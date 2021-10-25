@@ -2,15 +2,10 @@ open Base
 open Ocamlformat_lib
 
 let single_quote = '\''
-
 let double_quote = '"'
-
 let backslash = '\\'
-
 let space = ' '
-
 let tab = '\t'
-
 let newline = '\n'
 
 let tests_string =

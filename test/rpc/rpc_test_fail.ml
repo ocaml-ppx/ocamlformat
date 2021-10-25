@@ -1,7 +1,6 @@
 module Result = struct
   module Infix = struct
     let ( >>= ) r f = match r with Ok x -> f x | Error _ as e -> e
-
     let ( >>| ) r f = match r with Ok x -> Ok (f x) | Error _ as e -> e
   end
 
@@ -12,7 +11,6 @@ open Result.Infix
 module Ocf = Ocamlformat_rpc_lib
 
 let log = Format.printf
-
 let supported_versions = ["v1"]
 
 type state = Uninitialized | Running of Ocf.client | Errored

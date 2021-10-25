@@ -30,9 +30,7 @@ module Cmts = struct
   include Cmts
 
   let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
-
   let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
-
   let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
 
   let fmt c ?pro ?epi ?eol ?adj loc =
@@ -49,7 +47,6 @@ module Cmts = struct
 
   module Toplevel = struct
     let fmt_before c = Toplevel.fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
-
     let fmt_after c = Toplevel.fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
   end
 end
@@ -196,7 +193,6 @@ let update_items_config c items update_config =
   items
 
 let box_semisemi b k = hvbox_if b 0 (k $ fmt_if b "@,;;")
-
 let fmt_hole () = str "_"
 
 let fmt_item_list c ctx update_config ast fmt_item items =

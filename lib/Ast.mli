@@ -175,7 +175,6 @@ val break_between :
   Source.t -> cmt_checker -> t * Conf.t -> t * Conf.t -> bool
 
 val attributes : t -> attributes
-
 val location : t -> Location.t
 
 val dump : Format.formatter -> t -> unit

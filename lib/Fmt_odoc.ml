@@ -90,7 +90,6 @@ let fmt_code_block conf s1 s2 =
       box (wrap_code (vbox 0 (list_fl lines fmt_line)))
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
-
 let fmt_reference = ign_loc ~f:str_normalized
 
 (* Decide between using light and heavy syntax for lists *)
@@ -212,7 +211,6 @@ and fmt_nestable_block_elements c elems =
   list_block_elem elems (fmt_nestable_block_element c)
 
 let at = char '@'
-
 let space = fmt "@ "
 
 let fmt_tag_args ?arg ?txt c tag =

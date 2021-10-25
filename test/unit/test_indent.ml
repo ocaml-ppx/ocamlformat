@@ -1,7 +1,6 @@
 open Ocamlformat_lib
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
-
 let partial_let = read_file "../passing/tests/partial.ml"
 
 module Partial_ast = struct

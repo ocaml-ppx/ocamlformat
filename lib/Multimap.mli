@@ -16,7 +16,6 @@ type ('key, 'value, 'cmp) t = ('key, 'value list, 'cmp) Map.t
 
 module M (K : sig
   type t
-
   type comparator_witness
 end) : sig
   type nonrec 'value t = (K.t, 'value, K.comparator_witness) t

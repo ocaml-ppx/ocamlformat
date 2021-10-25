@@ -1,5 +1,4 @@
 let _ = Some_module.Submodule.(a + b)
-
 let _ = A.(a, b)
 
 let _ =
@@ -61,7 +60,6 @@ let () =
     )
 
 let () = X.(f y i)
-
 let () = X.(i)
 
 let () =
@@ -84,7 +82,6 @@ let x =
 
 open A
 open A.B
-
 open A (B)
 
 open struct
@@ -108,11 +105,8 @@ open (
 )
 
 open (val x)
-
 open (val x)
-
 open [%extension]
-
 open functor (A : T) -> T'
 
 module type T = sig
@@ -226,11 +220,8 @@ open
     end
 
 open A (B)
-
 open (A : S)
-
 open (val x)
-
 open [%ext]
 
 let _ =
@@ -283,11 +274,8 @@ open
     end [@@attr]
 
 open A (B) [@@attr]
-
 open (A : S) [@@attr]
-
 open (val x) [@@attr]
-
 open [%ext] [@@attr]
 
 let g =
@@ -298,45 +286,26 @@ let g =
     )
 
 let _ = M.({f} [@warning "foo"])
-
 let _ = M.((* A *) {f})
-
 let _ = M.({f} (* B *))
-
 let _ = M.((* A *) {f} (* B *))
-
 let _ = M.((* A *) {f} (* B *) [@warning "foo"] (* C *))
-
 let _ = M.([|f|] [@warning "foo"])
-
 let _ = M.((* A *) [|f|])
-
 let _ = M.([|f|] (* B *))
-
 let _ = M.((* A *) [|f|] (* B *))
-
 let _ = M.((* A *) [|f|] (* B *) [@warning "foo"] (* C *))
-
 let _ = M.([f] [@warning "foo"])
-
 let _ = M.((* A *) [f])
-
 let _ = M.([f] (* B *))
-
 let _ = M.([f] (* B *)) (* after *)
 
 let _ = M.((* A *) [f] (* B *))
-
 let _ = M.((* A *) [f] (* B *) [@warning "foo"] (* C *))
-
 let _ = M.((f, f) [@warning "foo"])
-
 let _ = M.((* A *) (f, f))
-
 let _ = M.((f, f) (* B *))
-
 let _ = M.((* A *) (f, f) (* B *))
-
 let _ = M.((* A *) ((f, f) (* B *) [@warning "foo"] (* C *)))
 
 let _ =

@@ -1,19 +1,11 @@
 type !'a t = private 'a ref
-
 type +!'a t = private 'a
-
 type -!'a t = private 'a -> unit
-
 type +!'a t = private 'a
-
 type -!'a t = private 'a -> unit
-
 type +!'a t = private 'a
-
 type -!'a t = private 'a -> unit
-
 type +!'a t = private 'a
-
 type -!'a t = private 'a -> unit
 
 module M : sig
@@ -29,7 +21,6 @@ end = struct
 end
 
 type !'a t = 'a list
-
 type !'a u = int
 
 module M : sig
@@ -39,15 +30,10 @@ end = struct
 end
 
 type 'a t = 'b constraint 'a = < b: 'b >
-
 type !'b u = < b: 'b > t
-
 type !_ t = X
-
 type (_, _) eq = Refl : ('a, 'a) eq
-
 type !'a t = private 'b constraint 'a = < b: 'b >
-
 type !'a t = private 'b constraint 'a = < b: 'b ; c: 'c >
 
 module M : sig

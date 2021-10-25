@@ -15,9 +15,7 @@ module T = struct
   type t = {txt: string; loc: Location.t}
 
   let loc t = t.loc
-
   let txt t = t.txt
-
   let create txt loc = {txt; loc}
 
   let compare =

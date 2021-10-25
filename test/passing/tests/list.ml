@@ -9,17 +9,11 @@ let f x =
       true
 
 let f x = match x with P [{xxxxxx}; {yyyyyyyy}] -> true
-
 let x = (x :: y) :: z
-
 let x = match x with (x :: y) :: z -> ()
-
 let _ = [a; b; c]
-
 let _ = match x with Atom x -> x | List [Atom x; Atom y] -> x ^ y
-
 let _ = match x with Atom x -> x | List (Atom x :: Atom y :: rest) -> x ^ y
-
 let _ = match x with (x :: y) :: z -> true
 
 let x = function
@@ -62,17 +56,11 @@ let x = function
       ()
 
 let _ = f (* A *) ~x:(a :: b) (* B *) ~y
-
 let _ = f (* A *) ~x:((* B *) a :: b (* C *)) (* D *) ~y
-
 let _ = f ~x:((* A *) a (* B *) :: (* C *) b (* D *) :: (* E *) c (* F *)) ~y
-
 let _ = f ((* A *) x (* B *) :: (* C *) y (* D *) :: (* E *) z (* F *))
-
 let _ = abc :: (* def :: *) ghi :: jkl
-
 let _ = abc :: def (* :: ghi *) :: jkl
-
 let _ = (c :: l1) @ foo (l2 @ l)
 
 let _ =

@@ -26,11 +26,8 @@ module Right : sig
   (** Predicates for [>] on the RHS of printed AST nodes. *)
 
   val core_type : core_type -> bool
-
   val label_declaration : label_declaration -> bool
-
   val row_field : row_field -> bool
-
   val payload : payload -> bool
 
   val list : elt:('a -> bool) -> 'a list -> bool

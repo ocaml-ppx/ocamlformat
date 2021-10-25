@@ -13,7 +13,6 @@
 type t = Left | Non | Right
 
 val to_string : t -> string
-
 val equal : t -> t -> bool
 
 val of_prec : Prec.t -> t

@@ -3949,7 +3949,7 @@
  (action
   (with-stdout-to reformat_string.ml.stdout
    (with-stderr-to reformat_string.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter=2 %{dep:tests/reformat_string.ml})))))
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/reformat_string.ml})))))
 
 (rule
  (alias runtest)

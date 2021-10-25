@@ -1,5 +1,4 @@
 let ( .%{;..} ) = Genarray.get
-
 let ( .%{;..}<- ) = Genarray.set
 
 let () =
@@ -10,5 +9,4 @@ let () =
 (** With path *)
 
 let _ = a.A.B.*(b; c)
-
 let _ = a.A.B.*(b; c) <- d

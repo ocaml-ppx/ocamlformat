@@ -54,19 +54,15 @@ let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 
 [%%ext
 11111111111111111111;;
-
 22222222222222222222]
 
 [%%ext
 11111111111111111111;;
-
 22222222222222222222;;
-
 33333333333333333333]
 
 [%%ext
 let foooooooooooooooo = foooo
-
 let fooooooooooooooo = foo]
 
 let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
@@ -104,17 +100,11 @@ let _ =
       done )
 
 let _ = function%ext x -> x
-
 let _ = f (function%ext x -> x)
-
 let _ = f (function%ext x -> x) x
-
 let _ = [%ext function x -> x]
-
 let _ = f [%ext function x -> x]
-
 let _ = f [%ext function x -> x] x
-
 let _ = f ([%ext e] [@attr]) x
 
 let _ =
@@ -145,15 +135,11 @@ let _ =
   with _ -> assert false
 
 let%lwt f = function _ -> ()
-
 type%any_extension t = < a: 'a >
 
 let value = f [%any_extension function 0 -> false | _ -> true]
-
 let value = [%any_extension fun x -> y] x
-
 let value = f [%any_extension try x with x -> false | _ -> true]
-
 let value = f [%any_extension match x with x -> false | _ -> true]
 
 let foo =
@@ -208,15 +194,10 @@ let () =
     () (* 1 *) [@foo (* 2 *) "bar"] (* 3 *)]
 
 open%ext M
-
 [%%ext open M]
-
 open! %ext M
-
 [%%ext open! M]
-
 include%ext M
-
 [%%ext include M]
 
 let x =
@@ -238,7 +219,6 @@ let x =
     x]
 
 exception%ext E
-
 [%%ext exception E]
 
 let _ =
@@ -251,7 +231,6 @@ let _ =
     x]
 
 module%ext E = P
-
 [%%ext module E = P]
 
 module%ext rec K = A
@@ -271,11 +250,8 @@ let _ =
     x]
 
 module type%ext E = P
-
 [%%ext module type E = P]
-
 class%ext x = y
-
 [%%ext class x = y]
 
 class%ext x = y
@@ -288,7 +264,6 @@ class x = y
 and y = z]
 
 class type%ext x = y
-
 [%%ext class type x = y]
 
 class type%ext x = y
@@ -301,21 +276,13 @@ class type x = y
 and y = z]
 
 let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
-
 let _ = assert%lwt false
-
 let _ = [%lwt assert false]
-
 let _ = f (assert%lwt false)
-
 let _ = f [%lwt assert false]
-
 let _ = lazy%ext e
-
 let _ = [%ext lazy e]
-
 let _ = f (lazy%ext e)
-
 let _ = f [%ext lazy e]
 
 let _ =
@@ -343,17 +310,10 @@ let _ =
       end]
 
 let _ = if%ext x then y else z
-
 let _ = [%ext if x then y else z]
-
 let _ = f (if%ext x then y else z)
-
 let _ = f [%ext if x then y else z]
-
 let _ = new%ext x
-
 let _ = [%ext new x]
-
 let _ = f (new%ext x)
-
 let _ = f [%ext new x]

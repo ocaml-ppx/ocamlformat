@@ -32,16 +32,12 @@ let () =
       (* foooooooooooooo *)
       (struct
         type t = t
-
         type t = t
-
         type t = t
-
         type t = t
       end)
       (struct
         type t = t
-
         type t = t
       end)
   in

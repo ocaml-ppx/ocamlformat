@@ -85,7 +85,6 @@ let _ =
   : Ephemeron.S )
 
 let _ = (module Ephemeron (HHHHHHHHHHHHHHH) (HHHHHHHHHHHHH) : Ephemeron.S)
-
 let _ = (module Ephemeron (HHH) : Ephemeron.S)
 
 let _ =
@@ -101,12 +100,10 @@ let _ =
 (* Tests for dropped comment *)
 
 module M = (val x : S (* a *))
-
 module M = (val x (* b *))
 
 let _ =
   ( module struct
     let x = 0
-
     let y = 1
   end )

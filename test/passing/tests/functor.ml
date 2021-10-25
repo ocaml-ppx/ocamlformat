@@ -1,15 +1,9 @@
 module type S = functor () -> sig end
-
 module type S = functor () () -> sig end
-
 module type M = functor () -> sig end
-
 module type M = functor (S : S) -> sig end
-
 module type M = functor (S : S) (T : T) -> sig end
-
 module type M = functor (S : S) (T : T) -> U
-
 module type M = functor (S : S) () -> sig end
 
 module type M = functor
@@ -17,22 +11,15 @@ module type M = functor
   (TTTTT : TTTTTTTTTTTTTTTT)
   -> sig
   val t1 : a
-
   val t2 : b
 end
 
 module M : functor () -> sig end = functor () -> struct end
-
 module M = (functor (S : S) -> struct end) (S)
-
 module M = (functor (S : S) (T : T) -> struct end) (S) (T)
-
 module M = (functor (S : S) (T : T) -> struct end : U) (S) (T)
-
 module M = (functor (S : S) () -> struct end : U) (S) (T)
-
 module M = (functor (S : S) (T : T) -> (struct end : U)) (S) (T)
-
 module rec A (S : S) = S
 
 module type S = sig
@@ -46,7 +33,6 @@ module M =
     ->
     struct
       let x = 2
-
       let y = 3
     end)
     (S)
@@ -54,9 +40,7 @@ module M =
 
 module type Module_type_fail = sig
   include S
-
   module F : functor (_ : T) -> sig end
-
   include S
 end
 
@@ -84,7 +68,5 @@ end
 
 (* Long syntax should be preserved *)
 module M = functor (_ : S) -> struct end
-
 module M (_ : S) = struct end
-
 module M : functor (_ : S) -> S' = functor (_ : S) -> struct end

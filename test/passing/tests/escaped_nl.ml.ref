@@ -10,19 +10,11 @@ let x =
     ~detail:alpha_flags (alpha_flags <> [])
 
 let s2 = "bla bla\n bli bli blo"
-
 let s3 = ""
-
 let s4 = " "
-
 let s5 = "  "
-
 let s6 = "\n"
-
 let s7 = "  \n"
-
 let c1 = '\n'
-
 let x1 = f x '\n' y z
-
 let zz = "\ns "

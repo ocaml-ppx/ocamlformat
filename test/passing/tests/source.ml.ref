@@ -51,7 +51,6 @@ let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo: t > ]
 
 [%%foo? _]
-
 [%%foo? Some y when y > 0]
 
 let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
@@ -61,7 +60,6 @@ let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
 let ([%foo: include S with type t = t] :
       [%foo:
         val x : t
-
         val y : t] ) =
   [%foo: type t = t]
 
@@ -72,23 +70,16 @@ let float_with_custom_modifier =
   1234567890_1234567890_1234567890_1234567890_1234567890.z
 
 let int32 = 1234l
-
 let int64 = 1234L
-
 let nativeint = 1234n
-
 let hex_without_modifier = 0x32f
-
 let hex_with_modifier = 0x32g
-
 let float_without_modifer = 1.2e3
-
 let float_with_modifer = 1.2g
 
 let%foo x = 42
 
 let%foo _ = ()
-
 and _ = ()
 
 let%foo _ = ()
@@ -134,19 +125,12 @@ class x =
     let[@foo] x = 3 in
     object
       inherit x [@@foo]
-
       val x = 3 [@@foo]
-
       val virtual x : t [@@foo]
-
       val! mutable x = 3 [@@foo]
-
       method x = 3 [@@foo]
-
       method virtual x : t [@@foo]
-
       method! private x = 3 [@@foo]
-
       initializer x [@@foo]
     end
     [@foo]
@@ -155,21 +139,13 @@ class x =
 class type t =
   object
     inherit t [@@foo]
-
     val x : t [@@foo]
-
     val mutable x : t [@@foo]
-
     method x : t [@@foo]
-
     method private x : t [@@foo]
-
     constraint t = t' [@@foo]
-
     [@@@abc]
-
     [%%id]
-
     [@@@aaa]
   end[@foo]
 
@@ -187,15 +163,10 @@ module type S = functor [@foo]
   -> sig end [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
-
 module type S = functor (_ : functor (_ : S) -> S) -> S
-
 module type S = functor (M : S) (_ : S) -> S
-
 module type S = functor (_ : functor (M : S) -> S) -> S
-
 module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
-
 module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
@@ -205,72 +176,52 @@ end
 
 (* Structure items *)
 let%foo[@foo] x = 4
-
 and[@foo] y = x
 
 type%foo t = int [@@foo]
-
 and t = int [@@foo]
 
 type%foo t += T [@@foo]
-
 class%foo x = x [@@foo]
-
 class type%foo x = x [@@foo]
-
 external%foo x : _ = "" [@@foo]
-
 exception%foo X [@foo]
-
 module%foo M = M [@@foo]
 
 module%foo rec M : S = M [@@foo]
 and M : S = M [@@foo]
 
 module type%foo S = S [@@foo]
-
 include%foo M [@@foo]
-
 open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig
   val%foo x : t [@@foo]
-
   external%foo x : t = "" [@@foo]
 
   type%foo t = int [@@foo]
-
   and t' = int [@@foo]
 
   type%foo t += T [@@foo]
-
   exception%foo X [@foo]
-
   module%foo M : S [@@foo]
 
   module%foo rec M : S [@@foo]
   and M : S [@@foo]
 
   module%foo M = M [@@foo]
-
   module type%foo S = S [@@foo]
-
   include%foo M [@@foo]
-
   open%foo M [@@foo]
-
   class%foo x : t [@@foo]
-
   class type%foo x = x [@@foo]
 end
 
 type t = ..
-
 type t += A;;
 
 [%extension_constructor A];;
-
 ([%extension_constructor A] : extension_constructor)
 
 module M = struct
@@ -299,7 +250,6 @@ class type castable =
 class type foo_t =
   object
     inherit castable
-
     method foo : string
   end
 
@@ -318,7 +268,6 @@ class foo : foo_t =
 class type bar_t =
   object
     inherit foo
-
     method bar : string
   end
 
@@ -332,16 +281,13 @@ class bar : bar_t =
       function Class Bar -> (self :> bar_t) | other -> super#cast other
 
     method bar = "bar"
-
     [@@@id]
-
     [%%id]
   end
 
 (* Now lets create a mutable list of castable objects *)
 
 let clist : castable list ref = ref []
-
 let push_castable (c : #castable) = clist := (c :> castable) :: !clist
 
 let pop_castable () =
@@ -355,15 +301,11 @@ let pop_castable () =
 (* We can add foos and bars to this list, and retrive them *)
 
 push_castable (new foo);;
-
 push_castable (new bar);;
-
 push_castable (new foo)
 
 let c1 : castable = pop_castable ()
-
 let c2 : castable = pop_castable ()
-
 let c3 : castable = pop_castable ()
 
 (* We can also downcast these values to foos and bars *)
@@ -389,7 +331,6 @@ let b3 : bar = c3#cast (Class Bar)
 (* Exception Bad_cast *)
 
 type foo = ..
-
 type foo += A | B of int
 
 let is_a x = match x with A -> true | _ -> false
@@ -397,20 +338,17 @@ let is_a x = match x with A -> true | _ -> false
 (* The type must be open to create extension *)
 
 type foo
-
 type foo += A of int (* Error type is not open *)
 
 (* The type parameters must match *)
 
 type 'a foo = ..
-
 type ('a, 'b) foo += A of int (* Error: type parameter mismatch *)
 
 (* In a signature the type does not have to be open *)
 
 module type S = sig
   type foo
-
   type foo += A of float
 end
 
@@ -418,7 +356,6 @@ end
 
 module type S = sig
   type foo = A of int
-
   type foo += B of float (* Error foo does not have an extensible type *)
 end
 
@@ -428,15 +365,12 @@ type foo = ..
 
 module M = struct
   type foo += A of int | B of string
-
   type foo += C of int | D of float
 end
 
 module type S = sig
   type foo += B of string | C of int
-
   type foo += D of float
-
   type foo += A of int
 end
 
@@ -445,7 +379,6 @@ module M_S : S = M
 (* Extensions can be GADTs *)
 
 type 'a foo = ..
-
 type _ foo += A : int -> int foo | B : int foo
 
 let get_num : type a. a foo -> a -> a option =
@@ -454,7 +387,6 @@ let get_num : type a. a foo -> a -> a option =
 (* Extensions must obey constraints *)
 
 type 'a foo = .. constraint 'a = [> `Var]
-
 type 'a foo += A of 'a
 
 let a = A 9 (* ERROR: Constraints not met *)
@@ -478,7 +410,6 @@ end
 module M_S : S = M
 
 let is_s x = match x with M_S.A _ -> true | _ -> false
-
 let a2 = M_S.A 20
 (* ERROR: Cannot create a value using a private constructor *)
 
@@ -491,9 +422,7 @@ module M = struct
 end
 
 type foo += A2 = M.A1
-
 type bar = ..
-
 type bar += A3 = M.A1 (* Error: rebind wrong type *)
 
 module M = struct
@@ -501,7 +430,6 @@ module M = struct
 end
 
 type foo += private B2 = M.B1
-
 type foo += B3 = M.B1 (* Error: rebind private extension *)
 
 type foo += C = Unknown (* Error: unbound extension *)
@@ -510,11 +438,9 @@ type foo += C = Unknown (* Error: unbound extension *)
 
 module M : sig
   type foo
-
   type foo += A1 of int
 end = struct
   type foo = ..
-
   type foo += A1 of int
 end
 
@@ -523,21 +449,15 @@ type M.foo += A2 = M.A1
 (* Rebinding handles abbreviations *)
 
 type 'a foo = ..
-
 type 'a foo1 = 'a foo = ..
-
 type 'a foo2 = 'a foo = ..
-
 type 'a foo1 += A of int | B of 'a | C : int foo1
-
 type 'a foo2 += D = A | E = B | F = C
 
 (* Extensions must obey variances *)
 
 type +'a foo = ..
-
 type 'a foo += A of (int -> 'a)
-
 type 'a foo += B of ('a -> int)
 (* ERROR: Parameter variances are not satisfied *)
 
@@ -545,7 +465,6 @@ type _ foo += C : ('a -> int) -> 'a foo
 (* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
-
 type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
 
 (* Exceptions are compatible with extensions *)
@@ -554,34 +473,29 @@ module M : sig
   type exn += Foo of int * float | Bar : 'a list -> exn
 end = struct
   exception Bar : 'a list -> exn
-
   exception Foo of int * float
 end
 
 module M : sig
   exception Bar : 'a list -> exn
-
   exception Foo of int * float
 end = struct
   type exn += Foo of int * float | Bar : 'a list -> exn
 end
 
 exception Foo of int * float
-
 exception Bar : 'a list -> exn
 
 module M : sig
   type exn += Foo of int * float | Bar : 'a list -> exn
 end = struct
   exception Bar = Bar
-
   exception Foo = Foo
 end
 
 (* Test toplevel printing *)
 
 type foo = ..
-
 type foo += Foo of int * int option | Bar of int option
 
 let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
@@ -591,7 +505,6 @@ type foo += Foo of string
 let y = x (* Prints Bar but not Foo (which has been shadowed) *)
 
 exception Foo of int * int option
-
 exception Bar of int option
 
 let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
@@ -603,17 +516,12 @@ let y = x (* Prints Bar and part of Foo (which has been shadowed) *)
 (* Test Obj functions *)
 
 type foo = ..
-
 type foo += Foo | Bar of int
 
 let extension_name e = Obj.extension_name (Obj.extension_constructor e)
-
 let extension_id e = Obj.extension_id (Obj.extension_constructor e)
-
 let n1 = extension_name Foo
-
 let n2 = extension_name (Bar 1)
-
 let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
 
 let f = extension_id (Bar 2) = extension_id Foo (* false *)
@@ -623,7 +531,6 @@ let is_foo x = extension_id Foo = extension_id x
 type foo += Foo
 
 let f = is_foo Foo
-
 let _ = Obj.extension_constructor 7 (* Invald_arg *)
 
 let _ =
@@ -637,11 +544,9 @@ let _ =
 
 module Msg : sig
   type 'a tag
-
   type result = Result : 'a tag * 'a -> result
 
   val write : 'a tag -> 'a -> unit
-
   val read : unit -> result
 
   type 'a tag += Int : int tag
@@ -650,9 +555,7 @@ module Msg : sig
     type t
 
     val label : string
-
     val write : t -> string
-
     val read : string -> t
   end
 
@@ -661,20 +564,16 @@ module Msg : sig
   end
 end = struct
   type 'a tag = ..
-
   type ktag = T : 'a tag -> ktag
 
   type 'a kind =
     {tag: 'a tag; label: string; write: 'a -> string; read: string -> 'a}
 
   type rkind = K : 'a kind -> rkind
-
   type wkind = {f: 'a. 'a tag -> 'a kind}
 
   let readTbl : (string, rkind) Hashtbl.t = Hashtbl.create 13
-
   let writeTbl : (ktag, wkind) Hashtbl.t = Hashtbl.create 13
-
   let read_raw () : string * string = raise (Failure "Not implemented")
 
   type result = Result : 'a tag * 'a -> result
@@ -699,7 +598,6 @@ end = struct
   type 'a tag += Int : int tag
 
   let ik = {tag= Int; label= "int"; write= string_of_int; read= int_of_string}
-
   let () = Hashtbl.add readTbl "int" (K ik)
 
   let () =
@@ -714,9 +612,7 @@ end = struct
     type t
 
     val label : string
-
     val write : t -> string
-
     val read : string -> t
   end
 
@@ -724,7 +620,6 @@ end = struct
     type 'a tag += C : D.t tag
 
     let k = {tag= C; label= D.label; write= D.write; read= D.read}
-
     let () = Hashtbl.add readTbl D.label (K k)
 
     let () =
@@ -741,9 +636,7 @@ module StrM = Msg.Define (struct
   type t = string
 
   let label = "string"
-
   let read s = s
-
   let write s = s
 end)
 
@@ -788,9 +681,7 @@ module type S = sig
   type t
 
   val to_string : t -> string
-
   val apply : t -> t
-
   val x : t
 end
 
@@ -799,9 +690,7 @@ let create (type s) to_string apply x =
     type t = s
 
     let to_string = to_string
-
     let apply = apply
-
     let x = x
   end in
   (module M : S with type t = s)
@@ -834,32 +723,24 @@ module TypEq : sig
   type ('a, 'b) t
 
   val apply : ('a, 'b) t -> 'a -> 'b
-
   val refl : ('a, 'a) t
-
   val sym : ('a, 'b) t -> ('b, 'a) t
 end = struct
   type ('a, 'b) t = unit
 
   let apply _ = Obj.magic
-
   let refl = ()
-
   let sym () = ()
 end
 
 module rec Typ : sig
   module type PAIR = sig
     type t
-
     type t1
-
     type t2
 
     val eq : (t, t1 * t2) TypEq.t
-
     val t1 : t1 Typ.typ
-
     val t2 : t2 Typ.typ
   end
 
@@ -870,15 +751,11 @@ module rec Typ : sig
 end = struct
   module type PAIR = sig
     type t
-
     type t1
-
     type t2
 
     val eq : (t, t1 * t2) TypEq.t
-
     val t1 : t1 Typ.typ
-
     val t2 : t2 Typ.typ
   end
 
@@ -891,21 +768,16 @@ end
 open Typ
 
 let int = Int TypEq.refl
-
 let str = String TypEq.refl
 
 let pair (type s1 s2) t1 t2 =
   let module P = struct
     type t = s1 * s2
-
     type t1 = s1
-
     type t2 = s2
 
     let eq = TypEq.refl
-
     let t1 = t1
-
     let t2 = t2
   end in
   let pair = (module P : PAIR with type t = s1 * s2) in
@@ -932,7 +804,6 @@ let () =
 (* #6262: first-class modules and module type aliases *)
 
 module type S1 = sig end
-
 module type S2 = S1
 
 let _f (x : (module S1)) : (module S2) = x
@@ -999,7 +870,6 @@ let idb1 =
     id
 
 let idb2 : bool -> bool = id
-
 let idb3 (_ : bool) = false
 
 let g (type t) (x : t) (tag : t ty) =
@@ -1061,9 +931,7 @@ type 'a ty =
   | Record : 'a record -> 'a ty
 
 and 'a record = {path: string; fields: 'a field_ list}
-
 and 'a field_ = Field : ('a, 'b) field -> 'a field_
-
 and ('a, 'b) field = {label: string; field_type: 'b ty; get: 'a -> 'b}
 
 (* Again *)
@@ -1285,11 +1153,8 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
 
 (* First attempt: represent 1-constructor variants using Conv *)
 let wrap_A t = Conv ("`A", (fun (`A x) -> x), (fun x -> `A x), t)
-
 let ty a = Rec (wrap_A (Option (Pair (a, Var))))
-
 let v = variantize Enil (ty Int)
-
 let x = v (`A (Some (1, `A (Some (2, `A None)))))
 
 (* Can also use it to decompose a tuple *)
@@ -1329,7 +1194,6 @@ let ty_abc =
         ; ("C", TCnoarg (Ttl (Ttl Thd))) ] }
 
 let v = variantize Enil ty_abc (`A 3)
-
 let a = devariantize Enil ty_abc v
 
 (* And an example with recursion... *)
@@ -1483,11 +1347,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 (* Basic types *)
 
 type ('a, 'b) sum = Inl of 'a | Inr of 'b
-
 type zero = Zero
-
 type 'a succ = Succ of 'a
-
 type _ nat = NZ : zero nat | NS : 'a nat -> 'a succ nat
 
 (* 2: A simple example *)
@@ -1528,9 +1389,7 @@ let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
 (* We do not have kinds, but we can encode them as predicates *)
 
 type tp = TP
-
 type nd = ND
-
 type ('a, 'b) fk = FK
 
 type _ shape =
@@ -1539,9 +1398,7 @@ type _ shape =
   | Fk : 'a shape * 'b shape -> ('a, 'b) fk shape
 
 type tt = TT
-
 type ff = FF
-
 type _ boolean = BT : tt boolean | BF : ff boolean
 
 (* 3.3 Feature : GADTs *)
@@ -1585,21 +1442,14 @@ type (_, _) le =
   | LeS : ('n, 'm) le -> ('n succ, 'm succ) le
 
 type _ even = EvenZ : zero even | EvenSS : 'n even -> 'n succ succ even
-
 type one = zero succ
-
 type two = one succ
-
 type three = two succ
-
 type four = three succ
 
 let even0 : zero even = EvenZ
-
 let even2 : two even = EvenSS EvenZ
-
 let even4 : four even = EvenSS (EvenSS EvenZ)
-
 let p1 : (two, one, three) plus = PlusS (PlusS (PlusZ (NS NZ)))
 
 let rec summandLessThanSum : type a b c. (a, b, c) plus -> (a, c) le =
@@ -1844,7 +1694,6 @@ let delete x (Avl t) =
 (* Exercise 22: Red-black trees *)
 
 type red = RED
-
 type black = BLACK
 
 type (_, _) sub_tree =
@@ -1857,7 +1706,6 @@ type (_, _) sub_tree =
       -> (black, 'n succ) sub_tree
 
 type rb_tree = Root : (black, 'n) sub_tree -> rb_tree
-
 type dir = LeftD | RightD
 
 type (_, _) ctxt =
@@ -1935,7 +1783,6 @@ type _ term =
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
 let ex1 = Ap (Add, Pair (Const 3, Const 5))
-
 let ex2 = Pair (ex1, Const 1)
 
 let rec eval_term : type a. a term -> a = function
@@ -2002,15 +1849,12 @@ let rec eval_term : type a. assoc list -> a term -> a =
   | Pair (x, y) -> (eval_term env x, eval_term env y)
 
 let ex3 = Abs ("x", Rint, Ap (Add, Pair (Var ("x", Rint), Var ("x", Rint))))
-
 let ex4 = Ap (ex3, Const 3)
-
 let v4 = eval_term [] ex4
 
 (* 5.9/5.10 Language with binding *)
 
 type rnil = RNIL
-
 type ('a, 'b, 'c) rcons = RCons of 'a * 'b * 'c
 
 type _ is_row =
@@ -2025,11 +1869,9 @@ type (_, _) lam =
   | App : ('e, 's -> 't) lam * ('e, 's) lam -> ('e, 't) lam
 
 type x = X
-
 type y = Y
 
 let ex1 = App (Var X, Shift (Var Y))
-
 let ex2 = Abs (X, Abs (Y, App (Shift (Var X), Var Y)))
 
 type _ env =
@@ -2046,27 +1888,17 @@ let rec eval_lam : type e t. e env -> (e, t) lam -> t =
   | _, App (f, x) -> eval_lam env f (eval_lam env x)
 
 type add = Add
-
 type suc = Suc
 
 let env0 = Econs (Zero, 0, Econs (Suc, succ, Econs (Add, ( + ), Enil)))
-
 let _0 : (_, int) lam = Var Zero
-
 let suc x = App (Shift (Var Suc : (_, int -> int) lam), x)
-
 let _1 = suc _0
-
 let _2 = suc _1
-
 let _3 = suc _2
-
 let add = Shift (Shift (Var Add : (_, int -> int -> int) lam))
-
 let double = Abs (X, App (App (Shift add, Var X), Var X))
-
 let ex3 = App (double, _3)
-
 let v3 = eval_lam env0 ex3
 
 (* 5.13: Constructing typing derivations at runtime *)
@@ -2145,11 +1977,8 @@ let ctx0 =
     )
 
 let ex1 = Ab ("x", I, Ap (Ap (V "+", V "x"), V "x"))
-
 let c1 = tc NZ ctx0 ex1
-
 let ex2 = Ap (ex1, C 3)
-
 let c2 = tc NZ ctx0 ex2
 
 let eval_checked env = function
@@ -2162,13 +1991,9 @@ let v2 = eval_checked env0 c2
 (* 5.12 Soundness *)
 
 type pexp = PEXP
-
 type pval = PVAL
-
 type _ mode = Pexp : pexp mode | Pval : pval mode
-
 type ('a, 'b) tarr = TARR
-
 type tint = TINT
 
 type (_, _) rel =
@@ -2219,7 +2044,6 @@ let rec subst : type m1 r t s. (m1, r, t) lam -> (r, s) sub -> (s, t) lam' =
     match subst x (Push sub) with Ex body -> Ex (Lam (v, body)) )
 
 type closed = rnil
-
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
 let rec rule :
@@ -2386,9 +2210,7 @@ type 'a poly =
 (* constraint 'a = [< `TagA of int | `TagB] *)
 
 let intA = function `TagA i -> i
-
 let intB = function `TagB -> 4
-
 let intAorB = function `TagA i -> i | `TagB -> 4
 
 type _ wrapPoly =
@@ -2416,9 +2238,7 @@ module F (S : sig
 end) =
 struct
   type a = int * int
-
   type b = int -> int
-
   type _ ab = A : a S.t ab | B : b S.t ab
 
   let f : a S.t ab -> b S.t ab -> string =
@@ -2438,7 +2258,6 @@ end = struct
 end
 
 let f : (M.s, [`A | `B]) t -> string = function Any -> "Any"
-
 let () = print_endline (f M.eq)
 
 module N : sig
@@ -2490,16 +2309,13 @@ end
 match M.comp with Diff -> false
 
 type 'a t = T of 'a
-
 type 'a s = S of 'a
-
 type (_, _) eq = Refl : ('a, 'a) eq
 
 let f : (int s, int t) eq -> unit = function Refl -> ()
 
 module M (S : sig
   type 'a t = T of 'a
-
   type 'a s = T of 'a
 end) =
 struct
@@ -2507,7 +2323,6 @@ struct
 end
 
 type _ nat = Zero : [`Zero] nat | Succ : 'a nat -> [`Succ of 'a] nat
-
 type 'a pre_nat = [`Zero | `Succ of 'a]
 
 type aux =
@@ -2547,9 +2362,7 @@ module N = M (A) (A)
 let x = N.f A
 
 type 'a visit_action
-
 type insert
-
 type 'a local_visit_action
 
 type ('a, 'result, 'visit_action) context =
@@ -2592,17 +2405,14 @@ let rec get_var : type stk ret. (stk s, ret) var -> stk lst -> ret =
   | Tail n', CCons (_, t) -> get_var n' t
 
 type 'a t = [< `Foo | `Bar] as 'a
-
 type 'a s = [< `Foo | `Bar | `Baz > `Bar] as 'a
 
 type 'a first = First : 'a second -> ('b t as 'a) first
-
 and 'a second = Second : ('b s as 'a) second
 
 type aux = Aux : 'a t second * ('a -> int) -> aux
 
 let it : 'a. ([< `Bar | `Foo > `Bar] as 'a) = `Bar
-
 let g (Aux (Second, f)) = f it
 
 type (_, _) eqp = Y : ('a, 'a) eqp | N : string -> ('a, 'b) eqp
@@ -2680,7 +2490,6 @@ let bad (type a) =
   N.M.e
 
 type +'a n = private int
-
 type nil = private Nil_type
 
 type (_, _) elt =
@@ -2700,7 +2509,6 @@ type _ t = T : int t
 let _ = match (raise Not_found : float t) with _ -> .
 
 type (_, _) eq = Eq : ('a, 'a) eq | Neq : int -> ('a, 'b) eq
-
 type 'a t
 
 let f (type a) (Neq n : (a, a t) eq) = n
@@ -2724,11 +2532,8 @@ end
 (* 2.2 Inductive Families *)
 
 type zero = Zero
-
 type _ succ = Succ
-
 type _ nat = NZ : zero nat | NS : 'a nat -> 'a succ nat
-
 type _ fin = FZ : 'a succ fin | FS : 'a fin -> 'a succ fin
 
 (* We cannot define val empty : zero fin -> 'a because we cannot write an
@@ -2744,7 +2549,6 @@ let fin_succ : type n. n fin -> n is_succ = function FZ -> IS | FS _ -> IS
 type 'a term = Var of 'a fin | Leaf | Fork of 'a term * 'a term
 
 let var x = Var x
-
 let lift r : 'm fin -> 'n term = fun x -> Var (r x)
 
 let rec pre_subst f = function
@@ -2871,13 +2675,9 @@ let mgu s t = amgu s t (EAlist Anil)
 (* val mgu : 'a term -> 'a term -> 'a ealist option *)
 
 let s = Fork (Var FZ, Fork (Var (FS (FS FZ)), Leaf))
-
 let t = Fork (Var (FS FZ), Var (FS FZ))
-
 let d = match mgu s t with Some x -> x | None -> failwith "mgu"
-
 let s' = subst' d s
-
 let t' = subst' d t
 
 (* Injectivity *)
@@ -2960,7 +2760,6 @@ module A = struct
 
   (* Mutually recursive declarations work as well *)
   type p = q [@@immediate]
-
   and q = int
 end
 
@@ -3087,7 +2886,6 @@ Error: Types marked with the immediate attribute must be
 (* Not guaranteed that t is immediate, so this is an invalid declaration *)
 module C = struct
   type t
-
   type s = t [@@immediate]
 end
 
@@ -3144,7 +2942,6 @@ Error: Signature mismatch:
 (* Can't use a non-immediate type even if mutually recursive *)
 module E = struct
   type t = s [@@immediate]
-
   and s = string
 end
 
@@ -3193,7 +2990,6 @@ module type S = sig
 end
 
 let f (module M : S with type t = int) = M.x
-
 let f (module M : S with type t = 'a) = M.x
 
 (* Error *)
@@ -3223,7 +3019,6 @@ let f (type a) ({s= (module M)} : a s) = M.x
 type s = {s: (module S with type t = int)}
 
 let f {s= (module M)} = M.x
-
 let f {s= (module M)} {s= (module N)} = M.x + N.x
 
 module type S = sig
@@ -3282,7 +3077,6 @@ M.f 3
 
 module type S = sig
   type t
-
   type u
 
   val x : t * u
@@ -3298,32 +3092,24 @@ module TypEq : sig
   type ('a, 'b) t
 
   val apply : ('a, 'b) t -> 'a -> 'b
-
   val refl : ('a, 'a) t
-
   val sym : ('a, 'b) t -> ('b, 'a) t
 end = struct
   type ('a, 'b) t = ('a -> 'b) * ('b -> 'a)
 
   let refl = ((fun x -> x), fun x -> x)
-
   let apply (f, _) x = f x
-
   let sym (f, g) = (g, f)
 end
 
 module rec Typ : sig
   module type PAIR = sig
     type t
-
     and t1
-
     and t2
 
     val eq : (t, t1 * t2) TypEq.t
-
     val t1 : t1 Typ.typ
-
     val t2 : t2 Typ.typ
   end
 
@@ -3335,21 +3121,16 @@ end =
   Typ
 
 let int = Typ.Int TypEq.refl
-
 let str = Typ.String TypEq.refl
 
 let pair (type s1 s2) t1 t2 =
   let module P = struct
     type t = s1 * s2
-
     type t1 = s1
-
     type t2 = s2
 
     let eq = TypEq.refl
-
     let t1 = t1
-
     let t2 = t2
   end in
   Typ.Pair (module P)
@@ -3370,11 +3151,9 @@ module type MapT = sig
   include Map.S
 
   type data
-
   type map
 
   val of_t : data t -> map
-
   val to_t : map -> data t
 end
 
@@ -3393,11 +3172,9 @@ module SSMap = struct
   include Map.Make (String)
 
   type data = string
-
   type map = data t
 
   let of_t x = x
-
   let to_t x = x
 end
 
@@ -3507,9 +3284,7 @@ let eval_lambda ~eval_rec ~subst l =
 (* Specialized versions to use on lambda *)
 
 let rec free1 x = free_lambda ~free_rec:free1 x
-
 let rec subst1 ~subst = subst_lambda ~subst_rec:subst1 ~free:free1 ~subst
-
 let rec eval1 x = eval_lambda ~eval_rec:eval1 ~subst:subst1 x
 
 (* The expr language of arithmetic expressions *)
@@ -3556,9 +3331,7 @@ let eval_expr ~eval_rec e =
 (* Specialized versions *)
 
 let rec free2 x = free_expr ~free_rec:free2 x
-
 let rec subst2 ~subst = subst_expr ~subst_rec:subst2 ~subst
-
 let rec eval2 x = eval_expr ~eval_rec:eval2 x
 
 (* The lexpr language, reunion of lambda and expr *)
@@ -3651,9 +3424,7 @@ let ( !! ) = Lazy.force
 class type ['a, 'b] ops =
   object
     method free : x:'b -> ?y:'c -> Names.t
-
     method subst : sub:'a Subst.t -> 'b -> 'a
-
     method eval : 'b -> 'a
   end
 
@@ -3669,7 +3440,6 @@ class ['a] var_ops =
       try Subst.find s sub with Not_found -> x
 
     method free (`Var s) = Names.singleton s
-
     method eval (#var as v) = v
   end
 
@@ -3880,9 +3650,7 @@ let ( !! ) = Lazy.force
 class type ['a, 'b] ops =
   object
     method free : 'b -> Names.t
-
     method subst : sub:'a Subst.t -> 'b -> 'a
-
     method eval : 'b -> 'a
   end
 
@@ -3896,7 +3664,6 @@ let var =
       try Subst.find s sub with Not_found -> x
 
     method free (`Var s) = Names.singleton s
-
     method eval (#var as v) = v
   end
 
@@ -4069,17 +3836,12 @@ let () =
   print_newline ()
 
 type sexp = A of string | L of sexp list
-
 type 'a t = 'a array
 
 let _ = fun (_ : 'a t) -> ()
-
 let array_of_sexp _ _ = [||]
-
 let sexp_of_array _ _ = A "foo"
-
 let sexp_of_int _ = A "42"
-
 let int_of_sexp _ = 42
 
 let t_of_sexp : 'a. (sexp -> 'a) -> sexp -> 'a t =
@@ -4104,9 +3866,7 @@ module T = struct
       fun t -> (array_of_sexp int_of_sexp) t
 
     let _ = t__of_sexp
-
     let sexp_of_t_ : t_ -> sexp = fun v -> (sexp_of_array sexp_of_int) v
-
     let _ = sexp_of_t_
   end
 end
@@ -4131,7 +3891,6 @@ module Permissioned : sig
 
     include sig
       val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
-
       val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
     end
   end
@@ -4178,7 +3937,6 @@ end
 type 'a foo = {x: 'a; y: int}
 
 let r = {{x= 0; y= 0} with x= 0}
-
 let r' : string foo = r
 
 external foo : int = "%ignore"
@@ -4194,15 +3952,11 @@ type 'a t = [`A of 'a t t]
 (* fails *)
 
 type 'a t = [`A of 'a t t] constraint 'a = 'a t
-
 type 'a t = [`A of 'a t] constraint 'a = 'a t
-
 type 'a t = [`A of 'a] as 'a
 
 type 'a v = [`A of u v] constraint 'a = t
-
 and t = u
-
 and u = t
 
 (* fails *)
@@ -4218,11 +3972,9 @@ let f (x : 'a t) (y : 'a) = x = y
 (* PR#6505 *)
 module type PR6505 = sig
   type 'o is_an_object = < .. > as 'o
-
   and 'o abs constraint 'o = 'o is_an_object
 
   val abs : 'o is_an_object -> 'o abs
-
   val unabs : 'o abs -> 'o
 end
 
@@ -4234,7 +3986,6 @@ f ?x:0
 
 (* PR#6352 *)
 let foo (f : unit -> unit) = ()
-
 let g ?x () = ();;
 
 foo
@@ -4251,7 +4002,6 @@ foo (fun ?opt () -> ())
 type 'a t = 'a
 
 let f (g : 'a list -> 'a t -> 'a) s = g s s
-
 let f (g : 'a * 'b -> 'a t -> 'a) s = g s s
 
 type ab = [`A | `B]
@@ -4293,19 +4043,13 @@ let rec x =
 and y = 1.
 
 type 'a t
-
 type a
 
 let f : < .. > t -> unit = fun _ -> ()
-
 let g : [< `b] t -> unit = fun _ -> ()
-
 let h : [> `b] t -> unit = fun _ -> ()
-
 let _ = fun (x : a t) -> f x
-
 let _ = fun (x : a t) -> g x
-
 let _ = fun (x : a t) -> h x
 
 (* PR#7012 *)
@@ -4313,14 +4057,12 @@ let _ = fun (x : a t) -> h x
 type t = ['A_name | `Hi]
 
 let f (x : 'id_arg) = x
-
 let f (x : 'Id_arg) = x
 
 (* undefined labels *)
 type t = {x: int; y: int};;
 
 {x= 3; z= 2};;
-
 fun {x= 3; z= 2} -> ();;
 
 (* mixed labels *)
@@ -4330,7 +4072,6 @@ fun {x= 3; z= 2} -> ();;
 type u = private {mutable u: int};;
 
 {u= 3};;
-
 fun x -> x.u <- 3
 
 (* Punning and abbreviations *)
@@ -4339,9 +4080,7 @@ module M = struct
 end
 
 let f {M.x; y} = x + y
-
 let r = {M.x= 1; y= 2}
-
 let z = f r
 
 (* messages *)
@@ -4351,7 +4090,6 @@ let f (r : int) = r.y <- 3
 
 (* bugs *)
 type foo = {y: int; z: int}
-
 type bar = {x: int}
 
 let f (r : bar) : foo = {r with z= 3}
@@ -4387,9 +4125,7 @@ let f : type t. t prod -> _ = function
       ()
 
 let (a : M.a) = 2
-
 let (b : M.b) = 2
-
 let _ = A.a = B.b
 
 module Std = struct
@@ -4397,7 +4133,6 @@ module Std = struct
 end
 
 open Std
-
 module Hash1 : module type of Hash = Hash
 
 module Hash2 : sig
@@ -4406,7 +4141,6 @@ end =
   Hash
 
 let f1 (x : (_, _) Hash1.t) : (_, _) Hashtbl.t = x
-
 let f2 (x : (_, _) Hash2.t) : (_, _) Hashtbl.t = x
 
 (* Another case, not using include *)
@@ -4418,7 +4152,6 @@ module Std2 = struct
 end
 
 module Std' = Std2
-
 module M' : module type of Std'.M = Std2.M
 
 let f3 (x : M'.t) : Std2.M.t = x
@@ -4436,7 +4169,6 @@ let f3 (x : M'.t) : Std2.M.t = x
    (Coverage.t, 'a) Hashtbl2.t end *)
 module type INCLUDING = sig
   include module type of List
-
   include module type of ListLabels
 end
 
@@ -4486,12 +4218,10 @@ module X2 = struct
 end
 
 let x = (3 : X2.F(DUMMY)(DUMMY).t)
-
 let x = (3 : X2.F(DUMMY)(DUMMY).t')
 
 module F (M : sig
   type 'a t
-
   type 'a u = string
 
   val f : unit -> _ u t
@@ -4501,27 +4231,22 @@ struct
 end
 
 type 't a = [`A]
-
 type 't wrap = 't constraint 't = [> 't wrap a]
-
 type t = t a wrap
 
 module T = struct
   let foo : 't wrap -> 't wrap -> unit = fun _ _ -> ()
-
   let bar : 'a a wrap as 'a = `A
 end
 
 module Good : sig
   val bar : t
-
   val foo : t -> t -> unit
 end =
   T
 
 module Bad : sig
   val foo : t -> t -> unit
-
   val bar : t
 end =
   T
@@ -4545,7 +4270,6 @@ module type S = sig
 end
 
 let f (module M : S with type t = int) = {M.a= 0}
-
 let flag = ref false
 
 module F (S : sig
@@ -4597,7 +4321,6 @@ module type PR6513 = sig
 
   module type T = sig
     type 'a wrap
-
     type uri
   end
 
@@ -4668,9 +4391,7 @@ module Common0 = struct
     handle_msg := f old
 
   let q : _ Queue.t = Queue.create ()
-
   let add msg = Queue.add msg q
-
   let handle_queue_messages () = Queue.iter !handle_msg q
 end
 
@@ -4686,9 +4407,7 @@ module Common = struct
     handle_msg := f old
 
   let q : _ Queue.t = Queue.create ()
-
   let add msg = Queue.add msg q
-
   let handle_queue_messages () = Queue.iter !handle_msg q
 end
 
@@ -4701,9 +4420,7 @@ module M1 = struct
     | x -> fallback x
 
   let () = Common.extend_handle handle
-
   let () = Common.add (Reload "config.file")
-
   let () = Common.add (Alert "Initialisation done")
 end
 
@@ -4714,14 +4431,11 @@ let should_reject =
 type 'a t = 'a option
 
 let is_some = function None -> false | Some _ -> true
-
 let should_accept ?x () = is_some x
 
 include struct
   let foo `Test = ()
-
   let wrap f `Test = f
-
   let bar = wrap ()
 end
 
@@ -4742,16 +4456,13 @@ end
 module Y = X.Y
 
 type 'a arg_t = 'at constraint 'a = (module Y.S with type t = 'at)
-
 type t = (module X.Y.S with type t = unit)
 
 let f (x : t arg_t) = ()
-
 let () = f ()
 
 module type S = sig
   type a
-
   type b
 end
 
@@ -4771,7 +4482,6 @@ module type S = sig
 end
 
 let f (type a) (module X : S with type t = a) = ()
-
 let _ = f (module A) (* ok *)
 
 module A_annotated_alias : S with type t = (module A.A_S) = A
@@ -4881,9 +4591,7 @@ module F (_ : sig end) = struct
 end
 
 module M = struct end
-
 module N = M
-
 module G (X : F(N).S) : A.S = X
 
 module F (_ : sig end) = struct
@@ -4891,9 +4599,7 @@ module F (_ : sig end) = struct
 end
 
 module M = struct end
-
 module N = M
-
 module G (X : F(N).S) : F(M).S = X
 
 module M : sig
@@ -5019,7 +4725,6 @@ end
 
 module type S = sig
   type t
-
   and s = t
 end
 
@@ -5096,7 +4801,6 @@ module type B = A with type t = u
 
 module type S = sig
   exception Foo of int
-
   exception Foo of bool
 end
 
@@ -5136,7 +4840,6 @@ let g x =
   L.length (L.map succ x)
 
 module F (X : sig end) = Char
-
 module C4 = F ();;
 
 C4.chr 66
@@ -5307,7 +5010,6 @@ end = (
 ;;
 
 M2.C'.chr 66;;
-
 StdLabels.List.map
 
 module Q = Queue
@@ -5353,7 +5055,6 @@ end
 
 module T = struct
   module M = struct end
-
   include F (M)
 end
 
@@ -5387,7 +5088,6 @@ end
 
 module M = struct
   module X = struct end
-
   module Y = FF (X) (* XXX *)
 
   type t = Y.t
@@ -5407,7 +5107,6 @@ module G = F (M.Y)
 (* PR#6307 *)
 
 module A1 = struct end
-
 module A2 = struct end
 
 module L1 = struct
@@ -5419,7 +5118,6 @@ module L2 = struct
 end
 
 module F (L : module type of L1) = struct end
-
 module F1 = F (L1)
 
 (* ok *)
@@ -5437,7 +5135,6 @@ end
 module SInt = Set.Make (Int)
 
 type (_, _) eq = Eq : ('a, 'a) eq
-
 type wrap = W of (SInt.t, SInt.t) eq
 
 module M = struct
@@ -5458,7 +5155,6 @@ end
 
 module type S' = sig
   module I = Int2
-
   include S with module I := I
 end
 
@@ -5531,7 +5227,6 @@ module type S' = S with module M = H'
 (* PR#6376 *)
 module type Alias = sig
   module N : sig end
-
   module M = N
 end
 
@@ -5596,7 +5291,6 @@ end
 module type S = sig
   module M : sig
     module N : sig end
-
     module P : sig end
   end
 
@@ -5609,7 +5303,6 @@ end
 module R = struct
   module M = struct
     module N = struct end
-
     module P = struct end
   end
 
@@ -5649,7 +5342,6 @@ R.M.f 3
 open A
 
 let f = L.map S.capitalize
-
 let () = L.iter print_endline (f ["jacques"; "garrigue"])
 
 module C : sig
@@ -5667,7 +5359,6 @@ include D'
 open A
 
 let f = L.map S.capitalize
-
 let () = L.iter print_endline (f ["jacques"; "garrigue"])
 
 module C : sig
@@ -5688,35 +5379,28 @@ end
 
 module type S = sig
   type u
-
   type t
 end
 
 module type S' = sig
   type t = int
-
   type u = bool
 end
 
 (* ok to convert between structurally equal signatures, and parameters are
    inferred *)
 let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
-
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
 (* with subtyping it is also ok to forget some types *)
 module type S2 = sig
   type u
-
   type t
-
   type w
 end
 
 let g2 x = (x : (module S2 with type t = 'a and type u = 'b) :> (module S'))
-
 let h x = (x : (module S2 with type t = 'a) :> (module S with type t = 'a))
-
 let f2 (x : (module S2 with type t = 'a and type u = 'b)) : (module S') = x
 
 (* fail *)
@@ -5727,7 +5411,6 @@ let k (x : (module S2 with type t = 'a)) : (module S with type t = 'a) = x
 (* but you cannot forget values (no physical coercions) *)
 module type S3 = sig
   type u
-
   type t
 
   val x : int
@@ -5784,7 +5467,6 @@ module H () = F ()
 
 (* Alias *)
 module U = struct end
-
 module M = F ()
 
 (* ok *)
@@ -5794,21 +5476,17 @@ module M = F (U)
 
 (* Cannot coerce between applicative and generative *)
 module F1 (X : sig end) = struct end
-
 module F2 : functor () -> sig end = F1
 
 (* fail *)
 module F3 () = struct end
-
 module F4 : functor (X : sig end) -> sig end = F3
 
 (* fail *)
 
 (* tests for shortened functor notation () *)
 module X (X : sig end) (Y : sig end) = functor (Z : sig end) -> struct end
-
 module Y = functor (X : sig end) (Y : sig end) (Z : sig end) -> struct end
-
 module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
 
 module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
@@ -5819,7 +5497,6 @@ module F (X : sig end) = struct
 end
 
 type t = F(Does_not_exist).t
-
 type expr = [`Abs of string * expr | `App of expr * expr]
 
 class type exp =
@@ -5830,7 +5507,6 @@ class type exp =
 class app e1 e2 : exp =
   object
     val l = e1
-
     val r = e2
 
     method eval env =
@@ -5849,7 +5525,6 @@ class virtual ['subject, 'event] observer =
 class ['event] subject =
   object (self : 'subject)
     val mutable observers : ('subject, 'event) observer list = []
-
     method add_observer obs = observers <- obs :: observers
 
     method notify_observers (e : 'event) =
@@ -5861,18 +5536,14 @@ type id = int
 class entity (id : id) =
   object
     val ent_destroy_subject = new subject
-
     method destroy_subject : id subject = ent_destroy_subject
-
     method entity_id = id
   end
 
 class ['entity] entity_container =
   object (self)
     inherit ['entity, id] observer as observer
-
     method add_entity (e : 'entity) = e#destroy_subject#add_observer self
-
     method notify _ id = ()
   end
 
@@ -5888,7 +5559,6 @@ let f (x : entity entity_container) = ()
 class c v =
   object
     initializer print_endline v
-
     val v = 42
   end
 ;;
@@ -5919,7 +5589,6 @@ class virtual ['a] c =
 let o =
   object (s : 'a)
     inherit ['a] c
-
     method m = 42
   end
 
@@ -5952,7 +5621,6 @@ end
 class c (x : int) =
   object
     inherit M.c x
-
     method x : bool = x
   end
 
@@ -5967,14 +5635,12 @@ class alfa =
 class bravo a =
   object
     val y = (a :> alfa)
-
     initializer y#x "bravo initialized"
   end
 
 class charlie a =
   object
     inherit bravo a
-
     initializer y#x "charlie initialized"
   end
 
@@ -5984,43 +5650,29 @@ exception Out_of_range
 class type ['a] cursor =
   object
     method get : 'a
-
     method incr : unit -> unit
-
     method is_last : bool
   end
 
 class type ['a] storage =
   object ('self)
     method first : 'a cursor
-
     method len : int
-
     method nth : int -> 'a cursor
-
     method copy : 'self
-
     method sub : int -> int -> 'self
-
     method concat : 'a storage -> 'self
-
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
-
     method iter : ('a -> unit) -> unit
   end
 
 class virtual ['a, 'cursor] storage_base =
   object (self : 'self)
     constraint 'cursor = 'a #cursor
-
     method virtual first : 'cursor
-
     method virtual len : int
-
     method virtual copy : 'self
-
     method virtual sub : int -> int -> 'self
-
     method virtual concat : 'a storage -> 'self
 
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b =
@@ -6047,16 +5699,13 @@ class virtual ['a, 'cursor] storage_base =
 class type ['a] obj_input_channel =
   object
     method get : unit -> 'a
-
     method close : unit -> unit
   end
 
 class type ['a] obj_output_channel =
   object
     method put : 'a -> unit
-
     method flush : unit -> unit
-
     method close : unit -> unit
   end
 
@@ -6064,31 +5713,24 @@ module UChar = struct
   type t = int
 
   let highest_bit = 1 lsl 30
-
   let lower_bits = highest_bit - 1
 
   let char_of c =
     try Char.chr c with Invalid_argument _ -> raise Out_of_range
 
   let of_char = Char.code
-
   let code c = if c lsr 30 = 0 then c else raise Out_of_range
-
   let chr n = if n >= 0 && n lsr 31 = 0 then n else raise Out_of_range
-
   let uint_code c = c
-
   let chr_of_uint n = n
 end
 
 type uchar = UChar.t
 
 let int_of_uchar u = UChar.uint_code u
-
 let uchar_of_int n = UChar.chr_of_uint n
 
 class type ucursor = [uchar] cursor
-
 class type ustorage = [uchar] storage
 
 class virtual ['ucursor] ustorage_base = [uchar, 'ucursor] storage_base
@@ -6128,17 +5770,11 @@ module UText = struct
   class text_raw buf =
     object (self : 'self)
       inherit [cursor] ustorage_base
-
       val contents = buf
-
       method first = new cursor (self :> text_raw) 0
-
       method len = String.length contents / 4
-
       method get i = get_buf contents (4 * i)
-
       method nth i = new cursor (self :> text_raw) i
-
       method copy = {<contents = String.copy contents>}
 
       method sub pos len =
@@ -6154,25 +5790,19 @@ module UText = struct
   and cursor text i =
     object
       val contents = text
-
       val mutable pos = i
-
       method get = contents#get pos
-
       method incr () = pos <- pos + 1
-
       method is_last = pos + 1 >= contents#len
     end
 
   class string_raw buf =
     object
       inherit text_raw buf
-
       method set i u = set_buf contents (4 * i) u
     end
 
   class text init = text_raw (make_buf init)
-
   class string init = string_raw (make_buf init)
 
   let of_string s =
@@ -6190,9 +5820,7 @@ module UText = struct
     new string_raw s
 
   let create len = make len (UChar.chr 0)
-
   let copy s = s#copy
-
   let sub s start len = s#sub start len
 
   let fill s start len u =
@@ -6207,7 +5835,6 @@ module UText = struct
     done
 
   let concat s1 s2 = s1#concat (s2 (* : #ustorage *) :> uchar storage)
-
   let iter proc s = s#iter proc
 end
 
@@ -6221,7 +5848,6 @@ type 'a name = Foo : foo_t name | Int : int name
 class foo =
   object (self)
     method foo = "foo"
-
     method cast = function Foo -> (self :> < foo: string >)
   end
 
@@ -6244,7 +5870,6 @@ class virtual name = object end
 and func (args_ty, ret_ty) =
   object (self)
     inherit name
-
     val mutable memo_args = None
 
     method arguments =
@@ -6296,7 +5921,6 @@ module Classdef = struct
   class virtual ['a, 'b] cl1 =
     object
       method virtual raise_trouble : int -> 'a
-
       method virtual m : 'a -> 'b -> int
     end
 
@@ -6307,7 +5931,6 @@ module Classdef = struct
 end
 
 type refer1 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
-
 type refer2 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 
 (* Actually this should succeed ... *)
@@ -6322,7 +5945,6 @@ module Classdef = struct
   class virtual ['a, 'b] cl1 =
     object
       method virtual raise_trouble : int -> 'a
-
       method virtual m : 'a -> 'b -> int
     end
 
@@ -6343,7 +5965,6 @@ end
 open Pr3918b
 
 let f x = (x : 'a vlist :> 'b vlist)
-
 let f (x : 'a vlist) : 'b vlist = x
 
 module type Poly = sig
@@ -6416,7 +6037,6 @@ module type S = sig
   type +'a t
 
   val foo : [`A] t -> unit
-
   val bar : [< `A | `B] t -> unit
 end
 
@@ -6436,9 +6056,7 @@ module type T = sig
   type term
 
   val map : (term -> term) -> term -> term
-
   val nnf : term -> term
-
   val nnf_not : term -> term
 end
 
@@ -6482,13 +6100,10 @@ module Fk (X : T with type term = private [> 'a termk] as 'a) = struct
 end
 
 type untyped
-
 type -'a typed = private untyped
 
 type -'typing wrapped = private sexp
-
 and +'a t = 'a typed wrapped
-
 and sexp = private untyped wrapped
 
 class type ['a] s3 =
@@ -6561,7 +6176,6 @@ end =
 ;;
 
 fun x -> (x : M3.t :> M1.t);;
-
 fun x -> (x : M3.t :> M.t)
 
 module M4 : sig
@@ -6666,13 +6280,11 @@ end =
 
 module M' : sig
   type t_priv = private T of int
-
   type t = t_priv
 
   val mk : int -> t
 end = struct
   type t_priv = T of int
-
   type t = t_priv
 
   let mk x = T x
@@ -6705,9 +6317,7 @@ end
 module Test2 : module type of Test with type t = Test.t = Test
 
 let f (x : Test.t) : Test2.t = x
-
 let f Test2.A = ()
-
 let a = Test2.A
 
 (* fail *)
@@ -6717,15 +6327,10 @@ module Test2 : module type of Test with type t = private Test.t = Test
 
 (* PR#6331 *)
 type t = private < x: int ; .. > as 'a
-
 type t = private (< x: int ; .. > as 'a) as 'a
-
 type t = private < x: int > as 'a
-
 type t = private (< x: int > as 'a) as 'b
-
 type 'a t = private < x: int ; .. > as 'a
-
 type 'a t = private 'a constraint 'a = < x: int ; .. >
 
 (* Bad (t = t) *)
@@ -6919,14 +6524,12 @@ module PR_4450_1 = struct
   end
 
   module MyMap (X : MyT) = X
-
   module rec MyList : MyT = MyMap (MyList)
 end
 
 module PR_4450_2 = struct
   module type MyT = sig
     type 'a wrap = My of 'a t
-
     and 'a t = private < map: 'b. ('a -> 'b) -> 'b wrap ; .. >
 
     val create : 'a list -> 'a t
@@ -6944,7 +6547,6 @@ module PR_4450_2 = struct
 
   module rec MyList : sig
     type 'a wrap = My of 'a t
-
     and 'a t = < map: 'b. ('a -> 'b) -> 'b wrap >
 
     val create : 'a list -> 'a t
@@ -6966,7 +6568,6 @@ end
 
 module type SET = sig
   type elt
-
   type t
 
   val iter : (elt -> unit) -> t -> unit
@@ -6983,7 +6584,6 @@ struct
     type t = I of int * int | D of int * Diet.t * int
 
     val compare : t -> t -> int
-
     val iter : (int -> unit) -> t -> unit
   end = struct
     type t = I of int * int | D of int * Diet.t * int
@@ -7056,18 +6656,15 @@ module PR_4557 = struct
     module rec Mod : sig
       module XSet : sig
         type elt = X.t
-
         type t = Set.Make(X).t
       end
 
       module XMap : sig
         type key = X.t
-
         type 'a t = 'a Map.Make(X).t
       end
 
       type elt = X.t
-
       type t = XSet.t XMap.t
 
       val compare : t -> t -> int
@@ -7076,7 +6673,6 @@ module PR_4557 = struct
       module XMap = Map.Make (X)
 
       type elt = X.t
-
       type t = XSet.t XMap.t
 
       let compare x y = 0
@@ -7090,18 +6686,15 @@ module F (X : Set.OrderedType) = struct
   module rec Mod : sig
     module XSet : sig
       type elt = X.t
-
       type t = Set.Make(X).t
     end
 
     module XMap : sig
       type key = X.t
-
       type 'a t = 'a Map.Make(X).t
     end
 
     type elt = X.t
-
     type t = XSet.t XMap.t
 
     val compare : t -> t -> int
@@ -7110,7 +6703,6 @@ module F (X : Set.OrderedType) = struct
     module XMap = Map.Make (X)
 
     type elt = X.t
-
     type t = XSet.t XMap.t
 
     let compare x y = 0
@@ -7169,7 +6761,6 @@ module rec Fib2 : sig
   val f : int -> int
 end = struct
   let rec g x = Fib2.f (x - 1) + Fib2.f (x - 2)
-
   and f x = if x < 2 then 1 else g x
 end
 
@@ -7225,7 +6816,6 @@ end = struct
   type t = A | B
 
   let _ = (A : Strengthen.t)
-
   let f x = if true then A else Strengthen.f B
 end
 
@@ -7245,7 +6835,6 @@ end = struct
   type t = A | B
 
   let _ = (A : Strengthen2.t)
-
   let f x = if true then A else Strengthen2.f B
 
   module M = struct
@@ -7260,7 +6849,6 @@ end = struct
     type v = D
 
     let _ = (D : R.v)
-
     let _ = (D : Strengthen2.R.v)
   end
 end
@@ -7307,9 +6895,7 @@ module rec Expr : sig
     | Binding of Binding.t * t
 
   val make_let : string -> t -> t -> t
-
   val fv : t -> StringSet.t
-
   val simpl : t -> t
 end = struct
   type t =
@@ -7341,9 +6927,7 @@ and Binding : sig
   type t = (string * Expr.t) list
 
   val fv : t -> StringSet.t
-
   val bv : t -> StringSet.t
-
   val simpl : t -> t
 end = struct
   type t = (string * Expr.t) list
@@ -7373,9 +6957,7 @@ module type ORDERED = sig
   type t
 
   val eq : t -> t -> bool
-
   val lt : t -> t -> bool
-
   val leq : t -> t -> bool
 end
 
@@ -7385,15 +6967,10 @@ module type HEAP = sig
   type heap
 
   val empty : heap
-
   val isEmpty : heap -> bool
-
   val insert : Elem.t -> heap -> heap
-
   val merge : heap -> heap -> heap
-
   val findMin : heap -> Elem.t
-
   val deleteMin : heap -> heap
 end
 
@@ -7406,9 +6983,7 @@ module Bootstrap (MakeH : functor (Element : ORDERED) ->
     type t = E | H of Elem.t * PrimH.heap
 
     val eq : t -> t -> bool
-
     val lt : t -> t -> bool
-
     val leq : t -> t -> bool
   end = struct
     type t = E | H of Elem.t * PrimH.heap
@@ -7440,7 +7015,6 @@ module Bootstrap (MakeH : functor (Element : ORDERED) ->
   type heap = BE.t
 
   let empty = BE.E
-
   let isEmpty = function BE.E -> true | _ -> false
 
   let rec merge x y =
@@ -7452,7 +7026,6 @@ module Bootstrap (MakeH : functor (Element : ORDERED) ->
         else BE.H (e2, PrimH.insert h1 p2)
 
   let insert x h = merge (BE.H (x, PrimH.empty)) h
-
   let findMin = function BE.E -> raise Not_found | BE.H (x, _) -> x
 
   let deleteMin = function
@@ -7480,7 +7053,6 @@ struct
     else T (rank a + 1, x, b, a)
 
   let empty = E
-
   let isEmpty = function E -> true | _ -> false
 
   let rec merge h1 h2 =
@@ -7492,7 +7064,6 @@ struct
         else make x2 a2 (merge h1 b2)
 
   let insert x h = merge (T (1, x, E, E)) h
-
   let findMin = function E -> raise Not_found | T (_, x, _, _) -> x
 
   let deleteMin = function
@@ -7504,9 +7075,7 @@ module Ints = struct
   type t = int
 
   let eq = ( = )
-
   let lt = ( < )
-
   let leq = ( <= )
 end
 
@@ -7541,7 +7110,6 @@ end = struct
   class d =
     object (self)
       inherit Class1.c as super
-
       method m (x : int) = super#m 0
     end
 end
@@ -7576,7 +7144,6 @@ let _ =
 
 module rec Coerce1 : sig
   val g : int -> int
-
   val f : int -> int
 end = struct
   module A : sig
@@ -7585,7 +7152,6 @@ end = struct
     Coerce1
 
   let g x = x
-
   let f x = if x <= 0 then 1 else A.f (x - 1) * x
 end
 
@@ -7593,13 +7159,9 @@ let _ = test 80 (Coerce1.f 10) 3628800
 
 module CoerceF (S : sig end) = struct
   let f1 () = 1
-
   let f2 () = 2
-
   let f3 () = 3
-
   let f4 () = 4
-
   let f5 () = 5
 end
 
@@ -7617,17 +7179,14 @@ module Coerce4 (A : sig
 end) =
 struct
   let x = 0
-
   let at a = A.f a
 end
 
 module rec Coerce5 : sig
   val blabla : int -> int
-
   val f : int -> int
 end = struct
   let blabla x = 0
-
   let f x = 5
 end
 
@@ -7674,7 +7233,6 @@ end =
   G (M1)
 
 let _ = test 102 (Lazy.force M2.x) 3
-
 let _ = Gc.full_major () (* will shortcut forwarding in M1.x *)
 
 module rec M3 : sig
@@ -7746,13 +7304,11 @@ end
 
 module type S = sig
   exception A of {x: int}
-
   exception A of {x: string}
 end
 
 module M = struct
   exception A of {x: int}
-
   exception A of {x: string}
 end
 
@@ -7771,7 +7327,6 @@ end
 
 module type S = sig
   include S1
-
   include S1
 end
 
@@ -7789,14 +7344,12 @@ end
 
 module Z = struct
   type X1.t += A of {x: int}
-
   type X2.t += A of {x: int}
 end
 
 (* PR#6716 *)
 
 type _ c = C : [`A] c
-
 type t = T : {x: [< `A] c} -> t
 
 let f (T {x= C}) = ()
@@ -7805,21 +7358,17 @@ module M : sig
   type 'a t
 
   type u = u t
-
   and v = v t
 
   val f : int -> u
-
   val g : v -> bool
 end = struct
   type 'a t = 'a
 
   type u = int
-
   and v = bool
 
   let f x = x
-
   let g x = x
 end
 
@@ -7841,9 +7390,7 @@ end
 type _ t = X of string | Y : bytes t
 
 let y : string t = Y
-
 let f : string A.t -> unit = function A.X s -> print_endline s
-
 let () = f A.y
 
 module rec A : sig
@@ -7855,7 +7402,6 @@ end = struct
 end
 
 type t = [`A | `B]
-
 type 'a u = t
 
 let a : [< int u] = `A
@@ -7870,7 +7416,6 @@ module Core = struct
       type t = int
 
       let compare = compare
-
       let ( + ) x y = x + y
     end
 
@@ -7886,14 +7431,12 @@ end
 open Core.Std
 
 let x = Int.Map.empty
-
 let y = x + x
 
 (* Avoid ambiguity *)
 
 module M = struct
   type t = A
-
   type u = C
 end
 
@@ -7905,9 +7448,7 @@ open M
 open N;;
 
 A;;
-
 B;;
-
 C
 
 include M
@@ -7935,13 +7476,11 @@ type t1 = A
 
 module M1 = struct
   type u = v
-
   and v = t1
 end
 
 module N1 = struct
   type u = v
-
   and v = M1.v
 end
 
@@ -7949,7 +7488,6 @@ type t1 = B
 
 module N2 = struct
   type u = v
-
   and v = M1.v
 end
 
@@ -7972,9 +7510,7 @@ end
 
 module M2 = struct
   type u = A.B.t
-
   type foo = int
-
   type v = A.B.t
 end
 
@@ -8007,7 +7543,6 @@ module type AST = sig
   module Value : VALUE
 
   type chunk
-
   type program
 
   val get_value : chunk -> Value.value
@@ -8015,11 +7550,9 @@ end
 
 module type EVALUATOR = sig
   module Value : VALUE
-
   module Ast : AST with module Value := Value
 
   type state = Value.state
-
   type value = Value.value
 
   exception Error of string
@@ -8037,11 +7570,9 @@ end
 
 module type INTERP = sig
   include EVALUATOR
-
   module Parser : PARSER with type chunk = Ast.chunk
 
   val dostring : state -> string -> value list
-
   val mk : unit -> state
 end
 
@@ -8049,13 +7580,11 @@ module type USERTYPE = sig
   type t
 
   val eq : t -> t -> bool
-
   val to_string : t -> string
 end
 
 module type TYPEVIEW = sig
   type combined
-
   type t
 
   val map : (combined -> t) * (t -> combined)
@@ -8067,13 +7596,11 @@ module type COMBINED_COMMON = sig
   end
 
   module TV1 : TYPEVIEW with type combined := T.t
-
   module TV2 : TYPEVIEW with type combined := T.t
 end
 
 module type COMBINED_TYPE = sig
   module T : USERTYPE
-
   include COMBINED_COMMON with module T := T
 end
 
@@ -8096,12 +7623,10 @@ module type WEAPON_LIB = sig
   type t = Weapon.t
 
   module T : USERTYPE with type t = t
-
   module Make : functor (TV : TYPEVIEW with type t = t) -> USERCODE(TV).F
 end
 
 module type X = functor (X : CORE) -> BARECODE
-
 module type X = functor (_ : CORE) -> BARECODE
 
 module M = struct
@@ -8129,7 +7654,6 @@ end
 
 module type PrintableComparable = sig
   include Printable
-
   include Comparable with type t = t
 end
 
@@ -8138,13 +7662,11 @@ module type PrintableComparable = sig
   type t
 
   include Printable with type t := t
-
   include Comparable with type t := t
 end
 
 module type PrintableComparable = sig
   include Printable
-
   include Comparable with type t := t
 end
 
@@ -8175,7 +7697,6 @@ end
 module type S = sig
   module T : sig
     type exp
-
     type arg
   end
 
@@ -8184,7 +7705,6 @@ end
 
 module M = struct
   type exp = string
-
   type arg = int
 end
 
@@ -8229,20 +7749,15 @@ let f x (type a) (y : a) = x = y
 class ['a] c =
   object (self)
     method m : 'a -> 'a = fun x -> x
-
     method n : 'a -> 'a = fun (type g) (x : g) -> self#m x
   end
 
 (* Fails *)
 
 external a : (int[@untagged]) -> unit = "a" "a_nat"
-
 external b : (int32[@unboxed]) -> unit = "b" "b_nat"
-
 external c : (int64[@unboxed]) -> unit = "c" "c_nat"
-
 external d : (nativeint[@unboxed]) -> unit = "d" "d_nat"
-
 external e : (float[@unboxed]) -> unit = "e" "e_nat"
 
 type t = private int
@@ -8251,11 +7766,9 @@ external f : (t[@untagged]) -> unit = "f" "f_nat"
 
 module M : sig
   external a : int -> (int[@untagged]) = "a" "a_nat"
-
   external b : (int[@untagged]) -> int = "b" "b_nat"
 end = struct
   external a : int -> (int[@untagged]) = "a" "a_nat"
-
   external b : (int[@untagged]) -> int = "b" "b_nat"
 end
 
@@ -8263,22 +7776,15 @@ module Global_attributes = struct
   [@@@ocaml.warning "-3"]
 
   external a : float -> float = "a" "noalloc" "a_nat" "float"
-
   external b : float -> float = "b" "noalloc" "b_nat"
-
   external c : float -> float = "c" "c_nat" "float"
-
   external d : float -> float = "d" "noalloc"
-
   external e : float -> float = "e"
 
   (* Should output a warning: no native implementation provided *)
   external f : (int32[@unboxed]) -> (int32[@unboxed]) = "f" "noalloc"
-
   external g : int32 -> int32 = "g" "g_nat" [@@unboxed] [@@noalloc]
-
   external h : (int[@untagged]) -> (int[@untagged]) = "h" "h_nat" "noalloc"
-
   external i : int -> int = "i" "i_nat" [@@untagged] [@@noalloc]
 end
 
@@ -8286,13 +7792,9 @@ module Old_style_warning = struct
   [@@@ocaml.warning "+3"]
 
   external a : float -> float = "a" "noalloc" "a_nat" "float"
-
   external b : float -> float = "b" "noalloc" "b_nat"
-
   external c : float -> float = "c" "c_nat" "float"
-
   external d : float -> float = "d" "noalloc"
-
   external e : float -> float = "c" "float"
 end
 
@@ -8351,7 +7853,6 @@ end
 (* Bad: unboxed or untagged with the wrong type *)
 
 external g : (float[@untagged]) -> float = "g" "g_nat"
-
 external h : (int[@unboxed]) -> float = "h" "h_nat"
 
 (* Bad: unboxing the function type *)
@@ -8368,34 +7869,24 @@ external k : int -> (float[@unboxd]) = "k" "k_nat"
 (* Bad: old style annotations + new style attributes *)
 
 external l : float -> float = "l" "l_nat" "float" [@@unboxed]
-
 external m : (float[@unboxed]) -> float = "m" "m_nat" "float"
-
 external n : float -> float = "n" "noalloc" [@@noalloc]
 
 (* Warnings: unboxed / untagged without any native implementation *)
 external o : (float[@unboxed]) -> float = "o"
-
 external p : float -> (float[@unboxed]) = "p"
-
 external q : (int[@untagged]) -> float = "q"
-
 external r : int -> (int[@untagged]) = "r"
-
 external s : int -> int = "s" [@@untagged]
-
 external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
-
 let _ = raise Exit 3;;
 
 (* comment 9644 of PR#6000 *)
 
 fun b -> if b then format_of_string "x" else "y";;
-
 fun b -> if b then "x" else format_of_string "y";;
-
 fun b : (_, _, _) format -> if b then "x" else "y"
 
 (* PR#7135 *)
@@ -8427,9 +7918,7 @@ let f = function None, None -> 1 | Some _, Some _ -> 2
 
 (* Exhaustiveness check is very slow *)
 type _ t = A : int t | B : bool t | C : char t | D : float t
-
 type (_, _, _, _) u = U : (int, int, int, int) u
-
 type v = E | F | G
 
 let f :
@@ -8460,7 +7949,6 @@ let f (x : unit t option) = match x with None -> 1 | Some _ -> 2
 
 (* warn *)
 let f (x : int t option) = match x with None -> 1 | _ -> 2
-
 let f (x : int t option) = match x with None -> 1
 
 (* warn *)
@@ -8468,11 +7956,9 @@ let f (x : int t option) = match x with None -> 1
 (* Example with record, type, single case *)
 
 type 'a box = Box of 'a
-
 type 'a pair = {left: 'a; right: 'a}
 
 let f : (int t box pair * bool) option -> unit = function None -> ()
-
 let f : (string t box pair * bool) option -> unit = function None -> ()
 
 (* Examples from ML2015 paper *)
@@ -8480,7 +7966,6 @@ let f : (string t box pair * bool) option -> unit = function None -> ()
 type _ t = Int : int t | Bool : bool t
 
 let f : type a. a t -> a = function Int -> 1 | Bool -> true
-
 let g : int t -> int = function Int -> 1
 
 let h : type a. a t -> a t -> bool =
@@ -8490,24 +7975,20 @@ type (_, _) cmp = Eq : ('a, 'a) cmp | Any : ('a, 'b) cmp
 
 module A : sig
   type a
-
   type b
 
   val eq : (a, b) cmp
 end = struct
   type a
-
   type b = a
 
   let eq = Eq
 end
 
 let f : (A.a, A.b) cmp -> unit = function Any -> ()
-
 let deep : char t option -> char = function None -> 'c'
 
 type zero = Zero
-
 type _ succ = Succ
 
 type (_, _, _) plus =
@@ -8569,13 +8050,9 @@ exception A
 type a = A;;
 
 A;;
-
 raise A;;
-
 fun (A : a) -> ();;
-
 function Not_found -> 1 | A -> 2 | _ -> 3;;
-
 try raise A with A -> 2
 
 module TypEq = struct
@@ -8590,7 +8067,6 @@ end
 
 module Make (M : T) = struct
   let _ = match M.is_t () with None -> 0 | Some _ -> 0
-
   let f () = match M.is_t () with None -> 0
 end
 
@@ -8634,7 +8110,6 @@ end
 (* Use type information *)
 module M1 = struct
   type t = {x: int; y: int}
-
   type u = {x: bool; y: bool}
 end
 
@@ -8672,7 +8147,6 @@ end
 (* Use type information with modules*)
 module M = struct
   type t = {x: int}
-
   type u = {x: bool}
 end
 
@@ -8720,7 +8194,6 @@ end
 (* Use field information *)
 module M = struct
   type u = {x: bool; y: int; z: char}
-
   type t = {x: int; y: bool}
 end
 
@@ -8741,7 +8214,6 @@ end
 
 module OK = struct
   type u = {x: int; y: bool}
-
   type t = {x: bool; y: int; z: char}
 
   let r = {x= 3; y= true}
@@ -8753,7 +8225,6 @@ end
 
 module F4 = struct
   type foo = {x: int; y: int}
-
   type bar = {x: int}
 
   let b : bar = {x= 3; y= 4}
@@ -8791,7 +8262,6 @@ let r = {MN.x= 3; NM.y= 4}
 
 module M = struct
   type foo = {x: int; y: int}
-
   type bar = {x: int; y: int; z: int}
 end
 
@@ -8821,7 +8291,6 @@ module F7 = struct
   open M
 
   let r = {x= 1; y= 2}
-
   let r : other = {x= 1; y= 2}
 end
 
@@ -8848,17 +8317,14 @@ end
 (* PR#6004 *)
 
 type t = A
-
 type s = A
 
 class f (_ : t) = object end
-
 class g = f A
 
 (* ok *)
 
 class f (_ : 'a) (_ : 'a) = object end
-
 class g = f (A : t) A
 
 (* warn with -principal *)
@@ -8893,9 +8359,7 @@ end
 
 module P6235 = struct
   type t = {loc: string}
-
   type v = {loc: string; x: int}
-
   type u = [`Key of t]
 
   let f (u : u) = match u with `Key {loc} -> loc
@@ -8905,9 +8369,7 @@ end
 
 module P6235' = struct
   type t = {loc: string}
-
   type v = {loc: string; x: int}
-
   type u = [`Key of t]
 
   let f = function (_ : u) when false -> "" | `Key {loc} -> loc
@@ -8919,7 +8381,6 @@ end
 
 module Unused_nonrec : sig end = struct
   type nonrec used = int
-
   type nonrec unused = used
 end
 
@@ -8935,7 +8396,6 @@ module Unused_extension_constructor : sig
   type t = ..
 end = struct
   type t = ..
-
   type t += Nobody_uses_me
 end
 
@@ -8953,7 +8413,6 @@ module Unused_extension_outside_patterns : sig
   val falsity : t -> bool
 end = struct
   type t = ..
-
   type t += Nobody_constructs_me
 
   let falsity = function Nobody_constructs_me -> true | _ -> false
@@ -8967,11 +8426,9 @@ end
 
 module Unused_private_extension : sig
   type t = ..
-
   type t += private Private_ext
 end = struct
   type t = ..
-
   type t += Private_ext
 end
 ;;
@@ -8998,7 +8455,6 @@ class c =
   end
 
 let f = function (x [@wee]) -> ()
-
 let f = function '1' .. '9' | '1' .. '8' -> () | 'a' .. 'z' -> ()
 
 let f = function
@@ -9041,13 +8497,9 @@ let f (type t) () =
   , function E _ -> print_endline "OK" | _ -> print_endline "KO" )
 
 let inj1, proj1 = f ()
-
 let inj2, proj2 = f ()
-
 let () = proj1 (inj1 42)
-
 let () = proj1 (inj2 42)
-
 let _ = ~-1
 
 class id = [%exp]
@@ -9082,18 +8534,13 @@ let _ =
 class ['a] c () =
   object
     constraint 'a = < .. > -> unit
-
     method m : 'a = fun x -> ()
   end
 
 let f : type a'. a' = assert false
-
 let foo : type a' b'. a' -> b' = fun a -> assert false
-
 let foo : type t'. t' = fun (type t') : t' -> assert false
-
 let foo : type t. t = assert false
-
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
 let f x =
@@ -9102,27 +8549,18 @@ let f x =
       x.contents )
 
 let ( ~$ ) x = Some x
-
 let g x = ~$(x.contents)
-
 let ( ~$ ) x y = (x, y)
-
 let g x y = ~$(x.contents) y.contents
 
 (* PR#7506: attributes on list tail *)
 
 let tail1 = [1; 2] [@hello]
-
 let tail2 = 0 :: ([1; 2] [@hello])
-
 let tail3 = 0 :: ([] [@hello])
-
 let f ~l:(l [@foo]) = l
-
 let test x y = (( + ) [@foo]) x y
-
 let test x = (( ~- ) [@foo])x
-
 let test contents = {contents= contents [@foo]}
 
 class type t = object (_[@foo]) end
@@ -9130,15 +8568,11 @@ class type t = object (_[@foo]) end
 class t = object (_ [@foo]) end
 
 let test f x = f ~x:(x [@foo])
-
 let f = function (`A | `B) [@bar] | `C -> ()
-
 let f = function _ :: ((_ :: _) [@foo]) -> () | _ -> ();;
 
 function {contents= (contents [@foo])} -> ();;
-
 fun contents -> {contents= contents [@foo]};;
-
 fun contents -> {contents= contents [@foo]; foo};;
 
 () ;
@@ -9177,15 +8611,10 @@ end
 module Indexop = struct
   module Def = struct
     let ( .%[] ) = Hashtbl.find
-
     let ( .%[]<- ) = Hashtbl.add
-
     let ( .%() ) = Hashtbl.find
-
     let ( .%()<- ) = Hashtbl.add
-
     let ( .%{} ) = Hashtbl.find
-
     let ( .%{}<- ) = Hashtbl.add
   end
   ;;
@@ -9205,7 +8634,6 @@ M.(Some x) [@foo]
 [@@@foo:]
 
 let x = (A B).a
-
 let x = A (B).a
 
 let formula_base x =

@@ -5,35 +5,20 @@ let _ =
 
     (* some comment *)
     method! x = 2 [@@attr]
-
     method x = (1 [@attr])
-
     method virtual x : t
-
     method virtual private x : t
-
     method! private x = 3
-
     method! private x : t = 4
-
     method! private x : type a b c. r = 5
-
     method! private x : type a. r = 6
-
     val virtual x : t
-
     val virtual mutable x : t
-
     val virtual mutable x : t
-
     val! mutable x = 7
-
     val! mutable x : t = 8
-
     constraint t = 'a t
-
     [%%ext salut, "hello"]
-
     [@@@attr]
 
     initializer
@@ -60,25 +45,19 @@ let _ =
   end
 
 let _ = f a#b (a#c x y)
-
 let _ = f a##.b (a##c x y)
 
 type t = (int, int) #q
 
 let _ = object%js end
-
 let _ = object%js (super) end
-
 let _ = object%js (super : 'a) end
-
 let _ = f (object end)
-
 let _ = f (object%js end)
 
 class t ~a =
   object
     inherit f a
-
     method x a b = a + b
   end
 
@@ -101,15 +80,10 @@ module type A = sig
   class c :
     object
       inherit ['a a] d
-
       constraint 'a = int
-
       [%%ext something]
-
       [@@@attr something]
-
       val virtual mutable a : int
-
       method virtual private b : int -> int -> int
     end
 end
@@ -136,7 +110,6 @@ class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =
   object
     inherit f a
-
     method x a b = a + b
   end
 
@@ -146,7 +119,6 @@ class tttttttttttttttttttttttttt x y =
   let f x =
     object
       inherit f a
-
       method x a b = a + b
     end
   in
@@ -158,7 +130,6 @@ class tttttttttttttttttttttttttt x y =
   (fun x ->
     object
       inherit f a
-
       method x a b = a + b
     end )
     0
@@ -225,9 +196,7 @@ let o =
   end
 
 class f = fun [@inline] (b [@inline]) -> object end
-
 class f = [%test] [@test]
-
 class f a (b [@inline]) = object end
 
 class f =
@@ -267,7 +236,6 @@ class type ['a] tsv =
    x = y >}
 
 class type a = b[@attr]
-
 class type a = object end[@attr]
 
 (* Syntax error: class type a = b -> c[@attr] *)

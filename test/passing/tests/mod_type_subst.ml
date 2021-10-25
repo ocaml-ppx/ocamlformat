@@ -10,7 +10,6 @@ module type t = sig
 end
 
 module type t' = t with module type x = x
-
 module type t'' = t with module type x := x
 
 module type t3 =
@@ -38,7 +37,6 @@ module type ENDO = sig
 end
 
 module type ENDO_2 = ENDO with module type Inner.T = ENDO
-
 module type ENDO_2' = ENDO with module type Inner.T := ENDO
 
 module type S = sig
@@ -73,7 +71,6 @@ end
 
 module type u = sig
   type x
-
   type y
 
   module type t = sig
@@ -98,13 +95,9 @@ module type fst = sig
 end
 
 module type ext
-
 module type fst_ext = fst with module type t = ext
-
 module type fst_ext = fst with module type t := ext
-
 module type fst_erased = fst with module type t := sig end
-
 module type fst_ok = fst with module type t = sig end
 
 module type S = sig
@@ -132,9 +125,7 @@ module type R = S with module type M.T := sig end
 module type s = sig
   module type u := sig
     type a
-
     type b
-
     type c
   end
 
@@ -154,9 +145,7 @@ end
 module type s = sig
   module type u := sig
     type a
-
     type b
-
     type c
   end
 
@@ -181,6 +170,5 @@ module type hidden = sig
   include t
 
   val x : (module t)
-
   val x : int
 end

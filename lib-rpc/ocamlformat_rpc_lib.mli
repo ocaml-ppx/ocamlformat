@@ -13,23 +13,17 @@ module type Command_S = sig
   type t
 
   val read_input : Stdlib.in_channel -> t
-
   val to_sexp : t -> Sexplib0.Sexp.t
-
   val output : Stdlib.out_channel -> t -> unit
 end
 
 module type Client_S = sig
   type t
-
   type cmd
 
   val pid : t -> int
-
   val mk : pid:int -> in_channel -> out_channel -> t
-
   val query : cmd -> t -> cmd
-
   val halt : t -> (unit, [> `Msg of string]) result
 
   val config :
@@ -40,7 +34,6 @@ end
 
 module type V = sig
   module Command : Command_S
-
   module Client : Client_S with type cmd = Command.t
 end
 
@@ -69,7 +62,6 @@ val pick_client :
     to the least wished version. *)
 
 val pid : client -> int
-
 val halt : client -> (unit, [> `Msg of string]) result
 
 val config :

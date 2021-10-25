@@ -74,7 +74,6 @@ end
 include T
 
 type s = (unit, Format.formatter, unit) format
-
 type sp = Blank | Cut | Space | Break of int * int
 
 let ( >$ ) f g x = f $ g x
@@ -83,7 +82,6 @@ let set_margin n =
   with_pp (fun fs -> Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1))
 
 let max_indent = ref None
-
 let set_max_indent n = with_pp (fun _ -> max_indent := Some n)
 
 (** Debug of formatting -------------------------------------------------*)
@@ -124,7 +122,6 @@ let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
 let str_as n s = with_pp (fun fs -> Format.pp_print_as fs n s)
-
 let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
@@ -167,13 +164,9 @@ let list xs sep pp = list_k xs (fmt sep) pp
 (** Conditional formatting ----------------------------------------------*)
 
 let fmt_if_k cnd x = if cnd then x else noop
-
 let fmt_if cnd f = fmt_if_k cnd (fmt f)
-
 let fmt_or_k cnd t f = if cnd then t else f
-
 let fmt_or cnd t f = fmt_or_k cnd (fmt t) (fmt f)
-
 let fmt_opt o = Option.value o ~default:noop
 
 (** Conditional on immediately following a line break -------------------*)
@@ -205,11 +198,9 @@ let fits_breaks_if ?force ?hint ?level cnd fits breaks =
 (** Wrapping ------------------------------------------------------------*)
 
 let wrap_if_k cnd pre suf k = fmt_if_k cnd pre $ k $ fmt_if_k cnd suf
-
 let wrap_k x = wrap_if_k true x
 
 let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
-
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
 let wrap_if_fits_or cnd pre suf k =
@@ -307,19 +298,12 @@ and close_box =
 (** Wrapping boxes ------------------------------------------------------*)
 
 let cbox ?name n = wrap_k (open_box ?name n) close_box
-
 and vbox ?name n = wrap_k (open_vbox ?name n) close_box
-
 and hvbox ?name n = wrap_k (open_hvbox ?name n) close_box
-
 and hovbox ?name n = wrap_k (open_hovbox ?name n) close_box
-
 and cbox_if ?name cnd n = wrap_if_k cnd (open_box ?name n) close_box
-
 and vbox_if ?name cnd n = wrap_if_k cnd (open_vbox ?name n) close_box
-
 and hvbox_if ?name cnd n = wrap_if_k cnd (open_hvbox ?name n) close_box
-
 and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
 
 (** Text filling --------------------------------------------------------*)

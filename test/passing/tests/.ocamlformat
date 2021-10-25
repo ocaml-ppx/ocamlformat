@@ -3,5 +3,5 @@ break-cases = fit
 margin = 77
 parse-docstrings = true
 wrap-comments = true
-max-iters = 2
+max-iters = 3
 ocaml-version = 4.13.0

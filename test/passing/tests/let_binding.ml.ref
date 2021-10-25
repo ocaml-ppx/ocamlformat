@@ -2,11 +2,8 @@
    typ) = exp ]}. The difference should be maintained *)
 
 let (_ : int) = x1
-
 let (x : int) = x2
-
 let (_ : int) = x3
-
 let x : int = x4
 
 let _ =
@@ -17,11 +14,8 @@ let _ =
   ()
 
 let%ext (_ : int) = x1
-
 let%ext (x : int) = x2
-
 let%ext (_ : int) = x3
-
 let%ext x : int = x4
 
 let%ext _ =
@@ -32,11 +26,8 @@ let%ext _ =
   ()
 
 let [%ext let x = 3] = 2
-
 let [%ext: [%exp let x = 3]] = 2
-
 let f : 'a. 'a ty -> 'a = fun y -> g y
-
 let f (A _ | B | C) = ()
 
 let f
@@ -52,9 +43,7 @@ let f
   ()
 
 let f (AAA (EEEEEEE | FFFFF | GGGGG) | BBBBBB | CCCCCCC) = ()
-
 let f = function AAA (EEEEEEE | FFFFF | GGGGG) | BBBBBB | CCCCCCC -> ()
-
 let f = function EEEEEEE | F | GGGGG | B | CCCCCCC -> ()
 
 let f = function
@@ -72,7 +61,6 @@ module Let_and_compact = struct
   [@@@ocamlformat "let-and=compact"]
 
   let x = 2
-
   and y = 2
 
   let _ =
@@ -88,7 +76,6 @@ module Let_and_sparse = struct
   [@@@ocamlformat "let-and=sparse"]
 
   let x = 2
-
   and y = 2
 
   let _ =
@@ -125,7 +112,6 @@ let _ =
 let fooo = fooooooooooo [@@foo]
 
 let fooo = fooooooooooo [@@foo]
-
 and fooo = fooooooooooo [@@foo]
 ;;
 
@@ -135,7 +121,6 @@ fooooooooooooooooooooo
 let[@foo] fooo = fooooooooooo
 
 let[@foo] fooo = fooooooooooo
-
 and[@foo] fooo = fooooooooooo
 ;;
 
@@ -143,7 +128,6 @@ let[@foo] foooo = fooooooooo in
 fooooooooooooooooooooo
 
 let a : int = 0
-
 let b = (0 : int)
 
 let _ =

@@ -7,13 +7,9 @@ let _ =
   ()
 
 let a :> x = v
-
 let a : x :> y = v
-
 let a = (v :> x)
-
 let a = (v : x :> y)
-
 let a : x :> y = (v : x :> y)
 
 class c =

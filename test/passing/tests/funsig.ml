@@ -42,9 +42,7 @@ type ('aaaa, 'bbbb, 'cccc) t =
   llll:('aaaa, 'bbbb, 'cccc) s -> dddddd list -> 'aaaa * 'cccc -> 'bbbb uuuuu
 
 external ident : a -> b -> c -> d = "something"
-
 external ident : a -> b -> c -> d = "something" "else"
-
 val ident : a -> b -> c -> d
 
 val ident :

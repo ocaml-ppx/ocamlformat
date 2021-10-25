@@ -102,7 +102,6 @@ module Toplevel : sig
 end
 
 val drop_inside : t -> Location.t -> unit
-
 val drop_before : t -> Location.t -> t
 
 val has_before : t -> Location.t -> bool

@@ -971,9 +971,7 @@ end
    formatting *)
 
 let project_root_witness = [".git"; ".hg"; "dune-project"]
-
 let kind = C.Operational
-
 let docs = C.section_name kind `Valid
 
 let comment_check =
@@ -1251,7 +1249,7 @@ let ocamlformat_profile =
   ; margin= 80
   ; max_indent= None
   ; max_iters= 10
-  ; module_item_spacing= `Sparse
+  ; module_item_spacing= `Compact
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
@@ -1553,11 +1551,8 @@ let is_project_root ~root dir =
           Fpath.(exists (dir / name)) )
 
 let dot_ocp_indent = ".ocp-indent"
-
 let dot_ocamlformat = ".ocamlformat"
-
 let dot_ocamlformat_ignore = ".ocamlformat-ignore"
-
 let dot_ocamlformat_enable = ".ocamlformat-enable"
 
 let rec collect_files ~enable_outside_detected_project ~root ~volume ~segs

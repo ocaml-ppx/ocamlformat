@@ -76,7 +76,6 @@ let benchmark () =
 let nothing _ = Ok ()
 
 type 'a result = (string, 'a) Hashtbl.t
-
 type 'a results = (string, 'a result) Hashtbl.t
 
 let process_results results =

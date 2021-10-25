@@ -18,9 +18,7 @@ module W = struct
   type t = int
 
   let in_lexer = [1; 2; 3; 14; 29]
-
   let disable x = -abs x
-
   let enable x = abs x
 
   let to_string x =

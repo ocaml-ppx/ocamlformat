@@ -33,37 +33,21 @@ let foooo =
      See `infer%s --help` for more information."
 
 let pp_sep fmt () = F.fprintf fmt ", @,\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n\n\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,@\n@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,@\n@\n@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n@\n\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n@;@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n@,@\n"
-
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n@\n\n"
-
 let fooooooooo = Fooooo "[%a]\n"
-
 let fooooooooo = Fooooo "[%a]@\n"
-
 let fooooooooo = Fooooo "[%a]\n@\n"
-
 let fooooooooo = Fooooo "[%a]@\n\n"
-
 let fooo = Fooo "@\nFooooo: `%s`\n"
 
 let fooooooooooo =
@@ -86,9 +70,6 @@ let fooooooooooo =
    officia deserunt mollit anim id est laborum."
 
 let _ = "abc@,def\n\nghi"
-
 let _ = "abc@,def\n\n ghi"
-
 let _ = "abc@,def\n\n"
-
 let _ = "abc@,def@\n\n"
