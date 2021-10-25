@@ -651,27 +651,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_string_literals-never.ml.stdout
-   (with-stderr-to break_string_literals-never.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-string-literals=never %{dep:tests/break_string_literals.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_string_literals-never.ml.ref break_string_literals-never.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_string_literals-never.ml.err break_string_literals-never.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_string_literals.ml.stdout
    (with-stderr-to break_string_literals.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-string-literals=auto %{dep:tests/break_string_literals.ml})))))
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_string_literals.ml})))))
 
 (rule
  (alias runtest)

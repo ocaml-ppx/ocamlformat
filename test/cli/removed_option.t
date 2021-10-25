@@ -70,10 +70,8 @@ Setting an option to a deprecated value on the command line should also display 
   [1]
 
   $ ocamlformat a.ml --break-string-literals=wrap
-  ocamlformat: option `--break-string-literals': value `wrap` has been removed
-               in version 0.12. It has been replaced by the new default `auto`
-               value, which breaks lines at newlines and wraps string literals
-               at the margin.
+  ocamlformat: option `--break-string-literals': This option has been removed
+               in version 1.0.0. This is not supported anymore.
   Usage: ocamlformat [OPTION]... [SRC]...
   Try `ocamlformat --help' for more information.
   [1]

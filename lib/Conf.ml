@@ -20,7 +20,6 @@ type t =
   ; break_fun_decl: [ `Wrap | `Fit_or_vertical | `Smart ]
   ; break_fun_sig: [ `Wrap | `Fit_or_vertical | `Smart ]
   ; break_separators: [ `Before | `After ]
-  ; break_string_literals: [ `Auto | `Never ]
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [ `Normal | `Compact ]
   ; comment_check: bool
@@ -342,29 +341,11 @@ module Formatting = struct
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let break_string_literals =
-    let doc = "Break string literals." in
+  let ( (* break_string_literals *) ) =
     let names = [ "break-string-literals" ] in
-    let all =
-      [ C.Value.make ~name:"auto" `Auto
-          "$(b,auto) mode breaks lines at newlines and wraps string \
-           literals at the margin."
-      ; C.Value.make ~name:"never" `Never
-          "$(b,never) mode formats string literals as they are parsed, in \
-           particular, with escape sequences expanded."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      ~removed_values:
-        (C.Value_removed.make_list
-           ~names:[ "newlines"; "newlines-and-wrap"; "wrap" ]
-           ~version:"0.12"
-           ~msg:
-             "It has been replaced by the new default `auto` value, which \
-              breaks lines at newlines and wraps string literals at the \
-              margin." )
-      (fun conf x -> { conf with break_string_literals= x })
-      (fun conf -> conf.break_string_literals)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* break_struct *) ) =
     let names = [ "break-struct" ] in
@@ -1233,7 +1214,6 @@ let ocamlformat_profile =
   ; break_fun_decl= `Wrap
   ; break_fun_sig= `Wrap
   ; break_separators= `Before
-  ; break_string_literals= `Auto
   ; cases_exp_indent= 4
   ; cases_matching_exp_indent= `Compact
   ; comment_check= true
@@ -1279,7 +1259,6 @@ let conventional_profile =
   ; break_fun_decl= C.default Formatting.break_fun_decl
   ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
-  ; break_string_literals= C.default Formatting.break_string_literals
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
@@ -1330,7 +1309,6 @@ let janestreet_profile =
   ; break_fun_decl= `Fit_or_vertical
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
-  ; break_string_literals= `Auto
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal
   ; comment_check= true

@@ -248,7 +248,7 @@ let fmt_constant c ?epi { pconst_desc; pconst_loc= loc } =
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
   | Pconst_string (s, _, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (_, _, None) -> (
+  | Pconst_string (_, _, None) ->
       let delim = [ "@,"; "@;" ] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -299,21 +299,14 @@ let fmt_constant c ?epi { pconst_desc; pconst_loc= loc } =
         let epi = str "\"" $ fmt_opt epi in
         hvbox 1 (str "\"" $ list_pn lines (fmt_line ~epi))
       in
-      let preserve_or_normalize =
-        match c.conf.break_string_literals with
-        | `Never -> `Preserve
-        | `Auto -> `Normalize
-      in
-      let s = Source.string_literal c.source preserve_or_normalize loc in
-      match c.conf.break_string_literals with
-      | `Auto when contains_pp_commands s ->
-          let break_on_pp_commands in_ pattern =
-            String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
-          in
-          List.fold_left delim ~init:s ~f:break_on_pp_commands
-          |> fmt_string_auto ~break_on_newlines:true
-      | `Auto -> fmt_string_auto ~break_on_newlines:false s
-      | `Never -> wrap "\"" "\"" (str s) )
+      let s = Source.string_literal c.source `Normalize loc in
+      if contains_pp_commands s then
+        let break_on_pp_commands in_ pattern =
+          String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
+        in
+        List.fold_left delim ~init:s ~f:break_on_pp_commands
+        |> fmt_string_auto ~break_on_newlines:true
+      else fmt_string_auto ~break_on_newlines:false s
 
 module Variance = struct
   let default = (NoVariance, NoInjectivity)
