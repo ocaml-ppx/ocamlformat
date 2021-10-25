@@ -219,19 +219,6 @@ module Longident = struct
   let is_hash_getter = test ~f:String_id.is_hash_getter
   let is_index_op i = Longident.last i |> String_id.is_index_op
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
-
-  (** [fit_margin c x] returns [true] if and only if [x] does not exceed 2/3
-      of the margin. *)
-  let fit_margin (c : Conf.t) x = x * 3 < c.margin * 2
-
-  let is_simple c x =
-    let rec length (x : Longident.t) =
-      match x with
-      | Lident x -> String.length x
-      | Ldot (x, y) -> length x + 1 + String.length y
-      | Lapply (x, y) -> length x + length y + 3
-    in
-    fit_margin c (length x)
 end
 
 module Attr = struct
@@ -459,56 +446,31 @@ module Structure_item = struct
      |Pstr_class [] ->
         false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
-    | `Compact | `Preserve ->
-        Location.is_single_line itm.pstr_loc c.Conf.margin
-    | `Sparse -> (
-      match itm.pstr_desc with
-      | Pstr_include {pincl_mod= me; _} | Pstr_module {pmb_expr= me; _} ->
-          let rec is_simple_mod me =
-            match me.pmod_desc with
-            | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-            | Pmod_functor (_, me) -> is_simple_mod me
-            | Pmod_ident i -> Longident.is_simple c i.txt
-            | _ -> false
-          in
-          is_simple_mod me
-      | Pstr_open {popen_expr= {pmod_desc= Pmod_ident i; _}; _} ->
-          Longident.is_simple c i.txt
-      | _ -> false )
+  let is_simple (itm, c) = Location.is_single_line itm.pstr_loc c.Conf.margin
 
-  let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Compact, `Compact -> (
-      match (itmI.pstr_desc, itmJ.pstr_desc) with
-      | Pstr_eval _, Pstr_eval _
-       |Pstr_value _, Pstr_value _
-       |Pstr_primitive _, Pstr_primitive _
-       |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
-       |Pstr_exception _, Pstr_exception _
-       |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
-        , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _) )
-       |Pstr_modtype _, Pstr_modtype _
-       |Pstr_class _, Pstr_class _
-       |Pstr_class_type _, Pstr_class_type _
-       |Pstr_attribute _, Pstr_attribute _
-       |Pstr_extension _, Pstr_extension _ ->
-          true
-      | _ -> false )
-    | _ -> true
+  let allow_adjacent itmI itmJ =
+    match (itmI.pstr_desc, itmJ.pstr_desc) with
+    | Pstr_eval _, Pstr_eval _
+     |Pstr_value _, Pstr_value _
+     |Pstr_primitive _, Pstr_primitive _
+     |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
+     |Pstr_exception _, Pstr_exception _
+     |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
+      , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _) )
+     |Pstr_modtype _, Pstr_modtype _
+     |Pstr_class _, Pstr_class _
+     |Pstr_class_type _, Pstr_class_type _
+     |Pstr_attribute _, Pstr_attribute _
+     |Pstr_extension _, Pstr_extension _ ->
+        true
+    | _ -> false
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.pstr_loc || cmts_before i2.pstr_loc || has_doc i1
     || has_doc i2
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.pstr_loc.loc_end i2.pstr_loc.loc_start
-    | _ ->
-        (not (is_simple (i1, c1)))
-        || (not (is_simple (i2, c2)))
-        || not (allow_adjacent (i1, c1) (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || (not (is_simple (i2, c2)))
+    || not (allow_adjacent i1 i2)
 end
 
 module Signature_item = struct
@@ -546,58 +508,37 @@ module Signature_item = struct
      |Psig_class [] ->
         false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
-    | `Compact | `Preserve ->
-        Location.is_single_line itm.psig_loc c.Conf.margin
-    | `Sparse -> (
-      match itm.psig_desc with
-      | Psig_open {popen_expr= i; _}
-       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i; _}; _}
-       |Psig_modsubst {pms_manifest= i; _} ->
-          Longident.is_simple c i.txt
-      | _ -> false )
+  let is_simple (itm, c) = Location.is_single_line itm.psig_loc c.Conf.margin
 
-  let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Compact, `Compact -> (
-      match (itmI.psig_desc, itmJ.psig_desc) with
-      | Psig_value _, Psig_value _
-       |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
-        , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
-       |Psig_exception _, Psig_exception _
-       |( ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
-          | Psig_include _ )
-        , ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
-          | Psig_include _ ) )
-       |Psig_modtype _, Psig_modtype _
-       |Psig_class _, Psig_class _
-       |Psig_class_type _, Psig_class_type _
-       |Psig_attribute _, Psig_attribute _
-       |Psig_extension _, Psig_extension _ ->
-          true
-      | _ -> false )
-    | _ -> true
+  let allow_adjacent itmI itmJ =
+    match (itmI.psig_desc, itmJ.psig_desc) with
+    | Psig_value _, Psig_value _
+     |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
+      , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
+     |Psig_exception _, Psig_exception _
+     |( ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
+        | Psig_include _ )
+      , ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
+        | Psig_include _ ) )
+     |Psig_modtype _, Psig_modtype _
+     |Psig_class _, Psig_class _
+     |Psig_class_type _, Psig_class_type _
+     |Psig_attribute _, Psig_attribute _
+     |Psig_extension _, Psig_extension _ ->
+        true
+    | _ -> false
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.psig_loc || cmts_before i2.psig_loc || has_doc i1
     || has_doc i2
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.psig_loc.loc_end i2.psig_loc.loc_start
-    | _ ->
-        (not (is_simple (i1, c1)))
-        || (not (is_simple (i2, c2)))
-        || not (allow_adjacent (i1, c1) (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || (not (is_simple (i2, c2)))
+    || not (allow_adjacent i1 i2)
 end
 
 module Vb = struct
   let has_doc itm = Option.is_some (fst (doc_atrs itm.pvb_attributes))
-
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.pvb_loc c.Conf.margin
+  let is_simple (i, c) = Location.is_single_line i.pvb_loc c.Conf.margin
 
   let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.pvb_loc || cmts_before i2.pvb_loc || has_doc i1
@@ -610,19 +551,13 @@ module Td = struct
   let has_doc itm = Option.is_some (fst (doc_atrs itm.ptype_attributes))
 
   let is_simple (i, (c : Conf.t)) =
-    match c.module_item_spacing with
-    | `Compact | `Preserve -> Location.is_single_line i.ptype_loc c.margin
-    | `Sparse -> false
+    Location.is_single_line i.ptype_loc c.margin
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.ptype_loc || cmts_before i2.ptype_loc || has_doc i1
     || has_doc i2
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.ptype_loc.loc_end
-          i2.ptype_loc.loc_start
-    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 module Class_field = struct
@@ -633,20 +568,13 @@ module Class_field = struct
     | Pcf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | _ -> false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
-    | `Compact | `Preserve ->
-        Location.is_single_line itm.pcf_loc c.Conf.margin
-    | `Sparse -> false
+  let is_simple (itm, c) = Location.is_single_line itm.pcf_loc c.Conf.margin
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.pcf_loc || cmts_before i2.pcf_loc || has_doc i1
     || has_doc i2
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.pcf_loc.loc_end i2.pcf_loc.loc_start
-    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 module Class_type_field = struct
@@ -657,20 +585,13 @@ module Class_type_field = struct
     | Pctf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | _ -> false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
-    | `Compact | `Preserve ->
-        Location.is_single_line itm.pctf_loc c.Conf.margin
-    | `Sparse -> false
+  let is_simple (itm, c) = Location.is_single_line itm.pctf_loc c.Conf.margin
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.pctf_loc || cmts_before i2.pctf_loc || has_doc i1
     || has_doc i2
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.pctf_loc.loc_end i2.pctf_loc.loc_start
-    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 type toplevel_item =
@@ -770,20 +691,20 @@ let break_between_modules {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
 
-let break_between s cc (i1, c1) (i2, c2) =
+let break_between cc (i1, c1) (i2, c2) =
   match (i1, i2) with
-  | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
-  | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
+  | Str i1, Str i2 -> Structure_item.break_between cc (i1, c1) (i2, c2)
+  | Sig i1, Sig i2 -> Signature_item.break_between cc (i1, c1) (i2, c2)
   | Vb i1, Vb i2 -> Vb.break_between cc (i1, c1) (i2, c2)
   | Mty _, Mty _ -> break_between_modules cc (i1, c1) (i2, c2)
   | Mod _, Mod _ -> break_between_modules cc (i1, c1) (i2, c2)
   | Tli (`Item i1), Tli (`Item i2) ->
-      Structure_item.break_between s cc (i1, c1) (i2, c2)
+      Structure_item.break_between cc (i1, c1) (i2, c2)
   | Tli (`Directive _), Tli (`Directive _) | Tli _, Tli _ ->
       true (* always break between an item and a directive *)
-  | Clf i1, Clf i2 -> Class_field.break_between s cc (i1, c1) (i2, c2)
-  | Ctf i1, Ctf i2 -> Class_type_field.break_between s cc (i1, c1) (i2, c2)
-  | Td i1, Td i2 -> Td.break_between s cc (i1, c1) (i2, c2)
+  | Clf i1, Clf i2 -> Class_field.break_between cc (i1, c1) (i2, c2)
+  | Ctf i1, Ctf i2 -> Class_type_field.break_between cc (i1, c1) (i2, c2)
+  | Td i1, Td i2 -> Td.break_between cc (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an

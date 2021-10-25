@@ -1,5 +1,3 @@
-[@@@ocamlformat "module-item-spacing=compact"]
-
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
 
@@ -75,27 +73,20 @@ module type N = sig
   open B
 end
 
-[@@@ocamlformat "module-item-spacing=preserve"]
-
 val cmos_rtc_seconds : foo
 val cmos_rtc_seconds_alarm : foo
 val cmos_rtc_minutes : foo
-
 val x : foo
-
 val log_other : foo
 val log_cpu : foo
 val log_fpu : foo
-
 val cr0_pe : foo
 val cr0_mp : foo
 val cr0_em : foo
 
 module C : sig
   type config = t
-
   type 'a t
-
   type parsed_from = [`File of Fpath.t * int | `Attribute]
 end
 

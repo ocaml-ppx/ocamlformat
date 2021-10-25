@@ -1,5 +1,3 @@
-[@@@ocamlformat "module-item-spacing=compact"]
-
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
 val f : k -> k -> k -> k -> k k -> k k -> k k
@@ -68,9 +66,6 @@ module type N = sig
   module B = BB
   open B
 end
-
-;;
-[@@@ocamlformat "module-item-spacing=preserve"]
 
 val cmos_rtc_seconds : foo
 val cmos_rtc_seconds_alarm : foo

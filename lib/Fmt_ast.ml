@@ -56,7 +56,7 @@ let cmt_checker {cmts; _} =
   ; cmts_within= Cmts.has_within cmts
   ; cmts_after= Cmts.has_after cmts }
 
-let break_between c = Ast.break_between c.source (cmt_checker c)
+let break_between c = Ast.break_between (cmt_checker c)
 
 type block =
   { opn: Fmt.t

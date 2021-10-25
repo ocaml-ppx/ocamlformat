@@ -723,42 +723,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to cmdline_override.ml.stdout
-   (with-stderr-to cmdline_override.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --config=module-item-spacing=compact --module-item-spacing=sparse %{dep:tests/cmdline_override.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/cmdline_override.ml cmdline_override.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/cmdline_override.ml.err cmdline_override.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to cmdline_override2.ml.stdout
-   (with-stderr-to cmdline_override2.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --module-item-spacing=sparse --config=module-item-spacing=compact %{dep:tests/cmdline_override2.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/cmdline_override2.ml cmdline_override2.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/cmdline_override2.ml.err cmdline_override2.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to coerce.ml.stdout
    (with-stderr-to coerce.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/coerce.ml})))))
@@ -3241,45 +3205,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to module_item_spacing-preserve.ml.stdout
-   (with-stderr-to module_item_spacing-preserve.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter=3 --module-item-spacing=preserve %{dep:tests/module_item_spacing.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/module_item_spacing-preserve.ml.ref module_item_spacing-preserve.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/module_item_spacing-preserve.ml.err module_item_spacing-preserve.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to module_item_spacing-sparse.ml.stdout
-   (with-stderr-to module_item_spacing-sparse.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter=3 --module-item-spacing=sparse %{dep:tests/module_item_spacing.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/module_item_spacing-sparse.ml.ref module_item_spacing-sparse.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/module_item_spacing-sparse.ml.err module_item_spacing-sparse.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to module_item_spacing.ml.stdout
    (with-stderr-to module_item_spacing.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter=3 --module-item-spacing=compact %{dep:tests/module_item_spacing.ml})))))
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/module_item_spacing.ml})))))
 
 (rule
  (alias runtest)
@@ -3761,13 +3689,13 @@
  (action (diff tests/prefix_infix.ml.err prefix_infix.ml.stderr)))
 
 (rule
- (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to print_config.ml.stdout
    (with-stderr-to print_config.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/dir1/dir2/print_config.ml} --print-config --config=max-iters=2 %{dep:tests/print_config.ml})))))
+     (run %{bin:ocamlformat} --margin-check --print-config --config=max-iters=2 %{dep:tests/print_config.ml})))))
 
 (rule
  (alias runtest)
@@ -3787,7 +3715,7 @@
  (action
   (with-stdout-to profiles.ml.stdout
    (with-stderr-to profiles.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --config=margin=20 --profile=janestreet --module-item-spacing=sparse %{dep:tests/profiles.ml})))))
+     (run %{bin:ocamlformat} --margin-check --config=margin=20 --profile=janestreet %{dep:tests/profiles.ml})))))
 
 (rule
  (alias runtest)

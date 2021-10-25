@@ -43,7 +43,6 @@ type t =
   ; margin: int
   ; max_indent: int option
   ; max_iters: int
-  ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
@@ -765,22 +764,11 @@ module Formatting = struct
       (fun conf x -> {conf with max_indent= x})
       (fun conf -> conf.max_indent)
 
-  let module_item_spacing =
-    let doc = "Spacing between items of structures and signatures." in
+  let ( (* module_item_spacing *) ) =
     let names = ["module-item-spacing"] in
-    let all =
-      [ C.Value.make ~name:"compact" `Compact
-          "$(b,compact) will not leave open lines between one-liners of \
-           similar sorts."
-      ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break a line between two items."
-      ; C.Value.make ~name:"preserve" `Preserve
-          "$(b,preserve) will not leave open lines between one-liners of \
-           similar sorts unless there is an open line in the input." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with module_item_spacing= x})
-      (fun conf -> conf.module_item_spacing)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* nested_match *) ) =
     let names = ["nested-match"] in
@@ -1249,7 +1237,6 @@ let ocamlformat_profile =
   ; margin= 80
   ; max_indent= None
   ; max_iters= 10
-  ; module_item_spacing= `Compact
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
@@ -1303,7 +1290,6 @@ let conventional_profile =
   ; margin= C.default Formatting.margin
   ; max_indent= C.default Formatting.max_indent
   ; max_iters= C.default max_iters
-  ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
@@ -1356,7 +1342,6 @@ let janestreet_profile =
   ; margin= 90
   ; max_indent= None
   ; max_iters= ocamlformat_profile.max_iters
-  ; module_item_spacing= `Compact
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= true
   ; parens_ite= true

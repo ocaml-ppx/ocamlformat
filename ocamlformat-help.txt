@@ -232,13 +232,6 @@ OPTIONS (CODE FORMATTING STYLE)
            the offset of the previous line. The default value is 68. Cannot
            be set in attributes.
 
-       --module-item-spacing={compact|sparse|preserve}
-           Spacing between items of structures and signatures. compact will
-           not leave open lines between one-liners of similar sorts. sparse
-           will always break a line between two items. preserve will not
-           leave open lines between one-liners of similar sorts unless there
-           is an open line in the input. The default value is compact.
-
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
@@ -461,6 +454,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --match-indent-nested=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --module-item-spacing=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

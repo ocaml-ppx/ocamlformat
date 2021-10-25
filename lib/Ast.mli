@@ -170,10 +170,7 @@ type t =
   | Top
 
 val is_top : t -> bool
-
-val break_between :
-  Source.t -> cmt_checker -> t * Conf.t -> t * Conf.t -> bool
-
+val break_between : cmt_checker -> t * Conf.t -> t * Conf.t -> bool
 val attributes : t -> attributes
 val location : t -> Location.t
 
