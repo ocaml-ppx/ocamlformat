@@ -55,7 +55,7 @@ let tests =
 
 let benchmark () =
   let ols =
-    Analyze.ols ~bootstrap:0 ~r_square:false ~predictors:Measure.[|run|]
+    Analyze.ols ~bootstrap:0 ~r_square:false ~predictors:Measure.[| run |]
   in
   let instances =
     Instance.[minor_allocated; major_allocated; monotonic_clock]

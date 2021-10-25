@@ -52,7 +52,6 @@ type t =
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
-  ; space_around_arrays: bool
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
@@ -878,12 +877,11 @@ module Formatting = struct
       (fun conf x -> {conf with single_case= x})
       (fun conf -> conf.single_case)
 
-  let space_around_arrays =
-    let doc = "Add a space inside the delimiters of arrays." in
+  let ( (* space_around_arrays *) ) =
     let names = ["space-around-arrays"] in
-    C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_arrays= x})
-      (fun conf -> conf.space_around_arrays)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
@@ -1246,7 +1244,6 @@ let ocamlformat_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
-  ; space_around_arrays= false
   ; space_around_lists= false
   ; space_around_records= false
   ; space_around_variants= false
@@ -1299,7 +1296,6 @@ let conventional_profile =
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
-  ; space_around_arrays= C.default Formatting.space_around_arrays
   ; space_around_lists= C.default Formatting.space_around_lists
   ; space_around_records= C.default Formatting.space_around_records
   ; space_around_variants= C.default Formatting.space_around_variants
@@ -1351,7 +1347,6 @@ let janestreet_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
-  ; space_around_arrays= true
   ; space_around_lists= true
   ; space_around_records= true
   ; space_around_variants= true

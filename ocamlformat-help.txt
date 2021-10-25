@@ -253,9 +253,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-docstrings
            Unset parse-docstrings.
 
-       --no-space-around-arrays
-           Unset space-around-arrays.
-
        --no-space-around-lists
            Unset space-around-lists.
 
@@ -331,10 +328,6 @@ OPTIONS (CODE FORMATTING STYLE)
            compact will try to format a single case on a single line. sparse
            will always break the line before a single case. The default value
            is compact.
-
-       --space-around-arrays
-           Add a space inside the delimiters of arrays. The flag is set by
-           default.
 
        --space-around-lists
            Add a space inside the delimiters of lists. The flag is set by
@@ -466,6 +459,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --parens-tuple-patterns=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --space-around-arrays=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

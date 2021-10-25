@@ -56,7 +56,6 @@ type t =
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
-  ; space_around_arrays: bool
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool

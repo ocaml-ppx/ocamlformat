@@ -4033,11 +4033,11 @@ let f x (g : [< `Foo]) =
 (* f : 'a -> [< `Foo ] -> 'a *)
 
 let rec x =
-  [|x|] ;
+  [| x |] ;
   1.
 
 let rec x =
-  let u = [|y|] in
+  let u = [| y |] in
   10.
 
 and y = 1.
@@ -4312,7 +4312,7 @@ let () = flag := true
 
 module M2 = M (Float) (Int)
 
-let _ = [|M2.X.x; M1.X.x|]
+let _ = [| M2.X.x; M1.X.x |]
 
 module type PR6513 = sig
   module type S = sig
@@ -8458,9 +8458,9 @@ let f = function (x [@wee]) -> ()
 let f = function '1' .. '9' | '1' .. '8' -> () | 'a' .. 'z' -> ()
 
 let f = function
-  | [|x1; x2|] -> ()
+  | [| x1; x2 |] -> ()
   | [||] -> ()
-  | ([|x|] [@foo]) -> ()
+  | ([| x |] [@foo]) -> ()
   | _ -> ()
 
 let g = function
@@ -8475,8 +8475,8 @@ let _ = function
       ignore
         ( Array.get x 1
         + Array.get [||] 0
-        + Array.get [|1|] 1
-        + Array.get [|1; 2|] 2 ) ;
+        + Array.get [| 1 |] 1
+        + Array.get [| 1; 2 |] 2 ) ;
       ignore [String.get s 1; String.get "" 2; String.get "123" 3] ;
       ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
   | b, s, ba1, ba2, ba3, bg ->
@@ -8528,7 +8528,7 @@ let _ =
   let f M.(x) = () in
   let g M.{x} = () in
   let h = function M.[] | M.[a] | M.(a :: q) -> () in
-  let i = function M.[||] | M.[|x|] -> true | _ -> false in
+  let i = function M.[||] | M.[| x |] -> true | _ -> false in
   ()
 
 class ['a] c () =

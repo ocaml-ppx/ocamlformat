@@ -235,7 +235,7 @@ let with_box_debug k =
 let box_depth = ref 0
 
 (* Numeric part of the ANSI escape sequence for colors *)
-let box_depth_colors = [|32; 33; 94; 31; 35; 36|]
+let box_depth_colors = [| 32; 33; 94; 31; 35; 36 |]
 
 let box_depth_color () =
   box_depth_colors.(!box_depth % Array.length box_depth_colors)

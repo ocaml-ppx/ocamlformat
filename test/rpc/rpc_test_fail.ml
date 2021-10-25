@@ -19,7 +19,7 @@ let state : state ref = ref Uninitialized
 
 let start () =
   let prog = Sys.argv.(1) in
-  let argv = [|"ocamlformat-rpc"|] in
+  let argv = [| "ocamlformat-rpc" |] in
   ( match
       let input, output = Unix.open_process_args prog argv in
       let pid = Unix.process_pid (input, output) in

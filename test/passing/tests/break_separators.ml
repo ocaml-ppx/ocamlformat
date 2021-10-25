@@ -85,7 +85,8 @@ let _ =
   match something with
   | [| very_very_long_field_name_running_out_of_space
      ; another_very_very_long_field_name_running_out_of_space
-     ; _ |] ->
+     ; _
+    |] ->
       0
   | _ -> 1
 
@@ -160,7 +161,8 @@ let length =
    ; 26
    ; (* foo *) 27 (* foo *)
    ; 27
-   ; 27 |]
+   ; 27
+  |]
   [@foo]
 
 (* this is a list *)
@@ -278,7 +280,8 @@ let length =
    ; 27
    ; 27
    ; 27
-   ; 28 |]
+   ; 28
+  |]
   [@foo]
 
 (* this is a list *)
@@ -569,7 +572,8 @@ let f () =
        ; eeeeeeeee
        ; ffffffffff
        ; gggggggggg
-       ; hhhhhhhhhh |]
+       ; hhhhhhhhhh
+      |]
     =
     some_value
   in
@@ -602,7 +606,8 @@ let g () =
      ; eeeeeeeee
      ; ffffffffff
      ; gggggggggg
-     ; hhhhhhhhhh |] ->
+     ; hhhhhhhhhh
+    |] ->
       fooooooooo
 
 let () = match x with _, (* line 1 line 2 *) Some _ -> x

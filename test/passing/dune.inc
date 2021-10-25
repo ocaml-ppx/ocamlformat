@@ -2971,24 +2971,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to list-space_around.ml.stdout
-   (with-stderr-to list-space_around.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/list.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/list-space_around.ml.ref list-space_around.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/list-space_around.ml.err list-space_around.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to list.ml.stdout
    (with-stderr-to list.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/list.ml})))))
@@ -4343,42 +4325,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to types-compact-space_around-docked.ml.stdout
-   (with-stderr-to types-compact-space_around-docked.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants --break-separators=after --dock-collection-brackets %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact-space_around-docked.ml.ref types-compact-space_around-docked.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact-space_around-docked.ml.err types-compact-space_around-docked.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to types-compact-space_around.ml.stdout
-   (with-stderr-to types-compact-space_around.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact-space_around.ml.ref types-compact-space_around.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact-space_around.ml.err types-compact-space_around.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to types-compact.ml.stdout
    (with-stderr-to types-compact.ml.stderr
      (run %{bin:ocamlformat} --margin-check --type-decl=compact %{dep:tests/types.ml})))))
@@ -4392,24 +4338,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/types-compact.ml.err types-compact.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to types-sparse-space_around.ml.stdout
-   (with-stderr-to types-sparse-space_around.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl=sparse --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-sparse-space_around.ml.ref types-sparse-space_around.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-sparse-space_around.ml.err types-sparse-space_around.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

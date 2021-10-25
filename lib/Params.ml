@@ -286,8 +286,7 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
 let get_list_expr (c : Conf.t) =
   collection_expr c ~space_around:c.space_around_lists "[" "]"
 
-let get_array_expr (c : Conf.t) =
-  collection_expr c ~space_around:c.space_around_arrays "[|" "|]"
+let get_array_expr c = collection_expr c ~space_around:true "[|" "|]"
 
 let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
   let space = if space_around then 1 else 0 in
@@ -324,8 +323,7 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
 let get_list_pat (c : Conf.t) ~ctx =
   collection_pat c ~ctx ~space_around:c.space_around_lists "[" "]"
 
-let get_array_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.space_around_arrays "[|" "|]"
+let get_array_pat c ~ctx = collection_pat c ~ctx ~space_around:true "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
