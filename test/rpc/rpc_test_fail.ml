@@ -38,7 +38,8 @@ let start () =
           "OCamlFormat-RPC did not respond. Check that a compatible version \
            of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is \
            installed." )
-  | x -> x )
+  | x ->
+      x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
          state := Errored;
          log
@@ -50,11 +51,13 @@ let start () =
 
 let get_client () =
   match !state with
-  | Uninitialized -> start ()
+  | Uninitialized ->
+      start ()
   | Running cl ->
       let i, _ = Unix.waitpid [ WNOHANG ] (Ocf.pid cl) in
       if i = 0 then Ok cl else start ()
-  | Errored -> Error `No_process
+  | Errored ->
+      Error `No_process
 
 let config c =
   get_client ()
@@ -76,15 +79,21 @@ let halt () =
 
 let protect_unit x =
   match x with
-  | Ok () -> ()
-  | Error (`Msg e) -> log "Error: %s\n%!" e
-  | Error `No_process -> log "No process\n%!"
+  | Ok () ->
+      ()
+  | Error (`Msg e) ->
+      log "Error: %s\n%!" e
+  | Error `No_process ->
+      log "No process\n%!"
 
 let protect_string x =
   match x with
-  | Ok s -> log "@[<hv>Output:@;%s@]\n%!" s
-  | Error (`Msg e) -> log "Error: %s\n%!" e
-  | Error `No_process -> log "No process\n%!"
+  | Ok s ->
+      log "@[<hv>Output:@;%s@]\n%!" s
+  | Error (`Msg e) ->
+      log "Error: %s\n%!" e
+  | Error `No_process ->
+      log "No process\n%!"
 
 let () =
   log "Starting then doing nothing\n%!";

@@ -29,9 +29,12 @@ module Layout_cache = struct
     let pattern_to_string e = Caml.Format.asprintf "%a" Pprintast.pattern e
 
     let sexp_of_arg_label = function
-      | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
-      | Labelled label -> List [ Atom "Labelled"; sexp_of_string label ]
-      | Optional label -> List [ Atom "Optional"; sexp_of_string label ]
+      | Asttypes.Nolabel ->
+          Sexp.Atom "Nolabel"
+      | Labelled label ->
+          List [ Atom "Labelled"; sexp_of_string label ]
+      | Optional label ->
+          List [ Atom "Optional"; sexp_of_string label ]
 
     let sexp_of_t = function
       | Arg (label, expression) ->
@@ -97,16 +100,22 @@ let update_remaining t ~f = t.remaining <- f t.remaining
 
 let update_cmts t pos ~f =
   match pos with
-  | `After -> t.cmts_after <- f t.cmts_after
-  | `Before -> t.cmts_before <- f t.cmts_before
-  | `Within -> t.cmts_within <- f t.cmts_within
+  | `After ->
+      t.cmts_after <- f t.cmts_after
+  | `Before ->
+      t.cmts_before <- f t.cmts_before
+  | `Within ->
+      t.cmts_within <- f t.cmts_within
 
 let find_at_position t loc pos =
   let map =
     match pos with
-    | `After -> t.cmts_after
-    | `Before -> t.cmts_before
-    | `Within -> t.cmts_within
+    | `After ->
+        t.cmts_after
+    | `Before ->
+        t.cmts_before
+    | `Within ->
+        t.cmts_within
   in
   Map.find map loc
 
@@ -119,11 +128,13 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
     Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
         | _ -> true )
   with
-  | [] -> true
+  | [] ->
+      true
   | [ (BAR, _) ] ->
       Source.begins_line src l1
       && Position.column l1.loc_start < Position.column l2.loc_start
-  | _ -> false
+  | _ ->
+      false
 
 (** Whether the symbol preceding location [loc] is an infix symbol
     (corresponding to [Ast.String_id.is_infix]) or a semicolon. If it is the
@@ -133,8 +144,10 @@ let infix_symbol_before src (loc : Location.t) =
   match
     Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
   with
-  | Some (x, _) -> Ast.Token.is_infix x
-  | None -> false
+  | Some (x, _) ->
+      Ast.Token.is_infix x
+  | None ->
+      false
 
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
@@ -202,28 +215,37 @@ end = struct
               ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
               , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
             with
-            | 0, 0 -> `Before_next
-            | 0, _ when infix_symbol_before src loc -> `Before_next
-            | 0, _ -> `After_prev
+            | 0, 0 ->
+                `Before_next
+            | 0, _ when infix_symbol_before src loc ->
+                `Before_next
+            | 0, _ ->
+                `After_prev
             | 1, x when x > 1 && Source.empty_line_after src loc ->
                 `After_prev
-            | _ -> `Before_next
+            | _ ->
+                `Before_next
           in
           let prev, next =
             if not (same_line_as_prev next) then
               let next, prev =
                 List.partition_tf cmtl ~f:(fun { Cmt.loc= l; _ } ->
                     match decide l with
-                    | `After_prev -> false
-                    | `Before_next -> true )
+                    | `After_prev ->
+                        false
+                    | `Before_next ->
+                        true )
               in
               (prev, next)
             else ([], cmtl)
           in
           (of_list prev, of_list next)
-      | after :: befores -> (of_list after, of_list (List.concat befores))
-      | [] -> impossible "by parent match" )
-    | _ -> (empty, cmts)
+      | after :: befores ->
+          (of_list after, of_list (List.concat befores))
+      | [] ->
+          impossible "by parent match" )
+    | _ ->
+        (empty, cmts)
 end
 
 let add_cmts t position loc cmts =
@@ -240,11 +262,13 @@ let rec place t loc_tree ?prev_loc locs cmts =
       let before, within, after = CmtSet.split cmts curr_loc in
       let before_curr =
         match prev_loc with
-        | None -> before
+        | None ->
+            before
         (* Location.none is a special case, it shouldn't be the location of a
            previous element, so if a comment is at the beginning of the file,
            it should be placed before the next element. *)
-        | Some prev_loc when Location.(compare prev_loc none) = 0 -> before
+        | Some prev_loc when Location.(compare prev_loc none) = 0 ->
+            before
         | Some prev_loc ->
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
@@ -254,12 +278,15 @@ let rec place t loc_tree ?prev_loc locs cmts =
       in
       add_cmts t `Before curr_loc before_curr;
       ( match Loc_tree.children loc_tree curr_loc with
-      | [] -> add_cmts t `Within curr_loc within
-      | children -> place t loc_tree children within );
+      | [] ->
+          add_cmts t `Within curr_loc within
+      | children ->
+          place t loc_tree children within );
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] -> (
     match prev_loc with
-    | Some prev_loc -> add_cmts t `After prev_loc cmts
+    | Some prev_loc ->
+        add_cmts t `After prev_loc cmts
     | None ->
         if t.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun { Cmt.txt; _ } ->
@@ -335,14 +362,18 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   | PStr [ { pstr_desc= Pstr_eval _; pstr_loc; _ } ] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
-        | Some loc -> loc
+        | Some loc ->
+            loc
         | None -> (
           match Source.loc_of_first_token_at src whole_loc PERCENT with
-          | Some loc -> loc
-          | None -> impossible "expect token starting extension" )
+          | Some loc ->
+              loc
+          | None ->
+              impossible "expect token starting extension" )
       in
       relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
-  | _ -> ()
+  | _ ->
+      ()
 
 let relocate_wrongfully_attached_cmts t src exp =
   let open Extended_ast in
@@ -353,8 +384,10 @@ let relocate_wrongfully_attached_cmts t src exp =
   | Pexp_try (e0, _) ->
       relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
         ~matched_loc:e0.pexp_loc
-  | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
-  | _ -> ()
+  | Pexp_extension ext ->
+      relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
+  | _ ->
+      ()
 
 (** Initialize global state and place comments. *)
 let init fragment ~debug source asts comments_n_docstrings =
@@ -378,8 +411,10 @@ let init fragment ~debug source asts comments_n_docstrings =
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     ( match locs with
-    | [] -> add_cmts t `After Location.none cmts
-    | _ -> place t loc_tree locs cmts );
+    | [] ->
+        add_cmts t `After Location.none cmts
+    | _ ->
+        place t loc_tree locs cmts );
     if debug then (
       let dump fs lt =
         let get_cmts pos loc =
@@ -440,7 +475,8 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
-         | [] -> impossible "previous match"
+         | [] ->
+             impossible "previous match"
          | [ cmt ] ->
              Cmt.fmt cmt ~wrap:conf.wrap_comments
                ~ocp_indent_compat:conf.ocp_indent_compat
@@ -453,14 +489,16 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | Some ({ loc= next; _ } :: _) ->
              let Cmt.{ loc= last; _ } = List.last_exn group in
              fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
-         | _ -> noop ) )
+         | _ ->
+             noop ) )
 
 (** Format comments for loc. *)
 let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
     found loc pos =
   let open Fmt in
   match found with
-  | None | Some [] -> noop
+  | None | Some [] ->
+      noop
   | Some cmts ->
       let epi =
         let ({ loc= last_loc; _ } : Cmt.t) = List.last_exn cmts in
@@ -499,11 +537,13 @@ module Toplevel = struct
   let fmt_cmts t conf ~fmt_code found (pos : Cmt.pos) =
     let open Fmt in
     match found with
-    | None | Some [] -> noop
+    | None | Some [] ->
+        noop
     | Some (({ loc= first_loc; _ } : Cmt.t) :: _ as cmts) ->
         let pro =
           match pos with
-          | Before -> noop
+          | Before ->
+              noop
           | Within | After ->
               if Source.begins_line t.source first_loc then
                 fmt_or
@@ -520,7 +560,8 @@ module Toplevel = struct
                   (Source.empty_line_after t.source last_loc)
                   "\n@;<1000 0>" "@\n"
               else break 1 0
-          | After -> noop
+          | After ->
+              noop
         in
         pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
@@ -578,7 +619,8 @@ let diff (conf : Conf.t) x y =
     let norm_non_code { Cmt.txt; _ } = Normalize.comment txt in
     let f z =
       match Cmt.txt z with
-      | "" | "$" -> norm_non_code z
+      | "" | "$" ->
+          norm_non_code z
       | str ->
           if Char.equal str.[0] '$' then
             let chars_removed =
@@ -590,7 +632,8 @@ let diff (conf : Conf.t) x y =
               Parse_with_comments.parse Std_ast.Parse.ast Structure conf
                 ~source
             with
-            | exception _ -> norm_non_code z
+            | exception _ ->
+                norm_non_code z
             | { ast; _ } ->
                 Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
                   (Normalize.normalize Structure conf ast)

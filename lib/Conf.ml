@@ -83,8 +83,10 @@ let warn ?filename ?lnum fmt =
         match (filename, lnum) with
         | Some file, Some lnum ->
             Format.asprintf "File %a, line %d:@\n" Fpath.pp file lnum
-        | Some file, None -> Format.asprintf "File %a@\n" Fpath.pp file
-        | None, _ -> ""
+        | Some file, None ->
+            Format.asprintf "File %a@\n" Fpath.pp file
+        | None, _ ->
+            ""
       in
       warn_raw (Format.asprintf "%sWarning: %s@\n" loc s) )
     fmt
@@ -151,8 +153,10 @@ let info =
 let ocaml_version_conv =
   let parse x =
     match Ocaml_version.of_string x with
-    | Ok x -> `Ok x
-    | Error (`Msg x) -> `Error x
+    | Ok x ->
+        `Ok x
+    | Error (`Msg x) ->
+        `Error x
   in
   (parse, Ocaml_version.pp)
 
@@ -1027,11 +1031,14 @@ let inputs =
   let file_or_dash =
     let parse, print = Arg.non_dir_file in
     let print fmt = function
-      | Stdin -> print fmt "<standard input>"
-      | File x -> print fmt x
+      | Stdin ->
+          print fmt "<standard input>"
+      | File x ->
+          print fmt x
     in
     let parse = function
-      | "-" -> `Ok Stdin
+      | "-" ->
+          `Ok Stdin
       | s -> (
         match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
     in
@@ -1403,12 +1410,16 @@ let ocp_indent_janestreet_profile =
   ]
 
 let string_of_user_error = function
-  | `Malformed line -> Format.sprintf "Invalid format %S" line
-  | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-  | `Unknown (name, None) -> Format.sprintf "Unknown option %S" name
+  | `Malformed line ->
+      Format.sprintf "Invalid format %S" line
+  | `Misplaced (name, _) ->
+      Format.sprintf "%s not allowed here" name
+  | `Unknown (name, None) ->
+      Format.sprintf "Unknown option %S" name
   | `Unknown (name, Some (`Msg msg)) ->
       Format.sprintf "Unknown option %S: %s" name msg
-  | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
+  | `Bad_value (name, msg) ->
+      Format.sprintf "For option %S: %s" name msg
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
@@ -1438,26 +1449,33 @@ let parse_line config ~from s =
   let update_ocp_indent_option ~config ~from ~name ~value =
     let equal = String.equal in
     match List.Assoc.find ocp_indent_options ~equal name with
-    | None -> Ok config
+    | None ->
+        Ok config
     | Some (l, _doc) ->
         let update_one config name = update ~config ~from ~name ~value in
         List.fold_result l ~init:config ~f:update_one
   in
   let rec update_many ~config ~from = function
-    | [] -> Ok config
+    | [] ->
+        Ok config
     | (name, value) :: t -> (
       match update_ocp_indent_option ~config ~from ~name ~value with
-      | Ok c -> update_many ~config:c ~from t
-      | Error e -> Error e )
+      | Ok c ->
+          update_many ~config:c ~from t
+      | Error e ->
+          Error e )
   in
   let s =
     match String.index s '#' with
-    | Some i -> String.sub s ~pos:0 ~len:i
-    | None -> s
+    | Some i ->
+        String.sub s ~pos:0 ~len:i
+    | None ->
+        s
   in
   let s = String.strip s in
   match String.split ~on:'=' s with
-  | [] | [ "" ] -> Ok config
+  | [] | [ "" ] ->
+      Ok config
   | [ name; value ] ->
       let name = String.strip name in
       let value = String.strip value in
@@ -1466,22 +1484,29 @@ let parse_line config ~from s =
       else update ~config ~from ~name ~value
   | [ s ] -> (
     match String.strip s with
-    | "" -> impossible "previous match"
+    | "" ->
+        impossible "previous match"
     (* special case for disable/enable *)
-    | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
-    | "normal" -> update_many ~config ~from ocp_indent_normal_profile
-    | "apprentice" -> update_many ~config ~from ocp_indent_apprentice_profile
+    | "enable" ->
+        update ~config ~from ~name:"disable" ~value:"false"
+    | "normal" ->
+        update_many ~config ~from ocp_indent_normal_profile
+    | "apprentice" ->
+        update_many ~config ~from ocp_indent_apprentice_profile
     | "JaneStreet" ->
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")
           (fun config ->
             update_many ~config ~from ocp_indent_janestreet_profile )
-    | name -> update ~config ~from ~name ~value:"true" )
-  | _ -> Error (`Malformed s)
+    | name ->
+        update ~config ~from ~name ~value:"true" )
+  | _ ->
+      Error (`Malformed s)
 
 let is_project_root ~root dir =
   match root with
-  | Some root -> Fpath.equal dir root
+  | Some root ->
+      Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
           Fpath.(exists (dir / name)) )
@@ -1494,7 +1519,8 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 let rec collect_files ~enable_outside_detected_project ~root ~volume ~segs
     ~ignores ~enables ~files =
   match segs with
-  | [] | [ "" ] -> (ignores, enables, files, None)
+  | [] | [ "" ] ->
+      (ignores, enables, files, None)
   | "" :: upper_segs ->
       collect_files ~enable_outside_detected_project ~root ~volume
         ~segs:upper_segs ~ignores ~enables ~files
@@ -1534,7 +1560,8 @@ let failwith_user_errors ~kind errors =
 
 let read_config_file conf filename_kind =
   match filename_kind with
-  | `Ocp_indent _ when not !ocp_indent_config -> conf
+  | `Ocp_indent _ when not !ocp_indent_config ->
+      conf
   | `Ocp_indent filename | `Ocamlformat filename -> (
     try
       In_channel.with_file (Fpath.to_string filename) ~f:(fun ic ->
@@ -1543,50 +1570,64 @@ let read_config_file conf filename_kind =
               ~f:(fun (conf, errors, num) line ->
                 let from = `File (filename, num) in
                 match parse_line conf ~from line with
-                | Ok conf -> (conf, errors, Int.succ num)
+                | Ok conf ->
+                    (conf, errors, Int.succ num)
                 | Error _ when !ignore_invalid_options ->
                     warn ~filename ~lnum:num "ignoring invalid options %S"
                       line;
                     (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num) )
+                | Error e ->
+                    (conf, e :: errors, Int.succ num) )
           in
           match List.rev errors with
-          | [] -> c
+          | [] ->
+              c
           | l ->
               let kind =
                 match filename_kind with
-                | `Ocp_indent _ -> dot_ocp_indent
-                | `Ocamlformat _ -> dot_ocamlformat
+                | `Ocp_indent _ ->
+                    dot_ocp_indent
+                | `Ocamlformat _ ->
+                    dot_ocamlformat
               in
               failwith_user_errors ~kind l )
     with
-    | Sys_error _ -> conf )
+    | Sys_error _ ->
+        conf )
 
 let update_using_env conf =
   let f (config, errors) (name, value) =
     match C.update ~config ~from:`Env ~name ~value ~inline:false with
-    | Ok c -> (c, errors)
-    | Error e -> (config, e :: errors)
+    | Ok c ->
+        (c, errors)
+    | Error e ->
+        (config, e :: errors)
   in
   let conf, errors = List.fold_left !config ~init:(conf, []) ~f in
   match List.rev errors with
-  | [] -> conf
-  | l -> failwith_user_errors ~kind:"OCAMLFORMAT environment variable" l
+  | [] ->
+      conf
+  | l ->
+      failwith_user_errors ~kind:"OCAMLFORMAT environment variable" l
 
 let xdg_config =
   let xdg_config_home =
     match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
     | None | Some "" -> (
       match Caml.Sys.getenv_opt "HOME" with
-      | None | Some "" -> None
-      | Some home -> Some Fpath.(v home / ".config") )
-    | Some xdg_config_home -> Some (Fpath.v xdg_config_home)
+      | None | Some "" ->
+          None
+      | Some home ->
+          Some Fpath.(v home / ".config") )
+    | Some xdg_config_home ->
+        Some (Fpath.v xdg_config_home)
   in
   match xdg_config_home with
   | Some xdg_config_home ->
       let filename = Fpath.(xdg_config_home / "ocamlformat") in
       if Fpath.exists filename then Some filename else None
-  | None -> None
+  | None ->
+      None
 
 let is_in_listing_file ~listings ~filename =
   let drop_line l = String.is_empty l || String.is_prefix l ~prefix:"#" in
@@ -1642,8 +1683,10 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   in
   let files =
     match (xdg_config, enable_outside_detected_project) with
-    | None, _ | Some _, false -> files
-    | Some f, true -> `Ocamlformat f :: files
+    | None, _ | Some _, false ->
+        files
+    | Some f, true ->
+        `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
@@ -1665,7 +1708,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
            Format.sprintf
              "no [.ocamlformat] was found within the project (root: %s)"
              (Fpath.to_string ~relativize:true root)
-       | None -> "no project root was found"
+       | None ->
+           "no project root was found"
      in
      warn ~filename:vfile
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
@@ -1681,7 +1725,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
           Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
             Fpath.pp file lno;
         { conf with disable= not conf.disable }
-    | None -> conf
+    | None ->
+        conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf, warn_now =
@@ -1693,26 +1738,33 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 
 let kind_of_ext fname =
   match Filename.extension fname with
-  | ".ml" | ".mlt" | ".eliom" -> Some Syntax.Use_file
-  | ".mli" | ".eliomi" -> Some Syntax.Signature
-  | _ -> None
+  | ".ml" | ".mlt" | ".eliom" ->
+      Some Syntax.Use_file
+  | ".mli" | ".eliomi" ->
+      Some Syntax.Signature
+  | _ ->
+      None
 
 let validate_inputs () =
   match (!inputs, !kind, !name) with
-  | [], _, _ -> Ok `No_input
+  | [], _, _ ->
+      Ok `No_input
   | [ Stdin ], None, None ->
       Error
         "Must specify at least one of --name, --impl or --intf when reading \
          from stdin"
-  | [ Stdin ], Some kind, name -> Ok (`Stdin (name, kind))
+  | [ Stdin ], Some kind, name ->
+      Ok (`Stdin (name, kind))
   | [ Stdin ], None, Some name -> (
     match kind_of_ext name with
-    | Some kind -> Ok (`Stdin (Some name, kind))
+    | Some kind ->
+        Ok (`Stdin (Some name, kind))
     | None ->
         Error
           "Cannot deduce file kind from passed --name. Please specify \
            --impl or --intf" )
-  | [ File f ], Some kind, name -> Ok (`Single_file (kind, name, f))
+  | [ File f ], Some kind, name ->
+      Ok (`Single_file (kind, name, f))
   | [ File f ], None, name ->
       let kind =
         Option.value ~default:f name
@@ -1726,7 +1778,8 @@ let validate_inputs () =
       Error "Cannot specify --name with multiple inputs"
   | (_ :: _ :: _ as inputs), None, None ->
       List.map inputs ~f:(function
-        | Stdin -> Error "Cannot specify stdin together with other inputs"
+        | Stdin ->
+            Error "Cannot specify stdin together with other inputs"
         | File f ->
             let kind = Option.value ~default:Use_file (kind_of_ext f) in
             Ok (kind, f) )
@@ -1744,8 +1797,10 @@ let validate_action () =
       ; Option.map ~f:(fun r -> (`Numeric r, "--numeric")) !numeric
       ]
   with
-  | [] -> Ok `No_action
-  | [ (action, _) ] -> Ok action
+  | [] ->
+      Ok `No_action
+  | [ (action, _) ] ->
+      Ok action
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
@@ -1784,9 +1839,12 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Print_config, inputs ->
       let file, is_stdin =
         match inputs with
-        | `Stdin _ -> ("-", true)
-        | `Single_file (_, _, f) -> (f, false)
-        | `Several_files ((_, f) :: _) -> (f, false)
+        | `Stdin _ ->
+            ("-", true)
+        | `Single_file (_, _, f) ->
+            (f, false)
+        | `Several_files ((_, f) :: _) ->
+            (f, false)
         | `Several_files [] | `No_input ->
             let root = Option.value root ~default:(Fpath.cwd ()) in
             (Fpath.(root / dot_ocamlformat |> to_string), true)
@@ -1821,7 +1879,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         make_file ~with_conf:(fun c -> { c with max_iters= 1 }) kind f
       in
       Ok (Check (List.map files ~f))
-  | `Check, `Stdin (name, kind) -> Ok (Check [ make_stdin ?name kind ])
+  | `Check, `Stdin (name, kind) ->
+      Ok (Check [ make_stdin ?name kind ])
   | `Numeric range, `Stdin (name, kind) ->
       Ok (Numeric (make_stdin ?name kind, range))
   | `Numeric range, `Single_file (kind, name, f) ->
@@ -1847,8 +1906,10 @@ let validate () =
     >>= fun inputs ->
     make_action ~enable_outside_detected_project ~root action inputs
   with
-  | exception Conf_error e -> `Error (false, e)
-  | Error e -> `Error (false, e)
+  | exception Conf_error e ->
+      `Error (false, e)
+  | Error e ->
+      `Error (false, e)
   | Ok action ->
       let opts = { debug= !debug; margin_check= !margin_check } in
       `Ok (action, opts)
@@ -1877,15 +1938,18 @@ let update ?(quiet = false) c { attr_name= { txt; loc }; attr_payload; _ } =
           ] ->
           parse_line ~from:`Attribute c str
           |> Result.map_error ~f:string_of_user_error
-      | _ -> Error "Invalid format: String expected" )
+      | _ ->
+          Error "Invalid format: String expected" )
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error
           (Format.sprintf "Invalid format: Unknown suffix %S"
              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) )
-    | _ -> Ok c
+    | _ ->
+        Ok c
   in
   match result with
-  | Ok conf -> conf
+  | Ok conf ->
+      conf
   | Error error ->
       let w = Warnings.Attribute_payload (txt, error) in
       if (not c.quiet) && not quiet then Warning.print_warning loc w;

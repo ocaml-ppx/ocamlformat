@@ -57,10 +57,14 @@ module Init :
   let read_input in_channel =
     let open Sexp in
     match Csexp.input in_channel with
-    | Ok (Atom "Halt") -> `Halt
-    | Ok (List [ Atom "Version"; Atom v ]) -> `Version v
-    | Ok _ -> `Unknown
-    | Error _msg -> `Halt
+    | Ok (Atom "Halt") ->
+        `Halt
+    | Ok (List [ Atom "Version"; Atom v ]) ->
+        `Version v
+    | Ok _ ->
+        `Unknown
+    | Error _msg ->
+        `Halt
 
   let to_sexp =
     let open Sexp in
@@ -93,34 +97,45 @@ module V1 :
     let read_input in_channel =
       let open Sexp in
       match Csexp.input in_channel with
-      | Ok (List [ Atom "Format"; Atom x ]) -> `Format x
+      | Ok (List [ Atom "Format"; Atom x ]) ->
+          `Format x
       | Ok (List [ Atom "Config"; List l ]) ->
           let c =
             List.fold_left
               (fun acc -> function
-                | List [ Atom name; Atom value ] -> (name, value) :: acc
-                | _ -> acc )
+                | List [ Atom name; Atom value ] ->
+                    (name, value) :: acc
+                | _ ->
+                    acc )
               [] l
             |> List.rev
           in
           `Config c
-      | Ok (List [ Atom "Error"; Atom x ]) -> `Error x
-      | Ok (Atom "Halt") -> `Halt
-      | Ok _ -> `Unknown
-      | Error _msg -> `Halt
+      | Ok (List [ Atom "Error"; Atom x ]) ->
+          `Error x
+      | Ok (Atom "Halt") ->
+          `Halt
+      | Ok _ ->
+          `Unknown
+      | Error _msg ->
+          `Halt
 
     let to_sexp =
       let open Sexp in
       function
-      | `Format x -> List [ Atom "Format"; Atom x ]
+      | `Format x ->
+          List [ Atom "Format"; Atom x ]
       | `Config c ->
           let l =
             List.map (fun (name, value) -> List [ Atom name; Atom value ]) c
           in
           List [ Atom "Config"; List l ]
-      | `Error x -> List [ Atom "Error"; Atom x ]
-      | `Halt -> Atom "Halt"
-      | _ -> assert false
+      | `Error x ->
+          List [ Atom "Error"; Atom x ]
+      | `Halt ->
+          Atom "Halt"
+      | _ ->
+          assert false
 
     let output channel t =
       to_sexp t |> Csexp.to_channel channel;
@@ -149,48 +164,65 @@ module V1 :
         close_in t.input;
         close_out t.output
       with
-      | exception _ -> Error (`Msg "failing to close connection to server")
-      | () -> Ok ()
+      | exception _ ->
+          Error (`Msg "failing to close connection to server")
+      | () ->
+          Ok ()
 
     let config c t =
       match query (`Config c) t with
-      | `Config _ -> Ok ()
-      | `Error msg -> Error (`Msg msg)
-      | _ -> Error (`Msg "failing to set configuration: unknown error")
+      | `Config _ ->
+          Ok ()
+      | `Error msg ->
+          Error (`Msg msg)
+      | _ ->
+          Error (`Msg "failing to set configuration: unknown error")
 
     let format x t =
       match query (`Format x) t with
-      | `Format x -> Ok x
-      | `Error msg -> Error (`Msg msg)
-      | _ -> Error (`Msg "failing to format input: unknown error")
+      | `Format x ->
+          Ok x
+      | `Error msg ->
+          Error (`Msg msg)
+      | _ ->
+          Error (`Msg "failing to format input: unknown error")
   end
 end
 
 type client = [ `V1 of V1.Client.t ]
 
 let get_client ~pid input output = function
-  | "v1" | "V1" -> Some (`V1 (V1.Client.mk ~pid input output))
-  | _ -> None
+  | "v1" | "V1" ->
+      Some (`V1 (V1.Client.mk ~pid input output))
+  | _ ->
+      None
 
 let get_client_exn ~pid input output x =
   match get_client ~pid input output x with
-  | Some x -> Ok x
-  | None -> failwith "impossible"
+  | Some x ->
+      Ok x
+  | None ->
+      failwith "impossible"
 
 let pick_client ~pid input output versions =
   let rec aux = function
-    | [] -> Error (`Msg "Version negociation failed")
+    | [] ->
+        Error (`Msg "Version negociation failed")
     | latest :: others -> (
         let version = `Version latest in
         Csexp.to_channel output (Init.to_sexp version);
         flush output;
         match Init.read_input input with
-        | `Version v when v = latest -> get_client_exn ~pid input output v
+        | `Version v when v = latest ->
+            get_client_exn ~pid input output v
         | `Version v -> (
           match others with
-          | h :: _ when v = h -> get_client_exn ~pid input output v
-          | _ -> aux others )
-        | `Unknown -> aux others
+          | h :: _ when v = h ->
+              get_client_exn ~pid input output v
+          | _ ->
+              aux others )
+        | `Unknown ->
+            aux others
         | `Halt ->
             Error
               (`Msg

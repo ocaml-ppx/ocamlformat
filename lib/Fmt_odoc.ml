@@ -42,8 +42,10 @@ let escape_brackets s =
 
 let escape_all s =
   let escapeworthy = function
-    | '@' | '{' | '}' | '[' | ']' -> true
-    | _ -> false
+    | '@' | '{' | '}' | '[' | ']' ->
+        true
+    | _ ->
+        false
   in
   ensure_escape ~escapeworthy s
 
@@ -77,7 +79,8 @@ let fmt_code_block conf s1 s2 =
   in
   let s2 = Odoc_parser.Loc.value s2 in
   match conf.fmt_code s2 with
-  | Ok formatted -> hvbox 0 (wrap_code formatted)
+  | Ok formatted ->
+      hvbox 0 (wrap_code formatted)
   | Error () ->
       let fmt_line ~first ~last:_ l =
         let l = String.rstrip l in
@@ -96,8 +99,10 @@ let fmt_reference = ign_loc ~f:str_normalized
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
     (* More than one element or contains a list *)
-    | [ { Loc.value= `List _; _ } ] | _ :: _ :: _ -> true
-    | [] | [ _ ] -> false
+    | [ { Loc.value= `List _; _ } ] | _ :: _ :: _ ->
+        true
+    | [] | [ _ ] ->
+        false
   in
   List.exists items ~f:heavy_nestable_block_elements
 
@@ -105,10 +110,13 @@ let list_should_use_heavy_syntax items =
 let block_element_should_break elem next =
   match (elem, next) with
   (* Mandatory breaks *)
-  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
+  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ ->
+      true
   (* Arbitrary breaks *)
-  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
-  | _, _ -> false
+  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) ->
+      true
+  | _, _ ->
+      false
 
 (* Format a list of block_elements separated by newlines Inserts blank line
    depending on [block_element_should_break] *)
@@ -122,8 +130,10 @@ let list_block_elem elems f =
                  (elem :> block_element)
                  (n :> block_element) ->
             fmt "\n@\n"
-        | Some _ -> fmt "@\n"
-        | None -> noop
+        | Some _ ->
+            fmt "@\n"
+        | None ->
+            noop
       in
       f elem $ break )
 
@@ -131,11 +141,14 @@ let space_elt : inline_element with_location = Loc.(at (span []) (`Space ""))
 
 let rec fmt_inline_elements elements =
   let wrap_elements opn cls ~always_wrap hd = function
-    | [] -> wrap_if always_wrap opn cls hd
-    | tl -> wrap opn cls (hd $ fmt_inline_elements (space_elt :: tl))
+    | [] ->
+        wrap_if always_wrap opn cls hd
+    | tl ->
+        wrap opn cls (hd $ fmt_inline_elements (space_elt :: tl))
   in
   let rec aux = function
-    | [] -> noop
+    | [] ->
+        noop
     | `Space _ :: `Word w :: t ->
         (* Escape lines starting with '+' or '-' *)
         let escape =
@@ -145,24 +158,34 @@ let rec fmt_inline_elements elements =
         in
         cbreak ~fits:("", 1, "") ~breaks:("", 0, escape)
         $ str_normalized w $ aux t
-    | `Space _ :: t -> fmt "@ " $ aux t
-    | `Word w :: t -> str_normalized w $ aux t
-    | `Code_span s :: t -> fmt_code_span s $ aux t
+    | `Space _ :: t ->
+        fmt "@ " $ aux t
+    | `Word w :: t ->
+        str_normalized w $ aux t
+    | `Code_span s :: t ->
+        fmt_code_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
-          | Some l -> str_normalized l $ str ":"
-          | None -> noop
+          | Some l ->
+              str_normalized l $ str ":"
+          | None ->
+              noop
         in
         wrap "{%%" "%%}" (lang $ str s) $ aux t
     | `Styled (style, elems) :: t ->
         let s =
           match style with
-          | `Bold -> "b"
-          | `Italic -> "i"
-          | `Emphasis -> "e"
-          | `Superscript -> "^"
-          | `Subscript -> "_"
+          | `Bold ->
+              "b"
+          | `Italic ->
+              "i"
+          | `Emphasis ->
+              "e"
+          | `Superscript ->
+              "^"
+          | `Subscript ->
+              "_"
         in
         hovbox
           (1 + String.length s + 1)
@@ -178,16 +201,20 @@ let rec fmt_inline_elements elements =
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
 
 and fmt_nestable_block_element c = function
-  | `Paragraph elems -> fmt_inline_elements elems
-  | `Code_block (s1, s2) -> fmt_code_block c s1 s2
-  | `Verbatim s -> fmt_verbatim_block s
+  | `Paragraph elems ->
+      fmt_inline_elements elems
+  | `Code_block (s1, s2) ->
+      fmt_code_block c s1 s2
+  | `Verbatim s ->
+      fmt_verbatim_block s
   | `Modules mods ->
       hovbox 0
         (wrap "{!modules:@," "@,}"
            (list mods "@ " (fun ref -> fmt_reference ref)) )
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
-  | `List (k, _syntax, items) -> fmt_list_light c k items
+  | `List (k, _syntax, items) ->
+      fmt_list_light c k items
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =
@@ -217,37 +244,58 @@ let fmt_tag_args ?arg ?txt c tag =
   at $ str tag
   $ opt arg (fun x -> char ' ' $ x)
   $ opt txt (function
-      | [] -> noop
-      | x -> space $ hovbox 0 (fmt_nestable_block_elements c x) )
+      | [] ->
+          noop
+      | x ->
+          space $ hovbox 0 (fmt_nestable_block_elements c x) )
 
 let wrap_see = function
-  | `Url -> wrap "<" ">"
-  | `File -> wrap "'" "'"
-  | `Document -> wrap "\"" "\""
+  | `Url ->
+      wrap "<" ">"
+  | `File ->
+      wrap "'" "'"
+  | `Document ->
+      wrap "\"" "\""
 
 let fmt_tag c = function
-  | `Author s -> fmt_tag_args c "author" ~arg:(str s)
-  | `Version s -> fmt_tag_args c "version" ~arg:(str s)
-  | `See (k, sr, txt) -> fmt_tag_args c "see" ~arg:(wrap_see k (str sr)) ~txt
-  | `Since s -> fmt_tag_args c "since" ~arg:(str s)
-  | `Before (s, txt) -> fmt_tag_args c "before" ~arg:(str s) ~txt
-  | `Deprecated txt -> fmt_tag_args c "deprecated" ~txt
-  | `Param (s, txt) -> fmt_tag_args c "param" ~arg:(str s) ~txt
-  | `Raise (s, txt) -> fmt_tag_args c "raise" ~arg:(str s) ~txt
-  | `Return txt -> fmt_tag_args c "return" ~txt
-  | `Inline -> fmt_tag_args c "inline"
-  | `Open -> fmt_tag_args c "open"
-  | `Closed -> fmt_tag_args c "closed"
-  | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
+  | `Author s ->
+      fmt_tag_args c "author" ~arg:(str s)
+  | `Version s ->
+      fmt_tag_args c "version" ~arg:(str s)
+  | `See (k, sr, txt) ->
+      fmt_tag_args c "see" ~arg:(wrap_see k (str sr)) ~txt
+  | `Since s ->
+      fmt_tag_args c "since" ~arg:(str s)
+  | `Before (s, txt) ->
+      fmt_tag_args c "before" ~arg:(str s) ~txt
+  | `Deprecated txt ->
+      fmt_tag_args c "deprecated" ~txt
+  | `Param (s, txt) ->
+      fmt_tag_args c "param" ~arg:(str s) ~txt
+  | `Raise (s, txt) ->
+      fmt_tag_args c "raise" ~arg:(str s) ~txt
+  | `Return txt ->
+      fmt_tag_args c "return" ~txt
+  | `Inline ->
+      fmt_tag_args c "inline"
+  | `Open ->
+      fmt_tag_args c "open"
+  | `Closed ->
+      fmt_tag_args c "closed"
+  | `Canonical ref ->
+      fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
 
 let fmt_block_element c = function
-  | `Tag tag -> hovbox 2 (fmt_tag c tag)
+  | `Tag tag ->
+      hovbox 2 (fmt_tag c tag)
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
       let lbl =
         match lbl with
-        | Some lbl -> str ":" $ str_normalized lbl
-        | None -> noop
+        | Some lbl ->
+            str ":" $ str_normalized lbl
+        | None ->
+            noop
       in
       let elems =
         if List.is_empty elems then elems else space_elt :: elems

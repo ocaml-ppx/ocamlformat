@@ -37,24 +37,45 @@ let compare : t -> t -> int = Poly.compare
 let equal a b = compare a b = 0
 
 let to_string = function
-  | Low -> "Low"
-  | Semi -> "Semi"
-  | LessMinus -> "LessMinus"
-  | ColonEqual -> "ColonEqual"
-  | As -> "As"
-  | Comma -> "Comma"
-  | MinusGreater -> "MinusGreater"
-  | BarBar -> "BarBar"
-  | AmperAmper -> "AmperAmper"
-  | InfixOp0 -> "InfixOp0"
-  | InfixOp1 -> "InfixOp1"
-  | ColonColon -> "ColonColon"
-  | InfixOp2 -> "InfixOp2"
-  | InfixOp3 -> "InfixOp3"
-  | InfixOp4 -> "InfixOp4"
-  | UMinus -> "UMinus"
-  | Apply -> "Apply"
-  | Dot -> "Dot"
-  | HashOp -> "HashOp"
-  | High -> "High"
-  | Atomic -> "Atomic"
+  | Low ->
+      "Low"
+  | Semi ->
+      "Semi"
+  | LessMinus ->
+      "LessMinus"
+  | ColonEqual ->
+      "ColonEqual"
+  | As ->
+      "As"
+  | Comma ->
+      "Comma"
+  | MinusGreater ->
+      "MinusGreater"
+  | BarBar ->
+      "BarBar"
+  | AmperAmper ->
+      "AmperAmper"
+  | InfixOp0 ->
+      "InfixOp0"
+  | InfixOp1 ->
+      "InfixOp1"
+  | ColonColon ->
+      "ColonColon"
+  | InfixOp2 ->
+      "InfixOp2"
+  | InfixOp3 ->
+      "InfixOp3"
+  | InfixOp4 ->
+      "InfixOp4"
+  | UMinus ->
+      "UMinus"
+  | Apply ->
+      "Apply"
+  | Dot ->
+      "Dot"
+  | HashOp ->
+      "HashOp"
+  | High ->
+      "High"
+  | Atomic ->
+      "Atomic"

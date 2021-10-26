@@ -35,8 +35,10 @@ let tokens lexbuf =
   let rec loop acc =
     match Lexer.token_with_comments lexbuf with
     (* The location in lexbuf are invalid for comments *)
-    | COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
-    | DOCSTRING ds as tok -> loop ((tok, Docstrings.docstring_loc ds) :: acc)
+    | COMMENT (_, loc) as tok ->
+        loop ((tok, loc) :: acc)
+    | DOCSTRING ds as tok ->
+        loop ((tok, Docstrings.docstring_loc ds) :: acc)
     | tok -> (
         let loc = Location.of_lexbuf lexbuf in
         let acc = (tok, loc) :: acc in

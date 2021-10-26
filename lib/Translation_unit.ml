@@ -30,8 +30,10 @@ let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
 let chop_any_extension s =
   match Filename.chop_extension s with
-  | r -> r
-  | exception Invalid_argument _ -> s
+  | r ->
+      r
+  | exception Invalid_argument _ ->
+      s
 
 let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0))
 
@@ -72,13 +74,17 @@ module Error = struct
     Caml.Sys.remove n
 
   let print ?(debug = false) ?(quiet = false) fmt = function
-    | Invalid_source _ when quiet -> ()
+    | Invalid_source _ when quiet ->
+        ()
     | Invalid_source { exn; input_name } -> (
         let reason =
           match exn with
-          | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
-          | Warning50 _ -> " (misplaced documentation comments - warning 50)"
-          | _ -> ""
+          | Syntaxerr.Error _ | Lexer.Error _ ->
+              " (syntax error)"
+          | Warning50 _ ->
+              " (misplaced documentation comments - warning 50)"
+          | _ ->
+              ""
         in
         Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason;
         match exn with
@@ -96,7 +102,8 @@ module Error = struct
                (though it might not be consistent with the ocaml compilers \
                and odoc), you can set the --no-comment-check option.\n\
                %!"
-        | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
+        | exn ->
+            Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
     | Unstable { iteration; prev; next; input_name } ->
         if debug then print_diff input_name ~prev ~next;
         if iteration <= 1 then
@@ -113,7 +120,8 @@ module Error = struct
           Format.fprintf fmt
             "  BUG: formatting did not stabilize after %i iterations.\n%!"
             iteration )
-    | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
+    | User_error msg ->
+        Format.fprintf fmt "%s: %s.\n%!" exe msg
     | Ocamlformat_bug { exn; input_name } -> (
         Format.fprintf fmt
           "%s: Cannot process %S.\n\
@@ -125,12 +133,18 @@ module Error = struct
         | Internal_error (m, l) ->
             let s =
               match m with
-              | `Cannot_parse _ -> "generating invalid ocaml syntax"
-              | `Ast_changed -> "ast changed"
-              | `Doc_comment _ -> "doc comments changed"
-              | `Comment -> "comments changed"
-              | `Comment_dropped _ -> "comments dropped"
-              | `Warning50 _ -> "misplaced documentation comments"
+              | `Cannot_parse _ ->
+                  "generating invalid ocaml syntax"
+              | `Ast_changed ->
+                  "ast changed"
+              | `Doc_comment _ ->
+                  "doc comments changed"
+              | `Comment ->
+                  "comments changed"
+              | `Comment_dropped _ ->
+                  "comments dropped"
+              | `Warning50 _ ->
+                  "misplaced documentation comments"
             in
             Format.fprintf fmt "  BUG: %s.\n%!" s;
             ( match m with
@@ -196,7 +210,8 @@ module Error = struct
             | `Warning50 l ->
                 if debug then
                   List.iter l ~f:(fun (l, w) -> Warning.print_warning l w)
-            | _ -> () );
+            | _ ->
+                () );
             if debug then
               List.iter l ~f:(fun (msg, sexp) ->
                   Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp) )
@@ -209,8 +224,10 @@ end
 let with_file input_name output_file suf ext f =
   let dir =
     match output_file with
-    | Some filename -> Filename.dirname filename
-    | None -> Filename.get_temp_dir_name ()
+    | Some filename ->
+        Filename.dirname filename
+    | None ->
+        Filename.get_temp_dir_name ()
   in
   let base = Filename.remove_extension (Filename.basename input_name) in
   let tmp = Filename.concat dir (base ^ suf ^ ext) in
@@ -229,7 +246,8 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
 
 let check_all_locations fmt cmts_t =
   match Cmts.remaining_locs cmts_t with
-  | [] -> ()
+  | [] ->
+      ()
   | l ->
       let print l = Format.fprintf fmt "%a\n%!" Location.print l in
       Format.fprintf fmt
@@ -261,12 +279,18 @@ let normalize fragment c { Parse_with_comments.ast; _ } =
   Normalize.normalize fragment c ast
 
 let recover (type a) : a Extended_ast.t -> _ -> a = function
-  | Structure -> Parse_wyc.structure
-  | Signature -> Parse_wyc.signature
-  | Use_file -> Parse_wyc.use_file
-  | Core_type -> failwith "no recovery for core_type"
-  | Module_type -> failwith "no recovery for module_type"
-  | Expression -> failwith "no recovery for expression"
+  | Structure ->
+      Parse_wyc.structure
+  | Signature ->
+      Parse_wyc.signature
+  | Use_file ->
+      Parse_wyc.use_file
+  | Core_type ->
+      failwith "no recovery for core_type"
+  | Module_type ->
+      failwith "no recovery for module_type"
+  | Expression ->
+      failwith "no recovery for expression"
 
 let strconst_mapper locs =
   let constant self c =
@@ -275,7 +299,8 @@ let strconst_mapper locs =
       ->
         locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs;
         c
-    | _ -> Ast_mapper.default_mapper.constant self c
+    | _ ->
+        Ast_mapper.default_mapper.constant self c
   in
   { Ast_mapper.default_mapper with constant }
 
@@ -346,15 +371,22 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           parse Extended_ast.Parse.ast ~disable_w50:true fg conf
             ~source:fmted
         with
-      | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
-      | t_new -> Ok t_new )
+      | exception Sys_error msg ->
+          Error (Error.User_error msg)
+      | exception exn ->
+          internal_error (`Cannot_parse exn) (exn_args ())
+      | t_new ->
+          Ok t_new )
       >>= fun t_new ->
       ( match parse Std_ast.Parse.ast std_fg conf ~source:fmted with
-      | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
-      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
-      | std_t_new -> Ok std_t_new )
+      | exception Sys_error msg ->
+          Error (Error.User_error msg)
+      | exception Warning50 l ->
+          internal_error (`Warning50 l) (exn_args ())
+      | exception exn ->
+          internal_error (`Cannot_parse exn) (exn_args ())
+      | std_t_new ->
+          Ok std_t_new )
       >>= fun std_t_new ->
       (* Ast not preserved ? *)
       ( if
@@ -389,11 +421,14 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       (* Comments not preserved ? *)
       if conf.comment_check then (
         ( match Cmts.remaining_comments cmts_t with
-        | [] -> ()
-        | l -> internal_error (`Comment_dropped l) [] );
+        | [] ->
+            ()
+        | l ->
+            internal_error (`Comment_dropped l) [] );
         let is_docstring (Cmt.{ txt; loc } as cmt) =
           match txt with
-          | "" | "*" -> Either.Second cmt
+          | "" | "*" ->
+              Either.Second cmt
           | _ when Char.equal txt.[0] '*' ->
               (* Doc comments here (comming directly from the lexer) include
                  their leading star *. It is not part of the docstring and
@@ -402,7 +437,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
               let cmt = Cmt.create txt loc in
               if conf.parse_docstrings then Either.First cmt
               else Either.Second cmt
-          | _ -> Either.Second cmt
+          | _ ->
+              Either.Second cmt
         in
         let old_docstrings, old_comments =
           List.partition_map t.comments ~f:is_docstring
@@ -442,13 +478,17 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new std_t_new
   in
   try print_check ~i:1 ~conf ~prev_source parsed std_parsed with
-  | Sys_error msg -> Error (User_error msg)
-  | exn -> Error (Ocamlformat_bug { exn; input_name })
+  | Sys_error msg ->
+      Error (User_error msg)
+  | exn ->
+      Error (Ocamlformat_bug { exn; input_name })
 
 let parse_result ?disable_w50 f fragment conf ~source ~input_name =
   match parse ?disable_w50 f fragment conf ~source with
-  | exception exn -> Error (Error.Invalid_source { exn; input_name })
-  | parsed -> Ok parsed
+  | exception exn ->
+      Error (Error.Invalid_source { exn; input_name })
+  | parsed ->
+      Ok parsed
 
 let normalize_eol ~strlocs ~line_endings s =
   let buf = Buffer.create (String.length s) in
@@ -457,7 +497,8 @@ let normalize_eol ~strlocs ~line_endings s =
     if i = stop then add_cr seen_cr
     else
       match s.[i] with
-      | '\r' -> normalize_segment ~seen_cr:(seen_cr + 1) (i + 1) stop
+      | '\r' ->
+          normalize_segment ~seen_cr:(seen_cr + 1) (i + 1) stop
       | '\n' ->
           Buffer.add_string buf
             (match line_endings with `Crlf -> "\r\n" | `Lf -> "\n");
@@ -493,12 +534,18 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
   Ok (normalize_eol ~strlocs ~line_endings:conf.Conf.line_endings formatted)
 
 let parse_and_format = function
-  | Syntax.Structure -> parse_and_format Structure Structure
-  | Syntax.Signature -> parse_and_format Signature Signature
-  | Syntax.Use_file -> parse_and_format Use_file Use_file
-  | Syntax.Core_type -> parse_and_format Core_type Core_type
-  | Syntax.Module_type -> parse_and_format Module_type Module_type
-  | Syntax.Expression -> parse_and_format Expression Expression
+  | Syntax.Structure ->
+      parse_and_format Structure Structure
+  | Syntax.Signature ->
+      parse_and_format Signature Signature
+  | Syntax.Use_file ->
+      parse_and_format Use_file Use_file
+  | Syntax.Core_type ->
+      parse_and_format Core_type Core_type
+  | Syntax.Module_type ->
+      parse_and_format Module_type Module_type
+  | Syntax.Expression ->
+      parse_and_format Expression Expression
 
 let check_line nlines i =
   (* the last line of the buffer (nlines + 1) should not raise an error *)
@@ -536,27 +583,40 @@ let numeric (type a b) (fg : a list Extended_ast.t)
       | Ok { ast= fmted_ast; source= fmted_src; _ } ->
           Indent.Valid_ast.indent_range fg ~lines ~range
             ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
-      | Error _ -> fallback () )
-    | Error _ -> fallback ()
+      | Error _ ->
+          fallback () )
+    | Error _ ->
+        fallback ()
   in
   let parse_or_recover ~src =
     match
       parse_result Extended_ast.Parse.ast fg conf ~source:src ~input_name
     with
-    | Ok parsed -> Ok parsed
-    | Error _ -> parse_result recover fg conf ~source:src ~input_name
+    | Ok parsed ->
+        Ok parsed
+    | Error _ ->
+        parse_result recover fg conf ~source:src ~input_name
   in
   match parse_or_recover ~src:source with
   | Ok parsed -> (
     match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
-    | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
-    | Error _ -> fallback () )
-  | Error _ -> fallback ()
+    | Ok std_parsed ->
+        indent_parsed parsed std_parsed ~src:source ~range
+    | Error _ ->
+        fallback () )
+  | Error _ ->
+      fallback ()
 
 let numeric = function
-  | Syntax.Structure -> numeric Structure Structure
-  | Syntax.Signature -> numeric Signature Signature
-  | Syntax.Use_file -> numeric Use_file Use_file
-  | Syntax.Core_type -> failwith "numeric not implemented for Core_type"
-  | Syntax.Module_type -> failwith "numeric not implemented for Module_type"
-  | Syntax.Expression -> failwith "numeric not implemented for Expression"
+  | Syntax.Structure ->
+      numeric Structure Structure
+  | Syntax.Signature ->
+      numeric Signature Signature
+  | Syntax.Use_file ->
+      numeric Use_file Use_file
+  | Syntax.Core_type ->
+      failwith "numeric not implemented for Core_type"
+  | Syntax.Module_type ->
+      failwith "numeric not implemented for Module_type"
+  | Syntax.Expression ->
+      failwith "numeric not implemented for Expression"

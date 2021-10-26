@@ -41,13 +41,17 @@ let find_first_token_on_line t line =
       ~compare:(fun (_, elt) -> Int.compare elt.Location.loc_start.pos_lnum)
       `First_equal_to line
   with
-  | None -> None
-  | Some i when i >= Array.length t.tokens -> None
-  | Some i -> Some t.tokens.(i)
+  | None ->
+      None
+  | Some i when i >= Array.length t.tokens ->
+      None
+  | Some i ->
+      Some t.tokens.(i)
 
 let tokens_between (t : t) ~filter loc_start loc_end =
   match find_token t `First_greater_than_or_equal_to loc_start with
-  | None -> []
+  | None ->
+      []
   | Some i ->
       let rec loop i acc =
         if i >= Array.length t.tokens then List.rev acc
@@ -65,7 +69,8 @@ let empty_line_between (t : t) p1 p2 =
   let l = tokens_between t ~filter:(function _ -> true) p1 p2 in
   let rec loop (prev : Lexing.position) (l : (_ * Location.t) list) =
     match l with
-    | [] -> p2.pos_lnum - prev.pos_lnum > 1
+    | [] ->
+        p2.pos_lnum - prev.pos_lnum > 1
     | (_tok, x) :: xs ->
         x.loc_start.pos_lnum - prev.pos_lnum > 1 || loop x.loc_end xs
   in
@@ -76,7 +81,8 @@ let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
 
 let find_token_before t ~filter pos =
   match find_token t `Last_strictly_less_than pos with
-  | None -> None
+  | None ->
+      None
   | Some i ->
       let rec loop i =
         if i < 0 then None
@@ -88,7 +94,8 @@ let find_token_before t ~filter pos =
 
 let find_token_after t ~filter pos =
   match find_token t `First_greater_than_or_equal_to pos with
-  | None -> None
+  | None ->
+      None
   | Some i ->
       let rec loop i =
         if i >= Array.length t.tokens then None
@@ -120,10 +127,12 @@ let is_long_pexp_open source { pexp_desc; _ } =
   match pexp_desc with
   | Pexp_open ({ popen_loc= from; _ }, { pexp_loc= upto; _ }) ->
       contains_token_between source ~from ~upto Parser.IN
-  | _ -> false
+  | _ ->
+      false
 
 let is_long_functor_syntax (t : t) ~(from : Location.t) = function
-  | Unit -> false
+  | Unit ->
+      false
   | Named ({ loc= _; _ }, _) -> (
     (* since 4.12 the functor keyword is just before the loc of the functor
        parameter *)
@@ -132,18 +141,24 @@ let is_long_functor_syntax (t : t) ~(from : Location.t) = function
         ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
         from.loc_start
     with
-    | Some (Parser.FUNCTOR, _) -> true
-    | _ -> false )
+    | Some (Parser.FUNCTOR, _) ->
+        true
+    | _ ->
+        false )
 
 let is_long_pmod_functor t { pmod_desc; pmod_loc= from; _ } =
   match pmod_desc with
-  | Pmod_functor (fp, _) -> is_long_functor_syntax t ~from fp
-  | _ -> false
+  | Pmod_functor (fp, _) ->
+      is_long_functor_syntax t ~from fp
+  | _ ->
+      false
 
 let is_long_pmty_functor t { pmty_desc; pmty_loc= from; _ } =
   match pmty_desc with
-  | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
-  | _ -> false
+  | Pmty_functor (fp, _) ->
+      is_long_functor_syntax t ~from fp
+  | _ ->
+      false
 
 let string_literal t mode loc =
   Option.value_exn ~message:"Parse error while reading string literal"
@@ -157,27 +172,33 @@ let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   if not ignore_spaces then Position.column l.loc_start = 0
   else
     match find_token_before t ~filter:(fun _ -> true) l.loc_start with
-    | None -> true
+    | None ->
+        true
     | Some (_, prev) ->
         assert (Location.compare prev l < 0);
         prev.loc_end.pos_lnum < l.loc_start.pos_lnum
 
 let ends_line t (l : Location.t) =
   match find_token_after t ~filter:(fun _ -> true) l.loc_end with
-  | None -> true
+  | None ->
+      true
   | Some (_, next) ->
       assert (Location.compare next l > 0);
       next.loc_start.pos_lnum > l.loc_end.pos_lnum
 
 let empty_line_before t (loc : Location.t) =
   match find_token_before t ~filter:(fun _ -> true) loc.loc_start with
-  | Some (_, before) -> Location.line_difference before loc > 1
-  | None -> false
+  | Some (_, before) ->
+      Location.line_difference before loc > 1
+  | None ->
+      false
 
 let empty_line_after t (loc : Location.t) =
   match find_token_after t ~filter:(fun _ -> true) loc.loc_end with
-  | Some (_, after) -> Location.line_difference loc after > 1
-  | None -> false
+  | Some (_, after) ->
+      Location.line_difference loc after > 1
+  | None ->
+      false
 
 let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Location.t) =
@@ -189,12 +210,16 @@ let type_constraint_is_first typ loc =
 let is_quoted_string t loc =
   let toks =
     tokens_at t loc ~filter:(function
-      | QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ -> true
-      | _ -> false )
+      | QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ ->
+          true
+      | _ ->
+          false )
   in
   not (List.is_empty toks)
 
 let loc_of_first_token_at t loc kwd =
   match tokens_at t loc ~filter:(Poly.( = ) kwd) with
-  | [] -> None
-  | (_, loc) :: _ -> Some loc
+  | [] ->
+      None
+  | (_, loc) :: _ ->
+      Some loc

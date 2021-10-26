@@ -18,8 +18,10 @@ let parse ~loc text =
   in
   let v = Odoc_parser.parse_comment ~location ~text in
   match Odoc_parser.warnings v with
-  | [] -> Ok (Odoc_parser.ast v)
-  | warnings -> Error warnings
+  | [] ->
+      Ok (Odoc_parser.ast v)
+  | warnings ->
+      Error warnings
 
 let warn fmt warning =
   Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"

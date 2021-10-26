@@ -16,7 +16,8 @@ let read_lines file =
     | exception End_of_file ->
         Stdlib.close_in ic;
         List.rev acc
-    | line -> aux (line :: acc)
+    | line ->
+        aux (line :: acc)
   in
   aux []
 
@@ -57,25 +58,36 @@ let register_file tests fname =
       let src_test_name = test_name ^ "." ^ ext in
       let setup =
         match StringMap.find src_test_name !tests with
-        | setup -> setup
+        | setup ->
+            setup
         | exception Not_found -> (
           (* foo_file-some_variant.ml should derive from foo_file.ml *)
           match String.index_opt test_name '-' with
-          | None -> add_test tests src_test_name
+          | None ->
+              add_test tests src_test_name
           | Some i ->
               let base_file = String.sub test_name 0 i ^ "." ^ ext in
               add_test ~base_file tests src_test_name )
       in
       match rest with
-      | [] -> ()
-      | [ "output" ] | [ "ocp"; "output" ] -> ()
-      | [ "opts" ] -> setup.has_opts <- true
-      | [ "broken-ref" ] -> setup.has_ref <- true
-      | [ "ocp" ] -> setup.has_ocp <- true
-      | [ "deps" ] -> setup.extra_deps <- read_lines fname
-      | [ "enabled-if" ] -> setup.enabled_if <- Some (read_file fname)
-      | _ -> invalid_arg fname )
-  | _ -> ()
+      | [] ->
+          ()
+      | [ "output" ] | [ "ocp"; "output" ] ->
+          ()
+      | [ "opts" ] ->
+          setup.has_opts <- true
+      | [ "broken-ref" ] ->
+          setup.has_ref <- true
+      | [ "ocp" ] ->
+          setup.has_ocp <- true
+      | [ "deps" ] ->
+          setup.extra_deps <- read_lines fname
+      | [ "enabled-if" ] ->
+          setup.enabled_if <- Some (read_file fname)
+      | _ ->
+          invalid_arg fname )
+  | _ ->
+      ()
 
 (* ignore dune file, .foo.whatever.swp, etc *)
 
@@ -99,8 +111,10 @@ let emit_test test_name setup =
   let extra_deps = String.concat " " setup.extra_deps in
   let enabled_if_line =
     match setup.enabled_if with
-    | None -> ""
-    | Some v -> Printf.sprintf "\n (enabled_if %s)" v
+    | None ->
+        ""
+    | Some v ->
+        Printf.sprintf "\n (enabled_if %s)" v
   in
   Printf.printf
     {|

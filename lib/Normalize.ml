@@ -20,7 +20,8 @@ let is_doc = function
   | Std_ast.{ attr_name= { Location.txt= "ocaml.doc" | "ocaml.text"; _ }; _ }
     ->
       true
-  | _ -> false
+  | _ ->
+      false
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
@@ -50,7 +51,8 @@ let dedup_cmts fragment ast comments =
         when Ast.Attr.is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc);
           atr
-      | _ -> Ast_mapper.default_mapper.attribute m atr
+      | _ ->
+          Ast_mapper.default_mapper.attribute m atr
     in
     map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore;
     !docs
@@ -82,7 +84,8 @@ let dedup_cmts_std fragment ast comments =
         when is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc);
           atr
-      | _ -> Ast_mapper.default_mapper.attribute m atr
+      | _ ->
+          Ast_mapper.default_mapper.attribute m atr
     in
     map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore;
     !docs
@@ -107,23 +110,32 @@ let odoc_reference = ign_loc str
 let option f fmt = function Some v -> f fmt v | None -> ()
 
 let odoc_style fmt = function
-  | `Bold -> fpf fmt "Bold"
-  | `Italic -> fpf fmt "Italic"
-  | `Emphasis -> fpf fmt "Emphasis"
-  | `Superscript -> fpf fmt "Superscript"
-  | `Subscript -> fpf fmt "Subscript"
+  | `Bold ->
+      fpf fmt "Bold"
+  | `Italic ->
+      fpf fmt "Italic"
+  | `Emphasis ->
+      fpf fmt "Emphasis"
+  | `Superscript ->
+      fpf fmt "Superscript"
+  | `Subscript ->
+      fpf fmt "Subscript"
 
 let rec odoc_inline_element fmt = function
-  | `Space _ -> ()
+  | `Space _ ->
+      ()
   | `Word txt ->
       (* Ignore backspace changes *)
       let txt =
         String.filter txt ~f:(function '\\' -> false | _ -> true)
       in
       fpf fmt "Word(%a)" str txt
-  | `Code_span txt -> fpf fmt "Code_span(%a)" str txt
-  | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_markup(%s,%a)" lang str txt
-  | `Raw_markup (None, txt) -> fpf fmt "Raw_markup(%a)" str txt
+  | `Code_span txt ->
+      fpf fmt "Code_span(%a)" str txt
+  | `Raw_markup (Some lang, txt) ->
+      fpf fmt "Raw_markup(%s,%a)" lang str txt
+  | `Raw_markup (None, txt) ->
+      fpf fmt "Raw_markup(%a)" str txt
   | `Styled (style, elems) ->
       fpf fmt "Styled(%a,%a)" odoc_style style odoc_inline_elements elems
   | `Reference (_kind, ref, content) ->
@@ -136,7 +148,8 @@ and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
 let rec odoc_nestable_block_element c fmt = function
-  | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
+  | `Paragraph elms ->
+      fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (metadata, txt) ->
       let txt = Odoc_parser.Loc.value txt in
       let txt =
@@ -156,11 +169,14 @@ let rec odoc_nestable_block_element c fmt = function
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
             Std_ast.Pprintast.structure ast print_comments comments
         with
-        | _ -> txt
+        | _ ->
+            txt
       in
       fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
-  | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
-  | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
+  | `Verbatim txt ->
+      fpf fmt "Verbatim(%a)" str txt
+  | `Modules mods ->
+      fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->
       let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
       let list_item fmt elems =
@@ -172,7 +188,8 @@ and odoc_nestable_block_elements c fmt elems =
   list (ign_loc (odoc_nestable_block_element c)) fmt elems
 
 let odoc_tag c fmt = function
-  | `Author txt -> fpf fmt "Author(%a)" str txt
+  | `Author txt ->
+      fpf fmt "Author(%a)" str txt
   | `Deprecated elems ->
       fpf fmt "Deprecated(%a)" (odoc_nestable_block_elements c) elems
   | `Param (p, elems) ->
@@ -188,21 +205,28 @@ let odoc_tag c fmt = function
       fpf fmt "See(%s,%a,%a)" kind str txt
         (odoc_nestable_block_elements c)
         elems
-  | `Since txt -> fpf fmt "Since(%a)" str txt
+  | `Since txt ->
+      fpf fmt "Since(%a)" str txt
   | `Before (p, elems) ->
       fpf fmt "Before(%a,%a)" str p (odoc_nestable_block_elements c) elems
-  | `Version txt -> fpf fmt "Version(%a)" str txt
-  | `Canonical ref -> fpf fmt "Canonical(%a)" odoc_reference ref
-  | `Inline -> fpf fmt "Inline"
-  | `Open -> fpf fmt "Open"
-  | `Closed -> fpf fmt "Closed"
+  | `Version txt ->
+      fpf fmt "Version(%a)" str txt
+  | `Canonical ref ->
+      fpf fmt "Canonical(%a)" odoc_reference ref
+  | `Inline ->
+      fpf fmt "Inline"
+  | `Open ->
+      fpf fmt "Open"
+  | `Closed ->
+      fpf fmt "Closed"
 
 let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->
       let lvl = Int.to_string lvl in
       let lbl = match lbl with Some lbl -> lbl | None -> "" in
       fpf fmt "Heading(%s,%a,%a)" lvl str lbl odoc_inline_elements content
-  | `Tag tag -> fpf fmt "Tag(%a)" (odoc_tag c) tag
+  | `Tag tag ->
+      fpf fmt "Tag(%a)" (odoc_tag c) tag
   | #Odoc_parser.Ast.nestable_block_element as elm ->
       odoc_nestable_block_element c fmt elm
 
@@ -256,7 +280,8 @@ let make_mapper conf ~ignore_doc_comments =
                   }
                 ]
           }
-    | _ -> Ast_mapper.default_mapper.attribute m attr
+    | _ ->
+        Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
@@ -273,7 +298,8 @@ let make_mapper conf ~ignore_doc_comments =
     match pexp_desc with
     | Pexp_poly ({ pexp_desc= Pexp_constraint (e, t); _ }, None) ->
         m.expr m { exp with pexp_desc= Pexp_poly (e, Some t) }
-    | Pexp_constraint (e, { ptyp_desc= Ptyp_poly ([], _t); _ }) -> m.expr m e
+    | Pexp_constraint (e, { ptyp_desc= Ptyp_poly ([], _t); _ }) ->
+        m.expr m e
     | Pexp_sequence
         ( exp1
         , { pexp_desc= Pexp_sequence (exp2, exp3)
@@ -285,7 +311,8 @@ let make_mapper conf ~ignore_doc_comments =
           (Exp.sequence ~loc:loc1 ~attrs:attrs1
              (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
              exp3 )
-    | _ -> Ast_mapper.default_mapper.expr m exp
+    | _ ->
+        Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
     let pat = { pat with ppat_loc_stack= [] } in
@@ -303,7 +330,8 @@ let make_mapper conf ~ignore_doc_comments =
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
              pat3 )
-    | _ -> Ast_mapper.default_mapper.pat m pat
+    | _ ->
+        Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =
     let typ = { typ with ptyp_loc_stack= [] } in
@@ -345,7 +373,8 @@ let make_docstring_mapper docstrings =
           ] ) ->
         docstrings := (loc, doc) :: !docstrings;
         attr
-    | _ -> Ast_mapper.default_mapper.attribute m attr
+    | _ ->
+        Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =

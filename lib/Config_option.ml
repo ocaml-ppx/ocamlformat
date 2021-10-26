@@ -88,8 +88,10 @@ module Make (C : CONFIG) = struct
   let removed ~since_version:rversion rmsg = { rmsg; rversion }
 
   let in_attributes cond = function
-    | Operational -> ""
-    | Formatting -> if cond then "" else " Cannot be set in attributes."
+    | Operational ->
+        ""
+    | Formatting ->
+        if cond then "" else " Cannot be set in attributes."
 
   let pp_deprecated ppf { dmsg; dversion= v } =
     Format.fprintf ppf "This option is deprecated since version %s. %s" v
@@ -100,9 +102,12 @@ module Make (C : CONFIG) = struct
       rmsg
 
   let status_doc ppf = function
-    | `Valid -> ()
-    | `Deprecated x -> Format.fprintf ppf " Warning: %a" pp_deprecated x
-    | `Removed _ -> ()
+    | `Valid ->
+        ()
+    | `Deprecated x ->
+        Format.fprintf ppf " Warning: %a" pp_deprecated x
+    | `Removed _ ->
+        ()
 
   let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
     let default = if default then "set" else "unset" in
@@ -114,8 +119,10 @@ module Make (C : CONFIG) = struct
       ~status =
     let default_doc =
       match default_doc with
-      | Some x -> x
-      | None -> Format.asprintf "%a" (Arg.conv_printer conv) default
+      | Some x ->
+          x
+      | None ->
+          Format.asprintf "%a" (Arg.conv_printer conv) default
     in
     let default =
       if String.is_empty default_doc then "none" else default_doc
@@ -128,10 +135,14 @@ module Make (C : CONFIG) = struct
     match status with
     | `Valid -> (
       match kind with
-      | Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
-      | Operational -> Cmdliner.Manpage.s_options )
-    | `Deprecated _ -> Cmdliner.Manpage.s_options ^ " (DEPRECATED)"
-    | `Removed _ -> Cmdliner.Manpage.s_options ^ " (REMOVED)"
+      | Formatting ->
+          Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
+      | Operational ->
+          Cmdliner.Manpage.s_options )
+    | `Deprecated _ ->
+        Cmdliner.Manpage.s_options ^ " (DEPRECATED)"
+    | `Removed _ ->
+        Cmdliner.Manpage.s_options ^ " (REMOVED)"
 
   let from = `Default
 
@@ -142,8 +153,10 @@ module Make (C : CONFIG) = struct
   (* somehow necessary *)
   let map_status : [ `Valid | `Deprecated of deprecated ] -> status =
     function
-    | `Valid -> `Valid
-    | `Deprecated x -> `Deprecated x
+    | `Valid ->
+        `Valid
+    | `Deprecated x ->
+        `Deprecated x
 
   let flag ~default ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
@@ -221,8 +234,10 @@ module Make (C : CONFIG) = struct
 
     let make ?deprecated ~name value doc =
       match deprecated with
-      | None -> (name, value, doc, `Valid)
-      | Some x -> (name, value, doc, `Deprecated x)
+      | None ->
+          (name, value, doc, `Valid)
+      | Some x ->
+          (name, value, doc, `Deprecated x)
 
     let pp_deprecated s ppf { dmsg= msg; dversion= v } =
       Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s v
@@ -234,13 +249,15 @@ module Make (C : CONFIG) = struct
         v msg
 
     let status_doc s ppf = function
-      | `Valid -> ()
+      | `Valid ->
+          ()
       | `Deprecated x ->
           Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
 
     let warn_if_deprecated conf opt (s, _, _, status) =
       match status with
-      | `Valid -> ()
+      | `Valid ->
+          ()
       | `Deprecated d ->
           C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
   end
@@ -267,7 +284,8 @@ module Make (C : CONFIG) = struct
               (fun s -> Error (`Msg s))
               "value `%s` has been removed in version %s. %s" name version
               msg
-        | None -> Arg.conv_parser conv s
+        | None ->
+            Arg.conv_parser conv s
       in
       Arg.conv (parse, Arg.conv_printer conv)
   end
@@ -299,8 +317,10 @@ module Make (C : CONFIG) = struct
     in
     let update conf x =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
-      | Some value -> Value.warn_if_deprecated conf name value
-      | None -> () );
+      | Some value ->
+          Value.warn_if_deprecated conf name value
+      | None ->
+          () );
       update conf x
     in
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
@@ -357,8 +377,10 @@ module Make (C : CONFIG) = struct
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
         ( match status with
-        | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
-        | _ -> () );
+        | `Deprecated d ->
+            C.warn config "%s: %a" name pp_deprecated d
+        | _ ->
+            () );
         Pack { p with from= `Updated from } )
       else Pack p
     in
@@ -376,7 +398,8 @@ module Make (C : CONFIG) = struct
                 let config = update config packed_value in
                 update_from config name from;
                 Some (Ok config)
-            | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
+            | Error (`Msg error) ->
+                Some (Error (`Bad_value (name, error)))
         else
           match
             List.find names ~f:(fun x -> String.equal ("no-" ^ x) name)
@@ -390,7 +413,8 @@ module Make (C : CONFIG) = struct
                   name valid_name valid_name valid_name
               in
               Some (Error (`Unknown (name, Some (`Msg error))))
-          | None -> None )
+          | None ->
+              None )
     |> Option.value ~default:(Error (`Unknown (name, None)))
 
   let default { default; _ } = default
@@ -398,7 +422,8 @@ module Make (C : CONFIG) = struct
   let update_using_cmdline config =
     let on_pack config (Pack { cmdline_get; update; names; _ }) =
       match cmdline_get () with
-      | None -> config
+      | None ->
+          config
       | Some x ->
           let config = update config x in
           update_from config (List.hd_exn names) `Commandline;
@@ -415,19 +440,26 @@ module Make (C : CONFIG) = struct
             Format.sprintf " (file %s:%i)"
               (Fpath.to_string ~relativize:true p)
               i
-        | `Parsed `Attribute -> " (attribute)"
-        | `Env -> " (environment variable)"
-        | `Commandline -> " (command line)"
+        | `Parsed `Attribute ->
+            " (attribute)"
+        | `Env ->
+            " (environment variable)"
+        | `Commandline ->
+            " (command line)"
       in
       let aux_from = function
-        | `Default -> ""
-        | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
-        | `Updated x -> aux_from x
+        | `Default ->
+            ""
+        | `Profile (s, p) ->
+            " (profile " ^ s ^ aux_from p ^ ")"
+        | `Updated x ->
+            aux_from x
       in
       match status with
       | `Valid | `Deprecated _ ->
           Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
-      | `Removed _ -> ()
+      | `Removed _ ->
+          ()
     in
     List.iter !store ~f:on_pack
 end

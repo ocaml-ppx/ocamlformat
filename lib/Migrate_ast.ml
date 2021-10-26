@@ -15,8 +15,10 @@ module Asttypes = struct
   let is_private = function Private -> true | Public -> false
 
   let is_open : closed_flag -> bool = function
-    | Open -> true
-    | Closed -> false
+    | Open ->
+        true
+    | Closed ->
+        false
 
   let is_override = function Override -> true | Fresh -> false
   let is_mutable = function Mutable -> true | Immutable -> false
@@ -61,9 +63,12 @@ module Location = struct
     match Position.compare loc_start b.loc_start with
     | 0 -> (
       match Position.compare loc_end b.loc_end with
-      | 0 -> Bool.compare loc_ghost b.loc_ghost
-      | c -> c )
-    | c -> c
+      | 0 ->
+          Bool.compare loc_ghost b.loc_ghost
+      | c ->
+          c )
+    | c ->
+        c
 
   type location = t
 

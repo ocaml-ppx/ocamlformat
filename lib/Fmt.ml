@@ -107,8 +107,10 @@ let noop = with_pp (fun _ -> ())
 let sequence l =
   let rec go l len =
     match l with
-    | [] -> noop
-    | [ x ] -> x
+    | [] ->
+        noop
+    | [ x ] ->
+        x
     | l ->
         let a_len = len / 2 in
         let b_len = len - a_len in
@@ -130,10 +132,14 @@ let str_as n s = with_pp (fun fs -> Format.pp_print_as fs n s)
 let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
-  | Blank -> char ' '
-  | Cut -> fmt "@,"
-  | Space -> fmt "@ "
-  | Break (x, y) -> break x y
+  | Blank ->
+      char ' '
+  | Cut ->
+      fmt "@,"
+  | Space ->
+      fmt "@ "
+  | Break (x, y) ->
+      break x y
 
 (** Primitive containers ------------------------------------------------*)
 
@@ -141,13 +147,17 @@ let opt o f = Option.value_map ~default:noop ~f o
 
 let list_pn x1N pp =
   match x1N with
-  | [] -> noop
-  | [ x1 ] -> lazy_ (fun () -> pp ~prev:None x1 ~next:None)
+  | [] ->
+      noop
+  | [ x1 ] ->
+      lazy_ (fun () -> pp ~prev:None x1 ~next:None)
   | x1 :: (x2 :: _ as x2N) ->
       let l =
         let rec aux (prev, acc) = function
-          | [] -> acc
-          | [ xI ] -> aux (xI, (Some prev, xI, None) :: acc) []
+          | [] ->
+              acc
+          | [ xI ] ->
+              aux (xI, (Some prev, xI, None) :: acc) []
           | xI :: (xJ :: _ as xJN) ->
               aux (xI, (Some prev, xI, Some xJ) :: acc) xJN
         in
@@ -195,9 +205,12 @@ let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
     =
   let nspaces, offset = hint in
   match force with
-  | Some Fit -> str fits
-  | Some Break -> fmt_if_k (offset >= 0) (break nspaces offset) $ str breaks
-  | None -> fits_or_breaks ~level fits nspaces offset breaks
+  | Some Fit ->
+      str fits
+  | Some Break ->
+      fmt_if_k (offset >= 0) (break nspaces offset) $ str breaks
+  | None ->
+      fits_or_breaks ~level fits nspaces offset breaks
 
 let fits_breaks_if ?force ?hint ?level cnd fits breaks =
   fmt_if_k cnd (fits_breaks ?force ?hint ?level fits breaks)
@@ -216,7 +229,8 @@ let wrap_if_fits_or cnd pre suf k =
 
 let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
   match (c.Conf.indicate_multiline_delimiters, space) with
-  | `No, false -> wrap_if_k cnd (str pre) (str suf) k
+  | `No, false ->
+      wrap_if_k cnd (str pre) (str suf) k
   | `Space, _ | `No, true ->
       fits_breaks_if cnd pre (pre ^ " ")
       $ k
@@ -251,8 +265,10 @@ let debug_box_open ?name box_kind n fs =
   if !box_debug_enabled then (
     let name =
       match name with
-      | Some s -> Format.sprintf "%s:%s" box_kind s
-      | None -> box_kind
+      | Some s ->
+          Format.sprintf "%s:%s" box_kind s
+      | None ->
+          box_kind
     in
     let openning = if n = 0 then name else Format.sprintf "%s<%d" name n in
     pp_color_k (box_depth_color ())
@@ -345,6 +361,8 @@ let fill_text ?(epi = "") text =
                match next with
                | Some str when String.for_all str ~f:Char.is_whitespace ->
                    close_box $ fmt "\n@," $ open_hovbox 0
-               | Some _ when not (String.is_empty curr) -> fmt "@ "
-               | _ -> noop )
+               | Some _ when not (String.is_empty curr) ->
+                   fmt "@ "
+               | _ ->
+                   noop )
          $ str epi ) )

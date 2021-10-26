@@ -89,7 +89,8 @@ let process_results results =
         (fun test_name ols ->
           let metrics =
             try Hashtbl.find metrics_by_test test_name with
-            | Not_found -> Hashtbl.create 16
+            | Not_found ->
+                Hashtbl.create 16
           in
           Hashtbl.add metrics metric_name ols;
           Hashtbl.replace metrics_by_test test_name metrics )
@@ -99,15 +100,21 @@ let process_results results =
 
 let json_of_ols ols =
   match Bechamel.Analyze.OLS.estimates ols with
-  | Some [ x ] -> `Float x
-  | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
-  | None -> `List []
+  | Some [ x ] ->
+      `Float x
+  | Some estimates ->
+      `List (List.map (fun x -> `Float x) estimates)
+  | None ->
+      `List []
 
 let json_of_string_ols ols =
   match ols with
-  | Some [ x ] -> `Float x
-  | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
-  | None -> `List []
+  | Some [ x ] ->
+      `Float x
+  | Some estimates ->
+      `List (List.map (fun x -> `Float x) estimates)
+  | None ->
+      `List []
 
 let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
     Yojson.Safe.t =
@@ -129,8 +136,10 @@ let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
   let bindings = [ ("results", results) ] in
   let bindings =
     match name with
-    | Some name -> ("name", `String name) :: bindings
-    | None -> bindings
+    | Some name ->
+        ("name", `String name) :: bindings
+    | None ->
+        bindings
   in
   `Assoc bindings
 

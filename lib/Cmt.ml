@@ -46,14 +46,19 @@ module Asterisk_prefixed = struct
     let pat =
       String.Search_pattern.create
         (String.init len ~f:(function
-          | 0 -> '\n'
-          | n when n < len - 1 -> ' '
-          | _ -> '*' ) )
+          | 0 ->
+              '\n'
+          | n when n < len - 1 ->
+              ' '
+          | _ ->
+              '*' ) )
     in
     let rec split_ pos =
       match String.Search_pattern.index pat ~pos ~in_:txt with
-      | Some 0 -> "" :: split_ len
-      | Some idx -> String.sub txt ~pos ~len:(idx - pos) :: split_ (idx + len)
+      | Some 0 ->
+          "" :: split_ len
+      | Some idx ->
+          String.sub txt ~pos ~len:(idx - pos) :: split_ (idx + len)
       | _ ->
           let drop = function ' ' | '\t' -> true | _ -> false in
           let line = String.rstrip ~drop (String.drop_prefix txt pos) in
@@ -71,8 +76,10 @@ module Asterisk_prefixed = struct
       ( fmt "(*"
       $ list_fl lines (fun ~first:_ ~last line ->
             match line with
-            | "" when last -> fmt ")"
-            | _ -> str line $ fmt_or last "*)" "@,*" ) )
+            | "" when last ->
+                fmt ")"
+            | _ ->
+                str line $ fmt_or last "*)" "@,*" ) )
 end
 
 module Unwrapped = struct
@@ -117,9 +124,12 @@ module Unwrapped = struct
           (* Not adding artificial breaks and keeping the comment contents
              verbatim will not interfere with ocp-indent. *)
           match pos with
-          | Before -> wrap "(*" "*)" @@ str s
-          | Within -> wrap "(*" "*)" @@ str s
-          | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s
+          | Before ->
+              wrap "(*" "*)" @@ str s
+          | Within ->
+              wrap "(*" "*)" @@ str s
+          | After ->
+              break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s
         else
           let epi =
             (* Preserve position of closing but strip empty lines at the
@@ -129,45 +139,64 @@ module Unwrapped = struct
                 break 1000 (-2) (* Break before closing *)
             | Some i when i < String.length s - 1 ->
                 str " " (* Preserve a space at the end *)
-            | _ -> noop
+            | _ ->
+                noop
           in
           (* Preserve the first level of indentation *)
           let starts_with_sp = is_sp first_line.[0] in
           wrap "(*" "*)"
           @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
                first_line tl
-    | _ -> wrap "(*" "*)" @@ str s
+    | _ ->
+        wrap "(*" "*)" @@ str s
 end
 
 let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
   let mode =
     match cmt.txt with
-    | "" -> impossible "not produced by parser"
+    | "" ->
+        impossible "not produced by parser"
     (* "(**)" is not parsed as a docstring but as a regular comment
        containing '*' and would be rewritten as "(***)" *)
-    | "*" when Location.width cmt.loc = 4 -> `Verbatim "(**)"
-    | "*" -> `Verbatim "(***)"
-    | "$" -> `Verbatim "(*$*)"
+    | "*" when Location.width cmt.loc = 4 ->
+        `Verbatim "(**)"
+    | "*" ->
+        `Verbatim "(***)"
+    | "$" ->
+        `Verbatim "(*$*)"
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
         let len = String.length str - if dollar_suf then 2 else 1 in
         let source = String.sub ~pos:1 ~len str in
         match fmt_code source with
-        | Ok formatted -> `Code (formatted, cls)
-        | Error () -> `Unwrapped cmt )
+        | Ok formatted ->
+            `Code (formatted, cls)
+        | Error () ->
+            `Unwrapped cmt )
     | _ -> (
       match Asterisk_prefixed.split cmt with
-      | [] | [ "" ] -> impossible "not produced by split_asterisk_prefixed"
-      | [ ""; "" ] -> `Verbatim "(* *)"
-      | [ text ] when wrap_comments -> `Wrapped (text, "*)")
-      | [ text; "" ] when wrap_comments -> `Wrapped (text, " *)")
-      | [ _ ] | [ _; "" ] -> `Unwrapped cmt
-      | lines -> `Asterisk_prefixed lines )
+      | [] | [ "" ] ->
+          impossible "not produced by split_asterisk_prefixed"
+      | [ ""; "" ] ->
+          `Verbatim "(* *)"
+      | [ text ] when wrap_comments ->
+          `Wrapped (text, "*)")
+      | [ text; "" ] when wrap_comments ->
+          `Wrapped (text, " *)")
+      | [ _ ] | [ _; "" ] ->
+          `Unwrapped cmt
+      | lines ->
+          `Asterisk_prefixed lines )
   in
   match mode with
-  | `Verbatim x -> str x
-  | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
-  | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
-  | `Unwrapped x -> Unwrapped.fmt ~ocp_indent_compat x pos
-  | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
+  | `Verbatim x ->
+      str x
+  | `Code (x, cls) ->
+      hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
+  | `Wrapped (x, epi) ->
+      str "(*" $ fill_text x ~epi
+  | `Unwrapped x ->
+      Unwrapped.fmt ~ocp_indent_compat x pos
+  | `Asterisk_prefixed x ->
+      Asterisk_prefixed.fmt x

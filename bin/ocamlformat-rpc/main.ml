@@ -21,8 +21,10 @@ module V = struct
   type t = V1
 
   let handshake = function
-    | "v1" | "V1" -> `Handled V1
-    | _ -> `Propose_another V1
+    | "v1" | "V1" ->
+        `Handled V1
+    | _ ->
+        `Propose_another V1
 
   let to_string = function V1 -> "v1"
 end
@@ -39,8 +41,10 @@ let format fg conf source =
 let rec rpc_main = function
   | Waiting_for_version -> (
     match Init.read_input stdin with
-    | `Halt -> Ok ()
-    | `Unknown -> Ok ()
+    | `Halt ->
+        Ok ()
+    | `Unknown ->
+        Ok ()
     | `Version vstr -> (
       match V.handshake vstr with
       | `Handled v ->
@@ -56,8 +60,10 @@ let rec rpc_main = function
     match v with
     | V1 -> (
       match V1.Command.read_input stdin with
-      | `Halt -> Ok ()
-      | `Unknown | `Error _ -> rpc_main state
+      | `Halt ->
+          Ok ()
+      | `Unknown | `Error _ ->
+          rpc_main state
       | `Format x ->
           List.fold_until ~init:()
             ~finish:(fun () ->
@@ -90,11 +96,14 @@ let rec rpc_main = function
           rpc_main state
       | `Config c -> (
           let rec update conf = function
-            | [] -> Ok conf
+            | [] ->
+                Ok conf
             | (name, value) :: t -> (
               match Conf.update_value conf ~name ~value with
-              | Ok c -> update c t
-              | Error e -> Error e )
+              | Ok c ->
+                  update c t
+              | Error e ->
+                  Error e )
           in
           match update conf c with
           | Ok conf ->

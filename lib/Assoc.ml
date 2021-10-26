@@ -22,18 +22,33 @@ let equal : t -> t -> bool = Poly.( = )
     across precedence levels. *)
 let of_prec (x : Prec.t) =
   match x with
-  | Low | Semi | LessMinus -> Non
-  | ColonEqual -> Right
-  | As -> Non
-  | Comma -> Non
-  | MinusGreater | BarBar | AmperAmper -> Right
-  | InfixOp0 -> Left
-  | InfixOp1 -> Right
-  | ColonColon -> Right
-  | InfixOp2 | InfixOp3 -> Left
-  | InfixOp4 -> Right
-  | UMinus | Apply -> Non
-  | HashOp -> Left
-  | Dot -> Left
-  | High -> Non
-  | Atomic -> Non
+  | Low | Semi | LessMinus ->
+      Non
+  | ColonEqual ->
+      Right
+  | As ->
+      Non
+  | Comma ->
+      Non
+  | MinusGreater | BarBar | AmperAmper ->
+      Right
+  | InfixOp0 ->
+      Left
+  | InfixOp1 ->
+      Right
+  | ColonColon ->
+      Right
+  | InfixOp2 | InfixOp3 ->
+      Left
+  | InfixOp4 ->
+      Right
+  | UMinus | Apply ->
+      Non
+  | HashOp ->
+      Left
+  | Dot ->
+      Left
+  | High ->
+      Non
+  | Atomic ->
+      Non

@@ -63,9 +63,12 @@ let () =
   match l with
   | "diff" :: args -> (
     match args with
-    | [ "parser"; d1; d2 ] -> diff parser_files d1 d2
-    | [ "stdlib"; d1; d2 ] -> diff stdlib_files d1 d2
-    | _ -> usage () )
+    | [ "parser"; d1; d2 ] ->
+        diff parser_files d1 d2
+    | [ "stdlib"; d1; d2 ] ->
+        diff stdlib_files d1 d2
+    | _ ->
+        usage () )
   | "import" :: args -> (
     match args with
     | [ version; dst ] -> (
@@ -77,5 +80,7 @@ let () =
           List.filter (function 0 -> false | _ -> true) codes
         in
         match non_zero with [] -> () | first :: _ -> exit first )
-    | _ -> usage () )
-  | _ -> usage ()
+    | _ ->
+        usage () )
+  | _ ->
+      usage ()

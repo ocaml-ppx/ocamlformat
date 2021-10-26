@@ -59,8 +59,10 @@ module Make (Itv : IN) = struct
            if Itv.contains root elt then
              let ancestors = root :: ancestors in
              ( match Map.find map root with
-             | Some children -> parents map children ~ancestors elt
-             | None -> ancestors )
+             | Some children ->
+                 parents map children ~ancestors elt
+             | None ->
+                 ancestors )
              |> Option.some
            else None ) )
 
@@ -72,10 +74,12 @@ module Make (Itv : IN) = struct
   let map_lists ~f { roots; map } = { roots= f roots; map= Map.map map ~f }
 
   let rec find_in_previous t elt = function
-    | [] -> parents t.map t.roots elt ~ancestors:[]
+    | [] ->
+        parents t.map t.roots elt ~ancestors:[]
     | p :: ancestors when Itv.contains p elt ->
         parents t.map [ p ] elt ~ancestors
-    | _ :: px -> find_in_previous t elt px
+    | _ :: px ->
+        find_in_previous t elt px
 
   (** Add elements in decreasing width order to construct tree from roots to
       leaves. That is, when adding an interval to a partially constructed
@@ -86,8 +90,10 @@ module Make (Itv : IN) = struct
       let ancestors = find_in_previous t elt prev_ancestor in
       let t =
         match ancestors with
-        | parent :: _ -> add_child t ~parent ~child:elt
-        | [] -> add_root t elt
+        | parent :: _ ->
+            add_child t ~parent ~child:elt
+        | [] ->
+            add_root t elt
       in
       (ancestors, t)
     in
