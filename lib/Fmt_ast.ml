@@ -1151,9 +1151,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             false
       in
       let xpats = Sugar.or_pat c.cmts xpat in
+      let break_or_patterns { ast= p1; _ } { ast= p2; _ } =
+        (not (Pat.is_simple p1))
+        || (not (Pat.is_simple p2))
+        || Cmts.has_after c.cmts p1.ppat_loc
+      in
       hvbox 0
-        ( list_fl
-            (List.group xpats ~break:(fun _ _ -> true))
+        ( list_fl (List.group xpats ~break:break_or_patterns)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last:_ xpat ->
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
@@ -1238,9 +1242,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       ( ext
       , PPat
           ( ( { ppat_desc=
-                  ( Ppat_lazy _
-                  | Ppat_unpack _
-                  | Ppat_exception _
+                  ( Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
                   | Ppat_constraint
                       ( { ppat_desc= Ppat_unpack _; _ }
                       , { ptyp_desc= Ptyp_package _; _ } ) )
@@ -1574,14 +1576,8 @@ and fmt_infix_op_args ?ext c ~parens xexp op_args =
   in
   let is_not_indented { ast= exp; _ } =
     match exp.pexp_desc with
-    | Pexp_ifthenelse _
-    | Pexp_let _
-    | Pexp_letexception _
-    | Pexp_letmodule _
-    | Pexp_match _
-    | Pexp_newtype _
-    | Pexp_sequence _
-    | Pexp_try _ ->
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _ | Pexp_letmodule _
+    | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _ | Pexp_try _ ->
         true
     | Pexp_open _ ->
         Source.is_long_pexp_open c.source exp
@@ -2361,11 +2357,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           if long_syntax then Some Break
           else
             match e0.pexp_desc with
-            | Pexp_let _
-            | Pexp_extension _
-            | Pexp_letexception _
-            | Pexp_letmodule _
-            | Pexp_open _ ->
+            | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+            | Pexp_letmodule _ | Pexp_open _ ->
                 Some Break
             | _ -> (
               match popen_expr.pmod_desc with
@@ -2559,20 +2552,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           [ ( { pstr_desc=
                   Pstr_eval
                     ( ( { pexp_desc=
-                            ( Pexp_while _
-                            | Pexp_for _
-                            | Pexp_match _
-                            | Pexp_try _
-                            | Pexp_let _
-                            | Pexp_ifthenelse _
-                            | Pexp_new _
-                            | Pexp_letmodule _
-                            | Pexp_object _
-                            | Pexp_function _
-                            | Pexp_letexception _
-                            | Pexp_open _
-                            | Pexp_assert _
-                            | Pexp_lazy _
+                            ( Pexp_while _ | Pexp_for _ | Pexp_match _
+                            | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
+                            | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
+                            | Pexp_function _ | Pexp_letexception _
+                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
                             | Pexp_pack _
                             | Pexp_constraint
                                 ( { pexp_desc= Pexp_pack _

@@ -1,8 +1,7 @@
 let f x = function
   | C
   | P (this, test, [ is; wide; enough; _to; break ], [ the; line ])
-  | A
-  | K ->
+  | A | K ->
       1
   | D ->
       let a = "this" in
@@ -149,11 +148,8 @@ let rec loop items =
 
 let ffffff ~foo =
   match (foo : Fooooooooooooo.t) with
-  | Aaaaaaaaaaaaaaaaa
-  | Bbbbbbbbbbbbbbbbb
-  | Ccccccccccccccccc
-  | Ddddddddddddddddd
-  | Eeeeeeeeeeeeeeeee ->
+  | Aaaaaaaaaaaaaaaaa | Bbbbbbbbbbbbbbbbb | Ccccccccccccccccc
+  | Ddddddddddddddddd | Eeeeeeeeeeeeeeeee ->
       foooooooooooooooooooo
   | Fffffffffffffffff ->
       fooooooooooooooooo
@@ -209,8 +205,7 @@ let _ =
   match x with
   | { y=
         (* _____________________________________________________________________ *)
-        ( X _
-        | Y _ )
+        ( X _ | Y _ )
     } ->
       ()
 
@@ -219,8 +214,7 @@ let _ =
   | { y=
         ( Z
         (* _____________________________________________________________________ *)
-        | X _
-        | Y _ )
+        | X _ | Y _ )
     } ->
       ()
 

@@ -49,41 +49,15 @@ type cls =
 
 module Char_id = struct
   let is_kwdop = function
-    | '$'
-    | '&'
-    | '*'
-    | '+'
-    | '-'
-    | '/'
-    | '<'
-    | '='
-    | '>'
-    | '@'
-    | '^'
-    | '|'
-    | '!'
-    | '%'
-    | ':'
-    | '?' ->
+    | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
+    | '!' | '%' | ':' | '?' ->
         true
     | _ ->
         false
 
   let is_infixop = function
-    | '$'
-    | '%'
-    | '*'
-    | '+'
-    | '-'
-    | '/'
-    | '<'
-    | '='
-    | '>'
-    | '|'
-    | '&'
-    | '@'
-    | '^'
-    | '#' ->
+    | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
+    | '^' | '#' ->
         true
     | _ ->
         false
@@ -91,37 +65,11 @@ end
 
 module Token = struct
   let is_infix = function
-    | Parser.AMPERAMPER
-    | AMPERSAND
-    | ANDOP _
-    | BAR
-    | BARBAR
-    | COLON
-    | COLONCOLON
-    | COLONEQUAL
-    | DOTDOT
-    | DOTOP _
-    | EQUAL
-    | GREATER
-    | HASHOP _
-    | INFIXOP0 _
-    | INFIXOP1 _
-    | INFIXOP2 _
-    | INFIXOP3 _
-    | INFIXOP4 _
-    | LESS
-    | LESSMINUS
-    | LETOP _
-    | MINUS
-    | MINUSDOT
-    | MINUSGREATER
-    | PERCENT
-    | PLUS
-    | PLUSDOT
-    | PLUSEQ
-    | SEMI
-    | SLASH
-    | STAR ->
+    | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | BAR | BARBAR | COLON
+    | COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER | HASHOP _
+    | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _ | LESS
+    | LESSMINUS | LETOP _ | MINUS | MINUSDOT | MINUSGREATER | PERCENT | PLUS
+    | PLUSDOT | PLUSEQ | SEMI | SLASH | STAR ->
         true
     | _ ->
         false
@@ -288,18 +236,8 @@ module String_id = struct
     if Char_id.is_infixop i.[0] then true
     else
       match i with
-      | "!="
-      | "land"
-      | "lor"
-      | "lxor"
-      | "mod"
-      | "::"
-      | ":="
-      | "asr"
-      | "lsl"
-      | "lsr"
-      | "or"
-      | "||" ->
+      | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
+      | "lsr" | "or" | "||" ->
           true
       | _ ->
           is_monadic_binding i
@@ -368,12 +306,8 @@ module Exp = struct
 
   let has_trailing_attributes { pexp_desc; pexp_attributes; _ } =
     match pexp_desc with
-    | Pexp_fun _
-    | Pexp_function _
-    | Pexp_ifthenelse _
-    | Pexp_match _
-    | Pexp_newtype _
-    | Pexp_try _ ->
+    | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
+    | Pexp_newtype _ | Pexp_try _ ->
         false
     | _ ->
         List.exists pexp_attributes ~f:(Fn.non Attr.is_doc)
@@ -415,13 +349,8 @@ module Exp = struct
     | ( { pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _ }
       , (Match | Let_match | Non_apply) )
     | ( { pexp_desc=
-            ( Pexp_fun _
-            | Pexp_let _
-            | Pexp_letop _
-            | Pexp_letexception _
-            | Pexp_letmodule _
-            | Pexp_newtype _
-            | Pexp_open _ )
+            ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
+            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
         ; _
         }
       , (Let_match | Non_apply) ) ->
@@ -433,9 +362,7 @@ end
 module Pat = struct
   let is_simple { ppat_desc; _ } =
     match ppat_desc with
-    | Ppat_any
-    | Ppat_constant _
-    | Ppat_var _
+    | Ppat_any | Ppat_constant _ | Ppat_var _
     | Ppat_variant (_, (None | Some { ppat_desc= Ppat_any; _ }))
     | Ppat_construct (_, (None | Some ([], { ppat_desc= Ppat_any; _ }))) ->
         true
@@ -445,18 +372,10 @@ module Pat = struct
   let has_trailing_attributes { ppat_desc; ppat_attributes; _ } =
     match ppat_desc with
     | Ppat_construct (_, None)
-    | Ppat_constant _
-    | Ppat_any
-    | Ppat_var _
+    | Ppat_constant _ | Ppat_any | Ppat_var _
     | Ppat_variant (_, None)
-    | Ppat_record _
-    | Ppat_array _
-    | Ppat_list _
-    | Ppat_type _
-    | Ppat_unpack _
-    | Ppat_extension _
-    | Ppat_open _
-    | Ppat_interval _ ->
+    | Ppat_record _ | Ppat_array _ | Ppat_list _ | Ppat_type _
+    | Ppat_unpack _ | Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
         false
     | _ ->
         List.exists ppat_attributes ~f:(Fn.non Attr.is_doc)
@@ -548,8 +467,7 @@ module Cty = struct
     | Pcty_constr _ | Pcty_signature { pcsig_fields= []; _ } ->
         true
     | Pcty_signature { pcsig_fields= _ :: _; _ }
-    | Pcty_open _
-    | Pcty_extension _ ->
+    | Pcty_open _ | Pcty_extension _ ->
         false
     | Pcty_arrow (_, _, t) ->
         is_simple t
@@ -561,9 +479,7 @@ module Cl = struct
     | Pcl_constr _ | Pcl_structure { pcstr_fields= []; _ } ->
         true
     | Pcl_structure { pcstr_fields= _ :: _; _ }
-    | Pcl_let _
-    | Pcl_open _
-    | Pcl_extension _ ->
+    | Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
         false
     | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) ->
         is_simple e
@@ -707,15 +623,9 @@ module Signature_item = struct
     | ( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
       , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
     | Psig_exception _, Psig_exception _
-    | ( ( Psig_module _
-        | Psig_modsubst _
-        | Psig_recmodule _
-        | Psig_open _
+    | ( ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
         | Psig_include _ )
-      , ( Psig_module _
-        | Psig_modsubst _
-        | Psig_recmodule _
-        | Psig_open _
+      , ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
         | Psig_include _ ) )
     | Psig_modtype _, Psig_modtype _
     | Psig_class _, Psig_class _
@@ -1633,47 +1543,21 @@ end = struct
             assert (p1 == pat)
         | Ppat_extension (_, ext) ->
             assert (check_extensions ext)
-        | Ppat_any
-        | Ppat_constant _
+        | Ppat_any | Ppat_constant _
         | Ppat_construct (_, None)
-        | Ppat_interval _
-        | Ppat_type _
-        | Ppat_unpack _
-        | Ppat_var _
+        | Ppat_interval _ | Ppat_type _ | Ppat_unpack _ | Ppat_var _
         | Ppat_variant (_, None) ->
             assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_apply _
-      | Pexp_array _
-      | Pexp_list _
-      | Pexp_assert _
-      | Pexp_coerce _
-      | Pexp_constant _
-      | Pexp_constraint _
-      | Pexp_construct _
-      | Pexp_field _
-      | Pexp_ident _
-      | Pexp_ifthenelse _
-      | Pexp_lazy _
-      | Pexp_letexception _
-      | Pexp_letmodule _
-      | Pexp_new _
-      | Pexp_newtype _
-      | Pexp_open _
-      | Pexp_override _
-      | Pexp_pack _
-      | Pexp_poly _
-      | Pexp_record _
-      | Pexp_send _
-      | Pexp_sequence _
-      | Pexp_setfield _
-      | Pexp_setinstvar _
-      | Pexp_tuple _
-      | Pexp_unreachable
-      | Pexp_variant _
-      | Pexp_while _
-      | Pexp_hole ->
+      | Pexp_apply _ | Pexp_array _ | Pexp_list _ | Pexp_assert _
+      | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
+      | Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
+      | Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
+      | Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
+      | Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
+      | Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _ | Pexp_unreachable
+      | Pexp_variant _ | Pexp_while _ | Pexp_hole ->
           assert false
       | Pexp_extension (_, ext) ->
           assert (check_extensions ext)
@@ -1807,12 +1691,8 @@ end = struct
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) ->
             assert (check_extensions ext)
-        | Pexp_constant _
-        | Pexp_ident _
-        | Pexp_new _
-        | Pexp_pack _
-        | Pexp_unreachable
-        | Pexp_hole ->
+        | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
+        | Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object { pcstr_fields; _ } ->
             assert (check_pcstr_fields pcstr_fields)
@@ -1903,18 +1783,10 @@ end = struct
             List.exists bindings ~f:(fun { pvb_expr; _ } -> pvb_expr == exp) )
       | Pstr_extension ((_, ext), _) ->
           assert (check_extensions ext)
-      | Pstr_primitive _
-      | Pstr_type _
-      | Pstr_typext _
-      | Pstr_exception _
-      | Pstr_module _
-      | Pstr_recmodule _
-      | Pstr_modtype _
-      | Pstr_open _
-      | Pstr_class _
-      | Pstr_class_type _
-      | Pstr_include _
-      | Pstr_attribute _ ->
+      | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
+      | Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
+      | Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
+        ->
           assert false )
     | Mod { pmod_desc= Pmod_unpack e1; _ } -> (
       match e1 with
@@ -1966,9 +1838,7 @@ end = struct
     match exp.pexp_desc with
     | Pexp_constant _ ->
         Exp.is_trivial c exp
-    | Pexp_field _
-    | Pexp_ident _
-    | Pexp_send _
+    | Pexp_field _ | Pexp_ident _ | Pexp_send _
     | Pexp_construct (_, None)
     | Pexp_variant (_, None) ->
         true
@@ -2075,14 +1945,8 @@ end = struct
           Some (Comma, Non)
       | Ptyp_constr _ ->
           Some (Apply, Non)
-      | Ptyp_any
-      | Ptyp_var _
-      | Ptyp_object _
-      | Ptyp_class _
-      | Ptyp_variant _
-      | Ptyp_poly _
-      | Ptyp_package _
-      | Ptyp_extension _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _ | Ptyp_variant _
+      | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
           None )
     | { ctx= Cty { pcty_desc; _ }; ast= Typ typ; _ } -> (
       match pcty_desc with
@@ -2117,8 +1981,7 @@ end = struct
       | Pexp_array _ | Pexp_list _ ->
           Some (Semi, Non)
       | Pexp_construct (_, Some _)
-      | Pexp_assert _
-      | Pexp_lazy _
+      | Pexp_assert _ | Pexp_lazy _
       | Pexp_variant (_, Some _) ->
           Some (Apply, Non)
       | Pexp_apply
@@ -2193,17 +2056,8 @@ end = struct
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
       ; ast=
-          ( Pld _
-          | Top
-          | Tli _
-          | Pat _
-          | Cl _
-          | Mty _
-          | Mod _
-          | Sig _
-          | Str _
-          | Clf _
-          | Ctf _ )
+          ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
+          | Str _ | Clf _ | Ctf _ )
       }
     | { ctx= Vb _; ast= _ }
     | { ctx= _; ast= Vb _ }
@@ -2211,43 +2065,15 @@ end = struct
     | { ctx= _; ast= Td _ }
     | { ctx= Cl _
       ; ast=
-          ( Pld _
-          | Top
-          | Tli _
-          | Pat _
-          | Mty _
-          | Mod _
-          | Sig _
-          | Str _
-          | Clf _
-          | Ctf _ )
+          ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
+          | Clf _ | Ctf _ )
       }
     | { ctx=
-          ( Pld _
-          | Top
-          | Tli _
-          | Typ _
-          | Cty _
-          | Pat _
-          | Mty _
-          | Mod _
-          | Sig _
-          | Str _
-          | Clf _
-          | Ctf _ )
+          ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
+          | Sig _ | Str _ | Clf _ | Ctf _ )
       ; ast=
-          ( Pld _
-          | Top
-          | Tli _
-          | Pat _
-          | Exp _
-          | Cl _
-          | Mty _
-          | Mod _
-          | Sig _
-          | Str _
-          | Clf _
-          | Ctf _ )
+          ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
+          | Sig _ | Str _ | Clf _ | Ctf _ )
       } ->
         None
 
@@ -2268,14 +2094,8 @@ end = struct
           Some InfixOp3
       | Ptyp_alias _ ->
           Some As
-      | Ptyp_any
-      | Ptyp_var _
-      | Ptyp_constr _
-      | Ptyp_object _
-      | Ptyp_class _
-      | Ptyp_variant _
-      | Ptyp_poly _
-      | Ptyp_extension _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _ | Ptyp_class _
+      | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None )
     | Td _ ->
         None
@@ -2339,13 +2159,9 @@ end = struct
             Some Apply )
       | Pexp_apply _ ->
           Some Apply
-      | Pexp_assert _
-      | Pexp_lazy _
-      | Pexp_for _
+      | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
       | Pexp_variant (_, Some _)
-      | Pexp_while _
-      | Pexp_new _
-      | Pexp_object _ ->
+      | Pexp_while _ | Pexp_new _ | Pexp_object _ ->
           Some Apply
       | Pexp_extension (ext, PStr [ { pstr_desc= Pstr_eval (e, _); _ } ])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
@@ -2525,8 +2341,7 @@ end = struct
         | Str { pstr_desc= Pstr_value _; _ } )
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
-        | Ppat_or _
-        | Ppat_alias _ ) ) ->
+        | Ppat_or _ | Ppat_alias _ ) ) ->
         true
     | ( ( Exp { pexp_desc= Pexp_let _ | Pexp_letop _; _ }
         | Str { pstr_desc= Pstr_value _; _ } )
@@ -2548,24 +2363,15 @@ end = struct
     | _, Ppat_unpack _
     | ( Pat
           { ppat_desc=
-              ( Ppat_alias _
-              | Ppat_array _
-              | Ppat_list _
-              | Ppat_constraint _
-              | Ppat_construct _
-              | Ppat_variant _ )
+              ( Ppat_alias _ | Ppat_array _ | Ppat_list _ | Ppat_constraint _
+              | Ppat_construct _ | Ppat_variant _ )
           ; _
           }
       , Ppat_tuple _ )
     | ( ( Pat
             { ppat_desc=
-                ( Ppat_construct _
-                | Ppat_exception _
-                | Ppat_or _
-                | Ppat_lazy _
-                | Ppat_tuple _
-                | Ppat_variant _
-                | Ppat_list _ )
+                ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
+                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _
             }
         | Exp { pexp_desc= Pexp_fun _; _ } )
@@ -2574,11 +2380,8 @@ end = struct
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
     | ( Pat
           { ppat_desc=
-              ( Ppat_construct _
-              | Ppat_exception _
-              | Ppat_tuple _
-              | Ppat_variant _
-              | Ppat_list _ )
+              ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
+              | Ppat_variant _ | Ppat_list _ )
           ; _
           }
       , Ppat_or _ )
@@ -2697,27 +2500,14 @@ end = struct
             continue (snd (List.last_exn args))
         | Pexp_tuple es ->
             continue (List.last_exn es)
-        | Pexp_array _
-        | Pexp_list _
-        | Pexp_coerce _
-        | Pexp_constant _
+        | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
         | Pexp_constraint _
         | Pexp_construct (_, None)
-        | Pexp_extension _
-        | Pexp_field _
-        | Pexp_for _
-        | Pexp_ident _
-        | Pexp_new _
-        | Pexp_object _
-        | Pexp_override _
-        | Pexp_pack _
-        | Pexp_poly _
-        | Pexp_record _
-        | Pexp_send _
-        | Pexp_unreachable
+        | Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
+        | Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
+        | Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
         | Pexp_variant (_, None)
-        | Pexp_hole
-        | Pexp_while _ ->
+        | Pexp_hole | Pexp_while _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2796,27 +2586,14 @@ end = struct
           continue (snd (List.last_exn args))
       | Pexp_tuple es ->
           continue (List.last_exn es)
-      | Pexp_array _
-      | Pexp_list _
-      | Pexp_coerce _
-      | Pexp_constant _
+      | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
       | Pexp_constraint _
       | Pexp_construct (_, None)
-      | Pexp_extension _
-      | Pexp_field _
-      | Pexp_for _
-      | Pexp_ident _
-      | Pexp_new _
-      | Pexp_object _
-      | Pexp_override _
-      | Pexp_pack _
-      | Pexp_poly _
-      | Pexp_record _
-      | Pexp_send _
-      | Pexp_unreachable
+      | Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
+      | Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
+      | Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
       | Pexp_variant (_, None)
-      | Pexp_hole
-      | Pexp_while _ ->
+      | Pexp_hole | Pexp_while _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
@@ -3052,9 +2829,7 @@ end = struct
           ( _
           , Some
               ( { pexp_desc=
-                    ( Pexp_ident _
-                    | Pexp_constant _
-                    | Pexp_record _
+                    ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
                     | Pexp_field _ )
                 ; _
                 } as e0 ) )

@@ -23,19 +23,8 @@ let should_inline : Llvm.llvalue -> bool =
          build contexts *)
       match Llvm.classify_value llv with
       | Instruction
-          ( Trunc
-          | ZExt
-          | SExt
-          | FPToUI
-          | FPToSI
-          | UIToFP
-          | SIToFP
-          | FPTrunc
-          | FPExt
-          | PtrToInt
-          | IntToPtr
-          | BitCast
-          | AddrSpaceCast ) ->
+          ( Trunc | ZExt | SExt | FPToUI | FPToSI | UIToFP | SIToFP | FPTrunc
+          | FPExt | PtrToInt | IntToPtr | BitCast | AddrSpaceCast ) ->
           true (* inline casts *)
       | _ ->
           false (* do not inline if >= 2 uses *) )
