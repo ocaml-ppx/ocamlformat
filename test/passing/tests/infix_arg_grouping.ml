@@ -20,9 +20,12 @@ hvbox 1
         $ opt next (fun next ->
               let spc =
                 match String.lfindi next ~f:(fun _ c -> not (drop c)) with
-                | Some 0 -> ""
-                | Some i -> escape_string (String.sub next 0 i)
-                | None -> escape_string next
+                | Some 0 ->
+                    ""
+                | Some i ->
+                    escape_string (String.sub next 0 i)
+                | None ->
+                    escape_string next
               in
               fmt "\\n"
               $ fmt_if_k
@@ -46,7 +49,8 @@ hvbox 0
                       $ fmt_core_type c (sub_typ ~ctx typ) )
                   $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
                   $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
-         | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
+         | Oinherit typ ->
+             fmt_core_type c (sub_typ ~ctx typ) )
      $ fmt_if
          Poly.(closedness = Open)
          (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ) )
@@ -98,7 +102,8 @@ match
   |> (* split by whitespace *)
   Str.split (Str.regexp_string "\" \"")
 with
-| prog :: args -> fooooooooooooooooooooo
+| prog :: args ->
+    fooooooooooooooooooooo
 
 let () =
   (* Open the repo *)

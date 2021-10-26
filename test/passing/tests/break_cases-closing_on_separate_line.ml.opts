@@ -1,1 +1,1 @@
---break-cases=all --indicate-multiline-delimiters=closing-on-separate-line
+--indicate-multiline-delimiters=closing-on-separate-line

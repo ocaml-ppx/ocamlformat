@@ -57,13 +57,15 @@ xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
+| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx ->
+    x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> function
-| x -> x
+| x ->
+    x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -76,18 +78,21 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
+| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx ->
+    x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function xxxxxxxxx, xxxxxxxxxxxxx -> x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee |> function
-| xxxxxxxx, xxxxxxxxx, xxxxxxxxxxxxx -> x
+| xxxxxxxx, xxxxxxxxx, xxxxxxxxxxxxx ->
+    x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function
-| xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
+| xxxxxxxxxxxxx ->
+    xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
 ;;
 
 eeeeeeeeeeeee eeeeeeeeee |> function
@@ -141,7 +146,8 @@ let end_gen_implementation ?toplevel ~ppf_dump
 let foo =
   (* get the tree origin *)
   get_store_tree s >>= function
-  | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
+  | None ->
+      f t >|= fun x -> Ok x (* no transaction is needed *)
   | Some (origin, old_tree) ->
       let batch = { repo; tree= old_tree; origin } in
       let b = Batch batch in
@@ -151,8 +157,10 @@ let _ = foo >>= function[@warning "-4"] A -> false | B -> true
 
 let _ =
   foo >>= function[@warning "-4"]
-  | Afoooooooooooooooooo fooooooooo -> false
-  | Bfoooooooooooooooooooooo fooooooooo -> true
+  | Afoooooooooooooooooo fooooooooo ->
+      false
+  | Bfoooooooooooooooooooooo fooooooooo ->
+      true
 
 let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
 
@@ -163,8 +171,10 @@ let _ =
 
 let _ =
   foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
-  | Afoooooooooooooooooo fooooooooo -> false
-  | Bfoooooooooooooooooooooo fooooooooo -> true
+  | Afoooooooooooooooooo fooooooooo ->
+      false
+  | Bfoooooooooooooooooooooo fooooooooo ->
+      true
 
 let _ =
   foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
@@ -182,7 +192,8 @@ let f = Ok () >>= (* *) function Foo -> Ok ()
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
   Ok () >>= (* *) function
-  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  | Foo ->
+      Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
@@ -196,7 +207,8 @@ let f =
   >>=
   (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
   function
-  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  | Foo ->
+      Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 (** The tests below are testing a dropped comment with
     `--no-break-infix-before-func` *)

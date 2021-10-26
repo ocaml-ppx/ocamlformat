@@ -1151,30 +1151,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             false
       in
       let xpats = Sugar.or_pat c.cmts xpat in
-      let space p =
-        match p.ppat_desc with
-        | Ppat_constant
-            { pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _ }
-          -> (
-          match i.[0] with '-' | '+' -> true | _ -> false )
-        | _ ->
-            false
-      in
-      let break { ast= p1; _ } { ast= p2; _ } =
-        Poly.(c.conf.break_cases = `Nested)
-        || (not (Pat.is_simple p1))
-        || (not (Pat.is_simple p2))
-        || Cmts.has_after c.cmts p1.ppat_loc
-      in
-      let open_box =
-        match c.conf.break_cases with
-        | `Fit_or_vertical ->
-            open_hvbox
-        | `Fit | `Nested | `Toplevel | `All ->
-            open_hovbox
-      in
       hvbox 0
-        ( list_fl (List.group xpats ~break)
+        ( list_fl
+            (List.group xpats ~break:(fun _ _ -> true))
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last:_ xpat ->
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
@@ -1194,13 +1173,11 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                       $ fits_breaks
                           (if parens then "(" else "")
                           (if nested then "" else "( ")
-                      $ open_box (-2)
+                      $ open_hovbox (-2)
                     else if first then
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
-                      $ open_box (-2)
-                    else
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
-                        ~space:(space xpat.ast)
+                      break (if cmts_before then 1000 else 1) 0
+                      $ str "| " $ open_hovbox (-2)
+                    else break (if cmts_before then 1000 else 1) 0 $ str "| "
                   in
                   leading_cmt $ fmt_pattern c ~box:true ~pro xpat )
               $ close_box )
@@ -3165,24 +3142,37 @@ and fmt_case c ctx ~first ~last:_ case =
       (Cmts.has_before c.cmts pc_rhs.pexp_loc)
       (fmt "@;<1000 0>")
   in
-  let p =
-    Params.get_cases c.conf ~first ~indent ~parens_branch c.source
-      ~loc:pc_rhs.pexp_loc
+  let grouping =
+    Params.parens_or_begin_end c.conf c.source ~loc:pc_rhs.pexp_loc
   in
-  p.leading_space $ leading_cmt
-  $ p.box_all
-      ( p.box_pattern_arrow
-          ( hvbox 0
-              ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
-              $ opt pc_guard (fun g ->
-                    fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g) )
-              )
-          $ p.break_before_arrow $ str "->" $ p.break_after_arrow
-          $ p.open_paren_branch )
-      $ p.break_after_opening_paren
-      $ hovbox 0
-          ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
-          $ p.close_paren_branch ) )
+  let (open_paren_branch : Fmt.s), close_paren_branch =
+    match grouping with
+    | `Parens -> (
+        ( " ("
+        , match c.conf.indicate_multiline_delimiters with
+          | `Space ->
+              fmt "@ )"
+          | `No ->
+              fmt "@,)"
+          | `Closing_on_separate_line ->
+              fmt "@;<1000 -2>)" ) )
+    | `Begin_end ->
+        ("@;<1 0>begin", fits_breaks " end" ~level:1 ~hint:(1000, 0) "end")
+  in
+  fmt_if (not first) "@ " $ leading_cmt
+  $ hovbox 0
+      ( hvbox 0
+          ( fmt_pattern c
+              ~pro:(fmt_or_k first (if_newline "| ") (str "| "))
+              ~parens:paren_lhs xlhs
+          $ opt pc_guard (fun g ->
+                fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g) ) )
+      $ fmt "@;<1 2>->"
+      $ fmt_or parens_branch open_paren_branch "@;<0 3>" )
+  $ fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
+  $ hovbox 0
+      ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
+      $ fmt_if_k parens_branch close_paren_branch )
 
 and fmt_value_description ?ext c ctx vd =
   let { pval_name= { txt; loc }

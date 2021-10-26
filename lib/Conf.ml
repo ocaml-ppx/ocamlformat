@@ -13,7 +13,6 @@
 
 type t =
   { assignment_operator: [ `Begin_line | `End_line ]
-  ; break_cases: [ `Fit | `Nested | `Toplevel | `Fit_or_vertical | `All ]
   ; break_collection_expressions: [ `Wrap | `Fit_or_vertical ]
   ; break_infix: [ `Wrap | `Fit_or_vertical ]
   ; break_infix_before_func: bool
@@ -206,32 +205,11 @@ module Formatting = struct
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let break_cases =
-    let doc = "Break pattern match cases." in
+  let ( (* break_cases *) ) =
     let names = [ "break-cases" ] in
-    let all =
-      [ C.Value.make ~name:"fit" `Fit
-          "Specifying $(b,fit) lets pattern matches break at the margin \
-           naturally."
-      ; C.Value.make ~name:"nested" `Nested
-          "$(b,nested) forces a break after nested or-patterns to highlight \
-           the case body. Note that with $(b,nested), the \
-           $(b,indicate-nested-or-patterns) option is not needed, and so \
-           ignored."
-      ; C.Value.make ~name:"toplevel" `Toplevel
-          "$(b,toplevel) forces top-level cases (i.e. not nested \
-           or-patterns) to break across lines, otherwise break naturally at \
-           the margin."
-      ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
-           line, otherwise breaks."
-      ; C.Value.make ~name:"all" `All
-          "$(b,all) forces all pattern matches to break across lines."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with break_cases= x })
-      (fun conf -> conf.break_cases)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let break_collection_expressions =
     let doc =
@@ -1184,7 +1162,6 @@ let ignore_invalid_options =
 
 let ocamlformat_profile =
   { assignment_operator= `End_line
-  ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Wrap
   ; break_infix_before_func= true
@@ -1225,7 +1202,6 @@ let ocamlformat_profile =
 
 let conventional_profile =
   { assignment_operator= C.default Formatting.assignment_operator
-  ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -1272,7 +1248,6 @@ let default_profile = conventional_profile
 
 let janestreet_profile =
   { assignment_operator= `Begin_line
-  ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical

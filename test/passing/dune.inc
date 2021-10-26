@@ -237,27 +237,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_cases-all.ml.stdout
-   (with-stderr-to break_cases-all.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=all %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-all.ml.ref break_cases-all.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-all.ml.err break_cases-all.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_cases-closing_on_separate_line.ml.stdout
    (with-stderr-to break_cases-closing_on_separate_line.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=all --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -275,7 +257,7 @@
  (action
   (with-stdout-to break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stdout
    (with-stderr-to break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=all --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -293,7 +275,7 @@
  (action
   (with-stdout-to break_cases-cosl_lnmp_cmei.ml.stdout
    (with-stderr-to break_cases-cosl_lnmp_cmei.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=all --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens --cases-matching-exp-indent=normal %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens --cases-matching-exp-indent=normal %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -309,45 +291,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_cases-fit_or_vertical.ml.stdout
-   (with-stderr-to break_cases-fit_or_vertical.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=fit-or-vertical %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-fit_or_vertical.ml.ref break_cases-fit_or_vertical.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-fit_or_vertical.ml.err break_cases-fit_or_vertical.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_cases-nested.ml.stdout
-   (with-stderr-to break_cases-nested.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=nested %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-nested.ml.ref break_cases-nested.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-nested.ml.err break_cases-nested.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_cases-normal_indent.ml.stdout
    (with-stderr-to break_cases-normal_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --cases-matching-exp-indent=normal --break-cases=all %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --cases-matching-exp-indent=normal %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -363,27 +309,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_cases-toplevel.ml.stdout
-   (with-stderr-to break_cases-toplevel.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=toplevel --max-iter=4 %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-toplevel.ml.ref break_cases-toplevel.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-toplevel.ml.err break_cases-toplevel.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_cases.ml.stdout
    (with-stderr-to break_cases.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-cases=fit --max-iter=4 %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=4 %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)

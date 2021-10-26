@@ -12,9 +12,12 @@ type _ expr =
   | App : ('a -> 'b) expr * 'a expr -> 'b expr
 
 let rec eval : type t. t expr -> t = function
-  | Int n -> n
-  | Add -> ( + )
-  | App (type a) ((f, x) : _ * a expr) -> eval f (eval x : a)
+  | Int n ->
+      n
+  | Add ->
+      ( + )
+  | App (type a) ((f, x) : _ * a expr) ->
+      eval f (eval x : a)
 
 (* Also allow annotations on multiary constructors *)
 type ('a, 'b) pair = Pair of 'a * 'b

@@ -78,7 +78,8 @@ let _ =
    _;
   } ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 let _ =
   match something with
@@ -87,7 +88,8 @@ let _ =
    another_very_very_long_field_name_running_out_of_space; _;
   ] ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 let _ =
   match something with
@@ -96,7 +98,8 @@ let _ =
    another_very_very_long_field_name_running_out_of_space; _;
   |] ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 module X = struct
   val select :

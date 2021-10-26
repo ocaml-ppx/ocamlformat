@@ -23,14 +23,20 @@ end
 
 module S = struct
   let x = function
-    | A, B -> 1
-    | BBB, _ -> 2
-    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+    | A, B ->
+        1
+    | BBB, _ ->
+        2
+    | CCCcccc, CCCCCCCC ->
+        (* cmt about 3 *) 3
 
   let x = function
-    | A, B -> 1
-    | BBB, _ -> 2
-    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+    | A, B ->
+        1
+    | BBB, _ ->
+        2
+    | CCCcccc, CCCCCCCC ->
+        (* cmt about 3 *) 3
 
   [@@@ocamlformat "disable"]
 
@@ -42,9 +48,12 @@ module S = struct
   [@@@ocamlformat "enable"]
 
   let x = function
-    | A, B -> 1
-    | BBB, _ -> 2
-    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+    | A, B ->
+        1
+    | BBB, _ ->
+        2
+    | CCCcccc, CCCCCCCC ->
+        (* cmt about 3 *) 3
 
   let _ =
     let x = 3 in
@@ -56,9 +65,12 @@ module S = struct
 end
 
 let x = function
-  | A, B -> 1
-  | BBB, _ -> 2
-  | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+  | A, B ->
+      1
+  | BBB, _ ->
+      2
+  | CCCcccc, CCCCCCCC ->
+      (* cmt about 3 *) 3
 
 module type S = sig
   type t    = int * int

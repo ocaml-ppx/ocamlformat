@@ -66,16 +66,26 @@ let _ =
 
 let _ =
   match w with
-  | (lazy%ext x) when x = y -> k
-  | [%ext lazy x] when x = y -> k
-  | (module%ext M) -> k
-  | [%ext (module M)] -> k
-  | (module%ext M : S) -> k
-  | [%ext (module M : S)] -> k
-  | (exception%ext e) -> k
-  | ((exception%ext e) [@attr]) -> k
-  | [%ext? exception e] -> k
-  | _ -> default
+  | (lazy%ext x) when x = y ->
+      k
+  | [%ext lazy x] when x = y ->
+      k
+  | (module%ext M) ->
+      k
+  | [%ext (module M)] ->
+      k
+  | (module%ext M : S) ->
+      k
+  | [%ext (module M : S)] ->
+      k
+  | (exception%ext e) ->
+      k
+  | ((exception%ext e) [@attr]) ->
+      k
+  | [%ext? exception e] ->
+      k
+  | _ ->
+      default
 
 let a =
   (* test *)

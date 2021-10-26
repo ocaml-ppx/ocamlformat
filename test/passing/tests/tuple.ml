@@ -1,7 +1,9 @@
 let _ =
   match w with
-  | A -> ([], A.(B (C (f x))), None, f x y, g y x)
-  | B -> (a, b, c, d, e, f)
+  | A ->
+      ([], A.(B (C (f x))), None, f x y, g y x)
+  | B ->
+      (a, b, c, d, e, f)
   | C ->
       ( []
       , A.(B (C (this is very looooooooooooooooooooooooooooooooooooong x)))

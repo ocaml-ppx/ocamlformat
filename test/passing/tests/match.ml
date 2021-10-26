@@ -4,18 +4,24 @@ let _ =
   match a with
   | AAAAAAAAAA -> (
     match bbbbbbbbbbbbb with
-    | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-    | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-  | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD
+    | BBbbbbbbbbbbbbb ->
+        bbbbbbbbbbbb
+    | CCCCCCCCCCCCCCcc ->
+        ccccccccccccccccc )
+  | DDDDDDDDDDDDDDd ->
+      DDDDDDDDDDDDDDDDdD
 
 let _ =
   match a with
   | AAAAAAAAAA -> (
       let x = 3 in
       match bbbbbbbbbbbbb with
-      | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-      | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-  | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD
+      | BBbbbbbbbbbbbbb ->
+          bbbbbbbbbbbb
+      | CCCCCCCCCCCCCCcc ->
+          ccccccccccccccccc )
+  | DDDDDDDDDDDDDDd ->
+      DDDDDDDDDDDDDDDDdD
 
 let _ =
   match x with
@@ -27,9 +33,12 @@ let _ =
     | AAAAAAAAAA -> (
         let x = 3 in
         match bbbbbbbbbbbbb with
-        | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-        | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-    | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD )
+        | BBbbbbbbbbbbbbb ->
+            bbbbbbbbbbbb
+        | CCCCCCCCCCCCCCcc ->
+            ccccccccccccccccc )
+    | DDDDDDDDDDDDDDd ->
+        DDDDDDDDDDDDDDDDdD )
 
 let x =
   let g =
@@ -39,29 +48,35 @@ let x =
           | A ->
               e;
               e
-          | _ -> () )
+          | _ ->
+              () )
     | `B -> (
         fun id -> function
           | A ->
               e;
               e
-          | _ -> () )
+          | _ ->
+              () )
   in
   ()
 
 let x =
   let g =
     match x with
-    | `A -> ( fun id -> function A -> () | B -> () )
-    | `B -> ( fun id -> function A -> () | _ -> () )
+    | `A -> (
+        fun id -> function A -> () | B -> () )
+    | `B -> (
+        fun id -> function A -> () | _ -> () )
   in
   ()
 
 let x =
   let g =
     match x with
-    | `A -> ( function A -> () | B -> () )
-    | `B -> ( function A -> () | _ -> () )
+    | `A -> (
+        function A -> () | B -> () )
+    | `B -> (
+        function A -> () | _ -> () )
   in
   ()
 

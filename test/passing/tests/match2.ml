@@ -4,18 +4,24 @@ let _ =
   match a with
   | AAAAAAAAAA ->
     ( match bbbbbbbbbbbbb with
-    | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-    | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-  | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD
+    | BBbbbbbbbbbbbbb ->
+        bbbbbbbbbbbb
+    | CCCCCCCCCCCCCCcc ->
+        ccccccccccccccccc )
+  | DDDDDDDDDDDDDDd ->
+      DDDDDDDDDDDDDDDDdD
 
 let _ =
   match a with
   | AAAAAAAAAA ->
       let x = 3 in
       ( match bbbbbbbbbbbbb with
-      | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-      | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-  | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD
+      | BBbbbbbbbbbbbbb ->
+          bbbbbbbbbbbb
+      | CCCCCCCCCCCCCCcc ->
+          ccccccccccccccccc )
+  | DDDDDDDDDDDDDDd ->
+      DDDDDDDDDDDDDDDDdD
 
 let _ =
   match x with
@@ -27,23 +33,30 @@ let _ =
     | AAAAAAAAAA ->
         let x = 3 in
         ( match bbbbbbbbbbbbb with
-        | BBbbbbbbbbbbbbb -> bbbbbbbbbbbb
-        | CCCCCCCCCCCCCCcc -> ccccccccccccccccc )
-    | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD )
+        | BBbbbbbbbbbbbbb ->
+            bbbbbbbbbbbb
+        | CCCCCCCCCCCCCCcc ->
+            ccccccccccccccccc )
+    | DDDDDDDDDDDDDDd ->
+        DDDDDDDDDDDDDDDDdD )
 
 let x =
   let g =
     match x with
-    | `A -> fun id -> (function A -> () | B -> ())
-    | `B -> fun id -> (function A -> () | _ -> ())
+    | `A ->
+        fun id -> (function A -> () | B -> ())
+    | `B ->
+        fun id -> (function A -> () | _ -> ())
   in
   ()
 
 let x =
   let g =
     match x with
-    | `A -> (function A -> () | B -> ())
-    | `B -> (function A -> () | _ -> ())
+    | `A ->
+        (function A -> () | B -> ())
+    | `B ->
+        (function A -> () | _ -> ())
   in
   ()
 
@@ -59,18 +72,25 @@ let foo = match foo with 1 -> bar >>= ( function _ -> () ) | other -> ()
 
 let foo =
   match foo with
-  | 1 -> bar >>= ( function a -> fooooo | b -> fooooo | _ -> () )
-  | other -> ()
+  | 1 ->
+      bar >>= ( function a -> fooooo | b -> fooooo | _ -> () )
+  | other ->
+      ()
 
 let foo =
   match foo with
   | 1 ->
       bar >>= ( function
-      | a -> fooooo
-      | b -> fooooo
-      | c -> foooooooo foooooooooo fooooooooooooooooooo ()
-      | _ -> () )
-  | other -> ()
+      | a ->
+          fooooo
+      | b ->
+          fooooo
+      | c ->
+          foooooooo foooooooooo fooooooooooooooooooo ()
+      | _ ->
+          () )
+  | other ->
+      ()
 
 let _ =
   match a with
@@ -87,4 +107,5 @@ let _ =
     | a ->
         let+ a = b in
         (match a with a -> a)
-    | b -> c )
+    | b ->
+        c )

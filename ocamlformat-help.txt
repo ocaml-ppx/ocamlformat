@@ -52,17 +52,6 @@ OPTIONS (CODE FORMATTING STYLE)
            assignment expression does not fit on a single line. The default
            value is end-line.
 
-       --break-cases={fit|nested|toplevel|fit-or-vertical|all}
-           Break pattern match cases. Specifying fit lets pattern matches
-           break at the margin naturally. nested forces a break after nested
-           or-patterns to highlight the case body. Note that with nested, the
-           indicate-nested-or-patterns option is not needed, and so ignored.
-           toplevel forces top-level cases (i.e. not nested or-patterns) to
-           break across lines, otherwise break naturally at the margin.
-           fit-or-vertical tries to fit all or-patterns on the same line,
-           otherwise breaks. all forces all pattern matches to break across
-           lines. The default value is fit.
-
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
            elements. fit-or-vertical vertically breaks expressions if they do
@@ -322,6 +311,10 @@ OPTIONS (REMOVED)
            is not supported anymore.
 
        --break-before-in=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --break-cases=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

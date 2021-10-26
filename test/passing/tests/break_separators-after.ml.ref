@@ -77,7 +77,8 @@ let _ =
       _
     } ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 let _ =
   match something with
@@ -86,7 +87,8 @@ let _ =
       _
     ] ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 let _ =
   match something with
@@ -95,7 +97,8 @@ let _ =
        _
     |] ->
       0
-  | _ -> 1
+  | _ ->
+      1
 
 module X = struct
   val select :

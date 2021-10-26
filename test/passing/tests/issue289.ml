@@ -16,22 +16,30 @@ let foo =
       ~args:[]
       ~typ:(non_null guid)
       ~resolve:(function
-        | A -> x.id
-        | B -> c )
+        | A ->
+            x.id
+        | B ->
+            c )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-        | A -> x.id
-        | B -> c )
+        | A ->
+            x.id
+        | B ->
+            c )
   ; field
       "id"
       ~doc:"Toy ID."
       ~args:[]
       ~typppppppppppppppppppp
       ~resolve:(function
-        | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | AAAAAAAAAAAAAAAAAAAa ->
+            x.idddddddddddddddddddddddddd
+        | BBBBBBBBBBBBBBBB ->
+            ccccccccccccccccccccccc )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-        | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | AAAAAAAAAAAAAAAAAAAa ->
+            x.idddddddddddddddddddddddddd
+        | BBBBBBBBBBBBBBBB ->
+            ccccccccccccccccccccccc )
   ; field
       "id"
       ~doc:"Toy ID."
@@ -74,18 +82,26 @@ let foo =
         x.id )
   ; field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid)
       ~resolve:(function
-      | A -> x.id
-      | B -> c )
+      | A ->
+          x.id
+      | B ->
+          c )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-      | A -> x.id
-      | B -> c )
+      | A ->
+          x.id
+      | B ->
+          c )
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppppppppppppppppppp
       ~resolve:(function
-      | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+      | AAAAAAAAAAAAAAAAAAAa ->
+          x.idddddddddddddddddddddddddd
+      | BBBBBBBBBBBBBBBB ->
+          ccccccccccccccccccccccc )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-      | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+      | AAAAAAAAAAAAAAAAAAAa ->
+          x.idddddddddddddddddddddddddd
+      | BBBBBBBBBBBBBBBB ->
+          ccccccccccccccccccccccc )
   ; field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid)
       ~resolve:(fun _ctx x -> x.id)
   ; field "name" ~doc:"Toy name." ~args:[] ~typ:(non_null string)

@@ -2,7 +2,8 @@ let file_contents = [] @ [ foo ] @ [ bar ]
 
 let _ =
   match s.src with
-  | None -> [ zz ] + 2
+  | None ->
+      [ zz ] + 2
   | Some s ->
       [ Variable (s_src, OpamFormat.make_string (OpamFilename.to_string s))
       ; yy

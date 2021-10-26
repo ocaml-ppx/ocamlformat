@@ -42,33 +42,40 @@ let _ = if (* a3 *) B (* c3 *) then (* d3 *) E (* f3 *) else (* g3 *) H
 ;;
 
 match x with
-| true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-| false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+| true ->
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+| false ->
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 (* this comment should not change the formatting of the following case *)
-| false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+| false ->
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 ;;
 
 try f x with
 (* this comment is intended to refer to the entire case below *)
-| Caml.Not_found -> ()
+| Caml.Not_found ->
+    ()
 ;;
 
 match x with
 (* this comment is intended to refer to the entire case below *)
-| false -> ()
+| false ->
+    ()
 ;;
 
 match x with
 | Aaaaaaaaaaaaaaaaaaaa
 (* this comment is intended to refer to the case below *)
- |Bbbbbbbbbbbbbbbbbbbb ->
+| Bbbbbbbbbbbbbbbbbbbb ->
     ()
 
 let _ =
   (* this comment is intended to refer to the entire match below *)
   match x with
-  | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" -> ()
-  | "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" -> ()
+  | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" ->
+      ()
+  | "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" ->
+      ()
 
 module type M = sig
   val f (* A list of [name], [count] pairs. *) : (string * int) list -> int
@@ -190,7 +197,8 @@ let () =
 
 let rec fooooooooooo = function
   (*XX*)
-  | x :: t (*YY*) -> k
+  | x :: t (*YY*) ->
+      k
   (* AA*)
   | [ (*BB*)
       (* CC *)
@@ -286,7 +294,8 @@ let _ =
   match x with
   | Some y -> (
     match y with None -> () | Some z -> incr z (* double some *) )
-  | None -> ()
+  | None ->
+      ()
 
 type prefix =
   { sib_extend: int  (** add more as needed *) (* extended sib index bit *) }
