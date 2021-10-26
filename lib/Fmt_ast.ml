@@ -3143,6 +3143,7 @@ and fmt_case c ctx ~first ~last:_ case =
     | `Begin_end ->
         ("@;<1 0>begin", fits_breaks " end" ~level:1 ~hint:(1000, 0) "end")
   in
+  (* XXX: use (break 1000 0) to always unfold a pattern-matching *)
   fmt_if (not first) "@ " $ leading_cmt
   $ hovbox 0
       ( hvbox 0
