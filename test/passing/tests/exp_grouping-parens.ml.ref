@@ -264,19 +264,19 @@ let _ =
 let _ =
   match x with
   | A -> (
-    match B with A -> fooooooooooooo )
+      match B with A -> fooooooooooooo )
   | A -> (
-    match B with A -> fooooooooooooo | B -> fooooooooooooo )
+      match B with A -> fooooooooooooo | B -> fooooooooooooo )
   | A -> (
-    match B with
-    | A ->
-        fooooooooooooo
-    | B ->
-        fooooooooooooo
-    | C ->
-        fooooooooooooo
-    | D ->
-        fooooooooooooo )
+      match B with
+      | A ->
+          fooooooooooooo
+      | B ->
+          fooooooooooooo
+      | C ->
+          fooooooooooooo
+      | D ->
+          fooooooooooooo )
 
 let () =
   ( add_test

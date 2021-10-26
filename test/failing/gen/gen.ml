@@ -61,13 +61,13 @@ let register_file tests fname =
         | setup ->
             setup
         | exception Not_found -> (
-          (* foo_file-some_variant.ml should derive from foo_file.ml *)
-          match String.index_opt test_name '-' with
-          | None ->
-              add_test tests src_test_name
-          | Some i ->
-              let base_file = String.sub test_name 0 i ^ "." ^ ext in
-              add_test ~base_file tests src_test_name )
+            (* foo_file-some_variant.ml should derive from foo_file.ml *)
+            match String.index_opt test_name '-' with
+            | None ->
+                add_test tests src_test_name
+            | Some i ->
+                let base_file = String.sub test_name 0 i ^ "." ^ ext in
+                add_test ~base_file tests src_test_name )
       in
       match rest with
       | [] ->

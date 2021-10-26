@@ -201,49 +201,49 @@ end = struct
   let partition src ~prev ~next cmts =
     match to_list cmts with
     | Cmt.{ loc; _ } :: _ as cmtl when is_adjacent src prev loc -> (
-      match
-        List.group cmtl ~break:(fun l1 l2 ->
-            not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
-      with
-      | [ cmtl ] when is_adjacent src (List.last_exn cmtl).loc next ->
-          let open Location in
-          let same_line_as_prev l =
-            prev.loc_end.pos_lnum = l.loc_start.pos_lnum
-          in
-          let decide loc =
-            match
-              ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
-              , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
-            with
-            | 0, 0 ->
-                `Before_next
-            | 0, _ when infix_symbol_before src loc ->
-                `Before_next
-            | 0, _ ->
-                `After_prev
-            | 1, x when x > 1 && Source.empty_line_after src loc ->
-                `After_prev
-            | _ ->
-                `Before_next
-          in
-          let prev, next =
-            if not (same_line_as_prev next) then
-              let next, prev =
-                List.partition_tf cmtl ~f:(fun { Cmt.loc= l; _ } ->
-                    match decide l with
-                    | `After_prev ->
-                        false
-                    | `Before_next ->
-                        true )
-              in
-              (prev, next)
-            else ([], cmtl)
-          in
-          (of_list prev, of_list next)
-      | after :: befores ->
-          (of_list after, of_list (List.concat befores))
-      | [] ->
-          impossible "by parent match" )
+        match
+          List.group cmtl ~break:(fun l1 l2 ->
+              not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
+        with
+        | [ cmtl ] when is_adjacent src (List.last_exn cmtl).loc next ->
+            let open Location in
+            let same_line_as_prev l =
+              prev.loc_end.pos_lnum = l.loc_start.pos_lnum
+            in
+            let decide loc =
+              match
+                ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
+                , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
+              with
+              | 0, 0 ->
+                  `Before_next
+              | 0, _ when infix_symbol_before src loc ->
+                  `Before_next
+              | 0, _ ->
+                  `After_prev
+              | 1, x when x > 1 && Source.empty_line_after src loc ->
+                  `After_prev
+              | _ ->
+                  `Before_next
+            in
+            let prev, next =
+              if not (same_line_as_prev next) then
+                let next, prev =
+                  List.partition_tf cmtl ~f:(fun { Cmt.loc= l; _ } ->
+                      match decide l with
+                      | `After_prev ->
+                          false
+                      | `Before_next ->
+                          true )
+                in
+                (prev, next)
+              else ([], cmtl)
+            in
+            (of_list prev, of_list next)
+        | after :: befores ->
+            (of_list after, of_list (List.concat befores))
+        | [] ->
+            impossible "by parent match" )
     | _ ->
         (empty, cmts)
 end
@@ -284,13 +284,13 @@ let rec place t loc_tree ?prev_loc locs cmts =
           place t loc_tree children within );
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] -> (
-    match prev_loc with
-    | Some prev_loc ->
-        add_cmts t `After prev_loc cmts
-    | None ->
-        if t.debug then
-          List.iter (CmtSet.to_list cmts) ~f:(fun { Cmt.txt; _ } ->
-              Format.eprintf "lost: %s@\n%!" txt ) )
+      match prev_loc with
+      | Some prev_loc ->
+          add_cmts t `After prev_loc cmts
+      | None ->
+          if t.debug then
+            List.iter (CmtSet.to_list cmts) ~f:(fun { Cmt.txt; _ } ->
+                Format.eprintf "lost: %s@\n%!" txt ) )
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
@@ -365,11 +365,11 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
         | Some loc ->
             loc
         | None -> (
-          match Source.loc_of_first_token_at src whole_loc PERCENT with
-          | Some loc ->
-              loc
-          | None ->
-              impossible "expect token starting extension" )
+            match Source.loc_of_first_token_at src whole_loc PERCENT with
+            | Some loc ->
+                loc
+            | None ->
+                impossible "expect token starting extension" )
       in
       relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
   | _ ->

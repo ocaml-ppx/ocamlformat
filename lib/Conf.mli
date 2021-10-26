@@ -21,7 +21,6 @@ type t =
   ; break_fun_sig: [ `Wrap | `Fit_or_vertical ]
   ; break_separators: [ `Before | `After ]
   ; cases_exp_indent: int
-  ; cases_matching_exp_indent: [ `Normal | `Compact ]
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [ `Before | `Before_except_val | `After_when_possible ]

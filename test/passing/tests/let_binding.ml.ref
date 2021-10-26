@@ -135,20 +135,20 @@ let _ =
 let _ =
   match a with
   | a -> (
-    match a with
-    | a -> (
-        let+ a = b in
-        match a with a -> a ) )
+      match a with
+      | a -> (
+          let+ a = b in
+          match a with a -> a ) )
 
 let _ =
   match a with
   | a -> (
-    match a with
-    | a -> (
-        let+ a = b in
-        match a with a -> a )
-    | b ->
-        c )
+      match a with
+      | a -> (
+          let+ a = b in
+          match a with a -> a )
+      | b ->
+          c )
 
 let _ =
   let+ a b = c in

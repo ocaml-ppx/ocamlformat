@@ -134,17 +134,17 @@ let is_long_functor_syntax (t : t) ~(from : Location.t) = function
   | Unit ->
       false
   | Named ({ loc= _; _ }, _) -> (
-    (* since 4.12 the functor keyword is just before the loc of the functor
-       parameter *)
-    match
-      find_token_before t
-        ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
-        from.loc_start
-    with
-    | Some (Parser.FUNCTOR, _) ->
-        true
-    | _ ->
-        false )
+      (* since 4.12 the functor keyword is just before the loc of the functor
+         parameter *)
+      match
+        find_token_before t
+          ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
+          from.loc_start
+      with
+      | Some (Parser.FUNCTOR, _) ->
+          true
+      | _ ->
+          false )
 
 let is_long_pmod_functor t { pmod_desc; pmod_loc= from; _ } =
   match pmod_desc with

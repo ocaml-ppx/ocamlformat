@@ -106,12 +106,12 @@ let run_action action opts =
 
 match Conf.action () with
 | `Ok (action, opts) -> (
-  match run_action action opts with
-  | Ok () ->
-      Caml.exit 0
-  | Error errors ->
-      List.iter errors ~f:(fun error -> error ());
-      Caml.exit 1 )
+    match run_action action opts with
+    | Ok () ->
+        Caml.exit 0
+    | Error errors ->
+        List.iter errors ~f:(fun error -> error ());
+        Caml.exit 1 )
 | `Version | `Help ->
     Caml.exit 0
 | `Error _ ->

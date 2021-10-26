@@ -15,7 +15,7 @@ let f =
     | E ->
         4
     | Z | P | M -> (
-      match y with O -> 5 | P when h x -> ( function A -> 6 ) )
+        match y with O -> 5 | P when h x -> ( function A -> 6 ) )
 
 let foo =
   List.map ~f:(fun x g t h y u ->
@@ -23,7 +23,7 @@ let foo =
       | E ->
           4
       | Z | P | M -> (
-        match y with O -> 5 | P when h x -> ( function A -> 6 ) ) );
+          match y with O -> 5 | P when h x -> ( function A -> 6 ) ) );
   List.map ~f:(fun x g t h y u ->
       fooooooooooooo foooooooo;
       (match k with foooo -> foooooooo);
@@ -32,11 +32,11 @@ let foo =
 
 match x with
 | true -> (
-  match y with
-  | true ->
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  | false ->
-      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
+    match y with
+    | true ->
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    | false ->
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
 | false ->
     "cccccccccccccccccccccccccccccc"
 ;;
@@ -67,7 +67,7 @@ let _ =
         false
     | Some looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
       -> (
-      match y with Some _ -> true | None -> false )
+        match y with Some _ -> true | None -> false )
   in
   ()
 
@@ -159,11 +159,11 @@ let () =
   | None ->
       None
   | Some x -> (
-    match x with
-    | None ->
-        None
-    | Some x -> (
-      match x with None -> None | Some x -> x ) )
+      match x with
+      | None ->
+          None
+      | Some x -> (
+          match x with None -> None | Some x -> x ) )
 
 let _ = function (exception A) | B -> 1 | C -> 2
 let _ = function A | (exception B) -> 1 | C -> 2

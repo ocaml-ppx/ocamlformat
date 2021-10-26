@@ -80,15 +80,15 @@ module Valid_ast = struct
         match
           match List.nth lines (i - 1) with
           | Some _ -> (
-            match indent_line i with
-            | Some indent -> (
-              match prev with
-              | Some prev_indent when indent = prev_indent ->
-                  `Maybe indent
-              | _ ->
-                  `Ok indent )
-            | None ->
-                `Ok 0 )
+              match indent_line i with
+              | Some indent -> (
+                  match prev with
+                  | Some prev_indent when indent = prev_indent ->
+                      `Maybe indent
+                  | _ ->
+                      `Ok indent )
+              | None ->
+                  `Ok 0 )
           | None ->
               `Ok 0
         with

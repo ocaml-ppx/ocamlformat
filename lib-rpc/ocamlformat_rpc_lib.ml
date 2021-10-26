@@ -216,11 +216,11 @@ let pick_client ~pid input output versions =
         | `Version v when v = latest ->
             get_client_exn ~pid input output v
         | `Version v -> (
-          match others with
-          | h :: _ when v = h ->
-              get_client_exn ~pid input output v
-          | _ ->
-              aux others )
+            match others with
+            | h :: _ when v = h ->
+                get_client_exn ~pid input output v
+            | _ ->
+                aux others )
         | `Unknown ->
             aux others
         | `Halt ->

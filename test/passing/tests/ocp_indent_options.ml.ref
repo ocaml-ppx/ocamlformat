@@ -4,6 +4,6 @@ let _ =
     | None ->
         false
     | Some loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong -> (
-      match y with Some _ -> true | None -> false )
+        match y with Some _ -> true | None -> false )
   in
   ()

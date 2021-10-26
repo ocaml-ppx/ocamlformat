@@ -134,11 +134,11 @@ module Make (C : CONFIG) = struct
   let section_name kind status =
     match status with
     | `Valid -> (
-      match kind with
-      | Formatting ->
-          Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
-      | Operational ->
-          Cmdliner.Manpage.s_options )
+        match kind with
+        | Formatting ->
+            Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
+        | Operational ->
+            Cmdliner.Manpage.s_options )
     | `Deprecated _ ->
         Cmdliner.Manpage.s_options ^ " (DEPRECATED)"
     | `Removed _ ->

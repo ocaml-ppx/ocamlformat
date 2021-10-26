@@ -1,3 +1,2 @@
 --indicate-multiline-delimiters=closing-on-separate-line
 --leading-nested-match-parens
---cases-matching-exp-indent=normal

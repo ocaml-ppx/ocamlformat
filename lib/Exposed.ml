@@ -33,42 +33,42 @@ module Right = struct
     | { ptyp_attributes= _ :: _; _ } ->
         false
     | { ptyp_desc; _ } -> (
-      match ptyp_desc with
-      | Ptyp_arrow (_, _, t) ->
-          core_type t
-      | Ptyp_tuple l ->
-          core_type (List.last_exn l)
-      | Ptyp_object _ ->
-          true
-      | _ ->
-          false )
+        match ptyp_desc with
+        | Ptyp_arrow (_, _, t) ->
+            core_type t
+        | Ptyp_tuple l ->
+            core_type (List.last_exn l)
+        | Ptyp_object _ ->
+            true
+        | _ ->
+            false )
 
   let constructor_arguments = function
     | Pcstr_record _ ->
         false
     | Pcstr_tuple args -> (
-      match List.last args with
-      | Some { ptyp_desc= Ptyp_arrow _; _ } ->
-          (* Arrows are wrapped in parens in this position:
+        match List.last args with
+        | Some { ptyp_desc= Ptyp_arrow _; _ } ->
+            (* Arrows are wrapped in parens in this position:
 
-             type a = A of (t -> <..>) *)
-          false
-      | Some last ->
-          core_type last
-      | None ->
-          false )
+               type a = A of (t -> <..>) *)
+            false
+        | Some last ->
+            core_type last
+        | None ->
+            false )
 
   let extension_constructor = function
     | { pext_attributes= _ :: _; _ } ->
         false
     | { pext_kind; _ } -> (
-      match pext_kind with
-      | Pext_rebind _ ->
-          false
-      | Pext_decl (_, _, Some _result) ->
-          false
-      | Pext_decl (_, args, None) ->
-          constructor_arguments args )
+        match pext_kind with
+        | Pext_rebind _ ->
+            false
+        | Pext_decl (_, _, Some _result) ->
+            false
+        | Pext_decl (_, args, None) ->
+            constructor_arguments args )
 
   let constructor_declaration = function
     | { pcd_attributes= _ :: _; _ } ->
@@ -114,7 +114,7 @@ module Right = struct
     | { prf_desc= Rinherit _; _ } ->
         false
     | { prf_desc= Rtag (_, _, cs); _ } -> (
-      match List.last cs with None -> false | Some x -> core_type x )
+        match List.last cs with None -> false | Some x -> core_type x )
 
   (* exception C of ... * ... * < ... > *)
   let type_exception = function

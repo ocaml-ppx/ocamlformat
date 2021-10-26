@@ -94,12 +94,6 @@ OPTIONS (CODE FORMATTING STYLE)
            cases-matching-exp-indent and nested-match options. The default
            value is 4. Cannot be set in attributes.
 
-       --cases-matching-exp-indent={normal|compact}
-           Indentation of cases right-hand sides which are `match` or `try`
-           expressions. normal indents as it would any other expression.
-           compact forces an indentation of 2, unless nested-match is set to
-           align and we're on the last case. The default value is normal.
-
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
@@ -327,6 +321,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --break-struct=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --cases-matching-exp-indent=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

@@ -171,11 +171,11 @@ let infix cmts prec xexp =
         in
         ( match List.last op_args2 with
         | Some (_, args2) -> (
-          match List.last args2 with
-          | Some (_, { ast= { pexp_loc= after; _ }; _ }) ->
-              may_relocate ~after
-          | None ->
-              may_relocate ~after )
+            match List.last args2 with
+            | Some (_, { ast= { pexp_loc= after; _ }; _ }) ->
+                may_relocate ~after
+            | None ->
+                may_relocate ~after )
         | _ ->
             may_relocate ~after );
         (xop, [ (l1, sub_exp ~ctx e1) ]) :: op_args2
@@ -391,13 +391,15 @@ let polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
   | Ppat_constraint (pat2, { ptyp_desc= Ptyp_poly (pvars, _); _ }) -> (
-    match polynewtype_ cmts pvars body [ (pat.ppat_loc, pat2.ppat_loc) ] with
-    | Some (typ, exp, relocs) ->
-        List.iter relocs ~f:(fun (src, dst) ->
-            Cmts.relocate cmts ~src ~before:dst ~after:dst );
-        Some (sub_pat ~ctx pat2, pvars, typ, exp)
-    | None ->
-        None )
+      match
+        polynewtype_ cmts pvars body [ (pat.ppat_loc, pat2.ppat_loc) ]
+      with
+      | Some (typ, exp, relocs) ->
+          List.iter relocs ~f:(fun (src, dst) ->
+              Cmts.relocate cmts ~src ~before:dst ~after:dst );
+          Some (sub_pat ~ctx pat2, pvars, typ, exp)
+      | None ->
+          None )
   | _ ->
       None
 

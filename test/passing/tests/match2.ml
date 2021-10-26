@@ -3,11 +3,11 @@ let _ = match a with A -> (match b with B -> b | C -> c) | D -> D
 let _ =
   match a with
   | AAAAAAAAAA ->
-    ( match bbbbbbbbbbbbb with
-    | BBbbbbbbbbbbbbb ->
-        bbbbbbbbbbbb
-    | CCCCCCCCCCCCCCcc ->
-        ccccccccccccccccc )
+      ( match bbbbbbbbbbbbb with
+      | BBbbbbbbbbbbbbb ->
+          bbbbbbbbbbbb
+      | CCCCCCCCCCCCCCcc ->
+          ccccccccccccccccc )
   | DDDDDDDDDDDDDDd ->
       DDDDDDDDDDDDDDDDdD
 
@@ -26,19 +26,19 @@ let _ =
 let _ =
   match x with
   | _ ->
-    ( match
-        something long enough to_break
-          _________________________________________________________________
-      with
-    | AAAAAAAAAA ->
-        let x = 3 in
-        ( match bbbbbbbbbbbbb with
-        | BBbbbbbbbbbbbbb ->
-            bbbbbbbbbbbb
-        | CCCCCCCCCCCCCCcc ->
-            ccccccccccccccccc )
-    | DDDDDDDDDDDDDDd ->
-        DDDDDDDDDDDDDDDDdD )
+      ( match
+          something long enough to_break
+            _________________________________________________________________
+        with
+      | AAAAAAAAAA ->
+          let x = 3 in
+          ( match bbbbbbbbbbbbb with
+          | BBbbbbbbbbbbbbb ->
+              bbbbbbbbbbbb
+          | CCCCCCCCCCCCCCcc ->
+              ccccccccccccccccc )
+      | DDDDDDDDDDDDDDd ->
+          DDDDDDDDDDDDDDDDdD )
 
 let x =
   let g =
@@ -95,17 +95,17 @@ let foo =
 let _ =
   match a with
   | a ->
-    ( match a with
-    | a ->
-        let+ a = b in
-        (match a with a -> a) )
+      ( match a with
+      | a ->
+          let+ a = b in
+          (match a with a -> a) )
 
 let _ =
   match a with
   | a ->
-    ( match a with
-    | a ->
-        let+ a = b in
-        (match a with a -> a)
-    | b ->
-        c )
+      ( match a with
+      | a ->
+          let+ a = b in
+          (match a with a -> a)
+      | b ->
+          c )

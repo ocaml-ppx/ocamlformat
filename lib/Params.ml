@@ -19,15 +19,15 @@ let parens_or_begin_end (c : Conf.t) source ~loc =
   | `Parens ->
       `Parens
   | `Preserve -> (
-    match
-      Source.find_token_after source
-        ~filter:(fun _ -> true)
-        loc.Location.loc_start
-    with
-    | Some (BEGIN, _) ->
-        `Begin_end
-    | None | Some _ ->
-        `Parens )
+      match
+        Source.find_token_after source
+          ~filter:(fun _ -> true)
+          loc.Location.loc_start
+      with
+      | Some (BEGIN, _) ->
+          `Begin_end
+      | None | Some _ ->
+          `Parens )
 
 let parens_if parens (c : Conf.t) k =
   if not parens then k
@@ -80,14 +80,15 @@ module Exp = struct
     | `Parens when fits_breaks ->
         wrap_fits_breaks ~space:false c "(" ")" k
     | `Parens -> (
-      match c.Conf.indicate_multiline_delimiters with
-      | `Space ->
-          Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
-      | `Closing_on_separate_line ->
-          Fmt.fits_breaks "(" "(" $ k
-          $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
-      | `No ->
-          wrap "(" ")" k )
+        match c.Conf.indicate_multiline_delimiters with
+        | `Space ->
+            Fmt.fits_breaks "(" "(" $ k
+            $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
+        | `Closing_on_separate_line ->
+            Fmt.fits_breaks "(" "(" $ k
+            $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
+        | `No ->
+            wrap "(" ")" k )
     | `Begin_end ->
         vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
 end

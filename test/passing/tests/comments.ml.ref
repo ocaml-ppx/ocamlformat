@@ -293,7 +293,7 @@ let _ =
 let _ =
   match x with
   | Some y -> (
-    match y with None -> () | Some z -> incr z (* double some *) )
+      match y with None -> () | Some z -> incr z (* double some *) )
   | None ->
       ()
 

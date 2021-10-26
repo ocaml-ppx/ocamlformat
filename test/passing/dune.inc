@@ -275,7 +275,7 @@
  (action
   (with-stdout-to break_cases-cosl_lnmp_cmei.ml.stdout
    (with-stderr-to break_cases-cosl_lnmp_cmei.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens --cases-matching-exp-indent=normal %{dep:tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line --leading-nested-match-parens %{dep:tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -286,24 +286,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/break_cases-cosl_lnmp_cmei.ml.err break_cases-cosl_lnmp_cmei.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_cases-normal_indent.ml.stdout
-   (with-stderr-to break_cases-normal_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --cases-matching-exp-indent=normal %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-normal_indent.ml.ref break_cases-normal_indent.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-normal_indent.ml.err break_cases-normal_indent.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

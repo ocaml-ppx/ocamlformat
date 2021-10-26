@@ -175,19 +175,19 @@ let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
         | Error () ->
             `Unwrapped cmt )
     | _ -> (
-      match Asterisk_prefixed.split cmt with
-      | [] | [ "" ] ->
-          impossible "not produced by split_asterisk_prefixed"
-      | [ ""; "" ] ->
-          `Verbatim "(* *)"
-      | [ text ] when wrap_comments ->
-          `Wrapped (text, "*)")
-      | [ text; "" ] when wrap_comments ->
-          `Wrapped (text, " *)")
-      | [ _ ] | [ _; "" ] ->
-          `Unwrapped cmt
-      | lines ->
-          `Asterisk_prefixed lines )
+        match Asterisk_prefixed.split cmt with
+        | [] | [ "" ] ->
+            impossible "not produced by split_asterisk_prefixed"
+        | [ ""; "" ] ->
+            `Verbatim "(* *)"
+        | [ text ] when wrap_comments ->
+            `Wrapped (text, "*)")
+        | [ text; "" ] when wrap_comments ->
+            `Wrapped (text, " *)")
+        | [ _ ] | [ _; "" ] ->
+            `Unwrapped cmt
+        | lines ->
+            `Asterisk_prefixed lines )
   in
   match mode with
   | `Verbatim x ->

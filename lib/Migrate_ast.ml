@@ -62,11 +62,11 @@ module Location = struct
   let compare { loc_start; loc_end; loc_ghost } b =
     match Position.compare loc_start b.loc_start with
     | 0 -> (
-      match Position.compare loc_end b.loc_end with
-      | 0 ->
-          Bool.compare loc_ghost b.loc_ghost
-      | c ->
-          c )
+        match Position.compare loc_end b.loc_end with
+        | 0 ->
+            Bool.compare loc_ghost b.loc_ghost
+        | c ->
+            c )
     | c ->
         c
 

@@ -576,15 +576,15 @@ let numeric (type a b) (fg : a list Extended_ast.t)
         opts
     with
     | Ok (_, fmted_src) -> (
-      match
-        parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
-          ~input_name
-      with
-      | Ok { ast= fmted_ast; source= fmted_src; _ } ->
-          Indent.Valid_ast.indent_range fg ~lines ~range
-            ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
-      | Error _ ->
-          fallback () )
+        match
+          parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
+            ~input_name
+        with
+        | Ok { ast= fmted_ast; source= fmted_src; _ } ->
+            Indent.Valid_ast.indent_range fg ~lines ~range
+              ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
+        | Error _ ->
+            fallback () )
     | Error _ ->
         fallback ()
   in
@@ -599,11 +599,13 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   in
   match parse_or_recover ~src:source with
   | Ok parsed -> (
-    match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
-    | Ok std_parsed ->
-        indent_parsed parsed std_parsed ~src:source ~range
-    | Error _ ->
-        fallback () )
+      match
+        parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+      with
+      | Ok std_parsed ->
+          indent_parsed parsed std_parsed ~src:source ~range
+      | Error _ ->
+          fallback () )
   | Error _ ->
       fallback ()
 

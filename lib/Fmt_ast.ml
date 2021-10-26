@@ -307,7 +307,7 @@ let fmt_constant c ?epi { pconst_desc; pconst_loc= loc } =
                instead of having a blank line in the list *)
             List.foldi lines ~init:[] ~f:(fun i acc -> function
               | "" when i < n_lines - 1 -> (
-                match acc with [] -> [ "" ] | h :: t -> (h ^ "\\n") :: t )
+                  match acc with [] -> [ "" ] | h :: t -> (h ^ "\\n") :: t )
               | line ->
                   line :: acc )
             |> List.rev
@@ -669,19 +669,19 @@ and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
   let fmt_type_rhs =
     match (typ, rhs) with
     | Some t, Some r -> (
-      match constraint_loc with
-      | Some (`Constraint_lid loc) ->
-          field_space
-          $ Cmts.fmt_before c loc ~pro:(Fmt.break 1 0) ~epi:noop
-          $ fmt_type t $ fmt "@ " $ fmt_rhs r $ Cmts.fmt_after c loc
-      | Some (`Constraint_exp loc) ->
-          field_space $ fmt "=@;<1 2>"
-          $ hvbox 0
-            @@ Cmts.fmt c loc
-                 (str "(" $ cbox 0 r $ str " " $ fmt_type ~parens:true t)
-      | None ->
-          field_space $ fmt_rhs ~parens:true r $ str " "
-          $ fmt_type ~parens:true t )
+        match constraint_loc with
+        | Some (`Constraint_lid loc) ->
+            field_space
+            $ Cmts.fmt_before c loc ~pro:(Fmt.break 1 0) ~epi:noop
+            $ fmt_type t $ fmt "@ " $ fmt_rhs r $ Cmts.fmt_after c loc
+        | Some (`Constraint_exp loc) ->
+            field_space $ fmt "=@;<1 2>"
+            $ hvbox 0
+              @@ Cmts.fmt c loc
+                   (str "(" $ cbox 0 r $ str " " $ fmt_type ~parens:true t)
+        | None ->
+            field_space $ fmt_rhs ~parens:true r $ str " "
+            $ fmt_type ~parens:true t )
     | Some t, None ->
         field_space $ fmt_type t
     | None, Some r ->
@@ -967,19 +967,19 @@ and fmt_pattern_attributes c xpat k =
       let parens_attr =
         match xpat.ast.ppat_desc with
         | Ppat_or _ -> (
-          match xpat.ctx with
-          | Pat { ppat_desc= Ppat_construct _; _ }
-          | Pat { ppat_desc= Ppat_variant _; _ } ->
-              true
-          | _ ->
-              false )
+            match xpat.ctx with
+            | Pat { ppat_desc= Ppat_construct _; _ }
+            | Pat { ppat_desc= Ppat_variant _; _ } ->
+                true
+            | _ ->
+                false )
         | _ -> (
-          match xpat.ctx with
-          | Exp { pexp_desc= Pexp_object _; _ }
-          | Cl { pcl_desc= Pcl_structure _; _ } ->
-              false
-          | _ ->
-              true )
+            match xpat.ctx with
+            | Exp { pexp_desc= Pexp_object _; _ }
+            | Cl { pcl_desc= Pcl_structure _; _ } ->
+                false
+            | _ ->
+                true )
       in
       Params.parens_if parens_attr c.conf
         (k $ fmt_attributes c ~pre:Space ~key:"@" attrs)
@@ -1994,14 +1994,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           | Pexp_function _ ->
                               "@ "
                           | _ -> (
-                            (* Avoid the "double indentation" of the
-                               application and the function matching when the
-                               [max-indent] option is set. *)
-                            match c.conf.max_indent with
-                            | Some i when i <= 2 ->
-                                "@ "
-                            | _ ->
-                                "@;<1 2>" ) )
+                              (* Avoid the "double indentation" of the
+                                 application and the function matching when
+                                 the [max-indent] option is set. *)
+                              match c.conf.max_indent with
+                              | Some i when i <= 2 ->
+                                  "@ "
+                              | _ ->
+                                  "@;<1 2>" ) )
                       $ fmt_expression c ?box xbody
                       $ closing_paren c ~force ~offset:(-2)
                       $ Cmts.fmt_after c pexp_loc )
@@ -2361,11 +2361,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_letmodule _ | Pexp_open _ ->
                 Some Break
             | _ -> (
-              match popen_expr.pmod_desc with
-              | Pmod_ident _ ->
-                  Option.some_if override Break
-              | _ ->
-                  Some Break )
+                match popen_expr.pmod_desc with
+                | Pmod_ident _ ->
+                    Option.some_if override Break
+                | _ ->
+                    Some Break )
         in
         match (xexp.ctx, popen_expr.pmod_desc) with
         | _, Pmod_ident _ when (not override) && not long_syntax ->
@@ -3097,15 +3097,7 @@ and fmt_cases c ctx cs =
 and fmt_case c ctx ~first ~last:_ case =
   let { pc_lhs; pc_guard; pc_rhs } = case in
   let xrhs = sub_exp ~ctx pc_rhs in
-  let indent =
-    match (c.conf.cases_matching_exp_indent, (ctx, pc_rhs.pexp_desc)) with
-    | ( `Compact
-      , ( Exp { pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _ }
-        , (Pexp_match _ | Pexp_try _) ) ) ->
-        2
-    | _, _ ->
-        c.conf.cases_exp_indent
-  in
+  let indent = c.conf.cases_exp_indent in
   let parens_branch, parens_for_exp =
     if c.conf.leading_nested_match_parens then (false, None)
     else if is_displaced_infix_op xrhs then (false, None)

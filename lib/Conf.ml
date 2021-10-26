@@ -20,7 +20,6 @@ type t =
   ; break_fun_sig: [ `Wrap | `Fit_or_vertical ]
   ; break_separators: [ `Before | `After ]
   ; cases_exp_indent: int
-  ; cases_matching_exp_indent: [ `Normal | `Compact ]
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [ `Before | `Before_except_val | `After_when_possible ]
@@ -344,24 +343,11 @@ module Formatting = struct
       (fun conf x -> { conf with cases_exp_indent= x })
       (fun conf -> conf.cases_exp_indent)
 
-  let cases_matching_exp_indent =
-    let doc =
-      "Indentation of cases right-hand sides which are `match` or `try` \
-       expressions."
-    in
+  let ( (* cases_matching_exp_indent *) ) =
     let names = [ "cases-matching-exp-indent" ] in
-    let all =
-      [ C.Value.make ~name:"normal" `Normal
-          "$(b,normal) indents as it would any other expression."
-      ; C.Value.make ~name:"compact" `Compact
-          "$(b,compact) forces an indentation of 2, unless \
-           $(b,nested-match) is set to $(b,align) and we're on the last \
-           case."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with cases_matching_exp_indent= x })
-      (fun conf -> conf.cases_matching_exp_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let disable =
     let doc =
@@ -1018,7 +1004,7 @@ let inputs =
       | "-" ->
           `Ok Stdin
       | s -> (
-        match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
+          match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
     in
     (parse, print)
   in
@@ -1169,7 +1155,6 @@ let ocamlformat_profile =
   ; break_fun_sig= `Wrap
   ; break_separators= `Before
   ; cases_exp_indent= 4
-  ; cases_matching_exp_indent= `Compact
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before_except_val
@@ -1210,7 +1195,6 @@ let conventional_profile =
   ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
-  ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
@@ -1256,7 +1240,6 @@ let janestreet_profile =
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
   ; cases_exp_indent= 2
-  ; cases_matching_exp_indent= `Normal
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
@@ -1434,11 +1417,11 @@ let parse_line config ~from s =
     | [] ->
         Ok config
     | (name, value) :: t -> (
-      match update_ocp_indent_option ~config ~from ~name ~value with
-      | Ok c ->
-          update_many ~config:c ~from t
-      | Error e ->
-          Error e )
+        match update_ocp_indent_option ~config ~from ~name ~value with
+        | Ok c ->
+            update_many ~config:c ~from t
+        | Error e ->
+            Error e )
   in
   let s =
     match String.index s '#' with
@@ -1458,23 +1441,23 @@ let parse_line config ~from s =
         update_ocp_indent_option ~config ~from ~name ~value
       else update ~config ~from ~name ~value
   | [ s ] -> (
-    match String.strip s with
-    | "" ->
-        impossible "previous match"
-    (* special case for disable/enable *)
-    | "enable" ->
-        update ~config ~from ~name:"disable" ~value:"false"
-    | "normal" ->
-        update_many ~config ~from ocp_indent_normal_profile
-    | "apprentice" ->
-        update_many ~config ~from ocp_indent_apprentice_profile
-    | "JaneStreet" ->
-        Result.( >>= )
-          (update ~config ~from ~name:"profile" ~value:"janestreet")
-          (fun config ->
-            update_many ~config ~from ocp_indent_janestreet_profile )
-    | name ->
-        update ~config ~from ~name ~value:"true" )
+      match String.strip s with
+      | "" ->
+          impossible "previous match"
+      (* special case for disable/enable *)
+      | "enable" ->
+          update ~config ~from ~name:"disable" ~value:"false"
+      | "normal" ->
+          update_many ~config ~from ocp_indent_normal_profile
+      | "apprentice" ->
+          update_many ~config ~from ocp_indent_apprentice_profile
+      | "JaneStreet" ->
+          Result.( >>= )
+            (update ~config ~from ~name:"profile" ~value:"janestreet")
+            (fun config ->
+              update_many ~config ~from ocp_indent_janestreet_profile )
+      | name ->
+          update ~config ~from ~name ~value:"true" )
   | _ ->
       Error (`Malformed s)
 
@@ -1538,37 +1521,37 @@ let read_config_file conf filename_kind =
   | `Ocp_indent _ when not !ocp_indent_config ->
       conf
   | `Ocp_indent filename | `Ocamlformat filename -> (
-    try
-      In_channel.with_file (Fpath.to_string filename) ~f:(fun ic ->
-          let c, errors, _ =
-            In_channel.fold_lines ic ~init:(conf, [], 1)
-              ~f:(fun (conf, errors, num) line ->
-                let from = `File (filename, num) in
-                match parse_line conf ~from line with
-                | Ok conf ->
-                    (conf, errors, Int.succ num)
-                | Error _ when !ignore_invalid_options ->
-                    warn ~filename ~lnum:num "ignoring invalid options %S"
-                      line;
-                    (conf, errors, Int.succ num)
-                | Error e ->
-                    (conf, e :: errors, Int.succ num) )
-          in
-          match List.rev errors with
-          | [] ->
-              c
-          | l ->
-              let kind =
-                match filename_kind with
-                | `Ocp_indent _ ->
-                    dot_ocp_indent
-                | `Ocamlformat _ ->
-                    dot_ocamlformat
-              in
-              failwith_user_errors ~kind l )
-    with
-    | Sys_error _ ->
-        conf )
+      try
+        In_channel.with_file (Fpath.to_string filename) ~f:(fun ic ->
+            let c, errors, _ =
+              In_channel.fold_lines ic ~init:(conf, [], 1)
+                ~f:(fun (conf, errors, num) line ->
+                  let from = `File (filename, num) in
+                  match parse_line conf ~from line with
+                  | Ok conf ->
+                      (conf, errors, Int.succ num)
+                  | Error _ when !ignore_invalid_options ->
+                      warn ~filename ~lnum:num "ignoring invalid options %S"
+                        line;
+                      (conf, errors, Int.succ num)
+                  | Error e ->
+                      (conf, e :: errors, Int.succ num) )
+            in
+            match List.rev errors with
+            | [] ->
+                c
+            | l ->
+                let kind =
+                  match filename_kind with
+                  | `Ocp_indent _ ->
+                      dot_ocp_indent
+                  | `Ocamlformat _ ->
+                      dot_ocamlformat
+                in
+                failwith_user_errors ~kind l )
+      with
+      | Sys_error _ ->
+          conf )
 
 let update_using_env conf =
   let f (config, errors) (name, value) =
@@ -1589,11 +1572,11 @@ let xdg_config =
   let xdg_config_home =
     match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
     | None | Some "" -> (
-      match Caml.Sys.getenv_opt "HOME" with
-      | None | Some "" ->
-          None
-      | Some home ->
-          Some Fpath.(v home / ".config") )
+        match Caml.Sys.getenv_opt "HOME" with
+        | None | Some "" ->
+            None
+        | Some home ->
+            Some Fpath.(v home / ".config") )
     | Some xdg_config_home ->
         Some (Fpath.v xdg_config_home)
   in
@@ -1731,13 +1714,13 @@ let validate_inputs () =
   | [ Stdin ], Some kind, name ->
       Ok (`Stdin (name, kind))
   | [ Stdin ], None, Some name -> (
-    match kind_of_ext name with
-    | Some kind ->
-        Ok (`Stdin (Some name, kind))
-    | None ->
-        Error
-          "Cannot deduce file kind from passed --name. Please specify \
-           --impl or --intf" )
+      match kind_of_ext name with
+      | Some kind ->
+          Ok (`Stdin (Some name, kind))
+      | None ->
+          Error
+            "Cannot deduce file kind from passed --name. Please specify \
+             --impl or --intf" )
   | [ File f ], Some kind, name ->
       Ok (`Single_file (kind, name, f))
   | [ File f ], None, name ->
@@ -1897,24 +1880,24 @@ let update ?(quiet = false) c { attr_name= { txt; loc }; attr_payload; _ } =
   let result =
     match txt with
     | "ocamlformat" -> (
-      match attr_payload with
-      | PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( { pexp_desc=
-                        Pexp_constant
-                          { pconst_desc= Pconst_string (str, _, None); _ }
-                    ; pexp_attributes= []
-                    ; _
-                    }
-                  , [] )
-            ; _
-            }
-          ] ->
-          parse_line ~from:`Attribute c str
-          |> Result.map_error ~f:string_of_user_error
-      | _ ->
-          Error "Invalid format: String expected" )
+        match attr_payload with
+        | PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( { pexp_desc=
+                          Pexp_constant
+                            { pconst_desc= Pconst_string (str, _, None); _ }
+                      ; pexp_attributes= []
+                      ; _
+                      }
+                    , [] )
+              ; _
+              }
+            ] ->
+            parse_line ~from:`Attribute c str
+            |> Result.map_error ~f:string_of_user_error
+        | _ ->
+            Error "Invalid format: String expected" )
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error
           (Format.sprintf "Invalid format: Unknown suffix %S"

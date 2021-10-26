@@ -40,92 +40,92 @@ let format fg conf source =
 
 let rec rpc_main = function
   | Waiting_for_version -> (
-    match Init.read_input stdin with
-    | `Halt ->
-        Ok ()
-    | `Unknown ->
-        Ok ()
-    | `Version vstr -> (
-      match V.handshake vstr with
-      | `Handled v ->
-          Init.output stdout (`Version vstr);
-          Out_channel.flush stdout;
-          rpc_main (Version_defined (v, Conf.default_profile))
-      | `Propose_another v ->
-          let vstr = V.to_string v in
-          Init.output stdout (`Version vstr);
-          Out_channel.flush stdout;
-          rpc_main Waiting_for_version ) )
-  | Version_defined (v, conf) as state -> (
-    match v with
-    | V1 -> (
-      match V1.Command.read_input stdin with
+      match Init.read_input stdin with
       | `Halt ->
           Ok ()
-      | `Unknown | `Error _ ->
-          rpc_main state
-      | `Format x ->
-          List.fold_until ~init:()
-            ~finish:(fun () ->
-              V1.Command.output stdout
-                (`Error (Format.flush_str_formatter ())) )
-            ~f:(fun () try_formatting ->
-              match try_formatting conf x with
-              | Ok formatted ->
-                  ignore (Format.flush_str_formatter ());
-                  V1.Command.output stdout (`Format formatted);
-                  Stop ()
-              | Error e ->
-                  Translation_unit.Error.print Format.str_formatter e;
-                  Continue () )
-            (* The formatting functions are ordered in such a way that the
-               ones expecting a keyword first (like signatures) are placed
-               before the more general ones (like toplevel phrases). Parsing
-               a file as `--impl` with `ocamlformat` processes it as a use
-               file (toplevel phrases) anyway.
+      | `Unknown ->
+          Ok ()
+      | `Version vstr -> (
+          match V.handshake vstr with
+          | `Handled v ->
+              Init.output stdout (`Version vstr);
+              Out_channel.flush stdout;
+              rpc_main (Version_defined (v, Conf.default_profile))
+          | `Propose_another v ->
+              let vstr = V.to_string v in
+              Init.output stdout (`Version vstr);
+              Out_channel.flush stdout;
+              rpc_main Waiting_for_version ) )
+  | Version_defined (v, conf) as state -> (
+      match v with
+      | V1 -> (
+          match V1.Command.read_input stdin with
+          | `Halt ->
+              Ok ()
+          | `Unknown | `Error _ ->
+              rpc_main state
+          | `Format x ->
+              List.fold_until ~init:()
+                ~finish:(fun () ->
+                  V1.Command.output stdout
+                    (`Error (Format.flush_str_formatter ())) )
+                ~f:(fun () try_formatting ->
+                  match try_formatting conf x with
+                  | Ok formatted ->
+                      ignore (Format.flush_str_formatter ());
+                      V1.Command.output stdout (`Format formatted);
+                      Stop ()
+                  | Error e ->
+                      Translation_unit.Error.print Format.str_formatter e;
+                      Continue () )
+                (* The formatting functions are ordered in such a way that
+                   the ones expecting a keyword first (like signatures) are
+                   placed before the more general ones (like toplevel
+                   phrases). Parsing a file as `--impl` with `ocamlformat`
+                   processes it as a use file (toplevel phrases) anyway.
 
-               `ocaml-lsp` should use core types, module types and
-               signatures. `ocaml-mdx` should use toplevel phrases,
-               expressions and signatures. *)
-            [ format Core_type
-            ; format Signature
-            ; format Module_type
-            ; format Expression
-            ; format Use_file
-            ];
-          rpc_main state
-      | `Config c -> (
-          let rec update conf = function
-            | [] ->
-                Ok conf
-            | (name, value) :: t -> (
-              match Conf.update_value conf ~name ~value with
-              | Ok c ->
-                  update c t
-              | Error e ->
-                  Error e )
-          in
-          match update conf c with
-          | Ok conf ->
-              V1.Command.output stdout (`Config c);
-              Out_channel.flush stdout;
-              rpc_main (Version_defined (v, conf))
-          | Error e ->
-              let msg =
-                match e with
-                | `Bad_value (x, y) ->
-                    Format.sprintf "Bad configuration value (%s, %s)" x y
-                | `Malformed x ->
-                    Format.sprintf "Malformed configuration value %s" x
-                | `Misplaced (x, y) ->
-                    Format.sprintf "Misplaced configuration value (%s, %s)" x
-                      y
-                | `Unknown (x, _) ->
-                    Format.sprintf "Unknown configuration option %s" x
+                   `ocaml-lsp` should use core types, module types and
+                   signatures. `ocaml-mdx` should use toplevel phrases,
+                   expressions and signatures. *)
+                [ format Core_type
+                ; format Signature
+                ; format Module_type
+                ; format Expression
+                ; format Use_file
+                ];
+              rpc_main state
+          | `Config c -> (
+              let rec update conf = function
+                | [] ->
+                    Ok conf
+                | (name, value) :: t -> (
+                    match Conf.update_value conf ~name ~value with
+                    | Ok c ->
+                        update c t
+                    | Error e ->
+                        Error e )
               in
-              V1.Command.output stdout (`Error msg);
-              Out_channel.flush stdout;
-              rpc_main state ) ) )
+              match update conf c with
+              | Ok conf ->
+                  V1.Command.output stdout (`Config c);
+                  Out_channel.flush stdout;
+                  rpc_main (Version_defined (v, conf))
+              | Error e ->
+                  let msg =
+                    match e with
+                    | `Bad_value (x, y) ->
+                        Format.sprintf "Bad configuration value (%s, %s)" x y
+                    | `Malformed x ->
+                        Format.sprintf "Malformed configuration value %s" x
+                    | `Misplaced (x, y) ->
+                        Format.sprintf
+                          "Misplaced configuration value (%s, %s)" x y
+                    | `Unknown (x, _) ->
+                        Format.sprintf "Unknown configuration option %s" x
+                  in
+                  V1.Command.output stdout (`Error msg);
+                  Out_channel.flush stdout;
+                  rpc_main state ) ) )
 
 let rpc_main () = rpc_main Waiting_for_version
 
