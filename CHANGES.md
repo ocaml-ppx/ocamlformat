@@ -63,7 +63,7 @@
 
   + Emacs: only hook ocamlformat mode on tuareg/caml modes when ocamlformat is not disabled (#1814, @gpetiot)
 
-  + Fix boxing of labelled arguments, avoid having a linebreak after a label when the argument has a comment attached (#1830, #<PR_NUMBER>, @gpetiot)
+  + Fix boxing of labelled arguments, avoid having a linebreak after a label when the argument has a comment attached (#1830, #1885, @gpetiot)
 
   + Add missing parentheses around application of prefix op when applied to other operands (#1825, @gpetiot)
 
