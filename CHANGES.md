@@ -50,6 +50,8 @@
 
   + Fix formatting of exception types, and add missing parentheses (#1873, @gpetiot)
 
+  + Fix indentation of with-type constraints (#1883, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
