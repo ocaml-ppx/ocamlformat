@@ -1450,7 +1450,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
     is_simple c.conf (expression_width c) xexp && not breaks
   in
-  let break x y = not (is_simple x && is_simple y) in
+  let break x y =
+    Cmts.has_after c.cmts (snd x).pexp_loc || not (is_simple x && is_simple y)
+  in
   let groups =
     if c.conf.wrap_fun_args then List.group args ~break
     else List.map args ~f:(fun x -> [x])
