@@ -18,3 +18,6 @@ Warning: tests/args_grouped.ml:105 exceeds the margin
 Warning: tests/args_grouped.ml:123 exceeds the margin
 Warning: tests/args_grouped.ml:124 exceeds the margin
 Warning: tests/args_grouped.ml:137 exceeds the margin
+Warning: tests/args_grouped.ml:141 exceeds the margin
+Warning: tests/args_grouped.ml:145 exceeds the margin
+Warning: tests/args_grouped.ml:151 exceeds the margin
