@@ -3498,7 +3498,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
         let pre = if first then "with" else "and" in
-        fmt_or first "@ " "@;<1 1>" $ fmt_with_constraint c ctx ~pre wc
+        fmt "@ " $ fmt_with_constraint c ctx ~pre wc
       in
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
         Cmts.fmt c loc

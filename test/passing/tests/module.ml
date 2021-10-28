@@ -40,7 +40,7 @@ module O : sig
   type t
 end
 with type t := t
- and type s := s = struct
+and type s := s = struct
   let () = ()
 end
 
