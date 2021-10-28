@@ -73,11 +73,11 @@ end
 module V1 :
   V
     with type Command.t =
-          [ `Halt
-          | `Unknown
-          | `Error of string
-          | `Config of (string * string) list
-          | `Format of string ] = struct
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ] = struct
   module Command = struct
     type t =
       [ `Halt

@@ -50,11 +50,11 @@ module Init : Command_S with type t = [`Halt | `Unknown | `Version of string]
 module V1 :
   V
     with type Command.t =
-          [ `Halt
-          | `Unknown
-          | `Error of string
-          | `Config of (string * string) list
-          | `Format of string ]
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ]
 
 type client = [`V1 of V1.Client.t]
 

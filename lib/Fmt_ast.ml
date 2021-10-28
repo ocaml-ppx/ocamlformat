@@ -3497,7 +3497,8 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
-        fmt_or first "@ with" "@;<1 1>and" $ fmt_with_constraint c ctx wc
+        let pre = if first then "with" else " and" in
+        fmt_or first "@ " "@," $ fmt_with_constraint c ctx ~pre wc
       in
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
         Cmts.fmt c loc
@@ -3892,19 +3893,19 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
   $ fmt_attributes c ~pre:Blank ~key:"@@" atrs
   $ doc_after
 
-and fmt_with_constraint c ctx = function
+and fmt_with_constraint c ctx ~pre = function
   | Pwith_type (ident, td) ->
-      fmt_type_declaration ~pre:" type" c ctx
+      fmt_type_declaration ~pre:(pre ^ " type") c ctx
         ~fmt_name:(fmt_longident_loc c ident)
         td
   | Pwith_module (m1, m2) ->
-      str " module " $ fmt_longident_loc c m1 $ str " = "
+      str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration ~pre:" type" c ~eq:":=" ctx
+      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ctx
         ~fmt_name:(fmt_longident_loc c lid) td
   | Pwith_modsubst (m1, m2) ->
-      str " module " $ fmt_longident_loc c m1 $ str " := "
+      str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
   | Pwith_modtype (m1, m2) ->
       let m1 =
@@ -3912,14 +3913,15 @@ and fmt_with_constraint c ctx = function
           txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
       in
       let m2 = Some (sub_mty ~ctx m2) in
-      break 1 2 $ fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
+      str pre $ break 1 2
+      $ fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
   | Pwith_modtypesubst (m1, m2) ->
       let m1 =
         { m1 with
           txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
       in
       let m2 = Some (sub_mty ~ctx m2) in
-      break 1 2
+      str pre $ break 1 2
       $ fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2
           []
 
