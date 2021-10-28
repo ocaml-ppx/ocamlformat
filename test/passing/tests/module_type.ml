@@ -46,6 +46,21 @@ module U :
      and type uuuuuuu = int
     with type vvvvvvvvv = int = struct end
 
+module U :
+  S
+    with type Command.t =
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ]
+     and type Command.t =
+       [ `Halt
+       | `Unknown
+       | `Error of string
+       | `Config of (string * string) list
+       | `Format of string ] = struct end
+
 module U = (val S : S with type t = int and type u = int)
 
 module U = (val S : S with type t = int and type u = int)
