@@ -314,6 +314,10 @@ let _ = new%ext x
 let _ = [%ext new x]
 let _ = f (new%ext x)
 let _ = f [%ext new x]
+let _ = (new%ext x) [@attr]
+let _ = [%ext new x] [@attr]
+let _ = f ((new%ext x) [@attr])
+let _ = f ([%ext new x] [@attr])
 
 let _ = (x ;%ext y)
 let _ = [%ext x; y]
