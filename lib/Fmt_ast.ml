@@ -2458,8 +2458,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         ; _ } as e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
-    when List.is_empty pexp_attributes
-         && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
+    when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
+      let parens = parens || has_attr in
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )
