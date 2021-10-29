@@ -359,10 +359,10 @@ let _ = f (x ;%ext y)
 
 let _ = f [%ext x ; y]
 
-let _ = [%ext x ; y] [@attr]
+let _ = (x ;%ext y) [@attr]
 
 let _ = [%ext x ; y] [@attr]
 
-let _ = f ([%ext x ; y] [@attr])
+let _ = f ((x ;%ext y) [@attr])
 
 let _ = f ([%ext x ; y] [@attr])

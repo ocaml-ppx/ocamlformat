@@ -2388,8 +2388,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     e1 )
                   , _ )
             ; pstr_loc= _ } ] )
-    when List.is_empty pexp_attributes
-         && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
+    when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
          && List.length (Sugar.sequence c.cmts xexp) > 1 ->
       fmt_sequence ~has_attr c parens (expression_width c) xexp pexp_loc
         fmt_atrs ~ext
