@@ -14,6 +14,7 @@
     - `break-collection-expressions` (#1891, @gpetiot)
     - `break-fun-decl=smart` (#1892, @gpetiot)
     - `break-fun-sig=smart` (#1893, @gpetiot)
+    - `break-string-literals` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 

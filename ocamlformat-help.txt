@@ -104,12 +104,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Force sequence expressions to break irrespective of margin. The
            flag is set by default.
 
-       --break-string-literals={auto|never}
-           Break string literals. auto mode breaks lines at newlines and
-           wraps string literals at the margin. never mode formats string
-           literals as they are parsed, in particular, with escape sequences
-           expanded. The default value is auto.
-
        --break-struct={force|natural}
            Break struct-end module items. force will break struct-end phrases
            unconditionally. natural will break struct-end phrases naturally
@@ -509,6 +503,14 @@ OPTIONS (DEPRECATED)
            try to format them in a single line. The default value is
            fit-or-vertical. Warning: This option is deprecated since version
            0.20.0. It will be removed by version 1.0.
+
+       --break-string-literals={auto|never}
+           Break string literals. auto mode breaks lines at newlines and
+           wraps string literals at the margin. never mode formats string
+           literals as they are parsed, in particular, with escape sequences
+           expanded. The default value is auto. Warning: This option is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0.
 
        --disable-outside-detected-project
            Warning: this option is deprecated and will be removed by
