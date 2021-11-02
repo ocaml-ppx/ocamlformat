@@ -17,6 +17,7 @@
     - `break-string-literals` (#1894, @gpetiot)
     - `break-struct` (#1895, @gpetiot)
     - `extension-indent` (#1896, @gpetiot)
+    - `function-indent` (#1897, @gpetiot)
 
 #### Bug fixes
 
