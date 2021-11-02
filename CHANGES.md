@@ -6,9 +6,10 @@
 
   + Profiles `compact` and `sparse` are now deprecated and will be removed by version 1.0 (#1803, @gpetiot)
 
-  + Options `--align-cases`, `--align-constructors-decl` and `--align-variants-decl` are now deprecated and will be removed by version 1.0 (#1793, @gpetiot)
-
-  + Option `disambiguate-non-breaking-match` is now deprecated and will be removed by version 1.0 (#1805, @gpetiot)
+  + Options that are not set by the preset profiles are now deprecated and will be removed by version 1.0:
+    - `align-cases`, `align-constructors-decl` and `align-variants-decl` (#1793, @gpetiot)
+    - `disambiguate-non-breaking-match` (#1805, @gpetiot)
+    - `break-before-in` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
