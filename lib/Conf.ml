@@ -686,6 +686,7 @@ module Formatting = struct
       "How to indicate that two matching delimiters live on different lines."
     in
     let names = ["indicate-multiline-delimiters"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"no" `No
           "$(b, no) doesn't do anything special to indicate the closing \
@@ -693,7 +694,7 @@ module Formatting = struct
       ; C.Value.make ~name:"space" `Space
           "$(b,space) prints a space inside the delimiter to indicate the \
            matching one is on a different line."
-      ; C.Value.make ~name:"closing-on-separate-line"
+      ; C.Value.make ~name:"closing-on-separate-line" ~deprecated
           `Closing_on_separate_line
           "$(b, closing-on-separate-line) makes sure that the closing \
            delimiter is on its own line." ]

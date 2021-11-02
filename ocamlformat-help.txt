@@ -180,8 +180,10 @@ OPTIONS (CODE FORMATTING STYLE)
            lines. no doesn't do anything special to indicate the closing
            delimiter. space prints a space inside the delimiter to indicate
            the matching one is on a different line. closing-on-separate-line
-           makes sure that the closing delimiter is on its own line. The
-           default value is no.
+           makes sure that the closing delimiter is on its own line. Warning:
+           Value `closing-on-separate-line` is deprecated since version
+           0.20.0. It will be removed by version 1.0. The default value is
+           no.
 
        --indicate-nested-or-patterns={unsafe-no|space}
            Control whether or not to indicate nested or-pattern using
