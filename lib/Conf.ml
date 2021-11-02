@@ -587,7 +587,9 @@ module Formatting = struct
       "Indentation of items inside extension nodes ($(docv) columns)."
     in
     let names = ["extension-indent"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
+      ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with extension_indent= x})
       (fun conf -> conf.extension_indent)
 

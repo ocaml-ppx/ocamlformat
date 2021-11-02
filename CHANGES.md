@@ -16,6 +16,7 @@
     - `break-fun-sig=smart` (#1893, @gpetiot)
     - `break-string-literals` (#1894, @gpetiot)
     - `break-struct` (#1895, @gpetiot)
+    - `extension-indent` (#1896, @gpetiot)
 
 #### Bug fixes
 
