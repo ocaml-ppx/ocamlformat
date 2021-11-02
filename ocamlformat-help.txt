@@ -104,11 +104,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Force sequence expressions to break irrespective of margin. The
            flag is set by default.
 
-       --break-struct={force|natural}
-           Break struct-end module items. force will break struct-end phrases
-           unconditionally. natural will break struct-end phrases naturally
-           at the margin. The default value is force.
-
        --cases-exp-indent=COLS
            Indentation of cases expressions (COLS columns). See also the
            cases-matching-exp-indent and nested-match options. The default
@@ -509,6 +504,13 @@ OPTIONS (DEPRECATED)
            wraps string literals at the margin. never mode formats string
            literals as they are parsed, in particular, with escape sequences
            expanded. The default value is auto. Warning: This option is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0.
+
+       --break-struct={force|natural}
+           Break struct-end module items. force will break struct-end phrases
+           unconditionally. natural will break struct-end phrases naturally
+           at the margin. The default value is force. Warning: This option is
            deprecated since version 0.20.0. It will be removed by version
            1.0.
 
