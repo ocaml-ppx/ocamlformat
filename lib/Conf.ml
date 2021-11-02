@@ -395,7 +395,8 @@ module Formatting = struct
           "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
       ~removed_values:
         (C.Value_removed.make_list
            ~names:["newlines"; "newlines-and-wrap"; "wrap"]
