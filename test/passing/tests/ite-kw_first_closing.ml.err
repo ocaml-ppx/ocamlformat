@@ -1,2 +1,1 @@
 Warning: option `indicate-multiline-delimiters`: value `closing-on-separate-line` is deprecated since version 0.20.0. It will be removed by version 1.0.
-Warning: option `if-then-else`: value `fit-or-vertical` is deprecated since version 0.20.0. It will be removed by version 1.0.
