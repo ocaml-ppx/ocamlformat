@@ -243,7 +243,8 @@ module Formatting = struct
           "$(b,auto) will only break the line if the $(i,in) keyword does \
            not fit on the previous line." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with break_before_in= x})
       (fun conf -> conf.break_before_in)
 
