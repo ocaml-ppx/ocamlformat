@@ -22,6 +22,7 @@
     - `if-then-else={fit-or-vertical,k-r}` (#1899, @gpetiot)
     - `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
     - `indent-after-in` (#1901, @gpetiot)
+    - `let-binding-indent` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
