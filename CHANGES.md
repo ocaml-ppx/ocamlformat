@@ -19,6 +19,7 @@
     - `extension-indent` (#1896, @gpetiot)
     - `function-indent` (#1897, @gpetiot)
     - `function-indent-nested` (#1898, @gpetiot)
+    - `if-then-else={fit-or-vertical,k-r}` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 

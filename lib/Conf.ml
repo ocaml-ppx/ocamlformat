@@ -651,17 +651,18 @@ module Formatting = struct
   let if_then_else =
     let doc = "If-then-else formatting." in
     let names = ["if-then-else"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) tries to format an if-then-else expression on a \
            single line."
-      ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
+      ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical ~deprecated
           "$(b,fit-or-vertical) vertically breaks branches if they do not \
            fit on a single line."
       ; C.Value.make ~name:"keyword-first" `Keyword_first
           "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line."
-      ; C.Value.make ~name:"k-r" `K_R
+      ; C.Value.make ~name:"k-r" `K_R ~deprecated
           "$(b,k-r) formats if-then-else expressions with parentheses that \
            match the K&R style." ]
     in

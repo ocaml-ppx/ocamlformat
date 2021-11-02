@@ -161,10 +161,13 @@ OPTIONS (CODE FORMATTING STYLE)
        --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
-           branches if they do not fit on a single line. keyword-first
-           formats if-then-else expressions such that the if-then-else
-           keywords are the first on the line. k-r formats if-then-else
-           expressions with parentheses that match the K&R style. The default
+           branches if they do not fit on a single line. Warning: Value
+           `fit-or-vertical` is deprecated since version 0.20.0. It will be
+           removed by version 1.0. keyword-first formats if-then-else
+           expressions such that the if-then-else keywords are the first on
+           the line. k-r formats if-then-else expressions with parentheses
+           that match the K&R style. Warning: Value `k-r` is deprecated since
+           version 0.20.0. It will be removed by version 1.0. The default
            value is compact.
 
        --indent-after-in=COLS
