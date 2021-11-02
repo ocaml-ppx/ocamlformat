@@ -13,7 +13,7 @@
     - `break-cases={toplevel,all}` (#1890, @gpetiot)
     - `break-collection-expressions` (#1891, @gpetiot)
     - `break-fun-decl=smart` (#1892, @gpetiot)
-    - `break-fun-sig=smart` (#<PR_NUMBER>, @gpetiot)
+    - `break-fun-sig=smart` (#1893, @gpetiot)
 
 #### Bug fixes
 
