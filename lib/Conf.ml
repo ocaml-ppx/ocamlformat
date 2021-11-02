@@ -771,7 +771,9 @@ module Formatting = struct
        not fit on a single line."
     in
     let names = ["let-binding-indent"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
+      ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with let_binding_indent= x})
       (fun conf -> conf.let_binding_indent)
 

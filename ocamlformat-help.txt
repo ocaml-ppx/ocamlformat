@@ -205,11 +205,6 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact.
 
-       --let-binding-indent=COLS
-           Indentation of let binding expressions (COLS columns) if they do
-           not fit on a single line. The default value is 2. Cannot be set in
-           attributes.
-
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
@@ -531,6 +526,12 @@ OPTIONS (DEPRECATED)
        --indent-after-in=COLS
            Indentation (COLS columns) after `let ... in`, unless followed by
            another `let`. The default value is 0. Cannot be set in
+           attributes. Warning: This option is deprecated since version
+           0.20.0. It will be removed by version 1.0.
+
+       --let-binding-indent=COLS
+           Indentation of let binding expressions (COLS columns) if they do
+           not fit on a single line. The default value is 2. Cannot be set in
            attributes. Warning: This option is deprecated since version
            0.20.0. It will be removed by version 1.0.
 
