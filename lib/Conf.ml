@@ -288,7 +288,8 @@ module Formatting = struct
           "$(b,wrap) will group simple expressions and try to format them \
            in a single line." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with break_collection_expressions= x})
       (fun conf -> conf.break_collection_expressions)
 

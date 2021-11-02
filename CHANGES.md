@@ -11,6 +11,7 @@
     - `disambiguate-non-breaking-match` (#1805, @gpetiot)
     - `break-before-in` (#1888, @gpetiot)
     - `break-cases={toplevel,all}` (#1890, @gpetiot)
+    - `break-collection-expressions` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
