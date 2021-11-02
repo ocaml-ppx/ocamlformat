@@ -18,6 +18,7 @@
     - `break-struct` (#1895, @gpetiot)
     - `extension-indent` (#1896, @gpetiot)
     - `function-indent` (#1897, @gpetiot)
+    - `function-indent-nested` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
