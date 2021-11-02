@@ -21,7 +21,7 @@
     - `function-indent-nested` (#1898, @gpetiot)
     - `if-then-else={fit-or-vertical,k-r}` (#1899, @gpetiot)
     - `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
-    - `indent-after-in` (#<PR_NUMBER>, @gpetiot)
+    - `indent-after-in` (#1901, @gpetiot)
 
 #### Bug fixes
 
