@@ -780,11 +780,12 @@ module Formatting = struct
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) spacing separates adjacent let bindings in a module \
            according to module-item-spacing."
-      ; C.Value.make ~name:"sparse" `Sparse
+      ; C.Value.make ~name:"sparse" `Sparse ~deprecated
           "$(b,sparse) places two open lines between a multi-line \
            module-level let binding and the next."
       ; C.Value.make ~name:"double-semicolon" `Double_semicolon
