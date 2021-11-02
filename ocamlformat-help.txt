@@ -151,10 +151,6 @@ OPTIONS (CODE FORMATTING STYLE)
            parentheses. preserve preserves the original grouping syntax
            (parentheses or begin/end). The default value is parens.
 
-       --extension-indent=COLS
-           Indentation of items inside extension nodes (COLS columns). The
-           default value is 2.
-
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. loose does. tight does
@@ -523,6 +519,11 @@ OPTIONS (DEPRECATED)
            line. The flag is unset by default. Warning: This option is
            deprecated since version 0.20.0. It will be removed by version
            1.0.
+
+       --extension-indent=COLS
+           Indentation of items inside extension nodes (COLS columns). The
+           default value is 2. Warning: This option is deprecated since
+           version 0.20.0. It will be removed by version 1.0.
 
        --no-align-cases
            Unset align-cases.
