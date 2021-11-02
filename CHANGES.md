@@ -20,7 +20,7 @@
     - `function-indent` (#1897, @gpetiot)
     - `function-indent-nested` (#1898, @gpetiot)
     - `if-then-else={fit-or-vertical,k-r}` (#1899, @gpetiot)
-    - `indicate-multiline-delimiters=closing-on-separate-line` (#<PR_NUMBER>, @gpetiot)
+    - `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
 
 #### Bug fixes
 
