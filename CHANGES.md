@@ -12,6 +12,7 @@
     - `break-before-in` (#1888, @gpetiot)
     - `break-cases={toplevel,all}` (#1890, @gpetiot)
     - `break-collection-expressions` (#1891, @gpetiot)
+    - `break-fun-decl=smart` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
