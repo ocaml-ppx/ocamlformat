@@ -622,7 +622,9 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
     let names = ["function-indent"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
+      ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with function_indent= x})
       (fun conf -> conf.function_indent)
 

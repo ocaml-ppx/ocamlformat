@@ -158,10 +158,6 @@ OPTIONS (CODE FORMATTING STYLE)
            (`:` or `=`). tight-decl is tight for declarations and loose for
            instantiations. The default value is loose.
 
-       --function-indent=COLS
-           Indentation of function cases (COLS columns). The default value is
-           2.
-
        --function-indent-nested={never|always|auto}
            Whether the function-indent parameter should be applied even when
            in a sub-block. never only applies function-indent if the function
@@ -524,6 +520,11 @@ OPTIONS (DEPRECATED)
            Indentation of items inside extension nodes (COLS columns). The
            default value is 2. Warning: This option is deprecated since
            version 0.20.0. It will be removed by version 1.0.
+
+       --function-indent=COLS
+           Indentation of function cases (COLS columns). The default value is
+           2. Warning: This option is deprecated since version 0.20.0. It
+           will be removed by version 1.0.
 
        --no-align-cases
            Unset align-cases.
