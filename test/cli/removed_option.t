@@ -62,7 +62,7 @@ Setting an option to a deprecated value on the command line should also display 
 
   $ ocamlformat a.ml --break-separators=after-and-docked
   ocamlformat: option `--break-separators': value `after-and-docked` has been
-               removed in version 0.12. One can get a similar behaviour by
+               removed in version 0.12.0. One can get a similar behaviour by
                setting `break-separators=after`, `space-around-lists=false`,
                and `dock-collection-brackets=false`.
   Usage: ocamlformat [OPTION]... [SRC]...
@@ -71,9 +71,9 @@ Setting an option to a deprecated value on the command line should also display 
 
   $ ocamlformat a.ml --break-string-literals=wrap
   ocamlformat: option `--break-string-literals': value `wrap` has been removed
-               in version 0.12. It has been replaced by the new default `auto`
-               value, which breaks lines at newlines and wraps string literals
-               at the margin.
+               in version 0.12.0. It has been replaced by the new default
+               `auto` value, which breaks lines at newlines and wraps string
+               literals at the margin.
   Usage: ocamlformat [OPTION]... [SRC]...
   Try `ocamlformat --help' for more information.
   [1]

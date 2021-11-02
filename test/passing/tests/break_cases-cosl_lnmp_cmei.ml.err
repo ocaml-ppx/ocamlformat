@@ -1,5 +1,5 @@
-Warning: option `indicate-multiline-delimiters`: value `closing-on-separate-line` is deprecated since version 0.20.0. It will be removed by version 1.0.
-Warning: option `break-cases`: value `all` is deprecated since version 0.20.0. It will be removed by version 1.0.
+Warning: option `indicate-multiline-delimiters`: value `closing-on-separate-line` is deprecated since version 0.20.0. It will be removed by version 1.0.0.
+Warning: option `break-cases`: value `all` is deprecated since version 0.20.0. It will be removed by version 1.0.0.
 Warning: tests/break_cases.ml:76 exceeds the margin
 Warning: tests/break_cases.ml:151 exceeds the margin
 Warning: tests/break_cases.ml:255 exceeds the margin

@@ -171,7 +171,7 @@ let info =
          Shell-style regular expressions are supported. Lines starting with \
          $(b,#) are ignored and can be used as comments." ]
   in
-  Term.info "ocamlformat" ~version:Version.version ~doc ~man
+  Term.info "ocamlformat" ~version:Version.current ~doc ~man
 
 let ocaml_version_conv =
   let parse x =
@@ -181,7 +181,10 @@ let ocaml_version_conv =
   in
   (parse, Ocaml_version.pp)
 
-let removed_by_v1_0 = "It will be removed by version 1.0."
+let removed_by_v1_0 =
+  Format.asprintf "It will be removed by version %a." Version.pp V1_0_0
+
+let deprecated_orphan = C.deprecated ~since:V0_20_0 removed_by_v1_0
 
 (** Options affecting formatting *)
 module Formatting = struct
@@ -190,24 +193,24 @@ module Formatting = struct
   let align_cases =
     let doc = "Align match/try cases vertically." in
     let names = ["align-cases"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
+    C.flag ~default:false ~names ~doc ~kind
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with align_cases= x})
       (fun conf -> conf.align_cases)
 
   let align_constructors_decl =
     let doc = "Align type declarations vertically." in
     let names = ["align-constructors-decl"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
+    C.flag ~default:false ~names ~doc ~kind
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with align_constructors_decl= x})
       (fun conf -> conf.align_constructors_decl)
 
   let align_variants_decl =
     let doc = "Align type variants declarations vertically." in
     let names = ["align-variants-decl"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
+    C.flag ~default:false ~names ~doc ~kind
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with align_variants_decl= x})
       (fun conf -> conf.align_variants_decl)
 
@@ -243,15 +246,13 @@ module Formatting = struct
           "$(b,auto) will only break the line if the $(i,in) keyword does \
            not fit on the previous line." ]
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with break_before_in= x})
       (fun conf -> conf.break_before_in)
 
   let break_cases =
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"fit" `Fit
           "Specifying $(b,fit) lets pattern matches break at the margin \
@@ -261,14 +262,14 @@ module Formatting = struct
            the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored."
-      ; C.Value.make ~name:"toplevel" `Toplevel ~deprecated
+      ; C.Value.make ~name:"toplevel" `Toplevel ~deprecated:deprecated_orphan
           "$(b,toplevel) forces top-level cases (i.e. not nested \
            or-patterns) to break across lines, otherwise break naturally at \
            the margin."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
            line, otherwise breaks."
-      ; C.Value.make ~name:"all" `All ~deprecated
+      ; C.Value.make ~name:"all" `All ~deprecated:deprecated_orphan
           "$(b,all) forces all pattern matches to break across lines." ]
     in
     C.choice ~names ~all ~doc ~kind
@@ -288,21 +289,19 @@ module Formatting = struct
           "$(b,wrap) will group simple expressions and try to format them \
            in a single line." ]
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with break_collection_expressions= x})
       (fun conf -> conf.break_collection_expressions)
 
   let break_fun_decl =
     let doc = "Style for function declarations and types." in
     let names = ["break-fun-decl"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart ~deprecated
+      ; C.Value.make ~name:"smart" `Smart ~deprecated:deprecated_orphan
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
            on their line if they fit." ]
     in
@@ -313,13 +312,12 @@ module Formatting = struct
   let break_fun_sig =
     let doc = "Style for function signatures." in
     let names = ["break-fun-sig"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart ~deprecated
+      ; C.Value.make ~name:"smart" `Smart ~deprecated:deprecated_orphan
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
            on their line if they fit." ]
     in
@@ -367,7 +365,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
-        [ C.Value_removed.make ~name:"after-and-docked" ~version:"0.12"
+        [ C.Value_removed.make ~name:"after-and-docked" ~since:V0_12_0
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
@@ -395,12 +393,11 @@ module Formatting = struct
           "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ]
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       ~removed_values:
         (C.Value_removed.make_list
            ~names:["newlines"; "newlines-and-wrap"; "wrap"]
-           ~version:"0.12"
+           ~since:V0_12_0
            ~msg:
              "It has been replaced by the new default `auto` value, which \
               breaks lines at newlines and wraps string literals at the \
@@ -418,8 +415,7 @@ module Formatting = struct
           "$(b,natural) will break struct-end phrases naturally at the \
            margin." ]
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
       (fun conf -> if conf.break_struct then `Force else `Natural)
 
@@ -466,10 +462,9 @@ module Formatting = struct
     let doc =
       "Add parentheses around matching constructs that fit on a single line."
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.flag
       ~names:["disambiguate-non-breaking-match"]
-      ~default:false ~doc ~kind ~status:(`Deprecated deprecated)
+      ~default:false ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with disambiguate_non_breaking_match= x})
       (fun conf -> conf.disambiguate_non_breaking_match)
 
@@ -491,7 +486,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
-        [ C.Value_removed.make ~name:"after" ~version:"0.14.2"
+        [ C.Value_removed.make ~name:"after" ~since:V0_14_2
             ~msg:
               "This value has been renamed `after-when-possible` to take \
                into account the technical limitations of ocamlformat, the \
@@ -524,7 +519,6 @@ module Formatting = struct
 
   let ( (* doc_comments_val *) ) =
     let names = ["doc-comments-val"] in
-    let version = "0.16.0" in
     let msg =
       "If you are using `doc-comments-val=before` in combination with \
        `doc-comments=before` then only `doc-comments=before` is now \
@@ -539,7 +533,7 @@ module Formatting = struct
        the same behavior can now be achieved by setting `doc-comments` \
        only."
     in
-    C.removed_option ~names ~version ~msg
+    C.removed_option ~names ~since:V0_16_0 ~msg
 
   let dock_collection_brackets =
     let doc =
@@ -557,15 +551,13 @@ module Formatting = struct
 
   let ( (* escape_chars *) ) =
     let names = ["escape-chars"] in
-    let version = "0.16.0" in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~version ~msg
+    C.removed_option ~names ~since:V0_16_0 ~msg
 
   let ( (* escape_strings *) ) =
     let names = ["escape-strings"] in
-    let version = "0.16.0" in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~version ~msg
+    C.removed_option ~names ~since:V0_16_0 ~msg
 
   let exp_grouping =
     let doc = "Style of expression grouping." in
@@ -587,17 +579,15 @@ module Formatting = struct
       "Indentation of items inside extension nodes ($(docv) columns)."
     in
     let names = ["extension-indent"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated)
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with extension_indent= x})
       (fun conf -> conf.extension_indent)
 
   let ( (* extension_sugar *) ) =
     let names = ["extension-sugar"] in
-    let version = "0.17.0" in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~version ~msg
+    C.removed_option ~names ~since:V0_17_0 ~msg
 
   let field_space =
     let doc =
@@ -622,9 +612,8 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
     let names = ["function-indent"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated)
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with function_indent= x})
       (fun conf -> conf.function_indent)
 
@@ -643,26 +632,25 @@ module Formatting = struct
       ; C.Value.make ~name:"auto" `Auto
           "$(b,auto) applies $(b,function-indent) when seen fit." ]
     in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with function_indent_nested= x})
       (fun conf -> conf.function_indent_nested)
 
   let if_then_else =
     let doc = "If-then-else formatting." in
     let names = ["if-then-else"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) tries to format an if-then-else expression on a \
            single line."
-      ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical ~deprecated
+      ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
+          ~deprecated:deprecated_orphan
           "$(b,fit-or-vertical) vertically breaks branches if they do not \
            fit on a single line."
       ; C.Value.make ~name:"keyword-first" `Keyword_first
           "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line."
-      ; C.Value.make ~name:"k-r" `K_R ~deprecated
+      ; C.Value.make ~name:"k-r" `K_R ~deprecated:deprecated_orphan
           "$(b,k-r) formats if-then-else expressions with parentheses that \
            match the K&R style." ]
     in
@@ -677,9 +665,8 @@ module Formatting = struct
        another `let`."
     in
     let names = ["indent-after-in"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
-      ~status:(`Deprecated deprecated)
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with indent_after_in= x})
       (fun conf -> conf.indent_after_in)
 
@@ -688,7 +675,6 @@ module Formatting = struct
       "How to indicate that two matching delimiters live on different lines."
     in
     let names = ["indicate-multiline-delimiters"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"no" `No
           "$(b, no) doesn't do anything special to indicate the closing \
@@ -696,8 +682,8 @@ module Formatting = struct
       ; C.Value.make ~name:"space" `Space
           "$(b,space) prints a space inside the delimiter to indicate the \
            matching one is on a different line."
-      ; C.Value.make ~name:"closing-on-separate-line" ~deprecated
-          `Closing_on_separate_line
+      ; C.Value.make ~name:"closing-on-separate-line"
+          ~deprecated:deprecated_orphan `Closing_on_separate_line
           "$(b, closing-on-separate-line) makes sure that the closing \
            delimiter is on its own line." ]
     in
@@ -771,21 +757,19 @@ module Formatting = struct
        not fit on a single line."
     in
     let names = ["let-binding-indent"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
-      ~status:(`Deprecated deprecated)
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with let_binding_indent= x})
       (fun conf -> conf.let_binding_indent)
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) spacing separates adjacent let bindings in a module \
            according to module-item-spacing."
-      ; C.Value.make ~name:"sparse" `Sparse ~deprecated
+      ; C.Value.make ~name:"sparse" `Sparse ~deprecated:deprecated_orphan
           "$(b,sparse) places two open lines between a multi-line \
            module-level let binding and the next."
       ; C.Value.make ~name:"double-semicolon" `Double_semicolon
@@ -814,9 +798,8 @@ module Formatting = struct
 
   let ( (* let_open *) ) =
     let names = ["let-open"] in
-    let version = "0.17.0" in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~version ~msg
+    C.removed_option ~names ~since:V0_17_0 ~msg
 
   let line_endings =
     let doc = "Line endings used." in
@@ -841,9 +824,8 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of match/try cases ($(docv) columns)." in
     let names = ["match-indent"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated)
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with match_indent= x})
       (fun conf -> conf.match_indent)
 
@@ -1153,7 +1135,7 @@ let disable_outside_detected_project =
        OCamlFormat v1.0."
   in
   let default = false in
-  let deprecated = C.deprecated ~since_version:"0.10.0" removed_by_v1_0 in
+  let deprecated = C.deprecated ~since:V0_10_0 removed_by_v1_0 in
   let docs = C.section_name Operational (`Deprecated deprecated) in
   mk ~default
     Arg.(value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
@@ -1673,11 +1655,11 @@ let (_profile : t option C.t) =
     ; C.Value.make ~name:"default" (Some default_profile)
         "$(b,default) is an alias for the $(b,conventional) profile."
     ; C.Value.make ~name:"compact" (Some compact_profile)
-        ~deprecated:(C.deprecated ~since_version:"0.20.0" removed_by_v1_0)
+        ~deprecated:deprecated_orphan
         "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
          for a generally more compact code style."
     ; C.Value.make ~name:"sparse" (Some sparse_profile)
-        ~deprecated:(C.deprecated ~since_version:"0.20.0" removed_by_v1_0)
+        ~deprecated:deprecated_orphan
         "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
          for a generally more sparse code style."
     ; C.Value.make ~name:"ocamlformat" (Some ocamlformat_profile)
@@ -1763,13 +1745,13 @@ let parse_line config ~from s =
     let value = String.strip value in
     match (name, from) with
     | "version", `File _ ->
-        if String.equal Version.version value || !no_version_check then
+        if String.equal Version.current value || !no_version_check then
           Ok config
         else
           Error
             (`Bad_value
               ( name
-              , Format.sprintf "expecting %S but got %S" Version.version
+              , Format.sprintf "expecting %S but got %S" Version.current
                   value ) )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false

@@ -159,7 +159,7 @@ let info =
          sent as a reply of the same form $(b,Format) $(i,CSEXP)"
     ; `P "Unknown commands are ignored." ]
   in
-  Term.info "ocamlformat-rpc" ~version:Version.version ~doc ~man
+  Term.info "ocamlformat-rpc" ~version:Version.current ~doc ~man
 
 let rpc_main_t = Term.(const rpc_main $ const ())
 
