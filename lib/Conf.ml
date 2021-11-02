@@ -643,7 +643,8 @@ module Formatting = struct
       ; C.Value.make ~name:"auto" `Auto
           "$(b,auto) applies $(b,function-indent) when seen fit." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with function_indent_nested= x})
       (fun conf -> conf.function_indent_nested)
 
