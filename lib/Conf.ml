@@ -677,7 +677,9 @@ module Formatting = struct
        another `let`."
     in
     let names = ["indent-after-in"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
+      ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with indent_after_in= x})
       (fun conf -> conf.indent_after_in)
 
