@@ -15,6 +15,7 @@
     - `break-fun-decl=smart` (#1892, @gpetiot)
     - `break-fun-sig=smart` (#1893, @gpetiot)
     - `break-string-literals` (#1894, @gpetiot)
+    - `break-struct` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 

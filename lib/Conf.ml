@@ -418,7 +418,8 @@ module Formatting = struct
           "$(b,natural) will break struct-end phrases naturally at the \
            margin." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated)
       (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
       (fun conf -> if conf.break_struct then `Force else `Natural)
 
