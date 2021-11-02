@@ -10,7 +10,7 @@
     - `align-cases`, `align-constructors-decl` and `align-variants-decl` (#1793, @gpetiot)
     - `disambiguate-non-breaking-match` (#1805, @gpetiot)
     - `break-before-in` (#1888, @gpetiot)
-    - `break-cases={toplevel,all}` (#<PR_NUMBER>, @gpetiot)
+    - `break-cases={toplevel,all}` (#1890, @gpetiot)
 
 #### Bug fixes
 
