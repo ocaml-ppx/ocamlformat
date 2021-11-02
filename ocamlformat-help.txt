@@ -209,9 +209,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
            places two open lines between a multi-line module-level let
-           binding and the next. double-semicolon places double semicolons
-           and an open line between a multi-line module-level let binding and
-           the next. The default value is compact.
+           binding and the next. Warning: Value `sparse` is deprecated since
+           version 0.20.0. It will be removed by version 1.0.
+           double-semicolon places double semicolons and an open line between
+           a multi-line module-level let binding and the next. The default
+           value is compact.
 
        --let-module={compact|sparse}
            Module binding formatting. compact does not break a line after the
