@@ -1,2 +1,1 @@
 Warning: break-collection-expressions: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
-Warning: tests/break_separators.ml:212 exceeds the margin

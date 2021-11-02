@@ -66,13 +66,6 @@ OPTIONS (CODE FORMATTING STYLE)
            deprecated since version 0.20.0. It will be removed by version
            1.0. The default value is fit.
 
-       --break-collection-expressions={fit-or-vertical|wrap}
-           Break collection expressions (lists and arrays) elements by
-           elements. fit-or-vertical vertically breaks expressions if they do
-           not fit on a single line. wrap will group simple expressions and
-           try to format them in a single line. The default value is
-           fit-or-vertical.
-
        --break-fun-decl={wrap|fit-or-vertical|smart}
            Style for function declarations and types. wrap breaks only if
            necessary. fit-or-vertical vertically breaks arguments if they do
@@ -505,6 +498,14 @@ OPTIONS (DEPRECATED)
            the previous line. The default value is fit-or-vertical. Warning:
            This option is deprecated since version 0.20.0. It will be removed
            by version 1.0.
+
+       --break-collection-expressions={fit-or-vertical|wrap}
+           Break collection expressions (lists and arrays) elements by
+           elements. fit-or-vertical vertically breaks expressions if they do
+           not fit on a single line. wrap will group simple expressions and
+           try to format them in a single line. The default value is
+           fit-or-vertical. Warning: This option is deprecated since version
+           0.20.0. It will be removed by version 1.0.
 
        --disable-outside-detected-project
            Warning: this option is deprecated and will be removed by
