@@ -1,3 +1,4 @@
+Warning: option `break-cases`: value `toplevel` is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/break_cases.ml:59 exceeds the margin
 Warning: tests/break_cases.ml:122 exceeds the margin
 Warning: tests/break_cases.ml:208 exceeds the margin

@@ -59,9 +59,12 @@ OPTIONS (CODE FORMATTING STYLE)
            indicate-nested-or-patterns option is not needed, and so ignored.
            toplevel forces top-level cases (i.e. not nested or-patterns) to
            break across lines, otherwise break naturally at the margin.
-           fit-or-vertical tries to fit all or-patterns on the same line,
-           otherwise breaks. all forces all pattern matches to break across
-           lines. The default value is fit.
+           Warning: Value `toplevel` is deprecated since version 0.20.0. It
+           will be removed by version 1.0. fit-or-vertical tries to fit all
+           or-patterns on the same line, otherwise breaks. all forces all
+           pattern matches to break across lines. Warning: Value `all` is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0. The default value is fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
