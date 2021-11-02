@@ -251,6 +251,7 @@ module Formatting = struct
   let break_cases =
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"fit" `Fit
           "Specifying $(b,fit) lets pattern matches break at the margin \
@@ -260,14 +261,14 @@ module Formatting = struct
            the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored."
-      ; C.Value.make ~name:"toplevel" `Toplevel
+      ; C.Value.make ~name:"toplevel" `Toplevel ~deprecated
           "$(b,toplevel) forces top-level cases (i.e. not nested \
            or-patterns) to break across lines, otherwise break naturally at \
            the margin."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
            line, otherwise breaks."
-      ; C.Value.make ~name:"all" `All
+      ; C.Value.make ~name:"all" `All ~deprecated
           "$(b,all) forces all pattern matches to break across lines." ]
     in
     C.choice ~names ~all ~doc ~kind
