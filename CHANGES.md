@@ -9,7 +9,7 @@
   + Options that are not set by the preset profiles are now deprecated and will be removed by version 1.0:
     - `align-cases`, `align-constructors-decl` and `align-variants-decl` (#1793, @gpetiot)
     - `disambiguate-non-breaking-match` (#1805, @gpetiot)
-    - `break-before-in` (#<PR_NUMBER>, @gpetiot)
+    - `break-before-in` (#1888, @gpetiot)
 
 #### Bug fixes
 
