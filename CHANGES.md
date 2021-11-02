@@ -23,7 +23,7 @@
     - `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
     - `indent-after-in` (#1901, @gpetiot)
     - `let-binding-indent` (#1902, @gpetiot)
-    - `let-binding-spacing=sparse` (#<PR_NUMBER>, @gpetiot)
+    - `let-binding-spacing=sparse` (#1903, @gpetiot)
 
 #### Bug fixes
 
