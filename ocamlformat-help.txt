@@ -78,7 +78,9 @@ OPTIONS (CODE FORMATTING STYLE)
            Style for function signatures. wrap breaks only if necessary.
            fit-or-vertical vertically breaks arguments if they do not fit on
            a single line. smart is like fit-or-vertical but try to fit
-           arguments on their line if they fit. The default value is wrap.
+           arguments on their line if they fit. Warning: Value `smart` is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0. The default value is wrap.
 
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple

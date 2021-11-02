@@ -313,12 +313,13 @@ module Formatting = struct
   let break_fun_sig =
     let doc = "Style for function signatures." in
     let names = ["break-fun-sig"] in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart
+      ; C.Value.make ~name:"smart" `Smart ~deprecated
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
            on their line if they fit." ]
     in
