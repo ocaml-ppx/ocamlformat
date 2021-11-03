@@ -378,11 +378,6 @@ OPTIONS (CODE FORMATTING STYLE)
            between constructors and record fields. The default value is
            compact.
 
-       --type-decl-indent=COLS
-           Indentation of type declarations (COLS columns) if they do not fit
-           on a single line. The default value is 2. Cannot be set in
-           attributes.
-
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
            into paragraphs by open lines (two or more consecutive newlines),
@@ -559,6 +554,12 @@ OPTIONS (DEPRECATED)
            columns). The default value is 0. Warning: This option is
            deprecated since version 0.20.0. It will be removed by version
            1.0.0.
+
+       --type-decl-indent=COLS
+           Indentation of type declarations (COLS columns) if they do not fit
+           on a single line. The default value is 2. Cannot be set in
+           attributes. Warning: This option is deprecated since version
+           0.20.0. It will be removed by version 1.0.0.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)

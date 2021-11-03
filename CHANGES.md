@@ -31,6 +31,7 @@
     - `parens-tuple-patterns` (#1908, @gpetiot)
     - `sequence-style=before` (#1909, @gpetiot)
     - `stritem-extension-indent` (#1910, @gpetiot)
+    - `type-decl-indent` (#1911, @gpetiot)
 
 #### Bug fixes
 
