@@ -30,7 +30,7 @@
     - `nested-match` (#1907, @gpetiot)
     - `parens-tuple-patterns` (#1908, @gpetiot)
     - `sequence-style=before` (#1909, @gpetiot)
-    - `stritem-extension-indent` (#<PR_NUMBER>, @gpetiot)
+    - `stritem-extension-indent` (#1910, @gpetiot)
 
 #### Bug fixes
 
