@@ -241,7 +241,9 @@ OPTIONS (CODE FORMATTING STYLE)
            not leave open lines between one-liners of similar sorts. sparse
            will always break a line between two items. preserve will not
            leave open lines between one-liners of similar sorts unless there
-           is an open line in the input. The default value is compact.
+           is an open line in the input. Warning: Value `preserve` is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0.0. The default value is compact.
 
        --nested-match={wrap|align}
            Style of a pattern-matching nested in the last case of another

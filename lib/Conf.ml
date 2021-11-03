@@ -876,7 +876,7 @@ module Formatting = struct
            similar sorts."
       ; C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) will always break a line between two items."
-      ; C.Value.make ~name:"preserve" `Preserve
+      ; C.Value.make ~name:"preserve" `Preserve ~deprecated:deprecated_orphan
           "$(b,preserve) will not leave open lines between one-liners of \
            similar sorts unless there is an open line in the input." ]
     in
