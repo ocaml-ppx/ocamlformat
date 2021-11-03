@@ -28,6 +28,7 @@
     - `match-indent-nested` (#1905, @gpetiot)
     - `module-item-spacing=preserve` (#1906, @gpetiot)
     - `nested-match` (#1907, @gpetiot)
+    - `parens-tuple-patterns` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 

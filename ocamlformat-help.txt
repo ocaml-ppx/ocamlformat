@@ -333,12 +333,6 @@ OPTIONS (CODE FORMATTING STYLE)
            tuples. multi-line-only mode will try to skip parens for
            single-line tuples. The default value is always.
 
-       --parens-tuple-patterns={multi-line-only|always}
-           Parens tuple patterns. multi-line-only mode will try to skip
-           parens for single-line tuple patterns. always always uses
-           parentheses around tuples patterns. The default value is
-           multi-line-only.
-
        --parse-docstrings
            Parse and format docstrings. The flag is unset by default.
 
@@ -554,6 +548,13 @@ OPTIONS (DEPRECATED)
 
        --no-disambiguate-non-breaking-match
            Unset disambiguate-non-breaking-match.
+
+       --parens-tuple-patterns={multi-line-only|always}
+           Parens tuple patterns. multi-line-only mode will try to skip
+           parens for single-line tuple patterns. always always uses
+           parentheses around tuples patterns. The default value is
+           multi-line-only. Warning: This option is deprecated since version
+           0.20.0. It will be removed by version 1.0.0.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)

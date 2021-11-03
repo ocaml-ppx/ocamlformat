@@ -956,7 +956,7 @@ module Formatting = struct
       ; C.Value.make ~name:"always" `Always
           "$(b,always) always uses parentheses around tuples patterns." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with parens_tuple_patterns= x})
       (fun conf -> conf.parens_tuple_patterns)
 
