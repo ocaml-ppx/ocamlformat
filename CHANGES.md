@@ -27,6 +27,7 @@
     - `match-indent` (#1904, @gpetiot)
     - `match-indent-nested` (#1905, @gpetiot)
     - `module-item-spacing=preserve` (#1906, @gpetiot)
+    - `nested-match` (#1907, @gpetiot)
 
 #### Bug fixes
 
