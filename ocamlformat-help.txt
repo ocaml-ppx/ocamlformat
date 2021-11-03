@@ -372,10 +372,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Add a space inside the delimiters of variants. The flag is set by
            default.
 
-       --stritem-extension-indent=COLS
-           Indentation of structure items inside extension nodes (COLS
-           columns). The default value is 0.
-
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break
@@ -557,6 +553,12 @@ OPTIONS (DEPRECATED)
            parentheses around tuples patterns. The default value is
            multi-line-only. Warning: This option is deprecated since version
            0.20.0. It will be removed by version 1.0.0.
+
+       --stritem-extension-indent=COLS
+           Indentation of structure items inside extension nodes (COLS
+           columns). The default value is 0. Warning: This option is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0.0.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)

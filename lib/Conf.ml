@@ -1048,6 +1048,7 @@ module Formatting = struct
     in
     let names = ["stritem-extension-indent"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with stritem_extension_indent= x})
       (fun conf -> conf.stritem_extension_indent)
 
