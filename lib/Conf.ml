@@ -1075,6 +1075,7 @@ module Formatting = struct
     in
     let names = ["type-decl-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
+      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with type_decl_indent= x})
       (fun conf -> conf.type_decl_indent)
 
