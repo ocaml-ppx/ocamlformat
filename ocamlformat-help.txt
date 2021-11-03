@@ -231,12 +231,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
 
-       --match-indent-nested={never|always|auto}
-           Whether the match-indent parameter should be applied even when in
-           a sub-block. never only applies match-indent if the match block
-           starts a line. always always apply match-indent. auto applies
-           match-indent when seen fit. The default value is never.
-
        --max-indent=COLS
            Maximum offset (COLS columns) added to a new line in addition to
            the offset of the previous line. The default value is 68. Cannot
@@ -537,6 +531,14 @@ OPTIONS (DEPRECATED)
            Indentation of match/try cases (COLS columns). The default value
            is 0. Warning: This option is deprecated since version 0.20.0. It
            will be removed by version 1.0.0.
+
+       --match-indent-nested={never|always|auto}
+           Whether the match-indent parameter should be applied even when in
+           a sub-block. never only applies match-indent if the match block
+           starts a line. always always apply match-indent. auto applies
+           match-indent when seen fit. The default value is never. Warning:
+           This option is deprecated since version 0.20.0. It will be removed
+           by version 1.0.0.
 
        --no-align-cases
            Unset align-cases.
