@@ -245,13 +245,6 @@ OPTIONS (CODE FORMATTING STYLE)
            deprecated since version 0.20.0. It will be removed by version
            1.0.0. The default value is compact.
 
-       --nested-match={wrap|align}
-           Style of a pattern-matching nested in the last case of another
-           pattern-matching. wrap wraps the nested pattern-matching with
-           parentheses and adds indentation. align vertically aligns the
-           nested pattern-matching under the encompassing pattern-matching.
-           The default value is wrap.
-
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
@@ -541,6 +534,14 @@ OPTIONS (DEPRECATED)
            match-indent when seen fit. The default value is never. Warning:
            This option is deprecated since version 0.20.0. It will be removed
            by version 1.0.0.
+
+       --nested-match={wrap|align}
+           Style of a pattern-matching nested in the last case of another
+           pattern-matching. wrap wraps the nested pattern-matching with
+           parentheses and adds indentation. align vertically aligns the
+           nested pattern-matching under the encompassing pattern-matching.
+           The default value is wrap. Warning: This option is deprecated
+           since version 0.20.0. It will be removed by version 1.0.0.
 
        --no-align-cases
            Unset align-cases.

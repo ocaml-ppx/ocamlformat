@@ -898,7 +898,7 @@ module Formatting = struct
           "$(b,align) vertically aligns the nested pattern-matching under \
            the encompassing pattern-matching." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with nested_match= x})
       (fun conf -> conf.nested_match)
 
