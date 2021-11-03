@@ -844,7 +844,7 @@ module Formatting = struct
       ; C.Value.make ~name:"auto" `Auto
           "$(b,auto) applies $(b,match-indent) when seen fit." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> {conf with match_indent_nested= x})
       (fun conf -> conf.match_indent_nested)
 
