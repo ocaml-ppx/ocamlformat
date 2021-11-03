@@ -26,6 +26,7 @@
     - `let-binding-spacing=sparse` (#1903, @gpetiot)
     - `match-indent` (#1904, @gpetiot)
     - `match-indent-nested` (#1905, @gpetiot)
+    - `module-item-spacing=preserve` (#<PR_NUMBER>, @gpetiot)
 
 #### Bug fixes
 
