@@ -346,7 +346,9 @@ OPTIONS (CODE FORMATTING STYLE)
        --sequence-style={terminator|separator|before}
            Style of sequence. terminator only puts spaces after semicolons.
            separator puts spaces before and after semicolons. before breaks
-           the sequence before semicolons. The default value is terminator.
+           the sequence before semicolons. Warning: Value `before` is
+           deprecated since version 0.20.0. It will be removed by version
+           1.0.0. The default value is terminator.
 
        --single-case={compact|sparse}
            Style of pattern matching expressions with only a single case.

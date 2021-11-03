@@ -29,6 +29,7 @@
     - `module-item-spacing=preserve` (#1906, @gpetiot)
     - `nested-match` (#1907, @gpetiot)
     - `parens-tuple-patterns` (#1908, @gpetiot)
+    - `sequence-style=before` (#1909, @gpetiot)
 
 #### Bug fixes
 

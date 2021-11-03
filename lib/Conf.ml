@@ -990,7 +990,7 @@ module Formatting = struct
           "$(b,terminator) only puts spaces after semicolons."
       ; C.Value.make ~name:"separator" `Separator
           "$(b,separator) puts spaces before and after semicolons."
-      ; C.Value.make ~name:"before" `Before
+      ; C.Value.make ~name:"before" `Before ~deprecated:deprecated_orphan
           "$(b,before) breaks the sequence before semicolons." ]
     in
     C.choice ~names ~all ~doc ~kind
