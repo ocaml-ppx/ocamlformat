@@ -335,6 +335,15 @@ let _ = [%ext match x with _ -> x] [@attr]
 let _ = f ((match%ext x with _ -> x) [@attr])
 let _ = f ([%ext match x with _ -> x] [@attr])
 
+let _ = try%ext x with _ -> x
+let _ = [%ext try x with _ -> x]
+let _ = f (try%ext x with _ -> x)
+let _ = f [%ext try x with _ -> x]
+let _ = (try%ext x with _ -> x) [@attr]
+let _ = [%ext try x with _ -> x] [@attr]
+let _ = f ((try%ext x with _ -> x) [@attr])
+let _ = f ([%ext try x with _ -> x] [@attr])
+
 let _ = fun%ext x -> x
 let _ = [%ext fun x -> x]
 let _ = f (fun%ext x -> x)
