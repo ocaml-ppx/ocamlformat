@@ -75,6 +75,8 @@
 
   + Fix indentation of with-type constraints (#1883, @gpetiot)
 
+  + Preserve sugared syntax of extension points with attributes (#1913, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
