@@ -443,6 +443,22 @@ let _ = f ((fun%ext x -> x) [@attr])
 
 let _ = f ([%ext fun x -> x] [@attr])
 
+let _ = function%ext x -> x
+
+let _ = [%ext function x -> x]
+
+let _ = f (function%ext x -> x)
+
+let _ = f [%ext function x -> x]
+
+let _ = (function%ext x -> x) [@attr]
+
+let _ = [%ext function x -> x] [@attr]
+
+let _ = f ((function%ext x -> x) [@attr])
+
+let _ = f ([%ext function x -> x] [@attr])
+
 let _ = new%ext x
 
 let _ = [%ext new x]
