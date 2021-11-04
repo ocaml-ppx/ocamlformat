@@ -303,6 +303,14 @@ let _ = f (assert%lwt false)
 
 let _ = f [%lwt assert false]
 
+let _ = (assert%lwt false) [@attr]
+
+let _ = [%lwt assert false] [@attr]
+
+let _ = f ((assert%lwt false) [@attr])
+
+let _ = f ([%lwt assert false] [@attr])
+
 let _ = lazy%ext e
 
 let _ = [%ext lazy e]
@@ -310,6 +318,14 @@ let _ = [%ext lazy e]
 let _ = f (lazy%ext e)
 
 let _ = f [%ext lazy e]
+
+let _ = (lazy%ext e) [@attr]
+
+let _ = [%ext lazy e] [@attr]
+
+let _ = f ((lazy%ext e) [@attr])
+
+let _ = f ([%ext lazy e] [@attr])
 
 let _ =
   object%ext
@@ -335,6 +351,34 @@ let _ =
            method x = y
          end]
 
+let _ =
+  (object%ext
+     method x = y
+  end )
+  [@attr]
+
+let _ =
+  [%ext
+       object
+         method x = y
+       end]
+  [@attr]
+
+let _ =
+  f
+    ((object%ext
+        method x = y
+     end )
+    [@attr] )
+
+let _ =
+  f
+    ( [%ext
+           object
+             method x = y
+           end]
+    [@attr] )
+
 let _ = if%ext x then y else z
 
 let _ = [%ext if x then y else z]
@@ -342,6 +386,14 @@ let _ = [%ext if x then y else z]
 let _ = f (if%ext x then y else z)
 
 let _ = f [%ext if x then y else z]
+
+let _ = (if%ext x then y else z) [@attr]
+
+let _ = [%ext if x then y else z] [@attr]
+
+let _ = f ((if%ext x then y else z) [@attr])
+
+let _ = f ([%ext if x then y else z] [@attr])
 
 let _ = new%ext x
 
