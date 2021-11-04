@@ -326,6 +326,15 @@ let _ = [%ext if x then y else z] [@attr]
 let _ = f ((if%ext x then y else z) [@attr])
 let _ = f ([%ext if x then y else z] [@attr])
 
+let _ = match%ext x with _ -> x
+let _ = [%ext match x with _ -> x]
+let _ = f (match%ext x with _ -> x)
+let _ = f [%ext match x with _ -> x]
+let _ = (match%ext x with _ -> x) [@attr]
+let _ = [%ext match x with _ -> x] [@attr]
+let _ = f ((match%ext x with _ -> x) [@attr])
+let _ = f ([%ext match x with _ -> x] [@attr])
+
 let _ = new%ext x
 let _ = [%ext new x]
 let _ = f (new%ext x)
