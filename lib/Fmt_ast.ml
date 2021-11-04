@@ -2458,10 +2458,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     , _ )
               ; pstr_loc= _ } as str ) ] )
     when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
-      let parens = parens || has_attr in
+      let outer_parens = has_attr && parens in
+      let inner_parens = has_attr || parens in
       hvbox 0
-        ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
-        $ fmt_atrs )
+        (Params.parens_if outer_parens c.conf
+           ( fmt_expression c ~box ?eol ~parens:inner_parens ~ext
+               (sub_exp ~ctx:(Str str) e1)
+           $ fmt_atrs ) )
   | Pexp_extension
       ( ext
       , PStr
