@@ -2870,7 +2870,7 @@
  (action
   (with-stdout-to js_source.ml.stdout
    (with-stderr-to js_source.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=3 --profile=janestreet %{dep:tests/js_source.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=4 --profile=janestreet %{dep:tests/js_source.ml})))))
 
 (rule
  (alias runtest)
