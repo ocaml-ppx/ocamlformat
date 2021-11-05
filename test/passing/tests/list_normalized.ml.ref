@@ -3,10 +3,7 @@ let x = [1; 2; 3; 4]
 (* comments may move during normalization *)
 let x =
   (* a *)
-  [ 1 (* b *)
-  ; (* c *)
-    2
-  ; 3
+  [ 1 (* b *); (* c *) 2; 3
   ; 4
     (* d *)
     (* e *) ]

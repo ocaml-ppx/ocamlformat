@@ -78,10 +78,7 @@ let rename (us, q) sub =
 
 let _ =
   List.map ~f
-    ( [ aaaaaaaaaaaaaaa
-      ; bbbbbbbbbbbbbbb
-      ; ccccccccccccccc
-      ; ddddddddddddddd
+    ( [ aaaaaaaaaaaaaaa; bbbbbbbbbbbbbbb; ccccccccccccccc; ddddddddddddddd
       ; eeeeeeeeeeeeeee ]
     @ l )
 

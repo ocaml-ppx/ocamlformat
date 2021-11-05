@@ -26,19 +26,9 @@ let import version ~src ~dst f =
        (Filename.concat dst f) version src f )
 
 let parser_files =
-  [ "ast_helper.ml"
-  ; "ast_helper.mli"
-  ; "ast_mapper.ml"
-  ; "ast_mapper.mli"
-  ; "asttypes.mli"
-  ; "docstrings.ml"
-  ; "docstrings.mli"
-  ; "lexer.mll"
-  ; "parse.ml"
-  ; "parse.mli"
-  ; "parser.mly"
-  ; "parsetree.mli"
-  ; "printast.ml"
+  [ "ast_helper.ml"; "ast_helper.mli"; "ast_mapper.ml"; "ast_mapper.mli"
+  ; "asttypes.mli"; "docstrings.ml"; "docstrings.mli"; "lexer.mll"
+  ; "parse.ml"; "parse.mli"; "parser.mly"; "parsetree.mli"; "printast.ml"
   ; "printast.mli" ]
 
 let stdlib_files = ["format.ml"; "format.mli"]

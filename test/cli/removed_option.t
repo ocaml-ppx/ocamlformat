@@ -77,3 +77,11 @@ Setting an option to a deprecated value on the command line should also display 
   Usage: ocamlformat [OPTION]… [SRC]…
   Try 'ocamlformat --help' for more information.
   [1]
+
+  $ ocamlformat a.ml --break-collection-expressions=wrap
+  ocamlformat: option '--break-collection-expressions': value `wrap` has been
+               removed in version 0.25. Subsumed by
+               `break-collection-expressions=wrap-or-vertical`.
+  Usage: ocamlformat [OPTION]… [SRC]…
+  Try 'ocamlformat --help' for more information.
+  [1]

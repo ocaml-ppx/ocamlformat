@@ -1,2 +1,2 @@
---break-collection-expressions=fit-or-vertical
+--break-collection-expressions=wrap-or-vertical
 --max-iters=3

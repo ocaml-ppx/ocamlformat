@@ -71,12 +71,12 @@ OPTIONS (CODE FORMATTING STYLE)
            all pattern matches to break across lines. The default value is
            fit.
 
-       --break-collection-expressions={fit-or-vertical|wrap}
+       --break-collection-expressions={wrap-or-vertical|vertical}
            Break collection expressions (lists and arrays) elements by
-           elements. fit-or-vertical vertically breaks expressions if they do
-           not fit on a single line. wrap will group simple expressions and
-           try to format them in a single line. The default value is
-           fit-or-vertical.
+           elements. wrap-or-vertical will wrap collections of simple
+           elements, and will vertically align collections of complex
+           elements. vertical always vertically breaks collections. The
+           default value is wrap-or-vertical.
 
        --break-colon={after|before}
            Break before or after colon in value binding declarations and type

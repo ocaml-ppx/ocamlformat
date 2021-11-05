@@ -498,19 +498,19 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_collection_expressions-wrap.ml.stdout
-   (with-stderr-to break_collection_expressions-wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=wrap --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
+  (with-stdout-to break_collection_expressions-vertical.ml.stdout
+   (with-stderr-to break_collection_expressions-vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=vertical --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/break_collection_expressions-wrap.ml.ref break_collection_expressions-wrap.ml.stdout)))
+ (action (diff tests/break_collection_expressions-vertical.ml.ref break_collection_expressions-vertical.ml.stdout)))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/break_collection_expressions-wrap.ml.err break_collection_expressions-wrap.ml.stderr)))
+ (action (diff tests/break_collection_expressions-vertical.ml.err break_collection_expressions-vertical.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -518,7 +518,7 @@
  (action
   (with-stdout-to break_collection_expressions.ml.stdout
    (with-stderr-to break_collection_expressions.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=fit-or-vertical --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
+     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=wrap-or-vertical --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
 
 (rule
  (alias runtest)

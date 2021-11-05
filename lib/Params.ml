@@ -245,12 +245,7 @@ let get_record_expr (c : Conf.t) =
         ; sep_after_final= fmt_if_k dock (fits_breaks ~level:0 "" ";") } )
   , {break_after_with= break 1 2} )
 
-let box_collec (c : Conf.t) =
-  match c.fmt_opts.break_collection_expressions with
-  | `Wrap -> hovbox
-  | `Fit_or_vertical -> hvbox
-
-let collection_expr (c : Conf.t) ~space_around opn cls =
+let collection_expr (c : Conf.t) ~space_around ~box_collec opn cls =
   let space = if space_around then 1 else 0 in
   let dock = c.fmt_opts.dock_collection_brackets in
   let offset = if dock then -2 else String.length opn - 1 in
@@ -262,8 +257,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
               hvbox 0
                 (wrap_k (str opn) (str cls)
                    ( break space (String.length opn + 1)
-                   $ box_collec c 0 k $ break space 0 ) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+                   $ box_collec 0 k $ break space 0 ) )
+            else box_collec 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= break 0 offset $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
@@ -273,8 +268,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
             if dock then
               hvbox 0
                 (wrap_k (str opn) (str cls)
-                   (break space 2 $ box_collec c 0 k $ break space 0) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+                   (break space 2 $ box_collec 0 k $ break space 0) )
+            else box_collec 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= noop
       ; sep_after_non_final=
           fmt_or_k dock (fmt ";@;<1 0>")
@@ -311,21 +306,20 @@ let get_record_pat (c : Conf.t) ~ctx =
   ( {params with box}
   , {wildcard= params.sep_before $ str "_" $ params.sep_after_final} )
 
-let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
-  let params = collection_expr c ~space_around opn cls in
+let collection_pat (c : Conf.t) ~ctx ~space_around ~box_collec opn cls =
+  let params = collection_expr c ~space_around ~box_collec opn cls in
   let box =
     if c.fmt_opts.dock_collection_brackets then
-      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
+      box_collec 0 >> box_pattern_docked c ~ctx ~space_around opn cls
     else params.box
   in
   {params with box}
 
-let get_list_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_lists "[" "]"
+let get_list_pat (c : Conf.t) =
+  collection_pat c ~space_around:c.fmt_opts.space_around_lists "[" "]"
 
-let get_array_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays "[|"
-    "|]"
+let get_array_pat (c : Conf.t) =
+  collection_pat c ~space_around:c.fmt_opts.space_around_arrays "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

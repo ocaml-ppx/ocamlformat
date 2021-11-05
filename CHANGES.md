@@ -1,5 +1,9 @@
 ## (unreleased)
 
+### Removed
+
+- Options `break-collection-expressions = wrap` and `break-collection-expressions = fit-or-vertical` are removed, please use `break-collection-expressions = wrap-or-vertical` instead. (#1916, @gpetiot)
+
 ### Bug fixes
 
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
@@ -31,6 +35,9 @@
 - New value `vertical` for option `if-then-else` (#2174, @gpetiot)
 - New value `vertical` for option `break-cases` (#2176, @gpetiot)
 - New value `wrap-or-vertical` for option `break-infix` that only wraps high precedence infix ops (#1865, @gpetiot)
+- New values for option `break-collection-expressions`:
+  + `wrap-or-vertical`: to wrap collections of simple elements, and vertically break collections of complex elements.
+  + `vertical`: to always vertically break collections. (#1916, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 

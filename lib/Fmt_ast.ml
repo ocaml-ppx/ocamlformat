@@ -120,19 +120,15 @@ let fmt_elements_collection ?pro ?(first_sep = true) ?(last_sep = true) c
   in
   list_fl xs fmt_one $ collection_last_cmt ?pro c loc (List.map ~f xs)
 
-let fmt_expressions c width sub_exp exprs fmt_expr p loc =
+let box_collec c is_simple elements =
+  let name = "collec" in
   match c.conf.fmt_opts.break_collection_expressions with
-  | `Fit_or_vertical ->
-      fmt_elements_collection c p Exp.location loc fmt_expr exprs
-  | `Wrap ->
-      let is_simple x = is_simple c.conf width (sub_exp x) in
-      let break x1 x2 = not (is_simple x1 && is_simple x2) in
-      let grps = List.group exprs ~break in
-      let fmt_grp ~first:first_grp ~last:last_grp exprs =
-        fmt_elements_collection c ~first_sep:first_grp ~last_sep:last_grp p
-          Exp.location loc fmt_expr exprs
-      in
-      list_fl grps fmt_grp
+  | `Wrap_or_vertical when List.for_all elements ~f:is_simple -> hovbox ~name
+  | `Wrap_or_vertical -> hvbox ~name
+  | `Vertical -> vbox ~name
+
+let fmt_expressions c exprs fmt_expr p loc =
+  fmt_elements_collection c p Exp.location loc fmt_expr exprs
 
 (** Handle the `break-fun-decl` option *)
 let wrap_fun_decl_args c k =
@@ -1059,13 +1055,15 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
-      let p = Params.get_array_pat c.conf ~ctx:ctx0 in
+      let box_collec = box_collec c Ast.Pat.is_simple pats in
+      let p = Params.get_array_pat c.conf ~box_collec ~ctx:ctx0 in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_list pats ->
-      let p = Params.get_list_pat c.conf ~ctx:ctx0 in
+      let box_collec = box_collec c Ast.Pat.is_simple pats in
+      let p = Params.get_list_pat c.conf ~box_collec ~ctx:ctx0 in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
@@ -1933,15 +1931,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
         $ fmt_atrs )
   | Pexp_array e1N ->
-      let p = Params.get_array_expr c.conf in
+      let box_collec = box_collec c Ast.Exp.is_trivial e1N in
+      let p = Params.get_array_expr c.conf ~box_collec in
       hvbox_if has_attr 0
         ( p.box
-            (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
+            (fmt_expressions c e1N
                (sub_exp ~ctx >> fmt_expression c)
                p pexp_loc )
         $ fmt_atrs )
   | Pexp_list e1N ->
-      let p = Params.get_list_expr c.conf in
+      let box_collec = box_collec c Ast.Exp.is_trivial e1N in
+      let p = Params.get_list_expr c.conf ~box_collec in
       let offset =
         if c.conf.fmt_opts.dock_collection_brackets then 0 else 2
       in
@@ -1949,7 +1949,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if has_attr 0
         (Params.parens_if parens c.conf
            ( p.box
-               (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
+               (fmt_expressions c e1N
                   (fun e ->
                     let fmt_cmts = Cmts.fmt c ~eol:cmt_break e.pexp_loc in
                     fmt_cmts @@ (sub_exp ~ctx >> fmt_expression c) e )

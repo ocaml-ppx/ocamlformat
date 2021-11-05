@@ -194,30 +194,32 @@ val close_box : t
 
 (** Wrapping boxes ------------------------------------------------------*)
 
-val cbox : ?name:string -> int -> t -> t
+type box = int -> t -> t
+
+val cbox : ?name:string -> box
 (** Wrap a format thunk with a compacting box with specified indentation. *)
 
-val vbox : ?name:string -> int -> t -> t
+val vbox : ?name:string -> box
 (** Wrap a format thunk with a vbox with specified indentation. *)
 
-val hvbox : ?name:string -> int -> t -> t
+val hvbox : ?name:string -> box
 (** Wrap a format thunk with an hvbox with specified indentation. *)
 
-val hovbox : ?name:string -> int -> t -> t
+val hovbox : ?name:string -> box
 (** Wrap a format thunk with an hovbox with specified indentation. *)
 
-val cbox_if : ?name:string -> bool -> int -> t -> t
+val cbox_if : ?name:string -> bool -> box
 (** Conditionally wrap a format thunk with a compacting sbox with specified
     indentation. *)
 
-val vbox_if : ?name:string -> bool -> int -> t -> t
+val vbox_if : ?name:string -> bool -> box
 (** Conditionally wrap a format thunk with a vbox with specified indentation. *)
 
-val hvbox_if : ?name:string -> bool -> int -> t -> t
+val hvbox_if : ?name:string -> bool -> box
 (** Conditionally wrap a format thunk with an hvbox with specified
     indentation. *)
 
-val hovbox_if : ?name:string -> bool -> int -> t -> t
+val hovbox_if : ?name:string -> bool -> box
 (** Conditionally wrap a format thunk with an hovbox with specified
     indentation. *)
 

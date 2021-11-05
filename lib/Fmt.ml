@@ -302,6 +302,8 @@ and close_box =
 
 (** Wrapping boxes ------------------------------------------------------*)
 
+type box = int -> t -> t
+
 let cbox ?name n = wrap_k (open_box ?name n) close_box
 
 and vbox ?name n = wrap_k (open_vbox ?name n) close_box

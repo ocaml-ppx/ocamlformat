@@ -19,7 +19,7 @@ type fmt_opts =
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases:
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
-  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
+  ; break_collection_expressions: [`Wrap_or_vertical | `Vertical]
   ; break_colon: [`Before | `After]
   ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical]
   ; break_infix_before_func: bool
@@ -198,6 +198,8 @@ module V = struct
   let v0_17 = Version.make ~major:0 ~minor:17 ~patch:None
 
   let v0_22 = Version.make ~major:0 ~minor:22 ~patch:None
+
+  let v0_25 = Version.make ~major:0 ~minor:25 ~patch:None
 end
 
 (** Options affecting formatting *)
@@ -289,17 +291,24 @@ module Formatting = struct
     in
     let names = ["break-collection-expressions"] in
     let all =
-      [ C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line."
-      ; C.Value.make ~name:"wrap" `Wrap
-          "$(b,wrap) will group simple expressions and try to format them \
-           in a single line." ]
+      [ C.Value.make ~name:"wrap-or-vertical" `Wrap_or_vertical
+          "$(b,wrap-or-vertical) will wrap collections of simple elements, \
+           and will vertically align collections of complex elements."
+      ; C.Value.make ~name:"vertical" `Vertical
+          "$(b,vertical) always vertically breaks collections." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with break_collection_expressions= x}) )
       (fun conf -> conf.fmt_opts.break_collection_expressions)
+      ~removed_values:
+        [ C.Value_removed.make ~name:"fit-or-vertical" ~since:V.v0_25
+            ~msg:
+              "Subsumed by `break-collection-expressions=wrap-or-vertical`."
+        ; C.Value_removed.make ~name:"wrap" ~since:V.v0_25
+            ~msg:
+              "Subsumed by `break-collection-expressions=wrap-or-vertical`."
+        ]
 
   let break_colon =
     let doc =
@@ -1441,7 +1450,7 @@ let ocamlformat_profile =
   ; assignment_operator= `End_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
-  ; break_collection_expressions= `Fit_or_vertical
+  ; break_collection_expressions= `Wrap_or_vertical
   ; break_colon= `After
   ; break_infix= `Wrap
   ; break_infix_before_func= true

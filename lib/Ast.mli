@@ -103,6 +103,8 @@ module Exp : sig
   val exposed_left : expression -> bool
   (** [exposed_left exp] holds if the left-most subexpression of [exp] is a
       prefix operators. *)
+
+  val is_trivial : expression -> bool
 end
 
 val doc_atrs :

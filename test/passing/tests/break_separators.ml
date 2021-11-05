@@ -76,16 +76,14 @@ let _ =
 let _ =
   match something with
   | [ very_very_long_field_name_running_out_of_space
-    ; another_very_very_long_field_name_running_out_of_space
-    ; _ ] ->
+    ; another_very_very_long_field_name_running_out_of_space; _ ] ->
       0
   | _ -> 1
 
 let _ =
   match something with
   | [| very_very_long_field_name_running_out_of_space
-     ; another_very_very_long_field_name_running_out_of_space
-     ; _ |] ->
+     ; another_very_very_long_field_name_running_out_of_space; _ |] ->
       0
   | _ -> 1
 
@@ -136,23 +134,13 @@ let x
 
 (* this is an array *)
 let length =
-  [| 0
-   ; 269999999999999999999999999999999999999999999999999
-   ; 26
-   ; (* foo *) 27 (* foo *)
-   ; 27
-   ; 27 |]
+  [| 0; 269999999999999999999999999999999999999999999999999; 26
+   ; (* foo *) 27 (* foo *); 27; 27 |]
   [@foo]
 
 (* this is a list *)
 let length =
-  [ 0
-  ; 14
-  ; (* foo *)
-    14
-  ; 17 (* foo *)
-  ; 17
-  ; 2777777777777777777777777777777777
+  [ 0; 14; (* foo *) 14; 17 (* foo *); 17; 2777777777777777777777777777777777
   ; 27 ]
   [@foo]
 ;;
@@ -314,28 +302,16 @@ let f () =
   foooooooooooo
 
 let f () =
-  let [ aaaaaaaa
-      ; bbbbbbbbbb
-      ; ccccccccc
-      ; dddddddddd
-      ; eeeeeeeee
-      ; ffffffffff
-      ; gggggggggg
-      ; hhhhhhhhhh ]
+  let [ aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff
+      ; gggggggggg; hhhhhhhhhh ]
     =
     some_value
   in
   foooooooooooo
 
 let f () =
-  let [| aaaaaaaa
-       ; bbbbbbbbbb
-       ; ccccccccc
-       ; dddddddddd
-       ; eeeeeeeee
-       ; ffffffffff
-       ; gggggggggg
-       ; hhhhhhhhhh |]
+  let [| aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff
+       ; gggggggggg; hhhhhhhhhh |]
     =
     some_value
   in
@@ -352,23 +328,11 @@ let g () =
     ; gggggggggg
     ; hhhhhhhhhh } ->
       foooooooo
-  | [ aaaaaaaa
-    ; bbbbbbbbbb
-    ; ccccccccc
-    ; dddddddddd
-    ; eeeeeeeee
-    ; ffffffffff
-    ; gggggggggg
-    ; hhhhhhhhhh ] ->
+  | [ aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff
+    ; gggggggggg; hhhhhhhhhh ] ->
       fooooooooo
-  | [| aaaaaaaa
-     ; bbbbbbbbbb
-     ; ccccccccc
-     ; dddddddddd
-     ; eeeeeeeee
-     ; ffffffffff
-     ; gggggggggg
-     ; hhhhhhhhhh |] ->
+  | [| aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff
+     ; gggggggggg; hhhhhhhhhh |] ->
       fooooooooo
 
 let () = match x with _, (* line 1 line 2 *) Some _ -> x

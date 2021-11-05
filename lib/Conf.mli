@@ -18,7 +18,7 @@ type fmt_opts =
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases:
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
-  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
+  ; break_collection_expressions: [`Wrap_or_vertical | `Vertical]
   ; break_colon: [`Before | `After]
   ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical]
   ; break_infix_before_func: bool
