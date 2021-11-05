@@ -4477,7 +4477,9 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
-    match Parse_with_comments.parse Parse.ast Structure conf ~source:s with
+    match
+      Parse_with_comments.parse (Parse.ast ~conf) Structure conf ~source:s
+    with
     | {ast; comments; source; prefix= _} ->
         let cmts = Cmts.init Structure ~debug source ast comments in
         let ctx = Pld (PStr ast) in

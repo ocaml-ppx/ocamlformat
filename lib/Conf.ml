@@ -59,6 +59,7 @@ type t =
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
+  ; normalize_lists: bool
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
@@ -1427,6 +1428,7 @@ let ocamlformat_profile =
   ; max_iters= 10
   ; module_item_spacing= `Sparse
   ; nested_match= `Wrap
+  ; normalize_lists= false
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
@@ -1500,6 +1502,7 @@ let conventional_profile =
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
+  ; normalize_lists= false
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
@@ -1626,6 +1629,7 @@ let janestreet_profile =
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap
+  ; normalize_lists= true
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= true
   ; parens_ite= true
@@ -2184,7 +2188,7 @@ let validate () =
 
 let action () = parse info validate
 
-open Extended_ast
+open Parsetree
 
 let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   let result =

@@ -24,7 +24,7 @@ type 'a t =
   | Expression : expression t
 
 module Parse : sig
-  val ast : 'a t -> Lexing.lexbuf -> 'a
+  val ast : 'a t -> conf:Conf.t -> Lexing.lexbuf -> 'a
 end
 
 val equal_core_type : core_type -> core_type -> bool
