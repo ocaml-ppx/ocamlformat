@@ -294,23 +294,88 @@ let _ = assert%lwt false
 let _ = [%lwt assert false]
 let _ = f (assert%lwt false)
 let _ = f [%lwt assert false]
+let _ = (assert%lwt false) [@attr]
+let _ = [%lwt assert false] [@attr]
+let _ = f ((assert%lwt false) [@attr])
+let _ = f ([%lwt assert false] [@attr])
 
 let _ = lazy%ext e
 let _ = [%ext lazy e]
 let _ = f (lazy%ext e)
 let _ = f [%ext lazy e]
+let _ = (lazy%ext e) [@attr]
+let _ = [%ext lazy e] [@attr]
+let _ = f ((lazy%ext e) [@attr])
+let _ = f ([%ext lazy e] [@attr])
 
 let _ = object%ext method x = y end
 let _ = [%ext object method x = y end]
 let _ = f (object%ext method x = y end)
 let _ = f [%ext object method x = y end]
+let _ = object%ext method x = y end [@attr]
+let _ = [%ext object method x = y end] [@attr]
+let _ = f ((object%ext method x = y end) [@attr])
+let _ = f ([%ext object method x = y end] [@attr])
 
 let _ = if%ext x then y else z
 let _ = [%ext if x then y else z]
 let _ = f (if%ext x then y else z)
 let _ = f [%ext if x then y else z]
+let _ = (if%ext x then y else z) [@attr]
+let _ = [%ext if x then y else z] [@attr]
+let _ = f ((if%ext x then y else z) [@attr])
+let _ = f ([%ext if x then y else z] [@attr])
+
+let _ = match%ext x with _ -> x
+let _ = [%ext match x with _ -> x]
+let _ = f (match%ext x with _ -> x)
+let _ = f [%ext match x with _ -> x]
+let _ = (match%ext x with _ -> x) [@attr]
+let _ = [%ext match x with _ -> x] [@attr]
+let _ = f ((match%ext x with _ -> x) [@attr])
+let _ = f ([%ext match x with _ -> x] [@attr])
+
+let _ = try%ext x with _ -> x
+let _ = [%ext try x with _ -> x]
+let _ = f (try%ext x with _ -> x)
+let _ = f [%ext try x with _ -> x]
+let _ = (try%ext x with _ -> x) [@attr]
+let _ = [%ext try x with _ -> x] [@attr]
+let _ = f ((try%ext x with _ -> x) [@attr])
+let _ = f ([%ext try x with _ -> x] [@attr])
+
+let _ = fun%ext x -> x
+let _ = [%ext fun x -> x]
+let _ = f (fun%ext x -> x)
+let _ = f [%ext fun x -> x]
+let _ = (fun%ext x -> x) [@attr]
+let _ = [%ext fun x -> x] [@attr]
+let _ = f ((fun%ext x -> x) [@attr])
+let _ = f ([%ext fun x -> x] [@attr])
+
+let _ = function%ext x -> x
+let _ = [%ext function x -> x]
+let _ = f (function%ext x -> x)
+let _ = f [%ext function x -> x]
+let _ = (function%ext x -> x) [@attr]
+let _ = [%ext function x -> x] [@attr]
+let _ = f ((function%ext x -> x) [@attr])
+let _ = f ([%ext function x -> x] [@attr])
 
 let _ = new%ext x
 let _ = [%ext new x]
 let _ = f (new%ext x)
 let _ = f [%ext new x]
+let _ = (new%ext x) [@attr]
+let _ = [%ext new x] [@attr]
+let _ = f ((new%ext x) [@attr])
+let _ = f ([%ext new x] [@attr])
+
+let _ = (x ;%ext y)
+let _ = [%ext x; y]
+let _ = f (x ;%ext y)
+let _ = f [%ext x; y]
+let _ = (x ;%ext y) [@attr]
+let _ = [%ext x; y] [@attr]
+let _ = f ((x ;%ext y) [@attr])
+let _ = f ([%ext x; y] [@attr])
