@@ -562,6 +562,9 @@ OPTIONS (DEPRECATED)
            0.20.0. It will be removed by version 1.0.0.
 
 OPTIONS
+       Unless mentioned otherwise non-formatting options cannot be set in
+       attributes or .ocamlformat files.
+
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
