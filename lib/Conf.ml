@@ -172,8 +172,8 @@ let info =
          $(b,#) are ignored and can be used as comments."
     ; `S (C.section_name C.Operational `Valid)
     ; `P
-        "Unless mentioned otherwise non-formatting options cannot be set \
-         in attributes or $(b,ocamlformat) files." ]
+        "Unless mentioned otherwise non-formatting options cannot be set in \
+         attributes or $(b,.ocamlformat) files." ]
   in
   Term.info "ocamlformat" ~version:Version.current ~doc ~man
 
