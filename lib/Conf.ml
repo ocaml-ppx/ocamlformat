@@ -173,7 +173,7 @@ let info =
     ; `S (C.section_name C.Operational `Valid)
     ; `P
         "Unless mentioned otherwise non-formatting options cannot be set \
-         neither in attributes nor in $(b,ocamlformat) files." ]
+         in attributes or $(b,ocamlformat) files." ]
   in
   Term.info "ocamlformat" ~version:Version.current ~doc ~man
 
