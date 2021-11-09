@@ -38,6 +38,8 @@ let parser_files =
   ; "parse.mli"
   ; "parser.mly"
   ; "parsetree.mli"
+  ; "printast.ml"
+  ; "printast.mli"
   ; "pprintast.ml"
   ; "pprintast.mli" ]
 
