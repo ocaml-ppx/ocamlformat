@@ -36,3 +36,7 @@ module Pprintast : sig
 
   val ast : 'a t -> Format.formatter -> 'a -> unit
 end
+
+module Printast : sig
+  val ast : 'a t -> Format.formatter -> 'a -> unit
+end

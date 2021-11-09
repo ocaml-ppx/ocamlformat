@@ -145,3 +145,17 @@ module Pprintast = struct
     | Module_type -> module_type
     | Expression -> expression
 end
+
+module Printast = struct
+  include Printast
+
+  let use_file = Format.pp_print_list top_phrase
+
+  let ast (type a) : a t -> _ -> a -> _ = function
+    | Structure -> implementation
+    | Signature -> interface
+    | Use_file -> use_file
+    | Core_type -> core_type 0
+    | Module_type -> module_type 0
+    | Expression -> expression 0
+end
