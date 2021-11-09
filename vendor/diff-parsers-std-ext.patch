@@ -535,6 +535,139 @@
    | Pexp_sequence of expression * expression
          (* E1; E2 *)
    | Pexp_while of expression * expression
+--- ocaml-4.13/printast.ml
++++ ocaml-4.13-extended/printast.ml
+@@@@
+ open Format;;
+ open Lexing;;
+ open Location;;
+ open Parsetree;;
+ 
++type cmts =
++  { before: Location.t -> string list option
++  ; within: Location.t -> string list option
++  ; after: Location.t -> string list option }
++
++let cmts : cmts option ref = ref None
++
+ let fmt_position with_name f l =
+   let fname = if with_name then l.pos_fname else "" in
+   if l.pos_lnum = -1
+   then fprintf f "%s[%d]" fname l.pos_cnum
+   else fprintf f "%s[%d,%d+%d]" fname l.pos_lnum l.pos_bol
+                (l.pos_cnum - l.pos_bol)
+ ;;
+ 
++let fmt_cmts f lbl get loc =
++  match get loc with
++  | Some cmts ->
++      let fmt_cmt f s = fprintf f "%s: (*%s*)" lbl s in
++      fprintf f "\n%a" (pp_print_list fmt_cmt) cmts
++  | None -> ()
++
+ let fmt_location f loc =
+   if not !Clflags.locations then ()
+   else begin
+     let p_2nd_name = loc.loc_start.pos_fname <> loc.loc_end.pos_fname in
+     fprintf f "(%a..%a)" (fmt_position true) loc.loc_start
+                          (fmt_position p_2nd_name) loc.loc_end;
+     if loc.loc_ghost then fprintf f " ghost";
++    match !cmts with
++    | None -> ()
++    | Some {before; within; after} ->
++        fmt_cmts f "before" before loc;
++        fmt_cmts f "within" within loc;
++        fmt_cmts f " after" after loc
+   end
+ ;;
+ 
+ let rec fmt_longident_aux f x =
+   match x with
+@@@@
+ let fmt_char_option f = function
+   | None -> fprintf f "None"
+   | Some c -> fprintf f "Some %c" c
+ 
+ let fmt_constant f x =
+-  match x with
++  match x.pconst_desc with
+   | Pconst_integer (i,m) -> fprintf f "PConst_int (%s,%a)" i fmt_char_option m;
+   | Pconst_char (c) -> fprintf f "PConst_char %02x" (Char.code c);
+   | Pconst_string (s, strloc, None) ->
+       fprintf f "PConst_string(%S,%a,None)" s fmt_location strloc ;
+   | Pconst_string (s, strloc, Some delim) ->
+@@@@
+   | Override -> fprintf f "Override";
+   | Fresh -> fprintf f "Fresh";
+ ;;
+ 
+ let fmt_closed_flag f x =
+-  match x with
++  match (x : closed_flag) with
+   | Closed -> fprintf f "Closed"
+   | Open -> fprintf f "Open"
+ 
++let fmt_closed_flag_loc f x =
++  match (x : closed_flag_loc) with
++  | Closed -> fprintf f "Closed"
++  | Open _ -> fprintf f "Open"
++
+ let fmt_rec_flag f x =
+   match x with
+   | Nonrecursive -> fprintf f "Nonrec";
+   | Recursive -> fprintf f "Rec";
+ ;;
+@@@@
+         ppf po
+   | Ppat_variant (l, po) ->
+       line i ppf "Ppat_variant \"%s\"\n" l;
+       option i pattern ppf po;
+   | Ppat_record (l, c) ->
+-      line i ppf "Ppat_record %a\n" fmt_closed_flag c;
++      line i ppf "Ppat_record %a\n" fmt_closed_flag_loc c;
+       list i longident_x_pattern ppf l;
+   | Ppat_array (l) ->
+       line i ppf "Ppat_array\n";
+       list i pattern ppf l;
++  | Ppat_list (l) ->
++      line i ppf "Ppat_list\n";
++      list i pattern ppf l;
+   | Ppat_or (p1, p2) ->
+       line i ppf "Ppat_or\n";
+       pattern i ppf p1;
+       pattern i ppf p2;
+   | Ppat_lazy p ->
+@@@@
+       longident_loc i ppf li;
+       expression i ppf e2;
+   | Pexp_array (l) ->
+       line i ppf "Pexp_array\n";
+       list i expression ppf l;
++  | Pexp_list (l) ->
++      line i ppf "Pexp_list\n";
++      list i expression ppf l;
+   | Pexp_ifthenelse (e1, e2, eo) ->
+       line i ppf "Pexp_ifthenelse\n";
+       expression i ppf e1;
+       expression i ppf e2;
+       option i expression ppf eo;
+--- ocaml-4.13/printast.mli
++++ ocaml-4.13-extended/printast.mli
+@@@@
+ val top_phrase : formatter -> toplevel_phrase -> unit;;
+ 
+ val expression: int -> formatter -> expression -> unit
+ val structure: int -> formatter -> structure -> unit
+ val payload: int -> formatter -> payload -> unit
++val core_type: int -> formatter -> core_type -> unit
++val module_type: int -> formatter -> module_type -> unit
++
++type cmts =
++  { before: Location.t -> string list option
++  ; within: Location.t -> string list option
++  ; after: Location.t -> string list option }
++
++val cmts : cmts option ref
 --- ocaml-4.13/pprintast.ml
 +++ ocaml-4.13-extended/pprintast.ml
 @@@@
