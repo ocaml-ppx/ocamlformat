@@ -19,13 +19,6 @@ open Lexing;;
 open Location;;
 open Parsetree;;
 
-type cmts =
-  { before: Location.t -> string list option
-  ; within: Location.t -> string list option
-  ; after: Location.t -> string list option }
-
-let cmts : cmts option ref = ref None
-
 let fmt_position with_name f l =
   let fname = if with_name then l.pos_fname else "" in
   if l.pos_lnum = -1
@@ -33,6 +26,13 @@ let fmt_position with_name f l =
   else fprintf f "%s[%d,%d+%d]" fname l.pos_lnum l.pos_bol
                (l.pos_cnum - l.pos_bol)
 ;;
+
+type cmts =
+  { before: Location.t -> string list option
+  ; within: Location.t -> string list option
+  ; after: Location.t -> string list option }
+
+let cmts : cmts option ref = ref None
 
 let fmt_cmts f lbl get loc =
   match get loc with
