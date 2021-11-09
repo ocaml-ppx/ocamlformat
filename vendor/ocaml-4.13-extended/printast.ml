@@ -19,6 +19,13 @@ open Lexing;;
 open Location;;
 open Parsetree;;
 
+type cmts =
+  { before: Location.t -> string list option
+  ; within: Location.t -> string list option
+  ; after: Location.t -> string list option }
+
+let cmts : cmts option ref = ref None
+
 let fmt_position with_name f l =
   let fname = if with_name then l.pos_fname else "" in
   if l.pos_lnum = -1
@@ -27,6 +34,13 @@ let fmt_position with_name f l =
                (l.pos_cnum - l.pos_bol)
 ;;
 
+let fmt_cmts f lbl get loc =
+  match get loc with
+  | Some cmts ->
+      let fmt_cmt f s = fprintf f "%s: (*%s*)" lbl s in
+      fprintf f "\n%a" (pp_print_list fmt_cmt) cmts
+  | None -> ()
+
 let fmt_location f loc =
   if not !Clflags.locations then ()
   else begin
@@ -34,6 +48,12 @@ let fmt_location f loc =
     fprintf f "(%a..%a)" (fmt_position true) loc.loc_start
                          (fmt_position p_2nd_name) loc.loc_end;
     if loc.loc_ghost then fprintf f " ghost";
+    match !cmts with
+    | None -> ()
+    | Some {before; within; after} ->
+        fmt_cmts f "before" before loc;
+        fmt_cmts f "within" within loc;
+        fmt_cmts f " after" after loc
   end
 ;;
 

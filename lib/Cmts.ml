@@ -371,18 +371,19 @@ let init fragment ~debug source asts comments_n_docstrings =
     | [] -> add_cmts t `After Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
     if debug then (
-      let dump fs lt =
-        let get_cmts pos loc =
-          let cmts = find_at_position t loc pos in
-          Option.map cmts ~f:(fun cmts -> List.map cmts ~f:Cmt.txt)
-        in
-        let cmts_before = get_cmts `Before in
-        let cmts_within = get_cmts `Within in
-        let cmts_after = get_cmts `After in
-        Fmt.eval fs (Loc_tree.dump ~cmts_before ~cmts_within ~cmts_after lt)
+      let get_cmts pos loc =
+        let cmts = find_at_position t loc pos in
+        Option.map cmts ~f:(List.map ~f:Cmt.txt)
       in
-      Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
+      let cmts : Printast.cmts =
+        { before= get_cmts `Before
+        ; within= get_cmts `Within
+        ; after= get_cmts `After }
+      in
+      Printast.cmts := Some cmts ;
+      Caml.Format.eprintf "AST:\n%a\n%!"
+        (Extended_ast.Printast.ast fragment)
+        asts ) ) ;
   t
 
 let preserve_nomemo f t =

@@ -32,3 +32,10 @@ val structure: int -> formatter -> structure -> unit
 val payload: int -> formatter -> payload -> unit
 val core_type: int -> formatter -> core_type -> unit
 val module_type: int -> formatter -> module_type -> unit
+
+type cmts =
+  { before: Location.t -> string list option
+  ; within: Location.t -> string list option
+  ; after: Location.t -> string list option }
+
+val cmts : cmts option ref
