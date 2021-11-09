@@ -1,0 +1,156 @@
+{0 OCamlFormat Manual}
+
+{1 Doc-comments language reference}
+
+OCamlFormat uses {{:https://github.com/ocaml/odoc}odoc} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from [odoc].
+
+Here is the accepted language:
+
+{2 Headings}
+
+{[
+(** {0 Main title}
+    {1 Sub title}
+    {2:label Sub-sub title with a label}
+*)
+]}
+
+{2 Tags}
+
+{[
+(** @raise [Abc] def.
+    @author Abc def
+    @param [id] [def]
+    @raise [exn] [def]
+    @since [Abc] [def]
+    @before [Abc] [def]
+    @version [Abc] [def]
+    @see <[Abc]> this is an URL
+    @see '[Abc]' this is a file
+    @see "[Abc]" this is a document
+    @deprecated [foo]
+    @param foo [foo]
+    @return [foo]
+    @inline
+    @open
+    @closed
+    @canonical Foo.Bar
+*)
+]}
+
+{2 Block elements}
+
+{3 Code blocks}
+
+{%html:
+<pre>
+<code class="ml hljs ocaml">(** Without metadata:
+    {[
+        ...
+    ]}
+
+    With metadata:
+    {@some_metadata[
+        ...
+    ]}
+*)</code></pre>
+%}
+
+{3 Verbatim blocks}
+
+{[
+(** Verbatim blocks:
+    {v
+        ...
+    v}
+*)
+]}
+
+{3 Module references}
+
+{[
+(** Module references:
+    {!modules:Foo}
+    {!modules:Foo Bar.Baz}
+*)
+]}
+
+{3 Lists}
+
+{4 Unordered lists}
+
+{[
+(** Short syntax:
+    - x
+    - y
+    - z
+
+    Long syntax:
+    {ul
+     {- x}
+     {- y}}
+*)
+]}
+
+{4 Ordered lists}
+
+{[
+(** Short syntax:
+    + x
+    + y
+    + z
+
+    Long syntax:
+    {ol
+     {- x}
+     { -y}}
+*)
+]}
+
+{2 Inline elements}
+
+{3 Basic elements}
+
+{[
+(** regular words
+    [code span]
+    {b this is bold}
+    {i this is italic}
+    {e this is an emphasis}
+    {^ this is superscript}
+    {_ this is subscript}
+*)
+]}
+
+{3 Markup}
+
+{[
+(** {%html:<p>Raw markup</p>%}
+    {%Without language%}
+    {%other:Other language%}
+*)
+]}
+
+{3 Links}
+
+{[
+(** {:https://github.com/}
+    {{:https://github.com/} Github}
+*)
+]}
+
+{3 References}
+
+{[
+(** {!module:A} {!module:A.B}
+    {!module-type:A} {!module-type:A.b}
+    {!class:c} {!class:M.c}
+    {!class-type:c} {!class-type:M.c}
+    {!val:x} {!val:M.x}
+    {!type:t} {!type:M.t}
+    {!exception:E} {!exception:M.E}
+    {!method:m} {!method:c.m}
+    {!constructor:C} {!constructor:M.C}
+    {!field:f} {!field:M.t.f}
+*)
+]}
