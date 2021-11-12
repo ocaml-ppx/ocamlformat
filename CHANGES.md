@@ -81,7 +81,7 @@
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
 
-  + Preserve bracketed lists in the Parsetree (#1694, #1876, @gpetiot)
+  + Preserve bracketed lists in the Parsetree (#1694, #1876, #1914, @gpetiot)
 
   + Line directives now cause OCamlFormat to emit an error, they were previously silently ignored (#1845, @gpetiot)
 

@@ -64,7 +64,61 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with binding_op}
 
-  let normalize fg = map fg fix_letop_locs
+  let list_pat pat =
+    let rec list_pat_ pat acc =
+      match pat.ppat_desc with
+      | Ppat_construct ({txt= Lident "[]"; loc= _}, None) -> (
+        (* Empty lists are always represented as Lident [] *)
+        match acc with [] -> None | _ -> Some (List.rev acc) )
+      | Ppat_construct
+          ( {txt= Lident "::"; loc= _}
+          , Some
+              ( []
+              , { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
+                ; ppat_attributes= []
+                ; _ } ) ) ->
+          list_pat_ tl (hd :: acc)
+      | _ -> None
+    in
+    list_pat_ pat []
+
+  let list_exp exp =
+    let rec list_exp_ exp acc =
+      match exp.pexp_desc with
+      | Pexp_construct ({txt= Lident "[]"; loc= _}, None) -> (
+        (* Empty lists are always represented as Lident [] *)
+        match acc with [] -> None | _ -> Some (List.rev acc) )
+      | Pexp_construct
+          ( {txt= Lident "::"; loc= _}
+          , Some
+              { pexp_desc= Pexp_tuple [hd; ({pexp_attributes= []; _} as tl)]
+              ; pexp_attributes= []
+              ; _ } ) ->
+          list_exp_ tl (hd :: acc)
+      | _ -> None
+    in
+    list_exp_ exp []
+
+  let normalize_lists =
+    let expr (m : Ast_mapper.mapper) e =
+      let e' =
+        match list_exp e with
+        | Some exprs -> {e with pexp_desc= Pexp_list exprs}
+        | None -> e
+      in
+      Ast_mapper.default_mapper.expr m e'
+    in
+    let pat (m : Ast_mapper.mapper) p =
+      let p' =
+        match list_pat p with
+        | Some pats -> {p with ppat_desc= Ppat_list pats}
+        | None -> p
+      in
+      Ast_mapper.default_mapper.pat m p'
+    in
+    Ast_mapper.{default_mapper with expr; pat}
+
+  let normalize fg x = map fg fix_letop_locs @@ map fg normalize_lists @@ x
 
   let ast (type a) (fg : a t) lexbuf : a =
     normalize fg

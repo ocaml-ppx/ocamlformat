@@ -3295,6 +3295,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to list_normalized.ml.stdout
+   (with-stderr-to list_normalized.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/list_normalized.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/list_normalized.ml.ref list_normalized.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/list_normalized.ml.err list_normalized.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to loc_stack.ml.stdout
    (with-stderr-to loc_stack.ml.stderr
      (run %{bin:ocamlformat} --margin-check -n 3 %{dep:tests/loc_stack.ml})))))
