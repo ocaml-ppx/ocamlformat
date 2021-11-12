@@ -2870,7 +2870,7 @@
  (action
   (with-stdout-to js_source.ml.stdout
    (with-stderr-to js_source.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=4 --profile=janestreet %{dep:tests/js_source.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 --profile=janestreet %{dep:tests/js_source.ml})))))
 
 (rule
  (alias runtest)
@@ -3290,6 +3290,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/list_and_comments.ml.err list_and_comments.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to list_normalized.ml.stdout
+   (with-stderr-to list_normalized.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/list_normalized.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/list_normalized.ml.ref list_normalized.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/list_normalized.ml.err list_normalized.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
