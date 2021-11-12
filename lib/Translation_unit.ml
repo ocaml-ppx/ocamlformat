@@ -333,9 +333,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
       ( match
-          parse
-            (Extended_ast.Parse.ast ~conf)
-            ~disable_w50:true fg conf ~source:fmted
+          parse Extended_ast.Parse.ast ~disable_w50:true fg conf
+            ~source:fmted
         with
       | exception Sys_error msg -> Error (Error.User_error msg)
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
@@ -471,9 +470,8 @@ let normalize_eol ~strlocs ~line_endings s =
 let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
-  parse_result
-    (Extended_ast.Parse.ast ~conf)
-    ~disable_w50:true fg conf ~source ~input_name
+  parse_result Extended_ast.Parse.ast ~disable_w50:true fg conf ~source
+    ~input_name
   >>= fun parsed ->
   parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   >>= fun std_parsed ->
@@ -520,9 +518,8 @@ let numeric (type a b) (fg : a list Extended_ast.t)
     with
     | Ok (_, fmted_src) -> (
       match
-        parse_result
-          (Extended_ast.Parse.ast ~conf)
-          fg ~source:fmted_src conf ~input_name
+        parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
+          ~input_name
       with
       | Ok {ast= fmted_ast; source= fmted_src; _} ->
           Indent.Valid_ast.indent_range fg ~lines ~range
@@ -532,9 +529,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   in
   let parse_or_recover ~src =
     match
-      parse_result
-        (Extended_ast.Parse.ast ~conf)
-        fg conf ~source:src ~input_name
+      parse_result Extended_ast.Parse.ast fg conf ~source:src ~input_name
     with
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result recover fg conf ~source:src ~input_name

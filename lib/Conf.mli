@@ -63,7 +63,6 @@ type t =
             [max_iters] iterations. *)
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; normalize_lists: bool
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
@@ -109,7 +108,7 @@ type opts =
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
 
-val update : ?quiet:bool -> t -> Parsetree.attribute -> t
+val update : ?quiet:bool -> t -> Extended_ast.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 

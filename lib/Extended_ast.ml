@@ -118,13 +118,10 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat}
 
-  let normalize fg (conf : Conf.t) x =
-    map fg fix_letop_locs
-    @@ (if conf.normalize_lists then map fg normalize_lists else Fn.id)
-    @@ x
+  let normalize fg x = map fg fix_letop_locs @@ map fg normalize_lists @@ x
 
-  let ast (type a) (fg : a t) ~conf lexbuf : a =
-    normalize fg conf
+  let ast (type a) (fg : a t) lexbuf : a =
+    normalize fg
     @@
     match fg with
     | Structure -> Parse.implementation lexbuf
