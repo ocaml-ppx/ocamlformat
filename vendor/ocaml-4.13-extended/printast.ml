@@ -201,17 +201,7 @@ let rec core_type i ppf x =
       option i (fun i -> list i string) ppf low
   | Ptyp_object (l, c) ->
       line i ppf "Ptyp_object %a\n" fmt_closed_flag c;
-      let i = i + 1 in
-      List.iter (fun field ->
-        match field.pof_desc with
-          | Otag (l, t) ->
-            line i ppf "method %s\n" l.txt;
-            attributes i ppf field.pof_attributes;
-            core_type (i + 1) ppf t
-          | Oinherit ct ->
-              line i ppf "Oinherit\n";
-              core_type (i + 1) ppf ct
-      ) l
+      list i object_field ppf l
   | Ptyp_class (li, l) ->
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
       list i core_type ppf l
@@ -227,6 +217,18 @@ let rec core_type i ppf x =
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension \"%s\"\n" s.txt;
       payload i ppf arg
+
+and object_field i ppf x =
+  line i ppf "object_field %a\n" fmt_location x.pof_loc;
+  attributes i ppf x.pof_attributes;
+  let i = i+1 in
+  match x.pof_desc with
+  | Otag (l, t) ->
+      line i ppf "Otag %a\n" fmt_string_loc l;
+      core_type i ppf t
+  | Oinherit ct ->
+      line i ppf "Oinherit\n";
+      core_type i ppf ct
 
 and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
