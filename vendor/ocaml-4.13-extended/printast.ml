@@ -995,7 +995,7 @@ and row_field i ppf x =
   let i = i+1 in
   match x.prf_desc with
   | Rtag (l, b, ctl) ->
-      line i ppf "Rtag \"%s\" %s\n" l.txt (string_of_bool b);
+      line i ppf "Rtag %a %s\n" fmt_string_loc l (string_of_bool b);
       list i core_type ppf ctl
   | Rinherit (ct) ->
       line i ppf "Rinherit\n";
