@@ -515,7 +515,7 @@ and type_extension i ppf x =
   line i ppf "ptyext_private = %a\n" fmt_private_flag x.ptyext_private;
 
 and type_exception i ppf x =
-  line i ppf "type_exception\n";
+  line i ppf "type_exception %a\n" fmt_location x.ptyexn_loc;
   attributes i ppf x.ptyexn_attributes;
   let i = i+1 in
   line i ppf "ptyext_constructor =\n";
