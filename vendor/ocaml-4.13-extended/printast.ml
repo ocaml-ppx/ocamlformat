@@ -771,13 +771,11 @@ and signature_item i ppf x =
       line i ppf "Psig_recmodule\n";
       list i module_declaration ppf decls;
   | Psig_modtype x ->
-      line i ppf "Psig_modtype %a\n" fmt_string_loc x.pmtd_name;
-      attributes i ppf x.pmtd_attributes;
-      modtype_declaration i ppf x.pmtd_type
+      line i ppf "Psig_modtype\n";
+      module_type_declaration i ppf x
   | Psig_modtypesubst x ->
-      line i ppf "Psig_modtypesubst %a\n" fmt_string_loc x.pmtd_name;
-      attributes i ppf x.pmtd_attributes;
-      modtype_declaration i ppf x.pmtd_type
+      line i ppf "Psig_modtypesubst\n";
+      module_type_declaration i ppf x
   | Psig_open od ->
       line i ppf "Psig_open\n";
       open_description i ppf od
@@ -892,9 +890,8 @@ and structure_item i ppf x =
       line i ppf "Pstr_recmodule\n";
       list i module_binding ppf bindings;
   | Pstr_modtype x ->
-      line i ppf "Pstr_modtype %a\n" fmt_string_loc x.pmtd_name;
-      attributes i ppf x.pmtd_attributes;
-      modtype_declaration i ppf x.pmtd_type
+      line i ppf "Pstr_modtype\n";
+      module_type_declaration i ppf x
   | Pstr_open od ->
       line i ppf "Pstr_open\n";
       open_declaration i ppf od
@@ -914,6 +911,12 @@ and structure_item i ppf x =
       payload i ppf arg
   | Pstr_attribute a ->
       attribute i ppf "Pstr_attribute" a
+
+and module_type_declaration i ppf x =
+  line i ppf "module_type_declaration %a %a\n" fmt_string_loc x.pmtd_name
+    fmt_location x.pmtd_loc;
+  attributes i ppf x.pmtd_attributes;
+  modtype_declaration (i+1) ppf x.pmtd_type
 
 and module_declaration i ppf pmd =
   str_opt_loc i ppf pmd.pmd_name;
