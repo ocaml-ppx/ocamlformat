@@ -127,7 +127,7 @@ let fmt_closed_flag f x =
 let fmt_closed_flag_loc f x =
   match (x : closed_flag_loc) with
   | Closed -> fprintf f "Closed"
-  | Open _ -> fprintf f "Open"
+  | Open loc -> fprintf f "Open %a" fmt_location loc
 
 let fmt_rec_flag f x =
   match x with
