@@ -421,7 +421,7 @@ and expression i ppf x =
       line i ppf "Pexp_object\n";
       class_structure i ppf s
   | Pexp_newtype (s, e) ->
-      line i ppf "Pexp_newtype \"%s\"\n" s.txt;
+      line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
       expression i ppf e
   | Pexp_pack me ->
       line i ppf "Pexp_pack\n";
