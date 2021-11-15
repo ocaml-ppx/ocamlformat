@@ -27,6 +27,14 @@ let fmt_position with_name f l =
                (l.pos_cnum - l.pos_bol)
 ;;
 
+let curr_indent : int ref = ref 0
+
+let line i f s (*...*) =
+  curr_indent := i;
+  fprintf f "%s" (String.make ((2*i) mod 72) ' ');
+  fprintf f s (*...*)
+;;
+
 type cmts =
   { before: Location.t -> string list option
   ; within: Location.t -> string list option
@@ -34,11 +42,13 @@ type cmts =
 
 let cmts : cmts option ref = ref None
 
-let fmt_cmts f lbl get loc =
-  match get loc with
+let fmt_cmts i f lbl = function
   | Some cmts ->
-      let fmt_cmt f s = fprintf f "%s: (*%s*)" lbl s in
-      fprintf f "\n%a" (pp_print_list fmt_cmt) cmts
+      let fmt_cmt f s =
+        line i f "%s: (*%s*)" lbl s
+      in
+      fprintf f "\n";
+      pp_print_list fmt_cmt f cmts
   | None -> ()
 
 let fmt_location f loc =
@@ -50,10 +60,17 @@ let fmt_location f loc =
     if loc.loc_ghost then fprintf f " ghost";
     match !cmts with
     | None -> ()
-    | Some {before; within; after} ->
-        fmt_cmts f "before" before loc;
-        fmt_cmts f "within" within loc;
-        fmt_cmts f " after" after loc
+    | Some {before; within; after} -> (
+        match before loc, within loc, after loc with
+        | None, None, None -> ()
+        | b, w, a ->
+            let i = !curr_indent in
+            fprintf f "\n";
+            line i f "comments";
+            let i = i+1 in
+            fmt_cmts i f "before" b;
+            fmt_cmts i f "within" w;
+            fmt_cmts i f " after" a )
   end
 ;;
 
@@ -82,11 +99,6 @@ let fmt_str_opt_loc f (x : string option loc) =
 let fmt_char_option f = function
   | None -> fprintf f "None"
   | Some c -> fprintf f "Some %c" c
-
-let line i f s (*...*) =
-  fprintf f "%s" (String.make ((2*i) mod 72) ' ');
-  fprintf f s (*...*)
-;;
 
 let fmt_constant i f x =
   line i f "constant %a\n" fmt_location x.pconst_loc;
