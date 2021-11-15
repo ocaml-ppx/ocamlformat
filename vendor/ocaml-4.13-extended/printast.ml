@@ -917,6 +917,7 @@ and structure_item i ppf x =
 
 and module_declaration i ppf pmd =
   str_opt_loc i ppf pmd.pmd_name;
+  fmt_location ppf pmd.pmd_loc;
   attributes i ppf pmd.pmd_attributes;
   module_type (i+1) ppf pmd.pmd_type;
 
