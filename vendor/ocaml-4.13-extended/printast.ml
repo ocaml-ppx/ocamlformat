@@ -197,7 +197,7 @@ let rec core_type i ppf x =
       list i core_type ppf l;
   | Ptyp_variant (l, closed, low) ->
       line i ppf "Ptyp_variant closed=%a\n" fmt_closed_flag closed;
-      list i label_x_bool_x_core_type_list ppf l;
+      list i row_field ppf l;
       option i (fun i -> list i string) ppf low
   | Ptyp_object (l, c) ->
       line i ppf "Ptyp_object %a\n" fmt_closed_flag c;
@@ -987,15 +987,17 @@ and label_x_expression i ppf (l,e) =
   arg_label i ppf l;
   expression (i+1) ppf e;
 
-and label_x_bool_x_core_type_list i ppf x =
+and row_field i ppf x =
+  line i ppf "row_field %a\n" fmt_location x.prf_loc;
+  attributes i ppf x.prf_attributes;
+  let i = i+1 in
   match x.prf_desc with
-    Rtag (l, b, ctl) ->
+  | Rtag (l, b, ctl) ->
       line i ppf "Rtag \"%s\" %s\n" l.txt (string_of_bool b);
-      attributes (i+1) ppf x.prf_attributes;
-      list (i+1) core_type ppf ctl
+      list i core_type ppf ctl
   | Rinherit (ct) ->
       line i ppf "Rinherit\n";
-      core_type (i+1) ppf ct
+      core_type i ppf ct
 ;;
 
 let rec toplevel_phrase i ppf x =
