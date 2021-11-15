@@ -1046,8 +1046,9 @@ let rec toplevel_phrase i ppf x =
   | Ptop_def (s) ->
       line i ppf "Ptop_def\n";
       structure (i+1) ppf s;
-  | Ptop_dir {pdir_name; pdir_arg; _} ->
-      line i ppf "Ptop_dir %a\n" fmt_string_loc pdir_name;
+  | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
+      line i ppf "Ptop_dir %a %a\n" fmt_string_loc pdir_name
+        fmt_location pdir_loc;
       match pdir_arg with
       | None -> ()
       | Some da -> directive_argument i ppf da;
