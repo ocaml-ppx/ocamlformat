@@ -659,6 +659,20 @@
    | _ :: _ ->
       line i ppf "[\n";
 @@@@
+   | Optional s -> line i ppf "Optional \"%s\"\n" s
+   | Labelled s -> line i ppf "Labelled \"%s\"\n" s
+ ;;
+ 
+ let typevars ppf vs =
+-  List.iter (fun x -> fprintf ppf " %a" Pprintast.tyvar x.txt) vs
++  List.iter (fun x ->
++      fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
+ 
+ let rec core_type i ppf x =
+   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
+   attributes i ppf x.ptyp_attributes;
+   let i = i+1 in
+@@@@
    | Ptyp_constr (li, l) ->
        line i ppf "Ptyp_constr %a\n" fmt_longident_loc li;
        list i core_type ppf l;
@@ -1027,10 +1041,11 @@
 +      open_description i ppf od
    | Psig_include incl ->
        line i ppf "Psig_include\n";
-       module_type i ppf incl.pincl_mod;
-       attributes i ppf incl.pincl_attributes
+-      module_type i ppf incl.pincl_mod;
+-      attributes i ppf incl.pincl_attributes
++      include_description i ppf incl
    | Psig_class (l) ->
-@@@@
+       line i ppf "Psig_class\n";
        list i class_description ppf l;
    | Psig_class_type (l) ->
        line i ppf "Psig_class_type\n";
@@ -1078,11 +1093,13 @@
        list i class_declaration ppf l;
    | Pstr_class_type (l) ->
        line i ppf "Pstr_class_type\n";
-@@@@
+       list i class_type_declaration ppf l;
    | Pstr_include incl ->
-       line i ppf "Pstr_include";
-       attributes i ppf incl.pincl_attributes;
-       module_expr i ppf incl.pincl_mod
+-      line i ppf "Pstr_include";
+-      attributes i ppf incl.pincl_attributes;
+-      module_expr i ppf incl.pincl_mod
++      line i ppf "Pstr_include\n";
++      include_declaration i ppf incl
    | Pstr_extension ((s, arg), attrs) ->
 -      line i ppf "Pstr_extension \"%s\"\n" s.txt;
 +      line i ppf "Pstr_extension %a\n" fmt_string_loc s;
@@ -1130,6 +1147,18 @@
 +  let i = i+1 in
 +  module_expr i ppf x.popen_expr
 +
++and include_description i ppf x =
++  line i ppf "include_description %a\n" fmt_location x.pincl_loc;
++  attributes i ppf x.pincl_attributes;
++  let i = i+1 in
++  module_type i ppf x.pincl_mod
++
++and include_declaration i ppf x =
++  line i ppf "include_declaration %a\n" fmt_location x.pincl_loc;
++  attributes i ppf x.pincl_attributes;
++  let i = i+1 in
++  module_expr i ppf x.pincl_mod
++
  and value_binding i ppf x =
 -  line i ppf "<def>\n";
 +  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
@@ -1168,9 +1197,11 @@
    | Ptop_def (s) ->
        line i ppf "Ptop_def\n";
        structure (i+1) ppf s;
-   | Ptop_dir {pdir_name; pdir_arg; _} ->
+-  | Ptop_dir {pdir_name; pdir_arg; _} ->
 -      line i ppf "Ptop_dir \"%s\"\n" pdir_name.txt;
-+      line i ppf "Ptop_dir %a\n" fmt_string_loc pdir_name;
++  | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
++      line i ppf "Ptop_dir %a %a\n" fmt_string_loc pdir_name
++        fmt_location pdir_loc;
        match pdir_arg with
        | None -> ()
        | Some da -> directive_argument i ppf da;
