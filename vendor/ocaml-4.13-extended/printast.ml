@@ -468,13 +468,14 @@ and type_declaration i ppf x =
   option (i+1) core_type ppf x.ptype_manifest
 
 and attribute i ppf k a =
-  line i ppf "%s \"%s\"\n" k a.attr_name.txt;
+  line i ppf "%s %a %a\n" k fmt_string_loc a.attr_name fmt_location a.attr_loc;
   payload i ppf a.attr_payload;
 
 and attributes i ppf l =
   let i = i + 1 in
   List.iter (fun a ->
-    line i ppf "attribute \"%s\"\n" a.attr_name.txt;
+    line i ppf "attribute %a %a\n" fmt_string_loc a.attr_name
+      fmt_location a.attr_loc;
     payload (i + 1) ppf a.attr_payload;
   ) l;
 
