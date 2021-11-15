@@ -187,7 +187,8 @@ let arg_label i ppf = function
 ;;
 
 let typevars ppf vs =
-  List.iter (fun x -> fprintf ppf " %a" Pprintast.tyvar x.txt) vs
+  List.iter (fun x ->
+      fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
 
 let rec core_type i ppf x =
   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
