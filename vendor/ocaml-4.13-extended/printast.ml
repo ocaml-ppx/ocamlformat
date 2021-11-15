@@ -759,9 +759,8 @@ and signature_item i ppf x =
       line i ppf "Psig_exception\n";
       type_exception i ppf te
   | Psig_module pmd ->
-      line i ppf "Psig_module %a\n" fmt_str_opt_loc pmd.pmd_name;
-      attributes i ppf pmd.pmd_attributes;
-      module_type i ppf pmd.pmd_type
+      line i ppf "Psig_module\n";
+      module_declaration i ppf pmd
   | Psig_modsubst pms ->
       line i ppf "Psig_modsubst %a = %a\n"
         fmt_string_loc pms.pms_name
