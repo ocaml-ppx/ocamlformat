@@ -793,8 +793,7 @@ and signature_item i ppf x =
       open_description i ppf od
   | Psig_include incl ->
       line i ppf "Psig_include\n";
-      module_type i ppf incl.pincl_mod;
-      attributes i ppf incl.pincl_attributes
+      include_description i ppf incl
   | Psig_class (l) ->
       line i ppf "Psig_class\n";
       list i class_description ppf l;
@@ -914,9 +913,8 @@ and structure_item i ppf x =
       line i ppf "Pstr_class_type\n";
       list i class_type_declaration ppf l;
   | Pstr_include incl ->
-      line i ppf "Pstr_include";
-      attributes i ppf incl.pincl_attributes;
-      module_expr i ppf incl.pincl_mod
+      line i ppf "Pstr_include\n";
+      include_declaration i ppf incl
   | Pstr_extension ((s, arg), attrs) ->
       line i ppf "Pstr_extension %a\n" fmt_string_loc s;
       attributes i ppf attrs;
@@ -992,6 +990,18 @@ and open_declaration i ppf x =
   attributes i ppf x.popen_attributes;
   let i = i+1 in
   module_expr i ppf x.popen_expr
+
+and include_description i ppf x =
+  line i ppf "include_description %a\n" fmt_location x.pincl_loc;
+  attributes i ppf x.pincl_attributes;
+  let i = i+1 in
+  module_type i ppf x.pincl_mod
+
+and include_declaration i ppf x =
+  line i ppf "include_declaration %a\n" fmt_location x.pincl_loc;
+  attributes i ppf x.pincl_attributes;
+  let i = i+1 in
+  module_expr i ppf x.pincl_mod
 
 and value_binding i ppf x =
   line i ppf "<def> %a\n" fmt_location x.pvb_loc;
