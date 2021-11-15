@@ -215,7 +215,7 @@ let rec core_type i ppf x =
       line i ppf "Ptyp_package %a\n" fmt_longident_loc s;
       list i package_with ppf l;
   | Ptyp_extension (s, arg) ->
-      line i ppf "Ptyp_extension \"%s\"\n" s.txt;
+      line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
 and object_field i ppf x =
@@ -296,7 +296,7 @@ and pattern i ppf x =
       line i ppf "Ppat_open \"%a\"\n" fmt_longident_loc m;
       pattern i ppf p
   | Ppat_extension (s, arg) ->
-      line i ppf "Ppat_extension \"%s\"\n" s.txt;
+      line i ppf "Ppat_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
 and expression i ppf x =
@@ -436,7 +436,7 @@ and expression i ppf x =
       list i binding_op ppf ands;
       expression i ppf body
   | Pexp_extension (s, arg) ->
-      line i ppf "Pexp_extension \"%s\"\n" s.txt;
+      line i ppf "Pexp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pexp_unreachable ->
       line i ppf "Pexp_unreachable"
@@ -526,7 +526,7 @@ and extension_constructor i ppf x =
   line i ppf "extension_constructor %a\n" fmt_location x.pext_loc;
   attributes i ppf x.pext_attributes;
   let i = i + 1 in
-  line i ppf "pext_name = \"%s\"\n" x.pext_name.txt;
+  line i ppf "pext_name = %a\n" fmt_string_loc x.pext_name;
   line i ppf "pext_kind =\n";
   extension_constructor_kind (i + 1) ppf x.pext_kind;
 
@@ -558,7 +558,7 @@ and class_type i ppf x =
       core_type i ppf co;
       class_type i ppf cl;
   | Pcty_extension (s, arg) ->
-      line i ppf "Pcty_extension \"%s\"\n" s.txt;
+      line i ppf "Pcty_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pcty_open (o, e) ->
       line i ppf "Pcty_open\n";
@@ -579,11 +579,11 @@ and class_type_field i ppf x =
       line i ppf "Pctf_inherit\n";
       class_type i ppf ct;
   | Pctf_val (s, mf, vf, ct) ->
-      line i ppf "Pctf_val \"%s\" %a %a\n" s.txt fmt_mutable_flag mf
+      line i ppf "Pctf_val %a %a %a\n" fmt_string_loc s fmt_mutable_flag mf
            fmt_virtual_flag vf;
       core_type (i+1) ppf ct;
   | Pctf_method (s, pf, vf, ct) ->
-      line i ppf "Pctf_method \"%s\" %a %a\n" s.txt fmt_private_flag pf
+      line i ppf "Pctf_method %a %a %a\n" fmt_string_loc s fmt_private_flag pf
            fmt_virtual_flag vf;
       core_type (i+1) ppf ct;
   | Pctf_constraint (ct1, ct2) ->
@@ -593,7 +593,7 @@ and class_type_field i ppf x =
   | Pctf_attribute a ->
       attribute i ppf "Pctf_attribute" a
   | Pctf_extension (s, arg) ->
-      line i ppf "Pctf_extension \"%s\"\n" s.txt;
+      line i ppf "Pctf_extension %a\n" fmt_string_loc s;
      payload i ppf arg
 
 and class_description i ppf x =
@@ -648,7 +648,7 @@ and class_expr i ppf x =
       class_expr i ppf ce;
       class_type i ppf ct;
   | Pcl_extension (s, arg) ->
-      line i ppf "Pcl_extension \"%s\"\n" s.txt;
+      line i ppf "Pcl_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pcl_open (o, e) ->
       line i ppf "Pcl_open\n";
@@ -687,7 +687,7 @@ and class_field i ppf x =
   | Pcf_attribute a ->
       attribute i ppf "Pcf_attribute" a
   | Pcf_extension (s, arg) ->
-      line i ppf "Pcf_extension \"%s\"\n" s.txt;
+      line i ppf "Pcf_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
 and class_field_kind i ppf = function
@@ -734,7 +734,7 @@ and module_type i ppf x =
       line i ppf "Pmty_typeof\n";
       module_expr i ppf m;
   | Pmty_extension (s, arg) ->
-      line i ppf "Pmod_extension \"%s\"\n" s.txt;
+      line i ppf "Pmod_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
 and signature i ppf x = list i signature_item ppf x
@@ -792,7 +792,7 @@ and signature_item i ppf x =
       line i ppf "Psig_class_type\n";
       list i class_type_declaration ppf l;
   | Psig_extension ((s, arg), attrs) ->
-      line i ppf "Psig_extension \"%s\"\n" s.txt;
+      line i ppf "Psig_extension %a\n" fmt_string_loc s;
       attributes i ppf attrs;
       payload i ppf arg
   | Psig_attribute a ->
@@ -855,7 +855,7 @@ and module_expr i ppf x =
       line i ppf "Pmod_unpack\n";
       expression i ppf e;
   | Pmod_extension (s, arg) ->
-      line i ppf "Pmod_extension \"%s\"\n" s.txt;
+      line i ppf "Pmod_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pmod_hole ->
       line i ppf "Pmod_hole"
@@ -909,7 +909,7 @@ and structure_item i ppf x =
       attributes i ppf incl.pincl_attributes;
       module_expr i ppf incl.pincl_mod
   | Pstr_extension ((s, arg), attrs) ->
-      line i ppf "Pstr_extension \"%s\"\n" s.txt;
+      line i ppf "Pstr_extension %a\n" fmt_string_loc s;
       attributes i ppf attrs;
       payload i ppf arg
   | Pstr_attribute a ->
@@ -1020,7 +1020,7 @@ let rec toplevel_phrase i ppf x =
       line i ppf "Ptop_def\n";
       structure (i+1) ppf s;
   | Ptop_dir {pdir_name; pdir_arg; _} ->
-      line i ppf "Ptop_dir \"%s\"\n" pdir_name.txt;
+      line i ppf "Ptop_dir %a\n" fmt_string_loc pdir_name;
       match pdir_arg with
       | None -> ()
       | Some da -> directive_argument i ppf da;
