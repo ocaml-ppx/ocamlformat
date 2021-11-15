@@ -1012,6 +1012,8 @@ let rec toplevel_phrase i ppf x =
       | Some da -> directive_argument i ppf da;
 
 and directive_argument i ppf x =
+  line i ppf "directive_argument %a\n" fmt_location x.pdira_loc;
+  let i = i+1 in
   match x.pdira_desc with
   | Pdir_string (s) -> line i ppf "Pdir_string \"%s\"\n" s;
   | Pdir_int (n, None) -> line i ppf "Pdir_int %s\n" n;
