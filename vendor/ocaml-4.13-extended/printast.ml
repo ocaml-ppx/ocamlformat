@@ -922,6 +922,7 @@ and module_declaration i ppf pmd =
 
 and module_binding i ppf x =
   str_opt_loc i ppf x.pmb_name;
+  fmt_location ppf x.pmb_loc;
   attributes i ppf x.pmb_attributes;
   module_expr (i+1) ppf x.pmb_expr
 
