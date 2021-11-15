@@ -977,7 +977,7 @@ and open_declaration i ppf x =
   module_expr i ppf x.popen_expr
 
 and value_binding i ppf x =
-  line i ppf "<def>\n";
+  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
   attributes (i+1) ppf x.pvb_attributes;
   pattern (i+1) ppf x.pvb_pat;
   expression (i+1) ppf x.pvb_expr

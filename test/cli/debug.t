@@ -13,7 +13,8 @@
   before: (* Intentionally not formatted *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,34+0]..[4,59+7])
+  before: (* Intentionally not formatted *)
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -37,7 +38,8 @@
   before: (* Intentionally not formatted *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,34+0]..[4,59+7])
+  before: (* Intentionally not formatted *)
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -61,7 +63,8 @@
   before: (* Intentionally not formatted *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,34+0]..[2,34+26])
+  before: (* Intentionally not formatted *)
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -85,7 +88,8 @@
   before: (* Intentionally not formatted *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,34+0]..[2,34+26])
+  before: (* Intentionally not formatted *)
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -124,7 +128,9 @@
    after: (* after let-binding *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,25+0]..[6,233+3])
+  before: (* before let-binding *)
+   after: (* after let-binding *)
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -133,7 +139,8 @@
   before: (* before x binding #2 *)
               Pexp_let Nonrec
               [
-                <def>
+                <def> (a.ml[5,90+2]..[5,90+122])
+   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
   before: (* before x *)
    after: (* after x #1 *)
@@ -165,7 +172,9 @@
    after: (* after let-binding *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,25+0]..[6,233+3])
+  before: (* before let-binding *)
+   after: (* after let-binding *)
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -174,7 +183,8 @@
   before: (* before x binding #2 *)
               Pexp_let Nonrec
               [
-                <def>
+                <def> (a.ml[5,90+2]..[5,90+122])
+   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
   before: (* before x *)
    after: (* after x #1 *)
@@ -206,7 +216,9 @@
    after: (* after let-binding *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,25+0]..[13,265+3])
+  before: (* before let-binding *)
+   after: (* after let-binding *)
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -215,7 +227,8 @@
   before: (* before x binding #2 *)
               Pexp_let Nonrec
               [
-                <def>
+                <def> (a.ml[5,90+2]..[10,210+28])
+   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
   before: (* before x *)
    after: (* after x #1 *)
@@ -247,7 +260,9 @@
    after: (* after let-binding *)
         Pstr_value Nonrec
         [
-          <def>
+          <def> (a.ml[2,25+0]..[13,265+3])
+  before: (* before let-binding *)
+   after: (* after let-binding *)
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -256,7 +271,8 @@
   before: (* before x binding #2 *)
               Pexp_let Nonrec
               [
-                <def>
+                <def> (a.ml[5,90+2]..[10,210+28])
+   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
   before: (* before x *)
    after: (* after x #1 *)
