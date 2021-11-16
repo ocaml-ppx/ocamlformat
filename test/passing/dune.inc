@@ -1011,6 +1011,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to comments.mli.stdout
+   (with-stderr-to comments.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/comments.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments.mli comments.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments.mli.err comments.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comments_args.ml.stdout
    (with-stderr-to comments_args.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iter=4 %{dep:tests/comments_args.ml})))))
