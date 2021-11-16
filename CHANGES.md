@@ -77,6 +77,8 @@
 
   + Preserve sugared syntax of extension points with attributes (#1913, @gpetiot)
 
+  + Improve comment attachment when followed but not preceded by a linebreak (#1926, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
