@@ -441,7 +441,7 @@ end
 module Structure_item = struct
   let has_doc itm =
     match itm.pstr_desc with
-    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pstr_attribute atr -> Attr.is_doc atr
     | Pstr_eval (_, atrs)
      |Pstr_value (_, {pvb_attributes= atrs; _} :: _)
      |Pstr_primitive {pval_attributes= atrs; _}
@@ -453,7 +453,7 @@ module Structure_item = struct
      |Pstr_extension (_, atrs)
      |Pstr_class_type ({pci_attributes= atrs; _} :: _)
      |Pstr_class ({pci_attributes= atrs; _} :: _) ->
-        Option.is_some (fst (doc_atrs atrs))
+        List.exists ~f:Attr.is_doc atrs
     | Pstr_include
         {pincl_mod= {pmod_attributes= atrs1; _}; pincl_attributes= atrs2; _}
      |Pstr_exception
@@ -462,7 +462,7 @@ module Structure_item = struct
         ; _ }
      |Pstr_module
         {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2; _}; _} ->
-        Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
+        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
     | Pstr_value (_, [])
      |Pstr_type (_, [])
      |Pstr_recmodule []
@@ -525,7 +525,7 @@ end
 module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
-    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Psig_attribute atr -> Attr.is_doc atr
     | Psig_value {pval_attributes= atrs; _}
      |Psig_type (_, {ptype_attributes= atrs; _} :: _)
      |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
@@ -537,7 +537,7 @@ module Signature_item = struct
      |Psig_extension (_, atrs)
      |Psig_class_type ({pci_attributes= atrs; _} :: _)
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
-        Option.is_some (fst (doc_atrs atrs))
+        List.exists ~f:Attr.is_doc atrs
     | Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
         :: _ )
@@ -549,7 +549,7 @@ module Signature_item = struct
         ; _ }
      |Psig_module
         {pmd_attributes= atrs1; pmd_type= {pmty_attributes= atrs2; _}; _} ->
-        Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
+        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
     | Psig_type (_, [])
      |Psig_typesubst []
      |Psig_recmodule []
@@ -604,7 +604,7 @@ module Signature_item = struct
 end
 
 module Vb = struct
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.pvb_attributes))
+  let has_doc itm = List.exists ~f:Attr.is_doc itm.pvb_attributes
 
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
@@ -618,7 +618,7 @@ module Vb = struct
 end
 
 module Td = struct
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.ptype_attributes))
+  let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
 
   let is_simple (i, (c : Conf.t)) =
     match c.module_item_spacing with
@@ -638,10 +638,10 @@ end
 
 module Class_field = struct
   let has_doc itm =
-    Option.is_some (fst (doc_atrs itm.pcf_attributes))
+    List.exists ~f:Attr.is_doc itm.pcf_attributes
     ||
     match itm.pcf_desc with
-    | Pcf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pcf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
   let is_simple (itm, c) =
@@ -662,10 +662,10 @@ end
 
 module Class_type_field = struct
   let has_doc itm =
-    Option.is_some (fst (doc_atrs itm.pctf_attributes))
+    List.exists ~f:Attr.is_doc itm.pctf_attributes
     ||
     match itm.pctf_desc with
-    | Pctf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pctf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
   let is_simple (itm, c) =
@@ -771,7 +771,7 @@ let location = function
   | Top -> Location.none
 
 let break_between_modules {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-  let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
+  let has_doc itm = List.exists ~f:Attr.is_doc (attributes itm) in
   let is_simple (itm, c) =
     Location.is_single_line (location itm) c.Conf.margin
   in
