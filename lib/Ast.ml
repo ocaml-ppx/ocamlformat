@@ -242,9 +242,26 @@ module Longident = struct
 end
 
 module Attr = struct
+  module Key = struct
+    type t = Regular | Item | Floating
+
+    let to_string = function
+      | Regular -> "@"
+      | Item -> "@@"
+      | Floating -> "@@@"
+  end
+
   let is_doc = function
     | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
+end
+
+module Ext = struct
+  module Key = struct
+    type t = Regular | Item
+
+    let to_string = function Regular -> "%" | Item -> "%%"
+  end
 end
 
 module Exp = struct
