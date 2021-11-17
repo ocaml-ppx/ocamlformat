@@ -105,6 +105,9 @@ type mapper = {
   value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
+  directive_argument: mapper -> directive_argument -> directive_argument;
+  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
+  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
 }
 (** A mapper record implements one "method" per syntactic category,
     using an open recursion style: each method takes as its first

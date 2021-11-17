@@ -24,30 +24,11 @@ type 'a t =
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
-(* Missing from ocaml_migrate_parsetree *)
-let use_file (mapper : Ast_mapper.mapper) use_file =
-  let open Parsetree in
-  List.map use_file ~f:(fun toplevel_phrase ->
-      match (toplevel_phrase : toplevel_phrase) with
-      | Ptop_def structure -> Ptop_def (mapper.structure mapper structure)
-      | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
-          let pdir_arg =
-            match pdir_arg with
-            | None -> None
-            | Some a ->
-                Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
-          in
-          Ptop_dir
-            { pdir_name=
-                {pdir_name with loc= mapper.location mapper pdir_name.loc}
-            ; pdir_arg
-            ; pdir_loc= mapper.location mapper pdir_loc } )
-
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   match x with
   | Structure -> m.structure m
   | Signature -> m.signature m
-  | Use_file -> use_file m
+  | Use_file -> List.map ~f:(m.toplevel_phrase m)
   | Core_type -> m.typ m
   | Module_type -> m.module_type m
   | Expression -> m.expr m
