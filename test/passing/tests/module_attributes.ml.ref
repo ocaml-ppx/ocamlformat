@@ -2,8 +2,7 @@ include (functor [@warning "item"] (M : S) -> N) [@@warning "structure"]
 
 include struct
   type t
-end
-[@warning "item"] [@@warning "structure"]
+end [@warning "item"] [@@warning "structure"]
 
 include M [@warning "item"] [@@warning "structure"]
 
