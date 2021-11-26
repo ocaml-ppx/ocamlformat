@@ -106,27 +106,15 @@ let find_at_position t loc pos =
   in
   Map.find map loc
 
+let no_filter (_ : Parser.token) = true
+
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is a
     [|] character and the first location begins a line and the start column
     of the first location is lower than that of the second location. *)
-let is_adjacent_prev src (l1 : Location.t) (l2 : Location.t) =
-  match
-    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-      | DOCSTRING _ -> false
-      | _ -> true )
-  with
-  | [] -> true
-  | [(BAR, _)] ->
-      Source.begins_line src l1
-      && Position.column l1.loc_start < Position.column l2.loc_start
-  | _ -> false
-
-let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
-  match
-    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-        | _ -> true )
-  with
+let is_adjacent ?(filter = no_filter) src (l1 : Location.t) (l2 : Location.t)
+    =
+  match Source.tokens_between src l1.loc_end l2.loc_start ~filter with
   | [] -> true
   | [(BAR, _)] ->
       Source.begins_line src l1
@@ -195,8 +183,13 @@ end = struct
     (a, b ++ c, d ++ e)
 
   let partition src ~prev ~next cmts =
+    let ignore_docstrings = function
+      | Parser.DOCSTRING _ -> false
+      | _ -> true
+    in
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl when is_adjacent_prev src prev loc -> (
+    | Cmt.{loc; _} :: _ as cmtl
+      when is_adjacent ~filter:ignore_docstrings src prev loc -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
