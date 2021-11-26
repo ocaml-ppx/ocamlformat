@@ -106,15 +106,15 @@ let find_at_position t loc pos =
   in
   Map.find map loc
 
+let no_filter (_ : Parser.token) = true
+
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is a
     [|] character and the first location begins a line and the start column
     of the first location is lower than that of the second location. *)
-let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
-  match
-    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-        | _ -> true )
-  with
+let is_adjacent ?(filter = no_filter) src (l1 : Location.t) (l2 : Location.t)
+    =
+  match Source.tokens_between src l1.loc_end l2.loc_start ~filter with
   | [] -> true
   | [(BAR, _)] ->
       Source.begins_line src l1
@@ -183,14 +183,21 @@ end = struct
     (a, b ++ c, d ++ e)
 
   let partition src ~prev ~next cmts =
+    let ignore_docstrings = function
+      | Parser.DOCSTRING _ -> false
+      | _ -> true
+    in
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
+    | Cmt.{loc; _} :: _ as cmtl
+      when is_adjacent ~filter:ignore_docstrings src prev loc -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
       | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
           let open Location in
+          let first_loc = (List.hd_exn cmtl).loc in
+          let last_loc = (List.last_exn cmtl).loc in
           let same_line_as_prev l =
             prev.loc_end.pos_lnum = l.loc_start.pos_lnum
           in
@@ -202,7 +209,14 @@ end = struct
             | 0, 0 -> `Before_next
             | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
-            | 1, x when x > 1 && Source.empty_line_after src loc ->
+            | 1, y when y > 1 && Source.empty_line_after src loc ->
+                `After_prev
+            | _, y
+              when y > 1
+                   && first_loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
+                      >= 1
+                   && Source.empty_line_after src last_loc
+                   && not (Source.empty_line_before src first_loc) ->
                 `After_prev
             | _ -> `Before_next
           in

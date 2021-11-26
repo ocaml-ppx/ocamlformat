@@ -1007,7 +1007,6 @@ let g (type t) (x : t) (tag : t ty) =
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with Bool -> idb2 x | Int -> x > 0
-
 (* Encoding generics using GADTs *)
 (* (c) Alain Frisch / Lexifi *)
 (* cf. http://www.lexifi.com/blog/dynamic-types *)
