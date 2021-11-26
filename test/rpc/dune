@@ -1,7 +1,10 @@
 (test
  (name rpc_test)
  (libraries ocamlformat-rpc-lib unix)
- (deps %{bin:ocamlformat-rpc})
+ (deps
+  %{bin:ocamlformat-rpc}
+  small_margin/.ocamlformat
+  big_margin/.ocamlformat)
  (modules rpc_test)
  (package ocamlformat-rpc)
  (enabled_if

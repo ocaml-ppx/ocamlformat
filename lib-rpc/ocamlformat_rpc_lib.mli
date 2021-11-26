@@ -9,8 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type format_args =
+  {path: string option; config: (string * string) list option}
+
+val empty_args : format_args
+
 module Version : sig
-  type t = V1
+  type t = V1 | V2
 
   val to_string : t -> string
 
@@ -68,7 +73,27 @@ module Make (IO : IO.S) : sig
     end
   end
 
-  type client = [`V1 of V1.Client.t]
+  module V2 : sig
+    module Command :
+      Command_S
+        with type t =
+          [ `Halt
+          | `Unknown
+          | `Error of string
+          | `Format of string * format_args ]
+
+    module Client : sig
+      include Client_S with type cmd = Command.t
+
+      val format :
+           format_args:format_args
+        -> string
+        -> t
+        -> (string, [> `Msg of string]) result IO.t
+    end
+  end
+
+  type client = [`V1 of V1.Client.t | `V2 of V2.Client.t]
 
   val pick_client :
        pid:int
@@ -93,5 +118,9 @@ module Make (IO : IO.S) : sig
     -> client
     -> (unit, [> `Msg of string]) result IO.t
 
-  val format : string -> client -> (string, [> `Msg of string]) result IO.t
+  val format :
+       ?format_args:format_args
+    -> string
+    -> client
+    -> (string, [> `Msg of string]) result IO.t
 end

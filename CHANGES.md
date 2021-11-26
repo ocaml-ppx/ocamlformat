@@ -21,6 +21,9 @@
   + ocamlformat-rpc-lib is now functorized over the IO (#1975, @gpetiot).
     Now handles `Csexp.t` types instead of `Sexplib0.Sexp.t`.
 
+  + RPC v2 (#1935, @panglesd):
+    Define a 'Format' command parameterized with optionnal arguments to set or override the config and path, to format in the style of a file.
+
 ### 0.20.1 (2021-12-13)
 
 #### New features

@@ -36,27 +36,32 @@ module Ocf = Make (IO)
 
 let log = Format.printf
 
-(* latest first *)
-let supported_versions = List.map Version.to_string [V1]
-
 type close = unit -> unit
 
 type state = Uninitialized | Running of Ocf.client * close | Errored
 
 let state : state ref = ref Uninitialized
 
-let start () =
+let start ?versions () =
   let prog = Sys.argv.(1) in
   let argv = [|"ocamlformat-rpc"|] in
   ( match
       let input, output = Unix.open_process_args prog argv in
       let pid = Unix.process_pid (input, output) in
-      Ocf.pick_client ~pid input output supported_versions
+      let versions =
+        match versions with
+        | Some v -> List.map Version.to_string v
+        | None -> List.map Version.to_string [V2; V1]
+      in
+      Ocf.pick_client ~pid input output versions
       >>| fun client ->
       let close =
         match client with
         | `V1 _ ->
             log "[ocf] client V1 selected\n%!" ;
+            fun () -> close_out output ; close_in input
+        | `V2 _ ->
+            log "[ocf] client V2 selected\n%!" ;
             fun () -> close_out output ; close_in input
       in
       state := Running (client, close) ;
@@ -78,12 +83,12 @@ let start () =
            msg ;
          `No_process )
 
-let get_client () =
+let get_client ?versions () =
   match !state with
-  | Uninitialized -> start ()
+  | Uninitialized -> start ?versions ()
   | Running (cl, _) ->
       let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
-      if i = 0 then Ok cl else start ()
+      if i = 0 then Ok cl else start ?versions ()
   | Errored -> Error `No_process
 
 let close_client () =
@@ -97,11 +102,11 @@ let close_client () =
 let config c =
   get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.config c cl
 
-let format x =
-  get_client ()
+let format ?(format_args = empty_args) ?versions x =
+  get_client ?versions ()
   >>= fun cl ->
   log "[ocf] Format '%s'\n%!" x ;
-  Ocf.format x cl
+  Ocf.format ~format_args x cl
 
 let halt () =
   get_client ()
@@ -129,8 +134,8 @@ let () =
   protect_unit @@ halt ()
 
 let () =
-  log "Sending requests\n%!" ;
-  protect_string @@ format "char -> string" ;
+  log "Testing v1\n%!" ;
+  protect_string @@ format ~versions:[V1] "char -> string" ;
   protect_string @@ format "int -> int" ;
   protect_string @@ format " int    (* foo *) \n\n ->     int  (* bar *)" ;
   protect_unit @@ config [("foo", "bar")] ;
@@ -165,4 +170,25 @@ let ssmap
   protect_string @@ format some_function ;
   protect_unit @@ config [("profile", "janestreet")] ;
   protect_string @@ format some_function ;
+  protect_unit @@ halt ()
+
+let () =
+  log "Testing v2\n%!" ;
+  (* testing format args *)
+  protect_string
+  @@ format ~versions:[V2]
+       ~format_args:{empty_args with path= Some "small_margin/foo.ml"}
+       "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
+  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
+  protect_string
+  @@ format
+       ~format_args:{empty_args with config= Some [("margin", "10")]}
+       "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
+  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
+  protect_string
+  @@ format
+       ~format_args:
+         {config= Some [("margin", "80")]; path= Some "small_margin/foo.ml"}
+       "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
+  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
   protect_unit @@ halt ()

@@ -1,7 +1,7 @@
 Starting then doing nothing
-[ocf] client V1 selected
+[ocf] client V2 selected
 [ocf] Halt
-Sending requests
+Testing v1
 [ocf] client V1 selected
 [ocf] Format 'char -> string'
 Output: char -> string
@@ -101,5 +101,38 @@ let ssmap
   =
   ()
 ;;
+
+[ocf] Halt
+Testing v2
+[ocf] client V2 selected
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output:    aaa
+-> bbb
+-> ccc
+-> ddd
+-> eee
+-> fff
+-> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa ->
+bbb ->
+ccc ->
+ddd ->
+eee ->
+fff ->
+ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
 
 [ocf] Halt

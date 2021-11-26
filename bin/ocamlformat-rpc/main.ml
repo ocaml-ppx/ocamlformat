@@ -44,7 +44,7 @@ module V = struct
   let handshake x =
     match Version.of_string x with
     | Some v -> `Handled v
-    | None -> `Propose_another Version.V1
+    | None -> `Propose_another Version.V2
 end
 
 type state = Waiting_for_version | Version_defined of (Version.t * Conf.t)
@@ -65,6 +65,10 @@ let run_config conf c =
       | Error e -> Error e )
   in
   update conf c
+
+let run_path path =
+  Ocamlformat_lib.Conf.build_config ~enable_outside_detected_project:false
+    ~root:None ~file:path ~is_stdin:false
 
 let run_format conf x =
   List.fold_until ~init:()
@@ -88,6 +92,15 @@ let run_format conf x =
     ; format Module_type
     ; format Expression
     ; format Use_file ]
+
+let run_format_with_args {path; config} conf x =
+  let temp_conf = Option.value_map path ~default:conf ~f:run_path in
+  match
+    Option.value_map config ~default:(Ok temp_conf) ~f:(fun c ->
+        run_config temp_conf c )
+  with
+  | Error e -> Error (`Config_error e)
+  | Ok temp_conf -> run_format temp_conf x
 
 let handle_format_error e = V1.Command.output stdout (`Error e)
 
@@ -128,7 +141,7 @@ let rec rpc_main = function
       | `Unknown | `Error _ -> rpc_main state
       | `Format x ->
           let conf =
-            match run_format conf x with
+            match run_format_with_args empty_args conf x with
             | Ok (`Format formatted) ->
                 ignore (Format.flush_str_formatter ()) ;
                 V1.Command.output stdout (`Format formatted) ;
@@ -143,7 +156,22 @@ let rec rpc_main = function
             V1.Command.output stdout (`Config c) ;
             Out_channel.flush stdout ;
             rpc_main (Version_defined (v, conf))
-        | Error e -> handle_config_error e ; rpc_main state ) ) )
+        | Error e -> handle_config_error e ; rpc_main state ) )
+    | V2 -> (
+      match V2.Command.read_input stdin with
+      | `Halt -> Ok ()
+      | `Unknown | `Error _ -> rpc_main state
+      | `Format (x, format_args) ->
+          let conf =
+            match run_format_with_args format_args conf x with
+            | Ok (`Format formatted) ->
+                ignore (Format.flush_str_formatter ()) ;
+                V2.Command.output stdout (`Format (formatted, format_args)) ;
+                conf
+            | Error (`Format_error e) -> handle_format_error e ; conf
+            | Error (`Config_error e) -> handle_config_error e ; conf
+          in
+          rpc_main (Version_defined (v, conf)) ) )
 
 let rpc_main () = rpc_main Waiting_for_version
 
@@ -173,7 +201,7 @@ let info =
     ; `P
         "Once the client and the server agree on a common version, the \
          requests you can send may differ from one version to another."
-    ; `P "On version $(b,v1), the supported RPC commands are:"
+    ; `P "All versions support the following commands:"
     ; `P
         "- $(b,Halt) to end the communication with the RPC server. The \
          caller must close the input and output channels."
@@ -191,6 +219,15 @@ let info =
         "- $(b,Format) $(i,CSEXP): submits a canonical s-expression \
          $(i,CSEXP) to be formatted by OCamlFormat, the formatted output is \
          sent as a reply of the same form $(b,Format) $(i,CSEXP)"
+    ; `P "Specific commands supported on version $(b,v2) are:"
+    ; `P
+        "- $(b,Format) $(i,CSEXP): submits a list as canonical s-expression \
+         $(i,CSEXP), where the first element of the list is a string to be \
+         formatted by OCamlFormat. The other arguments are (key, value) \
+         pairs, where key can be either $(i,\"Path\") or $(i,\"Config\"). \
+         They modify the server's configuration temporarily, for the \
+         current request. The formatted output is sent as a reply of the \
+         same form."
     ; `P "Unknown commands are ignored." ]
   in
   Term.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
