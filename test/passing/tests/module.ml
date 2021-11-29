@@ -71,3 +71,12 @@ let helper ?x =
   match x with Some (module X : X_typ) -> X.f | None -> X_add_one.f
 
 let helper ?x:((module X) = (module X_add_one : X_typ)) = X.f
+
+module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
+  (val Mooooooooooooooooooo)
+
+module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
+  [%foooooooooooooooo]
+
+module GZZZZZZZZZZZZZZ : functor (X : sig end) () (Z : sig end) -> sig end =
+  _

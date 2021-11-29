@@ -4013,7 +4013,9 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
-        bdy=
+        opn= open_hvbox 2
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
             $ hvbox 0
@@ -4087,7 +4089,9 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_unpack e1 ->
       { empty with
-        bdy=
+        opn= open_hvbox 2
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( hvbox 2
                 (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4095,13 +4099,17 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
       { empty with
-        bdy=
+        opn= open_hvbox 2
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_extension c ctx x1
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_hole ->
       { empty with
-        bdy=
+        opn= open_hvbox 2
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             (fmt_hole () $ fmt_attributes_and_docstrings c pmod_attributes)
       }
