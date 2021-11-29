@@ -109,7 +109,7 @@
     Normalizes let operator to the punned form where possible, if output syntax version is at least OCaml 4.13.0. (#1834, #1846, @jberdine)
 
   + Remove unnecessary surrounding parentheses for immediate objects.
-    This syntax is only produced when the output syntax is at least OCaml 4.14. (#<PR_NUMBER>, @gpetiot)
+    This syntax is only produced when the output syntax is at least OCaml 4.14. (#1934, @gpetiot)
 
 ### 0.19.0 (2021-07-16)
 
