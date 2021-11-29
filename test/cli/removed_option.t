@@ -54,7 +54,7 @@ An error is also reported if a removed option is set in an .ocamlformat file:
 
   $ echo 'escape-chars = preserve' > .ocamlformat
   $ ocamlformat a.ml
-  ocamlformat: Error while parsing .ocamlformat:
+  ocamlformat: Error while parsing $TESTCASE_ROOT/.ocamlformat:
                For option "escape-chars": This option has been removed in version 0.16.0. Concrete syntax will now always be preserved.
   [1]
 
