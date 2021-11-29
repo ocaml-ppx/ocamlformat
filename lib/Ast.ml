@@ -19,17 +19,23 @@ type cmt_checker =
   ; cmts_within: Location.t -> bool
   ; cmts_after: Location.t -> bool }
 
-let init, register_reset, leading_nested_match_parens, parens_ite =
+let ( init
+    , register_reset
+    , leading_nested_match_parens
+    , parens_ite
+    , ocaml_version ) =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
+  let ocaml_version = ref Ocaml_version.sys_version in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
     leading_nested_match_parens := conf.leading_nested_match_parens ;
     parens_ite := conf.parens_ite ;
+    ocaml_version := conf.ocaml_version ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens, parens_ite)
+  (init, register, leading_nested_match_parens, parens_ite, ocaml_version)
 
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
@@ -2263,6 +2269,9 @@ end = struct
         false
     (* Object fields do not require parens, even with trailing attributes *)
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
+    | _, {pexp_desc= Pexp_object _; _}
+      when Ocaml_version.(compare !ocaml_version Releases.v4_14 >= 0) ->
+        false
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
       when Longident.is_infix id ->
