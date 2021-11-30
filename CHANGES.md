@@ -79,7 +79,7 @@
 
   + Improve comment attachment when followed but not preceded by a linebreak (#1926, @gpetiot)
 
-  + Fix position of comments preceding Pmod_ident (#<PR_NUMBER>, @gpetiot)
+  + Fix position of comments preceding Pmod_ident (#1939, @gpetiot)
 
 #### Changes
 
