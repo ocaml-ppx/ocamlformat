@@ -4034,20 +4034,14 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             ) }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
-      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
-      in
       { empty with
         opn= open_hvbox 2
-      ; pro=
-          Option.some_if has_pro
-            (Cmts.fmt_before c pmod_loc $ fmt_docstring c ~epi:(fmt "@,") doc)
-      ; bdy= fmt_longident_loc c lid
-      ; cls= close_box
-      ; epi=
-          Option.some_if has_epi
-            (Cmts.fmt_after c pmod_loc $ fmt_attributes c ~pre:Space atrs) }
+      ; bdy=
+          Cmts.fmt c pmod_loc
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ fmt_longident_loc c lid
+            $ fmt_attributes c ~pre:Space atrs )
+      ; cls= close_box }
   | Pmod_structure sis ->
       let empty =
         List.is_empty sis && not (Cmts.has_within c.cmts pmod_loc)

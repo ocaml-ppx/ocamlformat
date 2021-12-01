@@ -79,6 +79,8 @@
 
   + Improve comment attachment when followed but not preceded by a linebreak (#1926, @gpetiot)
 
+  + Fix position of comments preceding Pmod_ident (#1939, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
