@@ -3933,17 +3933,14 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _; _} as me_f), me_a) ->
       let doc, atrs = doc_atrs pmod_attributes in
-      let blk_f = fmt_module_expr c (sub_mod ~ctx me_f) in
       let blk_a = maybe_generative c ~ctx me_a in
-      let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
         let break_struct =
           c.conf.break_struct && can_break_before_struct
           && not (Mod.is_simple me_a)
         in
         fmt_docstring c ~epi:(fmt "@,") doc
-        $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)
-        $ blk_f.esp $ fmt_opt blk_f.epi
+        $ compose_module (fmt_module_expr c (sub_mod ~ctx me_f)) ~f:Fn.id
         $ break (if break_struct then 1000 else 1) 0
         $ str "("
       in
@@ -3974,12 +3971,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let blk_f =
         fmt_module_expr ~can_break_before_struct c (sub_mod ~ctx me_f)
       in
-      let blk_a = maybe_generative c ~ctx me_a in
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
-        opn= blk_a.opn $ blk_f.opn $ open_hvbox 2
+        opn= blk_f.opn $ open_hvbox 2
       ; bdy=
           hvbox 2
             ( Cmts.fmt_before c pmod_loc
@@ -3988,9 +3984,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                 (fmt_opt blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
             $ fmt_opt blk_f.epi
             $ wrap "@ (" ")"
-                ( fmt_opt blk_a.pro $ blk_a.psp $ blk_a.bdy $ blk_a.esp
-                $ fmt_opt blk_a.epi ) )
-      ; cls= close_box $ blk_f.cls $ blk_a.cls
+                (compose_module (maybe_generative c ~ctx me_a) ~f:Fn.id) )
+      ; cls= close_box $ blk_f.cls
       ; epi=
           Option.some_if has_epi
             (Cmts.fmt_after c pmod_loc $ fmt_attributes c ~pre:Space atrs) }
