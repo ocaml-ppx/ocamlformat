@@ -19,7 +19,7 @@ exception
   Internal_error of
     [ `Cannot_parse of exn
     | `Ast_changed
-    | `Doc_comment of Normalize.docstring_error list
+    | `Doc_comment of Docstring.error list
     | `Comment
     | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
@@ -126,19 +126,19 @@ module Error = struct
             ( match m with
             | `Doc_comment l when not quiet ->
                 List.iter l ~f:(function
-                  | Normalize.Added (loc, msg) ->
+                  | Added (loc, msg) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) added.\n\
                          %!"
                         Location.print loc msg
-                  | Normalize.Removed (loc, msg) ->
+                  | Removed (loc, msg) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) dropped.\n\
                          %!"
                         Location.print loc msg
-                  | Normalize.Moved (loc_before, loc_after, msg) ->
+                  | Moved (loc_before, loc_after, msg) ->
                       if Location.compare loc_before Location.none = 0 then
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
@@ -160,7 +160,7 @@ module Error = struct
                            %!"
                           Location.print loc_before msg Location.print
                           loc_after
-                  | Normalize.Unstable (loc, x, y) ->
+                  | Unstable (loc, x, y) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Formatting of doc-comment is \
@@ -243,13 +243,6 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let equal fragment ~ignore_doc_comments c a b =
-  Normalize.equal fragment ~ignore_doc_comments c a.Parse_with_comments.ast
-    b.Parse_with_comments.ast
-
-let normalize fragment c {Parse_with_comments.ast; _} =
-  Normalize.normalize fragment c ast
-
 let recover (type a) : a Extended_ast.t -> _ -> a = function
   | Structure -> Parse_wyc.structure
   | Signature -> Parse_wyc.signature
@@ -318,10 +311,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
-    let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
+    let conf = if opts.debug then conf else {conf with quiet= true} in
     if String.equal prev_source fmted then (
       if opts.debug then check_all_locations Format.err_formatter cmts_t ;
-      if opts.Conf.margin_check then
+      if opts.margin_check then
         check_margin conf ~fmted
           ~filename:(Option.value output_file ~default:input_name) ;
       let strlocs = collect_strlocs fg t.ast in
@@ -349,14 +342,16 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       (* Ast not preserved ? *)
       ( if
         not
-          (equal std_fg ~ignore_doc_comments:(not conf.comment_check) conf
-             std_t std_t_new )
+          (Std_ast.Normalize.equal std_fg conf std_t.ast std_t_new.ast
+             ~ignore_doc_comments:(not conf.comment_check) )
       then
         let old_ast =
-          dump_ast std_fg ~suffix:".old" (normalize std_fg conf std_t)
+          dump_ast std_fg ~suffix:".old"
+            (Std_ast.Normalize.ast std_fg conf std_t.ast)
         in
         let new_ast =
-          dump_ast std_fg ~suffix:".new" (normalize std_fg conf std_t_new)
+          dump_ast std_fg ~suffix:".new"
+            (Std_ast.Normalize.ast std_fg conf std_t_new.ast)
         in
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
@@ -365,10 +360,13 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
-        if equal std_fg ~ignore_doc_comments:true conf std_t std_t_new then
+        if
+          Std_ast.Normalize.equal std_fg ~ignore_doc_comments:true conf
+            std_t.ast std_t_new.ast
+        then
           let docstrings =
-            Normalize.moved_docstrings std_fg conf
-              std_t.Parse_with_comments.ast std_t_new.Parse_with_comments.ast
+            Std_ast.Normalize.moved_docstrings std_fg conf std_t.ast
+              std_t_new.ast
           in
           let args = args ~suffix:".unequal-docs" in
           internal_error (`Doc_comment docstrings) args
@@ -401,8 +399,9 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         in
         let diff_cmts =
           Sequence.append
-            (Cmts.diff conf old_comments t_newcomments)
-            (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
+            (Std_ast.Normalize.diff_cmts conf old_comments t_newcomments)
+            (Std_ast.Normalize.diff_docstrings conf old_docstrings
+               t_newdocstrings )
         in
         if not (Sequence.is_empty diff_cmts) then
           let old_ast = dump_ast std_fg ~suffix:".old" std_t.ast in

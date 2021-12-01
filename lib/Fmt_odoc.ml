@@ -261,12 +261,5 @@ let fmt_block_element c = function
 let fmt ~fmt_code (docs : t) =
   vbox 0 (list_block_elem docs (fmt_block_element {fmt_code}))
 
-let diff c x y =
-  let norm z =
-    let f Cmt.{txt; _} = Normalize.docstring c txt in
-    Set.of_list (module String) (List.map ~f z)
-  in
-  Set.symmetric_diff (norm x) (norm y)
-
 let is_tag_only =
   List.for_all ~f:(function {Loc.value= `Tag _; _} -> true | _ -> false)

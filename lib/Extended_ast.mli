@@ -40,3 +40,8 @@ end
 module Printast : sig
   val ast : 'a t -> Format.formatter -> 'a -> unit
 end
+
+module Normalize : sig
+  val dedup_cmts : 'a t -> 'a -> Cmt.t list -> Cmt.t list
+  (** Remove comments that duplicate docstrings (or other comments). *)
+end

@@ -38,3 +38,36 @@ module Pprintast : sig
 
   val ast : 'a t -> Format.formatter -> 'a -> unit
 end
+
+(** Normalize abstract syntax trees *)
+module Normalize : sig
+  val is_doc : attribute -> bool
+
+  val dedup_cmts : 'a t -> 'a -> Cmt.t list -> Cmt.t list
+  (** Remove comments that duplicate docstrings (or other comments). *)
+
+  val comment : string -> string
+  (** Normalize a comment. *)
+
+  val ast : 'a t -> Conf.t -> 'a -> 'a
+  (** Normalize an AST fragment. *)
+
+  val equal : 'a t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
+  (** Compare fragments for equality up to normalization. *)
+
+  val moved_docstrings : 'a t -> Conf.t -> 'a -> 'a -> Docstring.error list
+
+  val diff_docstrings :
+       Conf.t
+    -> Cmt.t list
+    -> Cmt.t list
+    -> (string, string) Either.t Sequence.t
+  (** Difference between two lists of doc comments. *)
+
+  val diff_cmts :
+       Conf.t
+    -> Cmt.t list
+    -> Cmt.t list
+    -> (string, string) Either.t Sequence.t
+  (** Difference between two lists of comments. *)
+end
