@@ -3764,6 +3764,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to object_expr-414.ml.stdout
+   (with-stderr-to object_expr-414.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocaml-version=4.14.0 %{dep:tests/object_expr.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/object_expr-414.ml.ref object_expr-414.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/object_expr-414.ml.err object_expr-414.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to object_expr.ml.stdout
+   (with-stderr-to object_expr.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/object_expr.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/object_expr.ml.ref object_expr.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/object_expr.ml.err object_expr.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to object_type.ml.stdout
    (with-stderr-to object_type.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/object_type.ml})))))
