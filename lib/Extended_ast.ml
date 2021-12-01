@@ -16,6 +16,8 @@ let equal_core_type : core_type -> core_type -> bool = Poly.equal
 
 type use_file = toplevel_phrase list
 
+type repl_file = repl_phrase list
+
 type 'a t =
   | Structure : structure t
   | Signature : signature t
@@ -23,6 +25,7 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  | Repl_file : repl_file t
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -34,6 +37,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Core_type -> m.typ m
   | Module_type -> m.module_type m
   | Expression -> m.expr m
+  | Repl_file -> List.map ~f:(m.repl_phrase m)
 
 module Parse = struct
   let fix_letop_locs =
@@ -113,12 +117,15 @@ module Parse = struct
     | Core_type -> Parse.core_type lexbuf
     | Module_type -> Parse.module_type lexbuf
     | Expression -> Parse.expression lexbuf
+    | Repl_file -> Toplevel_lexer.repl_file lexbuf
 end
 
 module Pprintast = struct
   include Pprintast
 
   let use_file = Format.pp_print_list top_phrase
+
+  let repl_file = Format.pp_print_list repl_phrase
 
   let ast (type a) : a t -> _ -> a -> _ = function
     | Structure -> structure
@@ -127,12 +134,15 @@ module Pprintast = struct
     | Core_type -> core_type
     | Module_type -> module_type
     | Expression -> expression
+    | Repl_file -> repl_file
 end
 
 module Printast = struct
   include Printast
 
   let use_file = Format.pp_print_list top_phrase
+
+  let repl_file = Format.pp_print_list repl_phrase
 
   let ast (type a) : a t -> _ -> a -> _ = function
     | Structure -> implementation
@@ -141,6 +151,7 @@ module Printast = struct
     | Core_type -> core_type 0
     | Module_type -> module_type 0
     | Expression -> expression 0
+    | Repl_file -> repl_file
 end
 
 module Asttypes = struct

@@ -993,3 +993,9 @@ and directive_argument_desc =
   | Pdir_int of string * char option
   | Pdir_ident of Longident.t
   | Pdir_bool of bool
+
+type repl_phrase =
+  {
+    prepl_phrase : toplevel_phrase;
+    prepl_output : string;
+  }

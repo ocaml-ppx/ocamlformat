@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type code_formatter = string -> (Fmt.t, unit) Result.t
+type code_formatter = string -> (Fmt.t, [`Msg of string]) Result.t
 
 let parse ~loc text =
   let location = loc.Location.loc_start in

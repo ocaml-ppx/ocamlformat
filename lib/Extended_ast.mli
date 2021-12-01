@@ -15,6 +15,8 @@ include module type of Parsetree
 
 type use_file = toplevel_phrase list
 
+type repl_file = repl_phrase list
+
 type 'a t =
   | Structure : structure t
   | Signature : signature t
@@ -22,6 +24,7 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  | Repl_file : repl_file t
 
 module Parse : sig
   val ast : 'a t -> Lexing.lexbuf -> 'a

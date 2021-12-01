@@ -24,6 +24,8 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  (* not implemented *)
+  | Repl_file : unit t
 
 module Parse : sig
   val ast : 'a t -> Lexing.lexbuf -> 'a

@@ -9,11 +9,5 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type t =
-  | Structure
-  | Signature
-  | Use_file
-  | Core_type
-  | Module_type
-  | Expression
-  | Repl_file
+val repl_file :
+  Lexing.lexbuf -> Ocaml_413_extended.Parsetree.repl_phrase list

@@ -9,6 +9,18 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Lexing = struct
+  include Lexing
+
+  let set_position lexbuf position =
+    lexbuf.lex_curr_p <-
+      {position with pos_fname= lexbuf.lex_curr_p.pos_fname} ;
+    lexbuf.lex_abs_pos <- position.pos_cnum
+
+  let set_filename lexbuf fname =
+    lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname= fname}
+end
+
 module Position = struct
   open Lexing
 

@@ -69,6 +69,7 @@ type t =
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
+  ; parse_toplevel_phrases: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]

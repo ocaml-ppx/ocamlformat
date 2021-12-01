@@ -9,6 +9,16 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Lexing : sig
+  include module type of Lexing
+
+  val set_position : lexbuf -> position -> unit
+  (** @since ocaml-4.11 *)
+
+  val set_filename : lexbuf -> string -> unit
+  (** @since ocaml-4.11 *)
+end
+
 module Position : sig
   type t = Lexing.position
 

@@ -32,6 +32,11 @@
 
 #### New features
 
+  + Format toplevel phrases and their output (#1941, @Julow, @gpetiot).
+    This feature is enabled with the flag `--parse-toplevel-phrases`.
+    Toplevel phrases are supported when they are located in doc-comments blocks and cinaps comments.
+    Whole input files can also be formatted as toplevel phrases with the flag `--repl-file`.
+
 #### RPC
 
   + ocamlformat-rpc-lib is now functorized over the IO (#1975, @gpetiot).
