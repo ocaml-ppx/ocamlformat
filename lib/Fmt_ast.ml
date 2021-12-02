@@ -633,11 +633,7 @@ and fmt_payload c ctx pld =
   @@
   match pld with
   | PStr mex ->
-      fmt_if (not (List.is_empty mex)) "@ "
-      $ ( match mex with
-        | [{pstr_desc= Pstr_eval _; pstr_loc; _}] -> Cmts.fmt c pstr_loc
-        | _ -> Fn.id )
-        @@ fmt_structure c ctx mex
+      fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
   | PSig mty ->
       str ":"
       $ fmt_if (not (List.is_empty mty)) "@ "
