@@ -7591,3 +7591,15 @@ let[@a (* .............................................. .......................
             | _ -> .) [@ocaml.warning (* ....................................... *) let x = a and y = b in x + y])
     -> y[@attr (* ... *) (* ... *) attr (* ... *)]
 ;;
+
+let x =
+  foo (`A b) ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo
+    (`A `b)
+    ~f:(fun thing ->
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;

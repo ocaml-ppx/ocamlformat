@@ -304,8 +304,7 @@ let relocate_cmts_before (t : t) ~src ~sep ~dst =
     Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
         Location.compare_end loc sep < 0 )
   in
-  update_cmts t `Before ~f ;
-  update_cmts t `Within ~f
+  update_cmts t `Before ~f ; update_cmts t `Within ~f
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
@@ -617,9 +616,8 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
       fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
-  fmt_cmts t conf
-    (find_cmts t `Before loc)
-    ~fmt_code ?pro ~epi ?eol ?adj loc Before
+  fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
+    Before
 
 let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
   let open Fmt in
@@ -627,17 +625,15 @@ let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
     fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ?epi loc Within
   in
   let after =
-    fmt_cmts t conf
-      (find_cmts t `After loc)
-      ~fmt_code ~pro ?epi ~eol:noop loc After
+    fmt_cmts t conf (find_cmts t `After loc) ~fmt_code ~pro ?epi ~eol:noop
+      loc After
   in
   within $ after
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
     loc =
-  fmt_cmts t conf
-    (find_cmts t `Within loc)
-    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc Within
+  fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ~epi ~eol:Fmt.noop
+    loc Within
 
 module Toplevel = struct
   let fmt_cmts t conf ~fmt_code found (pos : Cmt.pos) =
@@ -687,9 +683,7 @@ let drop_inside t loc =
         (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
              not (Location.contains loc cmt_loc) ) )
   in
-  clear `Before ;
-  clear `Within ;
-  clear `After
+  clear `Before ; clear `Within ; clear `After
 
 let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;

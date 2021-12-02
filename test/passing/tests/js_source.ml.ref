@@ -9834,3 +9834,13 @@ let[@a
         (* ... *)
         attr (* ... *)]
 ;;
+
+let x =
+  foo (`A b) ~f:(fun thing ->
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo (`A `b) ~f:(fun thing ->
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;

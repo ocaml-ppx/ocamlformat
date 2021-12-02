@@ -1756,9 +1756,8 @@ let parse_line config ~from s =
           warn "Configuration in attribute %S ignored." s ;
           Ok config )
         else
-          C.update ~config
-            ~from:(`Parsed `Attribute)
-            ~name ~value ~inline:true
+          C.update ~config ~from:(`Parsed `Attribute) ~name ~value
+            ~inline:true
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
     let equal = String.equal in
