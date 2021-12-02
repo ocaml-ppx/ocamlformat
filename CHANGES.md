@@ -83,7 +83,7 @@
 
   + Make the formatting of attributes and docstrings more consistent (#1929, @gpetiot)
 
-  + Fix stabilization of comments inside attributes (#<PR_NUMBER>, @gpetiot)
+  + Fix stabilization of comments inside attributes (#1942, @gpetiot)
 
 #### Changes
 
