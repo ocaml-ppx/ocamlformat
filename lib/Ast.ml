@@ -314,6 +314,8 @@ module Exp = struct
         ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
         is_trivial e1
     | Pexp_variant (_, None) -> true
+    | Pexp_array [] | Pexp_list [] -> true
+    | Pexp_array [x] | Pexp_list [x] -> is_trivial x
     | _ -> false
 
   let rec exposed_left e =
