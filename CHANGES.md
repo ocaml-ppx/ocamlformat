@@ -81,6 +81,8 @@
 
   + Fix position of comments preceding Pmod_ident (#1939, @gpetiot)
 
+  + Make the formatting of attributes and docstrings more consistent (#1929, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)

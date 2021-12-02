@@ -594,7 +594,39 @@ and fmt_attributes = fmt_attributes_aux ~key:Attr.Key.Regular
 
 and fmt_item_attributes = fmt_attributes_aux ~key:Attr.Key.Item
 
-and fmt_floating_attributes = fmt_attributes_aux ~key:Attr.Key.Floating
+and fmt_attributes_and_docstrings_aux c ~key attrs =
+  let standalone, pro, space =
+    match key with
+    | Attr.Key.Regular | Attr.Key.Item ->
+        (false, break c.conf.doc_comments_padding 0, break 1 0)
+    | Attr.Key.Floating -> (true, noop, noop)
+  in
+  let aux = function
+    | { attr_name=
+          {txt= "ocaml.doc" | "ocaml.text"; loc= {loc_ghost= true; _}}
+      ; attr_payload=
+          PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( { pexp_desc=
+                          Pexp_constant
+                            {pconst_desc= Pconst_string (txt, _, None); _}
+                      ; pexp_loc= loc
+                      ; pexp_attributes= []
+                      ; _ }
+                    , [] )
+              ; _ } ]
+      ; _ } ->
+        fmt_docstring c ~standalone ~pro (Some [({txt; loc}, standalone)])
+    | attr -> space $ fmt_attribute c ~key attr
+  in
+  list attrs "" aux
+
+and fmt_attributes_and_docstrings =
+  fmt_attributes_and_docstrings_aux ~key:Attr.Key.Regular
+
+and fmt_floating_attributes_and_docstrings =
+  fmt_attributes_and_docstrings_aux ~key:Attr.Key.Floating
 
 and fmt_payload c ctx pld =
   protect c (Pld pld)
@@ -844,8 +876,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         ( fmt_if (is_open o_c) "..@ "
         $ Cmts.fmt_within c ~pro:noop ~epi:(str " ") ptyp_loc )
   | Ptyp_object (fields, closedness) ->
-      let fmt_field {pof_desc; pof_attributes= atrs; pof_loc} =
-        let doc, atrs = doc_atrs atrs in
+      let fmt_field {pof_desc; pof_attributes; pof_loc} =
         let fmt_field =
           match pof_desc with
           | Otag (lab_loc, typ) ->
@@ -862,8 +893,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         Cmts.fmt c pof_loc
         @@ hvbox 4
              ( hvbox 2 fmt_field
-             $ fmt_docstring_padded c doc
-             $ fmt_attributes c ~pre:Space atrs )
+             $ fmt_attributes_and_docstrings c pof_attributes )
       in
       hvbox 0
         (wrap "< " " >"
@@ -889,10 +919,8 @@ and fmt_package_type c ctx cnstrs =
   in
   list_fl cnstrs fmt_cstr
 
-and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
-    ~max_len_name =
-  let c = update_config c atrs in
-  let doc, atrs = doc_atrs atrs in
+and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} ~max_len_name =
+  let c = update_config c prf_attributes in
   let row =
     match prf_desc with
     | Rtag (name, const, typs) ->
@@ -919,8 +947,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
   in
   hvbox 0
     ( hvbox 0 (Cmts.fmt c prf_loc row)
-    $ fmt_attributes c ~pre:Space atrs
-    $ fmt_docstring_padded c doc )
+    $ fmt_attributes_and_docstrings c prf_attributes )
 
 and fmt_pattern_attributes c xpat k =
   match xpat.ast.ppat_attributes with
@@ -2172,12 +2199,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes rec_flag bindings body
+        ~has_attr rec_flag bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes Nonrecursive bd body
+        ~has_attr Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2599,7 +2626,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
 
-and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~attributes ~fmt_atrs ~fmt_expr
+and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~has_attr ~fmt_atrs ~fmt_expr
     rec_flag bindings body =
   let indent_after_in =
     match body.pexp_desc with
@@ -2617,7 +2644,7 @@ and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~attributes ~fmt_atrs ~fmt_expr
         0
     | _ -> c.conf.indent_after_in
   in
-  fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc ~attributes ~fmt_atrs
+  fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc ~has_attr ~fmt_atrs
     ~fmt_expr ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
@@ -2644,9 +2671,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
                   (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
-      | {pcf_desc= Pcf_attribute a; _} :: _
-        when Option.is_some (fst (doc_atrs [a])) ->
-          str "\n"
+      | {pcf_desc= Pcf_attribute a; _} :: _ when Attr.is_doc a -> str "\n"
       | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
     $ fmt_item_list c ctx update_config ast fmt_item fields )
@@ -2680,8 +2705,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                          (fmt_core_type c (sub_typ ~ctx self_)) ) )
            $ cmts_after_self
            $ ( match fields with
-             | {pctf_desc= Pctf_attribute a; _} :: _
-               when Option.is_some (fst (doc_atrs [a])) ->
+             | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
                  str "\n"
              | _ -> noop )
            $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
@@ -2784,9 +2808,9 @@ and fmt_class_expr c ?eol ({ast= exp; _} as xexp) =
       in
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
+      let has_attr = not (List.is_empty pcl_attributes) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
-        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
-        ~indent_after_in
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2930,10 +2954,7 @@ and fmt_class_field c ctx cf =
       $ fmt_core_type c (sub_typ ~ctx t2)
   | Pcf_initializer e ->
       fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
-  | Pcf_attribute atr ->
-      let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~standalone:true ~epi:noop doc
-      $ fmt_floating_attributes c atrs
+  | Pcf_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pcf_extension ext -> fmt_item_extension c ctx ext
 
 and fmt_class_type_field c ctx cf =
@@ -2974,10 +2995,7 @@ and fmt_class_type_field c ctx cf =
       $ fmt_core_type c (sub_typ ~ctx t1)
       $ str " = "
       $ fmt_core_type c (sub_typ ~ctx t2)
-  | Pctf_attribute atr ->
-      let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~standalone:true ~epi:noop doc
-      $ fmt_floating_attributes c atrs
+  | Pctf_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pctf_extension ext -> fmt_item_extension c ctx ext
 
 and fmt_cases c ctx cs =
@@ -3287,7 +3305,6 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
   in
   update_config_maybe_disabled c pcd_loc pcd_attributes
   @@ fun c ->
-  let doc, atrs = doc_atrs pcd_attributes in
   let fmt_padding =
     let is_empty =
       match pcd_args with
@@ -3322,8 +3339,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
               $ fmt_padding
               $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
                   pcd_res )
-          $ fmt_attributes c ~pre:(Break (1, 0)) atrs
-          $ fmt_docstring_padded c doc )
+          $ fmt_attributes_and_docstrings c pcd_attributes )
       $ Cmts.fmt_after c ~pro:(fmt_or c.conf.wrap_comments "@ " " ") pcd_loc
       )
 
@@ -3412,16 +3428,10 @@ and fmt_extension_constructor c ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
   update_config_maybe_disabled c pext_loc pext_attributes
   @@ fun c ->
-  let doc, atrs = doc_atrs pext_attributes in
   let sep =
     match pext_kind with
     | Pext_decl (_, _, Some _) -> fmt " :@ "
     | Pext_decl (_, _, None) | Pext_rebind _ -> fmt " of@ "
-  in
-  let suf =
-    match pext_kind with
-    | Pext_decl (_, _, None) | Pext_rebind _ -> None
-    | Pext_decl (_, _, Some _) -> Some " "
   in
   Cmts.fmt c pext_loc
   @@ hvbox 4
@@ -3435,8 +3445,7 @@ and fmt_extension_constructor c ctx ec =
            | Pext_decl (vars, args, res) ->
                fmt_constructor_arguments_result c ctx vars args res
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
-       $ fmt_attributes c ~pre:(Break (1, 0)) atrs ?suf
-       $ fmt_docstring_padded c doc )
+       $ fmt_attributes_and_docstrings c pext_attributes )
 
 and fmt_functor_arg c {loc; txt= arg} =
   match arg with
@@ -3461,23 +3470,19 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       ; epi= Some (fmt_attributes c pmty_attributes ~pre:(Break (1, 0))) }
   | Pmty_signature s ->
       let empty = List.is_empty s && not (Cmts.has_within c.cmts pmty_loc) in
-      let doc, atrs = doc_atrs pmty_attributes in
       let before = Cmts.fmt_before c pmty_loc in
       let within = Cmts.fmt_within c ~pro:noop pmty_loc in
       let after = Cmts.fmt_after c pmty_loc in
       { opn= noop
-      ; pro=
-          Some
-            ( before
-            $ fmt_docstring c ~epi:(fmt "@,") doc
-            $ str "sig" $ fmt_if empty " " )
+      ; pro= Some (before $ str "sig" $ fmt_if empty " ")
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= within $ fmt_signature c ctx s
       ; cls= noop
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
-          Some (str "end" $ after $ fmt_attributes c atrs ~pre:(Break (1, 0)))
-      }
+          Some
+            ( str "end" $ after
+            $ fmt_attributes_and_docstrings c pmty_attributes ) }
   | Pmty_functor _ ->
       let for_functor_kw = true in
       let xargs, mt2 = sugar_pmty_functor c ~for_functor_kw xmty in
@@ -3572,10 +3577,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   @@
   let ctx = Sig si in
   match si.psig_desc with
-  | Psig_attribute atr ->
-      let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~standalone:true ~epi:noop doc
-      $ fmt_floating_attributes c atrs
+  | Psig_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Psig_exception exc ->
       let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
       hvbox 2 (fmt_type_exception ~pre c ctx exc)
@@ -3932,21 +3934,19 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _; _} as me_f), me_a) ->
-      let doc, atrs = doc_atrs pmod_attributes in
       let blk_a = maybe_generative c ~ctx me_a in
       let fmt_rator =
         let break_struct =
           c.conf.break_struct && can_break_before_struct
           && not (Mod.is_simple me_a)
         in
-        fmt_docstring c ~epi:(fmt "@,") doc
-        $ compose_module (fmt_module_expr c (sub_mod ~ctx me_f)) ~f:Fn.id
+        compose_module (fmt_module_expr c (sub_mod ~ctx me_f)) ~f:Fn.id
         $ break (if break_struct then 1000 else 1) 0
         $ str "("
       in
       let epi =
         fmt_opt blk_a.epi $ str ")"
-        $ fmt_attributes c ~pre:Space atrs
+        $ fmt_attributes_and_docstrings c pmod_attributes
         $ Cmts.fmt_after c pmod_loc
       in
       if Option.is_some blk_a.pro then
@@ -3967,19 +3967,17 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let can_break_before_struct =
         match me_f.pmod_desc with Pmod_apply _ -> true | _ -> false
       in
-      let doc, atrs = doc_atrs pmod_attributes in
       let blk_f =
         fmt_module_expr ~can_break_before_struct c (sub_mod ~ctx me_f)
       in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
       { empty with
         opn= blk_f.opn $ open_hvbox 2
       ; bdy=
           hvbox 2
             ( Cmts.fmt_before c pmod_loc
-            $ fmt_docstring c ~epi:(fmt "@,") doc
             $ wrap_if parens "(" ")"
                 (fmt_opt blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
             $ fmt_opt blk_f.epi
@@ -3988,20 +3986,16 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       ; cls= close_box $ blk_f.cls
       ; epi=
           Option.some_if has_epi
-            (Cmts.fmt_after c pmod_loc $ fmt_attributes c ~pre:Space atrs) }
+            ( Cmts.fmt_after c pmod_loc
+            $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_constraint (me, mt) ->
-      let doc, atrs = doc_atrs pmod_attributes in
       let blk_e = fmt_module_expr c (sub_mod ~ctx me) in
       let blk_t = fmt_module_type c (sub_mty ~ctx mt) in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
       { opn= blk_t.opn $ blk_e.opn $ open_hovbox 2
-      ; pro=
-          Some
-            ( Cmts.fmt_before c pmod_loc
-            $ fmt_docstring c ~epi:(fmt "@,") doc
-            $ str "(" )
+      ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
       ; psp= fmt "@,"
       ; bdy=
           hvbox 0
@@ -4015,7 +4009,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       ; esp= noop
       ; epi=
           Option.some_if has_epi
-            (Cmts.fmt_after c pmod_loc $ fmt_attributes c ~pre:Space atrs) }
+            ( Cmts.fmt_after c pmod_loc
+            $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_functor _ ->
       let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
@@ -4033,29 +4028,22 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                    $ compose_module (fmt_module_expr c me) ~f:(hvbox 0) ) )
             ) }
   | Pmod_ident lid ->
-      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         opn= open_hvbox 2
       ; bdy=
           Cmts.fmt c pmod_loc
-            ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ fmt_longident_loc c lid
-            $ fmt_attributes c ~pre:Space atrs )
+            ( fmt_longident_loc c lid
+            $ fmt_attributes_and_docstrings c pmod_attributes )
       ; cls= close_box }
   | Pmod_structure sis ->
       let empty =
         List.is_empty sis && not (Cmts.has_within c.cmts pmod_loc)
       in
-      let doc, atrs = doc_atrs pmod_attributes in
       let before = Cmts.fmt_before c pmod_loc in
       let within = Cmts.fmt_within c ~pro:noop pmod_loc in
       let after = Cmts.fmt_after c pmod_loc in
       { opn= noop
-      ; pro=
-          Some
-            ( before
-            $ fmt_docstring c ~epi:(fmt "@,") doc
-            $ str "struct" $ fmt_if empty " " )
+      ; pro= Some (before $ str "struct" $ fmt_if empty " ")
       ; psp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
@@ -4064,7 +4052,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       ; esp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 0>" "@;<1 0>")
-      ; epi= Some (str "end" $ after $ fmt_attributes c ~pre:Space atrs) }
+      ; epi=
+          Some
+            ( hovbox_if (not empty) 0
+                (str "end" $ fmt_attributes_and_docstrings c pmod_attributes)
+            $ after ) }
   | Pmod_unpack
       { pexp_desc=
           Pexp_constraint
@@ -4075,14 +4067,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       ; pexp_loc
       ; _ } ->
       (* TODO: handle ptyp_loc and pexp_loc *)
-      let doc, atrs = doc_atrs pmod_attributes in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
       { empty with
-        pro=
-          Some
-            (Cmts.fmt_before c pmod_loc $ fmt_docstring c ~epi:(fmt "@,") doc)
+        pro= Some (Cmts.fmt_before c pmod_loc)
       ; bdy=
           Cmts.fmt c pmod_loc
           @@ hovbox 0
@@ -4096,33 +4085,28 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                         $ fmt_package_type c ctx cnstrs ) ) ) )
       ; epi=
           Option.some_if has_epi
-            (Cmts.fmt_after c pmod_loc $ fmt_attributes c ~pre:Space atrs) }
+            ( Cmts.fmt_after c pmod_loc
+            $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_unpack e1 ->
-      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         bdy=
           Cmts.fmt c pmod_loc
-            ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ hvbox 2
+            ( hvbox 2
                 (wrap_fits_breaks ~space:false c.conf "(" ")"
                    (str "val " $ fmt_expression c (sub_exp ~ctx e1)) )
-            $ fmt_attributes c ~pre:Space atrs ) }
+            $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
-      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         bdy=
           Cmts.fmt c pmod_loc
-            ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ fmt_extension c ctx x1
-            $ fmt_attributes c ~pre:Space atrs ) }
+            ( fmt_extension c ctx x1
+            $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_hole ->
-      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         bdy=
           Cmts.fmt c pmod_loc
-            ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ fmt_hole ()
-            $ fmt_attributes c ~pre:Space atrs ) }
+            (fmt_hole () $ fmt_attributes_and_docstrings c pmod_attributes)
+      }
 
 and fmt_structure c ctx itms =
   let update_config c i =
@@ -4167,10 +4151,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
     $ hvbox 0 ~name:"stri" (box_semisemi semisemi (k $ fmt_cmts_after)) )
   @@
   match si.pstr_desc with
-  | Pstr_attribute atr ->
-      let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~standalone:true ~epi:noop doc
-      $ fmt_floating_attributes c atrs
+  | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
       fmt_docstring c doc
@@ -4245,8 +4226,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
   | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
-    ~body_loc ~attributes ~indent_after_in =
-  let parens = parens || not (List.is_empty attributes) in
+    ~body_loc ~has_attr ~indent_after_in =
+  let parens = parens || has_attr in
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
@@ -4266,8 +4247,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     let last_bind = List.last_exn bindings in
     sequence_blank_line c last_bind.lb_loc body_loc
   in
-  Params.Exp.wrap c.conf c.source ~loc
-    ~parens:(parens || not (List.is_empty attributes))
+  Params.Exp.wrap c.conf c.source ~loc ~parens:(parens || has_attr)
     ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
