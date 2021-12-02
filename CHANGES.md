@@ -83,6 +83,8 @@
 
   + Make the formatting of attributes and docstrings more consistent (#1929, @gpetiot)
 
+  + Fix stabilization of comments inside attributes (#<PR_NUMBER>, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
