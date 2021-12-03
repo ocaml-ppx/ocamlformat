@@ -155,7 +155,7 @@
 
   + Fix formatting of multiline non-wrapping comments (#1723, @gpetiot)
 
-  + Fix position of comments following a record field (#<PR_NUMBER>, @gpetiot)
+  + Fix position of comments following a record field (#1945, @gpetiot)
 
 #### Changes
 
