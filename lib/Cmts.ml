@@ -129,6 +129,8 @@ let infix_symbol_before src (loc : Location.t) =
   match
     Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
   with
+  | Some (Parser.SEMI, loc') ->
+      Source.begins_line ~ignore_spaces:true src loc'
   | Some (x, _) -> Ast.Token.is_infix x
   | None -> false
 
