@@ -155,6 +155,8 @@
 
   + Fix formatting of multiline non-wrapping comments (#1723, @gpetiot)
 
+  + Fix position of comments following a record field (#1945, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

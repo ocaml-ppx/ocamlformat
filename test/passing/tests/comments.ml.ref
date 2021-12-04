@@ -255,8 +255,7 @@ let%map
   ()
 
 type t = < (* a *)
-         a: int [@atr] ; (* b *)
-         b: int (* c *) >
+         a: int [@atr] (* b *) ; b: int (* c *) >
 
 type t =
   < a:
