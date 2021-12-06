@@ -35,7 +35,7 @@
   (ocaml
    (and
     (>= 4.08)
-    (< 4.14)))
+    (< 4.15)))
   (alcotest :with-test)
   (base
    (and
@@ -75,7 +75,7 @@
   (ocaml
    (and
     (>= 4.08)
-    (< 4.14)))
+    (< 4.15)))
   (alcotest :with-test)
   (base
    (and
@@ -118,7 +118,7 @@
   (ocaml
    (and
     (>= 4.08)
-    (< 4.14)))
+    (< 4.15)))
   ocamlformat-rpc-lib
   (alcotest :with-test)
   (base
@@ -160,6 +160,6 @@
   (ocaml
    (and
     (>= 4.08)
-    (< 4.14)))
+    (< 4.15)))
   csexp
   sexplib0))
