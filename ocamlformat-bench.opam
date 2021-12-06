@@ -9,7 +9,7 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.8"}
-  "ocaml" {>= "4.08" & < "4.14"}
+  "ocaml" {>= "4.08" & < "4.15"}
   "alcotest" {with-test}
   "base" {>= "v0.12.0" & < "v0.15"}
   "bechamel"
