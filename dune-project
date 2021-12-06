@@ -53,7 +53,7 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.2.0))
+   (>= 3.3.0))
   ocp-indent
   (odoc-parser
    (>= 0.9.0))
@@ -95,7 +95,7 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.2.0))
+   (>= 3.3.0))
   ocp-indent
   (odoc-parser
    (>= 0.9.0))
@@ -137,7 +137,7 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.2.0))
+   (>= 3.3.0))
   ocp-indent
   (odoc-parser
    (>= 0.9.0))
