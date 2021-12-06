@@ -78,3 +78,16 @@ let f =
          multiple-line-spanning
          comment *)
     ~y
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info Eradicate (* TODO *)
+    ~user_documentation:""
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE" (* Should be enabled for special integrations *)
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info
