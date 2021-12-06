@@ -1,6 +1,4 @@
-### unreleased
-
-#### Removed
+### 0.20.0 (2021-12-06)
 
 #### Deprecated
 
