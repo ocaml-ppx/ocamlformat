@@ -18,13 +18,7 @@ Output: int (* foo *) -> int (* bar *)
 Error: Unknown configuration option foo
 [ocf] Config
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
-Output: aaa ->
-bbb ->
-ccc ->
-ddd ->
-eee ->
-fff ->
-ggg
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
 
 [ocf] Config
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
@@ -95,11 +89,12 @@ let ssmap
   ()
 '
 Output:
-let ssmap
-    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
-    -> unit
-  =
+let ssmap :
+    (module MapT
+       with type key = string
+        and type data = string
+        and type map = SSMap.map) ->
+    unit =
   ()
-;;
 
 [ocf] Halt

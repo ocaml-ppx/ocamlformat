@@ -14,7 +14,7 @@ open Sexplib0
 module type Command_S = sig
   type t
 
-  val read_input : Stdlib.in_channel -> t
+  val read_input : Stdlib.in_channel -> (t, [`Msg of string]) result
 
   val to_sexp : t -> Sexp.t
 
@@ -30,7 +30,7 @@ module type Client_S = sig
 
   val mk : pid:int -> in_channel -> out_channel -> t
 
-  val query : cmd -> t -> cmd
+  val query : cmd -> t -> (cmd, [`Msg of string]) result
 
   val halt : t -> (unit, [> `Msg of string]) result
 
@@ -47,28 +47,6 @@ module type V = sig
 end
 
 module Csexp = Csexp.Make (Sexp)
-
-module Init :
-  Command_S with type t = [`Halt | `Unknown | `Version of string] = struct
-  type t = [`Halt | `Unknown | `Version of string]
-
-  let read_input in_channel =
-    let open Sexp in
-    match Csexp.input in_channel with
-    | Ok (Atom "Halt") -> `Halt
-    | Ok (List [Atom "Version"; Atom v]) -> `Version v
-    | Ok _ -> `Unknown
-    | Error _msg -> `Halt
-
-  let to_sexp =
-    let open Sexp in
-    function
-    | `Version v -> List [Atom "Version"; Atom v] | _ -> assert false
-
-  let output channel t =
-    to_sexp t |> Csexp.to_channel channel ;
-    Stdlib.flush channel
-end
 
 module V1 :
   V
@@ -89,7 +67,7 @@ module V1 :
     let read_input in_channel =
       let open Sexp in
       match Csexp.input in_channel with
-      | Ok (List [Atom "Format"; Atom x]) -> `Format x
+      | Ok (List [Atom "Format"; Atom x]) -> Ok (`Format x)
       | Ok (List [Atom "Config"; List l]) ->
           let c =
             List.fold_left
@@ -99,11 +77,11 @@ module V1 :
               [] l
             |> List.rev
           in
-          `Config c
-      | Ok (List [Atom "Error"; Atom x]) -> `Error x
-      | Ok (Atom "Halt") -> `Halt
-      | Ok _ -> `Unknown
-      | Error _msg -> `Halt
+          Ok (`Config c)
+      | Ok (List [Atom "Error"; Atom x]) -> Ok (`Error x)
+      | Ok (Atom "Halt") -> Ok `Halt
+      | Ok _ -> Ok `Unknown
+      | Error msg -> Error (`Msg msg)
 
     let to_sexp =
       let open Sexp in
@@ -147,56 +125,14 @@ module V1 :
 
     let config c t =
       match query (`Config c) t with
-      | `Config _ -> Ok ()
-      | `Error msg -> Error (`Msg msg)
+      | Ok (`Config _) -> Ok ()
+      | Ok (`Error msg) -> Error (`Msg msg)
       | _ -> Error (`Msg "failing to set configuration: unknown error")
 
     let format x t =
       match query (`Format x) t with
-      | `Format x -> Ok x
-      | `Error msg -> Error (`Msg msg)
+      | Ok (`Format x) -> Ok x
+      | Ok (`Error msg) -> Error (`Msg msg)
       | _ -> Error (`Msg "failing to format input: unknown error")
   end
 end
-
-type client = [`V1 of V1.Client.t]
-
-let get_client ~pid input output = function
-  | "v1" | "V1" -> Some (`V1 (V1.Client.mk ~pid input output))
-  | _ -> None
-
-let get_client_exn ~pid input output x =
-  match get_client ~pid input output x with
-  | Some x -> Ok x
-  | None -> failwith "impossible"
-
-let pick_client ~pid input output versions =
-  let rec aux = function
-    | [] -> Error (`Msg "Version negociation failed")
-    | latest :: others -> (
-        let version = `Version latest in
-        Csexp.to_channel output (Init.to_sexp version) ;
-        flush output ;
-        match Init.read_input input with
-        | `Version v when v = latest -> get_client_exn ~pid input output v
-        | `Version v -> (
-          match others with
-          | h :: _ when v = h -> get_client_exn ~pid input output v
-          | _ -> aux others )
-        | `Unknown -> aux others
-        | `Halt ->
-            Error
-              (`Msg
-                "OCamlFormat-RPC did not respond. Check that a compatible \
-                 version of the OCamlFormat RPC server (ocamlformat-rpc >= \
-                 0.18.0) is installed." ) )
-  in
-  aux versions
-
-let pid = function `V1 cl -> V1.Client.pid cl
-
-let halt = function `V1 cl -> V1.Client.halt cl
-
-let config c = function `V1 cl -> V1.Client.config c cl
-
-let format x = function `V1 cl -> V1.Client.format x cl
