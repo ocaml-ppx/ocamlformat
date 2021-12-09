@@ -17,7 +17,7 @@
 
 (cram enable)
 
-(generate_opam_files true)
+(generate_opam_files false)
 
 (authors "Josh Berdine <jjb@fb.com>")
 
