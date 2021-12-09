@@ -23,3 +23,9 @@ let parse ~loc text =
 let warn fmt warning =
   Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"
     (Odoc_parser.Warning.to_string warning)
+
+type error =
+  | Moved of Location.t * Location.t * string
+  | Unstable of Location.t * string * string
+  | Added of Location.t * string
+  | Removed of Location.t * string

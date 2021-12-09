@@ -140,3 +140,36 @@ module Printast = struct
     | Module_type -> module_type 0
     | Expression -> expression 0
 end
+
+module Normalize = struct
+  let is_doc = function
+    | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
+    | _ -> false
+
+  let dedup_cmts fragment ast comments =
+    let of_ast ast =
+      let docs = ref (Set.empty (module Cmt)) in
+      let attribute m atr =
+        match atr with
+        | { attr_payload=
+              PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc=
+                              Pexp_constant
+                                {pconst_desc= Pconst_string (doc, _, None); _}
+                          ; pexp_loc
+                          ; _ }
+                        , [] )
+                  ; _ } ]
+          ; _ }
+          when is_doc atr ->
+            docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+            atr
+        | _ -> Ast_mapper.default_mapper.attribute m atr
+      in
+      map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+      !docs
+    in
+    Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
+end

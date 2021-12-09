@@ -122,10 +122,6 @@ val remaining_locs : t -> Location.t list
 val remaining_before : t -> Location.t -> Cmt.t list
 (** [remaining_before c loc] returns the comments before [loc] *)
 
-val diff :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
-(** Difference between two lists of comments. *)
-
 type layout_cache_key =
   | Arg of Asttypes.arg_label * Parsetree.expression
   | Pattern of Parsetree.pattern
