@@ -1735,14 +1735,6 @@ let ocp_indent_janestreet_profile =
   ; ("align_ops", "true")
   ; ("align_params", "always") ]
 
-let string_of_user_error = function
-  | `Malformed line -> Format.sprintf "Invalid format %S" line
-  | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-  | `Unknown (name, None) -> Format.sprintf "Unknown option %S" name
-  | `Unknown (name, Some (`Msg msg)) ->
-      Format.sprintf "Unknown option %S: %s" name msg
-  | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
-
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1753,10 +1745,10 @@ let parse_line config ~from s =
           Ok config
         else
           Error
-            (`Bad_value
-              ( name
-              , Format.sprintf "expecting %S but got %S" Version.current
-                  value ) )
+            (Config_option.Error.Bad_value
+               ( name
+               , Format.sprintf "expecting %S but got %S" Version.current
+                   value ) )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
@@ -1810,13 +1802,13 @@ let parse_line config ~from s =
           (fun config ->
             update_many ~config ~from ocp_indent_janestreet_profile )
     | name -> update ~config ~from ~name ~value:"true" )
-  | _ -> Error (`Malformed s)
+  | _ -> Error (Config_option.Error.Malformed s)
 
 exception Conf_error of string
 
 let failwith_user_errors ~from errors =
   let open Format in
-  let pp_error pp e = pp_print_string pp (string_of_user_error e) in
+  let pp_error pp e = pp_print_string pp (Config_option.Error.to_string e) in
   let pp_errors = pp_print_list ~pp_sep:pp_print_newline pp_error in
   let msg = asprintf "Error while parsing %s:@ %a" from pp_errors errors in
   raise (Conf_error msg)
@@ -2123,7 +2115,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
                   , [] )
             ; _ } ] ->
           parse_line ~from:`Attribute c str
-          |> Result.map_error ~f:string_of_user_error
+          |> Result.map_error ~f:Config_option.Error.to_string
       | _ -> Error "Invalid format: String expected" )
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error

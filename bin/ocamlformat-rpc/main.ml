@@ -102,14 +102,14 @@ let rec rpc_main = function
           | Error e ->
               let msg =
                 match e with
-                | `Bad_value (x, y) ->
+                | Bad_value (x, y) ->
                     Format.sprintf "Bad configuration value (%s, %s)" x y
-                | `Malformed x ->
+                | Malformed x ->
                     Format.sprintf "Malformed configuration value %s" x
-                | `Misplaced (x, y) ->
+                | Misplaced (x, y) ->
                     Format.sprintf "Misplaced configuration value (%s, %s)" x
                       y
-                | `Unknown (x, _) ->
+                | Unknown (x, _) ->
                     Format.sprintf "Unknown configuration option %s" x
               in
               V1.Command.output stdout (`Error msg) ;
