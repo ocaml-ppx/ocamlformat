@@ -14,8 +14,8 @@ module Format = Format_
 (** Format OCaml Ast *)
 
 open Migrate_ast
-open Asttypes
 open Extended_ast
+open Asttypes
 open Ast
 open Fmt
 
