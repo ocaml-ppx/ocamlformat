@@ -113,14 +113,6 @@ val update : ?quiet:bool -> t -> Extended_ast.attribute -> t
     [a]. [quiet] is false by default. *)
 
 val update_value :
-     t
-  -> name:string
-  -> value:string
-  -> ( t
-     , [ `Bad_value of string * string
-       | `Malformed of string
-       | `Misplaced of string * string
-       | `Unknown of string * [`Msg of string] option ] )
-     Result.t
+  t -> name:string -> value:string -> (t, Config_option.Error.t) Result.t
 
 val print_config : t -> unit

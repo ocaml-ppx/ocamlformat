@@ -9,6 +9,16 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Error : sig
+  type t =
+    | Bad_value of string * string
+    | Malformed of string
+    | Misplaced of string * string
+    | Unknown of string * [`Msg of string] option
+
+  val to_string : t -> string
+end
+
 module type CONFIG = sig
   type config
 
@@ -101,12 +111,7 @@ module Make (C : CONFIG) : sig
     -> name:string
     -> value:string
     -> inline:bool
-    -> ( config
-       , [ `Unknown of string * [`Msg of string] option
-         | `Bad_value of string * string
-         | `Malformed of string
-         | `Misplaced of string * string ] )
-       Result.t
+    -> (config, Error.t) Result.t
 
   val print_config : config -> unit
 end
