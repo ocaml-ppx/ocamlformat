@@ -11,6 +11,3 @@
 
 val fmt :
   fmt_code:(string -> (Fmt.t, unit) Result.t) -> Odoc_parser.Ast.t -> Fmt.t
-
-val is_tag_only : Odoc_parser.Ast.t -> bool
-(** [true] if the documentation only contains tags *)

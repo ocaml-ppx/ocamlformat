@@ -260,6 +260,3 @@ let fmt_block_element c = function
 
 let fmt ~fmt_code (docs : t) =
   vbox 0 (list_block_elem docs (fmt_block_element {fmt_code}))
-
-let is_tag_only =
-  List.for_all ~f:(function {Loc.value= `Tag _; _} -> true | _ -> false)
