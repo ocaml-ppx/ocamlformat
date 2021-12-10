@@ -46,9 +46,6 @@ module Normalize : sig
   val dedup_cmts : 'a t -> 'a -> Cmt.t list -> Cmt.t list
   (** Remove comments that duplicate docstrings (or other comments). *)
 
-  val comment : string -> string
-  (** Normalize a comment. *)
-
   val ast : 'a t -> Conf.t -> 'a -> 'a
   (** Normalize an AST fragment. *)
 

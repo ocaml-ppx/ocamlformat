@@ -399,7 +399,7 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
   | None, Some doc | Some doc, None -> (
       let is_tag_only =
         List.for_all ~f:(function
-          | Ok es, _ -> Fmt_odoc.is_tag_only es
+          | Ok es, _ -> Docstring.is_tag_only es
           | _ -> false )
       in
       let fmt_doc ?epi ?pro doc =
