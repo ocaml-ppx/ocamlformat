@@ -9,32 +9,20 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Interface over the AST defined in vendor/ocaml-4.13 *)
+val ast : 'a Std_ast.t -> Conf.t -> 'a -> 'a
+(** Normalize an AST fragment. *)
 
-open Ocaml_413
+val equal :
+  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
+(** Compare fragments for equality up to normalization. *)
 
-include module type of Parsetree
+val moved_docstrings :
+  'a Std_ast.t -> Conf.t -> 'a -> 'a -> Docstring.error list
 
-type use_file = toplevel_phrase list
+val diff_docstrings :
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+(** Difference between two lists of doc comments. *)
 
-type 'a t =
-  | Structure : structure t
-  | Signature : signature t
-  | Use_file : use_file t
-  | Core_type : core_type t
-  | Module_type : module_type t
-  | Expression : expression t
-
-module Parse : sig
-  val ast : 'a t -> Lexing.lexbuf -> 'a
-end
-
-val equal : 'a t -> 'a -> 'a -> bool
-
-val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
-
-module Pprintast : sig
-  include module type of Pprintast
-
-  val ast : 'a t -> Format.formatter -> 'a -> unit
-end
+val diff_cmts :
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+(** Difference between two lists of comments. *)

@@ -342,16 +342,16 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       (* Ast not preserved ? *)
       ( if
         not
-          (Std_ast.Normalize.equal std_fg conf std_t.ast std_t_new.ast
+          (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
              ~ignore_doc_comments:(not conf.comment_check) )
       then
         let old_ast =
           dump_ast std_fg ~suffix:".old"
-            (Std_ast.Normalize.ast std_fg conf std_t.ast)
+            (Normalize_std_ast.ast std_fg conf std_t.ast)
         in
         let new_ast =
           dump_ast std_fg ~suffix:".new"
-            (Std_ast.Normalize.ast std_fg conf std_t_new.ast)
+            (Normalize_std_ast.ast std_fg conf std_t_new.ast)
         in
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
@@ -361,11 +361,11 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
         if
-          Std_ast.Normalize.equal std_fg ~ignore_doc_comments:true conf
+          Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
             std_t.ast std_t_new.ast
         then
           let docstrings =
-            Std_ast.Normalize.moved_docstrings std_fg conf std_t.ast
+            Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
               std_t_new.ast
           in
           let args = args ~suffix:".unequal-docs" in
@@ -399,8 +399,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         in
         let diff_cmts =
           Sequence.append
-            (Std_ast.Normalize.diff_cmts conf old_comments t_newcomments)
-            (Std_ast.Normalize.diff_docstrings conf old_docstrings
+            (Normalize_std_ast.diff_cmts conf old_comments t_newcomments)
+            (Normalize_std_ast.diff_docstrings conf old_docstrings
                t_newdocstrings )
         in
         if not (Sequence.is_empty diff_cmts) then
