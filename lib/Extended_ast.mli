@@ -54,8 +54,3 @@ module Asttypes : sig
 
   val is_recursive : rec_flag -> bool
 end
-
-module Normalize : sig
-  val dedup_cmts : 'a t -> 'a -> Cmt.t list -> Cmt.t list
-  (** Remove comments that duplicate docstrings (or other comments). *)
-end

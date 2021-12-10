@@ -375,7 +375,7 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; layout_cache= Layout_cache.create () }
   in
   let comments =
-    Extended_ast.Normalize.dedup_cmts fragment asts comments_n_docstrings
+    Normalize_extended_ast.dedup_cmts fragment asts comments_n_docstrings
   in
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast fragment asts in
