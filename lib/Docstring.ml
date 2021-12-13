@@ -57,6 +57,8 @@ let odoc_reference = ign_loc str
 
 let option f fmt = function Some v -> f fmt v | None -> ()
 
+let pair fmt_a fmt_b fmt (a, b) = fpf fmt "(%a,%a)" fmt_a a fmt_b b
+
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
   | `Italic -> fpf fmt "Italic"
@@ -91,7 +93,10 @@ let rec odoc_nestable_block_element c fmt = function
   | `Code_block (metadata, txt) ->
       let txt = Odoc_parser.Loc.value txt in
       let txt = c.normalize_code txt in
-      fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
+      let fmt_metadata =
+        option (pair (ign_loc str) (option (ign_loc str)))
+      in
+      fpf fmt "Code_block(%a, %a)" fmt_metadata metadata str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->

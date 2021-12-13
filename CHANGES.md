@@ -10,6 +10,10 @@
 
 #### New features
 
+  + Update to odoc-parser 1.0.0 (#1843, @Julow).
+    New syntax: code blocks can carry metadata, e.g.:
+      `{@ocaml kind=toplevel env=e1[ code ]}`
+
 ### 0.20.0 (2021-12-06)
 
 #### Deprecated

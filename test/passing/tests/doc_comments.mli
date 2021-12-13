@@ -452,6 +452,18 @@ let fooooooooooooooooo =
     *)
     let code inside (* comment   *) = f inside
   ]}
+
+  Code block with metadata:
+  {@ocaml[ code ]}
+
+  {@ocaml kind=toplevel[ code ]}
+
+  {@ocaml kind=toplevel env=e1[
+    (** This is a comment with code inside
+        [ let code inside = f inside ]
+    *)
+    let code inside (* comment   *) = f inside
+  ]}
 *)
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
