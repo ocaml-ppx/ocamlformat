@@ -1,4 +1,1 @@
-pin-depends: [
-  [ "odoc-parser.dev" "git+https://github.com/ocaml-doc/odoc-parser#626ccc9e319d7d3cc67251425ddbb48e33bc2de8" ]
-]
 license: ["MIT" "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"] # OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license
