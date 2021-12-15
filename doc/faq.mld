@@ -100,4 +100,4 @@ Shell-style regular expressions are supported. Lines starting with [#] are ignor
 
 {2 Why is there an inconsistent spacing on the | character in match blocks?}
 
-The change in the indentation of [| ] vs [|] would indicate that there is a short body of a nested or-pattern that could be easily missed if formatted as: [| ]. This can be disabled using [indicate-nested-or-patterns = false] if you are happy with the risk. Alternatively, [break-cases = nested] can be used to break after the [->] to avoid the risk at the cost of significantly less compact code.
+The change in the indentation of [| ] vs [|] would indicate that there is a short body of a nested or-pattern that could be easily missed if formatted as: [| ]. This can be disabled using [indicate-nested-or-patterns = unsafe-no] if you are happy with the risk. Alternatively, [break-cases = nested] can be used to break after the [->] to avoid the risk at the cost of significantly less compact code.
