@@ -1,154 +1,42 @@
 {0 Doc-comments language reference}
 
-OCamlFormat uses {{:https://github.com/ocaml/odoc}odoc} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from [odoc].
+OCamlFormat uses {{:https://github.com/ocaml/odoc}odoc} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from [odoc] (detailed in {{:https://ocaml.github.io/odoc/odoc_for_authors.html}odoc's documentation}).
 
-Here is the accepted language:
-
-{1 Headings}
-
-{[
-(** {0 Main title}
-    {1 Sub title}
-    {2:label Sub-sub title with a label}
-*)
-]}
-
-{1 Tags}
-
-{[
-(** @raise Exception explanation.
-    @author Abc def
-    @param [id] [def]
-    @raise [exn] [def]
-    @since [Abc] [def]
-    @before [Abc] [def]
-    @version [Abc] [def]
-    @see <[Abc]> this is an URL
-    @see '[Abc]' this is a file
-    @see "[Abc]" this is a document
-    @deprecated [foo]
-    @param foo [foo]
-    @return [foo]
-    @inline
-    @open
-    @closed
-    @canonical Foo.Bar
-*)
-]}
-
-{1 Block elements}
-
-{2 Code blocks}
+Here is an example showing a few useful elements:
 
 {%html:
 <pre>
-<code class="ml hljs ocaml">(** Without metadata:
-    {[
-        ...
-    ]}
+<code class="ml hljs ocaml">(** {0 Adding integers} *)
 
-    With metadata:
+(** {1 Exception} *)
+
+(** Raised in case of integer overflow *)
+exception Int_overflow
+
+(** {1 Function definition} *)
+
+(** [add ~x ~y] returns [x + y] or raises an exception in case of integer overflow.
+    Usage:
     {@ocaml some_metadata[
-        ...
+    # add ~x:1 ~y:2 ;;
+    - : int = 3
     ]}
-*)</code></pre>
-%}
 
-{2 Verbatim blocks}
-
-{[
-(** Verbatim blocks:
+    Here is a basic diagram:
     {v
-        ...
+          add  ~x:1   ~y:2
+                  \   /
+                   (+)
+                    |
+                    3
     v}
-*)
-]}
 
-{3 Module references}
+    Notes:
+    - {_ check} that exception {!exception:Int_overflow} is {b not raised};
+    - have a look at {!module:Int} ({{:https://ocaml.org/api/Int.html}Documentation}).
 
-{[
-(** Module references:
-    {!modules:Foo}
-    {!modules:Foo Bar.Baz}
-*)
-]}
-
-{2 Lists}
-
-{3 Unordered lists}
-
-{[
-(** Short syntax:
-    - x
-    - y
-    - z
-
-    Long syntax:
-    {ul
-     {- x}
-     {- y}}
-*)
-]}
-
-{3 Ordered lists}
-
-{[
-(** Short syntax:
-    + x
-    + y
-    + z
-
-    Long syntax:
-    {ol
-     {- x}
-     { -y}}
-*)
-]}
-
-{1 Inline elements}
-
-{2 Basic elements}
-
-{[
-(** regular words
-    [code span]
-    {b this is bold}
-    {i this is italic}
-    {e this is an emphasis}
-    {^ this is superscript}
-    {_ this is subscript}
-*)
-]}
-
-{2 Markup}
-
-{[
-(** {%html:<p>Raw markup</p>%}
-    {%Without language%}
-    {%other:Other language%}
-*)
-]}
-
-{2 Links}
-
-{[
-(** {:https://github.com/}
-    {{:https://github.com/} Github}
-*)
-]}
-
-{2 References}
-
-{[
-(** {!module:A} {!module:A.B}
-    {!module-type:A} {!module-type:A.b}
-    {!class:c} {!class:M.c}
-    {!class-type:c} {!class-type:M.c}
-    {!val:x} {!val:M.x}
-    {!type:t} {!type:M.t}
-    {!exception:E} {!exception:M.E}
-    {!method:m} {!method:c.m}
-    {!constructor:C} {!constructor:M.C}
-    {!field:f} {!field:M.t.f}
-*)
-]}
+    @return [x + y]
+    @raise Exception [Int_overflow] *)
+val add: x:int (** one operand *) -> y:int (** another operand *) -> int (** result *)
+</code></pre>
+%}
