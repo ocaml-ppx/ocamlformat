@@ -4,7 +4,7 @@ First of all, make sure you have an [.ocamlformat] file at the root of your proj
 
 {2 Disable outside project}
 
-As mentioned in the Options section, when the option [--disable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file. If no configuration file is found, then the formatting is disabled.
+As mentioned in {!getting_started.options}, when the option [--disable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file. If no configuration file is found, then the formatting is disabled.
 
 This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
 
