@@ -11,7 +11,7 @@ speed up code review by focusing on the important parts.
 OCamlFormat is probably what you are after!
 OCamlFormat is a tool to format OCaml code.
 
-OCamlFormat works by parsing source code using the OCaml compiler's standard parser, deciding where to place comments in the parse tree, and writing the parse tree and comments in a consistent style.
+OCamlFormat works by parsing then outputting again the same OCaml source file in a consistent style.
 
 ## Getting started
 
