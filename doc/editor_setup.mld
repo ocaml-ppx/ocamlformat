@@ -1,6 +1,4 @@
-{0 OCamlFormat Manual}
-
-{1 Editor setup}
+{0 Editor setup}
 
 First of all, make sure you have an [.ocamlformat] file at the root of your project.
 
