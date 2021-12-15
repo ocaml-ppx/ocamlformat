@@ -50,7 +50,7 @@ Here is the accepted language:
     ]}
 
     With metadata:
-    {@some_metadata[
+    {@ocaml some_metadata[
         ...
     ]}
 *)</code></pre>
