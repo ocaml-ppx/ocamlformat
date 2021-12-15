@@ -237,3 +237,7 @@ remove the =_build-mingw64= directory.
 This script can also be triggered as a GitHub Action named =build-mingw64= which
 will build the binary in a GitHub worker and upload it back to GitHub. To
 retrieve it, select the Action run in question and scroll down to "Artifacts".
+
+* Building the documentation
+
+=dune build @doc && xdg-open _build/default/_doc/_html/ocamlformat/index.html=

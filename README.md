@@ -9,7 +9,6 @@ code base, so that you do not have to worry about formatting it by hand, and to
 speed up code review by focusing on the important parts.
 
 OCamlFormat is probably what you are after!
-OCamlFormat is a tool to format OCaml code.
 
 OCamlFormat works by parsing then outputting again the same OCaml source file in a consistent style.
 
@@ -46,17 +45,6 @@ The most common usecase involves using the `dune` build system, once your projec
 
 ```
 dune build @fmt
-```
-
-## Documentation
-
-If you have further questions, please read OCamlFormat's user manual: <...>
-
-You can also build the documentation and browse it locally:
-
-```
-dune build @doc
-xdg-open _build/default/_doc/_html/ocamlformat/index.html
 ```
 
 ## Community
