@@ -26,7 +26,7 @@ Alternatively, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build ins
 
 ### Formatting code!
 
-First of all, make sure you have an `.ocamlformat` file at the root of your project. Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this `.ocamlformat` file is considered good practice:
+Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this `.ocamlformat` file is considered good practice:
 ```
 profile = default
 version = 0.20.0
