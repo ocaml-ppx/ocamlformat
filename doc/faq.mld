@@ -30,7 +30,7 @@ version = 0.20.0
 (or replace with the output of [ocamlformat --version])
 
 This ensures two things:
-- you are using the default formatting configuration.
+- you are using the recommended formatting configuration.
 - the version that you use to format is recorded somewhere.
   If somebody else working on the project tries to use a different version,
   they will see an error message instead of reformatting the whole project in a
