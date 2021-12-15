@@ -76,7 +76,7 @@ dir/*/*/*
 
 {2 How to locally disable OCamlFormat?}
 
-To disable the formatting of a specific toplevel item you must attach an [[@@ocamlformat "option=VAL"]] attribute to this item in the processed file, such as:
+To disable the formatting of a specific toplevel item you must attach an [[@@ocamlformat "disable"]] attribute to this item in the processed file, such as:
 
 {[
 let do_not_touch
