@@ -10,7 +10,7 @@ important caveats. This FAQ should help you decide if it can work for you.
 OCamlFormat is beta software.
 While we do not follow {{:https://semver.org/}SemVer}, we expect the program to change considerably before we reach version 1.0.0.
 In particular, upgrading the [ocamlformat] package will cause your program to get reformatted.
-Sometimes it is relatively pain-free, but sometimes it will make a diff in almost every file.
+Sometimes the changes are relatively small, but sometimes upgrading can cause many changes all over the code base.
 This can be a hard price to pay, since this means losing the corresponding git history.
 
 If you use a custom configuration, options you rely on might also get removed in
