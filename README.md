@@ -4,9 +4,7 @@
 
 Hello, new user! Welcome! :wave:
 
-If you are here, you are probably interested in using a formatting tool for your
-code base, so that you do not have to worry about formatting it by hand, and to
-speed up code review by focusing on the important parts.
+If you are here, you are probably interested in using a formatting tool for your code base, so that you do not have to worry about formatting it by hand, and to speed up code review by focusing on the important parts.
 
 OCamlFormat is probably what you are after!
 
