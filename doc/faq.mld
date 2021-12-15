@@ -72,6 +72,8 @@ dir/*/*
 dir/*/*/*
 ]}
 
+It is also possible to add an [.ocamlformat-ignore] file containing [*] in every directory that needs to be ignored.
+
 {1 How to locally disable OCamlFormat?}
 
 To disable the formatting of a specific toplevel item you must attach an [[@@ocamlformat "disable"]] attribute to this item in the processed file, such as:
