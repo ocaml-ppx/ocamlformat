@@ -18,7 +18,7 @@ Here is the accepted language:
 {2 Tags}
 
 {[
-(** @raise [Abc] def.
+(** @raise Exception explanation.
     @author Abc def
     @param [id] [def]
     @raise [exn] [def]
