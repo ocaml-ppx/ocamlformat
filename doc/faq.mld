@@ -5,8 +5,7 @@
 OCamlFormat is already being used by several projects, but it comes with some
 important caveats. This FAQ should help you decide if it can work for you.
 
-OCamlFormat is beta software.
-While we do not follow {{:https://semver.org/}SemVer}, we expect the program to change considerably before we reach version 1.0.0.
+OCamlFormat is beta software, and we expect the program to change considerably before we reach version 1.0.0.
 In particular, upgrading the [ocamlformat] package will cause your program to get reformatted.
 Sometimes the changes are relatively small, but sometimes upgrading can cause many changes all over the code base.
 This can be a hard price to pay, since this means losing the corresponding git history.
@@ -41,7 +40,7 @@ It is better to see OCamlFormat as a tool to apply a style, rather than a tweaka
 There are some knobs that you can turn, such as overriding [margin] to determine the maximum line width.
 But it is better not to set individual options to override what the default profile is doing.
 
-To quote (and sed) {{:https://prettier.io/docs/en/option-philosophy.html}prettier's page on option philosophy}:
+To paraphrase {{:https://prettier.io/docs/en/option-philosophy.html}prettier's page on option philosophy}:
 
 {%html:
 <q>
