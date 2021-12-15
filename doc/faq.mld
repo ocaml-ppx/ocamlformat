@@ -53,11 +53,12 @@ The more options OCamlFormat has, the further from the above goal it gets. The d
 </q>
 %}
 
-{1 Can OCamlFormat handle Reason files?}
+{1 Can OCamlFormat format Reason files?}
 
-OCamlFormat is influenced by and follows the same basic design as [refmt] for {{:https://github.com/facebook/reason}Reason}, but outputs OCaml instead of Reason.
+No.
+Although OCamlFormat is influenced by and follows the same basic design as [refmt] for {{:https://github.com/facebook/reason}Reason}, OCamlFormat outputs OCaml instead of Reason.
 
-This tool is not able to deal directly with Reason code ([*.re]/[*.rei] files),
+OCamlFormat is not able to deal directly with Reason code ([*.re]/[*.rei] files),
 but it is possible to first convert these files to OCaml syntax using [refmt -p
 ml] and then running [ocamlformat] on this output.
 
