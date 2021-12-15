@@ -87,7 +87,7 @@ let do_not_touch
 ] [@@ocamlformat "disable"]
 ]}
 
-To disable the formatting of a specific expression you must attach an [[@ocamlformat "option=VAL"]] attribute to this expression in the processed file, such as:
+To disable the formatting of a specific expression you must attach an [[@ocamlformat "disable"]] attribute to this expression in the processed file, such as:
 
 {[
 let do_not_touch (x : t) (y : t) (z : t) = [
