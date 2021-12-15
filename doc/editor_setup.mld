@@ -2,13 +2,13 @@
 
 First of all, make sure you have an [.ocamlformat] file at the root of your project.
 
-{2 Disable outside project}
+{1 Disable outside project}
 
 As mentioned in {!getting_started.options}, when the option [--disable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file. If no configuration file is found, then the formatting is disabled.
 
 This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
 
-{2 Emacs setup}
+{1 Emacs setup}
 
 - add [$(opam config var share)/emacs/site-lisp] to [load-path] (as done by [opam user-setup install])
 
@@ -30,7 +30,7 @@ To pass the option [--disable-outside-detected-project] (or [--disable]) to OCam
 
 Other OCamlFormat options can be set in .ocamlformat configuration files.
 
-{3 With use-package}
+{2 With use-package}
 
 A basic configuration with {{:https://github.com/jwiegley/use-package}use-package}:
 
@@ -71,7 +71,7 @@ Sometimes you need to have a switch for OCamlFormat (because of version conflict
 
 This could be made simpler (by defining an elisp variable corresponding to the switch prefix when loading tuareg, for example) but it allows to have a full configuration in one place only which is often less error prone.
 
-{2 Vim setup}
+{1 Vim setup}
 
 - be sure the [ocamlformat] binary can be found in [PATH]
 

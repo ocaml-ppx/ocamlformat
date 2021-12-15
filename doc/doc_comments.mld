@@ -1,12 +1,10 @@
-{0 OCamlFormat Manual}
-
-{1 Doc-comments language reference}
+{0 Doc-comments language reference}
 
 OCamlFormat uses {{:https://github.com/ocaml/odoc}odoc} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from [odoc].
 
 Here is the accepted language:
 
-{2 Headings}
+{1 Headings}
 
 {[
 (** {0 Main title}
@@ -15,7 +13,7 @@ Here is the accepted language:
 *)
 ]}
 
-{2 Tags}
+{1 Tags}
 
 {[
 (** @raise Exception explanation.
@@ -38,9 +36,9 @@ Here is the accepted language:
 *)
 ]}
 
-{2 Block elements}
+{1 Block elements}
 
-{3 Code blocks}
+{2 Code blocks}
 
 {%html:
 <pre>
@@ -56,7 +54,7 @@ Here is the accepted language:
 *)</code></pre>
 %}
 
-{3 Verbatim blocks}
+{2 Verbatim blocks}
 
 {[
 (** Verbatim blocks:
@@ -75,9 +73,9 @@ Here is the accepted language:
 *)
 ]}
 
-{3 Lists}
+{2 Lists}
 
-{4 Unordered lists}
+{3 Unordered lists}
 
 {[
 (** Short syntax:
@@ -92,7 +90,7 @@ Here is the accepted language:
 *)
 ]}
 
-{4 Ordered lists}
+{3 Ordered lists}
 
 {[
 (** Short syntax:
@@ -107,9 +105,9 @@ Here is the accepted language:
 *)
 ]}
 
-{2 Inline elements}
+{1 Inline elements}
 
-{3 Basic elements}
+{2 Basic elements}
 
 {[
 (** regular words
@@ -122,7 +120,7 @@ Here is the accepted language:
 *)
 ]}
 
-{3 Markup}
+{2 Markup}
 
 {[
 (** {%html:<p>Raw markup</p>%}
@@ -131,7 +129,7 @@ Here is the accepted language:
 *)
 ]}
 
-{3 Links}
+{2 Links}
 
 {[
 (** {:https://github.com/}
@@ -139,7 +137,7 @@ Here is the accepted language:
 *)
 ]}
 
-{3 References}
+{2 References}
 
 {[
 (** {!module:A} {!module:A.B}

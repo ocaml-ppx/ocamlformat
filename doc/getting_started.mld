@@ -1,8 +1,6 @@
-{0 OCamlFormat Manual}
+{0 Getting started}
 
-{1 Getting started}
-
-{2 Installation}
+{1 Installation}
 
 OCamlFormat can be installed with [opam]:
 
@@ -18,7 +16,7 @@ dune subst
 dune build @install
 ]}
 
-{2 Formatting code!}
+{1 Formatting code!}
 
 First of all, make sure you have an [.ocamlformat] file at the root of your project. Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this [.ocamlformat] file is considered good practice:
 {[
@@ -41,7 +39,7 @@ dune build @fmt
 With this command, Dune will apply the appropriate autoformatter on each kind of file (where OCamlFormat is the one called on .ml, .mli, .mlt, .eliom and .eliomi files).
 All files are formatted, unless explicitly excluded (see below).
 
-{2 Code style}
+{1 Code style}
 
 There are a number of preset code style profiles, selected using the [--profile] option by passing [--profile=<name>] on the command line or adding [profile = <name>] to an [.ocamlformat] configuration file.
 The available profiles are:
@@ -64,7 +62,7 @@ The [ocamlformat] profile aims to take advantage of the strengths of a parsetree
 
 If no profile is selected, the [default] one is used.
 
-{2 Options}
+{1 Options}
 
 The full options' documentation is available through [ocamlformat --help].
 Options can be modified by the means of:
@@ -81,7 +79,7 @@ When this option is not set, [.ocamlformat] files outside of the project are ign
 
 An [.ocamlformat-ignore] file specifies files that OCamlFormat should ignore. Each line in an [.ocamlformat-ignore] file specifies a filename relative to the directory containing the [.ocamlformat-ignore] file. Lines starting with [#] are ignored and can be used as comments.
 
-{2 Version}
+{1 Version}
 
 On existing projects, it is likely an [.ocamlformat] file is already present, specifying a field [version = A.B.C] (e.g. [0.20.0]).
 
@@ -93,7 +91,7 @@ opam install ocamlformat.0.20.0
 
 Setting an OCamlFormat version in the configuration file is a good practice to ensure every contributor of a project gets the same formatting.
 
-{2 Requirements}
+{1 Requirements}
 
 OCamlFormat requires source code that meets the following conditions:
 
@@ -101,7 +99,7 @@ OCamlFormat requires source code that meets the following conditions:
 - Parses without any preprocessing, using the version of the standard OCaml (not camlp4) parser used to build OCamlFormat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
 - Is either a module implementation ([.ml]), an interface ([.mli]) or a sequence of toplevel phrases ([.mlt]). dune files in OCaml syntax also work.
 
-{2 Warranty}
+{1 Warranty}
 
 Under those conditions, OCamlFormat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, OCamlFormat enforces the following checks:
 - The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see {{:https://github.com/ocaml-ppx/ocamlformat/blob/main/lib/Normalize.ml}Normalize}[.equal]).

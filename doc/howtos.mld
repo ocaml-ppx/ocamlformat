@@ -1,10 +1,8 @@
-{0 OCamlFormat Manual}
-
-{1 How-To's}
+{0 How-To's}
 
 Using an autoformatter will make your process easier but it can also introduce a few pain points. Here are how to solve the most commonly encountered pain points.
 
-{2 Using OCamlFormat without breaking [git blame]}
+{1 Using OCamlFormat without breaking [git blame]}
 
 - Create [.git-blame-ignore-revs] in your project
 - Add revision(s) where the code was re-formatted
@@ -17,17 +15,17 @@ Using an autoformatter will make your process easier but it can also introduce a
 - Run [git config --local blame.ignoreRevsFile .git-blame-ignore-revs]
 - All future use of [git blame] will now provide blame information omitting the reformatting commits: lines that were changed or added by an ignored commit will be blamed on the previous commit that changed that line or nearby lines.
 
-{2 Resolve merge conflicts using Merge-fmt and OCamlFormat}
+{1 Resolve merge conflicts using Merge-fmt and OCamlFormat}
 
 {{:https://github.com/hhugo/merge-fmt}Merge-fmt} is a small wrapper on top of [git] commands to help resolve conflicts caused by code formatters.
 
 There are three ways to use [merge-fmt].
 
-{3 Standalone}
+{2 Standalone}
 Just call [merge-fmt] while there are unresolved conflicts. [merge-fmt] will try to
 resolve conflicts automatically.
 
-{3 As a Git mergetool}
+{2 As a Git mergetool}
 [merge-fmt] can act as a git {{:https://git-scm.com/docs/git-mergetool}mergetool}.
 First configure the current git repository with
 
@@ -39,7 +37,7 @@ git config --local mergetool.mergefmt.trustExitCode true
 
 Then, use [git mergetool] to resolve conflicts with [git mergetool -t mergefmt].
 
-{3 As a git merge driver}
+{2 As a git merge driver}
 [merge-fmt] can act as a git {{:https://git-scm.com/docs/gitattributes}merge driver}.
 Configure the current git repository to use [merge-fmt] as the default merge driver.
 {[
