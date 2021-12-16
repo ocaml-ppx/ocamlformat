@@ -33,7 +33,7 @@ exception Int_overflow
 
     Notes:
     - {_ check} that exception {!exception:Int_overflow} is {b not raised};
-    - have a look at {!module:Int} ({{:https://ocaml.org/api/Int.html}Documentation}).
+    - have a look at {!module:Int}.
 
     @return [x + y]
     @raise Exception [Int_overflow] *)
