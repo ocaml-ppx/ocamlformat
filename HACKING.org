@@ -23,7 +23,7 @@ Git is used to manage the script's state:
 - If a supported OCaml version does not have CI support, run test suite locally.
 
 - In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
-  and date. In =README.md=, update the recommended version to use in
+  and date. In =README.md=, =doc/faq.mld= and =doc/getting_started.mld= update the recommended version to use in
   =.ocamlformat= files. Commit the changes.
 
 - Tag
@@ -237,3 +237,7 @@ remove the =_build-mingw64= directory.
 This script can also be triggered as a GitHub Action named =build-mingw64= which
 will build the binary in a GitHub worker and upload it back to GitHub. To
 retrieve it, select the Action run in question and scroll down to "Artifacts".
+
+* Building the documentation
+
+=dune build @doc && xdg-open _build/default/_doc/_html/ocamlformat/index.html=

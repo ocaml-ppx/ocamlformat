@@ -1,0 +1,42 @@
+{0 Doc-comments language reference}
+
+OCamlFormat uses {{:https://github.com/ocaml-doc/odoc-parser}odoc-parser} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from {{:https://github.com/ocaml/odoc}odoc} (detailed in {{:https://ocaml.github.io/odoc/odoc_for_authors.html}odoc's documentation}).
+
+Here is an example showing a few useful elements:
+
+{%html:
+<pre>
+<code class="ml hljs ocaml">(** Adding integers. *)
+
+(** {1 Exception} *)
+
+(** Raised in case of integer overflow *)
+exception Int_overflow
+
+(** {1 Function definition} *)
+
+(** [add ~x ~y] returns [x + y] or raises an exception in case of integer overflow.
+    Usage:
+    {@ocaml some_metadata[
+    # add ~x:1 ~y:2 ;;
+    - : int = 3
+    ]}
+
+    Here is a basic diagram:
+    {v
+          add  ~x:1   ~y:2
+                  \   /
+                   (+)
+                    |
+                    3
+    v}
+
+    Notes:
+    - {_ check} that exception {!exception:Int_overflow} is {b not raised};
+    - have a look at {!module:Int}.
+
+    @return [x + y]
+    @raise Exception [Int_overflow] *)
+val add: x:int (** one operand *) -> y:int (** another operand *) -> int (** result *)
+</code></pre>
+%}

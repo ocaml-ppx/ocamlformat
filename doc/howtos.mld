@@ -1,0 +1,49 @@
+{0 How-To's}
+
+Using an autoformatter will make your process easier but it can also introduce a few pain points. Here are how to solve the most commonly encountered pain points.
+
+{1 Using OCamlFormat without breaking [git blame]}
+
+- Create [.git-blame-ignore-revs] in your project
+- Add revision(s) where the code was re-formatted
+
+{[
+# Apply new formatting with OCamlFormat
+2ceaf76b9f84cb632327c1479d0f30acfa3eeba2
+]}
+
+- Run [git config --local blame.ignoreRevsFile .git-blame-ignore-revs]
+- All future use of [git blame] will now provide blame information omitting the reformatting commits: lines that were changed or added by an ignored commit will be blamed on the previous commit that changed that line or nearby lines.
+
+{1 Resolve merge conflicts using Merge-fmt and OCamlFormat}
+
+{{:https://github.com/hhugo/merge-fmt}Merge-fmt} is a small wrapper on top of [git] commands to help resolve conflicts caused by code formatters.
+
+There are three ways to use [merge-fmt].
+
+{2 Standalone}
+Just call [merge-fmt] while there are unresolved conflicts. [merge-fmt] will try to
+resolve conflicts automatically.
+
+{2 As a Git mergetool}
+[merge-fmt] can act as a git {{:https://git-scm.com/docs/git-mergetool}mergetool}.
+First configure the current git repository with
+
+{[
+merge-fmt setup-mergetool
+git config --local mergetool.mergefmt.cmd 'merge-fmt mergetool --base=$BASE --current=$LOCAL --other=$REMOTE -o $MERGED'
+git config --local mergetool.mergefmt.trustExitCode true
+]}
+
+Then, use [git mergetool] to resolve conflicts with [git mergetool -t mergefmt].
+
+{2 As a git merge driver}
+[merge-fmt] can act as a git {{:https://git-scm.com/docs/gitattributes}merge driver}.
+Configure the current git repository to use [merge-fmt] as the default merge driver.
+{[
+$ merge-fmt setup-merge
+git config --local merge.mergefmt.name 'merge-fmt driver'
+git config --local merge.mergefmt.driver 'merge-fmt mergetool --base=%O --current=%A --other=%B -o %A --name=%P'
+git config --local merge.tool 'mergefmt'
+git config --local merge.default 'mergefmt'
+]}
