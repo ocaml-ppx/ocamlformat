@@ -6,7 +6,7 @@ Here is an example showing a few useful elements:
 
 {%html:
 <pre>
-<code class="ml hljs ocaml">(** {0 Adding integers} *)
+<code class="ml hljs ocaml">(** Adding integers. *)
 
 (** {1 Exception} *)
 
