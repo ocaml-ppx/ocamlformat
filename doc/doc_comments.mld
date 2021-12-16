@@ -1,6 +1,6 @@
 {0 Doc-comments language reference}
 
-OCamlFormat uses {{:https://github.com/ocaml/odoc}odoc} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from [odoc] (detailed in {{:https://ocaml.github.io/odoc/odoc_for_authors.html}odoc's documentation}).
+OCamlFormat uses {{:https://github.com/ocaml-doc/odoc-parser}odoc-parser} to parse doc-comments (also referred to as doc-strings), and hence it inherits the accepted language from {{:https://github.com/ocaml/odoc}odoc} (detailed in {{:https://ocaml.github.io/odoc/odoc_for_authors.html}odoc's documentation}).
 
 Here is an example showing a few useful elements:
 
