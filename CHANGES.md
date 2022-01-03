@@ -10,7 +10,7 @@
 
 #### Changes
 
-  + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#<PR_NUMBER>, @gpetiot)
+  + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#1968, @gpetiot)
 
 #### New features
 
