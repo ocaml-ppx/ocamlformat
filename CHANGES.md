@@ -6,6 +6,8 @@
 
 #### Bug fixes
 
+  + Add missing parentheses around variant class arguments (#<PR_NUMBER>, @gpetiot)
+
 #### Changes
 
 #### New features

@@ -2001,6 +2001,7 @@ end = struct
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
      |Exp {pexp_desc= Pexp_fun _; _}, Ppat_or _
+     |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
