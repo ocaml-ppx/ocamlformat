@@ -6,6 +6,8 @@
 
 #### Bug fixes
 
+  + Add missing parentheses around variant class arguments (#1967, @gpetiot)
+
 #### Changes
 
 #### New features
