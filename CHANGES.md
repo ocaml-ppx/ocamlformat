@@ -8,7 +8,7 @@
 
   + Add missing parentheses around variant class arguments (#1967, @gpetiot)
 
-  + Fix indentation of module binding RHS (#<PR_NUMBER>, @gpetiot)
+  + Fix indentation of module binding RHS (#1969, @gpetiot)
 
 #### Changes
 
