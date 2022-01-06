@@ -15,8 +15,7 @@ module M (K : sig
   type t
 
   type comparator_witness
-end) =
-struct
+end) = struct
   type nonrec 'v t = (K.t, 'v, K.comparator_witness) t
 end
 

@@ -2374,8 +2374,7 @@ let inlineseq_from_astseq seq =
 
 module Add (T : sig
   type two
-end) =
-struct
+end) = struct
   type _ t =
     | One : [ `One ] t
     | Two : T.two t
@@ -2462,8 +2461,7 @@ let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
   type 'a t
-end) =
-struct
+end) = struct
   type _ ab =
     | A : int S.t ab
     | B : float S.t ab
@@ -2477,8 +2475,7 @@ end
 
 module F (S : sig
   type 'a t
-end) =
-struct
+end) = struct
   type a = int * int
   type b = int -> int
 
@@ -2581,8 +2578,7 @@ let f : (int s, int t) eq -> unit = function
 module M (S : sig
   type 'a t = T of 'a
   type 'a s = T of 'a
-end) =
-struct
+end) = struct
   let f : ('a S.s, 'a S.t) eq -> unit = function
     | Refl -> ()
   ;;
@@ -2623,8 +2619,7 @@ module M (A : sig
   module type T
 end) (B : sig
   module type T
-end) =
-struct
+end) = struct
   let f : ((module A.T), (module B.T)) t -> string = function
     | B s -> s
   ;;
@@ -2824,8 +2819,7 @@ let f (type a) (Neq n : (a, a t) eq) = n
 
 module F (T : sig
   type _ t
-end) =
-struct
+end) = struct
   let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
 
@@ -4709,8 +4703,7 @@ module F (M : sig
   type 'a u = string
 
   val f : unit -> _ u t
-end) =
-struct
+end) = struct
   let t = M.f ()
 end
 
@@ -5014,8 +5007,7 @@ module Foo (Bar : sig
   type a = private [> `A ]
 end) (Baz : module type of struct
   include Bar
-end) =
-struct end
+end) = struct end
 
 module Bazoinks = struct
   type a = [ `A ]
@@ -5030,8 +5022,7 @@ let cast : type a b. (a, b) eq -> a -> b = fun Eq x -> x
 
 module Fix (F : sig
   type 'a f
-end) =
-struct
+end) = struct
   type 'a fix = ('a, 'a F.f) eq
 
   let uniq (type a b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
@@ -5553,8 +5544,7 @@ include C
 
 module F (X : sig
   module C = Char
-end) =
-struct
+end) = struct
   module C = X.C
 end
 
@@ -5616,8 +5606,7 @@ module F (Y : sig
   type t
 end) (M : sig
   type t = Y.t
-end) =
-struct end
+end) = struct end
 
 module G = F (M.Y)
 
@@ -6710,8 +6699,7 @@ class ['a] s3object r : ['a] s3 =
 
 module M (T : sig
   type t
-end) =
-struct
+end) = struct
   type t = private { t : T.t }
 end
 
@@ -7839,8 +7827,7 @@ let _ = test 81 (Coerce2.f1 ()) 1
 
 module Coerce4 (A : sig
   val f : int -> int
-end) =
-struct
+end) = struct
   let x = 0
   let at a = A.f a
 end
@@ -7887,8 +7874,7 @@ let _ =
 (* PR#4316 *)
 module G (S : sig
   val x : int Lazy.t
-end) =
-struct
+end) = struct
   include S
 end
 
@@ -7981,8 +7967,7 @@ end
 
 module F (X : sig
   val x : (module S)
-end) =
-struct
+end) = struct
   module A = (val X.x)
 end
 

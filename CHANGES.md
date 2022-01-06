@@ -10,6 +10,8 @@
 
   + Fix indentation of module binding RHS (#1969, @gpetiot)
 
+  + Improve consistency of `struct` keyword position ("docked" at the end of the preceding line) (#<PR_NUMBER>, @gpetiot)
+
 #### Changes
 
   + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#1968, @gpetiot)

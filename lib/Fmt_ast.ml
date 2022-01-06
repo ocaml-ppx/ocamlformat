@@ -3765,12 +3765,23 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
     fmt_docstring_around_item c ~force_before:(not single_line) ~fit:true
       attributes
   in
+  let box_pro =
+    let last_blk =
+      match blk_t.pro with
+      | Some pro -> Some pro
+      | None -> (
+        match List.rev arg_blks with
+        | [] -> blk_t.pro
+        | {txt= `Unit; _} :: _ -> blk_t.pro
+        | {txt= `Named (_, blk); _} :: _ -> blk.pro )
+    in
+    if Option.is_some last_blk then hovbox else hvbox
+  in
   hvbox
     (if compact then 0 else 2)
     ( doc_before
     $ box_b
-        ( (if Option.is_some blk_t.epi then hovbox else hvbox)
-            0
+        ( box_pro 0
             ( box_t
                 ( hvbox_if
                     (Option.is_some blk_t.pro)
