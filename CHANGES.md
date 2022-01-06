@@ -10,7 +10,7 @@
 
   + Fix indentation of module binding RHS (#1969, @gpetiot)
 
-  + Improve consistency of `struct` keyword position ("docked" at the end of the preceding line) (#<PR_NUMBER>, @gpetiot)
+  + Improve consistency of `struct` keyword position ("docked" at the end of the preceding line) (#1970, @gpetiot)
 
 #### Changes
 
