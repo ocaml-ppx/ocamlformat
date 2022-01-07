@@ -8,8 +8,29 @@ module Result = struct
   let map_error ~f = function Ok x -> Ok x | Error x -> Error (f x)
 end
 
+module IO = struct
+  type 'a t = 'a
+
+  type ic = in_channel
+
+  type oc = out_channel
+
+  let ( >>= ) x f = f x
+
+  let return x = x
+
+  let read_line ic =
+    match input_line ic with exception _ -> None | x -> Some x
+
+  let read _ _ = failwith "unused"
+
+  let write = output_string
+
+  let flush = flush
+end
+
 open Result.Infix
-module Ocf = Ocamlformat_rpc_lib
+module Ocf = Ocamlformat_rpc_lib.Make (IO)
 
 let log = Format.printf
 

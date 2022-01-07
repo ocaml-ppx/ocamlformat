@@ -18,6 +18,26 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter);;
 
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
+module IO = struct
+  type 'a t = 'a
+
+  type ic = In_channel.t
+
+  type oc = Out_channel.t
+
+  let ( >>= ) x f = f x
+
+  let return x = x
+
+  let read_line ic = In_channel.input_line ic
+
+  let read _ _ = failwith "unused"
+
+  let write = Out_channel.output_string
+
+  let flush = Out_channel.flush
+end
+
 module V = struct
   type t = V1
 
@@ -29,6 +49,8 @@ module V = struct
 end
 
 type state = Waiting_for_version | Version_defined of (V.t * Conf.t)
+
+include Make (IO)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
