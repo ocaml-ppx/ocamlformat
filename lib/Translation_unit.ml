@@ -399,8 +399,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         in
         let diff_cmts =
           Sequence.append
-            (Normalize_std_ast.diff_cmts conf old_comments t_newcomments)
-            (Normalize_std_ast.diff_docstrings conf old_docstrings
+            (Normalize_extended_ast.diff_cmts conf old_comments t_newcomments)
+            (Normalize_extended_ast.diff_docstrings conf old_docstrings
                t_newdocstrings )
         in
         if not (Sequence.is_empty diff_cmts) then

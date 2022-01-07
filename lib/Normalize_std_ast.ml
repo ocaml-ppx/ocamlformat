@@ -209,36 +209,3 @@ let moved_docstrings fragment c s1 s2 =
       List.map
         ~f:(fun ((loc, x), (_, y)) -> Docstring.Unstable (loc, x, y))
         l
-
-let diff_docstrings c x y =
-  let norm z =
-    let f Cmt.{txt; _} = docstring c txt in
-    Set.of_list (module String) (List.map ~f z)
-  in
-  Set.symmetric_diff (norm x) (norm y)
-
-let diff_cmts (conf : Conf.t) x y =
-  let norm z =
-    let norm_non_code {Cmt.txt; _} = Docstring.normalize_text txt in
-    let f z =
-      match Cmt.txt z with
-      | "" | "$" -> norm_non_code z
-      | str ->
-          if Char.equal str.[0] '$' then
-            let chars_removed =
-              if Char.equal str.[String.length str - 1] '$' then 2 else 1
-            in
-            let len = String.length str - chars_removed in
-            let source = String.sub ~pos:1 ~len str in
-            match
-              Parse_with_comments.parse Parse.ast Structure conf ~source
-            with
-            | exception _ -> norm_non_code z
-            | {ast= s; _} ->
-                Format.asprintf "%a" Pprintast.structure
-                  (ast Structure conf s)
-          else norm_non_code z
-    in
-    Set.of_list (module String) (List.map ~f z)
-  in
-  Set.symmetric_diff (norm x) (norm y)

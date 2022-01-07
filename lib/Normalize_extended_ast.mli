@@ -11,3 +11,11 @@
 
 val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
 (** Remove comments that duplicate docstrings (or other comments). *)
+
+val diff_docstrings :
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+(** Difference between two lists of doc comments. *)
+
+val diff_cmts :
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+(** Difference between two lists of comments. *)

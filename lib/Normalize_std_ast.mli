@@ -18,11 +18,3 @@ val equal :
 
 val moved_docstrings :
   'a Std_ast.t -> Conf.t -> 'a -> 'a -> Docstring.error list
-
-val diff_docstrings :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
-(** Difference between two lists of doc comments. *)
-
-val diff_cmts :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
-(** Difference between two lists of comments. *)
