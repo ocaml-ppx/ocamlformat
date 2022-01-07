@@ -606,10 +606,10 @@ OPTIONS
            Ignore invalid options (e.g. in .ocamlformat).
 
        --impl
-           Parse file with unrecognized extension as an implementation.
+           Parse input as an implementation.
 
        --intf
-           Parse file with unrecognized extension as an interface.
+           Parse input as an interface.
 
        --margin-check
            Emit a warning if the formatted output exceeds the margin.
