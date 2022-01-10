@@ -11,25 +11,7 @@
 
 open Sexplib0
 
-module type IO = sig
-  type +'a t
-
-  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
-
-  val return : 'a -> 'a t
-
-  type ic
-
-  type oc
-
-  val read : ic -> Sexp.t option t
-
-  val write : oc -> Sexp.t list -> unit t
-
-  val close : oc -> unit
-end
-
-module Make (IO : IO) = struct
+module Make (IO : IO.S) = struct
   module type Command_S = sig
     type t
 
