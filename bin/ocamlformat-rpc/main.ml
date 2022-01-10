@@ -29,13 +29,19 @@ module IO = struct
 
   let return x = x
 
-  let read_line ic = In_channel.input_line ic
+  module Csexp = Csexp.Make (Sexp)
 
-  let read _ _ = failwith "unused"
+  let read ic =
+    match Csexp.input ic with
+    | Ok x -> return (Some x)
+    | Error _ -> return None
 
-  let write = Out_channel.output_string
+  let write oc lx =
+    List.iter lx ~f:(Csexp.to_channel oc) ;
+    Out_channel.flush oc ;
+    return ()
 
-  let flush = Out_channel.flush
+  let close oc = Out_channel.close oc
 end
 
 module V = struct

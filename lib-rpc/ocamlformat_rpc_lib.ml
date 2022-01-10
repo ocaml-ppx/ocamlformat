@@ -22,13 +22,11 @@ module type IO = sig
 
   type oc
 
-  val read_line : ic -> string option t
+  val read : ic -> Sexp.t option t
 
-  val read : ic -> int -> string t
+  val write : oc -> Sexp.t list -> unit t
 
-  val write : oc -> string -> unit t
-
-  val flush : oc -> unit t
+  val close : oc -> unit
 end
 
 module Make (IO : IO) = struct
@@ -76,24 +74,19 @@ module Make (IO : IO) = struct
     let read_input ic =
       let open Sexp in
       let open IO in
-      read_line ic
+      read ic
       >>= function
       | None -> return `Unknown
-      | Some x -> (
-        match Csexp.parse_string x with
-        | Ok (Atom "Halt") -> return `Halt
-        | Ok (List [Atom "Version"; Atom v]) -> return (`Version v)
-        | Ok _ -> return `Unknown
-        | Error _msg -> return `Halt )
+      | Some (Atom "Halt") -> return `Halt
+      | Some (List [Atom "Version"; Atom v]) -> return (`Version v)
+      | Some _ -> return `Unknown
 
     let to_sexp =
       let open Sexp in
       function
       | `Version v -> List [Atom "Version"; Atom v] | _ -> assert false
 
-    let output oc t =
-      let open IO in
-      to_sexp t |> Csexp.to_string |> IO.write oc >>= fun () -> IO.flush oc
+    let output oc t = IO.write oc [to_sexp t]
   end
 
   module V1 :
@@ -115,26 +108,23 @@ module Make (IO : IO) = struct
       let read_input ic =
         let open Sexp in
         let open IO in
-        read_line ic
+        read ic
         >>= function
         | None -> return `Unknown
-        | Some x -> (
-          match Csexp.parse_string x with
-          | Ok (List [Atom "Format"; Atom x]) -> return (`Format x)
-          | Ok (List [Atom "Config"; List l]) ->
-              let c =
-                List.fold_left
-                  (fun acc -> function
-                    | List [Atom name; Atom value] -> (name, value) :: acc
-                    | _ -> acc )
-                  [] l
-                |> List.rev
-              in
-              return (`Config c)
-          | Ok (List [Atom "Error"; Atom x]) -> return (`Error x)
-          | Ok (Atom "Halt") -> return `Halt
-          | Ok _ -> return `Unknown
-          | Error _msg -> return `Halt )
+        | Some (List [Atom "Format"; Atom x]) -> return (`Format x)
+        | Some (List [Atom "Config"; List l]) ->
+            let c =
+              List.fold_left
+                (fun acc -> function
+                  | List [Atom name; Atom value] -> (name, value) :: acc
+                  | _ -> acc )
+                [] l
+              |> List.rev
+            in
+            return (`Config c)
+        | Some (List [Atom "Error"; Atom x]) -> return (`Error x)
+        | Some (Atom "Halt") -> return `Halt
+        | Some _ -> return `Unknown
 
       let to_sexp =
         let open Sexp in
@@ -149,9 +139,7 @@ module Make (IO : IO) = struct
         | `Halt -> Atom "Halt"
         | _ -> assert false
 
-      let output oc t =
-        let open IO in
-        to_sexp t |> Csexp.to_string |> IO.write oc >>= fun () -> IO.flush oc
+      let output oc t = IO.write oc [to_sexp t]
     end
 
     module Client = struct
@@ -173,7 +161,7 @@ module Make (IO : IO) = struct
         match Command.output t.output `Halt with
         | exception _ ->
             return (Error (`Msg "failing to close connection to server"))
-        | (_ : unit IO.t) -> return (Ok ())
+        | (_ : unit IO.t) -> return (Ok (IO.close t.output))
 
       let config c t =
         let open IO in
@@ -211,10 +199,7 @@ module Make (IO : IO) = struct
     let rec aux = function
       | [] -> return (Error (`Msg "Version negociation failed"))
       | latest :: others -> (
-          let version = `Version latest in
-          Init.to_sexp version |> Csexp.to_string |> IO.write oc
-          >>= fun () ->
-          IO.flush oc
+          IO.write oc [Init.to_sexp (`Version latest)]
           >>= fun () ->
           Init.read_input ic
           >>= function

@@ -19,14 +19,19 @@ module IO = struct
 
   let return x = x
 
-  let read_line ic =
-    match input_line ic with exception _ -> None | x -> Some x
+  module Csexp = Csexp.Make (Sexplib0.Sexp)
 
-  let read _ _ = failwith "unused"
+  let read ic =
+    match Csexp.input ic with
+    | Ok x -> return (Some x)
+    | Error _ -> return None
 
-  let write = output_string
+  let write oc lx =
+    List.iter (Csexp.to_channel oc) lx ;
+    Stdlib.flush oc ;
+    return ()
 
-  let flush = flush
+  let close oc = Stdlib.close_out oc
 end
 
 open Result.Infix
