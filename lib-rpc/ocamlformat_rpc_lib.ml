@@ -76,7 +76,7 @@ module Make (IO : IO) = struct
       let open IO in
       read ic
       >>= function
-      | None -> return `Unknown
+      | None -> return `Halt
       | Some (Atom "Halt") -> return `Halt
       | Some (List [Atom "Version"; Atom v]) -> return (`Version v)
       | Some _ -> return `Unknown
@@ -110,7 +110,7 @@ module Make (IO : IO) = struct
         let open IO in
         read ic
         >>= function
-        | None -> return `Unknown
+        | None -> return `Halt
         | Some (List [Atom "Format"; Atom x]) -> return (`Format x)
         | Some (List [Atom "Config"; List l]) ->
             let c =
