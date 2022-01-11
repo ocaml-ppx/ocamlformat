@@ -9,15 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Sexplib0
-
 module Make (IO : IO.S) = struct
   module type Command_S = sig
     type t
 
     val read_input : IO.ic -> t IO.t
 
-    val to_sexp : t -> Sexp.t
+    val to_sexp : t -> Csexp.t
 
     val output : IO.oc -> t -> unit IO.t
   end
@@ -47,14 +45,11 @@ module Make (IO : IO.S) = struct
     module Client : Client_S with type cmd = Command.t
   end
 
-  module Csexp = Csexp.Make (Sexp)
-
   module Init :
     Command_S with type t = [`Halt | `Unknown | `Version of string] = struct
     type t = [`Halt | `Unknown | `Version of string]
 
     let read_input ic =
-      let open Sexp in
       let open IO in
       read ic
       >>= function
@@ -64,7 +59,7 @@ module Make (IO : IO.S) = struct
       | Some _ -> return `Unknown
 
     let to_sexp =
-      let open Sexp in
+      let open Csexp in
       function
       | `Version v -> List [Atom "Version"; Atom v] | _ -> assert false
 
@@ -88,7 +83,7 @@ module Make (IO : IO.S) = struct
         | `Format of string ]
 
       let read_input ic =
-        let open Sexp in
+        let open Csexp in
         let open IO in
         read ic
         >>= function
@@ -109,7 +104,7 @@ module Make (IO : IO.S) = struct
         | Some _ -> return `Unknown
 
       let to_sexp =
-        let open Sexp in
+        let open Csexp in
         function
         | `Format x -> List [Atom "Format"; Atom x]
         | `Config c ->

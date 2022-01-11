@@ -161,5 +161,4 @@
    (and
     (>= 4.08)
     (< 4.15)))
-  csexp
-  sexplib0))
+  csexp))

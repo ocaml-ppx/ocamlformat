@@ -15,7 +15,7 @@ module Make (IO : IO.S) : sig
 
     val read_input : IO.ic -> t IO.t
 
-    val to_sexp : t -> Sexplib0.Sexp.t
+    val to_sexp : t -> Csexp.t
 
     val output : IO.oc -> t -> unit IO.t
   end

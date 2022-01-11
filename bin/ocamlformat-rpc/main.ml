@@ -29,8 +29,6 @@ module IO = struct
 
   let return x = x
 
-  module Csexp = Csexp.Make (Sexp)
-
   let read ic =
     match Csexp.input ic with
     | Ok x -> return (Some x)

@@ -29,9 +29,9 @@ module type S = sig
   (** [oc] represents an output channel *)
   type oc
 
-  val read : ic -> Sexplib0.Sexp.t option t
+  val read : ic -> Csexp.t option t
 
-  val write : oc -> Sexplib0.Sexp.t list -> unit t
+  val write : oc -> Csexp.t list -> unit t
 
   val close : oc -> unit
 end
