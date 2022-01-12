@@ -28,8 +28,6 @@ module IO = struct
     List.iter (Csexp.to_channel oc) lx ;
     Stdlib.flush oc ;
     return ()
-
-  let close oc = Stdlib.close_out oc
 end
 
 open Result.Infix
@@ -39,7 +37,9 @@ let log = Format.printf
 
 let supported_versions = ["v1"]
 
-type state = Uninitialized | Running of Ocf.client | Errored
+type close = unit -> unit
+
+type state = Uninitialized | Running of Ocf.client * close | Errored
 
 let state : state ref = ref Uninitialized
 
@@ -51,8 +51,13 @@ let start () =
       let pid = Unix.process_pid (input, output) in
       Ocf.pick_client ~pid input output supported_versions
       >>| fun client ->
-      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
-      state := Running client ;
+      let close =
+        match client with
+        | `V1 _ ->
+            log "[ocf] client V1 selected\n%!" ;
+            fun () -> close_out output ; close_in input
+      in
+      state := Running (client, close) ;
       client
     with
   | exception _ ->
@@ -74,10 +79,18 @@ let start () =
 let get_client () =
   match !state with
   | Uninitialized -> start ()
-  | Running cl ->
+  | Running (cl, _) ->
       let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
       if i = 0 then Ok cl else start ()
   | Errored -> Error `No_process
+
+let close_client () =
+  match !state with
+  | Uninitialized -> ()
+  | Running (cl, close) ->
+      let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
+      if i = 0 then close () else ()
+  | Errored -> ()
 
 let config c =
   get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.config c cl
@@ -92,7 +105,10 @@ let halt () =
   get_client ()
   >>= fun cl ->
   log "[ocf] Halt\n%!" ;
-  Ocf.halt cl >>| fun () -> state := Uninitialized
+  Ocf.halt cl
+  >>| fun () ->
+  close_client () ;
+  state := Uninitialized
 
 let protect_unit x =
   match x with

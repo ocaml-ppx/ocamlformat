@@ -138,7 +138,7 @@ module Make (IO : IO.S) = struct
         match Command.output t.output `Halt with
         | exception _ ->
             return (Error (`Msg "failing to close connection to server"))
-        | (_ : unit IO.t) -> return (Ok (IO.close t.output))
+        | (_ : unit IO.t) -> return (Ok ())
 
       let config c t =
         let open IO in

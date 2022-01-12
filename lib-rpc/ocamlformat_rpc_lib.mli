@@ -32,6 +32,8 @@ module Make (IO : IO.S) : sig
     val query : cmd -> t -> cmd IO.t
 
     val halt : t -> (unit, [> `Msg of string]) result IO.t
+    (** The caller must close the input and output channels after calling
+        [halt]. *)
 
     val config :
       (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
@@ -73,6 +75,8 @@ module Make (IO : IO.S) : sig
   val pid : client -> int
 
   val halt : client -> (unit, [> `Msg of string]) result IO.t
+  (** The caller must close the input and output channels after calling
+      [halt]. *)
 
   val config :
        (string * string) list

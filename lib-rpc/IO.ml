@@ -32,6 +32,4 @@ module type S = sig
   val read : ic -> Csexp.t option t
 
   val write : oc -> Csexp.t list -> unit t
-
-  val close : oc -> unit
 end

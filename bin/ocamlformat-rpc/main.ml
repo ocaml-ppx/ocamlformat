@@ -38,8 +38,6 @@ module IO = struct
     List.iter lx ~f:(Csexp.to_channel oc) ;
     Out_channel.flush oc ;
     return ()
-
-  let close oc = Out_channel.close oc
 end
 
 module V = struct
@@ -171,7 +169,9 @@ let info =
         "Once the client and the server agree on a common version, the \
          requests you can send may differ from one version to another."
     ; `P "On version $(b,v1), the supported RPC commands are:"
-    ; `P "- $(b,Halt) to close the connection to the RPC"
+    ; `P
+        "- $(b,Halt) to end the communication with the RPC server. The \
+         caller must close the input and output channels."
     ; `P
         "- $(b,Config) $(i,CSEXP): submits a list of (key, value) pairs (as \
          a canonical s-expression) to update OCamlFormat's configuration \
