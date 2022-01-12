@@ -74,8 +74,8 @@ module Make (IO : IO.S) : sig
   val pid : client -> int
 
   val halt : client -> (unit, [> `Msg of string]) result IO.t
-  (** The caller must close the input and output channels after calling
-      [halt]. *)
+  (** Tell the server to close the connection. No more commands can be sent
+      using the same `client` value. *)
 
   val config :
        (string * string) list
