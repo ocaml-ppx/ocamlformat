@@ -27,7 +27,8 @@ COMMANDS
 
        On version v1, the supported RPC commands are:
 
-       - Halt to close the connection to the RPC
+       - Halt to end the communication with the RPC server. The caller must
+       close the input and output channels.
 
        - Config CSEXP: submits a list of (key, value) pairs (as a canonical
        s-expression) to update OCamlFormat's configuration (please refer to

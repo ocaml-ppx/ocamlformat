@@ -16,6 +16,11 @@
 
 #### New features
 
+#### RPC
+
+  + ocamlformat-rpc-lib is now functorized over the IO (#1975, @gpetiot).
+    Now handles `Csexp.t` types instead of `Sexplib0.Sexp.t`.
+
 ### 0.20.1 (2021-12-13)
 
 #### New features

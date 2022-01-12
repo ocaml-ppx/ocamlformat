@@ -18,6 +18,28 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter);;
 
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
+module IO = struct
+  type 'a t = 'a
+
+  type ic = In_channel.t
+
+  type oc = Out_channel.t
+
+  let ( >>= ) x f = f x
+
+  let return x = x
+
+  let read ic =
+    match Csexp.input ic with
+    | Ok x -> return (Some x)
+    | Error _ -> return None
+
+  let write oc lx =
+    List.iter lx ~f:(Csexp.to_channel oc) ;
+    Out_channel.flush oc ;
+    return ()
+end
+
 module V = struct
   type t = V1
 
@@ -29,6 +51,8 @@ module V = struct
 end
 
 type state = Waiting_for_version | Version_defined of (V.t * Conf.t)
+
+include Make (IO)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
@@ -145,7 +169,9 @@ let info =
         "Once the client and the server agree on a common version, the \
          requests you can send may differ from one version to another."
     ; `P "On version $(b,v1), the supported RPC commands are:"
-    ; `P "- $(b,Halt) to close the connection to the RPC"
+    ; `P
+        "- $(b,Halt) to end the communication with the RPC server. The \
+         caller must close the input and output channels."
     ; `P
         "- $(b,Config) $(i,CSEXP): submits a list of (key, value) pairs (as \
          a canonical s-expression) to update OCamlFormat's configuration \
