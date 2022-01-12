@@ -20,29 +20,28 @@ module Make (IO : IO.S) = struct
     val output : IO.oc -> t -> unit IO.t
   end
 
-  module type Client_S = sig
-    type t
-
-    type cmd
-
-    val pid : t -> int
-
-    val mk : pid:int -> IO.ic -> IO.oc -> t
-
-    val query : cmd -> t -> cmd IO.t
-
-    val halt : t -> (unit, [> `Msg of string]) result IO.t
-
-    val config :
-      (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
-
-    val format : string -> t -> (string, [> `Msg of string]) result IO.t
-  end
-
   module type V = sig
     module Command : Command_S
 
-    module Client : Client_S with type cmd = Command.t
+    module Client : sig
+      type t
+
+      type cmd
+
+      val pid : t -> int
+
+      val mk : pid:int -> IO.ic -> IO.oc -> t
+
+      val query : cmd -> t -> cmd IO.t
+
+      val halt : t -> (unit, [> `Msg of string]) result IO.t
+
+      val config :
+        (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
+
+      val format : string -> t -> (string, [> `Msg of string]) result IO.t
+    end
+    with type cmd = Command.t
   end
 
   module Init :
