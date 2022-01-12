@@ -69,7 +69,9 @@ module Make (IO : IO.S) : sig
     -> (client, [`Msg of string]) result IO.t
   (** [pick_client ~pid in out versions] returns the most-fitting client
       according to a list of [versions], that is a list ordered from the most
-      to the least wished version. *)
+      to the least wished version. The given `IO.ic` and `IO.oc` values are
+      referenced by the `client` value and must be kept open until `halt` is
+      called. *)
 
   val pid : client -> int
 
