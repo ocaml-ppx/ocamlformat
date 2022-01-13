@@ -41,16 +41,13 @@ module IO = struct
 end
 
 module V = struct
-  type t = V1
-
-  let handshake = function
-    | "v1" | "V1" -> `Handled V1
-    | _ -> `Propose_another V1
-
-  let to_string = function V1 -> "v1"
+  let handshake x =
+    match Version.of_string x with
+    | Some v -> `Handled v
+    | None -> `Propose_another Version.V1
 end
 
-type state = Waiting_for_version | Version_defined of (V.t * Conf.t)
+type state = Waiting_for_version | Version_defined of (Version.t * Conf.t)
 
 include Make (IO)
 
@@ -71,7 +68,7 @@ let rec rpc_main = function
           Out_channel.flush stdout ;
           rpc_main (Version_defined (v, Conf.default_profile))
       | `Propose_another v ->
-          let vstr = V.to_string v in
+          let vstr = Version.to_string v in
           Init.output stdout (`Version vstr) ;
           Out_channel.flush stdout ;
           rpc_main Waiting_for_version ) )
@@ -185,7 +182,8 @@ let info =
          sent as a reply of the same form $(b,Format) $(i,CSEXP)"
     ; `P "Unknown commands are ignored." ]
   in
-  Term.info "ocamlformat-rpc" ~version:Version.current ~doc ~man
+  Term.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
+    ~man
 
 let rpc_main_t = Term.(const rpc_main $ const ())
 

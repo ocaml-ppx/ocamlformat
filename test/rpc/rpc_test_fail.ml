@@ -31,11 +31,13 @@ module IO = struct
 end
 
 open Result.Infix
-module Ocf = Ocamlformat_rpc_lib.Make (IO)
+open Ocamlformat_rpc_lib
+module Ocf = Make (IO)
 
 let log = Format.printf
 
-let supported_versions = ["v1"]
+(* latest first *)
+let supported_versions = List.map Version.to_string [V1]
 
 type close = unit -> unit
 

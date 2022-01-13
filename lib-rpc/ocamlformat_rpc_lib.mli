@@ -9,6 +9,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Version : sig
+  type t = V1
+
+  val to_string : t -> string
+
+  val of_string : string -> t option
+end
+
 module Make (IO : IO.S) : sig
   module type Command_S = sig
     type t
