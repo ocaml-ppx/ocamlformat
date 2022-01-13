@@ -28,28 +28,21 @@ module Make (IO : IO.S) = struct
     val output : IO.oc -> t -> unit IO.t
   end
 
-  module type V = sig
-    module Command : Command_S
+  module type Client_S = sig
+    type t
 
-    module Client : sig
-      type t
+    type cmd
 
-      type cmd
+    val pid : t -> int
 
-      val pid : t -> int
+    val mk : pid:int -> IO.ic -> IO.oc -> t
 
-      val mk : pid:int -> IO.ic -> IO.oc -> t
+    val query : cmd -> t -> cmd IO.t
 
-      val query : cmd -> t -> cmd IO.t
+    val halt : t -> (unit, [> `Msg of string]) result IO.t
 
-      val halt : t -> (unit, [> `Msg of string]) result IO.t
-
-      val config :
-        (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
-
-      val format : string -> t -> (string, [> `Msg of string]) result IO.t
-    end
-    with type cmd = Command.t
+    val config :
+      (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
   end
 
   module Init :
@@ -73,14 +66,22 @@ module Make (IO : IO.S) = struct
     let output oc t = IO.write oc [to_sexp t]
   end
 
-  module V1 :
-    V
-      with type Command.t =
-        [ `Halt
-        | `Unknown
-        | `Error of string
-        | `Config of (string * string) list
-        | `Format of string ] = struct
+  module V1 : sig
+    module Command :
+      Command_S
+        with type t =
+          [ `Halt
+          | `Unknown
+          | `Error of string
+          | `Config of (string * string) list
+          | `Format of string ]
+
+    module Client : sig
+      include Client_S with type cmd = Command.t
+
+      val format : string -> t -> (string, [> `Msg of string]) result IO.t
+    end
+  end = struct
     module Command = struct
       type t =
         [ `Halt
