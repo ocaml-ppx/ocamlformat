@@ -9,6 +9,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Version = struct
+  type t = V1
+
+  let to_string = function V1 -> "v1"
+
+  let of_string = function "v1" | "V1" -> Some V1 | _ -> None
+end
+
 module Make (IO : IO.S) = struct
   module type Command_S = sig
     type t
@@ -161,14 +169,10 @@ module Make (IO : IO.S) = struct
 
   type client = [`V1 of V1.Client.t]
 
-  let get_client ~pid input output = function
-    | "v1" | "V1" -> Some (`V1 (V1.Client.mk ~pid input output))
-    | _ -> None
-
-  let get_client_exn ~pid ic oc x =
-    match get_client ~pid ic oc x with
-    | Some x -> Ok x
-    | None -> failwith "impossible"
+  let get_client ~pid input output x =
+    match Version.of_string x with
+    | Some V1 -> Ok (`V1 (V1.Client.mk ~pid input output))
+    | None -> Error (`Msg "invalid client version")
 
   let pick_client ~pid ic oc versions =
     let open IO in
@@ -179,11 +183,10 @@ module Make (IO : IO.S) = struct
           >>= fun () ->
           Init.read_input ic
           >>= function
-          | `Version v when v = latest ->
-              return (get_client_exn ~pid ic oc v)
+          | `Version v when v = latest -> return (get_client ~pid ic oc v)
           | `Version v -> (
             match others with
-            | h :: _ when v = h -> return (get_client_exn ~pid ic oc v)
+            | h :: _ when v = h -> return (get_client ~pid ic oc v)
             | _ -> aux others )
           | `Unknown -> aux others
           | `Halt ->
