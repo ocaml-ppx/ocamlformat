@@ -42,9 +42,6 @@ module Make (IO : IO.S) : sig
     val halt : t -> (unit, [> `Msg of string]) result IO.t
     (** The caller must close the input and output channels after calling
         [halt]. *)
-
-    val config :
-      (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
   end
 
   (** Version used to set the protocol version *)
@@ -63,6 +60,9 @@ module Make (IO : IO.S) : sig
 
     module Client : sig
       include Client_S with type cmd = Command.t
+
+      val config :
+        (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
 
       val format : string -> t -> (string, [> `Msg of string]) result IO.t
     end
