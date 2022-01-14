@@ -40,9 +40,6 @@ module Make (IO : IO.S) = struct
     val query : cmd -> t -> cmd IO.t
 
     val halt : t -> (unit, [> `Msg of string]) result IO.t
-
-    val config :
-      (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
   end
 
   module Init :
@@ -78,6 +75,9 @@ module Make (IO : IO.S) = struct
 
     module Client : sig
       include Client_S with type cmd = Command.t
+
+      val config :
+        (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
 
       val format : string -> t -> (string, [> `Msg of string]) result IO.t
     end

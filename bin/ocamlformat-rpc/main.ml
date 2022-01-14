@@ -178,6 +178,9 @@ let info =
         "- $(b,Halt) to end the communication with the RPC server. The \
          caller must close the input and output channels."
     ; `P
+        "Some RPC versions offer specific commands, that are detailed below."
+    ; `P "Specific commands supported on version $(b,v1) are:"
+    ; `P
         "- $(b,Config) $(i,CSEXP): submits a list of (key, value) pairs (as \
          a canonical s-expression) to update OCamlFormat's configuration \
          (please refer to $(i,ocamlformat --help) to know more about the \
