@@ -37,7 +37,7 @@ module Ocf = Make (IO)
 let log = Format.printf
 
 (* latest first *)
-let supported_versions = List.map Version.to_string [V1]
+let supported_versions = List.map Version.to_string [V2; V1]
 
 type close = unit -> unit
 
@@ -57,6 +57,9 @@ let start () =
         match client with
         | `V1 _ ->
             log "[ocf] client V1 selected\n%!" ;
+            fun () -> close_out output ; close_in input
+        | `V2 _ ->
+            log "[ocf] client V2 selected\n%!" ;
             fun () -> close_out output ; close_in input
       in
       state := Running (client, close) ;

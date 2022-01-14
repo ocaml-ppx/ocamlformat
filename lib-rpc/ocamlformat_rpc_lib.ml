@@ -9,12 +9,20 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type format_args =
+  {path: string option; config: (string * string) list option}
+
+let empty_args = {path= None; config= None}
+
 module Version = struct
-  type t = V1
+  type t = V1 | V2
 
-  let to_string = function V1 -> "v1"
+  let to_string = function V1 -> "v1" | V2 -> "v2"
 
-  let of_string = function "v1" | "V1" -> Some V1 | _ -> None
+  let of_string = function
+    | "v1" | "V1" -> Some V1
+    | "v2" | "V2" -> Some V2
+    | _ -> None
 end
 
 module Make (IO : IO.S) = struct
@@ -168,11 +176,122 @@ module Make (IO : IO.S) = struct
     end
   end
 
-  type client = [`V1 of V1.Client.t]
+  module V2 : sig
+    module Command :
+      Command_S
+        with type t =
+          [ `Halt
+          | `Unknown
+          | `Error of string
+          | `Format of string * format_args ]
+
+    module Client : sig
+      include Client_S with type cmd = Command.t
+
+      val format :
+           format_args:format_args
+        -> string
+        -> t
+        -> (string, [> `Msg of string]) result IO.t
+    end
+  end = struct
+    module Command = struct
+      type t =
+        [ `Halt
+        | `Unknown
+        | `Error of string
+        | `Format of string * format_args ]
+
+      let read_input ic =
+        let open Csexp in
+        let open IO in
+        let csexp_to_config csexpl =
+          List.filter_map
+            (function
+              | List [Atom name; Atom value] -> Some (name, value)
+              | _ -> None )
+            csexpl
+        in
+        read ic
+        >>= function
+        | None -> return `Halt
+        | Some (List (Atom "Format" :: Atom x :: l)) ->
+            let extract args csexp =
+              match csexp with
+              | List [Atom "Config"; List l] ->
+                  {args with config= Some (csexp_to_config l)}
+              | List [Atom "Path"; Atom path] -> {args with path= Some path}
+              | _ -> args
+            in
+            let args = List.fold_left extract empty_args l in
+            return (`Format (x, args))
+        | Some (List [Atom "Error"; Atom x]) -> return (`Error x)
+        | Some (Atom "Halt") -> return `Halt
+        | Some _ -> return `Unknown
+
+      let to_sexp =
+        let open Csexp in
+        function
+        | `Format (x, {path; config}) ->
+            let map_config name config =
+              let c =
+                List.map
+                  (fun (name, value) -> List [Atom name; Atom value])
+                  config
+              in
+              List [Atom name; List c]
+            in
+            let ofp =
+              Option.map (fun path -> List [Atom "Path"; Atom path]) path
+            and oconfig = Option.map (map_config "Config") config in
+            List
+              (List.filter_map
+                 (fun i -> i)
+                 [Some (Atom "Format"); Some (Atom x); ofp; oconfig] )
+        | `Error x -> List [Atom "Error"; Atom x]
+        | `Halt -> Atom "Halt"
+        | _ -> assert false
+
+      let output oc t = IO.write oc [to_sexp t]
+    end
+
+    module Client = struct
+      type t = {pid: int; input: IO.ic; output: IO.oc}
+
+      type cmd = Command.t
+
+      let pid t = t.pid
+
+      let mk ~pid input output = {pid; input; output}
+
+      let query command t =
+        let open IO in
+        Command.output t.output command
+        >>= fun () -> Command.read_input t.input
+
+      let halt t =
+        let open IO in
+        match Command.output t.output `Halt with
+        | exception _ ->
+            return (Error (`Msg "failing to close connection to server"))
+        | (_ : unit IO.t) -> return (Ok ())
+
+      let format ~format_args x t =
+        let open IO in
+        query (`Format (x, format_args)) t
+        >>= function
+        | `Format (x, _args) -> return (Ok x)
+        | `Error msg -> return (Error (`Msg msg))
+        | _ -> return (Error (`Msg "failing to format input: unknown error"))
+    end
+  end
+
+  type client = [`V1 of V1.Client.t | `V2 of V2.Client.t]
 
   let get_client ~pid input output x =
     match Version.of_string x with
     | Some V1 -> Ok (`V1 (V1.Client.mk ~pid input output))
+    | Some V2 -> Ok (`V2 (V2.Client.mk ~pid input output))
     | None -> Error (`Msg "invalid client version")
 
   let pick_client ~pid ic oc versions =
@@ -200,11 +319,23 @@ module Make (IO : IO.S) = struct
     in
     aux versions
 
-  let pid = function `V1 cl -> V1.Client.pid cl
+  let pid = function
+    | `V1 cl -> V1.Client.pid cl
+    | `V2 cl -> V2.Client.pid cl
 
-  let halt = function `V1 cl -> V1.Client.halt cl
+  let halt = function
+    | `V1 cl -> V1.Client.halt cl
+    | `V2 cl -> V2.Client.halt cl
 
-  let config c = function `V1 cl -> V1.Client.config c cl
+  let config c = function
+    | `V1 cl -> V1.Client.config c cl
+    | `V2 _ ->
+        IO.return
+          (Error
+             (`Msg "'Config' command not implemented in ocamlformat-rpc V2")
+          )
 
-  let format x = function `V1 cl -> V1.Client.format x cl
+  let format ?(format_args = empty_args) x = function
+    | `V1 cl -> V1.Client.format x cl
+    | `V2 cl -> V2.Client.format ~format_args x cl
 end

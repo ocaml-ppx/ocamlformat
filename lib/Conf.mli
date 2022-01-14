@@ -89,6 +89,13 @@ type file = Stdin | File of string
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
 
+val build_config :
+     enable_outside_detected_project:bool
+  -> root:Ocamlformat_stdlib.Fpath.t option
+  -> file:string
+  -> is_stdin:bool
+  -> t
+
 type action =
   | In_out of input * string option
       (** Format input file (or [-] for stdin) of given kind to output file,
