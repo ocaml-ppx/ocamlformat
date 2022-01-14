@@ -143,7 +143,6 @@ let rec rpc_main = function
           let conf =
             match run_format_with_args empty_args conf x with
             | Ok (`Format formatted) ->
-                ignore (Format.flush_str_formatter ()) ;
                 V1.Command.output stdout (`Format formatted) ;
                 conf
             | Error (`Format_error e) -> handle_format_error e ; conf
@@ -165,7 +164,6 @@ let rec rpc_main = function
           let conf =
             match run_format_with_args format_args conf x with
             | Ok (`Format formatted) ->
-                ignore (Format.flush_str_formatter ()) ;
                 V2.Command.output stdout (`Format (formatted, format_args)) ;
                 conf
             | Error (`Format_error e) -> handle_format_error e ; conf
