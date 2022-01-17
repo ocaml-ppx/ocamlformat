@@ -73,7 +73,7 @@ let fmt_metadata (lang, meta) =
 
 let fmt_code_block conf s1 s2 =
   let wrap_code x =
-    str "{" $ opt s1 fmt_metadata $ fmt "[@;<1 2>" $ x $ fmt "@ ]}"
+    str "{" $ opt s1 fmt_metadata $ fmt "[@;<1000 2>" $ x $ fmt "@ ]}"
   in
   let s2 = Odoc_parser.Loc.value s2 in
   match conf.fmt_code s2 with
