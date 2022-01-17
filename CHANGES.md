@@ -14,6 +14,8 @@
 
   + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#1968, @gpetiot)
 
+  + Print odoc code block delimiters on their own line (#1980, @gpetiot)
+
 #### New features
 
 #### RPC

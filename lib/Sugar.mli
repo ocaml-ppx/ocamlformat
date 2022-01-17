@@ -81,7 +81,9 @@ val ite :
 (** [ite cmts exp] returns a list of conditional expressions from cascading
     if-then-else expressions, e.g.:
 
-    {[ if c1 then e1 else if c2 then e2 else e3 ]}
+    {[
+      if c1 then e1 else if c2 then e2 else e3
+    ]}
 
     will return the following list:
     [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
