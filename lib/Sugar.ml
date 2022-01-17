@@ -341,7 +341,7 @@ let rec polynewtype_ cmts pvars body relocs =
     Can be rewritten as:
 
     {[
-      let f : type r s. r s t = e
+    let f : type r s. r s t = e
     ]} *)
 let polynewtype cmts pat body =
   let ctx = Pat pat in

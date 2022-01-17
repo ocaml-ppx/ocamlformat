@@ -10,7 +10,6 @@ Warning: tests/doc_comments.mli:104 exceeds the margin
 Warning: tests/doc_comments.mli:306 exceeds the margin
 Warning: tests/doc_comments.mli:352 exceeds the margin
 Warning: tests/doc_comments.mli:359 exceeds the margin
-Warning: tests/doc_comments.mli:423 exceeds the margin
-Warning: tests/doc_comments.mli:436 exceeds the margin
-Warning: tests/doc_comments.mli:493 exceeds the margin
-Warning: tests/doc_comments.mli:523 exceeds the margin
+Warning: tests/doc_comments.mli:383 exceeds the margin
+Warning: tests/doc_comments.mli:492 exceeds the margin
+Warning: tests/doc_comments.mli:522 exceeds the margin

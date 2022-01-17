@@ -82,7 +82,7 @@ val ite :
     if-then-else expressions, e.g.:
 
     {[
-      if c1 then e1 else if c2 then e2 else e3
+    if c1 then e1 else if c2 then e2 else e3
     ]}
 
     will return the following list:

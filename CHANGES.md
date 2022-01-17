@@ -16,6 +16,8 @@
 
   + Print odoc code block delimiters on their own line (#1980, @gpetiot)
 
+  + Align odoc code block contents under the opening character (#<PR_NUMBER>, @gpetiot)
+
 #### New features
 
 #### RPC
