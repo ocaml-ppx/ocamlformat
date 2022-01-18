@@ -31,7 +31,13 @@ let inputs =
     ; kind= Syntax.Structure
     ; source= source_ml
     ; conf= Conf.default_profile
-    ; action= `Format } ]
+    ; action= `Format }
+  ; { name= "numeric:conventional"
+    ; input_name= "source.ml"
+    ; kind= Syntax.Structure
+    ; source= source_ml
+    ; conf= Conf.default_profile
+    ; action= `Numeric (10_000, 10_000) } ]
 
 let opts = Conf.{debug= false; margin_check= false}
 
