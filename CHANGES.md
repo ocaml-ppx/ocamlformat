@@ -12,7 +12,9 @@
 
 #### Changes
 
-  + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#1968, @gpetiot)
+  + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
+    - Variants with no argument (#1968, @gpetiot)
+    - Empty or singleton arrays/lists (#1943, @gpetiot)
 
   + Print odoc code block delimiters on their own line (#1980, @gpetiot)
 
