@@ -13,7 +13,7 @@
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
-    - Variant with no argument (#1968, @gpetiot)
+    - Variants with no argument (#1968, @gpetiot)
     - Empty or singleton arrays/lists (#1943, @gpetiot)
 
   + Print odoc code block delimiters on their own line (#1980, @gpetiot)
