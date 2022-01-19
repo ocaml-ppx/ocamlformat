@@ -564,7 +564,7 @@ module Signature_item = struct
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
         List.exists ~f:Attr.is_doc atrs
     | Psig_recmodule
-        ({pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
+        ( {pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
         :: _ )
      |Psig_include
         {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
