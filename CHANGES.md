@@ -18,7 +18,7 @@
 
   + Print odoc code block delimiters on their own line (#1980, @gpetiot)
 
-  + Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#<PR_NUMBER>, @gpetiot)
+  + Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#1983, @gpetiot)
 
 #### New features
 
