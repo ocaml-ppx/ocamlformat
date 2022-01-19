@@ -1018,7 +1018,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       ( {txt= Lident "::"; loc= _}
       , Some ([], {ppat_desc= Ppat_tuple [_; _]; ppat_attributes= []; _}) )
     ->
-      let loc_args = Sugar.infix_cons_pat c.cmts xpat in
+      let loc_args = Sugar.Pat.infix_cons c.cmts xpat in
       Cmts.fmt c ppat_loc
       @@ hvbox 0
            (fmt_infix_op_args_pat c ~parens xpat
@@ -1866,7 +1866,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; _ }
       , [(Nolabel, _); (Nolabel, _)] )
     when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
-      let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
+      let op_args = Sugar.Exp.infix c.cmts (prec_ast (Exp exp)) xexp in
       let inner_wrap = parens || has_attr in
       let outer_wrap =
         match ctx0 with
@@ -2123,7 +2123,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_construct
       ( {txt= Lident "::"; loc= _}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []; _} ) ->
-      let loc_args = Sugar.infix_cons c.cmts xexp in
+      let loc_args = Sugar.Exp.infix_cons c.cmts xexp in
       Cmts.fmt c pexp_loc
       @@ hvbox indent_wrap
            ( fmt_infix_op_args c ~parens xexp
