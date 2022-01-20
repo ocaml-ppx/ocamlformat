@@ -10,6 +10,8 @@
 
   + Fix indentation of module binding RHS (#1969, @gpetiot)
 
+  + Fix position of `:=` when `assignment-operator=end-line` (#<PR_NUMBER>, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):

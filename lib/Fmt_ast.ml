@@ -1744,7 +1744,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
            | `End_line ->
                hvbox 0
-                 (fmt_expression c (sub_exp ~ctx r) $ cmts_before $ str " :=")
+                 ( hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
+                 $ str " :=" )
                $ fmt "@;<1 2>" $ cmts_after
                $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
   | Pexp_apply
