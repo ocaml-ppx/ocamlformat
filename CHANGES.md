@@ -10,7 +10,7 @@
 
   + Fix indentation of module binding RHS (#1969, @gpetiot)
 
-  + Fix position of `:=` when `assignment-operator=end-line` (#<PR_NUMBER>, @gpetiot)
+  + Fix position of `:=` when `assignment-operator=end-line` (#1985, @gpetiot)
 
 #### Changes
 
