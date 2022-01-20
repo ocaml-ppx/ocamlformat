@@ -12,7 +12,7 @@
 
   + Fix position of `:=` when `assignment-operator=end-line` (#1985, @gpetiot)
 
-  + Fix position of comments attached to constructor decl (#<PR_NUMBER>, @gpetiot)
+  + Fix position of comments attached to constructor decl (#1986, @gpetiot)
 
 #### Changes
 
