@@ -12,6 +12,8 @@
 
   + Fix position of `:=` when `assignment-operator=end-line` (#1985, @gpetiot)
 
+  + Fix position of comments attached to constructor decl (#<PR_NUMBER>, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
