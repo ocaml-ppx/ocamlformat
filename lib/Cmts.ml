@@ -211,6 +211,12 @@ end = struct
             | 0, 0 -> `Before_next
             | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
+            | 1, 1 ->
+                if
+                  Location.compare_start_col (List.last_exn cmtl).loc next
+                  <= 0
+                then `Before_next
+                else `After_prev
             | 1, y when y > 1 && Source.empty_line_after src loc ->
                 `After_prev
             | _, y

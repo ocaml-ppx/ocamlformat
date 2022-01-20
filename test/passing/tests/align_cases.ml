@@ -8,8 +8,7 @@ type x =
   | Fooooooooo          of padding * int array
   | Fooooooooooo        of padding * int array * int array
   (* fooooooooooooooooo *)
-  | Fooooooooooo
-      (* fooooooooooooooooooo *) of
+  | Fooooooooooo (* fooooooooooooooooooo *) of
       padding * int array * int array
   (* fooooooooooooooooo *)
   | Foooooooooo         of padding * int array * int array

@@ -3377,19 +3377,18 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
-  $ Cmts.fmt_before c loc
   $ fmt_or_k first (if_newline "| ") (str "| ")
   $ hvbox ~name:"constructor_decl" 0
       ( hovbox 2
           ( hvbox 2
-              ( Cmts.fmt c loc
-                  (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
+              ( hovbox ~name:"constructor_decl_name" 0
+                  (Cmts.fmt c loc
+                     (wrap_if (String_id.is_symbol txt) "( " " )" (str txt)) )
               $ fmt_padding
               $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
                   pcd_res )
           $ fmt_attributes_and_docstrings c pcd_attributes )
-      $ Cmts.fmt_after c ~pro:(fmt_or c.conf.wrap_comments "@ " " ") pcd_loc
-      )
+      $ Cmts.fmt_after c pcd_loc )
 
 and fmt_constructor_arguments ?vars c ctx ~pre = function
   | Pcstr_tuple [] -> noop
