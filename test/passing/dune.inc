@@ -5048,6 +5048,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to wrap_invalid_doc_comments.ml.stdout
+   (with-stderr-to wrap_invalid_doc_comments.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --parse-docstrings --wrap-comments %{dep:tests/wrap_invalid_doc_comments.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/wrap_invalid_doc_comments.ml wrap_invalid_doc_comments.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/wrap_invalid_doc_comments.ml.err wrap_invalid_doc_comments.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to wrapping_functor_args.ml.stdout
    (with-stderr-to wrapping_functor_args.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/wrapping_functor_args.ml})))))
