@@ -14,6 +14,8 @@
 
   + Fix position of comments attached to constructor decl (#1986, @gpetiot)
 
+  + Do not wrap docstrings, `wrap-comments` should only impact non-documentation comments, wrapping invalid docstrings would cause the whole file to not be formatted (#1988, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):

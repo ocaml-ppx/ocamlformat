@@ -361,9 +361,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
         (String.length str_cmt > 1 && String.ends_with_whitespace str_cmt)
         " "
   in
-  let fmt_raw str_cmt =
-    if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
-  in
+  let fmt_raw str_cmt = str str_cmt in
   let doc =
     match parsed with
     | _ when not c.conf.parse_docstrings -> fmt_raw str_cmt
