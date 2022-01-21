@@ -16,6 +16,8 @@
 
   + Do not wrap docstrings, `wrap-comments` should only impact non-documentation comments, wrapping invalid docstrings would cause the whole file to not be formatted (#1988, @gpetiot)
 
+  + Do not break between 2 module items when the first one has a comment attached on the same line. Only a comment on the next line should induce a break to make it clear to which element it is attached to (#1989, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):

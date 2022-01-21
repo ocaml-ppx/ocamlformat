@@ -19,6 +19,9 @@ type cmt_checker =
   ; cmts_within: Location.t -> bool
   ; cmts_after: Location.t -> bool }
 
+let cmts_between s {cmts_before; cmts_after; _} loc1 loc2 =
+  (cmts_after loc1 && Source.ends_line s loc1) || cmts_before loc2
+
 let ( init
     , register_reset
     , leading_nested_match_parens
@@ -534,9 +537,9 @@ module Structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.pstr_loc || cmts_before i2.pstr_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pstr_loc i2.pstr_loc
+    || has_doc i1 || has_doc i2
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
@@ -615,9 +618,9 @@ module Signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.psig_loc || cmts_before i2.psig_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.psig_loc i2.psig_loc
+    || has_doc i1 || has_doc i2
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
@@ -635,9 +638,9 @@ module Vb = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pvb_loc c.Conf.margin
 
-  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.pvb_loc || cmts_before i2.pvb_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pvb_loc i2.pvb_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end
@@ -650,9 +653,9 @@ module Td = struct
     | `Compact | `Preserve -> Location.is_single_line i.ptype_loc c.margin
     | `Sparse -> false
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.ptype_loc || cmts_before i2.ptype_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.ptype_loc i2.ptype_loc
+    || has_doc i1 || has_doc i2
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
@@ -675,9 +678,9 @@ module Class_field = struct
         Location.is_single_line itm.pcf_loc c.Conf.margin
     | `Sparse -> false
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.pcf_loc || cmts_before i2.pcf_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pcf_loc i2.pcf_loc
+    || has_doc i1 || has_doc i2
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
@@ -699,9 +702,9 @@ module Class_type_field = struct
         Location.is_single_line itm.pctf_loc c.Conf.margin
     | `Sparse -> false
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
-    cmts_after i1.pctf_loc || cmts_before i2.pctf_loc || has_doc i1
-    || has_doc i2
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pctf_loc i2.pctf_loc
+    || has_doc i1 || has_doc i2
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
@@ -795,13 +798,12 @@ let location = function
   | Tli (`Directive x) -> x.pdir_loc
   | Top -> Location.none
 
-let break_between_modules {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+let break_between_modules s cc (i1, c1) (i2, c2) =
   let has_doc itm = List.exists ~f:Attr.is_doc (attributes itm) in
   let is_simple (itm, c) =
     Location.is_single_line (location itm) c.Conf.margin
   in
-  cmts_after (location i1)
-  || cmts_before (location i2)
+  cmts_between s cc (location i1) (location i2)
   || has_doc i1 || has_doc i2
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
@@ -810,9 +812,9 @@ let break_between s cc (i1, c1) (i2, c2) =
   match (i1, i2) with
   | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
-  | Vb i1, Vb i2 -> Vb.break_between cc (i1, c1) (i2, c2)
-  | Mty _, Mty _ -> break_between_modules cc (i1, c1) (i2, c2)
-  | Mod _, Mod _ -> break_between_modules cc (i1, c1) (i2, c2)
+  | Vb i1, Vb i2 -> Vb.break_between s cc (i1, c1) (i2, c2)
+  | Mty _, Mty _ -> break_between_modules s cc (i1, c1) (i2, c2)
+  | Mod _, Mod _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Tli (`Item i1), Tli (`Item i2) ->
       Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Tli (`Directive _), Tli (`Directive _) | Tli _, Tli _ ->
