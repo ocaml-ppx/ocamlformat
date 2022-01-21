@@ -24,7 +24,7 @@
 
   + Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#1983, @gpetiot)
 
-  + Do not wrap docstrings, `wrap-comments` should only impact non-documentation comments (#<PR_NUMBER>, @gpetiot)
+  + Do not wrap docstrings, `wrap-comments` should only impact non-documentation comments (#1988, @gpetiot)
 
 #### New features
 
