@@ -1,3 +1,5 @@
+  $ touch .ocamlformat
+
   $ echo 'let x = y' > a.ml
 
 Setting a deprecated option or a deprecated option value on the command line should display a warning message:
