@@ -1,3 +1,5 @@
+  $ touch .ocamlformat
+
   $ cat > a.ml << EOF
   > (* Intentionally not formatted *)
   > let () =
