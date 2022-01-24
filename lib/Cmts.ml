@@ -245,15 +245,26 @@ end = struct
     | _ -> (empty, cmts)
 end
 
-let add_cmts t position loc cmts =
+let add_cmts t position loc ?deep_loc cmts =
   if not (CmtSet.is_empty cmts) then
     let cmtl = CmtSet.to_list cmts in
-    update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl)
+    let key =
+      match deep_loc with
+      | Some deep_loc ->
+          let cmt = List.last_exn cmtl in
+          if
+            is_adjacent t.source deep_loc cmt.loc
+            && not (Source.begins_line ~ignore_spaces:true t.source cmt.loc)
+          then deep_loc
+          else loc
+      | None -> loc
+    in
+    update_cmts t position ~f:(Map.add_exn ~key ~data:cmtl)
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
     children. *)
-let rec place t loc_tree ?prev_loc locs cmts =
+let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
   match locs with
   | curr_loc :: next_locs ->
       let before, within, after = CmtSet.split cmts curr_loc in
@@ -268,21 +279,26 @@ let rec place t loc_tree ?prev_loc locs cmts =
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
             in
-            add_cmts t `After prev_loc after_prev ;
+            add_cmts t `After prev_loc after_prev ?deep_loc ;
             before_curr
       in
       add_cmts t `Before curr_loc before_curr ;
-      ( match Loc_tree.children loc_tree curr_loc with
-      | [] -> add_cmts t `Within curr_loc within
-      | children -> place t loc_tree children within ) ;
-      place t loc_tree ~prev_loc:curr_loc next_locs after
-  | [] -> (
-    match prev_loc with
-    | Some prev_loc -> add_cmts t `After prev_loc cmts
-    | None ->
-        if t.debug then
-          List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-              Format.eprintf "lost: %s@\n%!" txt ) )
+      let deep_loc =
+        match Loc_tree.children loc_tree curr_loc with
+        | [] ->
+            add_cmts t `Within curr_loc within ;
+            Option.some_if (List.is_empty next_locs) curr_loc
+        | children -> place t loc_tree children within
+      in
+      place t loc_tree ~prev_loc:curr_loc next_locs after ?deep_loc
+  | [] ->
+      ( match prev_loc with
+      | Some prev_loc -> add_cmts t `After prev_loc cmts ?deep_loc
+      | None ->
+          if t.debug then
+            List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
+                Format.eprintf "lost: %s@\n%!" txt ) ) ;
+      deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
@@ -392,7 +408,7 @@ let init fragment ~debug source asts comments_n_docstrings =
     let cmts = CmtSet.of_list comments in
     ( match locs with
     | [] -> add_cmts t `After Location.none cmts
-    | _ -> place t loc_tree locs cmts ) ;
+    | _ -> ignore @@ place t loc_tree locs cmts ) ;
     if debug then (
       let get_cmts pos loc =
         let cmts = find_at_position t loc pos in

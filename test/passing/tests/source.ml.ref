@@ -478,8 +478,8 @@ module M_S : S = M
 
 let is_s x = match x with M_S.A _ -> true | _ -> false
 
-let a2 = M_S.A 20
-(* ERROR: Cannot create a value using a private constructor *)
+let a2 =
+  M_S.A 20 (* ERROR: Cannot create a value using a private constructor *)
 
 (* Extensions can be rebound *)
 
@@ -2261,8 +2261,7 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> .
-(* error *)
+  | _ -> . (* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind = [`Link | `Nonlink]
@@ -2393,8 +2392,10 @@ type _ wrapPoly =
   | WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
 
 let example6 : type a. a wrapPoly -> a -> int =
- fun w -> match w with WrapPoly ATag -> intA | WrapPoly _ -> intA
-(* This should not be allowed *)
+ fun w ->
+  match w with
+  | WrapPoly ATag -> intA
+  | WrapPoly _ -> intA (* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
@@ -2517,8 +2518,7 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> .
-(* error *)
+  | _ -> . (* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 
@@ -8595,8 +8595,7 @@ module OK = struct
 
   let f2 r =
     ignore (r : t) ;
-    r.x
-  (* non principal *)
+    r.x (* non principal *)
 
   let f3 (r : t) = match r with {x; y} -> y + y (* ok *)
 end
