@@ -438,7 +438,6 @@ end
 
 type foo += private B2 = M.B1
 type foo += B3 = M.B1 (* Error: rebind private extension *)
-
 type foo += C = Unknown (* Error: unbound extension *)
 
 (* Extensions can be rebound even if type is closed *)
@@ -530,9 +529,7 @@ let extension_id e = Obj.extension_id (Obj.extension_constructor e)
 let n1 = extension_name Foo
 let n2 = extension_name (Bar 1)
 let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
-
 let f = extension_id (Bar 2) = extension_id Foo (* false *)
-
 let is_foo x = extension_id Foo = extension_id x
 
 type foo += Foo
@@ -2762,7 +2759,6 @@ type _ t = I : int t
 let f (type a) (x : a t) =
   let module M = struct
     let (I : a t) = x (* fail because of toplevel let *)
-
     let x = (I : a t)
   end
   in
@@ -2779,7 +2775,6 @@ let bad (type a) =
       val e : (int, a) eq
     end = struct
       let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
-
       let e : (int, a) eq = Refl
     end
   end
@@ -4993,7 +4988,6 @@ let _ = f (module A) (* ok *)
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
 let _ = f (module A_annotated_alias) (* ok *)
-
 let _ = f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok *)
 
 module A_alias = A
@@ -5003,11 +4997,8 @@ module A_alias_expanded = struct
 end
 
 let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
-
 let _ = f (module A_alias_expanded) (* ok *)
-
 let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
-
 let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
@@ -8217,9 +8208,7 @@ end
 
 module type VALUE = sig
   type value (* a Lua value *)
-
   type state (* the state of a Lua interpreter *)
-
   type usert (* a user-defined value *)
 end
 
