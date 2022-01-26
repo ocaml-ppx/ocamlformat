@@ -38,18 +38,23 @@ let dedup_cmts fragment ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
+let normalize_comments dedup fmt comments =
+  let comments = dedup comments in
+  List.sort comments ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
+      Migrate_ast.Location.compare a b )
+  |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
+
+let normalize_parse_result ast_kind ast comments =
+  Format.asprintf "AST,%a,COMMENTS,[%a]" (Pprintast.ast ast_kind) ast
+    (normalize_comments (dedup_cmts ast_kind ast))
+    comments
+
 let normalize_code conf (m : Ast_mapper.mapper) txt =
   match Parse_with_comments.parse Parse.ast Structure conf ~source:txt with
   | {ast; comments; _} ->
-      let comments = dedup_cmts Structure ast comments in
-      let print_comments fmt (l : Cmt.t list) =
-        List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-            Migrate_ast.Location.compare a b )
-        |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
-      in
-      let ast = m.structure m ast in
-      Format.asprintf "AST,%a,COMMENTS,[%a]" Pprintast.structure ast
-        print_comments comments
+      normalize_parse_result Structure
+        (List.map ~f:(m.structure_item m) ast)
+        comments
   | exception _ -> txt
 
 let docstring (c : Conf.t) =
@@ -155,8 +160,6 @@ let make_mapper conf ~ignore_doc_comments =
 let ast fragment ~ignore_doc_comments c =
   map fragment (make_mapper c ~ignore_doc_comments)
 
-let ast = ast ~ignore_doc_comments:false
-
 let docstring conf =
   let mapper = make_mapper conf ~ignore_doc_comments:false in
   let normalize_code = normalize_code conf mapper in
@@ -170,6 +173,8 @@ let diff_docstrings c x y =
   Set.symmetric_diff (norm x) (norm y)
 
 let diff_cmts (conf : Conf.t) x y =
+  let mapper = make_mapper conf ~ignore_doc_comments:false in
+  let normalize_code = normalize_code conf mapper in
   let norm z =
     let norm_non_code {Cmt.txt; _} = Docstring.normalize_text txt in
     let f z =
@@ -182,15 +187,13 @@ let diff_cmts (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
-            match
-              Parse_with_comments.parse Parse.ast Structure conf ~source
-            with
-            | exception _ -> norm_non_code z
-            | {ast= s; _} ->
-                Format.asprintf "%a" Pprintast.structure
-                  (ast Structure conf s)
+            normalize_code source
           else norm_non_code z
     in
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)
+
+let equal fragment ~ignore_doc_comments c ast1 ast2 =
+  let map = ast fragment c ~ignore_doc_comments in
+  equal fragment (map ast1) (map ast2)
