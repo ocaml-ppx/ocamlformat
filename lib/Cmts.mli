@@ -49,7 +49,7 @@ val relocate_wrongfully_attached_cmts :
 val fmt_before :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Docstring.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -62,7 +62,7 @@ val fmt_before :
 val fmt_after :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Docstring.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> Location.t
@@ -73,7 +73,7 @@ val fmt_after :
 val fmt_within :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Docstring.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> Location.t
@@ -85,7 +85,7 @@ module Toplevel : sig
   val fmt_before :
        t
     -> Conf.t
-    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> fmt_code:(Conf.t -> Docstring.code_formatter)
     -> Location.t
     -> Fmt.t
   (** [fmt_before loc] formats the comments associated with [loc] that appear
@@ -94,7 +94,7 @@ module Toplevel : sig
   val fmt_after :
        t
     -> Conf.t
-    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> fmt_code:(Conf.t -> Docstring.code_formatter)
     -> Location.t
     -> Fmt.t
   (** [fmt_after loc] formats the comments associated with [loc] that appear
