@@ -602,15 +602,16 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
   let groups =
-    List.group cmts ~break:(break_comment_group t.source conf.margin)
+    List.group cmts
+      ~break:(break_comment_group t.source conf.fmt_opts.margin)
   in
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
          | [cmt] ->
-             fmt_cmt cmt ~wrap:conf.wrap_comments
-               ~ocp_indent_compat:conf.ocp_indent_compat
+             fmt_cmt cmt ~wrap:conf.fmt_opts.wrap_comments
+               ~ocp_indent_compat:conf.fmt_opts.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->

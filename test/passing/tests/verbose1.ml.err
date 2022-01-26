@@ -1,4 +1,6 @@
 profile=ocamlformat (file tests/.ocamlformat:1)
+margin-check=true (command line)
+debug=false (profile ocamlformat (file tests/.ocamlformat:1))
 quiet=false (profile ocamlformat (file tests/.ocamlformat:1))
 max-iters=2 (file tests/.ocamlformat:6)
 comment-check=true (profile ocamlformat (file tests/.ocamlformat:1))

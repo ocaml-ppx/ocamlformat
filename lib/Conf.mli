@@ -12,7 +12,7 @@
 (** Configuration options *)
 
 (** Formatting options *)
-type t =
+type fmt_opts =
   { align_cases: bool
   ; align_constructors_decl: bool
   ; align_variants_decl: bool
@@ -84,9 +84,17 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-val default_profile : t
+val default_profile : fmt_opts
 
 type file = Stdin | File of string
+
+(** Options changing the tool's behavior *)
+type opr_opts =
+  { debug: bool  (** Generate debugging output if true. *)
+  ; margin_check: bool
+        (** Check whether the formatted output exceeds the margin. *) }
+
+type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
 
@@ -107,13 +115,7 @@ type action =
   | Print_config of t  (** Print the configuration and exit. *)
   | Numeric of input * (int * int)
 
-(** Options changing the tool's behavior *)
-type opts =
-  { debug: bool  (** Generate debugging output if true. *)
-  ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *) }
-
-val action : unit -> (action * opts) Cmdliner.Term.result
+val action : unit -> action Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
 
 val update : ?quiet:bool -> t -> Extended_ast.attribute -> t

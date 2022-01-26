@@ -53,8 +53,7 @@ include Make (IO)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
-  let opts = Conf.{debug= false; margin_check= false} in
-  Translation_unit.parse_and_format fg ~input_name ~source conf opts
+  Translation_unit.parse_and_format fg ~input_name ~source conf
 
 let run_config conf c =
   let rec update conf = function
@@ -127,7 +126,11 @@ let rec rpc_main = function
       | `Handled v ->
           Init.output stdout (`Version vstr) ;
           Out_channel.flush stdout ;
-          rpc_main (Version_defined (v, Conf.default_profile))
+          rpc_main
+            (Version_defined
+               ( v
+               , { fmt_opts= Conf.default_profile
+                 ; opr_opts= {debug= false; margin_check= false} } ) )
       | `Propose_another v ->
           let vstr = Version.to_string v in
           Init.output stdout (`Version vstr) ;

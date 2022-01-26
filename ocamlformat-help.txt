@@ -599,7 +599,7 @@ OPTIONS
            is found.
 
        -g, --debug
-           Generate debugging output.
+           Generate debugging output. The flag is unset by default.
 
        --help[=FMT] (default=auto)
            Show this help in format FMT. The value FMT must be one of `auto',
@@ -619,7 +619,8 @@ OPTIONS
            Parse input as an interface.
 
        --margin-check
-           Emit a warning if the formatted output exceeds the margin.
+           Emit a warning if the formatted output exceeds the margin. The
+           flag is unset by default.
 
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
@@ -634,6 +635,12 @@ OPTIONS
 
        --no-comment-check
            Unset comment-check.
+
+       --no-debug
+           Unset debug.
+
+       --no-margin-check
+           Unset margin-check.
 
        --no-quiet
            Unset quiet.

@@ -11,7 +11,7 @@
 
 (** Configuration options *)
 
-type t =
+type fmt_opts =
   { align_cases: bool
   ; align_constructors_decl: bool
   ; align_variants_decl: bool
@@ -80,6 +80,10 @@ type t =
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
+type opr_opts = {debug: bool; margin_check: bool}
+
+type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+
 let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
@@ -122,7 +126,9 @@ module C = Config_option.Make (struct
   let profile_option_names = profile_option_names
 
   let warn (config : config) fmt =
-    Format.kasprintf (fun s -> if not config.quiet then warn "%s" s) fmt
+    Format.kasprintf
+      (fun s -> if not config.fmt_opts.quiet then warn "%s" s)
+      fmt
 end)
 
 let info =
@@ -195,29 +201,33 @@ let deprecated_orphan = C.deprecated ~since:V0_20_0 removed_by_v1_0
 module Formatting = struct
   let kind = C.Formatting
 
+  let update ~f c = {c with fmt_opts= f c.fmt_opts}
+
   let align_cases =
     let doc = "Align match/try cases vertically." in
     let names = ["align-cases"] in
     C.flag ~default:false ~names ~doc ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with align_cases= x})
-      (fun conf -> conf.align_cases)
+      (fun conf x -> update conf ~f:(fun f -> {f with align_cases= x}))
+      (fun conf -> conf.fmt_opts.align_cases)
 
   let align_constructors_decl =
     let doc = "Align type declarations vertically." in
     let names = ["align-constructors-decl"] in
     C.flag ~default:false ~names ~doc ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with align_constructors_decl= x})
-      (fun conf -> conf.align_constructors_decl)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with align_constructors_decl= x}) )
+      (fun conf -> conf.fmt_opts.align_constructors_decl)
 
   let align_variants_decl =
     let doc = "Align type variants declarations vertically." in
     let names = ["align-variants-decl"] in
     C.flag ~default:false ~names ~doc ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with align_variants_decl= x})
-      (fun conf -> conf.align_variants_decl)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with align_variants_decl= x}) )
+      (fun conf -> conf.fmt_opts.align_variants_decl)
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -233,8 +243,9 @@ module Formatting = struct
            assignment expression does not fit on a single line." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with assignment_operator= x})
-      (fun conf -> conf.assignment_operator)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with assignment_operator= x}) )
+      (fun conf -> conf.fmt_opts.assignment_operator)
 
   let break_before_in =
     let doc =
@@ -252,8 +263,8 @@ module Formatting = struct
            not fit on the previous line." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with break_before_in= x})
-      (fun conf -> conf.break_before_in)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_before_in= x}))
+      (fun conf -> conf.fmt_opts.break_before_in)
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -278,8 +289,8 @@ module Formatting = struct
           "$(b,all) forces all pattern matches to break across lines." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_cases= x})
-      (fun conf -> conf.break_cases)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_cases= x}))
+      (fun conf -> conf.fmt_opts.break_cases)
 
   let break_collection_expressions =
     let doc =
@@ -295,8 +306,9 @@ module Formatting = struct
            in a single line." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with break_collection_expressions= x})
-      (fun conf -> conf.break_collection_expressions)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with break_collection_expressions= x}) )
+      (fun conf -> conf.fmt_opts.break_collection_expressions)
 
   let break_fun_decl =
     let doc = "Style for function declarations and types." in
@@ -311,8 +323,8 @@ module Formatting = struct
            on their line if they fit." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_fun_decl= x})
-      (fun conf -> conf.break_fun_decl)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_fun_decl= x}))
+      (fun conf -> conf.fmt_opts.break_fun_decl)
 
   let break_fun_sig =
     let doc = "Style for function signatures." in
@@ -327,8 +339,8 @@ module Formatting = struct
            on their line if they fit." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_fun_sig= x})
-      (fun conf -> conf.break_fun_sig)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_fun_sig= x}))
+      (fun conf -> conf.fmt_opts.break_fun_sig)
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
@@ -342,8 +354,8 @@ module Formatting = struct
            not fit on a single line." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_infix= x})
-      (fun conf -> conf.break_infix)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_infix= x}))
+      (fun conf -> conf.fmt_opts.break_infix)
 
   let break_infix_before_func =
     let doc =
@@ -353,8 +365,9 @@ module Formatting = struct
     in
     let names = ["break-infix-before-func"] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with break_infix_before_func= x})
-      (fun conf -> conf.break_infix_before_func)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with break_infix_before_func= x}) )
+      (fun conf -> conf.fmt_opts.break_infix_before_func)
 
   let break_separators =
     let doc =
@@ -375,8 +388,8 @@ module Formatting = struct
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
                `dock-collection-brackets=false`." ]
-      (fun conf x -> {conf with break_separators= x})
-      (fun conf -> conf.break_separators)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_separators= x}))
+      (fun conf -> conf.fmt_opts.break_separators)
 
   let break_sequences =
     let doc =
@@ -384,8 +397,8 @@ module Formatting = struct
     in
     let names = ["break-sequences"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with break_sequences= x})
-      (fun conf -> conf.break_sequences)
+      (fun conf x -> update conf ~f:(fun f -> {f with break_sequences= x}))
+      (fun conf -> conf.fmt_opts.break_sequences)
 
   let break_string_literals =
     let doc = "Break string literals." in
@@ -407,8 +420,9 @@ module Formatting = struct
              "It has been replaced by the new default `auto` value, which \
               breaks lines at newlines and wraps string literals at the \
               margin." )
-      (fun conf x -> {conf with break_string_literals= x})
-      (fun conf -> conf.break_string_literals)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with break_string_literals= x}) )
+      (fun conf -> conf.fmt_opts.break_string_literals)
 
   let break_struct =
     let doc = "Break struct-end module items." in
@@ -421,8 +435,9 @@ module Formatting = struct
            margin." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
-      (fun conf -> if conf.break_struct then `Force else `Natural)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with break_struct= Poly.(x = `Force)}) )
+      (fun conf -> if conf.fmt_opts.break_struct then `Force else `Natural)
 
   let cases_exp_indent =
     let docv = "COLS" in
@@ -432,8 +447,8 @@ module Formatting = struct
     in
     let names = ["cases-exp-indent"] in
     C.any Arg.int ~names ~default:4 ~doc ~docv ~kind ~allow_inline:false
-      (fun conf x -> {conf with cases_exp_indent= x})
-      (fun conf -> conf.cases_exp_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with cases_exp_indent= x}))
+      (fun conf -> conf.fmt_opts.cases_exp_indent)
 
   let cases_matching_exp_indent =
     let doc =
@@ -450,8 +465,9 @@ module Formatting = struct
            case." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with cases_matching_exp_indent= x})
-      (fun conf -> conf.cases_matching_exp_indent)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with cases_matching_exp_indent= x}) )
+      (fun conf -> conf.fmt_opts.cases_matching_exp_indent)
 
   let disable =
     let doc =
@@ -460,8 +476,8 @@ module Formatting = struct
        \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
     in
     C.flag ~names:["disable"] ~default:false ~doc ~kind
-      (fun conf x -> {conf with disable= x})
-      (fun conf -> conf.disable)
+      (fun conf x -> update conf ~f:(fun f -> {f with disable= x}))
+      (fun conf -> conf.fmt_opts.disable)
 
   let disambiguate_non_breaking_match =
     let doc =
@@ -470,8 +486,10 @@ module Formatting = struct
     C.flag
       ~names:["disambiguate-non-breaking-match"]
       ~default:false ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with disambiguate_non_breaking_match= x})
-      (fun conf -> conf.disambiguate_non_breaking_match)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with disambiguate_non_breaking_match= x})
+        )
+      (fun conf -> conf.fmt_opts.disambiguate_non_breaking_match)
 
   let doc_comments =
     let doc = "Doc comments position." in
@@ -496,8 +514,8 @@ module Formatting = struct
               "This value has been renamed `after-when-possible` to take \
                into account the technical limitations of ocamlformat, the \
                behavior is unchanged." ]
-      (fun conf x -> {conf with doc_comments= x})
-      (fun conf -> conf.doc_comments)
+      (fun conf x -> update conf ~f:(fun f -> {f with doc_comments= x}))
+      (fun conf -> conf.fmt_opts.doc_comments)
 
   let doc_comments_padding =
     let docv = "PADDING" in
@@ -506,8 +524,9 @@ module Formatting = struct
     in
     let names = ["doc-comments-padding"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      (fun conf x -> {conf with doc_comments_padding= x})
-      (fun conf -> conf.doc_comments_padding)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with doc_comments_padding= x}) )
+      (fun conf -> conf.fmt_opts.doc_comments_padding)
 
   let doc_comments_tag_only =
     let doc = "Position of doc comments with only tags." in
@@ -519,8 +538,9 @@ module Formatting = struct
           "$(b,fit) puts doc comments on the same line." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with doc_comments_tag_only= x})
-      (fun conf -> conf.doc_comments_tag_only)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with doc_comments_tag_only= x}) )
+      (fun conf -> conf.fmt_opts.doc_comments_tag_only)
 
   let ( (* doc_comments_val *) ) =
     let names = ["doc-comments-val"] in
@@ -548,8 +568,9 @@ module Formatting = struct
     in
     let names = ["dock-collection-brackets"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with dock_collection_brackets= x})
-      (fun conf -> conf.dock_collection_brackets)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with dock_collection_brackets= x}) )
+      (fun conf -> conf.fmt_opts.dock_collection_brackets)
 
   let concrete_syntax_preserved_msg =
     "Concrete syntax will now always be preserved."
@@ -575,8 +596,8 @@ module Formatting = struct
            (parentheses or $(i,begin)/$(i,end))." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with exp_grouping= x})
-      (fun conf -> conf.exp_grouping)
+      (fun conf x -> update conf ~f:(fun f -> {f with exp_grouping= x}))
+      (fun conf -> conf.fmt_opts.exp_grouping)
 
   let extension_indent =
     let docv = "COLS" in
@@ -586,8 +607,8 @@ module Formatting = struct
     let names = ["extension-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with extension_indent= x})
-      (fun conf -> conf.extension_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with extension_indent= x}))
+      (fun conf -> conf.fmt_opts.extension_indent)
 
   let ( (* extension_sugar *) ) =
     let names = ["extension-sugar"] in
@@ -610,8 +631,8 @@ module Formatting = struct
            for instantiations." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with field_space= x})
-      (fun conf -> conf.field_space)
+      (fun conf x -> update conf ~f:(fun f -> {f with field_space= x}))
+      (fun conf -> conf.fmt_opts.field_space)
 
   let function_indent =
     let docv = "COLS" in
@@ -619,8 +640,8 @@ module Formatting = struct
     let names = ["function-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with function_indent= x})
-      (fun conf -> conf.function_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with function_indent= x}))
+      (fun conf -> conf.fmt_opts.function_indent)
 
   let function_indent_nested =
     let doc =
@@ -638,8 +659,9 @@ module Formatting = struct
           "$(b,auto) applies $(b,function-indent) when seen fit." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with function_indent_nested= x})
-      (fun conf -> conf.function_indent_nested)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with function_indent_nested= x}) )
+      (fun conf -> conf.fmt_opts.function_indent_nested)
 
   let if_then_else =
     let doc = "If-then-else formatting." in
@@ -660,8 +682,8 @@ module Formatting = struct
            match the K&R style." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with if_then_else= x})
-      (fun conf -> conf.if_then_else)
+      (fun conf x -> update conf ~f:(fun f -> {f with if_then_else= x}))
+      (fun conf -> conf.fmt_opts.if_then_else)
 
   let indent_after_in =
     let docv = "COLS" in
@@ -672,8 +694,8 @@ module Formatting = struct
     let names = ["indent-after-in"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with indent_after_in= x})
-      (fun conf -> conf.indent_after_in)
+      (fun conf x -> update conf ~f:(fun f -> {f with indent_after_in= x}))
+      (fun conf -> conf.fmt_opts.indent_after_in)
 
   let indicate_multiline_delimiters =
     let doc =
@@ -693,8 +715,10 @@ module Formatting = struct
            delimiter is on its own line." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with indicate_multiline_delimiters= x})
-      (fun conf -> conf.indicate_multiline_delimiters)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with indicate_multiline_delimiters= x})
+        )
+      (fun conf -> conf.fmt_opts.indicate_multiline_delimiters)
 
   let indicate_nested_or_patterns =
     let doc =
@@ -713,8 +737,9 @@ module Formatting = struct
            than \"| \"." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with indicate_nested_or_patterns= x})
-      (fun conf -> conf.indicate_nested_or_patterns)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with indicate_nested_or_patterns= x}) )
+      (fun conf -> conf.fmt_opts.indicate_nested_or_patterns)
 
   let infix_precedence =
     let doc =
@@ -731,15 +756,16 @@ module Formatting = struct
            precedences of infix operators." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with infix_precedence= x})
-      (fun conf -> conf.infix_precedence)
+      (fun conf x -> update conf ~f:(fun f -> {f with infix_precedence= x}))
+      (fun conf -> conf.fmt_opts.infix_precedence)
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
     let names = ["leading-nested-match-parens"] in
     C.flag ~default:false ~names ~doc ~kind ~allow_inline:false
-      (fun conf x -> {conf with leading_nested_match_parens= x})
-      (fun conf -> conf.leading_nested_match_parens)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with leading_nested_match_parens= x}) )
+      (fun conf -> conf.fmt_opts.leading_nested_match_parens)
 
   let let_and =
     let doc = "Style of let_and." in
@@ -752,8 +778,8 @@ module Formatting = struct
           "$(b,sparse) will always break between them." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with let_and= x})
-      (fun conf -> conf.let_and)
+      (fun conf x -> update conf ~f:(fun f -> {f with let_and= x}))
+      (fun conf -> conf.fmt_opts.let_and)
 
   let let_binding_indent =
     let docv = "COLS" in
@@ -764,8 +790,8 @@ module Formatting = struct
     let names = ["let-binding-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with let_binding_indent= x})
-      (fun conf -> conf.let_binding_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with let_binding_indent= x}))
+      (fun conf -> conf.fmt_opts.let_binding_indent)
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
@@ -782,8 +808,9 @@ module Formatting = struct
            between a multi-line module-level let binding and the next." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with let_binding_spacing= x})
-      (fun conf -> conf.let_binding_spacing)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with let_binding_spacing= x}) )
+      (fun conf -> conf.fmt_opts.let_binding_spacing)
 
   let let_module =
     let doc = "Module binding formatting." in
@@ -798,8 +825,8 @@ module Formatting = struct
            line." ]
     in
     C.choice ~names:["let-module"] ~all ~doc ~kind
-      (fun conf x -> {conf with let_module= x})
-      (fun conf -> conf.let_module)
+      (fun conf x -> update conf ~f:(fun f -> {f with let_module= x}))
+      (fun conf -> conf.fmt_opts.let_module)
 
   let ( (* let_open *) ) =
     let names = ["let-open"] in
@@ -814,16 +841,16 @@ module Formatting = struct
           "$(b,crlf) uses Windows line endings." ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~kind
-      (fun conf x -> {conf with line_endings= x})
-      (fun conf -> conf.line_endings)
+      (fun conf x -> update conf ~f:(fun f -> {f with line_endings= x}))
+      (fun conf -> conf.fmt_opts.line_endings)
 
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
     C.any Arg.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~kind
       ~allow_inline:false
-      (fun conf x -> {conf with margin= x})
-      (fun conf -> conf.margin)
+      (fun conf x -> update conf ~f:(fun f -> {f with margin= x}))
+      (fun conf -> conf.fmt_opts.margin)
 
   let match_indent =
     let docv = "COLS" in
@@ -831,8 +858,8 @@ module Formatting = struct
     let names = ["match-indent"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with match_indent= x})
-      (fun conf -> conf.match_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with match_indent= x}))
+      (fun conf -> conf.fmt_opts.match_indent)
 
   let match_indent_nested =
     let doc =
@@ -850,8 +877,9 @@ module Formatting = struct
           "$(b,auto) applies $(b,match-indent) when seen fit." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with match_indent_nested= x})
-      (fun conf -> conf.match_indent_nested)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with match_indent_nested= x}) )
+      (fun conf -> conf.fmt_opts.match_indent_nested)
 
   let default_max_indent =
     (* Creating a fresh formatter in case the value of max-indent has been
@@ -869,8 +897,8 @@ module Formatting = struct
       Arg.(some ~none:default_max_indent int)
       ~names:["max-indent"] ~doc ~docv ~kind ~default:None
       ~allow_inline:false
-      (fun conf x -> {conf with max_indent= x})
-      (fun conf -> conf.max_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with max_indent= x}))
+      (fun conf -> conf.fmt_opts.max_indent)
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
@@ -886,8 +914,9 @@ module Formatting = struct
            similar sorts unless there is an open line in the input." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with module_item_spacing= x})
-      (fun conf -> conf.module_item_spacing)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with module_item_spacing= x}) )
+      (fun conf -> conf.fmt_opts.module_item_spacing)
 
   let nested_match =
     let doc =
@@ -904,8 +933,8 @@ module Formatting = struct
            the encompassing pattern-matching." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with nested_match= x})
-      (fun conf -> conf.nested_match)
+      (fun conf x -> update conf ~f:(fun f -> {f with nested_match= x}))
+      (fun conf -> conf.fmt_opts.nested_match)
 
   let ocaml_version =
     let docv = "V" in
@@ -914,8 +943,8 @@ module Formatting = struct
     let default_doc = "the version of OCaml used to build OCamlFormat" in
     C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
       ~doc ~docv ~kind
-      (fun conf x -> {conf with ocaml_version= x})
-      (fun conf -> conf.ocaml_version)
+      (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
+      (fun conf -> conf.fmt_opts.ocaml_version)
 
   let ocp_indent_compat =
     let doc =
@@ -924,8 +953,8 @@ module Formatting = struct
     in
     let names = ["ocp-indent-compat"] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with ocp_indent_compat= x})
-      (fun conf -> conf.ocp_indent_compat)
+      (fun conf x -> update conf ~f:(fun f -> {f with ocp_indent_compat= x}))
+      (fun conf -> conf.fmt_opts.ocp_indent_compat)
 
   let parens_ite =
     let doc =
@@ -934,8 +963,8 @@ module Formatting = struct
     in
     let names = ["parens-ite"] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with parens_ite= x})
-      (fun conf -> conf.parens_ite)
+      (fun conf x -> update conf ~f:(fun f -> {f with parens_ite= x}))
+      (fun conf -> conf.fmt_opts.parens_ite)
 
   let parens_tuple =
     let doc = "Parens tuple expressions." in
@@ -948,8 +977,8 @@ module Formatting = struct
            single-line tuples." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with parens_tuple= x})
-      (fun conf -> conf.parens_tuple)
+      (fun conf x -> update conf ~f:(fun f -> {f with parens_tuple= x}))
+      (fun conf -> conf.fmt_opts.parens_tuple)
 
   let parens_tuple_patterns =
     let doc = "Parens tuple patterns." in
@@ -962,22 +991,24 @@ module Formatting = struct
           "$(b,always) always uses parentheses around tuples patterns." ]
     in
     C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with parens_tuple_patterns= x})
-      (fun conf -> conf.parens_tuple_patterns)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with parens_tuple_patterns= x}) )
+      (fun conf -> conf.fmt_opts.parens_tuple_patterns)
 
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
     let names = ["parse-docstrings"] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with parse_docstrings= x})
-      (fun conf -> conf.parse_docstrings)
+      (fun conf x -> update conf ~f:(fun f -> {f with parse_docstrings= x}))
+      (fun conf -> conf.fmt_opts.parse_docstrings)
 
   let parse_toplevel_phrases =
     let doc = "Parse and format toplevel phrases and their output." in
     let names = ["parse-toplevel-phrases"] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with parse_toplevel_phrases= x})
-      (fun conf -> conf.parse_toplevel_phrases)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with parse_toplevel_phrases= x}) )
+      (fun conf -> conf.fmt_opts.parse_toplevel_phrases)
 
   let sequence_blank_line =
     let doc = "Blank line between expressions of a sequence." in
@@ -991,8 +1022,9 @@ module Formatting = struct
            a sequence." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with sequence_blank_line= x})
-      (fun conf -> conf.sequence_blank_line)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with sequence_blank_line= x}) )
+      (fun conf -> conf.fmt_opts.sequence_blank_line)
 
   let sequence_style =
     let doc = "Style of sequence." in
@@ -1006,8 +1038,8 @@ module Formatting = struct
           "$(b,before) breaks the sequence before semicolons." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with sequence_style= x})
-      (fun conf -> conf.sequence_style)
+      (fun conf x -> update conf ~f:(fun f -> {f with sequence_style= x}))
+      (fun conf -> conf.fmt_opts.sequence_style)
 
   let single_case =
     let doc =
@@ -1021,36 +1053,39 @@ module Formatting = struct
           "$(b,sparse) will always break the line before a single case." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with single_case= x})
-      (fun conf -> conf.single_case)
+      (fun conf x -> update conf ~f:(fun f -> {f with single_case= x}))
+      (fun conf -> conf.fmt_opts.single_case)
 
   let space_around_arrays =
     let doc = "Add a space inside the delimiters of arrays." in
     let names = ["space-around-arrays"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_arrays= x})
-      (fun conf -> conf.space_around_arrays)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with space_around_arrays= x}) )
+      (fun conf -> conf.fmt_opts.space_around_arrays)
 
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
     let names = ["space-around-lists"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_lists= x})
-      (fun conf -> conf.space_around_lists)
+      (fun conf x -> update conf ~f:(fun f -> {f with space_around_lists= x}))
+      (fun conf -> conf.fmt_opts.space_around_lists)
 
   let space_around_records =
     let doc = "Add a space inside the delimiters of records." in
     let names = ["space-around-records"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_records= x})
-      (fun conf -> conf.space_around_records)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with space_around_records= x}) )
+      (fun conf -> conf.fmt_opts.space_around_records)
 
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
     let names = ["space-around-variants"] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_variants= x})
-      (fun conf -> conf.space_around_variants)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with space_around_variants= x}) )
+      (fun conf -> conf.fmt_opts.space_around_variants)
 
   let stritem_extension_indent =
     let docv = "COLS" in
@@ -1061,8 +1096,9 @@ module Formatting = struct
     let names = ["stritem-extension-indent"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with stritem_extension_indent= x})
-      (fun conf -> conf.stritem_extension_indent)
+      (fun conf x ->
+        update conf ~f:(fun f -> {f with stritem_extension_indent= x}) )
+      (fun conf -> conf.fmt_opts.stritem_extension_indent)
 
   let type_decl =
     let doc = "Style of type declaration." in
@@ -1076,8 +1112,8 @@ module Formatting = struct
            fields." ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with type_decl= x})
-      (fun conf -> conf.type_decl)
+      (fun conf x -> update conf ~f:(fun f -> {f with type_decl= x}))
+      (fun conf -> conf.fmt_opts.type_decl)
 
   let type_decl_indent =
     let docv = "COLS" in
@@ -1088,8 +1124,8 @@ module Formatting = struct
     let names = ["type-decl-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
       ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> {conf with type_decl_indent= x})
-      (fun conf -> conf.type_decl_indent)
+      (fun conf x -> update conf ~f:(fun f -> {f with type_decl_indent= x}))
+      (fun conf -> conf.fmt_opts.type_decl_indent)
 
   let wrap_comments =
     let doc =
@@ -1101,20 +1137,25 @@ module Formatting = struct
        aligned are not wrapped either."
     in
     C.flag ~default:false ~names:["wrap-comments"] ~doc ~kind
-      (fun conf x -> {conf with wrap_comments= x})
-      (fun conf -> conf.wrap_comments)
+      (fun conf x -> update conf ~f:(fun f -> {f with wrap_comments= x}))
+      (fun conf -> conf.fmt_opts.wrap_comments)
 
   let wrap_fun_args =
     let default = true in
     let doc = "Style for function call." in
     let names = ["wrap-fun-args"] in
     C.flag ~default ~names ~doc ~kind
-      (fun conf wrap_fun_args -> {conf with wrap_fun_args})
-      (fun conf -> conf.wrap_fun_args)
+      (fun conf wrap_fun_args ->
+        update conf ~f:(fun f -> {f with wrap_fun_args}) )
+      (fun conf -> conf.fmt_opts.wrap_fun_args)
 end
 
 (* Flags that can be modified in the config file that don't affect
    formatting *)
+
+module Operational = struct
+  let update ~f c = {c with opr_opts= f c.opr_opts}
+end
 
 let kind = C.Operational
 
@@ -1127,8 +1168,9 @@ let comment_check =
      to turn off. May be set in $(b,.ocamlformat)."
   in
   C.flag ~default ~names:["comment-check"] ~doc ~kind
-    (fun conf x -> {conf with comment_check= x})
-    (fun conf -> conf.comment_check)
+    (fun conf x ->
+      Formatting.update conf ~f:(fun f -> {f with comment_check= x}) )
+    (fun conf -> conf.fmt_opts.comment_check)
 
 let disable_conf_attrs =
   let doc = "Disable configuration in attributes." in
@@ -1177,14 +1219,14 @@ let max_iters =
      iterations. May be set in $(b,.ocamlformat)."
   in
   C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
-    (fun conf x -> {conf with max_iters= x})
-    (fun conf -> conf.max_iters)
+    (fun conf x -> Formatting.update conf ~f:(fun f -> {f with max_iters= x}))
+    (fun conf -> conf.fmt_opts.max_iters)
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
   C.flag ~default:false ~names:["q"; "quiet"] ~doc ~kind
-    (fun conf x -> {conf with quiet= x})
-    (fun conf -> conf.quiet)
+    (fun conf x -> Formatting.update conf ~f:(fun f -> {f with quiet= x}))
+    (fun conf -> conf.fmt_opts.quiet)
 
 (* Other Flags *)
 
@@ -1209,10 +1251,12 @@ let config =
     Arg.(
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
-let debug =
+let _debug =
   let doc = "Generate debugging output." in
   let default = false in
-  mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~docs)
+  C.flag ~default ~names:["g"; "debug"] ~doc ~kind
+    (fun conf x -> Operational.update conf ~f:(fun f -> {f with debug= x}))
+    (fun conf -> conf.opr_opts.debug)
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
@@ -1244,6 +1288,13 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
+let _margin_check =
+  let doc = "Emit a warning if the formatted output exceeds the margin." in
+  C.flag ~default:false ~names:["margin-check"] ~doc ~kind
+    (fun conf x ->
+      Operational.update conf ~f:(fun f -> {f with margin_check= x}) )
+    (fun conf -> conf.opr_opts.margin_check)
+
 let kind : Syntax.t option ref =
   let doc = "Parse input as an implementation." in
   let impl = (Some Syntax.Use_file, Arg.info ["impl"] ~doc ~docs) in
@@ -1257,10 +1308,6 @@ let kind : Syntax.t option ref =
   in
   let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file; repl_file])
-
-let margin_check =
-  let doc = "Emit a warning if the formatted output exceeds the margin." in
-  mk ~default:false Arg.(value & flag & info ["margin-check"] ~doc ~docs)
 
 let name =
   let docv = "NAME" in
@@ -1661,7 +1708,7 @@ let janestreet_profile =
 
 let selected_profile_ref = ref (Some default_profile)
 
-let (_profile : t option C.t) =
+let (_profile : fmt_opts option C.t) =
   let doc =
     "Select a preset profile which sets $(i,all) options, overriding lower \
      priority configuration."
@@ -1704,9 +1751,10 @@ let (_profile : t option C.t) =
   C.choice ~names ~all ~doc ~kind:C.Formatting
     (fun conf p ->
       selected_profile_ref := p ;
-      let new_conf = Option.value p ~default:conf in
+      let new_fmt_opts = Option.value p ~default:conf.fmt_opts in
       (* The quiet option is cummulative *)
-      {new_conf with quiet= new_conf.quiet || conf.quiet} )
+      let quiet = new_fmt_opts.quiet || conf.fmt_opts.quiet in
+      {conf with fmt_opts= {new_fmt_opts with quiet}} )
     (fun _ -> !selected_profile_ref)
 
 let ocp_indent_normal_profile =
@@ -1908,7 +1956,10 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ~disable_conf_files:!disable_conf_files ~root ~file:file_abs
   in
   let conf =
-    let init = default_profile in
+    let init =
+      { fmt_opts= default_profile
+      ; opr_opts= {debug= false; margin_check= false} }
+    in
     List.fold fs.configuration_files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
@@ -1931,18 +1982,20 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
        why ) ;
-    {conf with disable= true} )
+    Formatting.update conf ~f:(fun f -> {f with disable= true}) )
   else
     let listings =
-      if conf.disable then fs.enable_files else fs.ignore_files
+      if conf.fmt_opts.disable then fs.enable_files else fs.ignore_files
     in
     match is_in_listing_file ~listings ~filename:file_abs with
     | Some (file, lno) ->
-        let status = if conf.disable then "enabled" else "ignored" in
-        if !debug then
+        let status =
+          if conf.fmt_opts.disable then "enabled" else "ignored"
+        in
+        if conf.opr_opts.debug then
           Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
             Fpath.pp file lno ;
-        {conf with disable= not conf.disable}
+        Formatting.update conf ~f:(fun f -> {f with disable= not f.disable})
     | None -> conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
@@ -1950,7 +2003,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     collect_warnings (fun () ->
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
   in
-  if not conf.quiet then warn_now () ;
+  if not conf.fmt_opts.quiet then warn_now () ;
   conf
 
 let kind_of_ext fname =
@@ -2073,7 +2126,10 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check [make_file ?name kind f])
   | `Check, `Several_files files ->
       let f (kind, f) =
-        make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
+        make_file
+          ~with_conf:(fun c ->
+            Formatting.update c ~f:(fun f -> {f with max_iters= 1}) )
+          kind f
       in
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
@@ -2081,8 +2137,6 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Numeric (make_stdin ?name kind, range))
   | `Numeric range, `Single_file (kind, name, f) ->
       Ok (Numeric (make_file ?name kind f, range))
-
-type opts = {debug: bool; margin_check: bool}
 
 let validate () =
   let root =
@@ -2105,9 +2159,7 @@ let validate () =
   with
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
-  | Ok action ->
-      let opts = {debug= !debug; margin_check= !margin_check} in
-      `Ok (action, opts)
+  | Ok action -> `Ok action
 
 let action () = parse info validate
 
@@ -2141,7 +2193,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   | Ok conf -> conf
   | Error error ->
       let w = Warnings.Attribute_payload (txt, error) in
-      if (not c.quiet) && not quiet then Warning.print_warning loc w ;
+      if (not c.fmt_opts.quiet) && not quiet then Warning.print_warning loc w ;
       c
 
 let update_value config ~name ~value =

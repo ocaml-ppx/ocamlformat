@@ -54,7 +54,7 @@ let fresh_lexbuf source =
 
 let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
   let warnings =
-    if conf.quiet then List.map ~f:W.disable W.in_lexer else []
+    if conf.fmt_opts.quiet then List.map ~f:W.disable W.in_lexer else []
   in
   let warnings = if disable_w50 then warnings else W.enable 50 :: warnings in
   ignore @@ Warnings.parse_options false (W.to_string warnings) ;
@@ -63,10 +63,12 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
     let lexbuf, hash_bang = fresh_lexbuf source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
-        if Warning.is_unexpected_docstring warn && conf.comment_check then (
+        if
+          Warning.is_unexpected_docstring warn && conf.fmt_opts.comment_check
+        then (
           w50 := (loc, warn) :: !w50 ;
           false )
-        else not conf.quiet )
+        else not conf.fmt_opts.quiet )
       ~f:(fun () ->
         let ast = parse fragment lexbuf in
         Warnings.check_fatal () ;
@@ -94,8 +96,8 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
 let is_repl_block x =
   String.length x >= 2 && Char.equal x.[0] '#' && Char.is_whitespace x.[1]
 
-let parse_toplevel ?disable_w50 conf ~source =
+let parse_toplevel ?disable_w50 (conf : Conf.t) ~source =
   let open Extended_ast in
-  if is_repl_block source && conf.Conf.parse_toplevel_phrases then
+  if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases then
     Either.Second (parse ?disable_w50 Parse.ast Repl_file conf ~source)
   else First (parse ?disable_w50 Parse.ast Use_file conf ~source)

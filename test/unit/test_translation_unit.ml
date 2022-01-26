@@ -4,6 +4,10 @@ open Ocamlformat_lib
 let err =
   Alcotest.testable Translation_unit.Error.print Translation_unit.Error.equal
 
+let conf =
+  Conf.
+    {fmt_opts= default_profile; opr_opts= {debug= false; margin_check= false}}
+
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =
     Stdlib.Format.sprintf "parse_and_format %s: %s" kind_name test_name
@@ -13,8 +17,7 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   , fun () ->
       let actual =
         Translation_unit.parse_and_format fg ~input_name:"<test>"
-          ~source:input Conf.default_profile
-          Conf.{debug= false; margin_check= false}
+          ~source:input conf
         |> Result.map_error ~f:(fun e ->
                Translation_unit.Error.print Stdlib.Format.str_formatter e ;
                Stdlib.Format.flush_str_formatter () )
@@ -137,10 +140,9 @@ let test_numeric =
     ( test_name
     , `Quick
     , fun () ->
-        let opts = Conf.{debug= false; margin_check= false} in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
-            Conf.default_profile opts
+            conf
           |> Result.map ~f:(reindent ~source ~range)
         in
         Alcotest.check Alcotest.(result string err) test_name expected got )
@@ -342,10 +344,9 @@ let test_numeric_file =
     ( test_name
     , `Quick
     , fun () ->
-        let opts = Conf.{debug= false; margin_check= false} in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
-            Conf.default_profile opts
+            conf
         in
         Alcotest.check
           Alcotest.(result (list int) err)
