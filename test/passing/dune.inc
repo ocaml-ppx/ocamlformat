@@ -113,7 +113,7 @@
  (action
   (with-stdout-to args_grouped-conventional.ml.stdout
    (with-stderr-to args_grouped-conventional.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 %{dep:tests/args_grouped.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 --ocaml-version=4.13.0 %{dep:tests/args_grouped.ml})))))
 
 (rule
  (alias runtest)
@@ -131,7 +131,7 @@
  (action
   (with-stdout-to args_grouped.ml.stdout
    (with-stderr-to args_grouped.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --margin=100 %{dep:tests/args_grouped.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --margin=100 --ocaml-version=4.13.0 %{dep:tests/args_grouped.ml})))))
 
 (rule
  (alias runtest)
@@ -2888,7 +2888,7 @@
  (action
   (with-stdout-to js_sig.mli.stdout
    (with-stderr-to js_sig.mli.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet %{dep:tests/js_sig.mli})))))
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --ocaml-version=4.13.0 %{dep:tests/js_sig.mli})))))
 
 (rule
  (alias runtest)
@@ -2906,7 +2906,7 @@
  (action
   (with-stdout-to js_source.ml.stdout
    (with-stderr-to js_source.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=3 --profile=janestreet %{dep:tests/js_source.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 --profile=janestreet --ocaml-version=4.13.0 %{dep:tests/js_source.ml})))))
 
 (rule
  (alias runtest)
@@ -4036,7 +4036,7 @@
  (action
   (with-stdout-to polytypes-default.ml.stdout
    (with-stderr-to polytypes-default.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=default %{dep:tests/polytypes.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=default --ocaml-version=4.13.0 %{dep:tests/polytypes.ml})))))
 
 (rule
  (alias runtest)
@@ -4054,7 +4054,7 @@
  (action
   (with-stdout-to polytypes-janestreet.ml.stdout
    (with-stderr-to polytypes-janestreet.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet %{dep:tests/polytypes.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --ocaml-version=4.13.0 %{dep:tests/polytypes.ml})))))
 
 (rule
  (alias runtest)
@@ -4165,7 +4165,7 @@
  (action
   (with-stdout-to profiles.ml.stdout
    (with-stderr-to profiles.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --config=margin=20 --profile=janestreet --module-item-spacing=sparse %{dep:tests/profiles.ml})))))
+     (run %{bin:ocamlformat} --margin-check --config=margin=20 --profile=janestreet --module-item-spacing=sparse --ocaml-version=4.13.0 %{dep:tests/profiles.ml})))))
 
 (rule
  (alias runtest)
@@ -4183,7 +4183,7 @@
  (action
   (with-stdout-to profiles2.ml.stdout
    (with-stderr-to profiles2.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet %{dep:tests/profiles2.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --ocaml-version=4.13.0 %{dep:tests/profiles2.ml})))))
 
 (rule
  (alias runtest)
@@ -5014,7 +5014,7 @@
  (action
   (with-stdout-to wrap_comments.ml.stdout
    (with-stderr-to wrap_comments.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat %{dep:tests/wrap_comments.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --ocaml-version=4.13.0 %{dep:tests/wrap_comments.ml})))))
 
 (rule
  (alias runtest)

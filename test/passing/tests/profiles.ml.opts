@@ -1,3 +1,4 @@
 --config=margin=20
 --profile=janestreet
 --module-item-spacing=sparse
+--ocaml-version=4.13.0
