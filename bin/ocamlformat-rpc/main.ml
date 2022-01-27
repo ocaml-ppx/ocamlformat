@@ -131,7 +131,8 @@ let rec rpc_main = function
                ( v
                , { fmt_opts= Conf.default_profile
                  ; opr_opts=
-                     { debug= false
+                     { comment_check= false
+                     ; debug= false
                      ; margin_check= false
                      ; ocaml_version= Ocaml_version.sys_version } } ) )
       | `Propose_another v ->

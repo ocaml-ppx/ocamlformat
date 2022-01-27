@@ -29,7 +29,6 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
-  ; comment_check: bool
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
@@ -80,7 +79,10 @@ type fmt_opts =
   ; wrap_fun_args: bool }
 
 type opr_opts =
-  {debug: bool; margin_check: bool; ocaml_version: Ocaml_version.t}
+  { comment_check: bool
+  ; debug: bool
+  ; margin_check: bool
+  ; ocaml_version: Ocaml_version.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -1150,6 +1152,16 @@ let docs = C.section_name kind `Valid
 module Operational = struct
   let update ~f c = {c with opr_opts= f c.opr_opts}
 
+  let comment_check =
+    let default = true in
+    let doc =
+      "Control whether to check comments and documentation comments. Unsafe \
+       to turn off. May be set in $(b,.ocamlformat)."
+    in
+    C.flag ~default ~names:["comment-check"] ~doc ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with comment_check= x}))
+      (fun conf -> conf.opr_opts.comment_check)
+
   let ocaml_version =
     let docv = "V" in
     let doc = "Version of OCaml syntax of the output." in
@@ -1160,17 +1172,6 @@ module Operational = struct
       (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
       (fun conf -> conf.opr_opts.ocaml_version)
 end
-
-let comment_check =
-  let default = true in
-  let doc =
-    "Control whether to check comments and documentation comments. Unsafe \
-     to turn off. May be set in $(b,.ocamlformat)."
-  in
-  C.flag ~default ~names:["comment-check"] ~doc ~kind
-    (fun conf x ->
-      Formatting.update conf ~f:(fun f -> {f with comment_check= x}) )
-    (fun conf -> conf.fmt_opts.comment_check)
 
 let disable_conf_attrs =
   let doc = "Disable configuration in attributes." in
@@ -1454,7 +1455,6 @@ let ocamlformat_profile =
   ; break_struct= true
   ; cases_exp_indent= 4
   ; cases_matching_exp_indent= `Compact
-  ; comment_check= true
   ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before_except_val
@@ -1523,7 +1523,6 @@ let conventional_profile =
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
-  ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; disambiguate_non_breaking_match=
       C.default Formatting.disambiguate_non_breaking_match
@@ -1653,7 +1652,6 @@ let janestreet_profile =
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal
-  ; comment_check= true
   ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
@@ -1956,7 +1954,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     let init =
       { fmt_opts= default_profile
       ; opr_opts=
-          { debug= C.default _debug
+          { comment_check= C.default Operational.comment_check
+          ; debug= C.default _debug
           ; margin_check= C.default _margin_check
           ; ocaml_version= C.default Operational.ocaml_version } }
     in

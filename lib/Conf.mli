@@ -31,7 +31,6 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
-  ; comment_check: bool
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
@@ -89,7 +88,8 @@ type file = Stdin | File of string
 
 (** Options changing the tool's behavior *)
 type opr_opts =
-  { debug: bool  (** Generate debugging output if true. *)
+  { comment_check: bool
+  ; debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
   ; ocaml_version: Ocaml_version.t
