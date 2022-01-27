@@ -1152,6 +1152,13 @@ module Operational = struct
       (fun conf x -> update conf ~f:(fun f -> {f with comment_check= x}))
       (fun conf -> conf.opr_opts.comment_check)
 
+  let debug =
+    let doc = "Generate debugging output." in
+    let default = false in
+    C.flag ~default ~names:["g"; "debug"] ~doc ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with debug= x}))
+      (fun conf -> conf.opr_opts.debug)
+
   let disable =
     let doc =
       "Disable ocamlformat. This is used in attributes to locally disable \
@@ -1251,13 +1258,6 @@ let config =
   mk ~default
     Arg.(
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
-
-let debug =
-  let doc = "Generate debugging output." in
-  let default = false in
-  C.flag ~default ~names:["g"; "debug"] ~doc ~kind
-    (fun conf x -> Operational.update conf ~f:(fun f -> {f with debug= x}))
-    (fun conf -> conf.opr_opts.debug)
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
@@ -1944,7 +1944,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       { fmt_opts= default_profile
       ; opr_opts=
           { comment_check= C.default Operational.comment_check
-          ; debug= C.default debug
+          ; debug= C.default Operational.debug
           ; disable= C.default Operational.disable
           ; margin_check= C.default margin_check
           ; max_iters= C.default Operational.max_iters
