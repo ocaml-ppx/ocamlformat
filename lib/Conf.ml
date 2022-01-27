@@ -1169,6 +1169,12 @@ module Operational = struct
       (fun conf x -> update conf ~f:(fun f -> {f with disable= x}))
       (fun conf -> conf.opr_opts.disable)
 
+  let margin_check =
+    let doc = "Emit a warning if the formatted output exceeds the margin." in
+    C.flag ~default:false ~names:["margin-check"] ~doc ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with margin_check= x}))
+      (fun conf -> conf.opr_opts.margin_check)
+
   let max_iters =
     let docv = "N" in
     let doc =
@@ -1288,13 +1294,6 @@ let inputs =
   let default = [] in
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
-
-let margin_check =
-  let doc = "Emit a warning if the formatted output exceeds the margin." in
-  C.flag ~default:false ~names:["margin-check"] ~doc ~kind
-    (fun conf x ->
-      Operational.update conf ~f:(fun f -> {f with margin_check= x}) )
-    (fun conf -> conf.opr_opts.margin_check)
 
 let kind : Syntax.t option ref =
   let doc = "Parse input as an implementation." in
@@ -1946,7 +1945,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
           { comment_check= C.default Operational.comment_check
           ; debug= C.default Operational.debug
           ; disable= C.default Operational.disable
-          ; margin_check= C.default margin_check
+          ; margin_check= C.default Operational.margin_check
           ; max_iters= C.default Operational.max_iters
           ; ocaml_version= C.default Operational.ocaml_version
           ; quiet= C.default Operational.quiet } }
