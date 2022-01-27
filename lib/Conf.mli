@@ -63,7 +63,6 @@ type fmt_opts =
             [max_iters] iterations. *)
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -92,7 +91,9 @@ type file = Stdin | File of string
 type opr_opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *) }
+        (** Check whether the formatted output exceeds the margin. *)
+  ; ocaml_version: Ocaml_version.t
+        (** Version of OCaml syntax of the output. *) }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 

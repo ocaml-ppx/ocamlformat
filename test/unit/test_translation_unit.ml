@@ -6,7 +6,11 @@ let err =
 
 let conf =
   Conf.
-    {fmt_opts= default_profile; opr_opts= {debug= false; margin_check= false}}
+    { fmt_opts= default_profile
+    ; opr_opts=
+        { debug= false
+        ; margin_check= false
+        ; ocaml_version= Ocaml_version.sys_version } }
 
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =

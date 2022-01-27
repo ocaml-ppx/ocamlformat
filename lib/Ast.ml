@@ -35,7 +35,7 @@ let ( init
   let init (conf : Conf.t) =
     leading_nested_match_parens := conf.fmt_opts.leading_nested_match_parens ;
     parens_ite := conf.fmt_opts.parens_ite ;
-    ocaml_version := conf.fmt_opts.ocaml_version ;
+    ocaml_version := conf.opr_opts.ocaml_version ;
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register, leading_nested_match_parens, parens_ite, ocaml_version)

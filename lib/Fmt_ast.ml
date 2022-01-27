@@ -1399,7 +1399,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
     when String.equal l i
          && List.is_empty arg.pexp_attributes
          && Ocaml_version.(
-              compare c.conf.fmt_opts.ocaml_version Releases.v4_14 >= 0) ->
+              compare c.conf.opr_opts.ocaml_version Releases.v4_14 >= 0) ->
       let lbl =
         match lbl with
         | Labelled _ -> str "~"
@@ -4347,7 +4347,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   @@ fun c ->
   let lb_pun =
     Ocaml_version.(
-      compare c.conf.fmt_opts.ocaml_version Releases.v4_13_0 >= 0)
+      compare c.conf.opr_opts.ocaml_version Releases.v4_13_0 >= 0)
     && lb_pun
   in
   let doc1, atrs = doc_atrs lb_attrs in

@@ -290,10 +290,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-wrap-fun-args
            Unset wrap-fun-args.
 
-       --ocaml-version=V
-           Version of OCaml syntax of the output. The default value is the
-           version of OCaml used to build OCamlFormat.
-
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. The flag is unset by default.
@@ -657,6 +653,10 @@ OPTIONS
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
+
+       --ocaml-version=V
+           Version of OCaml syntax of the output. The default value is the
+           version of OCaml used to build OCamlFormat.
 
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for

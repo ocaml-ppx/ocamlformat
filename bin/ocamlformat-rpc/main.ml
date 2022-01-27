@@ -130,7 +130,10 @@ let rec rpc_main = function
             (Version_defined
                ( v
                , { fmt_opts= Conf.default_profile
-                 ; opr_opts= {debug= false; margin_check= false} } ) )
+                 ; opr_opts=
+                     { debug= false
+                     ; margin_check= false
+                     ; ocaml_version= Ocaml_version.sys_version } } ) )
       | `Propose_another v ->
           let vstr = Version.to_string v in
           Init.output stdout (`Version vstr) ;

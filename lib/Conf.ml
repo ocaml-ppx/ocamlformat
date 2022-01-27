@@ -59,7 +59,6 @@ type fmt_opts =
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -80,7 +79,8 @@ type fmt_opts =
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
-type opr_opts = {debug: bool; margin_check: bool}
+type opr_opts =
+  {debug: bool; margin_check: bool; ocaml_version: Ocaml_version.t}
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -936,16 +936,6 @@ module Formatting = struct
       (fun conf x -> update conf ~f:(fun f -> {f with nested_match= x}))
       (fun conf -> conf.fmt_opts.nested_match)
 
-  let ocaml_version =
-    let docv = "V" in
-    let doc = "Version of OCaml syntax of the output." in
-    let default = Ocaml_version.sys_version in
-    let default_doc = "the version of OCaml used to build OCamlFormat" in
-    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
-      ~doc ~docv ~kind
-      (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
-      (fun conf -> conf.fmt_opts.ocaml_version)
-
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -1153,13 +1143,23 @@ end
 (* Flags that can be modified in the config file that don't affect
    formatting *)
 
-module Operational = struct
-  let update ~f c = {c with opr_opts= f c.opr_opts}
-end
-
 let kind = C.Operational
 
 let docs = C.section_name kind `Valid
+
+module Operational = struct
+  let update ~f c = {c with opr_opts= f c.opr_opts}
+
+  let ocaml_version =
+    let docv = "V" in
+    let doc = "Version of OCaml syntax of the output." in
+    let default = Ocaml_version.sys_version in
+    let default_doc = "the version of OCaml used to build OCamlFormat" in
+    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
+      ~doc ~docv ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
+      (fun conf -> conf.opr_opts.ocaml_version)
+end
 
 let comment_check =
   let default = true in
@@ -1484,7 +1484,6 @@ let ocamlformat_profile =
   ; max_iters= 10
   ; module_item_spacing= `Sparse
   ; nested_match= `Wrap
-  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
   ; parens_tuple= `Always
@@ -1558,7 +1557,6 @@ let conventional_profile =
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
-  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
@@ -1685,7 +1683,6 @@ let janestreet_profile =
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap
-  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
@@ -1958,7 +1955,10 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf =
     let init =
       { fmt_opts= default_profile
-      ; opr_opts= {debug= false; margin_check= false} }
+      ; opr_opts=
+          { debug= C.default _debug
+          ; margin_check= C.default _margin_check
+          ; ocaml_version= C.default Operational.ocaml_version } }
     in
     List.fold fs.configuration_files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
