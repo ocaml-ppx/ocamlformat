@@ -126,18 +126,7 @@ let rec rpc_main = function
       | `Handled v ->
           Init.output stdout (`Version vstr) ;
           Out_channel.flush stdout ;
-          rpc_main
-            (Version_defined
-               ( v
-               , { fmt_opts= Conf.default_profile
-                 ; opr_opts=
-                     { comment_check= false
-                     ; debug= false
-                     ; disable= false
-                     ; margin_check= false
-                     ; max_iters= 10
-                     ; ocaml_version= Ocaml_version.sys_version
-                     ; quiet= false } } ) )
+          rpc_main (Version_defined (v, Conf.default))
       | `Propose_another v ->
           let vstr = Version.to_string v in
           Init.output stdout (`Version vstr) ;

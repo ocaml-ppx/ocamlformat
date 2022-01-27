@@ -1931,6 +1931,17 @@ let is_in_listing_file ~listings ~filename =
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None )
 
+let default =
+  { fmt_opts= default_profile
+  ; opr_opts=
+      { comment_check= C.default Operational.comment_check
+      ; debug= C.default Operational.debug
+      ; disable= C.default Operational.disable
+      ; margin_check= C.default Operational.margin_check
+      ; max_iters= C.default Operational.max_iters
+      ; ocaml_version= C.default Operational.ocaml_version
+      ; quiet= C.default Operational.quiet } }
+
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
@@ -1939,18 +1950,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ~disable_conf_files:!disable_conf_files ~root ~file:file_abs
   in
   let conf =
-    let init =
-      { fmt_opts= default_profile
-      ; opr_opts=
-          { comment_check= C.default Operational.comment_check
-          ; debug= C.default Operational.debug
-          ; disable= C.default Operational.disable
-          ; margin_check= C.default Operational.margin_check
-          ; max_iters= C.default Operational.max_iters
-          ; ocaml_version= C.default Operational.ocaml_version
-          ; quiet= C.default Operational.quiet } }
-    in
-    List.fold fs.configuration_files ~init ~f:read_config_file
+    List.fold fs.configuration_files ~init:default ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
   let no_ocamlformat_files =

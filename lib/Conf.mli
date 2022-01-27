@@ -97,6 +97,8 @@ type opr_opts =
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
+val default : t
+
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
 
 val build_config :

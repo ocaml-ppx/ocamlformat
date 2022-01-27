@@ -23,18 +23,6 @@ type input =
   ; conf: Conf.t
   ; action: [`Format | `Numeric of range] }
 
-let conf =
-  Conf.
-    { fmt_opts= default_profile
-    ; opr_opts=
-        { comment_check= false
-        ; debug= false
-        ; disable= false
-        ; margin_check= false
-        ; max_iters= 10
-        ; ocaml_version= Ocaml_version.sys_version
-        ; quiet= false } }
-
 let inputs =
   let dir = "_build/default/bench/test" in
   let source_ml = Stdio.In_channel.read_all (dir ^ "/source_bench.ml") in
@@ -42,13 +30,13 @@ let inputs =
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf
+    ; conf= Conf.default
     ; action= `Format }
   ; { name= "numeric:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf
+    ; conf= Conf.default
     ; action= `Numeric (10_000, 10_000) } ]
 
 let tests =
