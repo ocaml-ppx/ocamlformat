@@ -315,7 +315,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     let fmted, cmts_t = format ~box_debug:false in
     let conf =
       if conf.opr_opts.debug then conf
-      else {conf with fmt_opts= {conf.fmt_opts with quiet= true}}
+      else {conf with opr_opts= {conf.opr_opts with quiet= true}}
     in
     if String.equal prev_source fmted then (
       if conf.opr_opts.debug then

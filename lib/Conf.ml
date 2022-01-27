@@ -63,7 +63,6 @@ type fmt_opts =
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; parse_toplevel_phrases: bool
-  ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
@@ -82,7 +81,8 @@ type opr_opts =
   ; debug: bool
   ; margin_check: bool
   ; max_iters: int
-  ; ocaml_version: Ocaml_version.t }
+  ; ocaml_version: Ocaml_version.t
+  ; quiet: bool }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -129,7 +129,7 @@ module C = Config_option.Make (struct
 
   let warn (config : config) fmt =
     Format.kasprintf
-      (fun s -> if not config.fmt_opts.quiet then warn "%s" s)
+      (fun s -> if not config.opr_opts.quiet then warn "%s" s)
       fmt
 end)
 
@@ -1181,6 +1181,12 @@ module Operational = struct
       ~doc ~docv ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
       (fun conf -> conf.opr_opts.ocaml_version)
+
+  let quiet =
+    let doc = "Quiet. May be set in $(b,.ocamlformat)." in
+    C.flag ~default:false ~names:["q"; "quiet"] ~doc ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with quiet= x}))
+      (fun conf -> conf.opr_opts.quiet)
 end
 
 let disable_conf_attrs =
@@ -1222,12 +1228,6 @@ let enable_outside_detected_project =
   let default = false in
   mk ~default
     Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs)
-
-let quiet =
-  let doc = "Quiet. May be set in $(b,.ocamlformat)." in
-  C.flag ~default:false ~names:["q"; "quiet"] ~doc ~kind
-    (fun conf x -> Formatting.update conf ~f:(fun f -> {f with quiet= x}))
-    (fun conf -> conf.fmt_opts.quiet)
 
 (* Other Flags *)
 
@@ -1489,7 +1489,6 @@ let ocamlformat_profile =
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; parse_toplevel_phrases= false
-  ; quiet= false
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
@@ -1560,7 +1559,6 @@ let conventional_profile =
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; parse_toplevel_phrases= C.default Formatting.parse_toplevel_phrases
-  ; quiet= C.default quiet
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
@@ -1684,7 +1682,6 @@ let janestreet_profile =
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; parse_toplevel_phrases= false
-  ; quiet= ocamlformat_profile.quiet
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
@@ -1744,9 +1741,7 @@ let (_profile : fmt_opts option C.t) =
     (fun conf p ->
       selected_profile_ref := p ;
       let new_fmt_opts = Option.value p ~default:conf.fmt_opts in
-      (* The quiet option is cummulative *)
-      let quiet = new_fmt_opts.quiet || conf.fmt_opts.quiet in
-      {conf with fmt_opts= {new_fmt_opts with quiet}} )
+      {conf with fmt_opts= new_fmt_opts} )
     (fun _ -> !selected_profile_ref)
 
 let ocp_indent_normal_profile =
@@ -1955,7 +1950,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
           ; debug= C.default debug
           ; margin_check= C.default margin_check
           ; max_iters= C.default Operational.max_iters
-          ; ocaml_version= C.default Operational.ocaml_version } }
+          ; ocaml_version= C.default Operational.ocaml_version
+          ; quiet= C.default Operational.quiet } }
     in
     List.fold fs.configuration_files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
@@ -2000,7 +1996,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     collect_warnings (fun () ->
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
   in
-  if not conf.fmt_opts.quiet then warn_now () ;
+  if not conf.opr_opts.quiet then warn_now () ;
   conf
 
 let kind_of_ext fname =
@@ -2190,7 +2186,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   | Ok conf -> conf
   | Error error ->
       let w = Warnings.Attribute_payload (txt, error) in
-      if (not c.fmt_opts.quiet) && not quiet then Warning.print_warning loc w ;
+      if (not c.opr_opts.quiet) && not quiet then Warning.print_warning loc w ;
       c
 
 let update_value config ~name ~value =

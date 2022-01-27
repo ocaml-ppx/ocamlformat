@@ -65,7 +65,6 @@ type fmt_opts =
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; parse_toplevel_phrases: bool
-  ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
@@ -93,7 +92,8 @@ type opr_opts =
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
   ; ocaml_version: Ocaml_version.t
-        (** Version of OCaml syntax of the output. *) }
+        (** Version of OCaml syntax of the output. *)
+  ; quiet: bool }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 

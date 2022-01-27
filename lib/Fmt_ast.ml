@@ -374,7 +374,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     | _ when not c.conf.fmt_opts.parse_docstrings -> fmt_raw str_cmt
     | Ok parsed -> fmt_parsed parsed
     | Error msgs ->
-        if not c.conf.fmt_opts.quiet then
+        if not c.conf.opr_opts.quiet then
           List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter) ;
         fmt_raw str_cmt
   in

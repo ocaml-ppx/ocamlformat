@@ -54,7 +54,7 @@ let fresh_lexbuf source =
 
 let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
   let warnings =
-    if conf.fmt_opts.quiet then List.map ~f:W.disable W.in_lexer else []
+    if conf.opr_opts.quiet then List.map ~f:W.disable W.in_lexer else []
   in
   let warnings = if disable_w50 then warnings else W.enable 50 :: warnings in
   ignore @@ Warnings.parse_options false (W.to_string warnings) ;
@@ -68,7 +68,7 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
         then (
           w50 := (loc, warn) :: !w50 ;
           false )
-        else not conf.fmt_opts.quiet )
+        else not conf.opr_opts.quiet )
       ~f:(fun () ->
         let ast = parse fragment lexbuf in
         Warnings.check_fatal () ;

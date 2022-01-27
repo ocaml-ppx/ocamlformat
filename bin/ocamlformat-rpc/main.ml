@@ -135,7 +135,8 @@ let rec rpc_main = function
                      ; debug= false
                      ; margin_check= false
                      ; max_iters= 10
-                     ; ocaml_version= Ocaml_version.sys_version } } ) )
+                     ; ocaml_version= Ocaml_version.sys_version
+                     ; quiet= false } } ) )
       | `Propose_another v ->
           let vstr = Version.to_string v in
           Init.output stdout (`Version vstr) ;

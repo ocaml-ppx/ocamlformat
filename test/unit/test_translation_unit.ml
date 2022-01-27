@@ -12,7 +12,8 @@ let conf =
         ; debug= false
         ; margin_check= false
         ; max_iters= 10
-        ; ocaml_version= Ocaml_version.sys_version } }
+        ; ocaml_version= Ocaml_version.sys_version
+        ; quiet= false } }
 
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =
