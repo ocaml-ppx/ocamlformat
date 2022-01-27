@@ -428,7 +428,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           in
           internal_error `Comment args ) ;
       (* Too many iteration ? *)
-      if i >= conf.fmt_opts.max_iters then (
+      if i >= conf.opr_opts.max_iters then (
         Caml.flush_all () ;
         Error
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}

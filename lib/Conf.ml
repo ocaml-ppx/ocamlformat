@@ -55,7 +55,6 @@ type fmt_opts =
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
-  ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
   ; ocp_indent_compat: bool
@@ -82,6 +81,7 @@ type opr_opts =
   { comment_check: bool
   ; debug: bool
   ; margin_check: bool
+  ; max_iters: int
   ; ocaml_version: Ocaml_version.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
@@ -1162,6 +1162,16 @@ module Operational = struct
       (fun conf x -> update conf ~f:(fun f -> {f with comment_check= x}))
       (fun conf -> conf.opr_opts.comment_check)
 
+  let max_iters =
+    let docv = "N" in
+    let doc =
+      "Fail if output of formatting does not stabilize within $(docv) \
+       iterations. May be set in $(b,.ocamlformat)."
+    in
+    C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with max_iters= x}))
+      (fun conf -> conf.opr_opts.max_iters)
+
   let ocaml_version =
     let docv = "V" in
     let doc = "Version of OCaml syntax of the output." in
@@ -1212,16 +1222,6 @@ let enable_outside_detected_project =
   let default = false in
   mk ~default
     Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs)
-
-let max_iters =
-  let docv = "N" in
-  let doc =
-    "Fail if output of formatting does not stabilize within $(docv) \
-     iterations. May be set in $(b,.ocamlformat)."
-  in
-  C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
-    (fun conf x -> Formatting.update conf ~f:(fun f -> {f with max_iters= x}))
-    (fun conf -> conf.fmt_opts.max_iters)
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
@@ -1481,7 +1481,6 @@ let ocamlformat_profile =
   ; match_indent= 0
   ; match_indent_nested= `Never
   ; max_indent= None
-  ; max_iters= 10
   ; module_item_spacing= `Sparse
   ; nested_match= `Wrap
   ; ocp_indent_compat= false
@@ -1553,7 +1552,6 @@ let conventional_profile =
   ; match_indent= C.default Formatting.match_indent
   ; match_indent_nested= C.default Formatting.match_indent_nested
   ; max_indent= C.default Formatting.max_indent
-  ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
@@ -1678,7 +1676,6 @@ let janestreet_profile =
   ; match_indent= 0
   ; match_indent_nested= `Never
   ; max_indent= None
-  ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap
   ; ocp_indent_compat= true
@@ -1957,6 +1954,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
           { comment_check= C.default Operational.comment_check
           ; debug= C.default _debug
           ; margin_check= C.default _margin_check
+          ; max_iters= C.default Operational.max_iters
           ; ocaml_version= C.default Operational.ocaml_version } }
     in
     List.fold fs.configuration_files ~init ~f:read_config_file
@@ -2127,7 +2125,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       let f (kind, f) =
         make_file
           ~with_conf:(fun c ->
-            Formatting.update c ~f:(fun f -> {f with max_iters= 1}) )
+            Operational.update c ~f:(fun f -> {f with max_iters= 1}) )
           kind f
       in
       Ok (Check (List.map files ~f))

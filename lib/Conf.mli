@@ -57,9 +57,6 @@ type fmt_opts =
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
-  ; max_iters: int
-        (** Fail if output of formatting does not stabilize within
-            [max_iters] iterations. *)
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
@@ -92,6 +89,9 @@ type opr_opts =
   ; debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
+  ; max_iters: int
+        (** Fail if output of formatting does not stabilize within
+            [max_iters] iterations. *)
   ; ocaml_version: Ocaml_version.t
         (** Version of OCaml syntax of the output. *) }
 

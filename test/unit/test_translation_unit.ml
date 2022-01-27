@@ -11,6 +11,7 @@ let conf =
         { comment_check= false
         ; debug= false
         ; margin_check= false
+        ; max_iters= 10
         ; ocaml_version= Ocaml_version.sys_version } }
 
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
