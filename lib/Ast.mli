@@ -185,6 +185,7 @@ type t =
   | Ctf of class_type_field
   | Tli of toplevel_item
   | Top
+  | Rep  (** Repl phrase *)
 
 val is_top : t -> bool
 

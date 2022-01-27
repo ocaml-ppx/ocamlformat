@@ -581,7 +581,7 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
         let source = String.sub ~pos:1 ~len str in
         match fmt_code source with
         | Ok formatted -> `Code (formatted, cls)
-        | Error () -> `Unwrapped cmt )
+        | Error (`Msg _) -> `Unwrapped cmt )
     | _ -> (
       match Asterisk_prefixed.split cmt with
       | [] | [""] -> impossible "not produced by split_asterisk_prefixed"

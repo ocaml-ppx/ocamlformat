@@ -16,3 +16,4 @@ type t =
   | Core_type
   | Module_type
   | Expression
+  | Repl_file

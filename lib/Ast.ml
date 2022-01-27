@@ -734,6 +734,7 @@ module T = struct
     | Ctf of class_type_field
     | Tli of toplevel_item
     | Top
+    | Rep
 
   let dump fs = function
     | Pld l -> Format.fprintf fs "Pld:@\n%a" Pprintast.payload l
@@ -755,6 +756,7 @@ module T = struct
     | Tli (`Directive d) ->
         Format.fprintf fs "Dir:@\n%a" Pprintast.toplevel_phrase (Ptop_dir d)
     | Top -> Format.pp_print_string fs "Top"
+    | Rep -> Format.pp_print_string fs "Rep"
 end
 
 include T
@@ -778,6 +780,7 @@ let attributes = function
   | Ctf x -> x.pctf_attributes
   | Top -> []
   | Tli _ -> []
+  | Rep -> []
 
 let location = function
   | Pld _ -> Location.none
@@ -797,6 +800,7 @@ let location = function
   | Tli (`Item x) -> x.pstr_loc
   | Tli (`Directive x) -> x.pdir_loc
   | Top -> Location.none
+  | Rep -> Location.none
 
 let break_between_modules s cc (i1, c1) (i2, c2) =
   let has_doc itm = List.exists ~f:Attr.is_doc (attributes itm) in
@@ -1143,7 +1147,7 @@ end = struct
       | _ -> assert false )
     | Clf _ -> assert false
     | Ctf _ -> assert false
-    | Top | Tli _ -> assert false
+    | Top | Tli _ | Rep -> assert false
 
   let assert_check_typ xtyp =
     let dump {ctx; ast= typ} = dump ctx (Typ typ) in
@@ -1220,6 +1224,7 @@ end = struct
     | Ctf _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
+    | Rep -> assert false
 
   let assert_check_cty xcty =
     let dump {ctx; ast= cty} = dump ctx (Cty cty) in
@@ -1278,6 +1283,7 @@ end = struct
     | Ctf _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
+    | Rep -> assert false
 
   let assert_check_cl xcl =
     let dump {ctx; ast= cl} = dump ctx (Cl cl) in
@@ -1388,7 +1394,7 @@ end = struct
       | _ -> assert false )
     | Clf x -> assert (check_pcstr_fields [x])
     | Ctf _ -> assert false
-    | Top | Tli _ -> assert false
+    | Top | Tli _ | Rep -> assert false
 
   let assert_check_pat xpat =
     let dump {ctx; ast= pat} = dump ctx (Pat pat) in
@@ -1556,7 +1562,7 @@ end = struct
     | Cty _ -> assert false
     | Ctf _ -> assert false
     | Clf x -> assert (check_pcstr_fields [x])
-    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ ->
+    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ | Rep ->
         assert false
 
   let assert_check_exp xexp =
@@ -1735,7 +1741,7 @@ end = struct
     | { ctx= Exp _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
-          | Str _ | Clf _ | Ctf _ ) }
+          | Str _ | Clf _ | Ctf _ | Rep ) }
      |{ctx= Vb _; ast= _}
      |{ctx= _; ast= Vb _}
      |{ctx= Td _; ast= _}
@@ -1743,13 +1749,13 @@ end = struct
      |{ ctx= Cl _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
-          | Clf _ | Ctf _ ) }
+          | Clf _ | Ctf _ | Rep ) }
      |{ ctx=
           ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ )
+          | Sig _ | Str _ | Clf _ | Ctf _ | Rep )
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ ) } ->
+          | Sig _ | Str _ | Clf _ | Ctf _ | Rep ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1831,7 +1837,8 @@ end = struct
       | Pcl_apply _ -> Some Apply
       | Pcl_structure _ -> Some Apply
       | _ -> None )
-    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _ ->
+    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
+     |Rep ->
         None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context

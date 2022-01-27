@@ -1065,8 +1065,16 @@ and directive_argument i ppf x =
   | Pdir_bool (b) -> line i ppf "Pdir_bool %s\n" (string_of_bool b);
 ;;
 
+let repl_phrase i ppf x =
+  line i ppf "repl_phrase\n";
+  let i = i+1 in
+  toplevel_phrase i ppf x.prepl_phrase;
+  line i ppf "output %S\n" x.prepl_output
+
 let interface ppf x = list 0 signature_item ppf x;;
 
 let implementation ppf x = list 0 structure_item ppf x;;
 
 let top_phrase ppf x = toplevel_phrase 0 ppf x;;
+
+let repl_phrase ppf x = repl_phrase 0 ppf x;;

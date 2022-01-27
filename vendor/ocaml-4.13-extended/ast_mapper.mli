@@ -108,6 +108,7 @@ type mapper = {
   directive_argument: mapper -> directive_argument -> directive_argument;
   toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
   toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+  repl_phrase: mapper -> repl_phrase -> repl_phrase;
 }
 (** A mapper record implements one "method" per syntactic category,
     using an open recursion style: each method takes as its first

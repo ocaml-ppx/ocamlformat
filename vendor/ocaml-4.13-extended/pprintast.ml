@@ -1710,6 +1710,11 @@ let top_phrase f x =
   pp f ";;";
   pp_print_newline f ()
 
+let repl_phrase f x =
+  top_phrase f x.prepl_phrase;
+  pp f "%s" x.prepl_output;
+  pp_print_newline f ()
+
 let core_type = core_type reset_ctxt
 let pattern = pattern reset_ctxt
 let signature = signature reset_ctxt

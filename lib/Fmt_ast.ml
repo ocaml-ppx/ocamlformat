@@ -194,7 +194,11 @@ let update_items_config c items update_config =
   let _, items = List.fold_map items ~init:c ~f:with_config in
   items
 
-let box_semisemi b k = hvbox_if b 0 (k $ fmt_if b "@,;;")
+let box_semisemi ~parent_ctx b k =
+  match parent_ctx with
+  | _ when not b -> k
+  | Rep -> k $ fmt ";;"
+  | _ -> hvbox 0 (k $ fmt "@,;;")
 
 let fmt_hole () = str "_"
 
@@ -4192,7 +4196,8 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
 
-and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
+and fmt_structure_item c ~last:last_item ?ext ~semisemi
+    {ctx= parent_ctx; ast= si} =
   protect c (Str si)
   @@
   let ctx = Str si in
@@ -4200,7 +4205,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
   (fun k ->
     fmt_cmts_before
-    $ hvbox 0 ~name:"stri" (box_semisemi semisemi (k $ fmt_cmts_after)) )
+    $ hvbox 0 ~name:"stri"
+        (box_semisemi ~parent_ctx semisemi (k $ fmt_cmts_after)) )
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
@@ -4438,34 +4444,43 @@ let fmt_toplevel_directive c ~semisemi dir =
         $ fmt_dir_arg pdira_desc
         $ Cmts.fmt_after c pdira_loc
   in
-  Cmts.fmt c pdir_loc (box_semisemi semisemi (name $ args))
+  Cmts.fmt c pdir_loc (box_semisemi ~parent_ctx:Top semisemi (name $ args))
 
 let flatten_ptop =
   List.concat_map ~f:(function
     | Ptop_def items -> List.map items ~f:(fun i -> `Item i)
     | Ptop_dir d -> [`Directive d] )
 
-let fmt_toplevel c ctx itms =
+let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   let itms = flatten_ptop itms in
   let update_config c = function
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
   let fmt_item c ctx ~prev:_ ~next itm =
+    let last = Option.is_none next in
     let semisemi =
       match (itm, next) with
       | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
       | `Item _, Some (`Directive _, _) -> true
-      | _ -> false
+      | _ -> force_semisemi && last
     in
     match itm with
-    | `Item i ->
-        fmt_structure_item c ~last:(Option.is_none next) ~semisemi
-          (sub_str ~ctx i)
+    | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c ~semisemi d
   in
   let ast x = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms
+
+let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
+  str "# "
+  $ fmt_toplevel ~force_semisemi:true c ctx [prepl_phrase]
+  $ fmt_if_k
+      (not (String.is_empty prepl_output))
+      (break 1000 0 $ str prepl_output)
+
+let fmt_repl_file c _ itms =
+  vbox 0 @@ list itms "@;<1000 0>" @@ fmt_repl_phrase c Rep
 
 (** Entry points *)
 
@@ -4484,15 +4499,30 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
         (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
+  | Repl_file, l -> fmt_repl_file c ctx l
+
+let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
+  let cmts = Cmts.init ast_kind ~debug source ast comments in
+  let ctx = Top in
+  Ok (fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code)
 
 let fmt_code ~debug =
-  let rec fmt_code conf s =
-    match Parse_with_comments.parse Parse.ast Structure conf ~source:s with
-    | {ast; comments; source; prefix= _} ->
-        let cmts = Cmts.init Structure ~debug source ast comments in
-        let ctx = Pld (PStr ast) in
-        Ok (fmt_file ~ctx ~debug Structure source cmts conf ast ~fmt_code)
-    | exception _ -> Error ()
+  let rec fmt_code (conf : Conf.t) s =
+    let warn = conf.parse_toplevel_phrases in
+    match Parse_with_comments.parse_toplevel conf ~source:s with
+    | Either.First {ast; comments; source; prefix= _} ->
+        fmt_parse_result conf ~debug Use_file ast source comments ~fmt_code
+    | Second {ast; comments; source; prefix= _} ->
+        fmt_parse_result conf ~debug Repl_file ast source comments ~fmt_code
+    | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
+        Error (`Msg (Caml.Format.asprintf "expecting: %s" x))
+    | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
+        Error (`Msg (Caml.Format.asprintf "not expecting: %s" x))
+    | exception Syntaxerr.Error (Other _) when warn ->
+        Error (`Msg (Caml.Format.asprintf "invalid toplevel or OCaml syntax"))
+    | exception e when warn ->
+        Error (`Msg (Caml.Format.asprintf "%a" Exn.pp e))
+    | exception _ -> Error (`Msg "")
   in
   fmt_code
 

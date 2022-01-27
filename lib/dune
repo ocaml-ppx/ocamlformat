@@ -11,6 +11,8 @@
 
 (ocamllex Literal_lexer)
 
+(ocamllex Toplevel_lexer)
+
 (library
  (name ocamlformat_lib)
  (flags

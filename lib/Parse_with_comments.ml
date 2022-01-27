@@ -83,3 +83,19 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
         {ast; comments; prefix= hash_bang; source} )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
+
+(** [is_repl_block x] returns whether [x] is a list of REPL phrases and
+    outputs of the form:
+
+    {v
+    # let this is = some phrase;;
+    this is some output
+    v} *)
+let is_repl_block x =
+  String.length x >= 2 && Char.equal x.[0] '#' && Char.is_whitespace x.[1]
+
+let parse_toplevel ?disable_w50 conf ~source =
+  let open Extended_ast in
+  if is_repl_block source && conf.Conf.parse_toplevel_phrases then
+    Either.Second (parse ?disable_w50 Parse.ast Repl_file conf ~source)
+  else First (parse ?disable_w50 Parse.ast Use_file conf ~source)

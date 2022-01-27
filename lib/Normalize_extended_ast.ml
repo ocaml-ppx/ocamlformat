@@ -50,10 +50,14 @@ let normalize_parse_result ast_kind ast comments =
     comments
 
 let normalize_code conf (m : Ast_mapper.mapper) txt =
-  match Parse_with_comments.parse Parse.ast Structure conf ~source:txt with
-  | {ast; comments; _} ->
-      normalize_parse_result Structure
-        (List.map ~f:(m.structure_item m) ast)
+  match Parse_with_comments.parse_toplevel conf ~source:txt with
+  | First {ast; comments; _} ->
+      normalize_parse_result Use_file
+        (List.map ~f:(m.toplevel_phrase m) ast)
+        comments
+  | Second {ast; comments; _} ->
+      normalize_parse_result Repl_file
+        (List.map ~f:(m.repl_phrase m) ast)
         comments
   | exception _ -> txt
 
@@ -109,6 +113,12 @@ let make_mapper conf ~ignore_doc_comments =
     in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
+  let repl_phrase (m : Ast_mapper.mapper) {prepl_phrase; prepl_output} =
+    let p =
+      {prepl_phrase; prepl_output= Docstring.normalize_text prepl_output}
+    in
+    Ast_mapper.default_mapper.repl_phrase m p
+  in
   let expr (m : Ast_mapper.mapper) exp =
     let exp = {exp with pexp_loc_stack= []} in
     let {pexp_desc; pexp_loc= loc1; pexp_attributes= attrs1; _} = exp in
@@ -153,6 +163,7 @@ let make_mapper conf ~ignore_doc_comments =
     location
   ; attribute
   ; attributes
+  ; repl_phrase
   ; expr
   ; pat
   ; typ }

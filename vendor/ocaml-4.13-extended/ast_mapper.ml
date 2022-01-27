@@ -79,6 +79,7 @@ type mapper = {
   directive_argument: mapper -> directive_argument -> directive_argument;
   toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
   toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+  repl_phrase: mapper -> repl_phrase -> repl_phrase;
 }
 
 let map_fst f (x, y) = (f x, y)
@@ -782,6 +783,11 @@ let default_mapper =
       (fun this -> function
          | Ptop_def s -> Ptop_def (this.structure this s)
          | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
+
+    repl_phrase =
+      (fun this p ->
+         { prepl_phrase= this.toplevel_phrase this p.prepl_phrase
+         ; prepl_output= p.prepl_output } );
   }
 
 let extension_of_error {kind; main; sub} =

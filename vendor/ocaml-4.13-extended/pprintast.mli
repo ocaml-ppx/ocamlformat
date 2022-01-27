@@ -39,6 +39,7 @@ val module_expr: Format.formatter -> Parsetree.module_expr -> unit
 
 val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
 val top_phrase: Format.formatter -> Parsetree.toplevel_phrase -> unit
+val repl_phrase: Format.formatter -> Parsetree.repl_phrase -> unit
 
 val class_field: Format.formatter -> Parsetree.class_field -> unit
 val class_type_field: Format.formatter -> Parsetree.class_type_field -> unit

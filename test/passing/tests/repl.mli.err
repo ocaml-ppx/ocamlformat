@@ -1,0 +1,46 @@
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 23, character 6 to line 26, character 4:
+invalid code block: not expecting: unexpected character 'v'.
+Hint: did you forget a space after the '#' at the start of the line?
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 45, character 6 to line 49, character 4:
+invalid code block: not expecting: unexpected character ' '.
+Hint: did you forget a space after the '#' at the start of the line?
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 72, character 6 to line 75, character 4:
+invalid code block: invalid toplevel or OCaml syntax
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 78, character 6 to line 81, character 4:
+invalid code block: invalid toplevel or OCaml syntax
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 84, character 6 to line 86, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 89, character 6 to line 92, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 95, character 6 to line 98, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 31, character 6 to line 34, character 4:
+invalid code block: not expecting: unexpected character 'v'.
+Hint: did you forget a space after the '#' at the start of the line?
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 58, character 6 to line 62, character 4:
+invalid code block: not expecting: unexpected character ' '.
+Hint: did you forget a space after the '#' at the start of the line?
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 86, character 6 to line 89, character 4:
+invalid code block: invalid toplevel or OCaml syntax
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 93, character 6 to line 96, character 4:
+invalid code block: invalid toplevel or OCaml syntax
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 100, character 6 to line 102, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 106, character 6 to line 109, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
+Warning: Invalid documentation comment:
+File "tests/repl.mli", line 113, character 6 to line 116, character 4:
+invalid code block: expecting: a toplevel phrase must end with `;;`.
