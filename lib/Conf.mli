@@ -31,7 +31,6 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
-  ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
@@ -86,6 +85,7 @@ type file = Stdin | File of string
 type opr_opts =
   { comment_check: bool
   ; debug: bool  (** Generate debugging output if true. *)
+  ; disable: bool
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
   ; max_iters: int

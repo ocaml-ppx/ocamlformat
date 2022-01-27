@@ -29,7 +29,6 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
-  ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
@@ -79,6 +78,7 @@ type fmt_opts =
 type opr_opts =
   { comment_check: bool
   ; debug: bool
+  ; disable: bool
   ; margin_check: bool
   ; max_iters: int
   ; ocaml_version: Ocaml_version.t
@@ -470,16 +470,6 @@ module Formatting = struct
       (fun conf x ->
         update conf ~f:(fun f -> {f with cases_matching_exp_indent= x}) )
       (fun conf -> conf.fmt_opts.cases_matching_exp_indent)
-
-  let disable =
-    let doc =
-      "Disable ocamlformat. This is used in attributes to locally disable \
-       automatic code formatting. One can also use $(b,[@@@ocamlformat \
-       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
-    in
-    C.flag ~names:["disable"] ~default:false ~doc ~kind
-      (fun conf x -> update conf ~f:(fun f -> {f with disable= x}))
-      (fun conf -> conf.fmt_opts.disable)
 
   let disambiguate_non_breaking_match =
     let doc =
@@ -1162,6 +1152,16 @@ module Operational = struct
       (fun conf x -> update conf ~f:(fun f -> {f with comment_check= x}))
       (fun conf -> conf.opr_opts.comment_check)
 
+  let disable =
+    let doc =
+      "Disable ocamlformat. This is used in attributes to locally disable \
+       automatic code formatting. One can also use $(b,[@@@ocamlformat \
+       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
+    in
+    C.flag ~names:["disable"] ~default:false ~doc ~kind ~allow_inline:true
+      (fun conf x -> update conf ~f:(fun f -> {f with disable= x}))
+      (fun conf -> conf.opr_opts.disable)
+
   let max_iters =
     let docv = "N" in
     let doc =
@@ -1455,7 +1455,6 @@ let ocamlformat_profile =
   ; break_struct= true
   ; cases_exp_indent= 4
   ; cases_matching_exp_indent= `Compact
-  ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before_except_val
   ; doc_comments_padding= 2
@@ -1521,7 +1520,6 @@ let conventional_profile =
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
-  ; disable= C.default Formatting.disable
   ; disambiguate_non_breaking_match=
       C.default Formatting.disambiguate_non_breaking_match
   ; doc_comments= C.default Formatting.doc_comments
@@ -1648,7 +1646,6 @@ let janestreet_profile =
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal
-  ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
   ; doc_comments_padding= 1
@@ -1948,6 +1945,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ; opr_opts=
           { comment_check= C.default Operational.comment_check
           ; debug= C.default debug
+          ; disable= C.default Operational.disable
           ; margin_check= C.default margin_check
           ; max_iters= C.default Operational.max_iters
           ; ocaml_version= C.default Operational.ocaml_version
@@ -1975,20 +1973,20 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
        why ) ;
-    Formatting.update conf ~f:(fun f -> {f with disable= true}) )
+    Operational.update conf ~f:(fun f -> {f with disable= true}) )
   else
     let listings =
-      if conf.fmt_opts.disable then fs.enable_files else fs.ignore_files
+      if conf.opr_opts.disable then fs.enable_files else fs.ignore_files
     in
     match is_in_listing_file ~listings ~filename:file_abs with
     | Some (file, lno) ->
         let status =
-          if conf.fmt_opts.disable then "enabled" else "ignored"
+          if conf.opr_opts.disable then "enabled" else "ignored"
         in
         if conf.opr_opts.debug then
           Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
             Fpath.pp file lno ;
-        Formatting.update conf ~f:(fun f -> {f with disable= not f.disable})
+        Operational.update conf ~f:(fun f -> {f with disable= not f.disable})
     | None -> conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =

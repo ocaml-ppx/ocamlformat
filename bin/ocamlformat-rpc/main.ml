@@ -133,6 +133,7 @@ let rec rpc_main = function
                  ; opr_opts=
                      { comment_check= false
                      ; debug= false
+                     ; disable= false
                      ; margin_check= false
                      ; max_iters= 10
                      ; ocaml_version= Ocaml_version.sys_version

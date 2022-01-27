@@ -115,12 +115,6 @@ OPTIONS (CODE FORMATTING STYLE)
            compact forces an indentation of 2, unless nested-match is set to
            align and we're on the last case. The default value is normal.
 
-       --disable
-           Disable ocamlformat. This is used in attributes to locally disable
-           automatic code formatting. One can also use [@@@ocamlformat
-           "enable"] instead of [@@@ocamlformat "disable=false"]. The flag is
-           unset by default.
-
        --doc-comments={after-when-possible|before-except-val|before}
            Doc comments position. after-when-possible puts doc comments after
            the corresponding code. This option has no effect on variant
@@ -250,9 +244,6 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --no-break-sequences
            Unset break-sequences.
-
-       --no-disable
-           Unset disable.
 
        --no-dock-collection-brackets
            Unset dock-collection-brackets.
@@ -581,6 +572,12 @@ OPTIONS
            Unsafe to turn off. May be set in .ocamlformat. The flag is set by
            default.
 
+       --disable
+           Disable ocamlformat. This is used in attributes to locally disable
+           automatic code formatting. One can also use [@@@ocamlformat
+           "enable"] instead of [@@@ocamlformat "disable=false"]. The flag is
+           unset by default.
+
        --disable-conf-attrs
            Disable configuration in attributes.
 
@@ -634,6 +631,9 @@ OPTIONS
 
        --no-debug
            Unset debug.
+
+       --no-disable
+           Unset disable.
 
        --no-margin-check
            Unset margin-check.

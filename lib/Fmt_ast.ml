@@ -159,7 +159,7 @@ let drop_while ~f s =
   String.sub s ~pos:!i ~len:(String.length s - !i)
 
 let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
-  if not c.conf.fmt_opts.disable then f c
+  if not c.conf.opr_opts.disable then f c
   else
     let loc = Source.extend_loc_to_include_attributes loc l in
     Cmts.drop_inside c.cmts loc ;
