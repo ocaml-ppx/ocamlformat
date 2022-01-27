@@ -1252,7 +1252,7 @@ let config =
     Arg.(
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
-let _debug =
+let debug =
   let doc = "Generate debugging output." in
   let default = false in
   C.flag ~default ~names:["g"; "debug"] ~doc ~kind
@@ -1289,7 +1289,7 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
-let _margin_check =
+let margin_check =
   let doc = "Emit a warning if the formatted output exceeds the margin." in
   C.flag ~default:false ~names:["margin-check"] ~doc ~kind
     (fun conf x ->
@@ -1952,8 +1952,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       { fmt_opts= default_profile
       ; opr_opts=
           { comment_check= C.default Operational.comment_check
-          ; debug= C.default _debug
-          ; margin_check= C.default _margin_check
+          ; debug= C.default debug
+          ; margin_check= C.default margin_check
           ; max_iters= C.default Operational.max_iters
           ; ocaml_version= C.default Operational.ocaml_version } }
     in
