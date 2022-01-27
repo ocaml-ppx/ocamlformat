@@ -20,7 +20,7 @@
 
   + Preserve position of comments attached to the last node of a subtree (#1667, @gpetiot)
 
-  + Do not override the values of the following non-formatting options when a profile is set: `comment-check`, `disable`, `max-iters`, `ocaml-version`, and `quiet` (#<PR_NUMBER>, @gpetiot).
+  + Do not override the values of the following non-formatting options when a profile is set: `comment-check`, `disable`, `max-iters`, `ocaml-version`, and `quiet` (#1995, @gpetiot).
 
 #### Changes
 
