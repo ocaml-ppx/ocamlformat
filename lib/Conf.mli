@@ -12,7 +12,7 @@
 (** Configuration options *)
 
 (** Formatting options *)
-type t =
+type fmt_opts =
   { align_cases: bool
   ; align_constructors_decl: bool
   ; align_variants_decl: bool
@@ -31,8 +31,6 @@ type t =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
-  ; comment_check: bool
-  ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
@@ -58,19 +56,14 @@ type t =
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
-  ; max_iters: int
-        (** Fail if output of formatting does not stabilize within
-            [max_iters] iterations. *)
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; parse_toplevel_phrases: bool
-  ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
@@ -84,9 +77,27 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-val default_profile : t
+val default_profile : fmt_opts
 
 type file = Stdin | File of string
+
+(** Options changing the tool's behavior *)
+type opr_opts =
+  { comment_check: bool
+  ; debug: bool  (** Generate debugging output if true. *)
+  ; disable: bool
+  ; margin_check: bool
+        (** Check whether the formatted output exceeds the margin. *)
+  ; max_iters: int
+        (** Fail if output of formatting does not stabilize within
+            [max_iters] iterations. *)
+  ; ocaml_version: Ocaml_version.t
+        (** Version of OCaml syntax of the output. *)
+  ; quiet: bool }
+
+type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+
+val default : t
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
 
@@ -107,13 +118,7 @@ type action =
   | Print_config of t  (** Print the configuration and exit. *)
   | Numeric of input * (int * int)
 
-(** Options changing the tool's behavior *)
-type opts =
-  { debug: bool  (** Generate debugging output if true. *)
-  ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *) }
-
-val action : unit -> (action * opts) Cmdliner.Term.result
+val action : unit -> action Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
 
 val update : ?quiet:bool -> t -> Extended_ast.attribute -> t

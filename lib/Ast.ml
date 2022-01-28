@@ -33,16 +33,16 @@ let ( init
   let ocaml_version = ref Ocaml_version.sys_version in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
-    leading_nested_match_parens := conf.leading_nested_match_parens ;
-    parens_ite := conf.parens_ite ;
-    ocaml_version := conf.ocaml_version ;
+    leading_nested_match_parens := conf.fmt_opts.leading_nested_match_parens ;
+    parens_ite := conf.fmt_opts.parens_ite ;
+    ocaml_version := conf.opr_opts.ocaml_version ;
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register, leading_nested_match_parens, parens_ite, ocaml_version)
 
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
-let fit_margin (c : Conf.t) x = x * 3 < c.margin
+let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin
 
 (** 'Classes' of expressions which are parenthesized differently. *)
 type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
@@ -237,7 +237,7 @@ module Longident = struct
 
   (** [fit_margin c x] returns [true] if and only if [x] does not exceed 2/3
       of the margin. *)
-  let fit_margin (c : Conf.t) x = x * 3 < c.margin * 2
+  let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin * 2
 
   let is_simple c x =
     let rec length (x : Longident.t) =
@@ -498,10 +498,10 @@ module Structure_item = struct
      |Pstr_class [] ->
         false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
+  let is_simple (itm, (c : Conf.t)) =
+    match c.fmt_opts.module_item_spacing with
     | `Compact | `Preserve ->
-        Location.is_single_line itm.pstr_loc c.Conf.margin
+        Location.is_single_line itm.pstr_loc c.fmt_opts.margin
     | `Sparse -> (
       match itm.pstr_desc with
       | Pstr_include {pincl_mod= me; _} | Pstr_module {pmb_expr= me; _} ->
@@ -518,7 +518,9 @@ module Structure_item = struct
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
+    match
+      Conf.(cI.fmt_opts.module_item_spacing, cJ.fmt_opts.module_item_spacing)
+    with
     | `Compact, `Compact -> (
       match (itmI.pstr_desc, itmJ.pstr_desc) with
       | Pstr_eval _, Pstr_eval _
@@ -541,7 +543,9 @@ module Structure_item = struct
     cmts_between s cc i1.pstr_loc i2.pstr_loc
     || has_doc i1 || has_doc i2
     ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    match
+      Conf.(c1.fmt_opts.module_item_spacing, c2.fmt_opts.module_item_spacing)
+    with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.pstr_loc.loc_end i2.pstr_loc.loc_start
     | _ ->
@@ -585,10 +589,10 @@ module Signature_item = struct
      |Psig_class [] ->
         false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
+  let is_simple (itm, (c : Conf.t)) =
+    match c.fmt_opts.module_item_spacing with
     | `Compact | `Preserve ->
-        Location.is_single_line itm.psig_loc c.Conf.margin
+        Location.is_single_line itm.psig_loc c.fmt_opts.margin
     | `Sparse -> (
       match itm.psig_desc with
       | Psig_open {popen_expr= i; _}
@@ -598,7 +602,9 @@ module Signature_item = struct
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
+    match
+      Conf.(cI.fmt_opts.module_item_spacing, cJ.fmt_opts.module_item_spacing)
+    with
     | `Compact, `Compact -> (
       match (itmI.psig_desc, itmJ.psig_desc) with
       | Psig_value _, Psig_value _
@@ -622,7 +628,9 @@ module Signature_item = struct
     cmts_between s cc i1.psig_loc i2.psig_loc
     || has_doc i1 || has_doc i2
     ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    match
+      Conf.(c1.fmt_opts.module_item_spacing, c2.fmt_opts.module_item_spacing)
+    with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.psig_loc.loc_end i2.psig_loc.loc_start
     | _ ->
@@ -634,9 +642,9 @@ end
 module Vb = struct
   let has_doc itm = List.exists ~f:Attr.is_doc itm.pvb_attributes
 
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.pvb_loc c.Conf.margin
+  let is_simple (i, (c : Conf.t)) =
+    Poly.(c.fmt_opts.module_item_spacing = `Compact)
+    && Location.is_single_line i.pvb_loc c.fmt_opts.margin
 
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pvb_loc i2.pvb_loc
@@ -649,15 +657,18 @@ module Td = struct
   let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
 
   let is_simple (i, (c : Conf.t)) =
-    match c.module_item_spacing with
-    | `Compact | `Preserve -> Location.is_single_line i.ptype_loc c.margin
+    match c.fmt_opts.module_item_spacing with
+    | `Compact | `Preserve ->
+        Location.is_single_line i.ptype_loc c.fmt_opts.margin
     | `Sparse -> false
 
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.ptype_loc i2.ptype_loc
     || has_doc i1 || has_doc i2
     ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    match
+      Conf.(c1.fmt_opts.module_item_spacing, c2.fmt_opts.module_item_spacing)
+    with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.ptype_loc.loc_end
           i2.ptype_loc.loc_start
@@ -672,17 +683,19 @@ module Class_field = struct
     | Pcf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
+  let is_simple (itm, (c : Conf.t)) =
+    match c.fmt_opts.module_item_spacing with
     | `Compact | `Preserve ->
-        Location.is_single_line itm.pcf_loc c.Conf.margin
+        Location.is_single_line itm.pcf_loc c.fmt_opts.margin
     | `Sparse -> false
 
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pcf_loc i2.pcf_loc
     || has_doc i1 || has_doc i2
     ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    match
+      Conf.(c1.fmt_opts.module_item_spacing, c2.fmt_opts.module_item_spacing)
+    with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.pcf_loc.loc_end i2.pcf_loc.loc_start
     | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
@@ -696,17 +709,19 @@ module Class_type_field = struct
     | Pctf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
-  let is_simple (itm, c) =
-    match c.Conf.module_item_spacing with
+  let is_simple (itm, (c : Conf.t)) =
+    match c.fmt_opts.module_item_spacing with
     | `Compact | `Preserve ->
-        Location.is_single_line itm.pctf_loc c.Conf.margin
+        Location.is_single_line itm.pctf_loc c.fmt_opts.margin
     | `Sparse -> false
 
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pctf_loc i2.pctf_loc
     || has_doc i1 || has_doc i2
     ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    match
+      Conf.(c1.fmt_opts.module_item_spacing, c2.fmt_opts.module_item_spacing)
+    with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.pctf_loc.loc_end i2.pctf_loc.loc_start
     | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
@@ -804,8 +819,8 @@ let location = function
 
 let break_between_modules s cc (i1, c1) (i2, c2) =
   let has_doc itm = List.exists ~f:Attr.is_doc (attributes itm) in
-  let is_simple (itm, c) =
-    Location.is_single_line (location itm) c.Conf.margin
+  let is_simple (itm, (c : Conf.t)) =
+    Location.is_single_line (location itm) c.fmt_opts.margin
   in
   cmts_between s cc (location i1) (location i2)
   || has_doc i1 || has_doc i2

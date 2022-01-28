@@ -113,7 +113,7 @@
  (action
   (with-stdout-to args_grouped-conventional.ml.stdout
    (with-stderr-to args_grouped-conventional.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 %{dep:tests/args_grouped.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 --max-iters=3 %{dep:tests/args_grouped.ml})))))
 
 (rule
  (alias runtest)
@@ -5050,7 +5050,7 @@
  (action
   (with-stdout-to wrap_comments.ml.stdout
    (with-stderr-to wrap_comments.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat %{dep:tests/wrap_comments.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --max-iters=3 %{dep:tests/wrap_comments.ml})))))
 
 (rule
  (alias runtest)
