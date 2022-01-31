@@ -204,6 +204,10 @@ let _ =
   [| (let a = b in
       c ) |]
 
+let _ =
+  [: (let a = b in
+      c ) :]
+
 let () = if a then b (* asd *)
 
 [@@@ocamlformat "if-then-else=compact"]

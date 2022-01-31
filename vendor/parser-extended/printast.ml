@@ -93,6 +93,12 @@ let fmt_char_option f = function
   | None -> fprintf f "None"
   | Some c -> fprintf f "Some %c" c
 
+(* Jane Street extension *)
+let fmt_sign f = function
+  | Positive -> fprintf f "Positive"
+  | Negative -> fprintf f "Negative"
+(* End Jane Street extension *)
+
 let fmt_constant i f x =
   line i f "constant %a\n" fmt_location x.pconst_loc;
   let i = i+1 in
@@ -104,6 +110,13 @@ let fmt_constant i f x =
   | Pconst_string (s, strloc, Some delim) ->
       line i f "PConst_string (%S,%a,Some %S)\n" s fmt_location strloc delim
   | Pconst_float (s,m) -> line i f "PConst_float (%s,%a)\n" s fmt_char_option m
+
+  (* Jane Street extension *)
+  | Pconst_unboxed_integer (s,j,m) ->
+      line i f "PConst_unboxed_integer (%a,%s,%a)" fmt_sign s j fmt_char_option m
+  | Pconst_unboxed_float (s,j,m) ->
+      line i f "PConst_unboxed_float (%a,%s,%a)" fmt_sign s j fmt_char_option m
+  (* End Jane Street extension *)
 
 let fmt_mutable_flag f x =
   match x with
@@ -234,6 +247,12 @@ let rec core_type i ppf x =
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
+
+  (* Jane Street extension *)
+  | Ptyp_constr_unboxed (li, l) ->
+      line i ppf "Ptyp_constr_unboxed %a\n" fmt_longident_loc li;
+      list i core_type ppf l
+  (* End Jane Street extension *)
 
 and arrow_param i ppf {pap_label; pap_loc; pap_type} =
   line i ppf "arrow_param %a\n" fmt_location pap_loc;
@@ -514,7 +533,7 @@ and if_branch i ppf { if_cond; if_body } =
 
 and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   match desc with
-  | Pparam_val (l, eo, p) ->
+  | Pparam_val (_islocal, l, eo, p) ->
       line i ppf "Pparam_val %a\n" fmt_location loc;
       arg_label (i+1) ppf l;
       option (i+1) expression ppf eo;
@@ -573,7 +592,7 @@ and attributes i ppf l =
 and ext_attrs i ppf attrs =
   let i = i + 1 in
   option (i + 1)
-    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext) 
+    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext)
     ppf attrs.attrs_extension;
   attributes i ppf attrs.attrs_before;
   attributes i ppf attrs.attrs_after
@@ -844,6 +863,10 @@ and module_type i ppf x =
   | Pmty_extension (s, arg) ->
       line i ppf "Pmod_extension %a\n" fmt_string_loc s;
       payload i ppf arg
+  | Pmty_strengthen (mt, li) ->
+      line i ppf "Pmty_strengthen\n";
+      module_type i ppf mt;
+      longident_loc i ppf li
 
 and signature i ppf x = list i signature_item ppf x
 

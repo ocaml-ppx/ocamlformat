@@ -32,7 +32,9 @@ module Position : sig
 end
 
 module Location : sig
-  include module type of Location
+  include module type of struct
+    include Location
+  end
 
   type comparator_witness
 
@@ -80,7 +82,9 @@ module Location : sig
 end
 
 module Longident : sig
-  include module type of Longident
+  include module type of struct
+    include Longident
+  end
 
   val lident : string -> t
   (** Make a Lident from a dotless string *)

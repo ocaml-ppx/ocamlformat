@@ -25,6 +25,8 @@ val update_state : t -> [`Enable | `Disable] -> t
 
 val parse_state_attr : Parsetree.attribute -> [`Enable | `Disable] option
 
+val is_jane_street_local_annotation : t -> string -> test:string -> bool
+
 val parse_line :
      t
   -> ?version_check:bool

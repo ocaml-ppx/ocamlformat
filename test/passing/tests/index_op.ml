@@ -175,6 +175,12 @@ let _ = Array.get [||] (-8)
 
 let _ = Array.unsafe_get [||] (-8)
 
+let _ = [::].:(-8)
+
+let _ = Iarray.get [::] (-8)
+
+let _ = Iarray.unsafe_get [::] (-8)
+
 let _ = Bigarray.Genarray.get x [||] (-8)
 
 let _ = Bigarray.Genarray.unsafe_get x [||] (-8)

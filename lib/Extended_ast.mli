@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 open Parser_extended
+module Extensions = Extensions
 
 include module type of Parsetree
 

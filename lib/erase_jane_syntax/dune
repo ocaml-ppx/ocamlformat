@@ -1,0 +1,3 @@
+(library
+ (public_name ocamlformat.erase_jane_syntax)
+ (name erase_jane_syntax))

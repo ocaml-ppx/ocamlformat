@@ -121,6 +121,7 @@ let _ = let a = b in c :: d
 let _ = a :: ( let a = b in c )
 let _ = [ ( let a = b in c ) ]
 let _ = [| ( let a = b in c ) |]
+let _ = [: ( let a = b in c ) :]
 
 let () =
   if a then begin b

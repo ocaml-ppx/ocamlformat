@@ -79,6 +79,10 @@ module Typ = struct
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
   let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
+
+  (* Jane Street extension *)
+  let constr_unboxed ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_constr_unboxed (a, b))
+  (* End Jane Street extension *)
 end
 
 module Pat = struct
@@ -198,6 +202,7 @@ module Mty = struct
   let with_ ?loc ?attrs a b = mk ?loc ?attrs (Pmty_with (a, b))
   let typeof_ ?loc ?attrs a = mk ?loc ?attrs (Pmty_typeof a)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmty_extension a)
+  let strengthen ?loc ?attrs a b = mk ?loc ?attrs (Pmty_strengthen (a, b))
 end
 
 module Mod = struct
@@ -600,3 +605,26 @@ module Of = struct
   let inherit_ ?loc ty =
     mk ?loc (Oinherit ty)
 end
+
+(* Jane Street extension *)
+module Jane = struct
+  let sign_str = function
+    | Positive -> ""
+    | Negative -> "-"
+
+  let pconst_unboxed_integer sign value suffix =
+    if Erase_jane_syntax.should_erase ()
+    then Pconst_integer (sign_str sign ^ value, suffix)
+    else Pconst_unboxed_integer (sign, value, suffix)
+
+  let pconst_unboxed_float sign value suffix =
+    if Erase_jane_syntax.should_erase ()
+    then Pconst_float (sign_str sign ^ value, suffix)
+    else Pconst_unboxed_float (sign, value, suffix)
+
+  let ptyp_constr_unboxed ident args =
+    if Erase_jane_syntax.should_erase ()
+    then Ptyp_constr (ident, args)
+    else Ptyp_constr_unboxed (ident, args)
+end
+(* End Jane Street extension *)

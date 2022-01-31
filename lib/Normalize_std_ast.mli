@@ -9,11 +9,27 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val ast : 'a Std_ast.t -> Conf.t -> 'a -> 'a
-(** Normalize an AST fragment. *)
+val ast : 'a Std_ast.t -> erase_jane_syntax:bool -> Conf.t -> 'a -> 'a
+(** Normalize an AST fragment. If [erase_jane_syntax] is true, remove all
+    [Jane_syntax] attributes signaling erasable syntax. *)
 
 val equal :
-  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
-(** Compare fragments for equality up to normalization. *)
+     'a Std_ast.t
+  -> ignore_doc_comments:bool
+  -> erase_jane_syntax:bool
+  -> Conf.t
+  -> old:'a
+  -> new_:'a
+  -> bool
+(** Compare fragments for equality up to normalization. If
+    [erase_jane_syntax] is true, first removes all [Jane_syntax] attributes
+    signaling erasable syntax from the [old] AST fragment; the [new_] AST
+    fragment should already omit them. *)
 
-val moved_docstrings : 'a Std_ast.t -> Conf.t -> 'a -> 'a -> Cmt.error list
+val moved_docstrings :
+     'a Std_ast.t
+  -> erase_jane_syntax:bool
+  -> Conf.t
+  -> old:'a
+  -> new_:'a
+  -> Cmt.error list

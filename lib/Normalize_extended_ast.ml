@@ -66,10 +66,28 @@ let normalize_code ~normalize_cmt conf (m : Ast_mapper.mapper) txt =
 let docstring (c : Conf.t) =
   Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings.v
 
+let normalize_jane_street_local_annotations c : attributes -> attributes =
+  List.map ~f:(fun attr ->
+      match attr with
+      | {attr_name= {txt= old_name; _}; attr_payload= PStr []; _} ->
+          let new_name txt =
+            {attr with attr_name= {attr.attr_name with txt}}
+          in
+          if Conf.is_jane_street_local_annotation c "local" ~test:old_name
+          then new_name "extension.local"
+          else if
+            Conf.is_jane_street_local_annotation c "global" ~test:old_name
+          then new_name "extension.global"
+          else if
+            Conf.is_jane_street_local_annotation c "exclave" ~test:old_name
+          then new_name "extension.exclave"
+          else attr
+      | _ -> attr )
+
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
-let make_mapper ~ignore_doc_comments ~normalize_doc =
+let make_mapper (conf : Conf.t) ~ignore_doc_comments ~normalize_doc =
   let open Ast_helper in
   (* remove locations *)
   let location _ _ = Location.none in
@@ -137,11 +155,61 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
           (Exp.sequence ~loc:loc1 ~attrs:attrs1
              (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
              exp3 )
+    | Pexp_extension (({txt= old_name; _} as old_loc_name), PStr [])
+      when conf.opr_opts.rewrite_old_style_jane_street_local_annotations.v ->
+        let new_name txt =
+          Exp.extension ~loc:loc1 ~attrs:attrs1
+            ({old_loc_name with txt}, PStr [])
+        in
+        let exp' =
+          if Conf.is_jane_street_local_annotation conf "local" ~test:old_name
+          then new_name "extension.local"
+          else if
+            Conf.is_jane_street_local_annotation conf "exclave"
+              ~test:old_name
+          then new_name "extension.exclave"
+          else exp
+        in
+        Ast_mapper.default_mapper.expr m exp'
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
+  (* The old-style [[@local]] attributes can only occur in record label
+     declarations, types, and patterns; checking there explicitly ensures we
+     don't confuse them with the existing [let[@local always] f x = x]
+     attribute, which occurs at a different level. *)
   let typ (m : Ast_mapper.mapper) typ =
+    (* Types also need their location stack cleared *)
     let typ = {typ with ptyp_loc_stack= []} in
+    let typ =
+      if conf.opr_opts.rewrite_old_style_jane_street_local_annotations.v then
+        { typ with
+          ptyp_attributes=
+            normalize_jane_street_local_annotations conf typ.ptyp_attributes
+        }
+      else typ
+    in
     Ast_mapper.default_mapper.typ m typ
+  in
+  let pat (m : Ast_mapper.mapper) pat =
+    let pat =
+      if conf.opr_opts.rewrite_old_style_jane_street_local_annotations.v then
+        { pat with
+          ppat_attributes=
+            normalize_jane_street_local_annotations conf pat.ppat_attributes
+        }
+      else pat
+    in
+    Ast_mapper.default_mapper.pat m pat
+  in
+  let label_declaration (m : Ast_mapper.mapper) ld =
+    let ld =
+      if conf.opr_opts.rewrite_old_style_jane_street_local_annotations.v then
+        { ld with
+          pld_attributes=
+            normalize_jane_street_local_annotations conf ld.pld_attributes }
+      else ld
+    in
+    Ast_mapper.default_mapper.label_declaration m ld
   in
   { Ast_mapper.default_mapper with
     location
@@ -149,7 +217,9 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
   ; attributes
   ; repl_phrase
   ; expr
-  ; typ }
+  ; pat
+  ; typ
+  ; label_declaration }
 
 let normalize_cmt (conf : Conf.t) =
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
@@ -168,7 +238,7 @@ let normalize_cmt (conf : Conf.t) =
 
     method code c =
       let mapper =
-        make_mapper ~ignore_doc_comments:false ~normalize_doc:self#doc
+        make_mapper conf ~ignore_doc_comments:false ~normalize_doc:self#doc
       in
       let normalize_cmt _conf cmt = self#cmt cmt in
       normalize_code ~normalize_cmt conf mapper c
@@ -177,7 +247,7 @@ let normalize_cmt (conf : Conf.t) =
 let ast fragment ~ignore_doc_comments c =
   let normalize_cmt = normalize_cmt c in
   map fragment
-    (make_mapper ~ignore_doc_comments ~normalize_doc:normalize_cmt#doc)
+    (make_mapper c ~ignore_doc_comments ~normalize_doc:normalize_cmt#doc)
 
 module Normalized_cmt = struct
   type t =

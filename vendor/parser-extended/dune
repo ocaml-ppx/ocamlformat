@@ -3,7 +3,12 @@
  (public_name ocamlformat-lib.parser_extended)
  (flags
   (:standard -w -9 -open Parser_shims -open Ocaml_common))
- (libraries compiler-libs.common menhirLib parser_shims ocaml_common))
+ (libraries
+  erase_jane_syntax
+  compiler-libs.common
+  menhirLib
+  parser_shims
+  ocaml_common))
 
 (ocamllex lexer)
 

@@ -1,12 +1,12 @@
 module List : sig
-  include module type of List
+  include module type of struct include List end
 
   val find_map : ('a -> 'b option) -> 'a list -> 'b option
   (** @since ocaml-4.10 *)
 end
 
 module Int : sig
-  include module type of Int
+  include module type of struct include Int end
 
   val min : int -> int -> int
   (** @since ocaml-4.13.0 *)
@@ -16,21 +16,24 @@ module Int : sig
 end
 
 module Misc : sig
-  include module type of Misc
+  include module type of struct include Misc end
 
   module Color : sig
-    include module type of Color
+    include module type of struct include Color end
 
     val default_setting : setting
     (** @since ocaml-4.09 *)
   end
 
   module Error_style : sig
-    include module type of Error_style
+    include module type of struct include Error_style end
 
     val default_setting : setting
     (** @since ocaml-4.09 *)
   end
+
+  (** Propositional equality *)
+  type (_, _) eq = Refl : ('a, 'a) eq
 end
 
 module Clflags : sig

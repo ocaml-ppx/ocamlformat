@@ -10,7 +10,12 @@
 (**************************************************************************)
 
 open Parser_extended
+module Extensions = Extensions
 include Parsetree
+
+(* Enable all language extensions *)
+let () =
+  List.iter ~f:Language_extension.enable Language_extension.max_compatible
 
 let equal_core_type : core_type -> core_type -> bool = Poly.equal
 
