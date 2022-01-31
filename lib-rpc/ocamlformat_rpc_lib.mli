@@ -10,7 +10,12 @@
 (**************************************************************************)
 
 type format_args =
-  {path: string option; config: (string * string) list option}
+  { path: string option
+        (** Path used for the current formatting request, this allows
+            ocamlformat to determine which .ocamlformat files must be
+            applied. *)
+  ; config: (string * string) list option
+        (** Additional options used for the current formatting request. *) }
 
 val empty_args : format_args
 
@@ -87,6 +92,8 @@ module Make (IO : IO.S) : sig
 
       val format :
            format_args:format_args
+             (** [format_args] modifies the server's configuration
+                 temporarily, for the current request. *)
         -> string
         -> t
         -> (string, [> `Msg of string]) result IO.t
@@ -101,26 +108,34 @@ module Make (IO : IO.S) : sig
     -> IO.oc
     -> string list
     -> (client, [`Msg of string]) result IO.t
-  (** [pick_client ~pid in out versions] returns the most-fitting client
-      according to a list of [versions], that is a list ordered from the most
-      to the least wished version. The given `IO.ic` and `IO.oc` values are
-      referenced by the `client` value and must be kept open until `halt` is
+  (** [pick_client ~pid in out versions] handles the interaction with the
+      server to agree with a common version of the RPC to use. Trying
+      successively each version of the provided list [versions] until the
+      server agrees, for this reason you might want to list newer versions
+      before older versions. The given [IO.ic] and [IO.oc] values are
+      referenced by the [client] value and must be kept open until [halt] is
       called. *)
 
   val pid : client -> int
 
   val halt : client -> (unit, [> `Msg of string]) result IO.t
   (** Tell the server to close the connection. No more commands can be sent
-      using the same `client` value. *)
+      using the same [client] value. *)
 
   val config :
        (string * string) list
     -> client
     -> (unit, [> `Msg of string]) result IO.t
+  (** @version v1 *)
 
   val format :
        ?format_args:format_args
+         (** [format_args] modifies the server's configuration temporarily,
+             for the current request.
+
+             @since v2 *)
     -> string
     -> client
     -> (string, [> `Msg of string]) result IO.t
+  (** When using v1, [format_args] will be ignored. *)
 end

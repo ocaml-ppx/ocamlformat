@@ -50,9 +50,9 @@ COMMANDS
        - Format CSEXP: submits a list as canonical s-expression CSEXP, where
        the first element of the list is a string to be formatted by
        OCamlFormat. The other arguments are (key, value) pairs, where key can
-       be either "Path" or "Config". They modify the server's configuration
-       temporarily, for the current request. The formatted output is sent as
-       a reply of the same form.
+       be either "Path" and/or "Config". They modify the server's
+       configuration temporarily, for the current request. The formatted
+       output is sent as a reply of the same form.
 
        Unknown commands are ignored.
 
