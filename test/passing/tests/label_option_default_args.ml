@@ -87,6 +87,8 @@ let f ?record:({a; b}) = ()
 
 let f ?array:([| 1; 2; 3 |]) = ()
 
+let f ?iarray:([: 1; 2; 3 :]) = ()
+
 let f ?or_:(Some () | None) = ()
 
 let f ?constraint_:(() : unit) = ()

@@ -13,43 +13,61 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
+val decompose_arrow :
+     Conf.t
+  -> Ast.t
+  -> arrow_param list
+  -> core_type
+  -> (arrow_param * bool) list * (arrow_param * bool) * Ast.t
+(** [decompose_arrow ctl ct2] returns a list of arrow params, where the last
+    is a dummy param corresponding to ct2 (the return type) and a bool
+    indicating the presence of a local attribute (which has been removed).
+    The returned Ast.t is a ctx that has similarly been updated to remove the
+    attributes *)
+
 type arg_kind =
-  | Val of arg_label * pattern Ast.xt * expression Ast.xt option
+  | Val of bool * arg_label * pattern Ast.xt * expression Ast.xt option
   | Newtypes of string loc list
 
 val fun_ :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
   -> arg_kind list * expression Ast.xt
-(** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
-    and the body of the function [exp]. [will_keep_first_ast_node] is set by
-    default, otherwise the [exp] is returned without modification. *)
+(** [fun_ conf cmts will_keep_first_ast_node exp] returns the list of
+    arguments and the body of the function [exp]. [will_keep_first_ast_node]
+    is set by default, otherwise the [exp] is returned without modification. *)
 
 val cl_fun :
      ?will_keep_first_ast_node:bool
+  -> Conf.t
   -> Cmts.t
   -> class_expr Ast.xt
   -> arg_kind list * class_expr Ast.xt
-(** [cl_fun will_keep_first_ast_node cmts exp] returns the list of arguments
-    and the body of the function [exp]. [will_keep_first_ast_node] is set by
-    default, otherwise the [exp] is returned without modification. *)
+(** [cl_fun conf will_keep_first_ast_node cmts exp] returns the list of
+    arguments and the body of the function [exp]. [will_keep_first_ast_node]
+    is set by default, otherwise the [exp] is returned without modification. *)
 
 module Exp : sig
   val infix :
-       Cmts.t
+       Conf.t
+    -> Cmts.t
     -> Prec.t option
     -> expression Ast.xt
     -> (string loc option * expression Ast.xt) list
-  (** [infix cmts prec exp] returns the infix operator and the list of
+  (** [infix conf cmts prec exp] returns the infix operator and the list of
       operands applied to this operator from expression [exp]. [prec] is the
       precedence of the infix operator. *)
 end
 
 val sequence :
-  Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
-(** [sequence cmts exp] returns the list of expressions (with the optional
-    extension) from a sequence of expressions [exp]. *)
+     Conf.t
+  -> Cmts.t
+  -> expression Ast.xt
+  -> (label loc option * expression Ast.xt) list
+(** [sequence conf cmts exp] returns the list of expressions (with the
+    optional extension) from a sequence of expressions [exp]. *)
 
 val mod_with :
      module_type Ast.xt
@@ -71,12 +89,15 @@ module Let_binding : sig
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
+    ; lb_local: bool
     ; lb_loc: Location.t }
 
   val of_let_binding :
-    Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t
+    Conf.t -> Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t
 
-  val of_let_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
+  val of_let_bindings :
+    Conf.t -> Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
-  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
+  val of_binding_ops :
+    Conf.t -> Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end

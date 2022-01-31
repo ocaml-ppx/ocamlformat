@@ -92,3 +92,9 @@ let add_edge target dep =
     Hashtbl.replace edge_count target
       (1 + try Hashtbl.find edge_count target with Not_found -> 0) ;
     if not (Hashtbl.mem edge_count dep) then Hashtbl.add edge_count dep 0 )
+
+let iarray_fold_transf (f : numbering -> 'a -> numbering * 'b) n
+    (a : 'a iarray)
+    : numbering * 'b iarray
+  =
+  match Iarray.length a with 0 -> (n, [::]) | 1 -> x

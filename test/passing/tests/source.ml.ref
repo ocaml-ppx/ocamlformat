@@ -2387,7 +2387,7 @@ let intAorB = function `TagA i -> i | `TagB -> 4
 type _ wrapPoly =
   | WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
 
-let example6 : type a. a wrapPoly -> a -> int =
+let example6 : type a. a wrapPoly -> (a -> int) =
  fun w ->
   match w with
   | WrapPoly ATag -> intA
@@ -9124,7 +9124,7 @@ type t = | ;;
 
 M.(Some x) [@foo]
 
-[@@@foo:]
+[@@@foo: ]
 
 let x = (A B).a
 

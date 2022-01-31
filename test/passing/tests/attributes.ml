@@ -83,7 +83,12 @@ if [@test] true then () else () ;;
 
 if [@test] true then () else if [@test] true then () else ()
 
-let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test])
+let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test], [::] [@test])
+
+let _ =
+  ( [() for _ = 0 to 1] [@test]
+  , [|() for _ = 0 to 1|] [@test]
+  , [:() for _ = 0 to 1:] [@test] )
 
 type blocklist =
   { f1: int [@version 1, 1, 0]  (** short comment *)
@@ -144,7 +149,7 @@ let () = ()
 
 and[@warning "-32"] f = ()
 
-external x : a -> b -> (a -> b[@test]) = ""
+external x : a -> b -> ((a -> b)[@test]) = ""
 
 let f = fun [@test] x y -> ()
 
@@ -247,6 +252,14 @@ let _ = f 1 ([e; f] [@a])
 
 let _ = f 1 ([|e; f|] [@a])
 
+let _ = f 1 ([:e; f:] [@a])
+
+let _ = f 1 ([() for _ = 0 to 1] [@a])
+
+let _ = f 1 ([|() for _ = 0 to 1|] [@a])
+
+let _ = f 1 ([:() for _ = 0 to 1:] [@a])
+
 let _ =
   object
     method g = (a <- b) [@a]
@@ -325,6 +338,8 @@ let (Foo ((A | B) [@attr])) = ()
 let ([(A | B) [@attr]; b; c] [@attr]) = ()
 
 let ([|a; (A | B) [@attr]; c|] [@attr]) = ()
+
+let ([:a; (A | B) [@attr]; c:] [@attr]) = ()
 
 let {b= (A | B) [@attr]} = ()
 

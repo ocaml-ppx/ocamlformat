@@ -18,6 +18,36 @@ open Lexing
 type t = Warnings.loc =
   { loc_start: position; loc_end: position; loc_ghost: bool }
 
+let equal
+      { loc_start = { pos_fname = loc_start_pos_fname_1
+                    ; pos_lnum = loc_start_pos_lnum_1
+                    ; pos_bol = loc_start_pos_bol_1
+                    ; pos_cnum = loc_start_pos_cnum_1 }
+      ; loc_end = { pos_fname = loc_end_pos_fname_1
+                  ; pos_lnum = loc_end_pos_lnum_1
+                  ; pos_bol = loc_end_pos_bol_1
+                  ; pos_cnum = loc_end_pos_cnum_1 }
+      ; loc_ghost = loc_ghost_1 }
+      { loc_start = { pos_fname = loc_start_pos_fname_2
+                    ; pos_lnum = loc_start_pos_lnum_2
+                    ; pos_bol = loc_start_pos_bol_2
+                    ; pos_cnum = loc_start_pos_cnum_2 }
+      ; loc_end = { pos_fname = loc_end_pos_fname_2
+                  ; pos_lnum = loc_end_pos_lnum_2
+                  ; pos_bol = loc_end_pos_bol_2
+                  ; pos_cnum = loc_end_pos_cnum_2 }
+      ; loc_ghost = loc_ghost_2 }
+  =
+  String.equal loc_start_pos_fname_1 loc_start_pos_fname_2 &&
+  Int.equal    loc_start_pos_lnum_1  loc_start_pos_lnum_2  &&
+  Int.equal    loc_start_pos_bol_1   loc_start_pos_bol_2   &&
+  Int.equal    loc_start_pos_cnum_1  loc_start_pos_cnum_2  &&
+  String.equal loc_end_pos_fname_1   loc_end_pos_fname_2   &&
+  Int.equal    loc_end_pos_lnum_1    loc_end_pos_lnum_2    &&
+  Int.equal    loc_end_pos_bol_1     loc_end_pos_bol_2     &&
+  Int.equal    loc_end_pos_cnum_1    loc_end_pos_cnum_2    &&
+  Bool.equal   loc_ghost_1           loc_ghost_2
+
 let in_file = Warnings.ghost_loc_in_file
 
 let none = in_file "_none_"
@@ -36,6 +66,11 @@ let init lexbuf fname =
     pos_bol = 0;
     pos_cnum = 0;
   }
+
+let ghostify l =
+  if l.loc_ghost
+  then l
+  else { l with loc_ghost = true }
 
 let symbol_rloc () = {
   loc_start = Parsing.symbol_start_pos ();

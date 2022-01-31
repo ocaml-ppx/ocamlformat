@@ -22,6 +22,10 @@
 
 open Asttypes
 
+(* Jane Street extension *)
+type sign = Positive | Negative
+(* End Jane Street extension *)
+
 type constant_desc =
   | Pconst_integer of string * char option
       (** Integer constants such as [3] [3l] [3L] [3n].
@@ -45,6 +49,17 @@ type constant_desc =
      Suffixes [g-z][G-Z] are accepted by the parser.
      Suffixes are rejected by the typechecker.
   *)
+
+  (* Jane street extension *)
+  (* Unboxed literals *)
+  | Pconst_unboxed_integer of sign * string * char option
+  (* [#3l], [-#42n] *)
+  (* The suffix is required, but ocamlformat need not enforce this, and
+     it's easier not to *)
+
+  | Pconst_unboxed_float of sign * string * char option
+  (* [#3.0], [-#4.] *)
+  (* End Jane Street extension *)
 
 type constant = {
   pconst_desc : constant_desc;
@@ -188,6 +203,10 @@ and core_type_desc =
          *)
   | Ptyp_package of package_type  (** [(module S)]. *)
   | Ptyp_extension of extension  (** [[%id]]. *)
+
+  (* Jane Street extension *)
+  | Ptyp_constr_unboxed of Longident.t loc * core_type list
+  (* End Jane Street extension *)
 
 and package_type = Longident.t loc * (Longident.t loc * core_type) list
 (** As {!package_type} typed values:
@@ -876,6 +895,7 @@ and module_type_desc =
   | Pmty_typeof of module_expr  (** [module type of ME] *)
   | Pmty_extension of extension  (** [[%id]] *)
   | Pmty_alias of Longident.t loc  (** [(module M)] *)
+  | Pmty_strengthen of module_type * Longident.t loc
 
 and functor_parameter =
   | Unit  (** [()] *)

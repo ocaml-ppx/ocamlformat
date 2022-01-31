@@ -1,0 +1,127 @@
+let f a b c = 1
+
+let f a ~foo:b ?foo:(c = 1) ~d = ()
+
+let f ~x ~(y : string) ?(z : string) = ()
+
+let xs = [(fun a (type b) ~c -> 1)]
+
+let xs = [(fun a (type b) ~c -> 1)]
+
+let f () =
+  let a = [1] in
+  let r = 1 in
+  let f : 'a. 'a -> 'a = fun x -> x in
+  let g a b c : int = 1 in
+  let () = g (fun () -> ()) in
+  "asdfasdfasdfasdfasdfasdfasdf"
+
+let f () =
+  let a = [1] in
+  let r = 1 in
+  let f : 'a. 'a -> 'a = fun x -> x in
+  let g a b c : int = 1 in
+  let () = g (fun () -> ()) in
+  "asdfasdfasdfasdfasdfasdfasdf"
+
+type 'a r = {mutable a: 'a; b: 'a; c: 'a}
+
+type 'a r = Foo of 'a | Bar of 'a * 'a | Baz of int * string * 'a
+
+type ('a, 'b) cfn = a:'a -> ?b:b -> 'a -> int -> 'b
+
+let _ = ()
+
+let _ = ()
+
+let () = x
+
+let () = x
+
+let {b} = ()
+
+let {b} = ()
+
+let () = r
+
+let () = r
+
+let x : string = "hi"
+
+let (x : string) = "hi"
+
+let (x : string) = "hi"
+
+let x = ("hi" : string)
+
+let x = ("hi" : string)
+
+let x : 'a. 'a -> 'a = "hi"
+
+let x : 'a. 'a -> 'a = "hi"
+
+let f : 'a. 'a -> 'a = "hi"
+
+let foo () =
+  if true then () ;
+  ()
+
+type loc_long_attrs = (string[@ocaml.local]) -> (string[@ocaml.local])
+
+type loc_short_attrs = (string[@local]) -> (string[@local])
+
+type global_long_attrs =
+  | Foo of {s: string [@ocaml.global]}
+  | Bar of (string[@ocaml.global])
+
+type global_short_attrs =
+  | Foo of {s: string [@global]}
+  | Bar of (string[@global])
+
+type global_short_attrs =
+  | Foo of {s: string [@global]}
+  | Bar of (string[@global])
+
+let local_long_ext = [%ocaml.local] ()
+
+let local_short_ext = [%local] ()
+
+let exclave_long_ext = [%ocaml.exclave] ()
+
+let exclave_short_ext = [%exclave] ()
+
+let[@ocaml.local] upstream_local_attr_long x = x
+
+let[@ocaml.local never] upstream_local_attr_never_long x = x
+
+let[@ocaml.local always] upstream_local_attr_always_long x = x
+
+let[@ocaml.local maybe] upstream_local_attr_maybe_long x = x
+
+let[@local] upstream_local_attr_short x = x
+
+let[@local never] upstream_local_attr_never_short x = x
+
+let[@local always] upstream_local_attr_always_short x = x
+
+let[@local maybe] upstream_local_attr_maybe_short x = x
+
+let f x =
+  (* a *)
+  let y = 1 in
+  x + y
+
+let f x =
+  (* a *)
+  let y = 1 in
+  x + y
+
+let x =
+  (* a *)
+  let y = 1 in
+  y
+
+let x =
+  (* a *)
+  let y = 1 in
+  y

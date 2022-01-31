@@ -147,6 +147,12 @@ module C = struct
           pconst_desc
       | Pconst_string (s, loc, quotation_delimiter) ->
           Pconst_string (s, sub.location sub loc, quotation_delimiter)
+
+    (* Jane Street extension *)
+      | Pconst_unboxed_integer _
+      | Pconst_unboxed_float _
+          -> pconst_desc
+    (* End Jane Street extension *)
     in
     Const.mk ~loc desc
 end
@@ -214,6 +220,11 @@ module T = struct
         let lid, l = map_package_type sub pt in
         package ~loc ~attrs lid l
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
+
+    (* Jane Street extension *)
+    | Ptyp_constr_unboxed (lid, tl) ->
+        constr_unboxed ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
+    (* End Jane Street extension *)
 
   let map_type_declaration sub
       {ptype_name; ptype_params; ptype_cstrs;
@@ -364,6 +375,10 @@ module MT = struct
           (List.map (sub.with_constraint sub) l)
     | Pmty_typeof me -> typeof_ ~loc ~attrs (sub.module_expr sub me)
     | Pmty_extension x -> extension ~loc ~attrs (sub.extension sub x)
+    | Pmty_strengthen (mt,s) ->
+        strengthen ~loc ~attrs
+          (sub.module_type sub mt)
+          (map_loc sub s)
 
   let map_with_constraint sub = function
     | Pwith_type (lid, d) ->

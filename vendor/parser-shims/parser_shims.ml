@@ -31,6 +31,8 @@ module Misc = struct
 
     let default_setting = Contextual
   end
+
+  type (_, _) eq = Refl : ('a, 'a) eq
 end
 
 module Clflags = struct

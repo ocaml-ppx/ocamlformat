@@ -5,4 +5,4 @@
   (:standard -open Ocaml_common -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat-lib re))
+ (libraries erase_jane_syntax ocamlformat-lib re))

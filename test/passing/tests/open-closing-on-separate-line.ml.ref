@@ -317,6 +317,16 @@ let _ = M.((* A *) [|f|] (* B *))
 
 let _ = M.((* A *) [|f|] (* B *) [@warning "foo"] (* C *))
 
+let _ = M.([:f:] [@warning "foo"])
+
+let _ = M.((* A *) [:f:])
+
+let _ = M.([:f:] (* B *))
+
+let _ = M.((* A *) [:f:] (* B *))
+
+let _ = M.((* A *) [:f:] (* B *) [@warning "foo"] (* C *))
+
 let _ = M.([f] [@warning "foo"])
 
 let _ = M.((* A *) [f])

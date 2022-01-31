@@ -208,7 +208,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
   let parens_branch, expr_parens =
     if align_nested_match then (false, Some false)
     else if c.fmt_opts.leading_nested_match_parens.v then (false, None)
-    else (parenze_exp xast && not body_has_parens, Some false)
+    else (parenze_exp c xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
   let open_paren_branch, close_paren_branch, branch_expr =
@@ -220,7 +220,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
           in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
-        (fmt "@;<1 0>begin", close_paren, sub_exp ~ctx:(Exp ast) nested_exp)
+        (fmt "@;<1 0>begin", close_paren, sub_exp c ~ctx:(Exp ast) nested_exp)
     | _ ->
         let close_paren =
           fmt_if_k parens_branch
@@ -413,6 +413,20 @@ let get_list_expr (c : Conf.t) =
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[|" "|]"
 
+let get_iarray_expr (c : Conf.t) =
+  collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[:" ":]"
+
+(* Modeled after [collection_expr] in [`After] mode *)
+let wrap_comprehension (c : Conf.t) ~space_around ~punctuation comp =
+  let opn = "[" ^ punctuation in
+  let cls = punctuation ^ "]" in
+  let space = if space_around then 1 else 0 in
+  if c.fmt_opts.dock_collection_brackets.v then
+    hvbox 0
+      (wrap_k (str opn) (str cls)
+         (break space 2 $ hvbox 0 comp $ break space 0) )
+  else hvbox 0 (wrap_collec c ~space_around opn cls comp)
+
 let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
   let space = if space_around then 1 else 0 in
   let indent_opn, indent_cls =
@@ -453,6 +467,10 @@ let get_array_pat (c : Conf.t) ~ctx =
   collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v "[|"
     "|]"
 
+let get_iarray_pat (c : Conf.t) ~ctx =
+  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v "[:"
+    ":]"
+
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t
@@ -473,7 +491,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
     let ast = xbch.Ast.ast in
     match ast with
     | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
-        (true, sub_exp ~ctx:(Exp ast) nested_exp)
+        (true, sub_exp c ~ctx:(Exp ast) nested_exp)
     | _ -> (false, xbch)
   in
   let wrap_parens ~wrap_breaks k =

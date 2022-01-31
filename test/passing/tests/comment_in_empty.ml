@@ -18,6 +18,8 @@ let _ = (* this list is empty2 *) []
 
 let _ = [| (* this array is empty *) |]
 
+let _ = [: (* this immutable array is empty *) :]
+
 let _ = f ( (* comment in unit *) )
 
 let _ = f "asd" (* te""st *) 3
@@ -25,6 +27,7 @@ let _ = f "asd" (* te""st *) 3
 let x = function
   | [ (* empty list pat *) ]
    |[| (* empty array pat *) |]
+   |[: (* empty immutable array pat *) :]
    |( (* unit pat *) )
    |"" (* comment *) ->
       ()

@@ -12,6 +12,9 @@
 open Parser_standard
 include Parsetree
 
+(* we always want all extensions enabled in ocamlformat *)
+let () = Language_extension.enable_maximal ()
+
 type use_file = toplevel_phrase list
 
 type 'a t =
