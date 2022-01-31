@@ -14,7 +14,7 @@
 
 module type S = sig
   (** ['a t] represents a blocking monad state *)
-  type +'a t
+  type 'a t
 
   val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   (** [a >>= b] will pass the result of [a] to the [b] function. This is a
