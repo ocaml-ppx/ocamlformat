@@ -22,6 +22,8 @@
 
   + Do not override the values of the following non-formatting options when a profile is set: `comment-check`, `disable`, `max-iters`, `ocaml-version`, and `quiet` (#1995, @gpetiot).
 
+  + Remove incorrect parentheses around polymorphic type constraint (#2002, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):

@@ -1984,10 +1984,7 @@ end = struct
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
-    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
-        | Str {pstr_desc= Pstr_value _; _} )
-      , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) ) ->
-        false
+    | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
     | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
         | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ->
