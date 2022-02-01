@@ -30,12 +30,12 @@ Specific commands supported on version v1 are:
 {2 Version 2}
 
 Specific commands supported on version v2 are:
-- [Format <s>]: submits a canonical s-expression encoding the string [x] to be formatted by OCamlFormat (similarly to the [Format] command of v1) and optional arguments modify the server's configuration temporarily, for the current request. Here are the different allowed forms:
-  + [List (Atom "Format"; Atom x)]
-  + [List (Atom "Format"; Atom x;  List (Atom "Path"; Atom p))]
-  + [List (Atom "Format"; Atom x; List (Atom "Config"; List l))]
-  + [List (Atom "Format"; Atom x; List (Atom "Path"; Atom p); List (Atom "Config"; List l))]
- The [Config] argument is treated the same as the [Config] command of v1, except the modification only affects the current request. The formatted output is sent as a reply of the same form.
+- [(Format x options...)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
+  The options are:
+  + [(Path p)] sets the path to the formatted file.
+  + [(Config config)] sets the formatting options. [config] is a list of options, for example:
+    [((profile default) (parse-docstrings true))]
+    See [ocamlformat --help] for the available formatting options.
 
 Unknown commands are ignored.
 
