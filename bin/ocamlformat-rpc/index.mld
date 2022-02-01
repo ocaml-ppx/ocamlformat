@@ -34,4 +34,4 @@ Specific commands supported on version v2 are:
 
 Unknown commands are ignored.
 
-To build your RPC client to interact with [ocamlformat-rpc] please refer to [ocamlformat-rpc-lib]'s {{:../../lib-rpc/ocamlformat_rpc_lib.mli}documentation}.
+To build your RPC client to interact with [ocamlformat-rpc] please refer to the library [ocamlformat-rpc-lib].
