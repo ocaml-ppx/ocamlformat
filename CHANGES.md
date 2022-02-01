@@ -22,7 +22,7 @@
 
   + Do not override the values of the following non-formatting options when a profile is set: `comment-check`, `disable`, `max-iters`, `ocaml-version`, and `quiet` (#1995, @gpetiot).
 
-  + Remove incorrect parentheses around polymorphic type constraint (#<PR_NUMBER>, @gpetiot)
+  + Remove incorrect parentheses around polymorphic type constraint (#2002, @gpetiot)
 
 #### Changes
 
