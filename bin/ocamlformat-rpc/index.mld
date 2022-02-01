@@ -16,20 +16,17 @@ Once the client and the server agree on a common version, the requests you can s
 
 {1 Commands}
 
-All versions support the following commands:
-- [Halt] to end the communication with the RPC server. The caller must close the input and output channels.
-
-Some RPC versions offer specific commands, that are detailed below.
+[ocamlformat-rpc] accepts different commands depending on the version agreed upon.
 
 {2 Version 1}
 
-Specific commands supported on version v1 are:
+- [Halt] to end the communication with the RPC server. The caller must close the input and output channels.
 - [(Config (options...))]: submits a list of formatting options (please refer to [ocamlformat --help] to know more about the available options). The server answer with the accepted configuration. The configuration can be reset to its default value by sending the pair [(profile default)].
 - [(Format x)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
 
 {2 Version 2}
 
-Specific commands supported on version v2 are:
+- [Halt] to end the communication with the RPC server. The caller must close the input and output channels.
 - [(Format x options...)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
   The options are:
   + [(Path p)] sets the path to the formatted file.
@@ -39,4 +36,4 @@ Specific commands supported on version v2 are:
 
 Unknown commands are ignored.
 
-To build your RPC client to interact with [ocamlformat-rpc] please refer to the library [ocamlformat-rpc-lib].
+All the commands take canonical s-expressions. To build your RPC client to interact with [ocamlformat-rpc] please refer to the library [ocamlformat-rpc-lib].
