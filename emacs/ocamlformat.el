@@ -290,10 +290,10 @@ is nil."
                     (erase-buffer))
                   (ocamlformat--process-errors
                    (buffer-file-name) bufferfile errorfile errbuf)))
-            (message "Could not apply ocamlformat on %s" buffer-file-name))))
-    (delete-file errorfile)
-    (delete-file bufferfile)
-    (delete-file outputfile)))
+            (message "Could not apply ocamlformat on %s" buffer-file-name)))
+      (delete-file errorfile)
+      (delete-file bufferfile)
+      (delete-file outputfile))))
 
 (defun ocamlformat-args (name start-line end-line)
   (let*
@@ -356,13 +356,14 @@ is nil."
                      (buffer-file-name) bufferfile errorfile errbuf)))
                 (message "Could not apply ocamlformat")))))
        (indents (mapcar 'string-to-number (split-string indents-str))))
-    (save-excursion
-      (goto-char start)
-      (mapcar
-       #'(lambda (indent) (indent-line-to indent) (forward-line))
-       indents))
-    (delete-file errorfile)
-    (delete-file bufferfile)))
+    (unwind-protect
+      (save-excursion
+        (goto-char start)
+        (mapcar
+         #'(lambda (indent) (indent-line-to indent) (forward-line))
+         indents))
+      (delete-file errorfile)
+      (delete-file bufferfile))))
 
 (defun ocamlformat-line ()
   (interactive nil)
