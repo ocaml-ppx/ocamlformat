@@ -170,3 +170,11 @@ end
 (** For a basic working example, see:
     {{:https://github.com/ocaml-ppx/ocamlformat/blob/93a6b2f46cf31237c413c1d0ac604a8d69676297/test/rpc/rpc_test.ml}
     test/rpc/rpc_test.ml}. *)
+
+(** Disclaimer:
+
+    The [ocamlformat-rpc-lib] API is versioned to offer some basic backwards
+    compatibility. Note that this guarantee is "best effort", meaning the
+    authors will try to minimize the changes over time and preserve the
+    original behavior or versioned clients as much as possible. However
+    structural changes may happen. *)
