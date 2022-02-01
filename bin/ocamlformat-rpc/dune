@@ -28,3 +28,6 @@
  (section man)
  (files ocamlformat-rpc.1)
  (package ocamlformat-rpc))
+
+(documentation
+ (package ocamlformat-rpc))

@@ -25,7 +25,9 @@ module Version = struct
     | _ -> None
 end
 
-module Make (IO : IO.S) = struct
+module type IO = IO.S
+
+module Make (IO : IO) = struct
   module type Command_S = sig
     type t
 

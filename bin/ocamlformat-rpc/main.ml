@@ -221,10 +221,10 @@ let info =
         "- $(b,Format) $(i,CSEXP): submits a list as canonical s-expression \
          $(i,CSEXP), where the first element of the list is a string to be \
          formatted by OCamlFormat. The other arguments are (key, value) \
-         pairs, where key can be either $(i,\"Path\") or $(i,\"Config\"). \
-         They modify the server's configuration temporarily, for the \
-         current request. The formatted output is sent as a reply of the \
-         same form."
+         pairs, where key can be either $(i,\"Path\") and/or \
+         $(i,\"Config\"). They modify the server's configuration \
+         temporarily, for the current request. The formatted output is sent \
+         as a reply of the same form."
     ; `P "Unknown commands are ignored." ]
   in
   Term.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
