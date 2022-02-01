@@ -25,3 +25,11 @@ let t4 :
 let foo : type a. a =
   (* aaaaaa *)
   failwith "foo"
+
+class c =
+  let id : 'a. 'a -> 'a = fun x -> x in
+  object end
+
+let _ =
+  let id : 'a. 'a -> 'a = fun x -> x in
+  ()
