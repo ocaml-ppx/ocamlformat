@@ -33,3 +33,29 @@ module type S = sig
 
   val write : oc -> Csexp.t list -> unit t
 end
+
+(** A basic implementation of this module can be:
+
+    {[
+      module IO = struct
+        type 'a t = 'a
+
+        type ic = in_channel
+
+        type oc = out_channel
+
+        let ( >>= ) x f = f x
+
+        let return x = x
+
+        let read ic =
+          match Csexp.input ic with
+          | Ok x -> return (Some x)
+          | Error _ -> return None
+
+        let write oc lx =
+          List.iter (Csexp.to_channel oc) lx ;
+          Stdlib.flush oc ;
+          return ()
+      end
+    ]} *)

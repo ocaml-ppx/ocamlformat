@@ -9,6 +9,11 @@
 (*                                                                        *)
 (**************************************************************************)
 
+(** OCamlformat RPC API.
+
+    This module defines the commands exchanged between the server and the
+    client, and the way to build RPC clients. *)
+
 type format_args =
   { path: string option
         (** Path used for the current formatting request, this allows
@@ -26,6 +31,16 @@ module Version : sig
 
   val of_string : string -> t option
 end
+
+(** The whole API is functorized over an [IO] module defining the blocking
+    interface for reading and writing the data.
+
+    After you decided on the [IO] implementation, the [Ocamlformat_rpc_lib]
+    API can then be instantiated:
+
+    {[
+      module RPC = Ocamlformat_rpc_lib.Make (IO)
+    ]} *)
 
 module Make (IO : IO.S) : sig
   module type Command_S = sig
@@ -108,7 +123,8 @@ module Make (IO : IO.S) : sig
     -> IO.oc
     -> string list
     -> (client, [`Msg of string]) result IO.t
-  (** [pick_client ~pid in out versions] handles the interaction with the
+  (** The RPC offers multiple versions of the API.
+      [pick_client ~pid in out versions] handles the interaction with the
       server to agree with a common version of the RPC to use. Trying
       successively each version of the provided list [versions] until the
       server agrees, for this reason you might want to list newer versions
@@ -126,7 +142,7 @@ module Make (IO : IO.S) : sig
        (string * string) list
     -> client
     -> (unit, [> `Msg of string]) result IO.t
-  (** @version v1 *)
+  (** @before v2 *)
 
   val format :
        ?format_args:format_args
@@ -138,4 +154,17 @@ module Make (IO : IO.S) : sig
     -> client
     -> (string, [> `Msg of string]) result IO.t
   (** When using v1, [format_args] will be ignored. *)
+
+  (** A basic interaction could be:
+
+      {[
+        RPC.config [("profile", "ocamlformat")] client >>= fun () ->
+        RPC.format "let x = 4 in x" client >>= fun formatted ->
+        ...
+        RPC.halt client >>= fun () ->
+        ...
+      ]} *)
 end
+
+(** For a basic working example, see: {{:../../../../test/rpc/rpc_test.ml}
+    test/rpc/rpc_test.ml}. *)
