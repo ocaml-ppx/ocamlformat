@@ -25,7 +25,7 @@ Some RPC versions offer specific commands, that are detailed below.
 
 Specific commands supported on version v1 are:
 - [Config <key, value>]: submits a list of (key, value) pairs to update OCamlFormat's configuration (please refer to [ocamlformat --help] to know more about the available options). The command expects a canonical s-expression of the form [List [Atom "Config"; List l]] where [l] is a list of canonical s-expressions encoding the key-values. The accepted configuration is sent as a reply of the same form. The configuration can be reset to its default value by sending the pair [("profile", "default")].
-- [Format <s>]: submits a string to be formatted by OCamlFormat. The command expects a canonical s-expression of the form [List [Atom "Format"; Atom x]]. [ocamlformat-rpc] will attempt to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
+- [(Format x)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
 
 {2 Version 2}
 
