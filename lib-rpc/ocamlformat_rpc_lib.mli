@@ -12,7 +12,17 @@
 (** OCamlformat RPC API.
 
     This module defines the commands exchanged between the server and the
-    client, and the way to build RPC clients. *)
+    client, and the way to build RPC clients.
+
+    The whole API is functorized over an [IO] module defining the blocking
+    interface for reading and writing the data.
+
+    After you decided on the {!module-type-IO} implementation, the
+    {!Ocamlformat_rpc_lib.Make} API can then be instantiated:
+
+    {[
+      module RPC = Ocamlformat_rpc_lib.Make (IO)
+    ]} *)
 
 type format_args =
   { path: string option
@@ -32,17 +42,9 @@ module Version : sig
   val of_string : string -> t option
 end
 
-(** The whole API is functorized over an [IO] module defining the blocking
-    interface for reading and writing the data.
+module type IO = IO.S
 
-    After you decided on the [IO] implementation, the [Ocamlformat_rpc_lib]
-    API can then be instantiated:
-
-    {[
-      module RPC = Ocamlformat_rpc_lib.Make (IO)
-    ]} *)
-
-module Make (IO : IO.S) : sig
+module Make (IO : IO) : sig
   module type Command_S = sig
     type t
 
@@ -107,11 +109,11 @@ module Make (IO : IO.S) : sig
 
       val format :
            format_args:format_args
-             (** [format_args] modifies the server's configuration
-                 temporarily, for the current request. *)
         -> string
         -> t
         -> (string, [> `Msg of string]) result IO.t
+      (** [format_args] modifies the server's configuration temporarily, for
+          the current request. *)
     end
   end
 
@@ -128,15 +130,15 @@ module Make (IO : IO.S) : sig
       server to agree with a common version of the RPC to use. Trying
       successively each version of the provided list [versions] until the
       server agrees, for this reason you might want to list newer versions
-      before older versions. The given [IO.ic] and [IO.oc] values are
-      referenced by the [client] value and must be kept open until [halt] is
-      called. *)
+      before older versions. The given {!module-IO.ic} and {!module-IO.oc}
+      values are referenced by the {!client} value and must be kept open
+      until {!halt} is called. *)
 
   val pid : client -> int
 
   val halt : client -> (unit, [> `Msg of string]) result IO.t
   (** Tell the server to close the connection. No more commands can be sent
-      using the same [client] value. *)
+      using the same {!client} value. *)
 
   val config :
        (string * string) list
@@ -146,14 +148,13 @@ module Make (IO : IO.S) : sig
 
   val format :
        ?format_args:format_args
-         (** [format_args] modifies the server's configuration temporarily,
-             for the current request.
-
-             @since v2 *)
     -> string
     -> client
     -> (string, [> `Msg of string]) result IO.t
-  (** When using v1, [format_args] will be ignored. *)
+  (** [format_args] modifies the server's configuration temporarily, for the
+      current request.
+
+      @before v2 When using v1, [format_args] will be ignored. *)
 
   (** A basic interaction could be:
 
@@ -166,5 +167,6 @@ module Make (IO : IO.S) : sig
       ]} *)
 end
 
-(** For a basic working example, see: {{:../../../../test/rpc/rpc_test.ml}
+(** For a basic working example, see:
+    {{:https://github.com/ocaml-ppx/ocamlformat/blob/93a6b2f46cf31237c413c1d0ac604a8d69676297/test/rpc/rpc_test.ml}
     test/rpc/rpc_test.ml}. *)

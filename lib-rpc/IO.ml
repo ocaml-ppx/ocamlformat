@@ -9,10 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** The [IO] module defines the blocking interface for reading and writing to
-    Cohttp streams *)
-
 module type S = sig
+  (** Defines the blocking interface for reading and writing to Cohttp
+      streams *)
+
   (** ['a t] represents a blocking monad state *)
   type 'a t
 
@@ -32,30 +32,30 @@ module type S = sig
   val read : ic -> Csexp.t option t
 
   val write : oc -> Csexp.t list -> unit t
+
+  (** A basic implementation of this module can be:
+
+      {[
+        module IO = struct
+          type 'a t = 'a
+
+          type ic = in_channel
+
+          type oc = out_channel
+
+          let ( >>= ) x f = f x
+
+          let return x = x
+
+          let read ic =
+            match Csexp.input ic with
+            | Ok x -> return (Some x)
+            | Error _ -> return None
+
+          let write oc lx =
+            List.iter (Csexp.to_channel oc) lx ;
+            Stdlib.flush oc ;
+            return ()
+        end
+      ]} *)
 end
-
-(** A basic implementation of this module can be:
-
-    {[
-      module IO = struct
-        type 'a t = 'a
-
-        type ic = in_channel
-
-        type oc = out_channel
-
-        let ( >>= ) x f = f x
-
-        let return x = x
-
-        let read ic =
-          match Csexp.input ic with
-          | Ok x -> return (Some x)
-          | Error _ -> return None
-
-        let write oc lx =
-          List.iter (Csexp.to_channel oc) lx ;
-          Stdlib.flush oc ;
-          return ()
-      end
-    ]} *)
