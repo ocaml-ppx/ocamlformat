@@ -34,7 +34,7 @@
 
   + Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#1983, @gpetiot)
 
-  + Apply 'sequence-style' to add a space before ';;' between toplevel items, consistently with the formatting of ';' in sequences (#<PR_NUMBER>, @gpetiot)
+  + Apply 'sequence-style' to add a space before ';;' between toplevel items, consistently with the formatting of ';' in sequences (#2004, @gpetiot)
 
 #### New features
 
