@@ -16,7 +16,7 @@ f x >>= function
         g y >>= function _ -> y () ) )
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
@@ -33,13 +33,13 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
 ;;
 
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x;;
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
 |> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
@@ -54,7 +54,7 @@ eeeeeeeeeeeee eeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 | xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
@@ -73,7 +73,7 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 | xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x

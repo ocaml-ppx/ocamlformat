@@ -12,9 +12,9 @@
 (** OCamlFormat *)
 
 open Ocamlformat_lib
-open Result.Monad_infix;;
+open Result.Monad_infix ;;
 
-Caml.at_exit (Format.pp_print_flush Format.err_formatter);;
+Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
