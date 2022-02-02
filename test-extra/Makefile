@@ -9,10 +9,12 @@
 #                                                                    #
 ######################################################################
 
+JS_DIRS=code/base code/base_bigstring code/base_quickcheck code/core code/core_bench code/core_compat code/core_extended code/core_kernel code/core_profiler code/core_unix
+
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune
+DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune $(JS_DIRS)
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
@@ -52,6 +54,18 @@ code/dune: URI = https://github.com/ocaml/dune.git
 # code/mirage: URI = https://github.com/mirage/mirage
 # code/alcotest: URI = https://github.com/mirage/alcotest
 # code/citty: URI = https://github.com/ocurrent/citty
+
+code/base: URI = https://github.com/janestreet/base.git
+code/base_bigstring: URI = https://github.com/janestreet/base_bigstring.git
+code/base_quickcheck: URI = https://github.com/janestreet/base_quickcheck.git
+
+code/core: URI = https://github.com/janestreet/core.git
+code/core_bench: URI = https://github.com/janestreet/core_bench.git
+code/core_compat: URI = https://github.com/janestreet/core_compat.git
+code/core_extended: URI = https://github.com/janestreet/core_extended.git
+code/core_kernel: URI = https://github.com/janestreet/core_kernel.git
+code/core_profiler: URI = https://github.com/janestreet/core_profiler.git
+code/core_unix: URI = https://github.com/janestreet/core_unix.git
 
 .PHONY: test_setup
 test_setup: $(ALL_DIRS)
