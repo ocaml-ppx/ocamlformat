@@ -76,9 +76,9 @@ let h x = (g [@inlined] [@ocaml.inlined never]) x
 
 let v = (fun [@inline] [@inlined] x -> x) 1
 
-let[@inline] i = fun [@inline] x -> x;;
+let[@inline] i = fun [@inline] x -> x ;;
 
-if [@test] true then () else ();;
+if [@test] true then () else () ;;
 
 if [@test] true then () else if [@test] true then () else ()
 
@@ -264,7 +264,7 @@ let _ = f (a.(b) [@a])
 
 let _ = (a.*?!@{b} <- c) [@a]
 
-let _ = f ((a.*?!@{b} <- c) [@a]);;
+let _ = f ((a.*?!@{b} <- c) [@a]) ;;
 
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
    (dropped parentheses around tuples with attributes). *)
@@ -273,7 +273,7 @@ let _ = f ((a.*?!@{b} <- c) [@a]);;
 
 let _ = ((0, 0) [@a])
 
-let _ = f ((0, 0) [@a]);;
+let _ = f ((0, 0) [@a]) ;;
 
 (* Ensure that adding an attribute doesn't break left-alignment of tuple
    components *)
@@ -336,7 +336,7 @@ let (A | B) [@attr] = ()
 
 let (Foo ((A | B) [@attr]) : (t[@attr])) = ()
 
-let (M.(A | B) [@attr]) = ();;
+let (M.(A | B) [@attr]) = () ;;
 
 (a_______________________________________________________________________________
 [@attr]) ()

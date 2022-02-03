@@ -2,9 +2,9 @@ let _ = List.map ~f:(( + ) (M.f x))
 
 let id x = x
 
-let plus a ?(b = 0) c = a + b + c;;
+let plus a ?(b = 0) c = a + b + c ;;
 
-id (plus 1) ~b:1;;
+id (plus 1) ~b:1 ;;
 
 (* The version above does not type-check, while the version below does
    type-check, and should not be formatted to the above. See
@@ -66,7 +66,7 @@ let whatever_labelled a_function_name long_list_one some_other_thing =
   )
 ;;
 
-(a - b) ();;
+(a - b) () ;;
 
 ((a - b) [@foo]) ()
 

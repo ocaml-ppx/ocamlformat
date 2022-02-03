@@ -194,11 +194,12 @@ let update_items_config c items update_config =
   let _, items = List.fold_map items ~init:c ~f:with_config in
   items
 
-let box_semisemi ~parent_ctx b k =
+let box_semisemi c ~parent_ctx b k =
+  let space = Poly.(c.conf.fmt_opts.sequence_style = `Separator) in
   match parent_ctx with
   | _ when not b -> k
-  | Rep -> k $ fmt ";;"
-  | _ -> hvbox 0 (k $ fmt "@,;;")
+  | Rep -> k $ fmt_if space " " $ str ";;"
+  | _ -> hvbox 0 (k $ fmt_or space "@;" "@," $ str ";;")
 
 let fmt_hole () = str "_"
 
@@ -4233,7 +4234,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"
-        (box_semisemi ~parent_ctx semisemi (k $ fmt_cmts_after)) )
+        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)) )
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
@@ -4473,7 +4474,7 @@ let fmt_toplevel_directive c ~semisemi dir =
         $ fmt_dir_arg pdira_desc
         $ Cmts.fmt_after c pdira_loc
   in
-  Cmts.fmt c pdir_loc (box_semisemi ~parent_ctx:Top semisemi (name $ args))
+  Cmts.fmt c pdir_loc (box_semisemi c ~parent_ctx:Top semisemi (name $ args))
 
 let flatten_ptop =
   List.concat_map ~f:(function

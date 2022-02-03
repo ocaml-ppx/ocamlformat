@@ -248,7 +248,7 @@ class type ['a] tsv =
    free_vars = IntSet.add x free_vars >}
 ;;
 
-{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>};;
+{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>} ;;
 
 {< (* Debug.print ("free var: "^string_of_int x); *)
    very_loooooooooooong_identifier >}
