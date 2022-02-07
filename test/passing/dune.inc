@@ -1365,6 +1365,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to doc.mld.stdout
+   (with-stderr-to doc.mld.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/doc.mld})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc.mld.ref doc.mld.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc.mld.err doc.mld.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to doc_comments-after.ml.stdout
    (with-stderr-to doc_comments-after.ml.stderr
      (run %{bin:ocamlformat} --margin-check --doc-comments=after-when-possible %{dep:tests/doc_comments.ml})))))
@@ -1510,6 +1528,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/doc_comments_padding.ml.err doc_comments_padding.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to doc_repl.mld.stdout
+   (with-stderr-to doc_repl.mld.stderr
+     (run %{bin:ocamlformat} --margin-check --parse-toplevel-phrases %{dep:tests/doc_repl.mld})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_repl.mld.ref doc_repl.mld.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_repl.mld.err doc_repl.mld.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -2182,6 +2218,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/generative.ml.err generative.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to hash_bang.ml.stdout
+   (with-stderr-to hash_bang.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/hash_bang.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/hash_bang.ml hash_bang.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/hash_bang.ml.err hash_bang.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

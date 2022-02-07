@@ -25,9 +25,11 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Repl_file : repl_file t
+  | Documentation : Odoc_parser.Ast.t t
 
 module Parse : sig
-  val ast : 'a t -> preserve_beginend:bool -> Lexing.lexbuf -> 'a
+  val ast :
+    'a t -> preserve_beginend:bool -> input_name:string -> string -> 'a
 end
 
 val equal_core_type : core_type -> core_type -> bool

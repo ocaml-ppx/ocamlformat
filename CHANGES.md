@@ -21,6 +21,7 @@
 ### New features
 
 - Add a `break-colon` option to decide whether to break before or after the `:` symbol in value binding declarations and type constraints. This behavior is no longer ensured by `ocp-indent-compat`. (#2149, @gpetiot)
+- Format `.mld` files as odoc documentation files (#2008, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 

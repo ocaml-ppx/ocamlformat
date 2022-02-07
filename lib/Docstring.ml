@@ -20,6 +20,9 @@ let parse ~loc text =
   | [] -> Ok (Odoc_parser.ast v)
   | warnings -> Error warnings
 
+let parse_file location text =
+  Odoc_parser.ast (Odoc_parser.parse_comment ~location ~text)
+
 let warn fmt warning =
   Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"
     (Odoc_parser.Warning.to_string warning)
@@ -155,3 +158,7 @@ let normalize ~parse_docstrings ~normalize_code text =
     let parsed = Odoc_parser.parse_comment ~location ~text in
     let c = {normalize_code} in
     Format.asprintf "Docstring(%a)%!" (odoc_docs c) (Odoc_parser.ast parsed)
+
+let dump fmt x =
+  let c = {normalize_code= Fn.id} in
+  Format.fprintf fmt "Docstring(%a)%!" (odoc_docs c) x

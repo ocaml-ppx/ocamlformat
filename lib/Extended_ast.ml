@@ -26,6 +26,7 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Repl_file : repl_file t
+  | Documentation : Odoc_parser.Ast.t t
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -38,6 +39,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Module_type -> m.module_type m
   | Expression -> m.expr m
   | Repl_file -> List.map ~f:(m.repl_phrase m)
+  | Documentation -> Fn.id
 
 module Parse = struct
   let fix_letop_locs =
@@ -112,9 +114,11 @@ module Parse = struct
     @@ (if preserve_beginend then Fn.id else map fg remove_beginend_nodes)
     @@ x
 
-  let ast (type a) (fg : a t) ~preserve_beginend lexbuf : a =
+  let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
     normalize fg ~preserve_beginend
     @@
+    let lexbuf = Lexing.from_string str in
+    Location.init lexbuf input_name ;
     match fg with
     | Structure -> Parse.implementation lexbuf
     | Signature -> Parse.interface lexbuf
@@ -123,6 +127,10 @@ module Parse = struct
     | Module_type -> Parse.module_type lexbuf
     | Expression -> Parse.expression lexbuf
     | Repl_file -> Toplevel_lexer.repl_file lexbuf
+    | Documentation ->
+        let pos = (Location.curr lexbuf).loc_start in
+        let pos = {pos with pos_fname= input_name} in
+        Docstring.parse_file pos str
 end
 
 module Printast = struct
@@ -140,6 +148,7 @@ module Printast = struct
     | Module_type -> module_type
     | Expression -> expression
     | Repl_file -> repl_file
+    | Documentation -> Docstring.dump
 end
 
 module Asttypes = struct
