@@ -1,2 +1,2 @@
 --parse-docstrings
---wrap-comments
+--comments=wrap

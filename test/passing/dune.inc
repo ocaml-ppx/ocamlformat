@@ -1319,7 +1319,7 @@
  (action
   (with-stdout-to doc_comments-no-wrap.mli.stdout
    (with-stderr-to doc_comments-no-wrap.mli.stderr
-     (run %{bin:ocamlformat} --margin-check --no-wrap-comments %{dep:tests/doc_comments.mli})))))
+     (run %{bin:ocamlformat} --margin-check --comments=default %{dep:tests/doc_comments.mli})))))
 
 (rule
  (alias runtest)
@@ -4993,7 +4993,7 @@
  (action
   (with-stdout-to unicode.ml.stdout
    (with-stderr-to unicode.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --margin=80 --wrap-comments %{dep:tests/unicode.ml})))))
+     (run %{bin:ocamlformat} --margin-check --margin=80 --comments=wrap %{dep:tests/unicode.ml})))))
 
 (rule
  (alias runtest)
@@ -5086,7 +5086,7 @@
  (action
   (with-stdout-to wrap_invalid_doc_comments.ml.stdout
    (with-stderr-to wrap_invalid_doc_comments.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --parse-docstrings --wrap-comments %{dep:tests/wrap_invalid_doc_comments.ml})))))
+     (run %{bin:ocamlformat} --margin-check --parse-docstrings --comments=wrap %{dep:tests/wrap_invalid_doc_comments.ml})))))
 
 (rule
  (alias runtest)

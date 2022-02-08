@@ -1,4 +1,4 @@
-[@@@ocamlformat "wrap-comments=true"]
+[@@@ocamlformat "comments=wrap"]
 
 type t =
   | Aaaaaaaaaa
@@ -30,7 +30,7 @@ let _ =
   (* blah blah *)
   ()
 
-[@@@ocamlformat "wrap-comments=false"]
+[@@@ocamlformat "comments=default"]
 
 type t =
   | Aaaaaaaaaa

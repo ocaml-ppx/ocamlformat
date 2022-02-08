@@ -7,7 +7,7 @@ exception First_exception
 exception Second_exception
 
 [@@@ocamlformat "parse-docstrings=true"]
-[@@@ocamlformat "wrap-comments=true"]
+[@@@ocamlformat "comments=wrap"]
 
 (** {e foooooooo oooooo oooo oooo ooooo oooo ooooo}
     {i fooooo ooooo ooo oooooo oo oooooo oooo}

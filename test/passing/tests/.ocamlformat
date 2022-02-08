@@ -2,6 +2,6 @@ profile = ocamlformat
 break-cases = fit
 margin = 77
 parse-docstrings = true
-wrap-comments = true
+comments = wrap
 max-iters = 2
 ocaml-version = 4.13.0

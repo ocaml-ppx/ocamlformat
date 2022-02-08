@@ -1,4 +1,4 @@
-[@@@ocamlformat "wrap-comments=true"]
+[@@@ocamlformat "comments=wrap"]
 
 type t =
   | Aaaaaaaaaa (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
@@ -54,7 +54,7 @@ let _ =
   ()
 ;;
 
-[@@@ocamlformat "wrap-comments=false"]
+[@@@ocamlformat "comments=default"]
 
 type t =
   | Aaaaaaaaaa (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)

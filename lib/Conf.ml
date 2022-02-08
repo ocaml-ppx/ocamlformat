@@ -29,6 +29,7 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
+  ; comments: [`Default | `Verbatim | `Wrap]
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
@@ -72,7 +73,6 @@ type fmt_opts =
   ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; type_decl_indent: int
-  ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
 type opr_opts =
@@ -470,6 +470,27 @@ module Formatting = struct
       (fun conf x ->
         update conf ~f:(fun f -> {f with cases_matching_exp_indent= x}) )
       (fun conf -> conf.fmt_opts.cases_matching_exp_indent)
+
+  let comments =
+    let doc = "Style of comments." in
+    let all =
+      [ C.Value.make ~name:"default" `Default
+          "Comments lines are re-indented under the first line of eqch \
+           comment."
+      ; C.Value.make ~name:"verbatim" `Verbatim
+          "Comments are printed verbatim. This can cause issues if the \
+           comment gets re-indented by OCamlFornat."
+      ; C.Value.make ~name:"wrap" `Wrap
+          "Wrap comments. Comments are divided into paragraphs by open \
+           lines (two or more consecutive newlines), and each paragraph is \
+           wrapped at the margin. Multi-line comments with \
+           vertically-aligned asterisks on the left margin are not wrapped. \
+           Consecutive comments with both left and right margin aligned are \
+           not wrapped either." ]
+    in
+    C.choice ~names:["comments"] ~all ~doc ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with comments= x}))
+      (fun conf -> conf.fmt_opts.comments)
 
   let disambiguate_non_breaking_match =
     let doc =
@@ -1109,7 +1130,7 @@ module Formatting = struct
       (fun conf x -> update conf ~f:(fun f -> {f with type_decl_indent= x}))
       (fun conf -> conf.fmt_opts.type_decl_indent)
 
-  let wrap_comments =
+  let _wrap_comments =
     let doc =
       "Wrap comments and docstrings. Comments and docstrings are divided \
        into paragraphs by open lines (two or more consecutive newlines), \
@@ -1118,9 +1139,20 @@ module Formatting = struct
        wrapped. Consecutive comments with both left and right margin \
        aligned are not wrapped either."
     in
+    let deprecated_msg =
+      C.deprecated ~since:V0_21_0
+        "Please use `comments=wrap` instead of `wrap-comments=true`, and \
+         `comments=default` instead of `wrap-comments=false`."
+    in
     C.flag ~default:false ~names:["wrap-comments"] ~doc ~kind
-      (fun conf x -> update conf ~f:(fun f -> {f with wrap_comments= x}))
-      (fun conf -> conf.fmt_opts.wrap_comments)
+      ~status:(`Deprecated deprecated_msg)
+      (fun conf x ->
+        update conf ~f:(fun f ->
+            {f with comments= (if x then `Wrap else `Default)} ) )
+      (fun conf ->
+        match conf.fmt_opts.comments with
+        | `Default | `Verbatim -> false
+        | `Wrap -> true )
 
   let wrap_fun_args =
     let default = true in
@@ -1454,6 +1486,7 @@ let ocamlformat_profile =
   ; break_struct= true
   ; cases_exp_indent= 4
   ; cases_matching_exp_indent= `Compact
+  ; comments= `Default
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before_except_val
   ; doc_comments_padding= 2
@@ -1497,7 +1530,6 @@ let ocamlformat_profile =
   ; stritem_extension_indent= 0
   ; type_decl= `Compact
   ; type_decl_indent= 2
-  ; wrap_comments= false
   ; wrap_fun_args= true }
 
 let conventional_profile =
@@ -1519,6 +1551,7 @@ let conventional_profile =
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
+  ; comments= C.default Formatting.comments
   ; disambiguate_non_breaking_match=
       C.default Formatting.disambiguate_non_breaking_match
   ; doc_comments= C.default Formatting.doc_comments
@@ -1566,7 +1599,6 @@ let conventional_profile =
   ; stritem_extension_indent= C.default Formatting.stritem_extension_indent
   ; type_decl= C.default Formatting.type_decl
   ; type_decl_indent= C.default Formatting.type_decl_indent
-  ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
 let default_profile = conventional_profile
@@ -1645,6 +1677,7 @@ let janestreet_profile =
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal
+  ; comments= `Default
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
   ; doc_comments_padding= 1
@@ -1688,7 +1721,6 @@ let janestreet_profile =
   ; stritem_extension_indent= 0
   ; type_decl= `Sparse
   ; type_decl_indent= 2
-  ; wrap_comments= false
   ; wrap_fun_args= false }
 
 let selected_profile_ref = ref (Some default_profile)

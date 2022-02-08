@@ -31,6 +31,7 @@ type fmt_opts =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
+  ; comments: [`Default | `Verbatim | `Wrap]
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
@@ -74,7 +75,6 @@ type fmt_opts =
   ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; type_decl_indent: int
-  ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
 val default_profile : fmt_opts

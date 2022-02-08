@@ -564,8 +564,7 @@ module Unwrapped = struct
     | _ -> wrap "(*" "*)" @@ str s
 end
 
-let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
-    pos =
+let fmt_cmt (cmt : Cmt.t) ~style ~ocp_indent_compat ~fmt_code pos =
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
@@ -574,6 +573,7 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
     | "*" when Location.width cmt.loc = 4 -> `Verbatim "(**)"
     | "*" -> `Verbatim "(***)"
     | "$" -> `Verbatim "(*$*)"
+    | txt when Poly.(style = `Verbatim) -> `Verbatim ("(*" ^ txt ^ "*)")
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
@@ -586,8 +586,8 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
       match Asterisk_prefixed.split cmt with
       | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
       | [""; ""] -> `Verbatim "(* *)"
-      | [text] when wrap_comments -> `Wrapped (text, "*)")
-      | [text; ""] when wrap_comments -> `Wrapped (text, " *)")
+      | [text] when Poly.(style = `Wrap) -> `Wrapped (text, "*)")
+      | [text; ""] when Poly.(style = `Wrap) -> `Wrapped (text, " *)")
       | [_] | [_; ""] -> `Unwrapped cmt
       | lines -> `Asterisk_prefixed lines )
   in
@@ -610,7 +610,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          ( match group with
          | [] -> impossible "previous match"
          | [cmt] ->
-             fmt_cmt cmt ~wrap:conf.fmt_opts.wrap_comments
+             fmt_cmt cmt ~style:conf.fmt_opts.comments
                ~ocp_indent_compat:conf.fmt_opts.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
          | group ->

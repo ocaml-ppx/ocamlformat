@@ -115,6 +115,17 @@ OPTIONS (CODE FORMATTING STYLE)
            compact forces an indentation of 2, unless nested-match is set to
            align and we're on the last case. The default value is normal.
 
+       --comments={default|verbatim|wrap}
+           Style of comments. Comments lines are re-indented under the first
+           line of eqch comment. Comments are printed verbatim. This can
+           cause issues if the comment gets re-indented by OCamlFornat. Wrap
+           comments. Comments are divided into paragraphs by open lines (two
+           or more consecutive newlines), and each paragraph is wrapped at
+           the margin. Multi-line comments with vertically-aligned asterisks
+           on the left margin are not wrapped. Consecutive comments with both
+           left and right margin aligned are not wrapped either. The default
+           value is default.
+
        --doc-comments={after-when-possible|before-except-val|before}
            Doc comments position. after-when-possible puts doc comments after
            the corresponding code. This option has no effect on variant
@@ -275,9 +286,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-space-around-variants
            Unset space-around-variants.
 
-       --no-wrap-comments
-           Unset wrap-comments.
-
        --no-wrap-fun-args
            Unset wrap-fun-args.
 
@@ -371,14 +379,6 @@ OPTIONS (CODE FORMATTING STYLE)
            and records definition in a single line. sparse will always break
            between constructors and record fields. The default value is
            compact.
-
-       --wrap-comments
-           Wrap comments and docstrings. Comments and docstrings are divided
-           into paragraphs by open lines (two or more consecutive newlines),
-           and each paragraph is wrapped at the margin. Multi-line comments
-           with vertically-aligned asterisks on the left margin are not
-           wrapped. Consecutive comments with both left and right margin
-           aligned are not wrapped either. The flag is unset by default.
 
        --wrap-fun-args
            Style for function call. The flag is set by default.
@@ -536,6 +536,9 @@ OPTIONS (DEPRECATED)
        --no-disambiguate-non-breaking-match
            Unset disambiguate-non-breaking-match.
 
+       --no-wrap-comments
+           Unset wrap-comments.
+
        --parens-tuple-patterns={multi-line-only|always}
            Parens tuple patterns. multi-line-only mode will try to skip
            parens for single-line tuple patterns. always always uses
@@ -554,6 +557,17 @@ OPTIONS (DEPRECATED)
            on a single line. The default value is 2. Cannot be set in
            attributes. Warning: This option is deprecated since version
            0.20.0. It will be removed by version 1.0.0.
+
+       --wrap-comments
+           Wrap comments and docstrings. Comments and docstrings are divided
+           into paragraphs by open lines (two or more consecutive newlines),
+           and each paragraph is wrapped at the margin. Multi-line comments
+           with vertically-aligned asterisks on the left margin are not
+           wrapped. Consecutive comments with both left and right margin
+           aligned are not wrapped either. The flag is unset by default.
+           Warning: This option is deprecated since version 0.21.0. Please
+           use `comments=wrap` instead of `wrap-comments=true`, and
+           `comments=default` instead of `wrap-comments=false`.
 
 OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in
