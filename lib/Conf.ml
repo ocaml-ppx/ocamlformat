@@ -184,7 +184,7 @@ let info =
         "Unless mentioned otherwise non-formatting options cannot be set in \
          attributes or $(b,.ocamlformat) files." ]
   in
-  Term.info "ocamlformat" ~version:Version.current ~doc ~man
+  Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
 
 let ocaml_version_conv =
   let parse x =
@@ -1257,7 +1257,7 @@ let config =
      pairs: \
      $(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL)."
   in
-  let env = Arg.env_var "OCAMLFORMAT" in
+  let env = Cmd.Env.info "OCAMLFORMAT" in
   let default = [] in
   let assoc = Arg.(pair ~sep:'=' string string) in
   let list_assoc = Arg.(list ~sep:',' assoc) in

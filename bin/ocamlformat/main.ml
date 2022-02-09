@@ -94,11 +94,11 @@ let run_action action =
 ;;
 
 match Conf.action () with
-| `Ok action -> (
+| Ok (`Ok action) -> (
   match run_action action with
   | Ok () -> Caml.exit 0
   | Error errors ->
       List.iter errors ~f:(fun error -> error ()) ;
       Caml.exit 1 )
-| `Version | `Help -> Caml.exit 0
-| `Error _ -> Caml.exit 1
+| Ok (`Version | `Help) -> Caml.exit 0
+| Error _ -> Caml.exit 1

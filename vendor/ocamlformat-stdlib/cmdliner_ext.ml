@@ -25,4 +25,4 @@ let mk ~default arg =
   var
 
 let parse info validate =
-  Term.eval (Term.(ret (const validate $ tuple !args)), info)
+  Cmd.eval_value (Cmd.v info (Term.(ret (const validate $ tuple !args))))
