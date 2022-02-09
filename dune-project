@@ -41,7 +41,8 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  cmdliner
+  (cmdliner
+   (>= 1.1.0))
   dune-build-info
   either
   fix
@@ -83,7 +84,8 @@
     (< v0.15)))
   bechamel
   bechamel-js
-  cmdliner
+  (cmdliner
+   (>= 1.1.0))
   dune-build-info
   either
   fix
@@ -125,7 +127,8 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  cmdliner
+  (cmdliner
+   (>= 1.1.0))
   dune-build-info
   either
   fix

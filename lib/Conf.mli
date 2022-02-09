@@ -118,7 +118,8 @@ type action =
   | Print_config of t  (** Print the configuration and exit. *)
   | Numeric of input * (int * int)
 
-val action : unit -> action Cmdliner.Term.result
+val action :
+  unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
 (** Formatting action: input type and source, and output destination. *)
 
 val update : ?quiet:bool -> t -> Extended_ast.attribute -> t

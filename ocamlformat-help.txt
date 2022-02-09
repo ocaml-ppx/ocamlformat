@@ -2,7 +2,7 @@ NAME
        ocamlformat - A tool to format OCaml code.
 
 SYNOPSIS
-       ocamlformat [OPTION]... [SRC]...
+       ocamlformat [OPTION]… [SRC]…
 
 DESCRIPTION
        ocamlformat automatically formats OCaml code.
@@ -594,11 +594,6 @@ OPTIONS
        -g, --debug
            Generate debugging output. The flag is unset by default.
 
-       --help[=FMT] (default=auto)
-           Show this help in format FMT. The value FMT must be one of `auto',
-           `pager', `groff' or `plain'. With `auto', the format is `pager` or
-           `plain' whenever the TERM env var is `dumb' or undefined.
-
        -i, --inplace
            Format in-place, overwriting input file(s).
 
@@ -689,11 +684,28 @@ OPTIONS
        --use-file
            Deprecated. Same as impl.
 
+       SRC Input files. At least one is required, and exactly one without
+           --inplace. If - is passed, will read from stdin.
+
+COMMON OPTIONS
+       --help[=FMT] (default=auto)
+           Show this help in format FMT. The value FMT must be one of auto,
+           pager, groff or plain. With auto, the format is pager or plain
+           whenever the TERM env var is dumb or undefined.
+
        --version
            Show version information.
 
-       SRC Input files. At least one is required, and exactly one without
-           --inplace. If - is passed, will read from stdin.
+EXIT STATUS
+       ocamlformat exits with the following status:
+
+       0   on success.
+
+       123 on indiscriminate errors reported on standard error.
+
+       124 on command line parsing errors.
+
+       125 on unexpected internal errors (bugs).
 
 ENVIRONMENT
        These environment variables affect the execution of ocamlformat:

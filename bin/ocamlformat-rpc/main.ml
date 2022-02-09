@@ -227,9 +227,9 @@ let info =
          as a reply of the same form."
     ; `P "Unknown commands are ignored." ]
   in
-  Term.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
+  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
     ~man
 
 let rpc_main_t = Term.(const rpc_main $ const ())
 
-let () = Term.exit @@ Term.eval (rpc_main_t, info)
+let () = Caml.exit @@ Cmd.eval_result (Cmd.v info rpc_main_t)
