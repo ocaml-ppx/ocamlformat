@@ -1826,25 +1826,27 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> false
       in
       wrap_fits_breaks_if c.conf parens "(" ")"
-        (hovbox 0
-           ( hvbox 2
-               ( hvbox indent_wrap
-                   ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
-                   $ fmt "@;"
-                   $ hovbox 2
-                       ( hvbox 0
-                           ( fmt_expression c (sub_exp ~ctx op)
-                           $ fmt "@ " $ cmts_before $ fmt_if parens_r "("
-                           $ str "fun " )
-                       $ fmt_attributes c pexp_attributes ~suf:" "
-                       $ hvbox_if
-                           (not c.conf.fmt_opts.wrap_fun_args)
-                           4
-                           (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
-                       $ fmt "@ ->" ) )
-               $ pre_body )
-           $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
-           $ body $ fmt_if parens_r ")" $ cmts_after ) )
+        ( hovbox 0
+            (wrap_if has_attr "(" ")"
+               ( hvbox 2
+                   ( hvbox indent_wrap
+                       ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
+                       $ fmt "@;"
+                       $ hovbox 2
+                           ( hvbox 0
+                               ( fmt_expression c (sub_exp ~ctx op)
+                               $ fmt "@ " $ cmts_before $ fmt_if parens_r "("
+                               $ str "fun " )
+                           $ fmt_attributes c pexp_attributes ~suf:" "
+                           $ hvbox_if
+                               (not c.conf.fmt_opts.wrap_fun_args)
+                               4
+                               (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
+                           $ fmt "@ ->" ) )
+                   $ pre_body )
+               $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
+               $ body $ fmt_if parens_r ")" $ cmts_after ) )
+        $ fmt_atrs )
   | Pexp_apply
       ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}
         as op )
