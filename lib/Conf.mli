@@ -101,14 +101,12 @@ val default : t
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
 
-exception Conf_error of string
-
 val build_config :
      enable_outside_detected_project:bool
   -> root:Ocamlformat_stdlib.Fpath.t option
   -> file:string
   -> is_stdin:bool
-  -> t
+  -> (t, string) Result.t
 
 type action =
   | In_out of input * string option

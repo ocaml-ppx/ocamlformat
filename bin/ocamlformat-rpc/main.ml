@@ -66,12 +66,12 @@ let run_config conf c =
   update conf c
 
 let run_path path =
-  try
-    Ok
-      (Ocamlformat_lib.Conf.build_config
-         ~enable_outside_detected_project:false ~root:None ~file:path
-         ~is_stdin:false )
-  with Ocamlformat_lib.Conf.Conf_error e -> Error (`Path_error e)
+  match
+    Ocamlformat_lib.Conf.build_config ~enable_outside_detected_project:false
+      ~root:None ~file:path ~is_stdin:false
+  with
+  | Ok _ as ok -> ok
+  | Error e -> Error (`Path_error e)
 
 let run_format conf x =
   List.fold_until ~init:()
