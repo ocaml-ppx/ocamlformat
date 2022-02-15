@@ -2078,6 +2078,19 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       ~is_stdin:false
     >>= fun conf -> Ok {kind; name; file= Stdin; conf}
   in
+  let make_input = function
+    | `Single_file (kind, name, f) -> make_file ?name kind f
+    | `Stdin (name, kind) -> make_stdin ?name kind
+  in
+  let make_inputs = function
+    | (`Single_file _ | `Stdin _) as inp ->
+        make_input inp >>= fun inp -> Ok [inp]
+    | `Several_files files -> (
+        let f (kind, f) = make_file kind f in
+        match List.map files ~f |> List.partition_result with
+        | _, e :: _ -> Error e
+        | inputs, [] -> Ok inputs )
+  in
   match (action, inputs) with
   | `Print_config, inputs ->
       let file, is_stdin =
@@ -2097,39 +2110,16 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         "Must specify exactly one input file without --inplace or --check"
   | `Inplace, `Stdin _ ->
       Error "Cannot specify stdin together with --inplace"
-  | `No_action, `Single_file (kind, name, f) ->
-      make_file ?name kind f >>= fun inp -> Ok (In_out (inp, None))
-  | `No_action, `Stdin (name, kind) ->
-      make_stdin ?name kind >>= fun inp -> Ok (In_out (inp, None))
-  | `Output output, `Single_file (kind, name, f) ->
-      make_file ?name kind f >>= fun inp -> Ok (In_out (inp, Some output))
-  | `Output output, `Stdin (name, kind) ->
-      make_stdin ?name kind >>= fun inp -> Ok (In_out (inp, Some output))
-  | `Inplace, `Single_file (kind, name, f) ->
-      make_file ?name kind f >>= fun inp -> Ok (Inplace [inp])
-  | `Inplace, `Several_files files -> (
-      let f (kind, f) = make_file kind f in
-      match List.map files ~f |> List.partition_result with
-      | _, e :: _ -> Error e
-      | inputs, [] -> Ok (Inplace inputs) )
-  | `Check, `Single_file (kind, name, f) ->
-      make_file ?name kind f >>= fun inp -> Ok (Check [inp])
-  | `Check, `Several_files files -> (
-      let f (kind, f) =
-        make_file
-          ~with_conf:(fun c ->
-            Operational.update c ~f:(fun f -> {f with max_iters= 1}) )
-          kind f
-      in
-      match List.map files ~f |> List.partition_result with
-      | _, e :: _ -> Error e
-      | inputs, [] -> Ok (Check inputs) )
-  | `Check, `Stdin (name, kind) ->
-      make_stdin ?name kind >>= fun inp -> Ok (Check [inp])
-  | `Numeric range, `Stdin (name, kind) ->
-      make_stdin ?name kind >>= fun inp -> Ok (Numeric (inp, range))
-  | `Numeric range, `Single_file (kind, name, f) ->
-      make_file ?name kind f >>= fun inp -> Ok (Numeric (inp, range))
+  | `No_action, ((`Single_file _ | `Stdin _) as inp) ->
+      make_input inp >>= fun inp -> Ok (In_out (inp, None))
+  | `Output output, ((`Single_file _ | `Stdin _) as inp) ->
+      make_input inp >>= fun inp -> Ok (In_out (inp, Some output))
+  | `Inplace, ((`Single_file _ | `Several_files _) as inputs) ->
+      make_inputs inputs >>= fun inputs -> Ok (Inplace inputs)
+  | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
+      make_inputs inputs >>= fun inputs -> Ok (Check inputs)
+  | `Numeric range, ((`Stdin _ | `Single_file _) as inp) ->
+      make_input inp >>= fun inp -> Ok (Numeric (inp, range))
 
 let validate () =
   let root =
