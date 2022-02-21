@@ -24,7 +24,7 @@
 
   + Remove incorrect parentheses around polymorphic type constraint (#2002, @gpetiot)
 
-  + Handle cases where an attribute is added to a bind expression, e.g. `(x >>= (fun () -> ())) [@a]` (#2012, #2013, @emillon)
+  + Handle cases where an attribute is added to a bind expression, e.g. `(x >>= (fun () -> ())) [@a]` (#2013, @emillon)
 
 #### Changes
 
