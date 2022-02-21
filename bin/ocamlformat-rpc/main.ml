@@ -61,13 +61,17 @@ let run_config conf c =
     | (name, value) :: t -> (
       match Conf.update_value conf ~name ~value with
       | Ok c -> update c t
-      | Error e -> Error e )
+      | Error e -> Error (`Config_error e) )
   in
   update conf c
 
 let run_path path =
-  Ocamlformat_lib.Conf.build_config ~enable_outside_detected_project:false
-    ~root:None ~file:path ~is_stdin:false
+  match
+    Ocamlformat_lib.Conf.build_config ~enable_outside_detected_project:false
+      ~root:None ~file:path ~is_stdin:false
+  with
+  | Ok _ as ok -> ok
+  | Error e -> Error (`Path_error e)
 
 let run_format conf x =
   List.fold_until ~init:()
@@ -93,17 +97,21 @@ let run_format conf x =
     ; format Use_file ]
 
 let run_format_with_args {path; config} conf x =
-  let temp_conf = Option.value_map path ~default:conf ~f:run_path in
-  match
-    Option.value_map config ~default:(Ok temp_conf) ~f:(fun c ->
-        run_config temp_conf c )
-  with
-  | Error e -> Error (`Config_error e)
-  | Ok temp_conf -> run_format temp_conf x
+  let open Result in
+  Option.value_map path ~default:(Ok conf) ~f:run_path
+  >>= fun conf ->
+  Option.value_map config ~default:(Ok conf) ~f:(fun c -> run_config conf c)
+  >>= fun conf -> run_format conf x
 
-let handle_format_error e = V1.Command.output stdout (`Error e)
+let handle_format_error e output =
+  output stdout (`Error e) ;
+  Out_channel.flush stdout
 
-let handle_config_error (e : Config_option.Error.t) =
+let handle_path_error e output =
+  output stdout (`Error e) ;
+  Out_channel.flush stdout
+
+let handle_config_error (e : Config_option.Error.t) output =
   let msg =
     match e with
     | Bad_value (x, y) ->
@@ -113,8 +121,14 @@ let handle_config_error (e : Config_option.Error.t) =
         Format.sprintf "Misplaced configuration value (%s, %s)" x y
     | Unknown (x, _) -> Format.sprintf "Unknown configuration option %s" x
   in
-  V1.Command.output stdout (`Error msg) ;
+  output stdout (`Error msg) ;
   Out_channel.flush stdout
+
+let handle_error e output =
+  match e with
+  | `Format_error e -> handle_format_error e output
+  | `Config_error e -> handle_config_error e output
+  | `Path_error e -> handle_path_error e output
 
 let rec rpc_main = function
   | Waiting_for_version -> (
@@ -144,8 +158,9 @@ let rec rpc_main = function
             | Ok (`Format formatted) ->
                 V1.Command.output stdout (`Format formatted) ;
                 conf
-            | Error (`Format_error e) -> handle_format_error e ; conf
-            | Error (`Config_error e) -> handle_config_error e ; conf
+            | Error e ->
+                handle_error e V1.Command.output ;
+                conf
           in
           rpc_main (Version_defined (v, conf))
       | `Config c -> (
@@ -154,7 +169,9 @@ let rec rpc_main = function
             V1.Command.output stdout (`Config c) ;
             Out_channel.flush stdout ;
             rpc_main (Version_defined (v, conf))
-        | Error e -> handle_config_error e ; rpc_main state ) )
+        | Error (`Config_error e) ->
+            handle_config_error e V1.Command.output ;
+            rpc_main state ) )
     | V2 -> (
       match V2.Command.read_input stdin with
       | `Halt -> Ok ()
@@ -165,8 +182,9 @@ let rec rpc_main = function
             | Ok (`Format formatted) ->
                 V2.Command.output stdout (`Format (formatted, format_args)) ;
                 conf
-            | Error (`Format_error e) -> handle_format_error e ; conf
-            | Error (`Config_error e) -> handle_config_error e ; conf
+            | Error e ->
+                handle_error e V2.Command.output ;
+                conf
           in
           rpc_main (Version_defined (v, conf)) ) )
 

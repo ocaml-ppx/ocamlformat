@@ -106,7 +106,7 @@ val build_config :
   -> root:Ocamlformat_stdlib.Fpath.t option
   -> file:string
   -> is_stdin:bool
-  -> t
+  -> (t, string) Result.t
 
 type action =
   | In_out of input * string option

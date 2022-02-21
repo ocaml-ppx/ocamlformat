@@ -51,6 +51,8 @@
   + RPC v2 (#1935, @panglesd):
     Define a 'Format' command parameterized with optionnal arguments to set or override the config and path, to format in the style of a file.
 
+  + Prevent RPC to crash on version mismatch with `.ocamlformat` (#2011, @panglesd, @Julow)
+
 ### 0.20.1 (2021-12-13)
 
 #### New features

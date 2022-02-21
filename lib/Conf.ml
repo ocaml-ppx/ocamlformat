@@ -1849,6 +1849,7 @@ let parse_line config ~from s =
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (Config_option.Error.Malformed s)
 
+(** Do not escape from [build_config] *)
 exception Conf_error of string
 
 let failwith_user_errors ~from errors =
@@ -1989,12 +1990,14 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     | None -> conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
-  let conf, warn_now =
-    collect_warnings (fun () ->
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
-  in
-  if not conf.opr_opts.quiet then warn_now () ;
-  conf
+  try
+    let conf, warn_now =
+      collect_warnings (fun () ->
+          build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
+    in
+    if not conf.opr_opts.quiet then warn_now () ;
+    Ok conf
+  with Conf_error msg -> Error msg
 
 let kind_of_ext fname =
   match Filename.extension fname with
@@ -2063,21 +2066,30 @@ type action =
   | Numeric of input * (int * int)
 
 let make_action ~enable_outside_detected_project ~root action inputs =
+  let open Result in
   let make_file ?(with_conf = fun c -> c) ?name kind file =
     let name = Option.value ~default:file name in
-    let conf =
-      with_conf
-        (build_config ~enable_outside_detected_project ~root ~file:name
-           ~is_stdin:false )
-    in
-    {kind; name; file= File file; conf}
+    build_config ~enable_outside_detected_project ~root ~file:name
+      ~is_stdin:false
+    >>= fun conf -> Ok {kind; name; file= File file; conf= with_conf conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
-    let conf =
-      build_config ~enable_outside_detected_project ~root ~file:name
-        ~is_stdin:false
-    in
-    {kind; name; file= Stdin; conf}
+    build_config ~enable_outside_detected_project ~root ~file:name
+      ~is_stdin:false
+    >>= fun conf -> Ok {kind; name; file= Stdin; conf}
+  in
+  let make_input = function
+    | `Single_file (kind, name, f) -> make_file ?name kind f
+    | `Stdin (name, kind) -> make_stdin ?name kind
+  in
+  let make_inputs = function
+    | (`Single_file _ | `Stdin _) as inp ->
+        make_input inp >>= fun inp -> Ok [inp]
+    | `Several_files files -> (
+        let f (kind, f) = make_file kind f in
+        match List.map files ~f |> List.partition_result with
+        | _, e :: _ -> Error e
+        | inputs, [] -> Ok inputs )
   in
   match (action, inputs) with
   | `Print_config, inputs ->
@@ -2089,10 +2101,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         | `Several_files [] | `No_input ->
             (File_system.root_ocamlformat_file ~root |> Fpath.to_string, true)
       in
-      let conf =
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
-      in
-      Ok (Print_config conf)
+      build_config ~enable_outside_detected_project ~root ~file ~is_stdin
+      >>= fun conf -> Ok (Print_config conf)
   | (`No_action | `Output _ | `Inplace | `Check | `Numeric _), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
   | (`No_action | `Output _ | `Numeric _), `Several_files _ ->
@@ -2100,33 +2110,16 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         "Must specify exactly one input file without --inplace or --check"
   | `Inplace, `Stdin _ ->
       Error "Cannot specify stdin together with --inplace"
-  | `No_action, `Single_file (kind, name, f) ->
-      Ok (In_out (make_file ?name kind f, None))
-  | `No_action, `Stdin (name, kind) ->
-      Ok (In_out (make_stdin ?name kind, None))
-  | `Output output, `Single_file (kind, name, f) ->
-      Ok (In_out (make_file ?name kind f, Some output))
-  | `Output output, `Stdin (name, kind) ->
-      Ok (In_out (make_stdin ?name kind, Some output))
-  | `Inplace, `Single_file (kind, name, f) ->
-      Ok (Inplace [make_file ?name kind f])
-  | `Inplace, `Several_files files ->
-      Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
-  | `Check, `Single_file (kind, name, f) ->
-      Ok (Check [make_file ?name kind f])
-  | `Check, `Several_files files ->
-      let f (kind, f) =
-        make_file
-          ~with_conf:(fun c ->
-            Operational.update c ~f:(fun f -> {f with max_iters= 1}) )
-          kind f
-      in
-      Ok (Check (List.map files ~f))
-  | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
-  | `Numeric range, `Stdin (name, kind) ->
-      Ok (Numeric (make_stdin ?name kind, range))
-  | `Numeric range, `Single_file (kind, name, f) ->
-      Ok (Numeric (make_file ?name kind f, range))
+  | `No_action, ((`Single_file _ | `Stdin _) as inp) ->
+      make_input inp >>= fun inp -> Ok (In_out (inp, None))
+  | `Output output, ((`Single_file _ | `Stdin _) as inp) ->
+      make_input inp >>= fun inp -> Ok (In_out (inp, Some output))
+  | `Inplace, ((`Single_file _ | `Several_files _) as inputs) ->
+      make_inputs inputs >>= fun inputs -> Ok (Inplace inputs)
+  | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
+      make_inputs inputs >>= fun inputs -> Ok (Check inputs)
+  | `Numeric range, ((`Stdin _ | `Single_file _) as inp) ->
+      make_input inp >>= fun inp -> Ok (Numeric (inp, range))
 
 let validate () =
   let root =
@@ -2147,7 +2140,6 @@ let validate () =
     >>= fun inputs ->
     make_action ~enable_outside_detected_project ~root action inputs
   with
-  | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
