@@ -43,6 +43,11 @@
     (< v0.15)))
   (cmdliner
    (>= 1.1.0))
+  dune
+  (dune
+   (and
+    :with-test
+    (< 3.0)))
   dune-build-info
   either
   fix
