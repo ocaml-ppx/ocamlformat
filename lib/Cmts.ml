@@ -533,47 +533,51 @@ module Unwrapped = struct
     in
     vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
-  let fmt ~ocp_indent_compat Cmt.{txt= s; loc} (pos : Cmt.pos) =
+  let fmt Cmt.{txt= s; loc} =
     let open Fmt in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     match String.split_lines (String.rstrip s) with
     | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
-        if ocp_indent_compat then
-          (* Not adding artificial breaks and keeping the comment contents
-             verbatim will not interfere with ocp-indent. *)
-          match pos with
-          | Before -> wrap "(*" "*)" @@ str s
-          | Within -> wrap "(*" "*)" @@ str s
-          | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s
-        else
-          let epi =
-            (* Preserve position of closing but strip empty lines at the
-               end *)
-            match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
-            | Some i when Char.( = ) s.[i] '\n' ->
-                break 1000 (-2) (* Break before closing *)
-            | Some i when i < String.length s - 1 ->
-                str " " (* Preserve a space at the end *)
-            | _ -> noop
-          in
-          (* Preserve the first level of indentation *)
-          let starts_with_sp = is_sp first_line.[0] in
-          wrap "(*" "*)"
-          @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
-               first_line tl
+        let epi =
+          (* Preserve position of closing but strip empty lines at the end *)
+          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
+          | Some i when Char.( = ) s.[i] '\n' ->
+              break 1000 (-2) (* Break before closing *)
+          | Some i when i < String.length s - 1 ->
+              str " " (* Preserve a space at the end *)
+          | _ -> noop
+        in
+        (* Preserve the first level of indentation *)
+        let starts_with_sp = is_sp first_line.[0] in
+        wrap "(*" "*)"
+        @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
+             first_line tl
     | _ -> wrap "(*" "*)" @@ str s
 end
 
-let fmt_cmt (cmt : Cmt.t) ~style ~ocp_indent_compat ~fmt_code pos =
+module Verbatim = struct
+  let fmt s (pos : Cmt.pos) =
+    let open Fmt in
+    match String.split_lines (String.rstrip s) with
+    | first_line :: _ :: _ when not (String.is_empty first_line) -> (
+      (* Not adding artificial breaks and keeping the comment contents
+         verbatim will not interfere with ocp-indent. *)
+      match pos with
+      | Before -> wrap "(*" "*)" @@ str s
+      | Within -> wrap "(*" "*)" @@ str s
+      | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s )
+    | _ -> wrap "(*" "*)" @@ str s
+end
+
+let fmt_cmt (cmt : Cmt.t) ~style ~fmt_code pos =
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
     (* "(**)" is not parsed as a docstring but as a regular comment
        containing '*' and would be rewritten as "(***)" *)
-    | "*" when Location.width cmt.loc = 4 -> `Verbatim "(**)"
-    | "*" -> `Verbatim "(***)"
-    | "$" -> `Verbatim "(*$*)"
-    | txt when Poly.(style = `Verbatim) -> `Verbatim ("(*" ^ txt ^ "*)")
+    | "*" when Location.width cmt.loc = 4 -> `Verbatim ""
+    | "*" -> `Verbatim "*"
+    | "$" -> `Verbatim "$"
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
@@ -582,10 +586,11 @@ let fmt_cmt (cmt : Cmt.t) ~style ~ocp_indent_compat ~fmt_code pos =
         match fmt_code source with
         | Ok formatted -> `Code (formatted, cls)
         | Error (`Msg _) -> `Unwrapped cmt )
+    | txt when Poly.(style = `Verbatim) -> `Verbatim txt
     | _ -> (
       match Asterisk_prefixed.split cmt with
       | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-      | [""; ""] -> `Verbatim "(* *)"
+      | [""; ""] -> `Verbatim " "
       | [text] when Poly.(style = `Wrap) -> `Wrapped (text, "*)")
       | [text; ""] when Poly.(style = `Wrap) -> `Wrapped (text, " *)")
       | [_] | [_; ""] -> `Unwrapped cmt
@@ -593,10 +598,10 @@ let fmt_cmt (cmt : Cmt.t) ~style ~ocp_indent_compat ~fmt_code pos =
   in
   let open Fmt in
   match mode with
-  | `Verbatim x -> str x
+  | `Verbatim x -> Verbatim.fmt x pos
   | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
-  | `Unwrapped x -> Unwrapped.fmt ~ocp_indent_compat x pos
+  | `Unwrapped x -> Unwrapped.fmt x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
@@ -611,7 +616,6 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [] -> impossible "previous match"
          | [cmt] ->
              fmt_cmt cmt ~style:conf.fmt_opts.comments
-               ~ocp_indent_compat:conf.fmt_opts.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
