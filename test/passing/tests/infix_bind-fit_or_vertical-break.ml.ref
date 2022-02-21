@@ -242,3 +242,5 @@ let _ = ( let* ) x (function y -> z)
 let _ = f (( let* ) x (fun y -> z))
 
 let _ = f (( let* ) x (function y -> z))
+
+let _ = (x >>= fun () -> ()) [@a]

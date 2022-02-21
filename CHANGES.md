@@ -24,6 +24,8 @@
 
   + Remove incorrect parentheses around polymorphic type constraint (#2002, @gpetiot)
 
+  + Handle cases where an attribute is added to a bind expression, e.g. `(x >>= (fun () -> ())) [@a]` (#2013, @emillon)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
