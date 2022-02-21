@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type code_formatter = string -> (Fmt.t, [`Msg of string]) Result.t
-
 val parse :
      loc:Warnings.loc
   -> string
