@@ -43,6 +43,7 @@
     (< v0.15)))
   (cmdliner
    (>= 1.1.0))
+  dune
   (dune
    (and
     :with-test
