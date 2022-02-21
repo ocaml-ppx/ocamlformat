@@ -82,8 +82,10 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  bechamel
-  bechamel-js
+  (bechamel
+   (>= 0.2.0))
+  (bechamel-js
+   (>= 0.2.0))
   (cmdliner
    (>= 1.1.0))
   dune-build-info
