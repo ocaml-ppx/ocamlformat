@@ -24,7 +24,7 @@ type c =
   ; debug: bool
   ; source: Source.t
   ; cmts: Cmts.t
-  ; fmt_code: Conf.t -> Docstring.code_formatter }
+  ; fmt_code: Conf.t -> Fmt.code_formatter }
 
 module Cmts = struct
   include Cmts

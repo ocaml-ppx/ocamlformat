@@ -9,4 +9,4 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val fmt : fmt_code:Docstring.code_formatter -> Odoc_parser.Ast.t -> Fmt.t
+val fmt : fmt_code:Fmt.code_formatter -> Odoc_parser.Ast.t -> Fmt.t
