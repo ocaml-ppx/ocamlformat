@@ -41,3 +41,5 @@
   (diff ocamlformat-rpc-help.txt ocamlformat-rpc-help.actual)))
 
 (data_only_dirs test-extra)
+
+(vendored_dirs vendor)
