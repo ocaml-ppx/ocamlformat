@@ -61,8 +61,6 @@
   (ocaml-version
    (>= 3.3.0))
   ocp-indent
-  (odoc-parser
-   (>= 1.0.0))
   (re
    (>= 1.7.2))
   (stdio
@@ -106,8 +104,6 @@
   (ocaml-version
    (>= 3.3.0))
   ocp-indent
-  (odoc-parser
-   (>= 1.0.0))
   (re
    (>= 1.7.2))
   (stdio
@@ -149,8 +145,6 @@
   (ocaml-version
    (>= 3.3.0))
   ocp-indent
-  (odoc-parser
-   (>= 1.0.0))
   (re
    (>= 1.7.2))
   (stdio
