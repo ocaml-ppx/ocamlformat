@@ -84,6 +84,7 @@
    (>= 0.2.0))
   (bechamel-js
    (>= 0.2.0))
+  bos
   (ocamlformat
    (= :version))
   stdio

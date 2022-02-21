@@ -12,6 +12,7 @@
 open Bechamel
 open Toolkit
 open Ocamlformat
+open Rresult
 
 type range = int * int
 
@@ -39,23 +40,47 @@ let inputs =
     ; conf= Conf.default
     ; action= `Numeric (10_000, 10_000) } ]
 
+let test_logs = Hashtbl.create 8
+
 let tests =
+  let fmt = Format.str_formatter in
   List.map
     (fun {name; input_name; kind; source; conf; action} ->
       Test.make
         ~name:(Caml.Format.sprintf "%s (%s)" name input_name)
         ( Staged.stage
         @@ fun () ->
-        match action with
-        | `Format ->
-            ignore
-              (Translation_unit.parse_and_format kind ~input_name ~source
-                 conf )
-        | `Numeric range ->
-            let range = Range.make source ~range in
-            ignore
-              (Translation_unit.numeric kind ~input_name ~source ~range conf)
-        ) )
+        let result =
+          match action with
+          | `Format ->
+              Translation_unit.parse_and_format kind ~input_name ~source conf
+              >>| fun x -> `Formatted x
+          | `Numeric range ->
+              let range = Range.make source ~range in
+              Translation_unit.numeric kind ~input_name ~source ~range conf
+              |> fun x -> Ok (`Indented x)
+        in
+        let () =
+          match result with
+          | Ok (`Formatted data) ->
+              let tmp = Filename.temp_file "source.ml" ".out" in
+              Stdio.Out_channel.write_all tmp ~data ;
+              let cmd = Bos.Cmd.(v "diff" % input_name % tmp) in
+              let output =
+                match Bos.OS.Cmd.(out_string (run_out cmd)) with
+                | Ok (x, _) -> x
+                | Error (`Msg x) -> x
+              in
+              Caml.Sys.remove tmp ;
+              Format.fprintf fmt "%s\n" output
+          | Ok (`Indented x) ->
+              let pp_sep fs () = Format.fprintf fs " " in
+              Format.fprintf fmt "%a\n"
+                (Format.pp_print_list ~pp_sep Format.pp_print_int)
+                x
+          | Error e -> Translation_unit.Error.print ~debug:true fmt e
+        in
+        Hashtbl.add test_logs name (Format.flush_str_formatter ()) ) )
     inputs
 
 let benchmark () =
@@ -75,10 +100,7 @@ let benchmark () =
   let results =
     List.map (fun instance -> Analyze.all ols instance raw_results) instances
   in
-  let results = Analyze.merge ols instances results in
-  results
-
-let nothing _ = Ok ()
+  Analyze.merge ols instances results
 
 type 'a result = (string, 'a) Hashtbl.t
 
@@ -102,12 +124,6 @@ let process_results results =
 
 let json_of_ols ols =
   match Bechamel.Analyze.OLS.estimates ols with
-  | Some [x] -> `Float x
-  | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
-  | None -> `List []
-
-let json_of_string_ols ols =
-  match ols with
   | Some [x] -> `Float x
   | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
   | None -> `List []
@@ -140,4 +156,11 @@ let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
 let () =
   let results = benchmark () in
   let js_output = json_of_ols_results results in
-  Format.printf "%s\n" (Yojson.Safe.to_string js_output)
+  Format.printf "%s\n" (Yojson.Safe.to_string js_output) ;
+  Format.printf "\n-------------------\n" ;
+  Hashtbl.iter
+    (fun k v ->
+      Format.printf "name: %s\n" k ;
+      Format.printf "output:\n%s\n\n" v )
+    test_logs ;
+  Hashtbl.clear test_logs
