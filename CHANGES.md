@@ -21,6 +21,10 @@ profile. This started with version 0.26.0.
 - Fixed bug with attributes on sub-expressions of infix operators (#2459, @tdelvecchio-jsc)
 - \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 
+### Added
+
+- New profile: `diff-friendly`, aiming to minimize the vertical diff (#2020, @gpetiot)
+
 ## 0.26.1 (2023-09-15)
 
 ### Changed

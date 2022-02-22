@@ -4880,6 +4880,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to source-diff-friendly.ml.stdout
+   (with-stderr-to source-diff-friendly.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=diff-friendly --max-iters=3 %{dep:tests/source.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-diff-friendly.ml.ref source-diff-friendly.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-diff-friendly.ml.err source-diff-friendly.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to source.ml.stdout
    (with-stderr-to source.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/source.ml})))))
