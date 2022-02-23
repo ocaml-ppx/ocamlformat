@@ -245,8 +245,7 @@ let info =
          as a reply of the same form."
     ; `P "Unknown commands are ignored." ]
   in
-  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat.Version.current ~doc
-    ~man
+  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat.Version.current ~doc ~man
 
 let rpc_main_t = Term.(const rpc_main $ const ())
 
