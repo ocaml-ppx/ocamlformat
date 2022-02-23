@@ -1,5 +1,6 @@
 (library
  (name parse_wyc)
+ (public_name ocamlformat.parse_wyc)
  (modules_without_implementation let_binding)
  (libraries menhirLib ocaml_common ocaml_413_extended)
  (flags

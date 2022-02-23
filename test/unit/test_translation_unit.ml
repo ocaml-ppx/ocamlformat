@@ -1,5 +1,5 @@
 open! Base
-open Ocamlformat_lib
+open Ocamlformat
 
 let err =
   Alcotest.testable Translation_unit.Error.print Translation_unit.Error.equal

@@ -11,7 +11,7 @@
 
 (** OCamlFormat-RPC *)
 
-open Ocamlformat_lib
+open Ocamlformat
 open Ocamlformat_rpc_lib ;;
 
 Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
@@ -67,7 +67,7 @@ let run_config conf c =
 
 let run_path path =
   match
-    Ocamlformat_lib.Conf.build_config ~enable_outside_detected_project:false
+    Ocamlformat.Conf.build_config ~enable_outside_detected_project:false
       ~root:None ~file:path ~is_stdin:false
   with
   | Ok _ as ok -> ok
@@ -245,8 +245,7 @@ let info =
          as a reply of the same form."
     ; `P "Unknown commands are ignored." ]
   in
-  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
-    ~man
+  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat.Version.current ~doc ~man
 
 let rpc_main_t = Term.(const rpc_main $ const ())
 
