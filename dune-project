@@ -36,12 +36,18 @@
    (and
     (>= 4.08)
     (< 4.15)))
+  (alcotest :with-test)
   (base
    (and
     (>= v0.12.0)
     (< v0.15)))
   (cmdliner
    (>= 1.1.0))
+  dune
+  (dune
+   (and
+    :with-test
+    (< 3.0)))
   dune-build-info
   either
   fix
@@ -64,12 +70,7 @@
   (uuseg
    (>= 10.0.0))
   (uutf
-   (>= 1.0.1))
-  (alcotest :with-test)
-  (dune
-   (and
-    :with-test
-    (< 3.0)))))
+   (>= 1.0.1))))
 
 (package
  (name ocamlformat-bench)
@@ -82,12 +83,12 @@
     (>= 4.08)
     (< 4.15)))
   (alcotest :with-test)
-  (ocamlformat
-   (= :version))
   (bechamel
    (>= 0.2.0))
   (bechamel-js
    (>= 0.2.0))
+  (ocamlformat
+   (= :version))
   (stdio
    (< v0.15))
   yojson))
@@ -102,11 +103,11 @@
    (and
     (>= 4.08)
     (< 4.15)))
+  (alcotest :with-test)
   (ocamlformat
    (= :version))
   (ocamlformat-rpc-lib
-   (= :version))
-  (alcotest :with-test)))
+   (= :version))))
 
 (package
  (name ocamlformat-rpc-lib)

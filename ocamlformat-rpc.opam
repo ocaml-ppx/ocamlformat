@@ -10,9 +10,9 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.8"}
   "ocaml" {>= "4.08" & < "4.15"}
+  "alcotest" {with-test}
   "ocamlformat" {= version}
   "ocamlformat-rpc-lib" {= version}
-  "alcotest" {with-test}
   "odoc" {with-doc}
 ]
 build: [
