@@ -8,7 +8,13 @@
 
 #### Changes
 
+  + Option `wrap-comments` is replaced by `comments` (#2009, @gpetiot).
+    - `wrap-comments = true` should be replaced by `comments = wrap`;
+    - `wrap-comments = false` should be replaced by `comments = default`.
+
 #### New features
+
+  + New option `comments = verbatim` prints comments verbatim (#2009, @gpetiot)
 
 ### 0.21.0 (2022-02-25)
 
