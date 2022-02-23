@@ -9,11 +9,8 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "ocaml" {>= "4.08" & < "4.15"}
-  "alcotest" {with-test}
   "base" {>= "v0.12.0" & < "v0.15"}
   "cmdliner" {>= "1.1.0"}
-  "dune" {>= "2.8"}
-  "dune" {with-test & < "3.0"}
   "dune-build-info"
   "either"
   "fix"
@@ -28,6 +25,8 @@ depends: [
   "stdio" {< "v0.15"}
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}
+  "alcotest" {with-test}
+  "dune" {>= "2.8" & with-test & < "3.0"}
   "odoc" {with-doc}
 ]
 build: [

@@ -1,6 +1,6 @@
 (** Extension of Cmdliner supporting lighter-weight option definition *)
 
-include module type of Cmdliner
+include module type of struct include Cmdliner end
 
 val mk : default:'a -> 'a Term.t -> 'a ref
 (** [mk ~default term] is a ref which, after [parse] is called, contains
