@@ -9,8 +9,7 @@
    enable_outside_detected_project.output
    (chdir
     enable_outside_detected_project
-    ; Changed because submoduling ruins this
-    (run ocamlformat --name ../.ocamlformat main.ml)))))
+    (run ocamlformat --enable-outside-detected-project main.ml)))))
 
 (rule
  (alias runtest)
