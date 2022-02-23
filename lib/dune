@@ -14,7 +14,7 @@
 (ocamllex Toplevel_lexer)
 
 (library
- (name ocamlformat_lib)
+ (name ocamlformat)
  (public_name ocamlformat)
  (flags
   (:standard

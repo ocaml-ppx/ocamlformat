@@ -11,7 +11,7 @@
 
 (** OCamlFormat *)
 
-open Ocamlformat_lib
+open Ocamlformat
 open Result.Monad_infix ;;
 
 Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
