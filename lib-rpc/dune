@@ -1,4 +1,11 @@
 (library
+ (name ocamlformat_rpc)
+ (public_name ocamlformat-rpc)
+ (libraries ocamlformat ocamlformat-rpc-lib)
+ (modules ocamlformat_rpc))
+
+(library
  (name ocamlformat_rpc_lib)
  (public_name ocamlformat-rpc-lib)
- (libraries csexp))
+ (libraries csexp)
+ (modules ocamlformat_rpc_lib iO))
