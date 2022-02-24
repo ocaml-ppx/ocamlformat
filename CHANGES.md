@@ -26,6 +26,8 @@
 
   + Handle cases where an attribute is added to a bind expression, e.g. `(x >>= (fun () -> ())) [@a]` (#2013, @emillon)
 
+  + Fix indentation of constraints of a package type pattern (#2025, @gpetiot)
+
 #### Changes
 
   + More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
