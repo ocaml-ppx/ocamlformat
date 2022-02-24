@@ -919,9 +919,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
 
 and fmt_package_type c ctx cnstrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
-    fmt_or first "@;<1 0>with type " "@;<1 1>and type "
-    $ fmt_longident_loc c lid $ str " = "
-    $ fmt_core_type c (sub_typ ~ctx typ)
+    fmt_or first "@;<1 0>" "@;<1 1>"
+    $ hvbox 2
+        ( fmt_or first "with type " "and type "
+        $ fmt_longident_loc c lid $ fmt " =@ "
+        $ fmt_core_type c (sub_typ ~ctx typ) )
   in
   list_fl cnstrs fmt_cstr
 
