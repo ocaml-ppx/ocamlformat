@@ -1,8 +1,4 @@
-### unreleased
-
-#### Removed
-
-#### Deprecated
+### 0.21.0 (2022-02-25)
 
 #### Bug fixes
 
