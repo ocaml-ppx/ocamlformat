@@ -27,7 +27,7 @@ Alternatively, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build ins
 Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this `.ocamlformat` file is considered good practice:
 ```
 profile = default
-version = 0.20.1
+version = 0.21.0
 ```
 
 To manually invoke OCamlformat the general command is:
