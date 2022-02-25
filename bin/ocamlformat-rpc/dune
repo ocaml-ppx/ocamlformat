@@ -17,7 +17,7 @@
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat ocamlformat-rpc-lib))
+ (libraries ocamlformat-rpc))
 
 (rule
  (with-stdout-to
