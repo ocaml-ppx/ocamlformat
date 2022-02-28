@@ -5027,6 +5027,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to verbatim_comments-wrap.ml.stdout
+   (with-stderr-to verbatim_comments-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --wrap-comments %{dep:tests/verbatim_comments.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/verbatim_comments-wrap.ml.ref verbatim_comments-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/verbatim_comments-wrap.ml.err verbatim_comments-wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to verbatim_comments.ml.stdout
    (with-stderr-to verbatim_comments.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/verbatim_comments.ml})))))
