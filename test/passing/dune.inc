@@ -5025,6 +5025,24 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to verbatim_comments.ml.stdout
+   (with-stderr-to verbatim_comments.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/verbatim_comments.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/verbatim_comments.ml.ref verbatim_comments.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/verbatim_comments.ml.err verbatim_comments.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
