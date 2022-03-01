@@ -8,9 +8,11 @@
 
 #### Changes
 
+  + Qtest comments are not re-formatted (#2034, @gpetiot)
+
 #### New features
 
-  +  New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
+  + New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
 
 ### 0.21.0 (2022-02-25)
 

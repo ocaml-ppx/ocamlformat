@@ -4217,6 +4217,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to qtest.ml.stdout
+   (with-stderr-to qtest.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/qtest.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/qtest.ml qtest.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/qtest.ml.err qtest.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to quoted_strings.ml.stdout
    (with-stderr-to quoted_strings.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/quoted_strings.ml})))))
