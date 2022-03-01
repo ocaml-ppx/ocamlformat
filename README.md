@@ -10,7 +10,7 @@ OCamlFormat is probably what you are after!
 
 OCamlFormat works by parsing then outputting again the same OCaml source file in a consistent style.
 
-Read the [manual](https://v3.ocaml.org/p/ocamlformat/0.21.0/doc/index.html) to learn more about OCamlFormat!
+Read the [documentation](https://v3.ocaml.org/p/ocamlformat) to learn more about OCamlFormat!
 
 ## Getting started
 
