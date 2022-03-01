@@ -97,25 +97,40 @@ let protect =
 let update_config ?quiet c l =
   {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}
 
-let fmt_elements_collection ?(first_sep = true) ?(last_sep = true)
-    (p : Params.elements_collection) fmt_x xs =
+(* Preserve the position of comments located after the last element of a
+   list/array (after `;`), otherwise comments are picked up by
+   `fmt_expression` and printed before `;`. *)
+let collection_last_cmt ?pro c (loc : Location.t) locs =
+  let filter = function Parser.SEMI -> true | _ -> false in
+  opt (List.last locs) (fun (last : Location.t) ->
+      match
+        Source.tokens_between c.source last.loc_end loc.loc_end ~filter
+      with
+      | [] -> noop
+      | (_, semicolon_loc) :: _ ->
+          Cmts.fmt_after ?pro c last ~filter:(fun Cmt.{loc; _} ->
+              Location.compare loc semicolon_loc >= 0 ) )
+
+let fmt_elements_collection ?pro ?(first_sep = true) ?(last_sep = true) c
+    (p : Params.elements_collection) f loc fmt_x xs =
   let fmt_one ~first ~last x =
     fmt_if_k (not (first && first_sep)) p.sep_before
     $ fmt_x x
     $ fmt_or_k (last && last_sep) p.sep_after_final p.sep_after_non_final
   in
-  list_fl xs fmt_one
+  list_fl xs fmt_one $ collection_last_cmt ?pro c loc (List.map ~f xs)
 
-let fmt_expressions c width sub_exp exprs fmt_expr p =
+let fmt_expressions c width sub_exp exprs fmt_expr p loc =
   match c.conf.fmt_opts.break_collection_expressions with
-  | `Fit_or_vertical -> fmt_elements_collection p fmt_expr exprs
+  | `Fit_or_vertical ->
+      fmt_elements_collection c p Exp.location loc fmt_expr exprs
   | `Wrap ->
       let is_simple x = is_simple c.conf width (sub_exp x) in
       let break x1 x2 = not (is_simple x1 && is_simple x2) in
       let grps = List.group exprs ~break in
       let fmt_grp ~first:first_grp ~last:last_grp exprs =
-        fmt_elements_collection ~first_sep:first_grp ~last_sep:last_grp p
-          fmt_expr exprs
+        fmt_elements_collection c ~first_sep:first_grp ~last_sep:last_grp p
+          Exp.location loc fmt_expr exprs
       in
       list_fl grps fmt_grp
 
@@ -1069,9 +1084,12 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let last_sep, fmt_underscore =
         match closed_flag with
         | Closed -> (true, noop)
-        | Open loc -> (false, Cmts.fmt c loc p2.wildcard)
+        | Open loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
       in
-      let fmt_fields = fmt_elements_collection ~last_sep p1 fmt_field flds in
+      let fmt_fields =
+        fmt_elements_collection c ~last_sep p1 (snd >> Pat.location) ppat_loc
+          fmt_field flds
+      in
       hvbox_if parens 0
         (Params.parens_if parens c.conf
            (p1.box (fmt_fields $ fmt_underscore)) )
@@ -1081,13 +1099,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_array pats ->
       let p = Params.get_array_pat c.conf ~ctx:ctx0 in
       p.box
-        (fmt_elements_collection p
-           (fun pat -> fmt_pattern c (sub_pat ~ctx pat))
+        (fmt_elements_collection c p Pat.location ppat_loc
+           (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_list pats ->
       let p = Params.get_list_pat c.conf ~ctx:ctx0 in
       p.box
-        (fmt_elements_collection p
+        (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_or _ ->
@@ -2039,7 +2057,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( p.box
             (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
                (sub_exp ~ctx >> fmt_expression c)
-               p )
+               p pexp_loc )
         $ fmt_atrs )
   | Pexp_list e1N ->
       let p = Params.get_list_expr c.conf in
@@ -2054,7 +2072,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   (fun e ->
                     let fmt_cmts = Cmts.fmt c ~eol:cmt_break e.pexp_loc in
                     fmt_cmts @@ (sub_exp ~ctx >> fmt_expression c) e )
-                  p )
+                  p pexp_loc )
            $ fmt_atrs ) )
   | Pexp_assert e0 ->
       let paren_body, wrap_symbol =
@@ -2453,7 +2471,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
       let p1, p2 = Params.get_record_expr c.conf in
-      let fmt_fields = fmt_elements_collection p1 fmt_field flds in
+      let fmt_fields =
+        fmt_elements_collection c p1 (snd >> Exp.location) pexp_loc fmt_field
+          flds ~pro:(break 1 2)
+      in
       hvbox_if has_attr 0
         ( p1.box
             ( opt default (fun d ->

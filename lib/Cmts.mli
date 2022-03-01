@@ -65,6 +65,7 @@ val fmt_after :
   -> fmt_code:(Conf.t -> Fmt.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
+  -> ?filter:(Cmt.t -> bool)
   -> Location.t
   -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear

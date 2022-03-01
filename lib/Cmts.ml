@@ -442,11 +442,12 @@ let preserve ~cache_key f t =
 let pop_if_debug t loc =
   if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
 
-let find_cmts t pos loc =
+let find_cmts ?(filter = Fn.const true) t pos loc =
   pop_if_debug t loc ;
-  let r = find_at_position t loc pos in
-  update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
-  r
+  Option.map (find_at_position t loc pos) ~f:(fun cmts ->
+      let picked, left = List.partition_tf cmts ~f:filter in
+      update_cmts t pos ~f:(Map.set ~key:loc ~data:left) ;
+      picked )
 
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
   let vertical_align =
@@ -647,14 +648,15 @@ let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
   fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
     Before
 
-let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
+let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi ?filter loc =
   let open Fmt in
   let within =
-    fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ?epi loc Within
+    let cmts = find_cmts ?filter t `Within loc in
+    fmt_cmts t conf cmts ~fmt_code ~pro ?epi loc Within
   in
   let after =
-    fmt_cmts t conf (find_cmts t `After loc) ~fmt_code ~pro ?epi ~eol:noop
-      loc After
+    let cmts = find_cmts ?filter t `After loc in
+    fmt_cmts t conf cmts ~fmt_code ~pro ?epi ~eol:noop loc After
   in
   within $ after
 

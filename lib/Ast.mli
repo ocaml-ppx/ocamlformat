@@ -87,6 +87,8 @@ module Longident : sig
 end
 
 module Exp : sig
+  val location : expression -> Location.t
+
   val is_prefix : expression -> bool
   (** Holds for prefix symbol expressions. *)
 
@@ -145,6 +147,8 @@ type cmt_checker =
   ; cmts_after: Location.t -> bool }
 
 module Pat : sig
+  val location : pattern -> Location.t
+
   val is_simple : pattern -> bool
 end
 
