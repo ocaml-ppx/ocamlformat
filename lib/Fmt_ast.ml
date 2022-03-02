@@ -2241,7 +2241,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 let p =
                   Params.get_if_then_else c.conf ~first ~last ~parens
                     ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
-                    ~expr_loc:pexp_loc
+                    ~xbch ~expr_loc:pexp_loc
                     ~fmt_extension_suffix:
                       (Option.map ext ~f:(fun _ ->
                            fmt_extension_suffix c ext ) )
@@ -2252,6 +2252,29 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 let wrap_parens =
                   if Exp.is_symbol xbch.ast then wrap "( " " )"
                   else p.wrap_parens
+                in
+                let xbch =
+                  match xbch.ast with
+                  | {pexp_desc= Pexp_beginend e; _} -> (
+                    match xbch.ctx with
+                    | Exp
+                        ({pexp_desc= Pexp_ifthenelse (x, y, Some z); _} as e')
+                      when Base.phys_equal xbch.ast z ->
+                        sub_exp e
+                          ~ctx:
+                            (Exp
+                               { e' with
+                                 pexp_desc= Pexp_ifthenelse (x, y, Some e) }
+                            )
+                    | Exp ({pexp_desc= Pexp_ifthenelse (x, y, z); _} as e')
+                      when Base.phys_equal xbch.ast y ->
+                        sub_exp e
+                          ~ctx:
+                            (Exp
+                               {e' with pexp_desc= Pexp_ifthenelse (x, e, z)}
+                            )
+                    | _ -> assert false )
+                  | _ -> xbch
                 in
                 parens_prev_bch := parens_bch ;
                 p.box_branch

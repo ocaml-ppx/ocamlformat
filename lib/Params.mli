@@ -109,6 +109,7 @@ val get_if_then_else :
   -> parens_bch:bool
   -> parens_prev_bch:bool
   -> xcond:expression Ast.xt option
+  -> xbch:expression Ast.xt
   -> expr_loc:Location.t
   -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t

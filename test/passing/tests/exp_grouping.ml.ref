@@ -216,76 +216,62 @@ let _ =
 [@@@ocamlformat "if-then-else=compact"]
 
 let _ =
-  if x then
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
-  else if y then
-    begin
-      f 0 ; f 2
-    end
-  else
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
+  if x then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
+  else if y then begin
+    f 0 ; f 2
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
 
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
-  if x then
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
-  else if y then
-    begin
-      f 0 ; f 2
-    end
-  else
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
+  if x then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
+  else if y then begin
+    f 0 ; f 2
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
 
 [@@@ocamlformat "if-then-else=keyword-first"]
 
 let _ =
   if x
-  then
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
+  then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
   else if y
-  then
-    begin
-      f 0 ; f 2
-    end
-  else
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
+  then begin
+    f 0 ; f 2
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
 
 [@@@ocamlformat "if-then-else=k-r"]
 
 let _ =
-  if x then
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
-  else if y then
-    begin
-      f 0 ; f 2
-    end
-  else
-    begin
-      foo.fooooo <- Fooo.foo fooo foo.fooooo ;
-      Fooo fooo
-    end
+  if x then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end else if y then begin
+    f 0 ; f 2
+  end else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  end
 
 let _ =
   match x with
