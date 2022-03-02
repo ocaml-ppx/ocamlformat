@@ -135,7 +135,7 @@
      val case: pattern -> ?guard:expression -> expression -> case
      val binding_op: str -> pattern -> expression -> loc -> binding_op
      val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
-+    val beginend: ?loc:loc -> ?attrs:attrs -> expression option -> expression
++    val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
    end
  
  (** Value declarations *)
@@ -204,7 +204,7 @@
      | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
      | Pexp_unreachable -> unreachable ~loc ~attrs ()
      | Pexp_hole -> hole ~loc ~attrs ()
-+    | Pexp_beginend e -> beginend ~loc ~attrs (map_opt (sub.expr sub) e)
++    | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
  
    let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
      let open Exp in
@@ -468,15 +468,12 @@
 -  | BEGIN ext = ext attrs = attributes e = seq_expr END
 -      { e.pexp_desc, (ext, attrs @ e.pexp_attributes) }
 +  | BEGIN ext_attributes seq_expr END
-+      { Pexp_beginend (Some $3), $2 }
++      { Pexp_beginend $3, $2 }
    | BEGIN ext_attributes END
--      { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
-+      { Pexp_beginend None, $2 }
+       { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
    | BEGIN ext_attributes seq_expr error
        { unclosed "begin" $loc($1) "end" $loc($4) }
    | NEW ext_attributes mkrhs(class_longident)
-       { Pexp_new($3), $2 }
-   | LPAREN MODULE ext_attributes module_expr RPAREN
 @@@@
          Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
    | mod_longident DOT
@@ -635,7 +632,7 @@
          (* . *)
    | Pexp_hole
          (* _ *)
-+  | Pexp_beginend of expression option
++  | Pexp_beginend of expression
 +        (* begin E end *)
  
  and case =   (* (P -> E) or (P when E0 -> E) *)
@@ -969,11 +966,9 @@
        line i ppf "Pexp_unreachable"
    | Pexp_hole ->
        line i ppf "Pexp_hole"
-+  | Pexp_beginend (Some e) ->
++  | Pexp_beginend e ->
 +      line i ppf "Pexp_beginend\n";
 +      expression i ppf e
-+  | Pexp_beginend None ->
-+      line i ppf "Pexp_beginend None"
  
  and value_description i ppf x =
    line i ppf "value_description %a %a\n" fmt_string_loc
@@ -1456,8 +1451,7 @@
            df expression e2 expression e3
      | Pexp_hole ->
          pp f "_"
-+    | Pexp_beginend (Some e) -> simple_expr ctxt f e
-+    | Pexp_beginend None -> pp f "()"
++    | Pexp_beginend e -> simple_expr ctxt f e
      | _ ->  paren true (expression ctxt) f x
  
  and attributes ctxt f l =
