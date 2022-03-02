@@ -49,7 +49,12 @@ type cases =
   ; close_paren_branch: Fmt.t }
 
 val get_cases :
-  Conf.t -> first:bool -> indent:int -> parens_branch:bool -> cases
+     Conf.t
+  -> first:bool
+  -> indent:int
+  -> parens_branch:bool
+  -> xbch:expression Ast.xt
+  -> cases
 
 val wrap_tuple :
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t

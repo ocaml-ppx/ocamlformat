@@ -3185,7 +3185,26 @@ and fmt_case c ctx ~first ~last ~padding case =
       (fmt "@;<1000 0>")
   in
   let indent = if align_nested_match then 0 else indent in
-  let p = Params.get_cases c.conf ~first ~indent ~parens_branch in
+  let p = Params.get_cases c.conf ~first ~indent ~parens_branch ~xbch:xrhs in
+  let xrhs =
+    match xrhs.ast with
+    | {pexp_desc= Pexp_beginend e; _} -> (
+        let replace_beginend c =
+          if Base.phys_equal c.pc_rhs pc_rhs then {c with pc_rhs= e} else c
+        in
+        match xrhs.ctx with
+        | Exp ({pexp_desc= Pexp_function cases; _} as e') ->
+            let cases = List.map cases ~f:replace_beginend in
+            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_function cases})
+        | Exp ({pexp_desc= Pexp_match (x, cases); _} as e') ->
+            let cases = List.map cases ~f:replace_beginend in
+            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_match (x, cases)})
+        | Exp ({pexp_desc= Pexp_try (x, cases); _} as e') ->
+            let cases = List.map cases ~f:replace_beginend in
+            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_try (x, cases)})
+        | _ -> assert false )
+    | _ -> xrhs
+  in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow

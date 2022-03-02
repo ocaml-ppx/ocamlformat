@@ -91,14 +91,27 @@ type cases =
   ; break_after_opening_paren: Fmt.t
   ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~first ~indent ~parens_branch =
-  let open_paren_branch = fmt_if parens_branch " (" in
+let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
+  let beginend =
+    match xbch.Ast.ast with
+    | {pexp_desc= Pexp_beginend _; _} -> true
+    | _ -> false
+  in
+  let open_paren_branch =
+    if beginend then fmt "@;<1 0>begin" else fmt_if parens_branch " ("
+  in
   let close_paren_branch =
-    fmt_if_k parens_branch
-      ( match c.fmt_opts.indicate_multiline_delimiters with
-      | `Space -> fmt "@ )"
-      | `No -> fmt "@,)"
-      | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
+    if beginend then
+      let offset =
+        match c.fmt_opts.break_cases with `Nested -> 0 | _ -> -2
+      in
+      fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
+    else
+      fmt_if_k parens_branch
+        ( match c.fmt_opts.indicate_multiline_delimiters with
+        | `Space -> fmt "@ )"
+        | `No -> fmt "@,)"
+        | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
   in
   match c.fmt_opts.break_cases with
   | `Fit ->
