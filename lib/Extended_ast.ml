@@ -109,12 +109,8 @@ module Parse = struct
     let expr (m : Ast_mapper.mapper) e =
       let e' =
         match e.pexp_desc with
-        | Pexp_beginend (Some e') ->
+        | Pexp_beginend e' ->
             {e' with pexp_attributes= e'.pexp_attributes @ e.pexp_attributes}
-        | Pexp_beginend None ->
-            let loc = e.pexp_loc in
-            let lid = Location.mkloc Longident.(Lident "()") loc in
-            Ast_helper.Exp.construct ~attrs:e.pexp_attributes ~loc lid None
         | _ -> e
       in
       Ast_mapper.default_mapper.expr m e'

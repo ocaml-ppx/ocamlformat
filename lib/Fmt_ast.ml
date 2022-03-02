@@ -2691,7 +2691,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend (Some e) ->
+  | Pexp_beginend e ->
       (* FIXME: tune wrapping based on the context *)
       let _brk hint = fits_breaks "" ~hint "" in
       let opn = str "begin" $ fmt_extension_suffix c ext
@@ -2701,14 +2701,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (wrap_k (break 1 2) (break 1000 0)
                (fmt_expression c ~box ?pro ?epi ?eol ~parens:false
                   ~indent_wrap ?ext (sub_exp ~ctx e) ) )
-        $ fmt_atrs )
-  | Pexp_beginend None ->
-      let opn = str "begin" $ fmt_extension_suffix c ext
-      and cls = str "end" in
-      hvbox 0
-        ( wrap_k opn cls
-            (wrap_k (break 1 2) (break 0 0)
-               (Cmts.fmt_within ~pro:noop c pexp_loc) )
         $ fmt_atrs )
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr

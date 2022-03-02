@@ -2350,9 +2350,9 @@ simple_expr:
 ;
 %inline simple_expr_attrs:
   | BEGIN ext_attributes seq_expr END
-      { Pexp_beginend (Some $3), $2 }
+      { Pexp_beginend $3, $2 }
   | BEGIN ext_attributes END
-      { Pexp_beginend None, $2 }
+      { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
   (*| BEGIN ext_attributes seq_expr error
       { unclosed "begin" $loc($1) "end" $loc($4) }*)
   | NEW ext_attributes mkrhs(class_longident)

@@ -1468,8 +1468,7 @@ end = struct
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
-         |Pexp_unreachable | Pexp_hole
-         |Pexp_beginend None ->
+         |Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object {pcstr_fields; _} ->
             assert (check_pcstr_fields pcstr_fields)
@@ -1518,7 +1517,7 @@ end = struct
                          true
                      | _ -> e == e ) )
         | Pexp_assert e
-         |Pexp_beginend (Some e)
+         |Pexp_beginend e
          |Pexp_constraint (e, _)
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
@@ -2134,9 +2133,7 @@ end = struct
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
          |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
-         |Pexp_hole | Pexp_while _
-         |Pexp_beginend (Some _)
-         |Pexp_beginend None ->
+         |Pexp_hole | Pexp_while _ | Pexp_beginend _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2215,9 +2212,7 @@ end = struct
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
-       |Pexp_hole | Pexp_while _
-       |Pexp_beginend (Some _)
-       |Pexp_beginend None ->
+       |Pexp_hole | Pexp_while _ | Pexp_beginend _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
