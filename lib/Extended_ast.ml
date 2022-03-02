@@ -108,8 +108,8 @@ module Parse = struct
   let remove_beginend_nodes =
     let expr (m : Ast_mapper.mapper) e =
       let e' =
-        match e.pexp_desc with
-        | Pexp_beginend e' when List.is_empty e.pexp_attributes -> e'
+        match e with
+        | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _} -> e'
         | _ -> e
       in
       Ast_mapper.default_mapper.expr m e'
