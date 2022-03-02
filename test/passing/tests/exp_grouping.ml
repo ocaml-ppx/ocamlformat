@@ -219,3 +219,8 @@ let _ = begin x y end
 let _ = begin (* foo *) x y end
 let _ = begin%ext x y end
 let _ = begin%ext (* foo *) x y end
+
+let _ =
+  begin[@landmark "parse_constant_dividends"]
+    market_data_items := ()
+  end

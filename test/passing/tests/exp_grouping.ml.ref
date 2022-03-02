@@ -347,3 +347,9 @@ let _ =
   begin%ext
     (* foo *) x y
   end
+
+let _ =
+  begin
+    market_data_items := ()
+  end
+  [@landmark "parse_constant_dividends"]

@@ -109,8 +109,7 @@ module Parse = struct
     let expr (m : Ast_mapper.mapper) e =
       let e' =
         match e.pexp_desc with
-        | Pexp_beginend e' ->
-            {e' with pexp_attributes= e'.pexp_attributes @ e.pexp_attributes}
+        | Pexp_beginend e' when List.is_empty e.pexp_attributes -> e'
         | _ -> e
       in
       Ast_mapper.default_mapper.expr m e'
