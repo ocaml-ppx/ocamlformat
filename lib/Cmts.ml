@@ -559,9 +559,7 @@ module Verbatim = struct
   let fmt s (pos : Cmt.pos) =
     let open Fmt in
     fmt_if_k
-      ( Poly.(pos = After)
-      && String.contains s '\n'
-      && not (String.is_prefix ~prefix:"\n" s) )
+      (Poly.(pos = After) && String.contains s '\n')
       (break_unless_newline 1000 0)
     $ wrap "(*" "*)" @@ str s
 end
