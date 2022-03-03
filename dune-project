@@ -103,11 +103,37 @@
    (and
     (>= 4.08)
     (< 4.15)))
+  ocamlformat-rpc-lib
   (alcotest :with-test)
-  (ocamlformat
-   (= :version))
-  (ocamlformat-rpc-lib
-   (= :version))))
+  (base
+   (and
+    (>= v0.12.0)
+    (< v0.15)))
+  (cmdliner
+   (>= 1.1.0))
+  dune-build-info
+  either
+  fix
+  fpath
+  (menhir
+   (>= 20201216))
+  (menhirLib
+   (>= 20201216))
+  (menhirSdk
+   (>= 20201216))
+  (ocaml-version
+   (>= 3.3.0))
+  ocp-indent
+  (odoc-parser
+   (>= 1.0.0))
+  (re
+   (>= 1.7.2))
+  (stdio
+   (< v0.15))
+  (uuseg
+   (>= 10.0.0))
+  (uutf
+   (>= 1.0.1))))
 
 (package
  (name ocamlformat-rpc-lib)
