@@ -558,15 +558,12 @@ end
 module Verbatim = struct
   let fmt s (pos : Cmt.pos) =
     let open Fmt in
-    match String.split_lines (String.rstrip s) with
-    | first_line :: _ :: _ when not (String.is_empty first_line) -> (
-      (* Not adding artificial breaks and keeping the comment contents
-         verbatim will not interfere with ocp-indent. *)
-      match pos with
-      | Before -> wrap "(*" "*)" @@ str s
-      | Within -> wrap "(*" "*)" @@ str s
-      | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s )
-    | _ -> wrap "(*" "*)" @@ str s
+    fmt_if_k
+      ( Poly.(pos = After)
+      && String.contains s '\n'
+      && not (String.is_prefix ~prefix:"\n" s) )
+      (break_unless_newline 1000 0)
+    $ wrap "(*" "*)" @@ str s
 end
 
 let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
