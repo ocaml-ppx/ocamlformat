@@ -32,11 +32,11 @@
   (with-stdout-to
    ocamlformat-rpc-help.actual
    (run %{bin:ocamlformat-rpc} --help=plain)))
- (package ocamlformat-rpc))
+ (package ocamlformat))
 
 (rule
  (alias runtest)
- (package ocamlformat-rpc)
+ (package ocamlformat)
  (action
   (diff ocamlformat-rpc-help.txt ocamlformat-rpc-help.actual)))
 
