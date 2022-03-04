@@ -574,8 +574,9 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
     | "*" when Location.width cmt.loc = 4 -> `Verbatim ""
     | "*" -> `Verbatim "*"
     | "$" -> `Verbatim "$"
+    (* Qtest pragmas *)
     | str when Char.(str.[0] = '$' && not (is_whitespace str.[1])) ->
-        `Qtest cmt
+        `Verbatim str
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
@@ -601,7 +602,6 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped x when ocp_indent_compat -> Verbatim.fmt x.txt pos
   | `Unwrapped x -> Unwrapped.fmt x
-  | `Qtest x -> Verbatim.fmt x.txt pos
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
