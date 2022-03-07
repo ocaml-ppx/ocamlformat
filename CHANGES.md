@@ -16,7 +16,7 @@
 
   + New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
 
-  + Preserve the begin-end construction in the AST (#1785, @gpetiot)
+  + Preserve the begin-end construction in the AST (#1785, @hhugo, @gpetiot)
 
 ### 0.21.0 (2022-02-25)
 
