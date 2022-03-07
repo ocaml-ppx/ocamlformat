@@ -2712,7 +2712,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             Fn.id
         | _ ->
             fun k ->
-              let _brk hint = fits_breaks "" ~hint "" in
               let opn = str "begin" $ fmt_extension_suffix c ext
               and cls = str "end" in
               hvbox 0
