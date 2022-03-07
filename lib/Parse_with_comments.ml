@@ -98,7 +98,8 @@ let is_repl_block x =
 
 let parse_toplevel ?disable_w50 (conf : Conf.t) ~source =
   let open Extended_ast in
+  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
+  let parse_ast = Parse.ast ~preserve_beginend in
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases then
-    Either.Second
-      (parse ?disable_w50 (Parse.ast ~conf) Repl_file conf ~source)
-  else First (parse ?disable_w50 (Parse.ast ~conf) Use_file conf ~source)
+    Either.Second (parse ?disable_w50 parse_ast Repl_file conf ~source)
+  else First (parse ?disable_w50 parse_ast Use_file conf ~source)

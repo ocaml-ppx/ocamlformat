@@ -116,15 +116,13 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr}
 
-  let normalize fg (conf : Conf.t) x =
+  let normalize fg ~preserve_beginend x =
     map fg fix_letop_locs @@ map fg normalize_lists
-    @@ ( match conf.fmt_opts.exp_grouping with
-       | `Preserve -> Fn.id
-       | `Parens -> map fg remove_beginend_nodes )
+    @@ (if preserve_beginend then Fn.id else map fg remove_beginend_nodes)
     @@ x
 
-  let ast (type a) (fg : a t) ~conf lexbuf : a =
-    normalize fg conf
+  let ast (type a) (fg : a t) ~preserve_beginend lexbuf : a =
+    normalize fg ~preserve_beginend
     @@
     match fg with
     | Structure -> Parse.implementation lexbuf
