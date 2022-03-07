@@ -2253,29 +2253,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   if Exp.is_symbol xbch.ast then wrap "( " " )"
                   else p.wrap_parens
                 in
-                let xbch =
-                  match xbch.ast with
-                  | {pexp_desc= Pexp_beginend e; _} -> (
-                    match xbch.ctx with
-                    | Exp
-                        ({pexp_desc= Pexp_ifthenelse (x, y, Some z); _} as e')
-                      when Base.phys_equal xbch.ast z ->
-                        sub_exp e
-                          ~ctx:
-                            (Exp
-                               { e' with
-                                 pexp_desc= Pexp_ifthenelse (x, y, Some e) }
-                            )
-                    | Exp ({pexp_desc= Pexp_ifthenelse (x, y, z); _} as e')
-                      when Base.phys_equal xbch.ast y ->
-                        sub_exp e
-                          ~ctx:
-                            (Exp
-                               {e' with pexp_desc= Pexp_ifthenelse (x, e, z)}
-                            )
-                    | _ -> assert false )
-                  | _ -> xbch
-                in
                 parens_prev_bch := parens_bch ;
                 p.box_branch
                   ( p.cond
@@ -2714,17 +2691,34 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend e ->
-      (* FIXME: tune wrapping based on the context *)
-      let _brk hint = fits_breaks "" ~hint "" in
-      let opn = str "begin" $ fmt_extension_suffix c ext
-      and cls = str "end" in
-      hvbox 0
-        ( wrap_k opn cls
-            (wrap_k (break 1 2) (break 1000 0)
-               (fmt_expression c ~box ?pro ?epi ?eol ~parens:false
-                  ~indent_wrap ?ext (sub_exp ~ctx e) ) )
-        $ fmt_atrs )
+  | Pexp_beginend e -> (
+    match ctx0 with
+    (* begin-end keywords are handled when printing if-then-else branch *)
+    | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some z); _}
+      when Base.phys_equal xexp.ast z ->
+        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+          (sub_exp ~ctx e)
+    | Exp {pexp_desc= Pexp_ifthenelse (_, y, _); _}
+      when Base.phys_equal xexp.ast y ->
+        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+          (sub_exp ~ctx e)
+    (* begin-end keywords are handled when printing pattern-matching cases *)
+    | Exp {pexp_desc= Pexp_function cases; _}
+     |Exp {pexp_desc= Pexp_match (_, cases); _}
+     |Exp {pexp_desc= Pexp_try (_, cases); _}
+      when List.exists cases ~f:(fun c -> Base.phys_equal c.pc_rhs exp) ->
+        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+          (sub_exp ~ctx e)
+    | _ ->
+        let _brk hint = fits_breaks "" ~hint "" in
+        let opn = str "begin" $ fmt_extension_suffix c ext
+        and cls = str "end" in
+        hvbox 0
+          ( wrap_k opn cls
+              (wrap_k (break 1 2) (break 1000 0)
+                 (fmt_expression c ~box ?pro ?epi ?eol ~parens:false
+                    ~indent_wrap ?ext (sub_exp ~ctx e) ) )
+          $ fmt_atrs ) )
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr
     rec_flag bindings body =
@@ -3187,25 +3181,6 @@ and fmt_case c ctx ~first ~last ~padding case =
   in
   let indent = if align_nested_match then 0 else indent in
   let p = Params.get_cases c.conf ~first ~indent ~parens_branch ~xbch:xrhs in
-  let xrhs =
-    match xrhs.ast with
-    | {pexp_desc= Pexp_beginend e; _} -> (
-        let replace_beginend c =
-          if Base.phys_equal c.pc_rhs pc_rhs then {c with pc_rhs= e} else c
-        in
-        match xrhs.ctx with
-        | Exp ({pexp_desc= Pexp_function cases; _} as e') ->
-            let cases = List.map cases ~f:replace_beginend in
-            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_function cases})
-        | Exp ({pexp_desc= Pexp_match (x, cases); _} as e') ->
-            let cases = List.map cases ~f:replace_beginend in
-            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_match (x, cases)})
-        | Exp ({pexp_desc= Pexp_try (x, cases); _} as e') ->
-            let cases = List.map cases ~f:replace_beginend in
-            sub_exp e ~ctx:(Exp {e' with pexp_desc= Pexp_try (x, cases)})
-        | _ -> assert false )
-    | _ -> xrhs
-  in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
