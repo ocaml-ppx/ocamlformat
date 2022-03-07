@@ -3158,6 +3158,7 @@ and fmt_case c ctx ~first ~last ~padding case =
       , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
         , (Pexp_match _ | Pexp_try _) ) ) ->
         2
+    | _, (_, Pexp_beginend _) -> 2
     | _, _ -> c.conf.fmt_opts.cases_exp_indent
   in
   let align_nested_match =

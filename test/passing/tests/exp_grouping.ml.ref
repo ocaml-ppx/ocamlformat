@@ -278,12 +278,12 @@ let _ =
   | A -> begin match B with A -> fooooooooooooo end
   | A -> begin match B with A -> fooooooooooooo | B -> fooooooooooooo end
   | A -> begin
-      match B with
-      | A -> fooooooooooooo
-      | B -> fooooooooooooo
-      | C -> fooooooooooooo
-      | D -> fooooooooooooo
-    end
+    match B with
+    | A -> fooooooooooooo
+    | B -> fooooooooooooo
+    | C -> fooooooooooooo
+    | D -> fooooooooooooo
+  end
 
 let () =
   begin
