@@ -2691,34 +2691,37 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend e -> (
-    match ctx0 with
-    (* begin-end keywords are handled when printing if-then-else branch *)
-    | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some z); _}
-      when Base.phys_equal xexp.ast z ->
-        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
-          (sub_exp ~ctx e)
-    | Exp {pexp_desc= Pexp_ifthenelse (_, y, _); _}
-      when Base.phys_equal xexp.ast y ->
-        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
-          (sub_exp ~ctx e)
-    (* begin-end keywords are handled when printing pattern-matching cases *)
-    | Exp {pexp_desc= Pexp_function cases; _}
-     |Exp {pexp_desc= Pexp_match (_, cases); _}
-     |Exp {pexp_desc= Pexp_try (_, cases); _}
-      when List.exists cases ~f:(fun c -> Base.phys_equal c.pc_rhs exp) ->
-        fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
-          (sub_exp ~ctx e)
-    | _ ->
-        let _brk hint = fits_breaks "" ~hint "" in
-        let opn = str "begin" $ fmt_extension_suffix c ext
-        and cls = str "end" in
-        hvbox 0
-          ( wrap_k opn cls
-              (wrap_k (break 1 2) (break 1000 0)
-                 (fmt_expression c ~box ?pro ?epi ?eol ~parens:false
-                    ~indent_wrap ?ext (sub_exp ~ctx e) ) )
-          $ fmt_atrs ) )
+  | Pexp_beginend e ->
+      let wrap_beginend =
+        match ctx0 with
+        (* begin-end keywords are handled when printing if-then-else
+           branch *)
+        | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some z); _}
+          when Base.phys_equal xexp.ast z ->
+            Fn.id
+        | Exp {pexp_desc= Pexp_ifthenelse (_, y, _); _}
+          when Base.phys_equal xexp.ast y ->
+            Fn.id
+        (* begin-end keywords are handled when printing pattern-matching
+           cases *)
+        | Exp {pexp_desc= Pexp_function cases; _}
+         |Exp {pexp_desc= Pexp_match (_, cases); _}
+         |Exp {pexp_desc= Pexp_try (_, cases); _}
+          when List.exists cases ~f:(fun c -> Base.phys_equal c.pc_rhs exp)
+          ->
+            Fn.id
+        | _ ->
+            fun k ->
+              let _brk hint = fits_breaks "" ~hint "" in
+              let opn = str "begin" $ fmt_extension_suffix c ext
+              and cls = str "end" in
+              hvbox 0
+                ( wrap_k opn cls (wrap_k (break 1 2) (break 1000 0) k)
+                $ fmt_atrs )
+      in
+      wrap_beginend
+      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+           (sub_exp ~ctx e)
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr
     rec_flag bindings body =
