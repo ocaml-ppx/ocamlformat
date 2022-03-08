@@ -2704,11 +2704,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             Fn.id
         (* begin-end keywords are handled when printing pattern-matching
            cases *)
-        | Exp {pexp_desc= Pexp_function cases; _}
-         |Exp {pexp_desc= Pexp_match (_, cases); _}
-         |Exp {pexp_desc= Pexp_try (_, cases); _}
-          when List.exists cases ~f:(fun c -> Base.phys_equal c.pc_rhs exp)
-          ->
+        | Exp
+            { pexp_desc=
+                Pexp_function xs | Pexp_match (_, xs) | Pexp_try (_, xs)
+            ; _ }
+          when List.exists xs ~f:(fun x -> Poly.(x.pc_rhs = exp)) ->
             Fn.id
         | _ ->
             fun k ->
