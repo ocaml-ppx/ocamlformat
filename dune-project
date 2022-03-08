@@ -70,7 +70,9 @@
   (uuseg
    (>= 10.0.0))
   (uutf
-   (>= 1.0.1))))
+   (>= 1.0.1))
+  (csexp
+   (>= 1.4.0))))
 
 (package
  (name ocamlformat-bench)

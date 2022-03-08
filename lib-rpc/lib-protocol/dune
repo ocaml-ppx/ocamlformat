@@ -1,0 +1,10 @@
+; Duplicate these two modules in order to share types and
+; serialization/deserialization code between two independent packages.
+
+(library
+ (name ocamlformat_rpc_lib_protocol)
+ (public_name ocamlformat.rpc_lib_protocol)
+ (libraries csexp))
+
+(copy_files#
+ (files ../{IO,protocol}.ml{,i}))

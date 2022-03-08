@@ -24,88 +24,43 @@
       module RPC = Ocamlformat_rpc_lib.Make (IO)
     ]} *)
 
-type format_args =
-  { path: string option
-        (** Path used for the current formatting request, this allows
-            ocamlformat to determine which .ocamlformat files must be
-            applied. *)
-  ; config: (string * string) list option
-        (** Additional options used for the current formatting request. *) }
+module Protocol = Protocol
+
+type format_args = Protocol.format_args
 
 val empty_args : format_args
 
-module Version : sig
-  type t = V1 | V2
-
-  val to_string : t -> string
-
-  val of_string : string -> t option
-end
+module Version = Protocol.Version
 
 module type IO = IO.S
 
 module Make (IO : IO) : sig
-  module type Command_S = sig
-    type t
-
-    val read_input : IO.ic -> t IO.t
-
-    val to_sexp : t -> Csexp.t
-
-    val output : IO.oc -> t -> unit IO.t
-  end
-
-  module type Client_S = sig
-    type t
-
-    type cmd
-
-    val pid : t -> int
-
-    val mk : pid:int -> IO.ic -> IO.oc -> t
-
-    val query : cmd -> t -> cmd IO.t
-
-    val halt : t -> (unit, [> `Msg of string]) result IO.t
-    (** The caller must close the input and output channels after calling
-        [halt]. *)
-  end
-
-  (** Version used to set the protocol version *)
-  module Init :
-    Command_S with type t = [`Halt | `Unknown | `Version of string]
-
   module V1 : sig
-    module Command :
-      Command_S
-        with type t =
-          [ `Halt
-          | `Unknown
-          | `Error of string
-          | `Config of (string * string) list
-          | `Format of string ]
-
     module Client : sig
-      include Client_S with type cmd = Command.t
+      type t
+
+      val pid : t -> int
+
+      val mk : pid:int -> IO.ic -> IO.oc -> t
 
       val config :
         (string * string) list -> t -> (unit, [> `Msg of string]) result IO.t
 
       val format : string -> t -> (string, [> `Msg of string]) result IO.t
+
+      val halt : t -> (unit, [> `Msg of string]) result IO.t
+      (** The caller must close the input and output channels after calling
+          [halt]. *)
     end
   end
 
   module V2 : sig
-    module Command :
-      Command_S
-        with type t =
-          [ `Halt
-          | `Unknown
-          | `Error of string
-          | `Format of string * format_args ]
-
     module Client : sig
-      include Client_S with type cmd = Command.t
+      type t
+
+      val pid : t -> int
+
+      val mk : pid:int -> IO.ic -> IO.oc -> t
 
       val format :
            format_args:format_args
@@ -114,6 +69,10 @@ module Make (IO : IO) : sig
         -> (string, [> `Msg of string]) result IO.t
       (** [format_args] modifies the server's configuration temporarily, for
           the current request. *)
+
+      val halt : t -> (unit, [> `Msg of string]) result IO.t
+      (** The caller must close the input and output channels after calling
+          [halt]. *)
     end
   end
 
