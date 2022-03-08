@@ -12,6 +12,8 @@
 
   + Qtest comments are not re-formatted (#2034, @gpetiot)
 
+  + ocamlformat-rpc is now distributed through the ocamlformat package (#2035, @Julow)
+
 #### New features
 
   + New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
