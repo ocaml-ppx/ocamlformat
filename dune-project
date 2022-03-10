@@ -70,7 +70,9 @@
   (uuseg
    (>= 10.0.0))
   (uutf
-   (>= 1.0.1))))
+   (>= 1.0.1))
+  (csexp
+   (>= 1.4.0))))
 
 (package
  (name ocamlformat-bench)
@@ -92,22 +94,6 @@
   (stdio
    (< v0.15))
   yojson))
-
-(package
- (name ocamlformat-rpc)
- (synopsis "Auto-formatter for OCaml code (RPC mode)")
- (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style. This package defines a RPC interface to OCamlFormat")
- (depends
-  (ocaml
-   (and
-    (>= 4.08)
-    (< 4.15)))
-  (alcotest :with-test)
-  (ocamlformat
-   (= :version))
-  (ocamlformat-rpc-lib
-   (= :version))))
 
 (package
  (name ocamlformat-rpc-lib)

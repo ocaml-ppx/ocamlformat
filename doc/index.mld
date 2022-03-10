@@ -13,3 +13,4 @@ OCamlFormat is a tool to format OCaml code.
 - {{!page-howtos}How-To's}
 - {{!page-faq}Frequently asked questions}
 - {{!page-doc_comments}Doc-comments language reference}
+- {{!page-rpc}RPC}

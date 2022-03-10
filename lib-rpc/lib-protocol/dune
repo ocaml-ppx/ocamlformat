@@ -9,35 +9,13 @@
 ;                                                                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(env
- (release
-  (flags
-   (:standard -noassert))))
+; Duplicate these two modules in order to share types and
+; serialization/deserialization code between two independent packages.
 
-(rule
- (action
-  (with-stdout-to
-   ocamlformat-help.actual
-   (run %{bin:ocamlformat} --help=plain)))
- (package ocamlformat))
+(library
+ (name ocamlformat_rpc_lib_protocol)
+ (public_name ocamlformat.rpc_lib_protocol)
+ (libraries csexp))
 
-(rule
- (alias runtest)
- (package ocamlformat)
- (action
-  (diff ocamlformat-help.txt ocamlformat-help.actual)))
-
-(rule
- (action
-  (with-stdout-to
-   ocamlformat-rpc-help.actual
-   (run %{bin:ocamlformat-rpc} --help=plain)))
- (package ocamlformat))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action
-  (diff ocamlformat-rpc-help.txt ocamlformat-rpc-help.actual)))
-
-(data_only_dirs test-extra)
+(copy_files#
+ (files ../{IO,protocol}.ml{,i}))
