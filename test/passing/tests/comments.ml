@@ -370,3 +370,7 @@ let _ = assert ( (* before override *) {< x; y>} (* after override *) )
 let _ = assert ( (* before override *) {< x= x'; y= y'>} (* after override *) )
 
 let _ = assert ( (* before new *) new x )
+
+let _ = assert ( (* before variant *) `X (* after variant *) )
+
+let _ = assert ( (* before hole *) _ (* after hole *) )
