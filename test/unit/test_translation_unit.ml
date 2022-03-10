@@ -219,7 +219,7 @@ let foooooooooooo = let foooooooooooooo =
          foo)
   in
     foooooo
-  end|}
+end|}
       )
   ; make_test "split over multiple lines"
       ~source:{|let fooooo =

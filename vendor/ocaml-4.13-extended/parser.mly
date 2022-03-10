@@ -2350,8 +2350,8 @@ simple_expr:
       { $1 }
 ;
 %inline simple_expr_attrs:
-  | BEGIN ext = ext attrs = attributes e = seq_expr END
-      { e.pexp_desc, (ext, attrs @ e.pexp_attributes) }
+  | BEGIN ext_attributes seq_expr END
+      { Pexp_beginend $3, $2 }
   | BEGIN ext_attributes END
       { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
   | BEGIN ext_attributes seq_expr error

@@ -587,7 +587,7 @@ module Formatting = struct
           "$(b,preserve) preserves the original grouping syntax \
            (parentheses or $(i,begin)/$(i,end))." ]
     in
-    C.choice ~names ~all ~doc ~kind
+    C.choice ~names ~all ~doc ~kind ~allow_inline:false
       (fun conf x -> update conf ~f:(fun f -> {f with exp_grouping= x}))
       (fun conf -> conf.fmt_opts.exp_grouping)
 
@@ -2145,7 +2145,7 @@ let validate () =
 
 let action () = parse info validate
 
-open Extended_ast
+open Parsetree
 
 let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   let result =

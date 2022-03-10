@@ -105,10 +105,24 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat}
 
-  let normalize fg x = map fg fix_letop_locs @@ map fg normalize_lists @@ x
+  let remove_beginend_nodes =
+    let expr (m : Ast_mapper.mapper) e =
+      let e' =
+        match e with
+        | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _} -> e'
+        | _ -> e
+      in
+      Ast_mapper.default_mapper.expr m e'
+    in
+    Ast_mapper.{default_mapper with expr}
 
-  let ast (type a) (fg : a t) lexbuf : a =
-    normalize fg
+  let normalize fg ~preserve_beginend x =
+    map fg fix_letop_locs @@ map fg normalize_lists
+    @@ (if preserve_beginend then Fn.id else map fg remove_beginend_nodes)
+    @@ x
+
+  let ast (type a) (fg : a t) ~preserve_beginend lexbuf : a =
+    normalize fg ~preserve_beginend
     @@
     match fg with
     | Structure -> Parse.implementation lexbuf

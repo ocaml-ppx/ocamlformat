@@ -143,7 +143,8 @@ OPTIONS (CODE FORMATTING STYLE)
        --exp-grouping={parens|preserve}
            Style of expression grouping. parens groups expressions using
            parentheses. preserve preserves the original grouping syntax
-           (parentheses or begin/end). The default value is parens.
+           (parentheses or begin/end). The default value is parens. Cannot be
+           set in attributes.
 
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.

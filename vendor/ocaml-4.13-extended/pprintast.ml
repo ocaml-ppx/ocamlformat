@@ -836,6 +836,7 @@ and simple_expr ctxt f x =
           df expression e2 expression e3
     | Pexp_hole ->
         pp f "_"
+    | Pexp_beginend e -> simple_expr ctxt f e
     | _ ->  paren true (expression ctxt) f x
 
 and attributes ctxt f l =
