@@ -362,3 +362,9 @@ let _ = assert ( (* before object *) object (self) end (* after end *) )
 let _ = assert ( (* before object *) object method x = x end (* after end *) )
 
 let _ = assert ( (* before object *) object (self) method x = x end (* after end *) )
+
+let _ = assert ( (* before override *) {<>} (* after override *) )
+
+let _ = assert ( (* before override *) {< x; y>} (* after override *) )
+
+let _ = assert ( (* before override *) {< x= x'; y= y'>} (* after override *) )

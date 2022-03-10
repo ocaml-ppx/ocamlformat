@@ -436,6 +436,22 @@ let relocate_wrongfully_attached_cmts t src exp =
         ~nested_loc:(List.last_exn xs).pexp_loc
   | Pexp_array [] ->
       relocate_cmts_from_within t ~src ~whole_loc (LBRACKETBAR, BARRBRACKET)
+  | Pexp_override (x :: _ as xs) ->
+      let first_loc =
+        match x with
+        | id, {pexp_desc= Pexp_ident {txt; _}; pexp_loc; _}
+          when Ast.Longident.field_alias ~field:(Longident.lident id.txt) txt
+          ->
+            pexp_loc
+        | id, _ -> id.loc
+      in
+      let _, {pexp_loc= last_loc; _} = List.last_exn xs in
+      relocate_cmts_before_token t src LBRACELESS ~whole_loc
+        ~nested_loc:first_loc ;
+      relocate_cmts_after_token t src GREATERRBRACE ~whole_loc
+        ~nested_loc:last_loc
+  | Pexp_override [] ->
+      relocate_cmts_from_within t ~src ~whole_loc (LBRACELESS, GREATERRBRACE)
   | Pexp_function (x :: _) ->
       relocate_cmts_before_token t src FUNCTION ~whole_loc
         ~nested_loc:x.pc_lhs.ppat_loc
