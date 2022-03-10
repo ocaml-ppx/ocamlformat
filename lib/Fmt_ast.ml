@@ -2640,13 +2640,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.parens_if parens c.conf
            ( fmt_expression c (sub_exp ~ctx exp)
            $ fmt "@,#" $ fmt_str_loc c meth $ fmt_atrs ) )
-  | Pexp_new {txt; loc} ->
-      Cmts.fmt c loc
-      @@ hvbox 2
-           (Params.parens_if parens c.conf
-              ( str "new"
-              $ fmt_extension_suffix c ext
-              $ fmt "@ " $ fmt_longident txt $ fmt_atrs ) )
+  | Pexp_new lid ->
+      hvbox 2
+        (Params.parens_if parens c.conf
+           ( str "new"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ " $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_object {pcstr_self; pcstr_fields} ->
       hvbox 0
         (Params.parens_if parens c.conf

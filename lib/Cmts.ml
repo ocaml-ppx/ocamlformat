@@ -493,6 +493,8 @@ let relocate_wrongfully_attached_cmts t src exp =
       relocate_cmts_before_token t src BEGIN ~whole_loc
         ~nested_loc:x.pexp_loc ;
       relocate_cmts_after_token t src END ~whole_loc ~nested_loc:x.pexp_loc
+  | Pexp_new x ->
+      relocate_cmts_before_token t src NEW ~whole_loc ~nested_loc:x.loc
   | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc
   | _ -> ()
 

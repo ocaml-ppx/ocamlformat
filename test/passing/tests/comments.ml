@@ -368,3 +368,5 @@ let _ = assert ( (* before override *) {<>} (* after override *) )
 let _ = assert ( (* before override *) {< x; y>} (* after override *) )
 
 let _ = assert ( (* before override *) {< x= x'; y= y'>} (* after override *) )
+
+let _ = assert ( (* before new *) new x )
