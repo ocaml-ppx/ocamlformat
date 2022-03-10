@@ -321,7 +321,7 @@ let relocate (t : t) ~src ~before ~after =
         let s = Set.add s after in
         Set.add s before )
 
-let relocate_cmts_from_within (t : t) ~src ~whole_loc (tok1, tok2) =
+let relocate_cmts_from_within (t : t) src ~whole_loc (tok1, tok2) =
   let kwd_loc_1 =
     Option.value_exn (Source.loc_of_first_token_at src whole_loc tok1)
   in
@@ -406,36 +406,30 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
 
 let relocate_wrongfully_attached_cmts t src exp =
   let open Extended_ast in
+  let open Parser in
   let whole_loc = exp.pexp_loc in
+  let reloc = function
+    | `Before (nested_loc, tok) ->
+        relocate_cmts_before_token t src tok ~whole_loc ~nested_loc
+    | `After (nested_loc, tok) ->
+        relocate_cmts_after_token t src tok ~whole_loc ~nested_loc
+    | `Within toks -> relocate_cmts_from_within t src ~whole_loc toks
+  in
   match exp.pexp_desc with
-  | Pexp_match (e0, _) ->
-      relocate_cmts_before_token t src MATCH ~whole_loc
-        ~nested_loc:e0.pexp_loc
-  | Pexp_try (e0, _) ->
-      relocate_cmts_before_token t src TRY ~whole_loc ~nested_loc:e0.pexp_loc
-  | Pexp_letmodule (x, _, _) ->
-      relocate_cmts_before_token t src LET ~whole_loc ~nested_loc:x.loc
-  | Pexp_letexception (x, _) ->
-      relocate_cmts_before_token t src LET ~whole_loc ~nested_loc:x.pext_loc
-  | Pexp_fun (_, _, x, _) ->
-      relocate_cmts_before_token t src FUN ~whole_loc ~nested_loc:x.ppat_loc
-  | Pexp_ifthenelse (x, _, _) ->
-      relocate_cmts_before_token t src IF ~whole_loc ~nested_loc:x.pexp_loc
-  | Pexp_assert x ->
-      relocate_cmts_before_token t src ASSERT ~whole_loc
-        ~nested_loc:x.pexp_loc
+  | Pexp_match (e0, _) -> reloc (`Before (e0.pexp_loc, MATCH))
+  | Pexp_try (e0, _) -> reloc (`Before (e0.pexp_loc, TRY))
+  | Pexp_letmodule (x, _, _) -> reloc (`Before (x.loc, LET))
+  | Pexp_letexception (x, _) -> reloc (`Before (x.pext_loc, LET))
+  | Pexp_fun (_, _, x, _) -> reloc (`Before (x.ppat_loc, FUN))
+  | Pexp_ifthenelse (x, _, _) -> reloc (`Before (x.pexp_loc, IF))
+  | Pexp_assert x -> reloc (`Before (x.pexp_loc, ASSERT))
   | Pexp_list (x :: _ as xs) ->
-      relocate_cmts_before_token t src LBRACKET ~whole_loc
-        ~nested_loc:x.pexp_loc ;
-      relocate_cmts_after_token t src RBRACKET ~whole_loc
-        ~nested_loc:(List.last_exn xs).pexp_loc
+      reloc (`Before (x.pexp_loc, LBRACKET)) ;
+      reloc (`After ((List.last_exn xs).pexp_loc, RBRACKET))
   | Pexp_array (x :: _ as xs) ->
-      relocate_cmts_before_token t src LBRACKETBAR ~whole_loc
-        ~nested_loc:x.pexp_loc ;
-      relocate_cmts_after_token t src BARRBRACKET ~whole_loc
-        ~nested_loc:(List.last_exn xs).pexp_loc
-  | Pexp_array [] ->
-      relocate_cmts_from_within t ~src ~whole_loc (LBRACKETBAR, BARRBRACKET)
+      reloc (`Before (x.pexp_loc, LBRACKETBAR)) ;
+      reloc (`After ((List.last_exn xs).pexp_loc, BARRBRACKET))
+  | Pexp_array [] -> reloc (`Within (LBRACKETBAR, BARRBRACKET))
   | Pexp_override (x :: _ as xs) ->
       let first_loc =
         match x with
@@ -445,16 +439,10 @@ let relocate_wrongfully_attached_cmts t src exp =
             pexp_loc
         | id, _ -> id.loc
       in
-      let _, {pexp_loc= last_loc; _} = List.last_exn xs in
-      relocate_cmts_before_token t src LBRACELESS ~whole_loc
-        ~nested_loc:first_loc ;
-      relocate_cmts_after_token t src GREATERRBRACE ~whole_loc
-        ~nested_loc:last_loc
-  | Pexp_override [] ->
-      relocate_cmts_from_within t ~src ~whole_loc (LBRACELESS, GREATERRBRACE)
-  | Pexp_function (x :: _) ->
-      relocate_cmts_before_token t src FUNCTION ~whole_loc
-        ~nested_loc:x.pc_lhs.ppat_loc
+      reloc (`Before (first_loc, LBRACELESS)) ;
+      reloc (`After ((snd @@ List.last_exn xs).pexp_loc, GREATERRBRACE))
+  | Pexp_override [] -> reloc (`Within (LBRACELESS, GREATERRBRACE))
+  | Pexp_function (x :: _) -> reloc (`Before (x.pc_lhs.ppat_loc, FUNCTION))
   | Pexp_record ((x :: _ as xs), default) ->
       let first_loc =
         match default with
@@ -466,35 +454,27 @@ let relocate_wrongfully_attached_cmts t src exp =
               pexp_loc
           | id, _ -> id.loc )
       in
-      let _, {pexp_loc= last_loc; _} = List.last_exn xs in
-      relocate_cmts_before_token t src LBRACE ~whole_loc
-        ~nested_loc:first_loc ;
-      relocate_cmts_after_token t src RBRACE ~whole_loc ~nested_loc:last_loc
-  | Pexp_lazy x ->
-      relocate_cmts_before_token t src LAZY ~whole_loc ~nested_loc:x.pexp_loc
+      reloc (`Before (first_loc, LBRACE)) ;
+      reloc (`After ((snd @@ List.last_exn xs).pexp_loc, RBRACE))
+  | Pexp_lazy x -> reloc (`Before (x.pexp_loc, LAZY))
   | Pexp_for (p, _, _, _, e) ->
-      relocate_cmts_before_token t src FOR ~whole_loc ~nested_loc:p.ppat_loc ;
-      relocate_cmts_after_token t src DONE ~whole_loc ~nested_loc:e.pexp_loc
+      reloc (`Before (p.ppat_loc, FOR)) ;
+      reloc (`After (e.pexp_loc, DONE))
   | Pexp_while (e1, e2) ->
-      relocate_cmts_before_token t src WHILE ~whole_loc
-        ~nested_loc:e1.pexp_loc ;
-      relocate_cmts_after_token t src DONE ~whole_loc ~nested_loc:e2.pexp_loc
+      reloc (`Before (e1.pexp_loc, WHILE)) ;
+      reloc (`After (e2.pexp_loc, DONE))
   | Pexp_object o ->
-      let first_loc = o.pcstr_self.ppat_loc in
       let last_loc =
         match o.pcstr_fields with
         | [] -> o.pcstr_self.ppat_loc
         | xs -> (List.last_exn xs).pcf_loc
       in
-      relocate_cmts_before_token t src OBJECT ~whole_loc
-        ~nested_loc:first_loc ;
-      relocate_cmts_after_token t src END ~whole_loc ~nested_loc:last_loc
+      reloc (`Before (o.pcstr_self.ppat_loc, OBJECT)) ;
+      reloc (`After (last_loc, END))
   | Pexp_beginend x ->
-      relocate_cmts_before_token t src BEGIN ~whole_loc
-        ~nested_loc:x.pexp_loc ;
-      relocate_cmts_after_token t src END ~whole_loc ~nested_loc:x.pexp_loc
-  | Pexp_new x ->
-      relocate_cmts_before_token t src NEW ~whole_loc ~nested_loc:x.loc
+      reloc (`Before (x.pexp_loc, BEGIN)) ;
+      reloc (`After (x.pexp_loc, END))
+  | Pexp_new x -> reloc (`Before (x.loc, NEW))
   | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc
   | _ -> ()
 
