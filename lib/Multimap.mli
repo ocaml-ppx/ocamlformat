@@ -47,6 +47,8 @@ val move_multi :
   -> key:'key
   -> f:('value -> bool)
   -> ('key, 'value, 'cmp) t * ('key, 'value, 'cmp) t
+(** Move the values of key [key] satisfying [f] from [src] to [dst], returns
+    the updated maps, [src] then [dst]. *)
 
 val filter :
   ('key, 'value, 'cmp) t -> f:('value -> bool) -> ('key, 'value, 'cmp) t
