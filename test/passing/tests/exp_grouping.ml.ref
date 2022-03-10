@@ -332,3 +332,11 @@ let _ =
     market_data_items := ()
   end
   [@landmark "parse_constant_dividends"]
+
+let _ =
+  assert
+    (* before begin *)
+    begin
+      (* before x *) x (* after x *)
+    end
+(* after end *)

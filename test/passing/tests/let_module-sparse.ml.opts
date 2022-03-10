@@ -1,1 +1,2 @@
 --let-module=sparse
+--max-iters=3

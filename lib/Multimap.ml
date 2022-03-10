@@ -37,6 +37,14 @@ let partition_multi map ~src ~dst ~f =
   in
   change_multi map src dontmove
 
+let move_multi ~src ~dst ~key ~f =
+  let move, dontmove = List.partition_tf (Map.find_multi src key) ~f in
+  let dst =
+    List.fold_left ~init:dst (List.rev move) ~f:(fun map data ->
+        Map.add_multi map ~key ~data )
+  in
+  (change_multi src key dontmove, dst)
+
 let filter map ~f = Map.map map ~f:(List.filter ~f)
 
 let to_list map = Map.to_alist map |> List.concat_map ~f:snd

@@ -41,6 +41,13 @@ val partition_multi :
 (** Split the values of key [src] with [f], the values satisfying [f] are
     moved to key [dst] while the others remain associated to key [src]. *)
 
+val move_multi :
+     src:('key, 'value, 'cmp) t
+  -> dst:('key, 'value, 'cmp) t
+  -> key:'key
+  -> f:('value -> bool)
+  -> ('key, 'value, 'cmp) t * ('key, 'value, 'cmp) t
+
 val filter :
   ('key, 'value, 'cmp) t -> f:('value -> bool) -> ('key, 'value, 'cmp) t
 

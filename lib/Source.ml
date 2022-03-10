@@ -192,3 +192,8 @@ let loc_of_first_token_at t loc kwd =
   match tokens_at t loc ~filter:(Poly.( = ) kwd) with
   | [] -> None
   | (_, loc) :: _ -> Some loc
+
+let loc_of_last_token_at t loc kwd =
+  match List.rev @@ tokens_at t loc ~filter:(Poly.( = ) kwd) with
+  | [] -> None
+  | (_, loc) :: _ -> Some loc

@@ -295,3 +295,70 @@ let _ =
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
   #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+
+let _ =
+  assert (
+    (* before let module *)
+    let module (* before A *) A (* after A *) = struct
+      let v = true
+    end in
+    A.v || b)
+
+let _ =
+  assert (
+    (* before let exception *)
+    let exception Foo in
+    raise Foo)
+
+let _ =
+  assert (
+    (* before fun *)
+    fun x -> x)
+
+let _ =
+  assert (
+    (* before if then else *)
+    if (* before x *) x (* after x *) then (* before y *) y (* after y *) else (* before z *) z (* after z *) )
+
+let _ =
+  assert (
+    (* before nested assert *)
+    assert x )
+
+let _ = assert ( (* before list *) [] (* after list *) )
+
+let _ = assert ( (* before list *) [x; y] (* after list *) )
+
+let _ = assert ( (* before array *) [||] (* after array *) )
+
+let _ = assert ( (* before array *) [|x; y|] (* after array *) )
+
+let _ = assert ( (* before function *) function _ -> true )
+
+let _ = assert ( (* before let *) let x = y in z )
+
+let _ = assert ( (* before letop *) let>> x = y in z )
+
+let _ = assert ( (* before module *) module X )
+
+let _ = assert ( (* before record *) {x; y} (* after record *) )
+
+let _ = assert ( (* before record *) {r with x; y} (* after record *) )
+
+let _ = assert ( (* before record *) {x= x'; y= y'} (* after record *) )
+
+let _ = assert ( (* before record *) {r with x= x'; y= y'} (* after record *) )
+
+let _ = assert ( (* before lazy *) lazy z )
+
+let _ = assert ( (* before for *) for x = 0 to 1 do () done (* after done *))
+
+let _ = assert ( (* before while *) while x do () done (* after done *) )
+
+let _ = assert ( (* before object *) object end (* after end *) )
+
+let _ = assert ( (* before object *) object (self) end (* after end *) )
+
+let _ = assert ( (* before object *) object method x = x end (* after end *) )
+
+let _ = assert ( (* before object *) object (self) method x = x end (* after end *) )

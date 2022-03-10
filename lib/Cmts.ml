@@ -321,6 +321,25 @@ let relocate (t : t) ~src ~before ~after =
         let s = Set.add s after in
         Set.add s before )
 
+let relocate_cmts_from_within (t : t) ~src ~whole_loc (tok1, tok2) =
+  let kwd_loc_1 =
+    Option.value_exn (Source.loc_of_first_token_at src whole_loc tok1)
+  in
+  let kwd_loc_2 =
+    Option.value_exn (Source.loc_of_first_token_at src whole_loc tok2)
+  in
+  let within, before =
+    Multimap.move_multi ~src:t.cmts_within ~dst:t.cmts_before ~key:whole_loc
+      ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc_1 < 0)
+  in
+  let within, after =
+    Multimap.move_multi ~src:within ~dst:t.cmts_after ~key:whole_loc
+      ~f:(fun Cmt.{loc; _} -> Location.compare_end kwd_loc_2 loc < 0)
+  in
+  t.cmts_before <- before ;
+  t.cmts_within <- within ;
+  t.cmts_after <- after
+
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
     Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
@@ -328,11 +347,24 @@ let relocate_cmts_before (t : t) ~src ~sep ~dst =
   in
   update_cmts t `Before ~f ; update_cmts t `Within ~f
 
-let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
+let relocate_cmts_after (t : t) ~src ~sep ~dst =
+  let f map =
+    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
+        Location.compare_end sep loc < 0 )
+  in
+  update_cmts t `After ~f ; update_cmts t `Within ~f
+
+let relocate_cmts_before_token (t : t) src tok ~whole_loc ~nested_loc =
   let kwd_loc =
     Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
   in
-  relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
+  relocate_cmts_before t ~src:nested_loc ~sep:kwd_loc ~dst:whole_loc
+
+let relocate_cmts_after_token (t : t) src tok ~whole_loc ~nested_loc =
+  let kwd_loc =
+    Option.value_exn (Source.loc_of_last_token_at src whole_loc tok)
+  in
+  relocate_cmts_after t ~src:nested_loc ~sep:kwd_loc ~dst:whole_loc
 
 let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   let open Extended_ast in
@@ -374,14 +406,78 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
 
 let relocate_wrongfully_attached_cmts t src exp =
   let open Extended_ast in
+  let whole_loc = exp.pexp_loc in
   match exp.pexp_desc with
   | Pexp_match (e0, _) ->
-      relocate_pattern_matching_cmts t src Parser.MATCH
-        ~whole_loc:exp.pexp_loc ~matched_loc:e0.pexp_loc
+      relocate_cmts_before_token t src MATCH ~whole_loc
+        ~nested_loc:e0.pexp_loc
   | Pexp_try (e0, _) ->
-      relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
-        ~matched_loc:e0.pexp_loc
-  | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
+      relocate_cmts_before_token t src TRY ~whole_loc ~nested_loc:e0.pexp_loc
+  | Pexp_letmodule (x, _, _) ->
+      relocate_cmts_before_token t src LET ~whole_loc ~nested_loc:x.loc
+  | Pexp_letexception (x, _) ->
+      relocate_cmts_before_token t src LET ~whole_loc ~nested_loc:x.pext_loc
+  | Pexp_fun (_, _, x, _) ->
+      relocate_cmts_before_token t src FUN ~whole_loc ~nested_loc:x.ppat_loc
+  | Pexp_ifthenelse (x, _, _) ->
+      relocate_cmts_before_token t src IF ~whole_loc ~nested_loc:x.pexp_loc
+  | Pexp_assert x ->
+      relocate_cmts_before_token t src ASSERT ~whole_loc
+        ~nested_loc:x.pexp_loc
+  | Pexp_list (x :: _ as xs) ->
+      relocate_cmts_before_token t src LBRACKET ~whole_loc
+        ~nested_loc:x.pexp_loc ;
+      relocate_cmts_after_token t src RBRACKET ~whole_loc
+        ~nested_loc:(List.last_exn xs).pexp_loc
+  | Pexp_array (x :: _ as xs) ->
+      relocate_cmts_before_token t src LBRACKETBAR ~whole_loc
+        ~nested_loc:x.pexp_loc ;
+      relocate_cmts_after_token t src BARRBRACKET ~whole_loc
+        ~nested_loc:(List.last_exn xs).pexp_loc
+  | Pexp_array [] ->
+      relocate_cmts_from_within t ~src ~whole_loc (LBRACKETBAR, BARRBRACKET)
+  | Pexp_function (x :: _) ->
+      relocate_cmts_before_token t src FUNCTION ~whole_loc
+        ~nested_loc:x.pc_lhs.ppat_loc
+  | Pexp_record ((x :: _ as xs), default) ->
+      let first_loc =
+        match default with
+        | Some x -> x.pexp_loc
+        | None -> (
+          match x with
+          | id, {pexp_desc= Pexp_ident {txt; _}; pexp_loc; _}
+            when Ast.Longident.field_alias ~field:id.txt txt ->
+              pexp_loc
+          | id, _ -> id.loc )
+      in
+      let _, {pexp_loc= last_loc; _} = List.last_exn xs in
+      relocate_cmts_before_token t src LBRACE ~whole_loc
+        ~nested_loc:first_loc ;
+      relocate_cmts_after_token t src RBRACE ~whole_loc ~nested_loc:last_loc
+  | Pexp_lazy x ->
+      relocate_cmts_before_token t src LAZY ~whole_loc ~nested_loc:x.pexp_loc
+  | Pexp_for (p, _, _, _, e) ->
+      relocate_cmts_before_token t src FOR ~whole_loc ~nested_loc:p.ppat_loc ;
+      relocate_cmts_after_token t src DONE ~whole_loc ~nested_loc:e.pexp_loc
+  | Pexp_while (e1, e2) ->
+      relocate_cmts_before_token t src WHILE ~whole_loc
+        ~nested_loc:e1.pexp_loc ;
+      relocate_cmts_after_token t src DONE ~whole_loc ~nested_loc:e2.pexp_loc
+  | Pexp_object o ->
+      let first_loc = o.pcstr_self.ppat_loc in
+      let last_loc =
+        match o.pcstr_fields with
+        | [] -> o.pcstr_self.ppat_loc
+        | xs -> (List.last_exn xs).pcf_loc
+      in
+      relocate_cmts_before_token t src OBJECT ~whole_loc
+        ~nested_loc:first_loc ;
+      relocate_cmts_after_token t src END ~whole_loc ~nested_loc:last_loc
+  | Pexp_beginend x ->
+      relocate_cmts_before_token t src BEGIN ~whole_loc
+        ~nested_loc:x.pexp_loc ;
+      relocate_cmts_after_token t src END ~whole_loc ~nested_loc:x.pexp_loc
+  | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc
   | _ -> ()
 
 (** Initialize global state and place comments. *)

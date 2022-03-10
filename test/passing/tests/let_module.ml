@@ -49,6 +49,26 @@ let () =
   foo
 
 let f () =
-  let module (* comment *)
-      M = struct end in
+  (* before let module *)
+  let module M = struct end in
+  ()
+
+let f () =
+  let module (* before M *)
+     M = struct end in
+  ()
+
+let f () =
+  (* before let module *)
+  let module
+     (* before M *) M = struct end in
+  ()
+
+let f () =
+  let module (* before M *) M = struct end in
+  ()
+
+let f () =
+  (* before let module *)
+  let module (* before M *) M = struct end in
   ()

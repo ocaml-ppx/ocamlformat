@@ -8,6 +8,8 @@
 
   + emacs: Remove temp files in the event of an error (#2003, @gpetiot)
 
+  + Prevent comments from moving after a keyword inside a sub-expression (#2036, @gpetiot)
+
 #### Changes
 
   + Qtest comments are not re-formatted (#2034, @gpetiot)

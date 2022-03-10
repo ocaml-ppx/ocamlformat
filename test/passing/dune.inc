@@ -1610,7 +1610,7 @@
  (action
   (with-stdout-to exp_grouping-parens.ml.stdout
    (with-stderr-to exp_grouping-parens.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --exp-grouping=parens %{dep:tests/exp_grouping.ml})))))
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=parens --max-iters=3 %{dep:tests/exp_grouping.ml})))))
 
 (rule
  (alias runtest)
@@ -1628,7 +1628,7 @@
  (action
   (with-stdout-to exp_grouping.ml.stdout
    (with-stderr-to exp_grouping.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/exp_grouping.ml})))))
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve --max-iters=3 %{dep:tests/exp_grouping.ml})))))
 
 (rule
  (alias runtest)
@@ -3206,7 +3206,7 @@
  (action
   (with-stdout-to let_module-sparse.ml.stdout
    (with-stderr-to let_module-sparse.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --let-module=sparse %{dep:tests/let_module.ml})))))
+     (run %{bin:ocamlformat} --margin-check --let-module=sparse --max-iters=3 %{dep:tests/let_module.ml})))))
 
 (rule
  (alias runtest)
@@ -3224,7 +3224,7 @@
  (action
   (with-stdout-to let_module.ml.stdout
    (with-stderr-to let_module.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --let-module=compact %{dep:tests/let_module.ml})))))
+     (run %{bin:ocamlformat} --margin-check --let-module=compact --max-iters=3 %{dep:tests/let_module.ml})))))
 
 (rule
  (alias runtest)
