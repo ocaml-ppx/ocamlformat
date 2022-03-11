@@ -14,6 +14,8 @@
 
   + ocamlformat-rpc is now distributed through the ocamlformat package (#2035, @Julow)
 
+  + Doc-comments code blocks with a language other than 'ocaml' (set in metadata) are not parsed as OCaml (#2037, @gpetiot)
+
 #### New features
 
   + New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
