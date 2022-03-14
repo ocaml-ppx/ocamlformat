@@ -80,6 +80,10 @@ module Longident : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
+
+  val field_alias_str : field:t -> string -> bool
+
+  val field_alias : field:t -> t -> bool
 end
 
 module Exp : sig

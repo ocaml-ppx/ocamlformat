@@ -459,11 +459,6 @@ let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
 
-let field_alias ~field:(li1 : Longident.t) (li2 : Longident.t) =
-  match (li1, li2) with
-  | (Ldot (_, x) | Lident x), Lident y -> String.equal x y
-  | _ -> false
-
 let is_arrow_or_poly = function
   | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
   | _ -> false
@@ -1065,11 +1060,11 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           @@
           match ppat_desc with
           | Ppat_var {txt= txt'; _}
-            when field_alias ~field:lid1.txt (Longident.lident txt')
+            when Longident.field_alias_str ~field:lid1.txt txt'
                  && List.is_empty ppat_attributes ->
               fmt_record_field c lid1
           | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc; _}, t)
-            when field_alias ~field:lid1.txt (Longident.lident txt)
+            when Longident.field_alias_str ~field:lid1.txt txt
                  && List.is_empty ppat_attributes ->
               Cmts.relocate c.cmts ~src:ppat_loc ~before:lid1.loc
                 ~after:lid1.loc ;
@@ -2450,12 +2445,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         hvbox 0
           ( match f.pexp_desc with
           | Pexp_ident {txt; loc= _}
-            when field_alias ~field:lid1.txt txt
+            when Longident.field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
               Cmts.fmt c f.pexp_loc @@ fmt_record_field c lid1
           | Pexp_constraint
               ({pexp_desc= Pexp_ident {txt; loc= _}; pexp_loc; _}, t)
-            when field_alias ~field:lid1.txt txt
+            when Longident.field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
               Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
               @@ fmt_record_field c lid1 ~typ:(sub_typ ~ctx t)
@@ -2663,8 +2658,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let txt = Longident.lident txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc}
-          when field_alias ~field:txt txt' && List.is_empty f.pexp_attributes
-          ->
+          when Longident.field_alias ~field:txt txt'
+               && List.is_empty f.pexp_attributes ->
             Cmts.fmt c ~eol loc @@ fmt_longident txt'
         | _ ->
             Cmts.fmt c ~eol loc @@ fmt_longident txt

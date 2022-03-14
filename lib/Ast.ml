@@ -240,13 +240,22 @@ module Longident = struct
   let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin * 2
 
   let is_simple c x =
-    let rec length (x : Longident.t) =
+    let rec length (x : t) =
       match x with
       | Lident x -> String.length x
       | Ldot (x, y) -> length x + 1 + String.length y
       | Lapply (x, y) -> length x + length y + 3
     in
     fit_margin c (length x)
+
+  let field_alias_str ~field y =
+    match field with
+    | Ldot (_, x) | Lident x -> String.equal x y
+    | Lapply _ -> false
+
+  let field_alias ~field = function
+    | Lident x -> field_alias_str ~field x
+    | Ldot _ | Lapply _ -> false
 end
 
 module Attr = struct
