@@ -157,13 +157,14 @@ let info =
          the processed file."
     ; `P
         "(*) $(b,.ocamlformat) files in current and all ancestor \
-         directories for each input file are used, as well as the global \
-         $(b,ocamlformat) file defined in $(b,\\$XDG_CONFIG_HOME) or in \
-         $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined. The \
-         global $(b,ocamlformat) file has the lowest priority, then the \
-         closer the directory is to the processed file, the higher the \
-         priority. The global $(b,ocamlformat) file is only used when the \
-         option $(b,enable-outside-detected-project) is set."
+         directories for each input file are used, applied from top to \
+         bottom, overriding the settings each time a file is applied, \
+         stopping at the project root. If no project root and no \
+         $(b,ocamlformat) file has been found, and if the option \
+         $(b,enable-outside-detected-project) is set, the global \
+         $(b,ocamlformat) file defined in $(b,\\$XDG_CONFIG_HOME) (or in \
+         $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined) is \
+         used."
     ; `P
         "If the $(b,disable) option is not set, an $(b,.ocamlformat-ignore) \
          file specifies files that OCamlFormat should ignore. Each line in \
@@ -1232,10 +1233,15 @@ let enable_outside_detected_project =
   in
   let doc =
     Format.sprintf
-      "Read $(b,.ocamlformat) config files outside the current project. The \
-       project root of an input file is taken to be the nearest ancestor \
-       directory that contains a %s file. Formatting is enabled even if no \
-       $(b,.ocamlformat) configuration file is found."
+      "Read $(b,.ocamlformat) config files outside the current project when \
+       no project root has been detected for the input file. The project \
+       root of an input file is taken to be the nearest ancestor directory \
+       that contains a %s file. If $(b,.ocamlformat) config files are \
+       located in the same directory or parents they are applied, if no \
+       $(b,.ocamlformat) file is found then the global configuration \
+       defined in $(b,\\$XDG_CONFIG_HOME/.ocamlformat) (or in \
+       $(b,\\$HOME/.config/.ocamlformat) if $(b,\\$XDG_CONFIG_HOME) is \
+       undefined) is applied."
       witness
   in
   let default = false in
