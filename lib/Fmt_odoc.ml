@@ -75,25 +75,31 @@ let fmt_code_block conf s1 s2 =
   let wrap_code x =
     str "{" $ opt s1 fmt_metadata $ fmt "[@;<1000 2>" $ x $ fmt "@ ]}"
   in
+  let fmt_line ~first ~last:_ l =
+    let l = String.rstrip l in
+    if first then str l
+    else if String.length l = 0 then str "\n"
+    else fmt "@," $ str l
+  in
+  let fmt_no_code s =
+    let lines = String.split_lines s in
+    let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
+    box (wrap_code (vbox 0 (list_fl lines fmt_line)))
+  in
   let Odoc_parser.Loc.{location; value} = s2 in
-  match conf.fmt_code value with
-  | Ok formatted -> hvbox 0 (wrap_code formatted)
-  | Error (`Msg message) ->
-      ( match message with
-      | "" -> ()
-      | _ ->
-          Docstring.warn Caml.Format.err_formatter
-            { location
-            ; message= Format.sprintf "invalid code block: %s" message } ) ;
-      let fmt_line ~first ~last:_ l =
-        let l = String.rstrip l in
-        if first then str l
-        else if String.length l = 0 then str "\n"
-        else fmt "@," $ str l
-      in
-      let lines = String.split_lines value in
-      let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-      box (wrap_code (vbox 0 (list_fl lines fmt_line)))
+  match s1 with
+  | Some ({value= "ocaml"; _}, _) | None -> (
+    match conf.fmt_code value with
+    | Ok formatted -> hvbox 0 (wrap_code formatted)
+    | Error (`Msg message) ->
+        ( match message with
+        | "" -> ()
+        | _ ->
+            Docstring.warn Caml.Format.err_formatter
+              { location
+              ; message= Format.sprintf "invalid code block: %s" message } ) ;
+        fmt_no_code value )
+  | Some _ -> fmt_no_code value
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 

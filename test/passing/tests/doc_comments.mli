@@ -582,3 +582,7 @@ type x =
   | B of b
   (** {[(* a
            b *)]} *)
+
+(** Set a different language name in the block metadata to not format as OCaml:
+
+    {@sh[ echo "this""is""only""a""single"(echo word)(echo also) ]} *)
