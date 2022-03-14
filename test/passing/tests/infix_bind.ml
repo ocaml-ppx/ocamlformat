@@ -3,7 +3,8 @@ g y >>= fun () ->
 f x >>= fun y ->
 g y >>= fun () ->
 f x >>= fun y ->
-g y >>= fun () -> y ()
+g y >>= fun () ->
+y ()
 ;;
 
 f x >>= function
@@ -45,8 +46,8 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
 |> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
 ;;
 
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxxxxxx ->
-xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee
+|> fun xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
 ;;
 
 eeeeeeeeeeeee eeeeeeeeee
@@ -136,7 +137,9 @@ let end_gen_implementation ?toplevel ~ppf_dump
 let foo =
   (* get the tree origin *)
   get_store_tree s >>= function
-  | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
+  | None ->
+      f t >|= fun x ->
+      Ok x (* no transaction is needed *)
   | Some (origin, old_tree) ->
       let batch = {repo; tree= old_tree; origin} in
       let b = Batch batch in
@@ -149,7 +152,9 @@ let _ =
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
-let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
+let _ =
+  foo >>= fun [@warning "-4"] x ->
+  fooooooooooooooooooooooo
 
 let _ =
   foo >>= fun [@warning "-4"] x y ->
@@ -165,7 +170,9 @@ let _ =
   foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
   fooooooooooooooooooooooo
 
-let f = Ok () >>= (* *) fun _ -> Ok ()
+let f =
+  Ok () >>= (* *) fun _ ->
+  Ok ()
 
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
@@ -208,16 +215,19 @@ let _ = () (* This is needed here to avoid the comment above from moving *)
 
 let encoder f =
   let field_encode = unstage (t f.ftype) in
-  stagged @@ fun x k : t -> field_encode (f.fget x) k
+  stagged @@ fun x k : t ->
+  field_encode (f.fget x) k
 
 let encoder f =
   let field_encode = unstage (t f.ftype) in
-  stagged @@ fun x k : t -> field_encode (f.fget x) k
+  stagged @@ fun x k : t ->
+  field_encode (f.fget x) k
 
 let default =
-  command##hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
-  command##hasPermission #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
+  command ## hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
+  command ## hasPermission
+  #= (fun ctx ->
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)
@@ -228,4 +238,12 @@ let _ = f (( let* ) x (fun y -> z))
 
 let _ = f (( let* ) x (function y -> z))
 
-let _ = ((x >>= fun () -> ()) [@a])
+let _ =
+  ( (x >>= fun () ->
+    ())
+  [@a] )
+
+let _ =
+  x >>= (* xxx *) fun _ ->
+  (* yyy *)
+  x

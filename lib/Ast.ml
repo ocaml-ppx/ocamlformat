@@ -198,6 +198,16 @@ module String_id = struct
     && Option.is_none
          (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char_id.is_kwdop c)))
 
+  let is_monadic s =
+    let is_monadop s =
+      match String.sub s ~pos:0 ~len:(min 2 (String.length s)) with
+      | ">>" | ">|" | "@@" | "@>" -> true
+      | _ -> false
+    in
+    is_monadop s
+    (* "*>>=", "+>>>", "/>>|", etc. *)
+    || (String.length s > 3 && is_monadop (String.sub s ~pos:1 ~len:2))
+
   let is_infix i =
     if Char_id.is_infixop i.[0] then true
     else
@@ -226,6 +236,8 @@ module Longident = struct
   let is_prefix = test ~f:String_id.is_prefix
 
   let is_monadic_binding = test ~f:String_id.is_monadic_binding
+
+  let is_monadic = test ~f:String_id.is_monadic
 
   let is_infix = test ~f:String_id.is_infix
 
@@ -293,6 +305,8 @@ module Exp = struct
   let is_index_op = test_id ~f:Longident.is_index_op
 
   let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
+
+  let is_monadic = test_id ~f:Longident.is_monadic
 
   let is_symbol = test_id ~f:Longident.is_symbol
 

@@ -1797,7 +1797,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ( Nolabel
           , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
       )
-    when Longident.is_infix id
+    when Longident.is_monadic id
          && (not (Longident.is_monadic_binding id))
          && not c.conf.fmt_opts.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
@@ -1809,18 +1809,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_cstr, xbody = type_constr_and_body c xbody in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
-      let followed_by_infix_op =
-        match xbody.ast.pexp_desc with
-        | Pexp_apply
-            ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-              ; pexp_attributes= []
-              ; _ }
-            , [ (Nolabel, _)
-              ; (Nolabel, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ] )
-          when Longident.is_infix id ->
-            true
-        | _ -> false
-      in
       wrap_fits_breaks_if c.conf parens "(" ")"
         ( hovbox 0
             (wrap_if has_attr "(" ")"
@@ -1840,8 +1828,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
                            $ fmt "@ ->" ) )
                    $ pre_body )
-               $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
-               $ body $ fmt_if parens_r ")" $ cmts_after ) )
+               $ break 1000 0 $ body $ fmt_if parens_r ")" $ cmts_after ) )
         $ fmt_atrs )
   | Pexp_apply
       ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}

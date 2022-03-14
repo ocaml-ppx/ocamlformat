@@ -16,6 +16,7 @@
 - Doc-comments code blocks with a language other than 'ocaml' (set in metadata) are not parsed as OCaml (#2037, @gpetiot)
 - More comprehensible error message in case of version mismatch (#2042, @gpetiot)
 - The global configuration file (`$XDG_CONFIG_HOME` or `$HOME/.config`) is only applied when no project is detected, `--enable-outside-detected-project` is set, and no applicable `.ocamlformat` file has been found. Global and local configurations are no longer used at the same time. (#2039, @gpetiot)
+- Break after `fun ->` following a monadic op (#2040, @gpetiot)
 
 ### New features
 
