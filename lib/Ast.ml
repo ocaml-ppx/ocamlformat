@@ -49,20 +49,6 @@ type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
 (** Predicates recognizing special symbol identifiers. *)
 
-module Char_id = struct
-  let is_kwdop = function
-    | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
-     |'!' | '%' | ':' | '?' ->
-        true
-    | _ -> false
-
-  let is_infixop = function
-    | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
-     |'^' | '#' ->
-        true
-    | _ -> false
-end
-
 module Token = struct
   let is_infix = function
     | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | BAR | BARBAR | COLON
@@ -192,30 +178,13 @@ module String_id = struct
     | "!=" -> false
     | _ -> ( match i.[0] with '!' | '?' | '~' -> true | _ -> false )
 
-  let is_monadic_binding s =
-    String.length s > 3
-    && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
-    && Option.is_none
-         (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char_id.is_kwdop c)))
-
-  let is_infix i =
-    if Char_id.is_infixop i.[0] then true
-    else
-      match i with
-      | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
-       |"lsl" | "lsr" | "or" | "||" ->
-          true
-      | _ -> is_monadic_binding i
-
-  let is_hash_getter i =
-    let is_infix_char c = Char.equal c '.' || Char_id.is_infixop c in
-    match (i.[0], i.[String.length i - 1]) with
-    | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
-    | _ -> false
-
   let is_index_op ident = Option.is_some (Indexing_op.parse ident)
 
-  let is_symbol i = is_prefix i || is_infix i || is_index_op i
+  let is_infix x =
+    match Op2.String_id.kind x with Some (Infix _) -> true | _ -> false
+
+  let is_symbol i =
+    is_prefix i || Option.is_some (Op2.String_id.kind i) || is_index_op i
 end
 
 module Longident = struct
@@ -225,11 +194,7 @@ module Longident = struct
 
   let is_prefix = test ~f:String_id.is_prefix
 
-  let is_monadic_binding = test ~f:String_id.is_monadic_binding
-
   let is_infix = test ~f:String_id.is_infix
-
-  let is_hash_getter = test ~f:String_id.is_hash_getter
 
   let is_index_op i = Longident.last i |> String_id.is_index_op
 
@@ -291,8 +256,6 @@ module Exp = struct
   let is_infix = test_id ~f:Longident.is_infix
 
   let is_index_op = test_id ~f:Longident.is_index_op
-
-  let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
 
   let is_symbol = test_id ~f:Longident.is_symbol
 
@@ -1736,23 +1699,9 @@ end = struct
             | Some e when e == exp -> Some (LessMinus, Right)
             | _ -> Some (Low, Left) )
       | Pexp_apply
-          ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
+          ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) ->
           let child = if e1 == exp then Left else Right in
-          match (i.[0], i) with
-          | _, ":=" -> Some (ColonEqual, child)
-          | _, ("or" | "||") -> Some (BarBar, child)
-          | _, ("&" | "&&") -> Some (AmperAmper, child)
-          | ('=' | '<' | '>' | '|' | '&' | '$'), _ | _, "!=" ->
-              Some (InfixOp0, child)
-          | ('@' | '^'), _ -> Some (InfixOp1, child)
-          | ('+' | '-'), _ -> Some (InfixOp2, child)
-          | '*', _ when String.(i <> "*") && Char.(i.[1] = '*') ->
-              Some (InfixOp4, child)
-          | ('*' | '/' | '%'), _ | _, ("lor" | "lxor" | "mod" | "land") ->
-              Some (InfixOp3, child)
-          | _, ("lsl" | "lsr" | "asr") -> Some (InfixOp4, child)
-          | '#', _ -> Some (HashOp, child)
-          | _ -> Some (Apply, if String_id.is_infix i then child else Non) )
+          Some (Op2.String_id.prec i ~child)
       | Pexp_apply _ -> Some (Apply, Non)
       | Pexp_setfield (e0, _, _) when e0 == exp -> Some (Dot, Left)
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
@@ -2060,24 +2009,21 @@ end = struct
 
   (** Check if an exp is a prefix op that is not fully applied *)
   let is_displaced_prefix_op {ctx; ast= exp} =
-    match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)]); _}
-      , Pexp_ident {txt= i; _} )
-      when e0 == exp && Longident.is_prefix i ->
+    match ctx with
+    | Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)]); _}
+      when e0 == exp && Exp.is_prefix exp ->
         false
-    | _, Pexp_ident {txt= i; _} when Longident.is_prefix i -> true
+    | _ when Exp.is_prefix exp -> true
     | _ -> false
 
   (** Check if an exp is an infix op that is not fully applied *)
   let is_displaced_infix_op {ctx; ast= exp} =
-    match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)]); _}
-      , Pexp_ident {txt= i; _} )
-      when e0 == exp && Longident.is_infix i
-           && List.is_empty exp.pexp_attributes ->
+    match ctx with
+    | Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)]); _}
+      when e0 == exp && Exp.is_infix exp && List.is_empty exp.pexp_attributes
+      ->
         false
-    | _, Pexp_ident {txt= i; _} when Longident.is_infix i ->
-        List.is_empty exp.pexp_attributes
+    | _ when Exp.is_infix exp -> List.is_empty exp.pexp_attributes
     | _ -> false
 
   let marked_parenzed_inner_nested_match =
@@ -2234,9 +2180,8 @@ end = struct
     let parenze () =
       let is_right_infix_arg ctx_desc exp =
         match ctx_desc with
-        | Pexp_apply
-            ({pexp_desc= Pexp_ident {txt= i; _}; _}, _ :: (_, e2) :: _)
-          when e2 == exp && Longident.is_infix i
+        | Pexp_apply (op, _ :: (_, e2) :: _)
+          when e2 == exp && Exp.is_infix op
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       Prec.compare p Apply < 0 ) ->
             true
@@ -2288,12 +2233,8 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
-    | ( _
-      , { pexp_desc=
-            Pexp_apply ({pexp_desc= Pexp_ident {txt= id; _}; _}, _ :: _)
-        ; pexp_attributes= _ :: _
-        ; _ } )
-      when Longident.is_infix id ->
+    | _, {pexp_desc= Pexp_apply (op, _ :: _); pexp_attributes= _ :: _; _}
+      when Exp.is_infix op ->
         true
     | ( Str
           { pstr_desc=

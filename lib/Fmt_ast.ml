@@ -1774,28 +1774,25 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1))
         $ fmt_atrs )
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= id; loc}
+      ( ( { pexp_desc= Pexp_ident {txt= _; loc}
           ; pexp_attributes= []
           ; pexp_loc
           ; _ } as op )
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_ident _; _} as r))] )
-    when Longident.is_hash_getter id ->
+    when Poly.(Op2.Exp.kind op = Some (Infix Hash_get)) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       Params.parens_if parens c.conf
         ( fmt_expression c (sub_exp ~ctx l)
         $ fmt_expression c (sub_exp ~ctx op)
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-          ; pexp_attributes= []
-          ; pexp_loc= _
-          ; _ } as op )
+      ( op
       , [ (Nolabel, l)
         ; ( Nolabel
           , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
       )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
+    when ( Poly.(Op2.Exp.kind op = Some (Infix Monad))
+         || Poly.(Op2.Exp.kind op = Some (Infix Other)) )
          && not c.conf.fmt_opts.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
@@ -1809,13 +1806,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let followed_by_infix_op =
         match xbody.ast.pexp_desc with
         | Pexp_apply
-            ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-              ; pexp_attributes= []
-              ; _ }
+            ( op'
             , [ (Nolabel, _)
               ; (Nolabel, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ] )
-          when Longident.is_infix id ->
-            true
+          -> (
+          match Op2.Exp.kind op' with Some (Infix _) -> true | _ -> false )
         | _ -> false
       in
       wrap_fits_breaks_if c.conf parens "(" ")"
@@ -1841,14 +1836,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ body $ fmt_if parens_r ")" $ cmts_after ) )
         $ fmt_atrs )
   | Pexp_apply
-      ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}
-        as op )
+      ( op
       , [ (Nolabel, l)
         ; ( Nolabel
           , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r)
           ) ] )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
+    when ( Poly.(Op2.Exp.kind op = Some (Infix Monad))
+         || Poly.(Op2.Exp.kind op = Some (Infix Other)) )
          && not c.conf.fmt_opts.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
@@ -1869,13 +1863,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ fmt_attributes c pexp_attributes ) )
            $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )"
            $ cmts_after ) )
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-        ; pexp_attributes= []
-        ; pexp_loc= _
-        ; _ }
-      , [(Nolabel, _); (Nolabel, _)] )
-    when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
+  | Pexp_apply (op, [(Nolabel, _); (Nolabel, _)])
+    when Poly.(Op2.Exp.kind op = Some (Infix Monad))
+         || Poly.(Op2.Exp.kind op = Some (Infix Other)) ->
       let op_args = Sugar.Exp.infix c.cmts (prec_ast (Exp exp)) xexp in
       let inner_wrap = parens || has_attr in
       let outer_wrap =
@@ -1883,12 +1873,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (* infix operator used to build a function *)
         | Exp {pexp_desc= Pexp_apply (f, _); _} when phys_equal f exp ->
             has_attr && parens
-        | Exp
-            { pexp_desc=
-                Pexp_apply ({pexp_desc= Pexp_ident {txt= id; loc= _}; _}, _)
-            ; _ }
-          when not (Longident.is_infix id) ->
-            has_attr && parens
+        | Exp {pexp_desc= Pexp_apply (op, _); _} -> (
+          match Op2.Exp.kind op with
+          | Some (Infix _) -> has_attr && not parens
+          | _ -> has_attr && parens )
         | _ -> has_attr && not parens
       in
       let infix_op_args =
@@ -2218,9 +2206,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let wrap, wrap_ident =
         if Exp.is_symbol exp && not (List.is_empty pexp_attributes) then
           (wrap_if parens "(" ")", wrap "( " " )")
-        else if Exp.is_monadic_binding exp then (wrap "( " " )", Fn.id)
-        else if Exp.is_symbol exp then (wrap_if parens "( " " )", Fn.id)
-        else (wrap_if parens "(" ")", Fn.id)
+        else
+          match Op2.Exp.kind exp with
+          | Some Monad_bind -> (wrap "( " " )", Fn.id)
+          | _ ->
+              if Exp.is_symbol exp then (wrap_if parens "( " " )", Fn.id)
+              else (wrap_if parens "(" ")", Fn.id)
       in
       Cmts.fmt c loc
       @@ wrap
@@ -2568,18 +2559,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           [ ( { pstr_desc=
                   Pstr_eval
                     ( ( { pexp_desc=
-                            Pexp_apply
-                              ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-                                ; pexp_attributes= []
-                                ; pexp_loc= _
-                                ; _ }
-                              , [(Nolabel, _); (Nolabel, _)] )
+                            Pexp_apply (op, [(Nolabel, _); (Nolabel, _)])
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
+    when ( Poly.(Op2.Exp.kind op = Some (Infix Monad))
+         || Poly.(Op2.Exp.kind op = Some (Infix Other)) )
          && List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0

@@ -53,33 +53,10 @@ module String_id : sig
 
   val is_symbol : string -> bool
   (** Holds for prefix or infix symbols. *)
-
-  val is_hash_getter : string -> bool
-  (** [is_hash_getter id] returns whether [id] is considered a hash-getter
-      operator, of the form [#**#] or [#**.] where [**] can be 0 or more
-      operator chars. *)
-
-  val is_monadic_binding : string -> bool
-  (** [is_monadic_binding id] returns whether [id] is a monadic binding
-      operator of the form [let**] or [and**] where [**] can be 1 or more
-      operator chars. *)
 end
 
 module Longident : sig
   include module type of Longident
-
-  val is_infix : t -> bool
-  (** Holds for infix identifiers. *)
-
-  val is_hash_getter : t -> bool
-  (** [is_hash_getter id] returns whether [id] is considered a hash-getter
-      operator, of the form [#**#] or [#**.] where [**] can be 0 or more
-      operator chars. *)
-
-  val is_monadic_binding : t -> bool
-  (** [is_monadic_binding id] returns whether [id] is a monadic binding
-      operator of the form [let**] or [and**] where [**] can be 1 or more
-      operator chars. *)
 
   val field_alias_str : field:t -> string -> bool
 
@@ -92,11 +69,6 @@ module Exp : sig
 
   val is_symbol : expression -> bool
   (** Holds for prefix or infix expressions. *)
-
-  val is_monadic_binding : expression -> bool
-  (** [is_monadic_binding id] returns whether [id] is a monadic binding
-      operator of the form [let**] or [and**] where [**] can be 1 or more
-      operator chars. *)
 
   val exposed_left : expression -> bool
   (** [exposed_left exp] holds if the left-most subexpression of [exp] is a
