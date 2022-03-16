@@ -7,7 +7,7 @@ Exit code is printed by hand because sed succeeding would hide the error.
 
   $ (<a.ml ocamlformat --impl -; echo [$?]) 2>&1 | sed 's/expecting "[^"]*"/expecting "..."/g'
   ocamlformat: Error while parsing $TESTCASE_ROOT/.ocamlformat:
-               For option "version": expecting "..." but got "bad"
+               Project should be formatted using ocamlformat version "bad", but the installed version is "unknown"
   [1]
 
 Invalid syntax in .ocamlformat file:

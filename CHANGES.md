@@ -16,6 +16,8 @@
 
   + Doc-comments code blocks with a language other than 'ocaml' (set in metadata) are not parsed as OCaml (#2037, @gpetiot)
 
+  + More comprehensible error message in case of version mismatch (#<PR_NUMBER>, @gpetiot)
+
 #### New features
 
   + New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)

@@ -1791,10 +1791,8 @@ let parse_line config ~from s =
           Ok config
         else
           Error
-            (Config_option.Error.Bad_value
-               ( name
-               , Format.sprintf "expecting %S but got %S" Version.current
-                   value ) )
+            (Config_option.Error.Version_mismatch
+               {read= value; installed= Version.current} )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
