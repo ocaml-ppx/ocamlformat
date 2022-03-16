@@ -109,7 +109,11 @@ module Parse = struct
     let expr (m : Ast_mapper.mapper) e =
       let e' =
         match e with
-        | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _} -> e'
+        | { pexp_desc= Pexp_beginend (Some e')
+          ; pexp_attributes= []
+          ; pexp_ext= None
+          ; _ } ->
+            e'
         | _ -> e
       in
       Ast_mapper.default_mapper.expr m e'

@@ -1,6 +1,6 @@
 let () = [%ext expr] ; ()
 
-let _ = (match%ext x with () -> ()) [@attr y]
+let _ = match%ext[@attr y] x with () -> ()
 
 let _ =
   match%ext x with
@@ -178,7 +178,10 @@ let _ =
     let+ a = b in
     c]
 
-let _ = [%ext "foo" ; "bar"]
+let _ =
+  begin%ext
+    "foo" ; "bar"
+  end
 
 let this_function_has_a_long_name plus very many arguments =
   "and a kind of long body"
@@ -195,10 +198,12 @@ ___________________________________________________________
 
 let () =
   (* -1 *)
-  [%(* 0 *)
-    (* 0.5 *)
-    test
-    () (* 1 *) [@foo (* 2 *) "bar"] (* 3 *)]
+  begin%(* 0 *)
+        (* 0.5 *)
+  test
+  end
+  (* 1 *) [@foo (* 2 *) "bar"]
+(* 3 *)
 
 open%ext M
 
@@ -303,11 +308,11 @@ let _ = f (assert%lwt false)
 
 let _ = f [%lwt assert false]
 
-let _ = (assert%lwt false) [@attr]
+let _ = assert%lwt false [@attr]
 
 let _ = [%lwt assert false] [@attr]
 
-let _ = f ((assert%lwt false) [@attr])
+let _ = f (assert%lwt false [@attr])
 
 let _ = f ([%lwt assert false] [@attr])
 
@@ -319,11 +324,11 @@ let _ = f (lazy%ext e)
 
 let _ = f [%ext lazy e]
 
-let _ = (lazy%ext e) [@attr]
+let _ = lazy%ext e [@attr]
 
 let _ = [%ext lazy e] [@attr]
 
-let _ = f ((lazy%ext e) [@attr])
+let _ = f (lazy%ext e [@attr])
 
 let _ = f ([%ext lazy e] [@attr])
 
@@ -352,9 +357,9 @@ let _ =
       end]
 
 let _ =
-  (object%ext
-     method x = y
-  end )
+  object%ext
+    method x = y
+  end
   [@attr]
 
 let _ =
@@ -366,9 +371,9 @@ let _ =
 
 let _ =
   f
-    ((object%ext
-        method x = y
-     end )
+    (object%ext
+       method x = y
+    end
     [@attr] )
 
 let _ =
@@ -387,11 +392,11 @@ let _ = f (if%ext x then y else z)
 
 let _ = f [%ext if x then y else z]
 
-let _ = (if%ext x then y else z) [@attr]
+let _ = if%ext [@attr] x then y else z
 
 let _ = [%ext if x then y else z] [@attr]
 
-let _ = f ((if%ext x then y else z) [@attr])
+let _ = f (if%ext [@attr] x then y else z)
 
 let _ = f ([%ext if x then y else z] [@attr])
 
@@ -403,11 +408,11 @@ let _ = f (match%ext x with _ -> x)
 
 let _ = f [%ext match x with _ -> x]
 
-let _ = (match%ext x with _ -> x) [@attr]
+let _ = match%ext[@attr] x with _ -> x
 
 let _ = [%ext match x with _ -> x] [@attr]
 
-let _ = f ((match%ext x with _ -> x) [@attr])
+let _ = f (match%ext[@attr] x with _ -> x)
 
 let _ = f ([%ext match x with _ -> x] [@attr])
 
@@ -419,11 +424,11 @@ let _ = f (try%ext x with _ -> x)
 
 let _ = f [%ext try x with _ -> x]
 
-let _ = (try%ext x with _ -> x) [@attr]
+let _ = try%ext[@attr] x with _ -> x
 
 let _ = [%ext try x with _ -> x] [@attr]
 
-let _ = f ((try%ext x with _ -> x) [@attr])
+let _ = f (try%ext[@attr] x with _ -> x)
 
 let _ = f ([%ext try x with _ -> x] [@attr])
 
@@ -435,11 +440,11 @@ let _ = f (fun%ext x -> x)
 
 let _ = f [%ext fun x -> x]
 
-let _ = (fun%ext x -> x) [@attr]
+let _ = fun%ext [@attr] x -> x
 
 let _ = [%ext fun x -> x] [@attr]
 
-let _ = f ((fun%ext x -> x) [@attr])
+let _ = f (fun%ext [@attr] x -> x)
 
 let _ = f ([%ext fun x -> x] [@attr])
 
@@ -451,11 +456,11 @@ let _ = f (function%ext x -> x)
 
 let _ = f [%ext function x -> x]
 
-let _ = (function%ext x -> x) [@attr]
+let _ = function%ext[@attr] x -> x
 
 let _ = [%ext function x -> x] [@attr]
 
-let _ = f ((function%ext x -> x) [@attr])
+let _ = f (function%ext [@attr] x -> x)
 
 let _ = f ([%ext function x -> x] [@attr])
 
@@ -467,11 +472,11 @@ let _ = f (new%ext x)
 
 let _ = f [%ext new x]
 
-let _ = (new%ext x) [@attr]
+let _ = new%ext x [@attr]
 
 let _ = [%ext new x] [@attr]
 
-let _ = f ((new%ext x) [@attr])
+let _ = f (new%ext x [@attr])
 
 let _ = f ([%ext new x] [@attr])
 

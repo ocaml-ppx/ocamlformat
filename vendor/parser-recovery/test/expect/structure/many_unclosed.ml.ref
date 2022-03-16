@@ -65,53 +65,54 @@
                 ]
                 expression ([1,0+81]..[1,0+143])
                   Pexp_beginend
-                  expression ([1,0+88]..[1,0+143])
-                    Pexp_let Nonrec
-                    [
-                      <def> ([1,0+88]..[1,0+102])
-                        pattern ([1,0+92]..[1,0+93])
-                          Ppat_var "x" ([1,0+92]..[1,0+93])
-                        expression ([1,0+100]..[1,0+102])
-                          Pexp_construct "()" ([1,0+100]..[1,0+102])
-                          None
-                    ]
-                    expression ([1,0+104]..[1,0+143])
+                  Some
+                    expression ([1,0+88]..[1,0+143])
                       Pexp_let Nonrec
                       [
-                        <def> ([1,0+104]..[1,0+143])
-                          pattern ([1,0+108]..[1,0+115])
-                            Ppat_var "foooooo" ([1,0+108]..[1,0+115])
-                          expression ([1,0+119]..[1,0+143])
-                            Pexp_apply
-                            expression ([1,0+142]..[1,0+143])
-                              Pexp_ident "=" ([1,0+142]..[1,0+143])
-                            [
-                              <arg>
-                              Nolabel
-                                expression ([1,0+119]..[1,0+141])
-                                  Pexp_apply
-                                  expression ([1,0+119]..[1,0+125])
-                                    Pexp_ident "fooooo" ([1,0+119]..[1,0+125])
-                                  [
-                                    <arg>
-                                    Nolabel
-                                      expression ([1,0+127]..[1,0+139])
-                                        Pexp_ident "foooooooolet" ([1,0+127]..[1,0+139])
-                                    <arg>
-                                    Nolabel
-                                      expression ([1,0+140]..[1,0+141])
-                                        Pexp_ident "k" ([1,0+140]..[1,0+141])
-                                  ]
-                              <arg>
-                              Nolabel
-                                expression (_none_[0,0+-1]..[0,0+-1]) ghost
-                                  Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
-                                  []
-                            ]
+                        <def> ([1,0+88]..[1,0+102])
+                          pattern ([1,0+92]..[1,0+93])
+                            Ppat_var "x" ([1,0+92]..[1,0+93])
+                          expression ([1,0+100]..[1,0+102])
+                            Pexp_construct "()" ([1,0+100]..[1,0+102])
+                            None
                       ]
-                      expression (_none_[0,0+-1]..[0,0+-1]) ghost
-                        Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
-                        []
+                      expression ([1,0+104]..[1,0+143])
+                        Pexp_let Nonrec
+                        [
+                          <def> ([1,0+104]..[1,0+143])
+                            pattern ([1,0+108]..[1,0+115])
+                              Ppat_var "foooooo" ([1,0+108]..[1,0+115])
+                            expression ([1,0+119]..[1,0+143])
+                              Pexp_apply
+                              expression ([1,0+142]..[1,0+143])
+                                Pexp_ident "=" ([1,0+142]..[1,0+143])
+                              [
+                                <arg>
+                                Nolabel
+                                  expression ([1,0+119]..[1,0+141])
+                                    Pexp_apply
+                                    expression ([1,0+119]..[1,0+125])
+                                      Pexp_ident "fooooo" ([1,0+119]..[1,0+125])
+                                    [
+                                      <arg>
+                                      Nolabel
+                                        expression ([1,0+127]..[1,0+139])
+                                          Pexp_ident "foooooooolet" ([1,0+127]..[1,0+139])
+                                      <arg>
+                                      Nolabel
+                                        expression ([1,0+140]..[1,0+141])
+                                          Pexp_ident "k" ([1,0+140]..[1,0+141])
+                                    ]
+                                <arg>
+                                Nolabel
+                                  expression (_none_[0,0+-1]..[0,0+-1]) ghost
+                                    Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+                                    []
+                              ]
+                        ]
+                        expression (_none_[0,0+-1]..[0,0+-1]) ghost
+                          Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+                          []
           ]
     ]
 ]

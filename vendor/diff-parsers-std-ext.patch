@@ -34,6 +34,52 @@
    let mk ?(loc= !default_loc) name payload =
      { attr_name = name;
 @@@@
+   let object_ ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_object (a, b))
+   let class_ ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_class (a, b))
+   let alias ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_alias (a, b))
+   let variant ?loc ?attrs a b c = mk ?loc ?attrs (Ptyp_variant (a, b, c))
+   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
+-  let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
++  let package ?loc ?attrs ?ext a b = mk ?loc ?attrs (Ptyp_package ((a, b), ext))
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
+ 
+   let force_poly t =
+     match t.ptyp_desc with
+     | Ptyp_poly _ -> t
+@@@@
+                          flag, lbl_lst_option)
+         | Ptyp_poly(string_lst, core_type) ->
+           List.iter (fun v ->
+             check_variable var_names t.ptyp_loc v.txt) string_lst;
+             Ptyp_poly(string_lst, loop core_type)
+-        | Ptyp_package(longident,lst) ->
+-            Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
++        | Ptyp_package((longident,lst), ext) ->
++            Ptyp_package
++              ((longident,List.map (fun (n,typ) -> (n,loop typ) ) lst), ext)
+         | Ptyp_extension (s, arg) ->
+             Ptyp_extension (s, arg)
+       in
+       {t with ptyp_desc = desc}
+     and loop_row_field field =
+@@@@
+     loop t
+ 
+ end
+ 
+ module Pat = struct
+-  let mk ?(loc = !default_loc) ?(attrs = []) d =
++  let mk ?(loc = !default_loc) ?(attrs = []) ?ext d =
+     {ppat_desc = d;
+      ppat_loc = loc;
+      ppat_loc_stack = [];
++     ppat_ext = ext;
+      ppat_attributes = attrs}
+   let attr d a = {d with ppat_attributes = d.ppat_attributes @ [a]}
+ 
+   let any ?loc ?attrs () = mk ?loc ?attrs Ppat_any
+   let var ?loc ?attrs a = mk ?loc ?attrs (Ppat_var a)
+@@@@
    let tuple ?loc ?attrs a = mk ?loc ?attrs (Ppat_tuple a)
    let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
@@ -41,34 +87,213 @@
    let array ?loc ?attrs a = mk ?loc ?attrs (Ppat_array a)
 +  let list ?loc ?attrs a = mk ?loc ?attrs (Ppat_list a)
    let or_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_or (a, b))
-   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_constraint (a, b))
+-  let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_constraint (a, b))
++  let constraint_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Ppat_constraint (a, b))
    let type_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_type a)
-   let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
-   let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
-@@@@
+-  let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
+-  let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
++  let lazy_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Ppat_lazy a)
++  let unpack ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Ppat_unpack a)
+   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_open (a, b))
+-  let exception_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_exception a)
++  let exception_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Ppat_exception a)
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Ppat_extension a)
+ end
+ 
+ module Exp = struct
+-  let mk ?(loc = !default_loc) ?(attrs = []) d =
++  let mk ?(loc = !default_loc) ?(attrs = []) ?ext d =
+     {pexp_desc = d;
+      pexp_loc = loc;
+      pexp_loc_stack = [];
++     pexp_ext = ext;
+      pexp_attributes = attrs}
+   let attr d a = {d with pexp_attributes = d.pexp_attributes @ [a]}
+ 
+   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
+   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
+-  let let_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_let (a, b, c))
+-  let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_fun (a, b, c, d))
+-  let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
++  let let_ ?loc ?attrs ?ext a b c = mk ?loc ?attrs ?ext (Pexp_let (a, b, c))
++  let fun_ ?loc ?attrs ?ext a b c d = mk ?loc ?attrs ?ext (Pexp_fun (a, b, c, d))
++  let function_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_function a)
+   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
+-  let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
+-  let try_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_try (a, b))
++  let match_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_match (a, b))
++  let try_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_try (a, b))
+   let tuple ?loc ?attrs a = mk ?loc ?attrs (Pexp_tuple a)
+   let construct ?loc ?attrs a b = mk ?loc ?attrs (Pexp_construct (a, b))
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Pexp_variant (a, b))
    let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
    let field ?loc ?attrs a b = mk ?loc ?attrs (Pexp_field (a, b))
    let setfield ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_setfield (a, b, c))
    let array ?loc ?attrs a = mk ?loc ?attrs (Pexp_array a)
+-  let ifthenelse ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_ifthenelse (a, b, c))
+-  let sequence ?loc ?attrs a b = mk ?loc ?attrs (Pexp_sequence (a, b))
+-  let while_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_while (a, b))
+-  let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
+-  let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
 +  let list ?loc ?attrs a = mk ?loc ?attrs (Pexp_list a)
-   let ifthenelse ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_ifthenelse (a, b, c))
-   let sequence ?loc ?attrs a b = mk ?loc ?attrs (Pexp_sequence (a, b))
-   let while_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_while (a, b))
-   let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
-   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
-@@@@
-   let letop ?loc ?attrs let_ ands body =
-     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
++  let ifthenelse ?loc ?attrs ?ext a b c = mk ?loc ?attrs ?ext (Pexp_ifthenelse (a, b, c))
++  let sequence ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_sequence (a, b))
++  let while_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_while (a, b))
++  let for_ ?loc ?attrs ?ext a b c d e = mk ?loc ?attrs ?ext (Pexp_for (a, b, c, d, e))
++  let constraint_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_constraint (a, b))
+   let coerce ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_coerce (a, b, c))
+   let send ?loc ?attrs a b = mk ?loc ?attrs (Pexp_send (a, b))
+-  let new_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_new a)
++  let new_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_new a)
+   let setinstvar ?loc ?attrs a b = mk ?loc ?attrs (Pexp_setinstvar (a, b))
+   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
+-  let letmodule ?loc ?attrs a b c= mk ?loc ?attrs (Pexp_letmodule (a, b, c))
+-  let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))
+-  let assert_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_assert a)
+-  let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_lazy a)
++  let letmodule ?loc ?attrs ?ext a b c= mk ?loc ?attrs ?ext (Pexp_letmodule (a, b, c))
++  let letexception ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_letexception (a, b))
++  let assert_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_assert a)
++  let lazy_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_lazy a)
+   let poly ?loc ?attrs a b = mk ?loc ?attrs (Pexp_poly (a, b))
+-  let object_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_object a)
+-  let newtype ?loc ?attrs a b = mk ?loc ?attrs (Pexp_newtype (a, b))
+-  let pack ?loc ?attrs a = mk ?loc ?attrs (Pexp_pack a)
+-  let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
+-  let letop ?loc ?attrs let_ ands body =
+-    mk ?loc ?attrs (Pexp_letop {let_; ands; body})
++  let object_ ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_object a)
++  let newtype ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_newtype (a, b))
++  let pack ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_pack a)
++  let open_ ?loc ?attrs ?ext a b = mk ?loc ?attrs ?ext (Pexp_open (a, b))
++  let letop ?loc ?attrs ?ext let_ ands body =
++    mk ?loc ?attrs ?ext (Pexp_letop {let_; ands; body})
    let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
    let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
    let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
-+  let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
++  let beginend ?loc ?attrs ?ext a = mk ?loc ?attrs ?ext (Pexp_beginend a)
  
    let case lhs ?guard rhs =
      {
       pc_lhs = lhs;
       pc_guard = guard;
+@@@@
+     }
+ end
+ 
+ module Mty = struct
+   let mk ?(loc = !default_loc) ?(attrs = []) d =
+-    {pmty_desc = d; pmty_loc = loc; pmty_attributes = attrs}
++    {pmty_desc = d;
++     pmty_loc = loc;
++     pmty_attributes = attrs}
+   let attr d a = {d with pmty_attributes = d.pmty_attributes @ [a]}
+ 
+   let ident ?loc ?attrs a = mk ?loc ?attrs (Pmty_ident a)
+   let alias ?loc ?attrs a = mk ?loc ?attrs (Pmty_alias a)
+   let signature ?loc ?attrs a = mk ?loc ?attrs (Pmty_signature a)
+@@@@
+   let typeof_ ?loc ?attrs a = mk ?loc ?attrs (Pmty_typeof a)
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmty_extension a)
+ end
+ 
+ module Mod = struct
+-let mk ?(loc = !default_loc) ?(attrs = []) d =
+-  {pmod_desc = d; pmod_loc = loc; pmod_attributes = attrs}
++  let mk ?(loc = !default_loc) ?(attrs = []) d =
++    {pmod_desc = d;
++     pmod_loc = loc;
++     pmod_attributes = attrs}
+   let attr d a = {d with pmod_attributes = d.pmod_attributes @ [a]}
+ 
+   let ident ?loc ?attrs x = mk ?loc ?attrs (Pmod_ident x)
+   let structure ?loc ?attrs x = mk ?loc ?attrs (Pmod_structure x)
+   let functor_ ?loc ?attrs arg body =
+@@@@
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
+   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+ end
+ 
+ module Sig = struct
+-  let mk ?(loc = !default_loc) d = {psig_desc = d; psig_loc = loc}
+-
+-  let value ?loc a = mk ?loc (Psig_value a)
+-  let type_ ?loc rec_flag a = mk ?loc (Psig_type (rec_flag, a))
+-  let type_subst ?loc a = mk ?loc (Psig_typesubst a)
+-  let type_extension ?loc a = mk ?loc (Psig_typext a)
+-  let exception_ ?loc a = mk ?loc (Psig_exception a)
+-  let module_ ?loc a = mk ?loc (Psig_module a)
+-  let mod_subst ?loc a = mk ?loc (Psig_modsubst a)
+-  let rec_module ?loc a = mk ?loc (Psig_recmodule a)
+-  let modtype ?loc a = mk ?loc (Psig_modtype a)
+-  let modtype_subst ?loc a = mk ?loc (Psig_modtypesubst a)
+-  let open_ ?loc a = mk ?loc (Psig_open a)
+-  let include_ ?loc a = mk ?loc (Psig_include a)
+-  let class_ ?loc a = mk ?loc (Psig_class a)
+-  let class_type ?loc a = mk ?loc (Psig_class_type a)
++  let mk ?(loc = !default_loc) d =
++    {psig_desc = d;
++     psig_loc = loc}
++
++  let value ?loc ?ext a = mk ?loc (Psig_value (a, ext))
++  let type_ ?loc ?ext rec_flag a = mk ?loc (Psig_type (rec_flag, a, ext))
++  let type_subst ?loc ?ext a = mk ?loc (Psig_typesubst (a, ext))
++  let type_extension ?loc ?ext a = mk ?loc (Psig_typext (a, ext))
++  let exception_ ?loc ?ext a = mk ?loc (Psig_exception (a, ext))
++  let module_ ?loc ?ext a = mk ?loc (Psig_module (a, ext))
++  let mod_subst ?loc ?ext a = mk ?loc (Psig_modsubst (a, ext))
++  let rec_module ?loc ?ext a = mk ?loc (Psig_recmodule (a, ext))
++  let modtype ?loc ?ext a = mk ?loc (Psig_modtype (a, ext))
++  let modtype_subst ?loc ?ext a = mk ?loc (Psig_modtypesubst (a, ext))
++  let open_ ?loc ?ext a = mk ?loc (Psig_open (a, ext))
++  let include_ ?loc ?ext a = mk ?loc (Psig_include (a, ext))
++  let class_ ?loc ?ext a = mk ?loc (Psig_class (a, ext))
++  let class_type ?loc ?ext a = mk ?loc (Psig_class_type (a, ext))
+   let extension ?loc ?(attrs = []) a = mk ?loc (Psig_extension (a, attrs))
+   let attribute ?loc a = mk ?loc (Psig_attribute a)
+   let text txt =
+     let f_txt = List.filter (fun ds -> docstring_body ds <> "") txt in
+     List.map
+       (fun ds -> attribute ~loc:(docstring_loc ds) (text_attr ds))
+       f_txt
+ end
+ 
+ module Str = struct
+-  let mk ?(loc = !default_loc) d = {pstr_desc = d; pstr_loc = loc}
++  let mk ?(loc = !default_loc) d =
++    {pstr_desc = d;
++     pstr_loc = loc}
+ 
+   let eval ?loc ?(attrs = []) a = mk ?loc (Pstr_eval (a, attrs))
+-  let value ?loc a b = mk ?loc (Pstr_value (a, b))
+-  let primitive ?loc a = mk ?loc (Pstr_primitive a)
+-  let type_ ?loc rec_flag a = mk ?loc (Pstr_type (rec_flag, a))
+-  let type_extension ?loc a = mk ?loc (Pstr_typext a)
+-  let exception_ ?loc a = mk ?loc (Pstr_exception a)
+-  let module_ ?loc a = mk ?loc (Pstr_module a)
+-  let rec_module ?loc a = mk ?loc (Pstr_recmodule a)
+-  let modtype ?loc a = mk ?loc (Pstr_modtype a)
+-  let open_ ?loc a = mk ?loc (Pstr_open a)
+-  let class_ ?loc a = mk ?loc (Pstr_class a)
+-  let class_type ?loc a = mk ?loc (Pstr_class_type a)
+-  let include_ ?loc a = mk ?loc (Pstr_include a)
++  let value ?loc ?ext a b = mk ?loc (Pstr_value (a, b, ext))
++  let primitive ?loc ?ext a = mk ?loc (Pstr_primitive (a, ext))
++  let type_ ?loc ?ext rec_flag a = mk ?loc (Pstr_type (rec_flag, a, ext))
++  let type_extension ?loc ?ext a = mk ?loc (Pstr_typext (a, ext))
++  let exception_ ?loc ?ext a = mk ?loc (Pstr_exception (a, ext))
++  let module_ ?loc ?ext a = mk ?loc (Pstr_module (a, ext))
++  let rec_module ?loc ?ext a = mk ?loc (Pstr_recmodule (a, ext))
++  let modtype ?loc ?ext a = mk ?loc (Pstr_modtype (a, ext))
++  let open_ ?loc ?ext a = mk ?loc (Pstr_open (a, ext))
++  let class_ ?loc ?ext a = mk ?loc (Pstr_class (a, ext))
++  let class_type ?loc ?ext a = mk ?loc (Pstr_class_type (a, ext))
++  let include_ ?loc ?ext a = mk ?loc (Pstr_include (a, ext))
+   let extension ?loc ?(attrs = []) a = mk ?loc (Pstr_extension (a, attrs))
+   let attribute ?loc a = mk ?loc (Pstr_attribute a)
+   let text txt =
+     let f_txt = List.filter (fun ds -> docstring_body ds <> "") txt in
+     List.map
 --- parser-standard/ast_helper.mli
 +++ parser-extended/ast_helper.mli
 @@@@
@@ -101,6 +326,32 @@
  module Attr : sig
    val mk: ?loc:loc -> str -> payload -> attribute
 @@@@
+     val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
+     val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
+     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
+                  -> label list option -> core_type
+     val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
+-    val package: ?loc:loc -> ?attrs:attrs -> lid -> (lid * core_type) list
++    val package: ?loc:loc -> ?attrs:attrs -> ?ext:str -> lid -> (lid * core_type) list
+                  -> core_type
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> core_type
+ 
+     val force_poly: core_type -> core_type
+ 
+@@@@
+   end
+ 
+ (** Patterns *)
+ module Pat:
+   sig
+-    val mk: ?loc:loc -> ?attrs:attrs -> pattern_desc -> pattern
++    val mk: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern_desc -> pattern
+     val attr:pattern -> attribute -> pattern
+ 
+     val any: ?loc:loc -> ?attrs:attrs -> unit -> pattern
+     val var: ?loc:loc -> ?attrs:attrs -> str -> pattern
+     val alias: ?loc:loc -> ?attrs:attrs -> pattern -> str -> pattern
+@@@@
      val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
      val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
      val construct: ?loc:loc -> ?attrs:attrs ->
@@ -113,34 +364,189 @@
      val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
 +    val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
      val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
-     val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
+-    val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
++    val constraint_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> core_type -> pattern
      val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
-     val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-     val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
+-    val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+-    val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
++    val lazy_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> pattern
++    val unpack: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str_opt -> pattern
+     val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
+-    val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
++    val exception_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> pattern
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
+   end
+ 
+ (** Expressions *)
+ module Exp:
+   sig
+-    val mk: ?loc:loc -> ?attrs:attrs -> expression_desc -> expression
++    val mk: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression_desc -> expression
+     val attr: expression -> attribute -> expression
+ 
+     val ident: ?loc:loc -> ?attrs:attrs -> lid -> expression
+     val constant: ?loc:loc -> ?attrs:attrs -> constant -> expression
+-    val let_: ?loc:loc -> ?attrs:attrs -> rec_flag -> value_binding list
++    val let_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> rec_flag -> value_binding list
+               -> expression -> expression
+-    val fun_: ?loc:loc -> ?attrs:attrs -> arg_label -> expression option
++    val fun_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> arg_label -> expression option
+               -> pattern -> expression -> expression
+-    val function_: ?loc:loc -> ?attrs:attrs -> case list -> expression
++    val function_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> case list -> expression
+     val apply: ?loc:loc -> ?attrs:attrs -> expression
+                -> (arg_label * expression) list -> expression
+-    val match_: ?loc:loc -> ?attrs:attrs -> expression -> case list
++    val match_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> case list
+                 -> expression
+-    val try_: ?loc:loc -> ?attrs:attrs -> expression -> case list -> expression
++    val try_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> case list -> expression
+     val tuple: ?loc:loc -> ?attrs:attrs -> expression list -> expression
+     val construct: ?loc:loc -> ?attrs:attrs -> lid -> expression option
+                    -> expression
+     val variant: ?loc:loc -> ?attrs:attrs -> label -> expression option
+                  -> expression
 @@@@
                  -> expression option -> expression
      val field: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
      val setfield: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
                    -> expression
      val array: ?loc:loc -> ?attrs:attrs -> expression list -> expression
+-    val ifthenelse: ?loc:loc -> ?attrs:attrs -> expression -> expression
 +    val list: ?loc:loc -> ?attrs:attrs -> expression list -> expression
-     val ifthenelse: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val ifthenelse: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
                      -> expression option -> expression
-     val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
+-    val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val sequence: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
                    -> expression
-     val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
-@@@@
+-    val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val while_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
+                 -> expression
+-    val for_: ?loc:loc -> ?attrs:attrs -> pattern -> expression -> expression
++    val for_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> expression -> expression
+               -> direction_flag -> expression -> expression
+     val coerce: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
+                 -> core_type -> expression
+-    val constraint_: ?loc:loc -> ?attrs:attrs -> expression -> core_type
++    val constraint_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> core_type
+                      -> expression
+     val send: ?loc:loc -> ?attrs:attrs -> expression -> str -> expression
+-    val new_: ?loc:loc -> ?attrs:attrs -> lid -> expression
++    val new_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> lid -> expression
+     val setinstvar: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
+     val override: ?loc:loc -> ?attrs:attrs -> (str * expression) list
+                   -> expression
+-    val letmodule: ?loc:loc -> ?attrs:attrs -> str_opt -> module_expr
++    val letmodule: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str_opt -> module_expr
+                    -> expression -> expression
+     val letexception:
+-      ?loc:loc -> ?attrs:attrs -> extension_constructor -> expression
++      ?loc:loc -> ?attrs:attrs -> ?ext:str -> extension_constructor -> expression
+       -> expression
+-    val assert_: ?loc:loc -> ?attrs:attrs -> expression -> expression
+-    val lazy_: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val assert_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
++    val lazy_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
+     val poly: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
+               -> expression
+-    val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
+-    val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
+-    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
+-    val open_: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
++    val object_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> class_structure -> expression
++    val newtype: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str -> expression -> expression
++    val pack: ?loc:loc -> ?attrs:attrs -> ?ext:str -> module_expr -> expression
++    val open_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> open_declaration -> expression
+                -> expression
+-    val letop: ?loc:loc -> ?attrs:attrs -> binding_op
++    val letop: ?loc:loc -> ?attrs:attrs -> ?ext:str -> binding_op
+                -> binding_op list -> expression -> expression
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
      val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
  
      val case: pattern -> ?guard:expression -> expression -> case
      val binding_op: str -> pattern -> expression -> loc -> binding_op
      val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
-+    val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val beginend: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression option -> expression
    end
  
  (** Value declarations *)
  module Val:
    sig
+@@@@
+ (** Signature items *)
+ module Sig:
+   sig
+     val mk: ?loc:loc -> signature_item_desc -> signature_item
+ 
+-    val value: ?loc:loc -> value_description -> signature_item
+-    val type_: ?loc:loc -> rec_flag -> type_declaration list -> signature_item
+-    val type_subst: ?loc:loc -> type_declaration list -> signature_item
+-    val type_extension: ?loc:loc -> type_extension -> signature_item
+-    val exception_: ?loc:loc -> type_exception -> signature_item
+-    val module_: ?loc:loc -> module_declaration -> signature_item
+-    val mod_subst: ?loc:loc -> module_substitution -> signature_item
+-    val rec_module: ?loc:loc -> module_declaration list -> signature_item
+-    val modtype: ?loc:loc -> module_type_declaration -> signature_item
+-    val modtype_subst: ?loc:loc -> module_type_declaration -> signature_item
+-    val open_: ?loc:loc -> open_description -> signature_item
+-    val include_: ?loc:loc -> include_description -> signature_item
+-    val class_: ?loc:loc -> class_description list -> signature_item
+-    val class_type: ?loc:loc -> class_type_declaration list -> signature_item
++    val value: ?loc:loc -> ?ext:str -> value_description -> signature_item
++    val type_: ?loc:loc -> ?ext:str -> rec_flag -> type_declaration list -> signature_item
++    val type_subst: ?loc:loc -> ?ext:str -> type_declaration list -> signature_item
++    val type_extension: ?loc:loc -> ?ext:str -> type_extension -> signature_item
++    val exception_: ?loc:loc -> ?ext:str -> type_exception -> signature_item
++    val module_: ?loc:loc -> ?ext:str -> module_declaration -> signature_item
++    val mod_subst: ?loc:loc -> ?ext:str -> module_substitution -> signature_item
++    val rec_module: ?loc:loc -> ?ext:str -> module_declaration list -> signature_item
++    val modtype: ?loc:loc -> ?ext:str -> module_type_declaration -> signature_item
++    val modtype_subst: ?loc:loc -> ?ext:str -> module_type_declaration -> signature_item
++    val open_: ?loc:loc -> ?ext:str -> open_description -> signature_item
++    val include_: ?loc:loc -> ?ext:str -> include_description -> signature_item
++    val class_: ?loc:loc -> ?ext:str -> class_description list -> signature_item
++    val class_type: ?loc:loc -> ?ext:str -> class_type_declaration list -> signature_item
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> signature_item
+     val attribute: ?loc:loc -> attribute -> signature_item
+     val text: text -> signature_item list
+   end
+ 
+@@@@
+ module Str:
+   sig
+     val mk: ?loc:loc -> structure_item_desc -> structure_item
+ 
+     val eval: ?loc:loc -> ?attrs:attributes -> expression -> structure_item
+-    val value: ?loc:loc -> rec_flag -> value_binding list -> structure_item
+-    val primitive: ?loc:loc -> value_description -> structure_item
+-    val type_: ?loc:loc -> rec_flag -> type_declaration list -> structure_item
+-    val type_extension: ?loc:loc -> type_extension -> structure_item
+-    val exception_: ?loc:loc -> type_exception -> structure_item
+-    val module_: ?loc:loc -> module_binding -> structure_item
+-    val rec_module: ?loc:loc -> module_binding list -> structure_item
+-    val modtype: ?loc:loc -> module_type_declaration -> structure_item
+-    val open_: ?loc:loc -> open_declaration -> structure_item
+-    val class_: ?loc:loc -> class_declaration list -> structure_item
+-    val class_type: ?loc:loc -> class_type_declaration list -> structure_item
+-    val include_: ?loc:loc -> include_declaration -> structure_item
++    val value: ?loc:loc -> ?ext:str -> rec_flag -> value_binding list -> structure_item
++    val primitive: ?loc:loc -> ?ext:str -> value_description -> structure_item
++    val type_: ?loc:loc -> ?ext:str -> rec_flag -> type_declaration list -> structure_item
++    val type_extension: ?loc:loc -> ?ext:str -> type_extension -> structure_item
++    val exception_: ?loc:loc -> ?ext:str -> type_exception -> structure_item
++    val module_: ?loc:loc -> ?ext:str -> module_binding -> structure_item
++    val rec_module: ?loc:loc -> ?ext:str -> module_binding list -> structure_item
++    val modtype: ?loc:loc -> ?ext:str -> module_type_declaration -> structure_item
++    val open_: ?loc:loc -> ?ext:str -> open_declaration -> structure_item
++    val class_: ?loc:loc -> ?ext:str -> class_declaration list -> structure_item
++    val class_type: ?loc:loc -> ?ext:str -> class_type_declaration list -> structure_item
++    val include_: ?loc:loc -> ?ext:str -> include_declaration -> structure_item
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> structure_item
+     val attribute: ?loc:loc -> attribute -> structure_item
+     val text: text -> structure_item list
+   end
+ 
 --- parser-standard/ast_mapper.ml
 +++ parser-extended/ast_mapper.ml
 @@@@
@@ -155,9 +561,13 @@
  let map_fst f (x, y) = (f x, y)
  let map_snd f (x, y) = (x, f y)
  let map_tuple f1 f2 (x, y) = (f1 x, f2 y)
-@@@@
+ let map_tuple3 f1 f2 f3 (x, y, z) = (f1 x, f2 y, f3 z)
+ let map_opt f = function None -> None | Some x -> Some (f x)
+ 
  let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
  
++let map_ext sub ext = map_opt (map_loc sub) ext
++
  module C = struct
    (* Constants *)
  
@@ -187,6 +597,189 @@
    (* Type expressions for the core language *)
  
 @@@@
+     | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+     | Ptyp_variant (rl, b, ll) ->
+         variant ~loc ~attrs (List.map (row_field sub) rl) b ll
+     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
+                              (List.map (map_loc sub) sl) (sub.typ sub t)
+-    | Ptyp_package (lid, l) ->
+-        package ~loc ~attrs (map_loc sub lid)
++    | Ptyp_package ((lid, l), ext) ->
++        let ext = map_opt (map_loc sub) ext in
++        package ~loc ~attrs ?ext (map_loc sub lid)
+           (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
+ 
+   let map_type_declaration sub
+       {ptype_name; ptype_params; ptype_cstrs;
+@@@@
+ 
+   let map_signature_item sub {psig_desc = desc; psig_loc = loc} =
+     let open Sig in
+     let loc = sub.location sub loc in
+     match desc with
+-    | Psig_value vd -> value ~loc (sub.value_description sub vd)
+-    | Psig_type (rf, l) ->
+-        type_ ~loc rf (List.map (sub.type_declaration sub) l)
+-    | Psig_typesubst l ->
+-        type_subst ~loc (List.map (sub.type_declaration sub) l)
+-    | Psig_typext te -> type_extension ~loc (sub.type_extension sub te)
+-    | Psig_exception ed -> exception_ ~loc (sub.type_exception sub ed)
+-    | Psig_module x -> module_ ~loc (sub.module_declaration sub x)
+-    | Psig_modsubst x -> mod_subst ~loc (sub.module_substitution sub x)
+-    | Psig_recmodule l ->
+-        rec_module ~loc (List.map (sub.module_declaration sub) l)
+-    | Psig_modtype x -> modtype ~loc (sub.module_type_declaration sub x)
+-    | Psig_modtypesubst x ->
+-        modtype_subst ~loc (sub.module_type_declaration sub x)
+-    | Psig_open x -> open_ ~loc (sub.open_description sub x)
+-    | Psig_include x -> include_ ~loc (sub.include_description sub x)
+-    | Psig_class l -> class_ ~loc (List.map (sub.class_description sub) l)
+-    | Psig_class_type l ->
+-        class_type ~loc (List.map (sub.class_type_declaration sub) l)
++    | Psig_value (vd, ext) ->
++        let ext = map_ext sub ext in
++        value ~loc ?ext (sub.value_description sub vd)
++    | Psig_type (rf, l, ext) ->
++        let ext = map_ext sub ext in
++        type_ ~loc ?ext rf (List.map (sub.type_declaration sub) l)
++    | Psig_typesubst (l, ext) ->
++        let ext = map_ext sub ext in
++        type_subst ~loc ?ext (List.map (sub.type_declaration sub) l)
++    | Psig_typext (te, ext) ->
++        let ext = map_ext sub ext in
++        type_extension ~loc ?ext (sub.type_extension sub te)
++    | Psig_exception (ed, ext) ->
++        let ext = map_ext sub ext in
++        exception_ ~loc ?ext (sub.type_exception sub ed)
++    | Psig_module (x, ext) ->
++        let ext = map_ext sub ext in
++        module_ ~loc ?ext (sub.module_declaration sub x)
++    | Psig_modsubst (x, ext) ->
++        let ext = map_ext sub ext in
++        mod_subst ~loc ?ext (sub.module_substitution sub x)
++    | Psig_recmodule (l, ext) ->
++        let ext = map_ext sub ext in
++        rec_module ~loc ?ext (List.map (sub.module_declaration sub) l)
++    | Psig_modtype (x, ext) ->
++        let ext = map_ext sub ext in
++        modtype ~loc ?ext (sub.module_type_declaration sub x)
++    | Psig_modtypesubst (x, ext) ->
++        let ext = map_ext sub ext in
++        modtype_subst ~loc ?ext (sub.module_type_declaration sub x)
++    | Psig_open (x, ext) ->
++        let ext = map_ext sub ext in
++        open_ ~loc ?ext (sub.open_description sub x)
++    | Psig_include (x, ext) ->
++        let ext = map_ext sub ext in
++        include_ ~loc ?ext (sub.include_description sub x)
++    | Psig_class (l, ext) ->
++        let ext = map_ext sub ext in
++        class_ ~loc ?ext (List.map (sub.class_description sub) l)
++    | Psig_class_type (l, ext) ->
++        let ext = map_ext sub ext in
++        class_type ~loc ?ext (List.map (sub.class_type_declaration sub) l)
+     | Psig_extension (x, attrs) ->
+         let attrs = sub.attributes sub attrs in
+         extension ~loc ~attrs (sub.extension sub x)
+     | Psig_attribute x -> attribute ~loc (sub.attribute sub x)
+ end
+@@@@
+     let loc = sub.location sub loc in
+     match desc with
+     | Pstr_eval (x, attrs) ->
+         let attrs = sub.attributes sub attrs in
+         eval ~loc ~attrs (sub.expr sub x)
+-    | Pstr_value (r, vbs) -> value ~loc r (List.map (sub.value_binding sub) vbs)
+-    | Pstr_primitive vd -> primitive ~loc (sub.value_description sub vd)
+-    | Pstr_type (rf, l) -> type_ ~loc rf (List.map (sub.type_declaration sub) l)
+-    | Pstr_typext te -> type_extension ~loc (sub.type_extension sub te)
+-    | Pstr_exception ed -> exception_ ~loc (sub.type_exception sub ed)
+-    | Pstr_module x -> module_ ~loc (sub.module_binding sub x)
+-    | Pstr_recmodule l -> rec_module ~loc (List.map (sub.module_binding sub) l)
+-    | Pstr_modtype x -> modtype ~loc (sub.module_type_declaration sub x)
+-    | Pstr_open x -> open_ ~loc (sub.open_declaration sub x)
+-    | Pstr_class l -> class_ ~loc (List.map (sub.class_declaration sub) l)
+-    | Pstr_class_type l ->
+-        class_type ~loc (List.map (sub.class_type_declaration sub) l)
+-    | Pstr_include x -> include_ ~loc (sub.include_declaration sub x)
++    | Pstr_value (r, vbs, ext) ->
++        let ext = map_ext sub ext in
++        value ~loc ?ext r (List.map (sub.value_binding sub) vbs)
++    | Pstr_primitive (vd, ext) ->
++        let ext = map_ext sub ext in
++        primitive ~loc ?ext (sub.value_description sub vd)
++    | Pstr_type (rf, l, ext) ->
++        let ext = map_ext sub ext in
++        type_ ~loc ?ext rf (List.map (sub.type_declaration sub) l)
++    | Pstr_typext (te, ext) ->
++        let ext = map_ext sub ext in
++        type_extension ~loc ?ext (sub.type_extension sub te)
++    | Pstr_exception (ed, ext) ->
++        let ext = map_ext sub ext in
++        exception_ ~loc ?ext (sub.type_exception sub ed)
++    | Pstr_module (x, ext) ->
++        let ext = map_ext sub ext in
++        module_ ~loc ?ext (sub.module_binding sub x)
++    | Pstr_recmodule (l, ext) ->
++        let ext = map_ext sub ext in
++        rec_module ~loc ?ext (List.map (sub.module_binding sub) l)
++    | Pstr_modtype (x, ext) ->
++        let ext = map_ext sub ext in
++        modtype ~loc ?ext (sub.module_type_declaration sub x)
++    | Pstr_open (x, ext) ->
++        let ext = map_ext sub ext in
++        open_ ~loc ?ext (sub.open_declaration sub x)
++    | Pstr_class (l, ext) ->
++        let ext = map_ext sub ext in
++        class_ ~loc ?ext (List.map (sub.class_declaration sub) l)
++    | Pstr_class_type (l, ext) ->
++        let ext = map_ext sub ext in
++        class_type ~loc ?ext (List.map (sub.class_type_declaration sub) l)
++    | Pstr_include (x, ext) ->
++        let ext = map_ext sub ext in
++        include_ ~loc ?ext (sub.include_declaration sub x)
+     | Pstr_extension (x, attrs) ->
+         let attrs = sub.attributes sub attrs in
+         extension ~loc ~attrs (sub.extension sub x)
+     | Pstr_attribute x -> attribute ~loc (sub.attribute sub x)
+ end
+ 
+ module E = struct
+   (* Value expressions for the core language *)
+ 
+-  let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} =
++  let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs; pexp_ext = ext} =
+     let open Exp in
+     let loc = sub.location sub loc in
+     let attrs = sub.attributes sub attrs in
++    let ext = map_opt (map_loc sub) ext in
+     match desc with
+     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
+     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
+     | Pexp_let (r, vbs, e) ->
+-        let_ ~loc ~attrs r (List.map (sub.value_binding sub) vbs)
++        let_ ~loc ~attrs ?ext r (List.map (sub.value_binding sub) vbs)
+           (sub.expr sub e)
+     | Pexp_fun (lab, def, p, e) ->
+-        fun_ ~loc ~attrs lab (map_opt (sub.expr sub) def) (sub.pat sub p)
++        fun_ ~loc ~attrs ?ext lab (map_opt (sub.expr sub) def) (sub.pat sub p)
+           (sub.expr sub e)
+-    | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
++    | Pexp_function pel -> function_ ~loc ~attrs ?ext (sub.cases sub pel)
+     | Pexp_apply (e, l) ->
+         apply ~loc ~attrs (sub.expr sub e) (List.map (map_snd (sub.expr sub)) l)
+     | Pexp_match (e, pel) ->
+-        match_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
+-    | Pexp_try (e, pel) -> try_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
++        match_ ~loc ~attrs ?ext (sub.expr sub e) (sub.cases sub pel)
++    | Pexp_try (e, pel) -> try_ ~loc ~attrs ?ext (sub.expr sub e) (sub.cases sub pel)
+     | Pexp_tuple el -> tuple ~loc ~attrs (List.map (sub.expr sub) el)
+     | Pexp_construct (lid, arg) ->
+         construct ~loc ~attrs (map_loc sub lid) (map_opt (sub.expr sub) arg)
+     | Pexp_variant (lab, eo) ->
+         variant ~loc ~attrs lab (map_opt (sub.expr sub) eo)
+@@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
          setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
@@ -194,22 +787,89 @@
      | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
 +    | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
      | Pexp_ifthenelse (e1, e2, e3) ->
-         ifthenelse ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
+-        ifthenelse ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
++        ifthenelse ~loc ~attrs ?ext (sub.expr sub e1) (sub.expr sub e2)
            (map_opt (sub.expr sub) e3)
      | Pexp_sequence (e1, e2) ->
-         sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
-@@@@
-         letop ~loc ~attrs (sub.binding_op sub let_)
+-        sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
++        sequence ~loc ~attrs ?ext (sub.expr sub e1) (sub.expr sub e2)
+     | Pexp_while (e1, e2) ->
+-        while_ ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
++        while_ ~loc ~attrs ?ext (sub.expr sub e1) (sub.expr sub e2)
+     | Pexp_for (p, e1, e2, d, e3) ->
+-        for_ ~loc ~attrs (sub.pat sub p) (sub.expr sub e1) (sub.expr sub e2) d
++        for_ ~loc ~attrs ?ext (sub.pat sub p) (sub.expr sub e1) (sub.expr sub e2) d
+           (sub.expr sub e3)
+     | Pexp_coerce (e, t1, t2) ->
+         coerce ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t1)
+           (sub.typ sub t2)
+     | Pexp_constraint (e, t) ->
+-        constraint_ ~loc ~attrs (sub.expr sub e) (sub.typ sub t)
++        constraint_ ~loc ~attrs ?ext (sub.expr sub e) (sub.typ sub t)
+     | Pexp_send (e, s) ->
+         send ~loc ~attrs (sub.expr sub e) (map_loc sub s)
+-    | Pexp_new lid -> new_ ~loc ~attrs (map_loc sub lid)
++    | Pexp_new lid -> new_ ~loc ~attrs ?ext (map_loc sub lid)
+     | Pexp_setinstvar (s, e) ->
+         setinstvar ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+     | Pexp_override sel ->
+         override ~loc ~attrs
+           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)
+     | Pexp_letmodule (s, me, e) ->
+-        letmodule ~loc ~attrs (map_loc sub s) (sub.module_expr sub me)
++        letmodule ~loc ~attrs ?ext (map_loc sub s) (sub.module_expr sub me)
+           (sub.expr sub e)
+     | Pexp_letexception (cd, e) ->
+-        letexception ~loc ~attrs
++        letexception ~loc ~attrs ?ext
+           (sub.extension_constructor sub cd)
+           (sub.expr sub e)
+-    | Pexp_assert e -> assert_ ~loc ~attrs (sub.expr sub e)
+-    | Pexp_lazy e -> lazy_ ~loc ~attrs (sub.expr sub e)
++    | Pexp_assert e -> assert_ ~loc ~attrs ?ext (sub.expr sub e)
++    | Pexp_lazy e -> lazy_ ~loc ~attrs ?ext (sub.expr sub e)
+     | Pexp_poly (e, t) ->
+         poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
+-    | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
++    | Pexp_object cls -> object_ ~loc ~attrs ?ext (sub.class_structure sub cls)
+     | Pexp_newtype (s, e) ->
+-        newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+-    | Pexp_pack me -> pack ~loc ~attrs (sub.module_expr sub me)
++        newtype ~loc ~attrs ?ext (map_loc sub s) (sub.expr sub e)
++    | Pexp_pack me -> pack ~loc ~attrs ?ext (sub.module_expr sub me)
+     | Pexp_open (o, e) ->
+-        open_ ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
++        open_ ~loc ~attrs ?ext (sub.open_declaration sub o) (sub.expr sub e)
+     | Pexp_letop {let_; ands; body} ->
+-        letop ~loc ~attrs (sub.binding_op sub let_)
++        letop ~loc ~attrs ?ext (sub.binding_op sub let_)
            (List.map (sub.binding_op sub) ands) (sub.expr sub body)
      | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
      | Pexp_unreachable -> unreachable ~loc ~attrs ()
      | Pexp_hole -> hole ~loc ~attrs ()
-+    | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
++    | Pexp_beginend e -> beginend ~loc ~attrs ?ext (map_opt (sub.expr sub) e)
  
    let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
      let open Exp in
      let op = map_loc sub pbop_op in
      let pat = sub.pat sub pbop_pat in
+@@@@
+ end
+ 
+ module P = struct
+   (* Patterns *)
+ 
+-  let map sub {ppat_desc = desc; ppat_loc = loc; ppat_attributes = attrs} =
++  let map sub {ppat_desc = desc; ppat_loc = loc; ppat_attributes = attrs; ppat_ext = ext} =
+     let open Pat in
+     let loc = sub.location sub loc in
+     let attrs = sub.attributes sub attrs in
++    let ext = map_opt (map_loc sub) ext in
+     match desc with
+     | Ppat_any -> any ~loc ~attrs ()
+     | Ppat_var s -> var ~loc ~attrs (map_loc sub s)
+     | Ppat_alias (p, s) -> alias ~loc ~attrs (sub.pat sub p) (map_loc sub s)
+     | Ppat_constant c -> constant ~loc ~attrs (sub.constant sub c)
 @@@@
               (fun (vl, p) -> List.map (map_loc sub) vl, sub.pat sub p)
               p)
@@ -225,9 +885,21 @@
 +    | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
      | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
      | Ppat_constraint (p, t) ->
-         constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
+-        constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
++        constraint_ ~loc ~attrs ?ext (sub.pat sub p) (sub.typ sub t)
      | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
-     | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+-    | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+-    | Ppat_unpack s -> unpack ~loc ~attrs (map_loc sub s)
++    | Ppat_lazy p -> lazy_ ~loc ~attrs ?ext (sub.pat sub p)
++    | Ppat_unpack s -> unpack ~loc ~attrs ?ext (map_loc sub s)
+     | Ppat_open (lid,p) -> open_ ~loc ~attrs (map_loc sub lid) (sub.pat sub p)
+-    | Ppat_exception p -> exception_ ~loc ~attrs (sub.pat sub p)
++    | Ppat_exception p -> exception_ ~loc ~attrs ?ext (sub.pat sub p)
+     | Ppat_extension x -> extension ~loc ~attrs (sub.extension sub x)
+ end
+ 
+ module CE = struct
+   (* Value expressions for the class language *)
 @@@@
  
      toplevel_phrase =
@@ -323,9 +995,12 @@
 +    { pexp_desc = Pexp_constant const;
        pexp_loc = loc;
        pexp_loc_stack = [];
++      pexp_ext = None;
        pexp_attributes = []; }
    in
    let item =
+     { pstr_desc = Pstr_eval (exp, []); pstr_loc = loc }
+   in
 @@@@
  
  let text_attr ds =
@@ -338,12 +1013,23 @@
 +    { pexp_desc = Pexp_constant const;
        pexp_loc = loc;
        pexp_loc_stack = [];
++      pexp_ext = None;
        pexp_attributes = []; }
    in
    let item =
+     { pstr_desc = Pstr_eval (exp, []); pstr_loc = loc }
+   in
 --- parser-standard/parser.mly
 +++ parser-extended/parser.mly
 @@@@
+   Location.loc_ghost = true;
+ }
+ 
+ let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
+ let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
+-let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
++let mkexp ~loc ?ext d = Exp.mk ~loc:(make_loc loc) ?ext d
+ let mkmty ~loc ?attrs d = Mty.mk ~loc:(make_loc loc) ?attrs d
  let mksig ~loc d = Sig.mk ~loc:(make_loc loc) d
  let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
  let mkstr ~loc d = Str.mk ~loc:(make_loc loc) d
@@ -352,10 +1038,45 @@
 +let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
  
  let pstr_typext (te, ext) =
-   (Pstr_typext te, ext)
+-  (Pstr_typext te, ext)
++  Pstr_typext (te, ext)
  let pstr_primitive (vd, ext) =
-   (Pstr_primitive vd, ext)
-@@@@
+-  (Pstr_primitive vd, ext)
++  Pstr_primitive (vd, ext)
+ let pstr_type ((nr, ext), tys) =
+-  (Pstr_type (nr, tys), ext)
++  Pstr_type (nr, tys, ext)
+ let pstr_exception (te, ext) =
+-  (Pstr_exception te, ext)
++  Pstr_exception (te, ext)
+ let pstr_include (body, ext) =
+-  (Pstr_include body, ext)
++  Pstr_include (body, ext)
+ let pstr_recmodule (ext, bindings) =
+-  (Pstr_recmodule bindings, ext)
++  Pstr_recmodule (bindings, ext)
+ 
+ let psig_typext (te, ext) =
+-  (Psig_typext te, ext)
++  Psig_typext (te, ext)
+ let psig_value (vd, ext) =
+-  (Psig_value vd, ext)
++  Psig_value (vd, ext)
+ let psig_type ((nr, ext), tys) =
+-  (Psig_type (nr, tys), ext)
++  Psig_type (nr, tys, ext)
+ let psig_typesubst ((nr, ext), tys) =
+   assert (nr = Recursive); (* see [no_nonrec_flag] *)
+-  (Psig_typesubst tys, ext)
++  Psig_typesubst (tys, ext)
+ let psig_exception (te, ext) =
+-  (Psig_exception te, ext)
++  Psig_exception (te, ext)
+ let psig_include (body, ext) =
+-  (Psig_include body, ext)
++  Psig_include (body, ext)
+ 
+ let mkctf ~loc ?attrs ?docs d =
    Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
  let mkcf ~loc ?attrs ?docs d =
    Cf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -367,6 +1088,19 @@
    if x.Location.loc_ghost
    then acc
    else x :: acc
+@@@@
+ *)
+ let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
+ let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
+ let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
+ let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
+-let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
+-let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
+ 
+ let mkinfix arg1 op arg2 =
+   Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2])
+ 
+ let neg_string f =
 @@@@
    then String.sub f 1 (String.length f - 1)
    else "-" ^ f
@@ -433,8 +1167,75 @@
  let mkexp_constraint ~loc e (t1, t2) =
    match t1, t2 with
 @@@@
- let wrap_mksig_ext ~loc (item, ext) =
-   wrap_sig_ext ~loc (mksig ~loc item) ext
+   let mk_newtypes = mk_newtypes ~loc in
+   let exp = mkexp(Pexp_constraint(body,core_type)) in
+   let exp = mk_newtypes newtypes exp in
+   (exp, ghtyp(Ptyp_poly(newtypes, Typ.varify_constructors newtypes core_type)))
+ 
+-let wrap_exp_attrs ~loc body (ext, attrs) =
+-  let ghexp = ghexp ~loc in
++let wrap_exp_attrs ~loc:_ body (ext, attrs) =
+   (* todo: keep exact location for the entire attribute *)
+-  let body = {body with pexp_attributes = attrs @ body.pexp_attributes} in
+-  match ext with
+-  | None -> body
+-  | Some id -> ghexp(Pexp_extension (id, PStr [mkstrexp body []]))
++  {body with
++    pexp_ext = ext;
++    pexp_attributes = attrs @ body.pexp_attributes}
+ 
+ let mkexp_attrs ~loc d attrs =
+   wrap_exp_attrs ~loc (mkexp ~loc d) attrs
+ 
+-let wrap_typ_attrs ~loc typ (ext, attrs) =
++let wrap_typ_attrs ~loc:_ typ attrs =
+   (* todo: keep exact location for the entire attribute *)
+-  let typ = {typ with ptyp_attributes = attrs @ typ.ptyp_attributes} in
+-  match ext with
+-  | None -> typ
+-  | Some id -> ghtyp ~loc (Ptyp_extension (id, PTyp typ))
++  {typ with ptyp_attributes = attrs @ typ.ptyp_attributes}
+ 
+-let wrap_pat_attrs ~loc pat (ext, attrs) =
++let wrap_pat_attrs ~loc:_ pat (ext, attrs) =
+   (* todo: keep exact location for the entire attribute *)
+-  let pat = {pat with ppat_attributes = attrs @ pat.ppat_attributes} in
+-  match ext with
+-  | None -> pat
+-  | Some id -> ghpat ~loc (Ppat_extension (id, PPat (pat, None)))
++  {pat with
++    ppat_ext = ext;
++    ppat_attributes = attrs @ pat.ppat_attributes}
+ 
+ let mkpat_attrs ~loc d attrs =
+   wrap_pat_attrs ~loc (mkpat ~loc d) attrs
+ 
+ let wrap_class_attrs ~loc:_ body attrs =
+@@@@
+ let wrap_mod_attrs ~loc:_ attrs body =
+   {body with pmod_attributes = attrs @ body.pmod_attributes}
+ let wrap_mty_attrs ~loc:_ attrs body =
+   {body with pmty_attributes = attrs @ body.pmty_attributes}
+ 
+-let wrap_str_ext ~loc body ext =
+-  match ext with
+-  | None -> body
+-  | Some id -> ghstr ~loc (Pstr_extension ((id, PStr [body]), []))
+-
+-let wrap_mkstr_ext ~loc (item, ext) =
+-  wrap_str_ext ~loc (mkstr ~loc item) ext
+-
+-let wrap_sig_ext ~loc body ext =
+-  match ext with
+-  | None -> body
+-  | Some id -> ghsig ~loc (Psig_extension ((id, PSig [body]), []))
++let wrap_mkstr_ext ~loc item =
++  mkstr ~loc item
+ 
+-let wrap_mksig_ext ~loc (item, ext) =
+-  wrap_sig_ext ~loc (mksig ~loc item) ext
++let wrap_mksig_ext ~loc item =
++  mksig ~loc item
  
  let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
    let exp_id = mkloc id idloc in
@@ -446,6 +1247,22 @@
  let text_str pos = Str.text (rhs_text pos)
  let text_sig pos = Sig.text (rhs_text pos)
  let text_cstr pos = Cf.text (rhs_text pos)
+@@@@
+            ~docs:(Lazy.force lb.lb_docs)
+            ~text:(Lazy.force lb.lb_text)
+            lb.lb_pattern lb.lb_expression)
+       lbs.lbs_bindings
+   in
+-  let str = mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings)) in
+-  match lbs.lbs_extension with
+-  | None -> str
+-  | Some id -> ghstr ~loc (Pstr_extension((id, PStr [str]), []))
++  mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings, lbs.lbs_extension))
+ 
+ let expr_of_let_bindings ~loc lbs body =
+   let bindings =
+     List.map
+       (fun lb ->
 @@@@
     semantic value is a pair of a list of [X]s and an optional [Y]. *)
  
@@ -460,6 +1277,97 @@
    tail = listx(delimiter, X, Y)
      { let xs, y = tail in
 @@@@
+     | module_binding
+         { $1 }
+     | rec_module_bindings
+         { pstr_recmodule $1 }
+     | module_type_declaration
+-        { let (body, ext) = $1 in (Pstr_modtype body, ext) }
++        { let (body, ext) = $1 in Pstr_modtype (body, ext) }
+     | open_declaration
+-        { let (body, ext) = $1 in (Pstr_open body, ext) }
++        { let (body, ext) = $1 in Pstr_open (body, ext) }
+     | class_declarations
+-        { let (ext, l) = $1 in (Pstr_class l, ext) }
++        { let (ext, l) = $1 in Pstr_class (l, ext) }
+     | class_type_declarations
+-        { let (ext, l) = $1 in (Pstr_class_type l, ext) }
++        { let (ext, l) = $1 in Pstr_class_type (l, ext) }
+     | include_statement(module_expr)
+         { pstr_include $1 }
+     )
+     { $1 }
+ ;
+@@@@
+   attrs2 = post_item_attributes
+     { let docs = symbol_docs $sloc in
+       let loc = make_loc $sloc in
+       let attrs = attrs1 @ attrs2 in
+       let body = Mb.mk name body ~attrs ~loc ~docs in
+-      Pstr_module body, ext }
++      Pstr_module (body, ext) }
+ ;
+ 
+ (* The body (right-hand side) of a module binding. *)
+ module_binding_body:
+     EQUAL me = module_expr
+@@@@
+     | sig_type_extension
+         { psig_typext $1 }
+     | sig_exception_declaration
+         { psig_exception $1 }
+     | module_declaration
+-        { let (body, ext) = $1 in (Psig_module body, ext) }
++        { let (body, ext) = $1 in Psig_module (body, ext) }
+     | module_alias
+-        { let (body, ext) = $1 in (Psig_module body, ext) }
++        { let (body, ext) = $1 in Psig_module (body, ext) }
+     | module_subst
+-        { let (body, ext) = $1 in (Psig_modsubst body, ext) }
++        { let (body, ext) = $1 in Psig_modsubst (body, ext) }
+     | rec_module_declarations
+-        { let (ext, l) = $1 in (Psig_recmodule l, ext) }
++        { let (ext, l) = $1 in Psig_recmodule (l, ext) }
+     | module_type_declaration
+-        { let (body, ext) = $1 in (Psig_modtype body, ext) }
++        { let (body, ext) = $1 in Psig_modtype (body, ext) }
+     | module_type_subst
+-        { let (body, ext) = $1 in (Psig_modtypesubst body, ext) }
++        { let (body, ext) = $1 in Psig_modtypesubst (body, ext) }
+     | open_description
+-        { let (body, ext) = $1 in (Psig_open body, ext) }
++        { let (body, ext) = $1 in Psig_open (body, ext) }
+     | include_statement(module_type)
+         { psig_include $1 }
+     | class_descriptions
+-        { let (ext, l) = $1 in (Psig_class l, ext) }
++        { let (ext, l) = $1 in Psig_class (l, ext) }
+     | class_type_declarations
+-        { let (ext, l) = $1 in (Psig_class_type l, ext) }
++        { let (ext, l) = $1 in Psig_class_type (l, ext) }
+     )
+     { $1 }
+ 
+ (* A module declaration. *)
+ %inline module_declaration:
+@@@@
+   | expr        %prec below_SEMI  { $1 }
+   | expr SEMI                     { $1 }
+   | mkexp(expr SEMI seq_expr
+     { Pexp_sequence($1, $3) })
+     { $1 }
+-  | expr SEMI PERCENT attr_id seq_expr
+-    { let seq = mkexp ~loc:$sloc (Pexp_sequence ($1, $5)) in
+-      let payload = PStr [mkstrexp seq []] in
+-      mkexp ~loc:$sloc (Pexp_extension ($4, payload)) }
++  | expr SEMI PERCENT ext=attr_id seq_expr
++    { mkexp ~loc:$sloc ~ext (Pexp_sequence ($1, $5)) }
+ ;
+ labeled_simple_pattern:
+     QUESTION LPAREN label_let_pattern opt_default RPAREN
+       { (Optional (fst $3), $4, snd $3) }
+   | QUESTION label_var
+@@@@
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
        { $1 }
@@ -468,12 +1376,15 @@
 -  | BEGIN ext = ext attrs = attributes e = seq_expr END
 -      { e.pexp_desc, (ext, attrs @ e.pexp_attributes) }
 +  | BEGIN ext_attributes seq_expr END
-+      { Pexp_beginend $3, $2 }
++      { Pexp_beginend (Some $3), $2 }
    | BEGIN ext_attributes END
-       { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
+-      { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
++      { Pexp_beginend None, $2 }
    | BEGIN ext_attributes seq_expr error
        { unclosed "begin" $loc($1) "end" $loc($4) }
    | NEW ext_attributes mkrhs(class_longident)
+       { Pexp_new($3), $2 }
+   | LPAREN MODULE ext_attributes module_expr RPAREN
 @@@@
          Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
    | mod_longident DOT
@@ -523,6 +1434,38 @@
  %inline record_pat_field:
    label = mkrhs(label_longident)
    octy = preceded(COLON, core_type)?
+@@@@
+    - variant types:                       [`A]
+  *)
+ atomic_type:
+   | LPAREN core_type RPAREN
+       { $2 }
+-  | LPAREN MODULE ext_attributes package_type RPAREN
+-      { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
++  | LPAREN MODULE ext_attributes module_type RPAREN
++      { let ext, attrs' = $3 in
++        let (lid, cstrs, attrs) = package_type_of_module_type $4 in
++        let descr = Ptyp_package ((lid, cstrs), ext) in
++        let ty = mktyp ~loc:$sloc ~attrs descr in
++        wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc ty) attrs' }
+   | mktyp( /* begin mktyp group */
+       QUOTE ident
+         { Ptyp_var $2 }
+     | UNDERSCORE
+         { Ptyp_any }
+@@@@
+       { tys }
+ ;
+ 
+ %inline package_type: module_type
+       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
+-        let descr = Ptyp_package (lid, cstrs) in
++        let descr = Ptyp_package ((lid, cstrs), None) in
+         mktyp ~loc:$sloc ~attrs descr }
+ ;
+ %inline row_field_list:
+   separated_nonempty_llist(BAR, row_field)
+     { $1 }
 @@@@
  ;
  
@@ -590,7 +1533,38 @@
  
  (** {1 Extension points} *)
  
++type ext = string loc
++
  type attribute = {
+     attr_name : string loc;
+     attr_payload : payload;
+     attr_loc : Location.t;
+   }
+@@@@
+            node.
+ 
+            - As the {{!value_description.pval_type}[pval_type]} field of a
+            {!value_description}.
+          *)
+-  | Ptyp_package of package_type  (** [(module S)]. *)
++  | Ptyp_package of package_type * ext option  (** [(module S)]. *)
+   | Ptyp_extension of extension  (** [[%id]]. *)
+ 
+ and package_type = Longident.t loc * (Longident.t loc * core_type) list
+ (** As {!package_type} typed values:
+          - [(S, [])] represents [(module S)],
+@@@@
+     {
+      ppat_desc: pattern_desc;
+      ppat_loc: Location.t;
+      ppat_loc_stack: location_stack;
+      ppat_attributes: attributes;  (** [... [\@id1] [\@id2]] *)
++     ppat_ext: ext option;
+     }
+ 
+ and pattern_desc =
+   | Ppat_any  (** The pattern [_]. *)
+   | Ppat_var of string loc  (** A variable pattern such as [x] *)
 @@@@
    | Ppat_variant of label * pattern option
        (** [Ppat_variant(`A, pat)] represents:
@@ -615,6 +1589,18 @@
    | Ppat_lazy of pattern  (** Pattern [lazy P] *)
    | Ppat_unpack of string option loc
 @@@@
+     {
+      pexp_desc: expression_desc;
+      pexp_loc: Location.t;
+      pexp_loc_stack: location_stack;
+      pexp_attributes: attributes;  (** [... [\@id1] [\@id2]] *)
++     pexp_ext: ext option;
+     }
+ 
+ and expression_desc =
+   | Pexp_ident of Longident.t loc
+       (** Identifiers such as [x] and [M.x]
+@@@@
           *)
    | Pexp_field of expression * Longident.t loc  (** [E.l] *)
    | Pexp_setfield of expression * Longident.t loc * expression
@@ -632,12 +1618,111 @@
    | Pexp_extension of extension  (** [[%id]] *)
    | Pexp_unreachable  (** [.] *)
    | Pexp_hole  (** [_] *)
-+  | Pexp_beginend of expression  (** [begin E end] *)
++  | Pexp_beginend of expression option  (** [begin E end] *)
  
  and case =
      {
       pc_lhs: pattern;
       pc_guard: expression option;
+@@@@
+      psig_desc: signature_item_desc;
+      psig_loc: Location.t;
+     }
+ 
+ and signature_item_desc =
+-  | Psig_value of value_description
++  | Psig_value of value_description * ext option
+       (** - [val x: T]
+             - [external x: T = "s1" ... "sn"]
+          *)
+-  | Psig_type of rec_flag * type_declaration list
++  | Psig_type of rec_flag * type_declaration list * ext option
+       (** [type t1 = ... and ... and tn  = ...] *)
+-  | Psig_typesubst of type_declaration list
++  | Psig_typesubst of type_declaration list * ext option
+       (** [type t1 := ... and ... and tn := ...]  *)
+-  | Psig_typext of type_extension  (** [type t1 += ...] *)
+-  | Psig_exception of type_exception  (** [exception C of T] *)
+-  | Psig_module of module_declaration  (** [module X = M] and [module X : MT] *)
+-  | Psig_modsubst of module_substitution  (** [module X := M] *)
+-  | Psig_recmodule of module_declaration list
++  | Psig_typext of type_extension * ext option  (** [type t1 += ...] *)
++  | Psig_exception of type_exception * ext option  (** [exception C of T] *)
++  | Psig_module of module_declaration * ext option
++      (** [module X = M] and [module X : MT] *)
++  | Psig_modsubst of module_substitution * ext option  (** [module X := M] *)
++  | Psig_recmodule of module_declaration list * ext option
+       (** [module rec X1 : MT1 and ... and Xn : MTn] *)
+-  | Psig_modtype of module_type_declaration
++  | Psig_modtype of module_type_declaration * ext option
+       (** [module type S = MT] and [module type S] *)
+-  | Psig_modtypesubst of module_type_declaration
++  | Psig_modtypesubst of module_type_declaration * ext option
+       (** [module type S :=  ...]  *)
+-  | Psig_open of open_description  (** [open X] *)
+-  | Psig_include of include_description  (** [include MT] *)
+-  | Psig_class of class_description list
++  | Psig_open of open_description * ext option  (** [open X] *)
++  | Psig_include of include_description * ext option  (** [include MT] *)
++  | Psig_class of class_description list * ext option
+       (** [class c1 : ... and ... and cn : ...] *)
+-  | Psig_class_type of class_type_declaration list
++  | Psig_class_type of class_type_declaration list * ext option
+       (** [class type ct1 = ... and ... and ctn = ...] *)
+   | Psig_attribute of attribute  (** [[\@\@\@id]] *)
+   | Psig_extension of extension * attributes  (** [[%%id]] *)
+ 
+ and module_declaration =
+@@@@
+      pstr_loc: Location.t;
+     }
+ 
+ and structure_item_desc =
+   | Pstr_eval of expression * attributes  (** [E] *)
+-  | Pstr_value of rec_flag * value_binding list
++  | Pstr_value of rec_flag * value_binding list * ext option
+       (** [Pstr_value(rec, [(P1, E1 ; ... ; (Pn, En))])] represents:
+             - [let P1 = E1 and ... and Pn = EN]
+                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
+             - [let rec P1 = E1 and ... and Pn = EN ]
+                 when [rec] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
+         *)
+-  | Pstr_primitive of value_description
++  | Pstr_primitive of value_description * ext option
+       (** - [val x: T]
+             - [external x: T = "s1" ... "sn" ]*)
+-  | Pstr_type of rec_flag * type_declaration list
++  | Pstr_type of rec_flag * type_declaration list * ext option
+       (** [type t1 = ... and ... and tn = ...] *)
+-  | Pstr_typext of type_extension  (** [type t1 += ...] *)
+-  | Pstr_exception of type_exception
++  | Pstr_typext of type_extension * ext option  (** [type t1 += ...] *)
++  | Pstr_exception of type_exception * ext option
+       (** - [exception C of T]
+             - [exception C = M.X] *)
+-  | Pstr_module of module_binding  (** [module X = ME] *)
+-  | Pstr_recmodule of module_binding list
++  | Pstr_module of module_binding * ext option  (** [module X = ME] *)
++  | Pstr_recmodule of module_binding list * ext option
+       (** [module rec X1 = ME1 and ... and Xn = MEn] *)
+-  | Pstr_modtype of module_type_declaration  (** [module type S = MT] *)
+-  | Pstr_open of open_declaration  (** [open X] *)
+-  | Pstr_class of class_declaration list
++  | Pstr_modtype of module_type_declaration * ext option
++      (** [module type S = MT] *)
++  | Pstr_open of open_declaration * ext option  (** [open X] *)
++  | Pstr_class of class_declaration list * ext option
+       (** [class c1 = ... and ... and cn = ...] *)
+-  | Pstr_class_type of class_type_declaration list
++  | Pstr_class_type of class_type_declaration list * ext option
+       (** [class type ct1 = ... and ... and ctn = ...] *)
+-  | Pstr_include of include_declaration  (** [include ME] *)
++  | Pstr_include of include_declaration * ext option  (** [include ME] *)
+   | Pstr_attribute of attribute  (** [[\@\@\@id]] *)
+   | Pstr_extension of extension * attributes  (** [[%%id]] *)
+ 
+ and value_binding =
+   {
 @@@@
  and directive_argument_desc =
    | Pdir_string of string
@@ -783,6 +1868,10 @@
    | Optional s -> line i ppf "Optional \"%s\"\n" s
    | Labelled s -> line i ppf "Labelled \"%s\"\n" s
  
++let sug_ext i ppf = function
++  | Some x -> line i ppf "extension %a\n" fmt_string_loc x
++  | None -> ()
++
  let typevars ppf vs =
 -  List.iter (fun x -> fprintf ppf " %a" Pprintast.tyvar x.txt) vs
 +  List.iter (fun x ->
@@ -820,10 +1909,14 @@
        list i core_type ppf l
    | Ptyp_alias (ct, s) ->
        line i ppf "Ptyp_alias \"%s\"\n" s;
-@@@@
        core_type i ppf ct;
-   | Ptyp_package (s, l) ->
+   | Ptyp_poly (sl, ct) ->
+       line i ppf "Ptyp_poly%a\n" typevars sl;
+       core_type i ppf ct;
+-  | Ptyp_package (s, l) ->
++  | Ptyp_package ((s, l), ext) ->
        line i ppf "Ptyp_package %a\n" fmt_longident_loc s;
++      sug_ext i ppf ext;
        list i package_with ppf l;
    | Ptyp_extension (s, arg) ->
 -      line i ppf "Ptyp_extension \"%s\"\n" s.txt;
@@ -847,7 +1940,11 @@
    core_type i ppf t
  
  and pattern i ppf x =
-@@@@
+   line i ppf "pattern %a\n" fmt_location x.ppat_loc;
++  sug_ext i ppf x.ppat_ext;
+   attributes i ppf x.ppat_attributes;
+   let i = i+1 in
+   match x.ppat_desc with
    | Ppat_any -> line i ppf "Ppat_any\n";
    | Ppat_var (s) -> line i ppf "Ppat_var %a\n" fmt_string_loc s;
    | Ppat_alias (p, s) ->
@@ -899,6 +1996,7 @@
  
  and expression i ppf x =
    line i ppf "expression %a\n" fmt_location x.pexp_loc;
++  sug_ext i ppf x.pexp_ext;
    attributes i ppf x.pexp_attributes;
    let i = i+1 in
    match x.pexp_desc with
@@ -972,7 +2070,7 @@
        line i ppf "Pexp_hole"
 +  | Pexp_beginend e ->
 +      line i ppf "Pexp_beginend\n";
-+      expression i ppf e
++      option i expression ppf e
  
  and value_description i ppf x =
    line i ppf "value_description %a %a\n" fmt_string_loc
@@ -1129,54 +2227,95 @@
  and signature i ppf x = list i signature_item ppf x
  
  and signature_item i ppf x =
-@@@@
+   line i ppf "signature_item %a\n" fmt_location x.psig_loc;
+   let i = i+1 in
+   match x.psig_desc with
+-  | Psig_value vd ->
++  | Psig_value (vd, ext) ->
+       line i ppf "Psig_value\n";
++      sug_ext i ppf ext;
+       value_description i ppf vd;
+-  | Psig_type (rf, l) ->
++  | Psig_type (rf, l, ext) ->
+       line i ppf "Psig_type %a\n" fmt_rec_flag rf;
++      sug_ext i ppf ext;
+       list i type_declaration ppf l;
+-  | Psig_typesubst l ->
++  | Psig_typesubst (l, ext) ->
+       line i ppf "Psig_typesubst\n";
++      sug_ext i ppf ext;
+       list i type_declaration ppf l;
+-  | Psig_typext te ->
++  | Psig_typext (te, ext) ->
+       line i ppf "Psig_typext\n";
++      sug_ext i ppf ext;
        type_extension i ppf te
-   | Psig_exception te ->
+-  | Psig_exception te ->
++  | Psig_exception (te, ext) ->
        line i ppf "Psig_exception\n";
++      sug_ext i ppf ext;
        type_exception i ppf te
-   | Psig_module pmd ->
+-  | Psig_module pmd ->
 -      line i ppf "Psig_module %a\n" fmt_str_opt_loc pmd.pmd_name;
 -      attributes i ppf pmd.pmd_attributes;
 -      module_type i ppf pmd.pmd_type
+-  | Psig_modsubst pms ->
++  | Psig_module (pmd, ext) ->
 +      line i ppf "Psig_module\n";
++      sug_ext i ppf ext;
 +      module_declaration i ppf pmd
-   | Psig_modsubst pms ->
++  | Psig_modsubst (pms, ext) ->
        line i ppf "Psig_modsubst %a = %a\n"
          fmt_string_loc pms.pms_name
          fmt_longident_loc pms.pms_manifest;
 +      fmt_location ppf pms.pms_loc;
++      sug_ext i ppf ext;
        attributes i ppf pms.pms_attributes;
-   | Psig_recmodule decls ->
+-  | Psig_recmodule decls ->
++  | Psig_recmodule (decls, ext) ->
        line i ppf "Psig_recmodule\n";
++      sug_ext i ppf ext;
        list i module_declaration ppf decls;
-   | Psig_modtype x ->
+-  | Psig_modtype x ->
 -      line i ppf "Psig_modtype %a\n" fmt_string_loc x.pmtd_name;
 -      attributes i ppf x.pmtd_attributes;
 -      modtype_declaration i ppf x.pmtd_type
-+      line i ppf "Psig_modtype\n";
-+      module_type_declaration i ppf x
-   | Psig_modtypesubst x ->
+-  | Psig_modtypesubst x ->
 -      line i ppf "Psig_modtypesubst %a\n" fmt_string_loc x.pmtd_name;
 -      attributes i ppf x.pmtd_attributes;
 -      modtype_declaration i ppf x.pmtd_type
-+      line i ppf "Psig_modtypesubst\n";
-+      module_type_declaration i ppf x
-   | Psig_open od ->
+-  | Psig_open od ->
 -      line i ppf "Psig_open %a %a\n" fmt_override_flag od.popen_override
 -        fmt_longident_loc od.popen_expr;
 -      attributes i ppf od.popen_attributes
+-  | Psig_include incl ->
++  | Psig_modtype (x, ext) ->
++      line i ppf "Psig_modtype\n";
++      sug_ext i ppf ext;
++      module_type_declaration i ppf x
++  | Psig_modtypesubst (x, ext) ->
++      line i ppf "Psig_modtypesubst\n";
++      sug_ext i ppf ext;
++      module_type_declaration i ppf x
++  | Psig_open (od, ext) ->
 +      line i ppf "Psig_open\n";
++      sug_ext i ppf ext;
 +      open_description i ppf od
-   | Psig_include incl ->
++  | Psig_include (incl, ext) ->
        line i ppf "Psig_include\n";
 -      module_type i ppf incl.pincl_mod;
 -      attributes i ppf incl.pincl_attributes
+-  | Psig_class (l) ->
++      sug_ext i ppf ext;
 +      include_description i ppf incl
-   | Psig_class (l) ->
++  | Psig_class (l, ext) ->
        line i ppf "Psig_class\n";
++      sug_ext i ppf ext;
        list i class_description ppf l;
-   | Psig_class_type (l) ->
+-  | Psig_class_type (l) ->
++  | Psig_class_type (l, ext) ->
        line i ppf "Psig_class_type\n";
++      sug_ext i ppf ext;
        list i class_type_declaration ppf l;
    | Psig_extension ((s, arg), attrs) ->
 -      line i ppf "Psig_extension \"%s\"\n" s.txt;
@@ -1200,33 +2339,79 @@
  
  and structure i ppf x = list i structure_item ppf x
 @@@@
+   match x.pstr_desc with
+   | Pstr_eval (e, attrs) ->
+       line i ppf "Pstr_eval\n";
+       attributes i ppf attrs;
+       expression i ppf e;
+-  | Pstr_value (rf, l) ->
++  | Pstr_value (rf, l, ext) ->
+       line i ppf "Pstr_value %a\n" fmt_rec_flag rf;
++      sug_ext i ppf ext;
+       list i value_binding ppf l;
+-  | Pstr_primitive vd ->
++  | Pstr_primitive (vd, ext) ->
+       line i ppf "Pstr_primitive\n";
++      sug_ext i ppf ext;
+       value_description i ppf vd;
+-  | Pstr_type (rf, l) ->
++  | Pstr_type (rf, l, ext) ->
+       line i ppf "Pstr_type %a\n" fmt_rec_flag rf;
++      sug_ext i ppf ext;
+       list i type_declaration ppf l;
+-  | Pstr_typext te ->
++  | Pstr_typext (te, ext) ->
+       line i ppf "Pstr_typext\n";
++      sug_ext i ppf ext;
+       type_extension i ppf te
+-  | Pstr_exception te ->
++  | Pstr_exception (te, ext) ->
+       line i ppf "Pstr_exception\n";
++      sug_ext i ppf ext;
+       type_exception i ppf te
+-  | Pstr_module x ->
++  | Pstr_module (x, ext) ->
+       line i ppf "Pstr_module\n";
++      sug_ext i ppf ext;
        module_binding i ppf x
-   | Pstr_recmodule bindings ->
+-  | Pstr_recmodule bindings ->
++  | Pstr_recmodule (bindings, ext) ->
        line i ppf "Pstr_recmodule\n";
++      sug_ext i ppf ext;
        list i module_binding ppf bindings;
-   | Pstr_modtype x ->
+-  | Pstr_modtype x ->
 -      line i ppf "Pstr_modtype %a\n" fmt_string_loc x.pmtd_name;
 -      attributes i ppf x.pmtd_attributes;
 -      modtype_declaration i ppf x.pmtd_type
-+      line i ppf "Pstr_modtype\n";
-+      module_type_declaration i ppf x
-   | Pstr_open od ->
+-  | Pstr_open od ->
 -      line i ppf "Pstr_open %a\n" fmt_override_flag od.popen_override;
 -      module_expr i ppf od.popen_expr;
 -      attributes i ppf od.popen_attributes
+-  | Pstr_class (l) ->
++  | Pstr_modtype (x, ext) ->
++      line i ppf "Pstr_modtype\n";
++      sug_ext i ppf ext;
++      module_type_declaration i ppf x
++  | Pstr_open (od, ext) ->
 +      line i ppf "Pstr_open\n";
++      sug_ext i ppf ext;
 +      open_declaration i ppf od
-   | Pstr_class (l) ->
++  | Pstr_class (l, ext) ->
        line i ppf "Pstr_class\n";
++      sug_ext i ppf ext;
        list i class_declaration ppf l;
-   | Pstr_class_type (l) ->
+-  | Pstr_class_type (l) ->
++  | Pstr_class_type (l, ext) ->
        line i ppf "Pstr_class_type\n";
++      sug_ext i ppf ext;
        list i class_type_declaration ppf l;
-   | Pstr_include incl ->
+-  | Pstr_include incl ->
 -      line i ppf "Pstr_include";
 -      attributes i ppf incl.pincl_attributes;
 -      module_expr i ppf incl.pincl_mod
++  | Pstr_include (incl, ext) ->
 +      line i ppf "Pstr_include\n";
++      sug_ext i ppf ext;
 +      include_declaration i ppf incl
    | Pstr_extension ((s, arg), attrs) ->
 -      line i ppf "Pstr_extension \"%s\"\n" s.txt;

@@ -8,6 +8,8 @@
 
 ### Changes
 
+- Improve the consistency of the formatting of sugared extension nodes with respect to their non-extended counterparts (#2043, @gpetiot)
+
 ### New features
 
 ## 0.22.4 (2022-05-26)

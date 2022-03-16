@@ -168,6 +168,10 @@ let arg_label i ppf = function
   | Optional s -> line i ppf "Optional \"%s\"\n" s
   | Labelled s -> line i ppf "Labelled \"%s\"\n" s
 
+let sug_ext i ppf = function
+  | Some x -> line i ppf "extension %a\n" fmt_string_loc x
+  | None -> ()
+
 let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
@@ -206,8 +210,9 @@ let rec core_type i ppf x =
   | Ptyp_poly (sl, ct) ->
       line i ppf "Ptyp_poly%a\n" typevars sl;
       core_type i ppf ct;
-  | Ptyp_package (s, l) ->
+  | Ptyp_package ((s, l), ext) ->
       line i ppf "Ptyp_package %a\n" fmt_longident_loc s;
+      sug_ext i ppf ext;
       list i package_with ppf l;
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
@@ -231,6 +236,7 @@ and package_with i ppf (s, t) =
 
 and pattern i ppf x =
   line i ppf "pattern %a\n" fmt_location x.ppat_loc;
+  sug_ext i ppf x.ppat_ext;
   attributes i ppf x.ppat_attributes;
   let i = i+1 in
   match x.ppat_desc with
@@ -296,6 +302,7 @@ and pattern i ppf x =
 
 and expression i ppf x =
   line i ppf "expression %a\n" fmt_location x.pexp_loc;
+  sug_ext i ppf x.pexp_ext;
   attributes i ppf x.pexp_attributes;
   let i = i+1 in
   match x.pexp_desc with
@@ -439,7 +446,7 @@ and expression i ppf x =
       line i ppf "Pexp_hole"
   | Pexp_beginend e ->
       line i ppf "Pexp_beginend\n";
-      expression i ppf e
+      option i expression ppf e
 
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
@@ -741,50 +748,64 @@ and signature_item i ppf x =
   line i ppf "signature_item %a\n" fmt_location x.psig_loc;
   let i = i+1 in
   match x.psig_desc with
-  | Psig_value vd ->
+  | Psig_value (vd, ext) ->
       line i ppf "Psig_value\n";
+      sug_ext i ppf ext;
       value_description i ppf vd;
-  | Psig_type (rf, l) ->
+  | Psig_type (rf, l, ext) ->
       line i ppf "Psig_type %a\n" fmt_rec_flag rf;
+      sug_ext i ppf ext;
       list i type_declaration ppf l;
-  | Psig_typesubst l ->
+  | Psig_typesubst (l, ext) ->
       line i ppf "Psig_typesubst\n";
+      sug_ext i ppf ext;
       list i type_declaration ppf l;
-  | Psig_typext te ->
+  | Psig_typext (te, ext) ->
       line i ppf "Psig_typext\n";
+      sug_ext i ppf ext;
       type_extension i ppf te
-  | Psig_exception te ->
+  | Psig_exception (te, ext) ->
       line i ppf "Psig_exception\n";
+      sug_ext i ppf ext;
       type_exception i ppf te
-  | Psig_module pmd ->
+  | Psig_module (pmd, ext) ->
       line i ppf "Psig_module\n";
+      sug_ext i ppf ext;
       module_declaration i ppf pmd
-  | Psig_modsubst pms ->
+  | Psig_modsubst (pms, ext) ->
       line i ppf "Psig_modsubst %a = %a\n"
         fmt_string_loc pms.pms_name
         fmt_longident_loc pms.pms_manifest;
       fmt_location ppf pms.pms_loc;
+      sug_ext i ppf ext;
       attributes i ppf pms.pms_attributes;
-  | Psig_recmodule decls ->
+  | Psig_recmodule (decls, ext) ->
       line i ppf "Psig_recmodule\n";
+      sug_ext i ppf ext;
       list i module_declaration ppf decls;
-  | Psig_modtype x ->
+  | Psig_modtype (x, ext) ->
       line i ppf "Psig_modtype\n";
+      sug_ext i ppf ext;
       module_type_declaration i ppf x
-  | Psig_modtypesubst x ->
+  | Psig_modtypesubst (x, ext) ->
       line i ppf "Psig_modtypesubst\n";
+      sug_ext i ppf ext;
       module_type_declaration i ppf x
-  | Psig_open od ->
+  | Psig_open (od, ext) ->
       line i ppf "Psig_open\n";
+      sug_ext i ppf ext;
       open_description i ppf od
-  | Psig_include incl ->
+  | Psig_include (incl, ext) ->
       line i ppf "Psig_include\n";
+      sug_ext i ppf ext;
       include_description i ppf incl
-  | Psig_class (l) ->
+  | Psig_class (l, ext) ->
       line i ppf "Psig_class\n";
+      sug_ext i ppf ext;
       list i class_description ppf l;
-  | Psig_class_type (l) ->
+  | Psig_class_type (l, ext) ->
       line i ppf "Psig_class_type\n";
+      sug_ext i ppf ext;
       list i class_type_declaration ppf l;
   | Psig_extension ((s, arg), attrs) ->
       line i ppf "Psig_extension %a\n" fmt_string_loc s;
@@ -865,41 +886,53 @@ and structure_item i ppf x =
       line i ppf "Pstr_eval\n";
       attributes i ppf attrs;
       expression i ppf e;
-  | Pstr_value (rf, l) ->
+  | Pstr_value (rf, l, ext) ->
       line i ppf "Pstr_value %a\n" fmt_rec_flag rf;
+      sug_ext i ppf ext;
       list i value_binding ppf l;
-  | Pstr_primitive vd ->
+  | Pstr_primitive (vd, ext) ->
       line i ppf "Pstr_primitive\n";
+      sug_ext i ppf ext;
       value_description i ppf vd;
-  | Pstr_type (rf, l) ->
+  | Pstr_type (rf, l, ext) ->
       line i ppf "Pstr_type %a\n" fmt_rec_flag rf;
+      sug_ext i ppf ext;
       list i type_declaration ppf l;
-  | Pstr_typext te ->
+  | Pstr_typext (te, ext) ->
       line i ppf "Pstr_typext\n";
+      sug_ext i ppf ext;
       type_extension i ppf te
-  | Pstr_exception te ->
+  | Pstr_exception (te, ext) ->
       line i ppf "Pstr_exception\n";
+      sug_ext i ppf ext;
       type_exception i ppf te
-  | Pstr_module x ->
+  | Pstr_module (x, ext) ->
       line i ppf "Pstr_module\n";
+      sug_ext i ppf ext;
       module_binding i ppf x
-  | Pstr_recmodule bindings ->
+  | Pstr_recmodule (bindings, ext) ->
       line i ppf "Pstr_recmodule\n";
+      sug_ext i ppf ext;
       list i module_binding ppf bindings;
-  | Pstr_modtype x ->
+  | Pstr_modtype (x, ext) ->
       line i ppf "Pstr_modtype\n";
+      sug_ext i ppf ext;
       module_type_declaration i ppf x
-  | Pstr_open od ->
+  | Pstr_open (od, ext) ->
       line i ppf "Pstr_open\n";
+      sug_ext i ppf ext;
       open_declaration i ppf od
-  | Pstr_class (l) ->
+  | Pstr_class (l, ext) ->
       line i ppf "Pstr_class\n";
+      sug_ext i ppf ext;
       list i class_declaration ppf l;
-  | Pstr_class_type (l) ->
+  | Pstr_class_type (l, ext) ->
       line i ppf "Pstr_class_type\n";
+      sug_ext i ppf ext;
       list i class_type_declaration ppf l;
-  | Pstr_include incl ->
+  | Pstr_include (incl, ext) ->
       line i ppf "Pstr_include\n";
+      sug_ext i ppf ext;
       include_declaration i ppf incl
   | Pstr_extension ((s, arg), attrs) ->
       line i ppf "Pstr_extension %a\n" fmt_string_loc s;

@@ -83,7 +83,7 @@ module Typ :
     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
                  -> label list option -> core_type
     val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
-    val package: ?loc:loc -> ?attrs:attrs -> lid -> (lid * core_type) list
+    val package: ?loc:loc -> ?attrs:attrs -> ?ext:str -> lid -> (lid * core_type) list
                  -> core_type
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> core_type
 
@@ -102,7 +102,7 @@ module Typ :
 (** Patterns *)
 module Pat:
   sig
-    val mk: ?loc:loc -> ?attrs:attrs -> pattern_desc -> pattern
+    val mk: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern_desc -> pattern
     val attr:pattern -> attribute -> pattern
 
     val any: ?loc:loc -> ?attrs:attrs -> unit -> pattern
@@ -119,33 +119,33 @@ module Pat:
     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
-    val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
+    val constraint_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> core_type -> pattern
     val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
-    val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-    val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
+    val lazy_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> pattern
+    val unpack: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str_opt -> pattern
     val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
-    val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+    val exception_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> pattern
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
   end
 
 (** Expressions *)
 module Exp:
   sig
-    val mk: ?loc:loc -> ?attrs:attrs -> expression_desc -> expression
+    val mk: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression_desc -> expression
     val attr: expression -> attribute -> expression
 
     val ident: ?loc:loc -> ?attrs:attrs -> lid -> expression
     val constant: ?loc:loc -> ?attrs:attrs -> constant -> expression
-    val let_: ?loc:loc -> ?attrs:attrs -> rec_flag -> value_binding list
+    val let_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> rec_flag -> value_binding list
               -> expression -> expression
-    val fun_: ?loc:loc -> ?attrs:attrs -> arg_label -> expression option
+    val fun_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> arg_label -> expression option
               -> pattern -> expression -> expression
-    val function_: ?loc:loc -> ?attrs:attrs -> case list -> expression
+    val function_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> case list -> expression
     val apply: ?loc:loc -> ?attrs:attrs -> expression
                -> (arg_label * expression) list -> expression
-    val match_: ?loc:loc -> ?attrs:attrs -> expression -> case list
+    val match_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> case list
                 -> expression
-    val try_: ?loc:loc -> ?attrs:attrs -> expression -> case list -> expression
+    val try_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> case list -> expression
     val tuple: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val construct: ?loc:loc -> ?attrs:attrs -> lid -> expression option
                    -> expression
@@ -158,38 +158,38 @@ module Exp:
                   -> expression
     val array: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val list: ?loc:loc -> ?attrs:attrs -> expression list -> expression
-    val ifthenelse: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val ifthenelse: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
                     -> expression option -> expression
-    val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val sequence: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
                   -> expression
-    val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val while_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
                 -> expression
-    val for_: ?loc:loc -> ?attrs:attrs -> pattern -> expression -> expression
+    val for_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> pattern -> expression -> expression
               -> direction_flag -> expression -> expression
     val coerce: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
                 -> core_type -> expression
-    val constraint_: ?loc:loc -> ?attrs:attrs -> expression -> core_type
+    val constraint_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> core_type
                      -> expression
     val send: ?loc:loc -> ?attrs:attrs -> expression -> str -> expression
-    val new_: ?loc:loc -> ?attrs:attrs -> lid -> expression
+    val new_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> lid -> expression
     val setinstvar: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
     val override: ?loc:loc -> ?attrs:attrs -> (str * expression) list
                   -> expression
-    val letmodule: ?loc:loc -> ?attrs:attrs -> str_opt -> module_expr
+    val letmodule: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str_opt -> module_expr
                    -> expression -> expression
     val letexception:
-      ?loc:loc -> ?attrs:attrs -> extension_constructor -> expression
+      ?loc:loc -> ?attrs:attrs -> ?ext:str -> extension_constructor -> expression
       -> expression
-    val assert_: ?loc:loc -> ?attrs:attrs -> expression -> expression
-    val lazy_: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val assert_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
+    val lazy_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression -> expression
     val poly: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
               -> expression
-    val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
-    val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
-    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
-    val open_: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
+    val object_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> class_structure -> expression
+    val newtype: ?loc:loc -> ?attrs:attrs -> ?ext:str -> str -> expression -> expression
+    val pack: ?loc:loc -> ?attrs:attrs -> ?ext:str -> module_expr -> expression
+    val open_: ?loc:loc -> ?attrs:attrs -> ?ext:str -> open_declaration -> expression
                -> expression
-    val letop: ?loc:loc -> ?attrs:attrs -> binding_op
+    val letop: ?loc:loc -> ?attrs:attrs -> ?ext:str -> binding_op
                -> binding_op list -> expression -> expression
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
     val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
@@ -197,7 +197,7 @@ module Exp:
     val case: pattern -> ?guard:expression -> expression -> case
     val binding_op: str -> pattern -> expression -> loc -> binding_op
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
-    val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val beginend: ?loc:loc -> ?attrs:attrs -> ?ext:str -> expression option -> expression
   end
 
 (** Value declarations *)
@@ -288,20 +288,20 @@ module Sig:
   sig
     val mk: ?loc:loc -> signature_item_desc -> signature_item
 
-    val value: ?loc:loc -> value_description -> signature_item
-    val type_: ?loc:loc -> rec_flag -> type_declaration list -> signature_item
-    val type_subst: ?loc:loc -> type_declaration list -> signature_item
-    val type_extension: ?loc:loc -> type_extension -> signature_item
-    val exception_: ?loc:loc -> type_exception -> signature_item
-    val module_: ?loc:loc -> module_declaration -> signature_item
-    val mod_subst: ?loc:loc -> module_substitution -> signature_item
-    val rec_module: ?loc:loc -> module_declaration list -> signature_item
-    val modtype: ?loc:loc -> module_type_declaration -> signature_item
-    val modtype_subst: ?loc:loc -> module_type_declaration -> signature_item
-    val open_: ?loc:loc -> open_description -> signature_item
-    val include_: ?loc:loc -> include_description -> signature_item
-    val class_: ?loc:loc -> class_description list -> signature_item
-    val class_type: ?loc:loc -> class_type_declaration list -> signature_item
+    val value: ?loc:loc -> ?ext:str -> value_description -> signature_item
+    val type_: ?loc:loc -> ?ext:str -> rec_flag -> type_declaration list -> signature_item
+    val type_subst: ?loc:loc -> ?ext:str -> type_declaration list -> signature_item
+    val type_extension: ?loc:loc -> ?ext:str -> type_extension -> signature_item
+    val exception_: ?loc:loc -> ?ext:str -> type_exception -> signature_item
+    val module_: ?loc:loc -> ?ext:str -> module_declaration -> signature_item
+    val mod_subst: ?loc:loc -> ?ext:str -> module_substitution -> signature_item
+    val rec_module: ?loc:loc -> ?ext:str -> module_declaration list -> signature_item
+    val modtype: ?loc:loc -> ?ext:str -> module_type_declaration -> signature_item
+    val modtype_subst: ?loc:loc -> ?ext:str -> module_type_declaration -> signature_item
+    val open_: ?loc:loc -> ?ext:str -> open_description -> signature_item
+    val include_: ?loc:loc -> ?ext:str -> include_description -> signature_item
+    val class_: ?loc:loc -> ?ext:str -> class_description list -> signature_item
+    val class_type: ?loc:loc -> ?ext:str -> class_type_declaration list -> signature_item
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> signature_item
     val attribute: ?loc:loc -> attribute -> signature_item
     val text: text -> signature_item list
@@ -313,18 +313,18 @@ module Str:
     val mk: ?loc:loc -> structure_item_desc -> structure_item
 
     val eval: ?loc:loc -> ?attrs:attributes -> expression -> structure_item
-    val value: ?loc:loc -> rec_flag -> value_binding list -> structure_item
-    val primitive: ?loc:loc -> value_description -> structure_item
-    val type_: ?loc:loc -> rec_flag -> type_declaration list -> structure_item
-    val type_extension: ?loc:loc -> type_extension -> structure_item
-    val exception_: ?loc:loc -> type_exception -> structure_item
-    val module_: ?loc:loc -> module_binding -> structure_item
-    val rec_module: ?loc:loc -> module_binding list -> structure_item
-    val modtype: ?loc:loc -> module_type_declaration -> structure_item
-    val open_: ?loc:loc -> open_declaration -> structure_item
-    val class_: ?loc:loc -> class_declaration list -> structure_item
-    val class_type: ?loc:loc -> class_type_declaration list -> structure_item
-    val include_: ?loc:loc -> include_declaration -> structure_item
+    val value: ?loc:loc -> ?ext:str -> rec_flag -> value_binding list -> structure_item
+    val primitive: ?loc:loc -> ?ext:str -> value_description -> structure_item
+    val type_: ?loc:loc -> ?ext:str -> rec_flag -> type_declaration list -> structure_item
+    val type_extension: ?loc:loc -> ?ext:str -> type_extension -> structure_item
+    val exception_: ?loc:loc -> ?ext:str -> type_exception -> structure_item
+    val module_: ?loc:loc -> ?ext:str -> module_binding -> structure_item
+    val rec_module: ?loc:loc -> ?ext:str -> module_binding list -> structure_item
+    val modtype: ?loc:loc -> ?ext:str -> module_type_declaration -> structure_item
+    val open_: ?loc:loc -> ?ext:str -> open_declaration -> structure_item
+    val class_: ?loc:loc -> ?ext:str -> class_declaration list -> structure_item
+    val class_type: ?loc:loc -> ?ext:str -> class_type_declaration list -> structure_item
+    val include_: ?loc:loc -> ?ext:str -> include_declaration -> structure_item
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> structure_item
     val attribute: ?loc:loc -> attribute -> structure_item
     val text: text -> structure_item list

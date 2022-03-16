@@ -99,24 +99,26 @@ module Right = struct
     | {pval_prim= _ :: _; _} -> false
     | {pval_type= ct; _} -> core_type ct
 
-  let structure_item {pstr_desc; pstr_loc= _} =
+  let structure_item {pstr_desc; pstr_loc= _; _} =
     match pstr_desc with
-    | Pstr_type (_recflag, typedecls) -> list ~elt:type_declaration typedecls
-    | Pstr_typext te -> type_extension te
-    | Pstr_exception te -> type_exception te
-    | Pstr_primitive vd -> value_description vd
+    | Pstr_type (_recflag, typedecls, _) ->
+        list ~elt:type_declaration typedecls
+    | Pstr_typext (te, _) -> type_extension te
+    | Pstr_exception (te, _) -> type_exception te
+    | Pstr_primitive (vd, _) -> value_description vd
     | Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
      |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
      |Pstr_extension _ | Pstr_value _ | Pstr_eval _ ->
         false
 
-  let signature_item {psig_desc; psig_loc= _} =
+  let signature_item {psig_desc; psig_loc= _; _} =
     match psig_desc with
-    | Psig_value vd -> value_description vd
-    | Psig_type (_recflag, typedecls) -> list ~elt:type_declaration typedecls
-    | Psig_typesubst typedecls -> list ~elt:type_declaration typedecls
-    | Psig_typext te -> type_extension te
-    | Psig_exception te -> type_exception te
+    | Psig_value (vd, _) -> value_description vd
+    | Psig_type (_recflag, typedecls, _) ->
+        list ~elt:type_declaration typedecls
+    | Psig_typesubst (typedecls, _) -> list ~elt:type_declaration typedecls
+    | Psig_typext (te, _) -> type_extension te
+    | Psig_exception (te, _) -> type_exception te
     | Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_modtype _
      |Psig_modtypesubst _ | Psig_open _ | Psig_include _ | Psig_class _
      |Psig_class_type _ | Psig_attribute _ | Psig_extension _ ->

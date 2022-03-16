@@ -272,21 +272,30 @@ let () =
   let test_name = "Test 2" in
   test_name >:: fun _ -> assert_equal "b" "b"
 
-let _ = ()
+let _ = begin end
 
-let _ = ( (* foo *) )
+let _ =
+  begin
+    (* foo *)
+  end
 
-let _ = [%ext ()]
+let _ = begin%ext end
 
-let _ = [%ext (* foo *) ()]
+let _ = begin%ext (* foo *) end
 
 let _ = x y
 
 let _ = (* foo *) x y
 
-let _ = [%ext x y]
+let _ =
+  begin%ext
+    x y
+  end
 
-let _ = [%ext (* foo *) x y]
+let _ =
+  begin%ext
+    (* foo *) x y
+  end
 
 let _ =
   begin

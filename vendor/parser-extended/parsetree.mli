@@ -52,6 +52,8 @@ type location_stack = Location.t list
 
 (** {1 Extension points} *)
 
+type ext = string loc
+
 type attribute = {
     attr_name : string loc;
     attr_payload : payload;
@@ -170,7 +172,7 @@ and core_type_desc =
            - As the {{!value_description.pval_type}[pval_type]} field of a
            {!value_description}.
          *)
-  | Ptyp_package of package_type  (** [(module S)]. *)
+  | Ptyp_package of package_type * ext option  (** [(module S)]. *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
 and package_type = Longident.t loc * (Longident.t loc * core_type) list
@@ -219,6 +221,7 @@ and pattern =
      ppat_loc: Location.t;
      ppat_loc_stack: location_stack;
      ppat_attributes: attributes;  (** [... [\@id1] [\@id2]] *)
+     ppat_ext: ext option;
     }
 
 and pattern_desc =
@@ -286,6 +289,7 @@ and expression =
      pexp_loc: Location.t;
      pexp_loc_stack: location_stack;
      pexp_attributes: attributes;  (** [... [\@id1] [\@id2]] *)
+     pexp_ext: ext option;
     }
 
 and expression_desc =
@@ -424,7 +428,7 @@ and expression_desc =
   | Pexp_extension of extension  (** [[%id]] *)
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
-  | Pexp_beginend of expression  (** [begin E end] *)
+  | Pexp_beginend of expression option  (** [begin E end] *)
 
 and case =
     {
@@ -841,29 +845,30 @@ and signature_item =
     }
 
 and signature_item_desc =
-  | Psig_value of value_description
+  | Psig_value of value_description * ext option
       (** - [val x: T]
             - [external x: T = "s1" ... "sn"]
          *)
-  | Psig_type of rec_flag * type_declaration list
+  | Psig_type of rec_flag * type_declaration list * ext option
       (** [type t1 = ... and ... and tn  = ...] *)
-  | Psig_typesubst of type_declaration list
+  | Psig_typesubst of type_declaration list * ext option
       (** [type t1 := ... and ... and tn := ...]  *)
-  | Psig_typext of type_extension  (** [type t1 += ...] *)
-  | Psig_exception of type_exception  (** [exception C of T] *)
-  | Psig_module of module_declaration  (** [module X = M] and [module X : MT] *)
-  | Psig_modsubst of module_substitution  (** [module X := M] *)
-  | Psig_recmodule of module_declaration list
+  | Psig_typext of type_extension * ext option  (** [type t1 += ...] *)
+  | Psig_exception of type_exception * ext option  (** [exception C of T] *)
+  | Psig_module of module_declaration * ext option
+      (** [module X = M] and [module X : MT] *)
+  | Psig_modsubst of module_substitution * ext option  (** [module X := M] *)
+  | Psig_recmodule of module_declaration list * ext option
       (** [module rec X1 : MT1 and ... and Xn : MTn] *)
-  | Psig_modtype of module_type_declaration
+  | Psig_modtype of module_type_declaration * ext option
       (** [module type S = MT] and [module type S] *)
-  | Psig_modtypesubst of module_type_declaration
+  | Psig_modtypesubst of module_type_declaration * ext option
       (** [module type S :=  ...]  *)
-  | Psig_open of open_description  (** [open X] *)
-  | Psig_include of include_description  (** [include MT] *)
-  | Psig_class of class_description list
+  | Psig_open of open_description * ext option  (** [open X] *)
+  | Psig_include of include_description * ext option  (** [include MT] *)
+  | Psig_class of class_description list * ext option
       (** [class c1 : ... and ... and cn : ...] *)
-  | Psig_class_type of class_type_declaration list
+  | Psig_class_type of class_type_declaration list * ext option
       (** [class type ct1 = ... and ... and ctn = ...] *)
   | Psig_attribute of attribute  (** [[\@\@\@id]] *)
   | Psig_extension of extension * attributes  (** [[%%id]] *)
@@ -985,32 +990,33 @@ and structure_item =
 
 and structure_item_desc =
   | Pstr_eval of expression * attributes  (** [E] *)
-  | Pstr_value of rec_flag * value_binding list
+  | Pstr_value of rec_flag * value_binding list * ext option
       (** [Pstr_value(rec, [(P1, E1 ; ... ; (Pn, En))])] represents:
             - [let P1 = E1 and ... and Pn = EN]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
             - [let rec P1 = E1 and ... and Pn = EN ]
                 when [rec] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
         *)
-  | Pstr_primitive of value_description
+  | Pstr_primitive of value_description * ext option
       (** - [val x: T]
             - [external x: T = "s1" ... "sn" ]*)
-  | Pstr_type of rec_flag * type_declaration list
+  | Pstr_type of rec_flag * type_declaration list * ext option
       (** [type t1 = ... and ... and tn = ...] *)
-  | Pstr_typext of type_extension  (** [type t1 += ...] *)
-  | Pstr_exception of type_exception
+  | Pstr_typext of type_extension * ext option  (** [type t1 += ...] *)
+  | Pstr_exception of type_exception * ext option
       (** - [exception C of T]
             - [exception C = M.X] *)
-  | Pstr_module of module_binding  (** [module X = ME] *)
-  | Pstr_recmodule of module_binding list
+  | Pstr_module of module_binding * ext option  (** [module X = ME] *)
+  | Pstr_recmodule of module_binding list * ext option
       (** [module rec X1 = ME1 and ... and Xn = MEn] *)
-  | Pstr_modtype of module_type_declaration  (** [module type S = MT] *)
-  | Pstr_open of open_declaration  (** [open X] *)
-  | Pstr_class of class_declaration list
+  | Pstr_modtype of module_type_declaration * ext option
+      (** [module type S = MT] *)
+  | Pstr_open of open_declaration * ext option  (** [open X] *)
+  | Pstr_class of class_declaration list * ext option
       (** [class c1 = ... and ... and cn = ...] *)
-  | Pstr_class_type of class_type_declaration list
+  | Pstr_class_type of class_type_declaration list * ext option
       (** [class type ct1 = ... and ... and ctn = ...] *)
-  | Pstr_include of include_declaration  (** [include ME] *)
+  | Pstr_include of include_declaration * ext option  (** [include ME] *)
   | Pstr_attribute of attribute  (** [[\@\@\@id]] *)
   | Pstr_extension of extension * attributes  (** [[%%id]] *)
 

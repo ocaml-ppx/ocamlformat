@@ -48,7 +48,7 @@ let ghost_loc (startpos, endpos) = {
 
 let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
 let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
-let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
+let mkexp ~loc ?ext d = Exp.mk ~loc:(make_loc loc) ?ext d
 let mkmty ~loc ?attrs d = Mty.mk ~loc:(make_loc loc) ?attrs d
 let mksig ~loc d = Sig.mk ~loc:(make_loc loc) d
 let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
@@ -58,31 +58,31 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 
 let pstr_typext (te, ext) =
-  (Pstr_typext te, ext)
+  Pstr_typext (te, ext)
 let pstr_primitive (vd, ext) =
-  (Pstr_primitive vd, ext)
+  Pstr_primitive (vd, ext)
 let pstr_type ((nr, ext), tys) =
-  (Pstr_type (nr, tys), ext)
+  Pstr_type (nr, tys, ext)
 let pstr_exception (te, ext) =
-  (Pstr_exception te, ext)
+  Pstr_exception (te, ext)
 let pstr_include (body, ext) =
-  (Pstr_include body, ext)
+  Pstr_include (body, ext)
 let pstr_recmodule (ext, bindings) =
-  (Pstr_recmodule bindings, ext)
+  Pstr_recmodule (bindings, ext)
 
 let psig_typext (te, ext) =
-  (Psig_typext te, ext)
+  Psig_typext (te, ext)
 let psig_value (vd, ext) =
-  (Psig_value vd, ext)
+  Psig_value (vd, ext)
 let psig_type ((nr, ext), tys) =
-  (Psig_type (nr, tys), ext)
+  Psig_type (nr, tys, ext)
 let psig_typesubst ((nr, ext), tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
-  (Psig_typesubst tys, ext)
+  Psig_typesubst (tys, ext)
 let psig_exception (te, ext) =
-  (Psig_exception te, ext)
+  Psig_exception (te, ext)
 let psig_include (body, ext) =
-  (Psig_include body, ext)
+  Psig_include (body, ext)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -136,8 +136,6 @@ let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
 let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
 let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
 let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
-let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
-let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 
 let mkinfix arg1 op arg2 =
   Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2])
@@ -386,30 +384,24 @@ let wrap_type_annotation ~loc newtypes core_type body =
   let exp = mk_newtypes newtypes exp in
   (exp, ghtyp(Ptyp_poly(newtypes, Typ.varify_constructors newtypes core_type)))
 
-let wrap_exp_attrs ~loc body (ext, attrs) =
-  let ghexp = ghexp ~loc in
+let wrap_exp_attrs ~loc:_ body (ext, attrs) =
   (* todo: keep exact location for the entire attribute *)
-  let body = {body with pexp_attributes = attrs @ body.pexp_attributes} in
-  match ext with
-  | None -> body
-  | Some id -> ghexp(Pexp_extension (id, PStr [mkstrexp body []]))
+  {body with
+    pexp_ext = ext;
+    pexp_attributes = attrs @ body.pexp_attributes}
 
 let mkexp_attrs ~loc d attrs =
   wrap_exp_attrs ~loc (mkexp ~loc d) attrs
 
-let wrap_typ_attrs ~loc typ (ext, attrs) =
+let wrap_typ_attrs ~loc:_ typ attrs =
   (* todo: keep exact location for the entire attribute *)
-  let typ = {typ with ptyp_attributes = attrs @ typ.ptyp_attributes} in
-  match ext with
-  | None -> typ
-  | Some id -> ghtyp ~loc (Ptyp_extension (id, PTyp typ))
+  {typ with ptyp_attributes = attrs @ typ.ptyp_attributes}
 
-let wrap_pat_attrs ~loc pat (ext, attrs) =
+let wrap_pat_attrs ~loc:_ pat (ext, attrs) =
   (* todo: keep exact location for the entire attribute *)
-  let pat = {pat with ppat_attributes = attrs @ pat.ppat_attributes} in
-  match ext with
-  | None -> pat
-  | Some id -> ghpat ~loc (Ppat_extension (id, PPat (pat, None)))
+  {pat with
+    ppat_ext = ext;
+    ppat_attributes = attrs @ pat.ppat_attributes}
 
 let mkpat_attrs ~loc d attrs =
   wrap_pat_attrs ~loc (mkpat ~loc d) attrs
@@ -421,21 +413,11 @@ let wrap_mod_attrs ~loc:_ attrs body =
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
 
-let wrap_str_ext ~loc body ext =
-  match ext with
-  | None -> body
-  | Some id -> ghstr ~loc (Pstr_extension ((id, PStr [body]), []))
+let wrap_mkstr_ext ~loc item =
+  mkstr ~loc item
 
-let wrap_mkstr_ext ~loc (item, ext) =
-  wrap_str_ext ~loc (mkstr ~loc item) ext
-
-let wrap_sig_ext ~loc body ext =
-  match ext with
-  | None -> body
-  | Some id -> ghsig ~loc (Psig_extension ((id, PSig [body]), []))
-
-let wrap_mksig_ext ~loc (item, ext) =
-  wrap_sig_ext ~loc (mksig ~loc item) ext
+let wrap_mksig_ext ~loc item =
+  mksig ~loc item
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
@@ -522,10 +504,7 @@ let val_of_let_bindings ~loc lbs =
            lb.lb_pattern lb.lb_expression)
       lbs.lbs_bindings
   in
-  let str = mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings)) in
-  match lbs.lbs_extension with
-  | None -> str
-  | Some id -> ghstr ~loc (Pstr_extension((id, PStr [str]), []))
+  mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings, lbs.lbs_extension))
 
 let expr_of_let_bindings ~loc lbs body =
   let bindings =
@@ -1411,13 +1390,13 @@ structure_item:
     | rec_module_bindings
         { pstr_recmodule $1 }
     | module_type_declaration
-        { let (body, ext) = $1 in (Pstr_modtype body, ext) }
+        { let (body, ext) = $1 in Pstr_modtype (body, ext) }
     | open_declaration
-        { let (body, ext) = $1 in (Pstr_open body, ext) }
+        { let (body, ext) = $1 in Pstr_open (body, ext) }
     | class_declarations
-        { let (ext, l) = $1 in (Pstr_class l, ext) }
+        { let (ext, l) = $1 in Pstr_class (l, ext) }
     | class_type_declarations
-        { let (ext, l) = $1 in (Pstr_class_type l, ext) }
+        { let (ext, l) = $1 in Pstr_class_type (l, ext) }
     | include_statement(module_expr)
         { pstr_include $1 }
     )
@@ -1435,7 +1414,7 @@ structure_item:
       let loc = make_loc $sloc in
       let attrs = attrs1 @ attrs2 in
       let body = Mb.mk name body ~attrs ~loc ~docs in
-      Pstr_module body, ext }
+      Pstr_module (body, ext) }
 ;
 
 (* The body (right-hand side) of a module binding. *)
@@ -1647,25 +1626,25 @@ signature_item:
     | sig_exception_declaration
         { psig_exception $1 }
     | module_declaration
-        { let (body, ext) = $1 in (Psig_module body, ext) }
+        { let (body, ext) = $1 in Psig_module (body, ext) }
     | module_alias
-        { let (body, ext) = $1 in (Psig_module body, ext) }
+        { let (body, ext) = $1 in Psig_module (body, ext) }
     | module_subst
-        { let (body, ext) = $1 in (Psig_modsubst body, ext) }
+        { let (body, ext) = $1 in Psig_modsubst (body, ext) }
     | rec_module_declarations
-        { let (ext, l) = $1 in (Psig_recmodule l, ext) }
+        { let (ext, l) = $1 in Psig_recmodule (l, ext) }
     | module_type_declaration
-        { let (body, ext) = $1 in (Psig_modtype body, ext) }
+        { let (body, ext) = $1 in Psig_modtype (body, ext) }
     | module_type_subst
-        { let (body, ext) = $1 in (Psig_modtypesubst body, ext) }
+        { let (body, ext) = $1 in Psig_modtypesubst (body, ext) }
     | open_description
-        { let (body, ext) = $1 in (Psig_open body, ext) }
+        { let (body, ext) = $1 in Psig_open (body, ext) }
     | include_statement(module_type)
         { psig_include $1 }
     | class_descriptions
-        { let (ext, l) = $1 in (Psig_class l, ext) }
+        { let (ext, l) = $1 in Psig_class (l, ext) }
     | class_type_declarations
-        { let (ext, l) = $1 in (Psig_class_type l, ext) }
+        { let (ext, l) = $1 in Psig_class_type (l, ext) }
     )
     { $1 }
 
@@ -2167,10 +2146,8 @@ seq_expr:
   | mkexp(expr SEMI seq_expr
     { Pexp_sequence($1, $3) })
     { $1 }
-  | expr SEMI PERCENT attr_id seq_expr
-    { let seq = mkexp ~loc:$sloc (Pexp_sequence ($1, $5)) in
-      let payload = PStr [mkstrexp seq []] in
-      mkexp ~loc:$sloc (Pexp_extension ($4, payload)) }
+  | expr SEMI PERCENT ext=attr_id seq_expr
+    { mkexp ~loc:$sloc ~ext (Pexp_sequence ($1, $5)) }
 ;
 labeled_simple_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
@@ -2351,9 +2328,9 @@ simple_expr:
 ;
 %inline simple_expr_attrs:
   | BEGIN ext_attributes seq_expr END
-      { Pexp_beginend $3, $2 }
+      { Pexp_beginend (Some $3), $2 }
   | BEGIN ext_attributes END
-      { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
+      { Pexp_beginend None, $2 }
   | BEGIN ext_attributes seq_expr error
       { unclosed "begin" $loc($1) "end" $loc($4) }
   | NEW ext_attributes mkrhs(class_longident)
@@ -3360,8 +3337,12 @@ tuple_type:
 atomic_type:
   | LPAREN core_type RPAREN
       { $2 }
-  | LPAREN MODULE ext_attributes package_type RPAREN
-      { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
+  | LPAREN MODULE ext_attributes module_type RPAREN
+      { let ext, attrs' = $3 in
+        let (lid, cstrs, attrs) = package_type_of_module_type $4 in
+        let descr = Ptyp_package ((lid, cstrs), ext) in
+        let ty = mktyp ~loc:$sloc ~attrs descr in
+        wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc ty) attrs' }
   | mktyp( /* begin mktyp group */
       QUOTE ident
         { Ptyp_var $2 }
@@ -3420,7 +3401,7 @@ atomic_type:
 
 %inline package_type: module_type
       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
-        let descr = Ptyp_package (lid, cstrs) in
+        let descr = Ptyp_package ((lid, cstrs), None) in
         mktyp ~loc:$sloc ~attrs descr }
 ;
 %inline row_field_list:

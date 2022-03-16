@@ -67,9 +67,6 @@ val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
 
-val extension_using_sugar :
-  name:string Location.loc -> payload:Location.t -> bool
-
 val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
 
 val type_constraint_is_first : core_type -> Location.t -> bool

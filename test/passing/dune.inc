@@ -1628,7 +1628,7 @@
  (action
   (with-stdout-to exp_grouping-parens.ml.stdout
    (with-stderr-to exp_grouping-parens.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --exp-grouping=parens %{dep:tests/exp_grouping.ml})))))
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=parens --max-iters=3 %{dep:tests/exp_grouping.ml})))))
 
 (rule
  (alias runtest)
@@ -1646,7 +1646,7 @@
  (action
   (with-stdout-to exp_grouping.ml.stdout
    (with-stderr-to exp_grouping.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/exp_grouping.ml})))))
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve --max-iters=3 %{dep:tests/exp_grouping.ml})))))
 
 (rule
  (alias runtest)
