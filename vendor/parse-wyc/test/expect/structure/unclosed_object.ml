@@ -1,0 +1,1 @@
+let o = object

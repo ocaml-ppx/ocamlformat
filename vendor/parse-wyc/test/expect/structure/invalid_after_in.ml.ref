@@ -1,0 +1,3 @@
+let fooooooooooooooooooooo =
+  let foooooooooooooooooooo = let foooooooooooooooo = foooooooo in foooooo in
+  [%merlin.hole ]

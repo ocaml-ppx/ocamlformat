@@ -1,0 +1,6 @@
+module M =
+  struct
+    let foooooo = foooo
+    let foooooooooooooo =
+      let foooooooooooo = foooooend <- [%merlin.hole ] in [%merlin.hole ]
+  end
