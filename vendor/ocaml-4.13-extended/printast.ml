@@ -1061,3 +1061,31 @@ let implementation ppf x = list 0 structure_item ppf x
 let top_phrase ppf x = toplevel_phrase 0 ppf x
 
 let repl_phrase ppf x = repl_phrase 0 ppf x
+
+let expression ppf x = expression 0 ppf x
+
+let payload ppf x = payload 0 ppf x
+
+let core_type ppf x = core_type 0 ppf x
+
+let module_type ppf x = module_type 0 ppf x
+
+let pattern ppf x = pattern 0 ppf x
+
+let type_declaration ppf x = type_declaration 0 ppf x
+
+let value_binding ppf x = value_binding 0 ppf x
+
+let class_expr ppf x = class_expr 0 ppf x
+
+let class_type ppf x = class_type 0 ppf x
+
+let class_field ppf x = class_field 0 ppf x
+
+let class_type_field ppf x = class_type_field 0 ppf x
+
+let module_expr ppf x = module_expr 0 ppf x
+
+let structure_item ppf x = structure_item 0 ppf x
+
+let signature_item ppf x = signature_item 0 ppf x

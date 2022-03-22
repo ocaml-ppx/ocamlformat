@@ -47,17 +47,17 @@ module Parse = struct
     | Repl_file -> ()
 end
 
-module Pprintast = struct
-  include Pprintast
+module Printast = struct
+  include Printast
 
   let use_file = Format.pp_print_list top_phrase
 
   let ast (type a) : a t -> _ -> a -> _ = function
-    | Structure -> structure
-    | Signature -> signature
+    | Structure -> implementation
+    | Signature -> interface
     | Use_file -> use_file
-    | Core_type -> core_type
-    | Module_type -> module_type
-    | Expression -> expression
+    | Core_type -> core_type 0
+    | Module_type -> module_type 0
+    | Expression -> expression 0
     | Repl_file -> fun _ _ -> ()
 end

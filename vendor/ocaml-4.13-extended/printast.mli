@@ -28,11 +28,21 @@ val implementation : formatter -> structure_item list -> unit
 val top_phrase : formatter -> toplevel_phrase -> unit
 val repl_phrase : formatter -> repl_phrase -> unit
 
-val expression: int -> formatter -> expression -> unit
+val expression: formatter -> expression -> unit
 val structure: int -> formatter -> structure -> unit
-val payload: int -> formatter -> payload -> unit
-val core_type: int -> formatter -> core_type -> unit
-val module_type: int -> formatter -> module_type -> unit
+val payload: formatter -> payload -> unit
+val core_type: formatter -> core_type -> unit
+val module_type: formatter -> module_type -> unit
+val pattern: formatter -> pattern -> unit
+val type_declaration: formatter -> type_declaration -> unit
+val value_binding: formatter -> value_binding -> unit
+val class_expr: formatter -> class_expr -> unit
+val class_type: formatter -> class_type -> unit
+val class_field: formatter -> class_field -> unit
+val class_type_field: formatter -> class_type_field -> unit
+val module_expr: formatter -> module_expr -> unit
+val structure_item: formatter -> structure_item -> unit
+val signature_item: formatter -> signature_item -> unit
 
 type cmts =
   { before: Location.t -> string list option

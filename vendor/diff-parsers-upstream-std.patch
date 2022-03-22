@@ -504,51 +504,13 @@
  
  and structure_item i ppf x =
    line i ppf "structure_item %a\n" fmt_location x.pstr_loc;
---- ocaml-4.13-upstream/pprintast.ml
-+++ ocaml-4.13/pprintast.ml
+--- ocaml-4.13-upstream/printast.mli
++++ ocaml-4.13/printast.mli
 @@@@
-         let fmt:(_,_,_)format =
-           "@[<hv0>@[<hv2>@[<2>for %a =@;%a@;%a%a@;do@]@;%a@]@;done@]" in
-         let expression = expression ctxt in
-         pp f fmt (pattern ctxt) s expression e1 direction_flag
-           df expression e2 expression e3
-+    | Pexp_hole ->
-+        pp f "_"
-     | _ ->  paren true (expression ctxt) f x
+ val top_phrase : formatter -> toplevel_phrase -> unit
  
- and attributes ctxt f l =
-   List.iter (attribute ctxt f) l
- 
-@@@@
-         pp f "(%a)(%a)" (module_expr ctxt) me1 (module_expr ctxt) me2
-         (* Cf: #7200 *)
-     | Pmod_unpack e ->
-         pp f "(val@ %a)" (expression ctxt) e
-     | Pmod_extension e -> extension ctxt f e
-+    | Pmod_hole ->
-+        pp f "_"
- 
- and structure ctxt f x = list ~sep:"@\n" (structure_item ctxt) f x
- 
- and payload ctxt f = function
-   | PStr [{pstr_desc = Pstr_eval (e, attrs)}] ->
-@@@@
- let class_type = class_type reset_ctxt
- let structure_item = structure_item reset_ctxt
- let signature_item = signature_item reset_ctxt
- let binding = binding reset_ctxt
- let payload = payload reset_ctxt
-+let type_declaration = type_declaration reset_ctxt
---- ocaml-4.13-upstream/pprintast.mli
-+++ ocaml-4.13/pprintast.mli
-@@@@
- val module_type: Format.formatter -> Parsetree.module_type -> unit
- val structure_item: Format.formatter -> Parsetree.structure_item -> unit
- val signature_item: Format.formatter -> Parsetree.signature_item -> unit
- val binding: Format.formatter -> Parsetree.value_binding -> unit
- val payload: Format.formatter -> Parsetree.payload -> unit
-+val type_declaration: Format.formatter -> Parsetree.type_declaration -> unit
- 
- val tyvar: Format.formatter -> string -> unit
-   (** Print a type variable name, taking care of the special treatment
-       required for the single quote character in second position. *)
+ val expression: int -> formatter -> expression -> unit
+ val structure: int -> formatter -> structure -> unit
+ val payload: int -> formatter -> payload -> unit
++val core_type: int -> formatter -> core_type -> unit
++val module_type: int -> formatter -> module_type -> unit

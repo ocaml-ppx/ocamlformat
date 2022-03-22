@@ -761,24 +761,24 @@ module T = struct
     | Rep
 
   let dump fs = function
-    | Pld l -> Format.fprintf fs "Pld:@\n%a" Pprintast.payload l
-    | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
-    | Td t -> Format.fprintf fs "Td:@\n%a" Pprintast.type_declaration t
-    | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
-    | Exp e -> Format.fprintf fs "Exp:@\n%a" Pprintast.expression e
-    | Vb b -> Format.fprintf fs "Vb:@\n%a" Pprintast.binding b
-    | Cl cl -> Format.fprintf fs "Cl:@\n%a" Pprintast.class_expr cl
-    | Mty mt -> Format.fprintf fs "Mty:@\n%a" Pprintast.module_type mt
-    | Cty cty -> Format.fprintf fs "Cty:@\n%a" Pprintast.class_type cty
-    | Mod m -> Format.fprintf fs "Mod:@\n%a" Pprintast.module_expr m
-    | Sig s -> Format.fprintf fs "Sig:@\n%a" Pprintast.signature_item s
+    | Pld l -> Format.fprintf fs "Pld:@\n%a" Printast.payload l
+    | Typ t -> Format.fprintf fs "Typ:@\n%a" Printast.core_type t
+    | Td t -> Format.fprintf fs "Td:@\n%a" Printast.type_declaration t
+    | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
+    | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
+    | Vb b -> Format.fprintf fs "Vb:@\n%a" Printast.value_binding b
+    | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
+    | Mty mt -> Format.fprintf fs "Mty:@\n%a" Printast.module_type mt
+    | Cty cty -> Format.fprintf fs "Cty:@\n%a" Printast.class_type cty
+    | Mod m -> Format.fprintf fs "Mod:@\n%a" Printast.module_expr m
+    | Sig s -> Format.fprintf fs "Sig:@\n%a" Printast.signature_item s
     | Str s | Tli (`Item s) ->
-        Format.fprintf fs "Str:@\n%a" Pprintast.structure_item s
-    | Clf clf -> Format.fprintf fs "Clf:@\n%a@\n" Pprintast.class_field clf
+        Format.fprintf fs "Str:@\n%a" Printast.structure_item s
+    | Clf clf -> Format.fprintf fs "Clf:@\n%a@\n" Printast.class_field clf
     | Ctf ctf ->
-        Format.fprintf fs "Ctf:@\n%a@\n" Pprintast.class_type_field ctf
+        Format.fprintf fs "Ctf:@\n%a@\n" Printast.class_type_field ctf
     | Tli (`Directive d) ->
-        Format.fprintf fs "Dir:@\n%a" Pprintast.toplevel_phrase (Ptop_dir d)
+        Format.fprintf fs "Dir:@\n%a" Printast.top_phrase (Ptop_dir d)
     | Top -> Format.pp_print_string fs "Top"
     | Rep -> Format.pp_print_string fs "Rep"
 end

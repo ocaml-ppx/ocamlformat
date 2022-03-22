@@ -39,9 +39,7 @@ let parser_files =
   ; "parser.mly"
   ; "parsetree.mli"
   ; "printast.ml"
-  ; "printast.mli"
-  ; "pprintast.ml"
-  ; "pprintast.mli" ]
+  ; "printast.mli" ]
 
 let stdlib_files = ["format.ml"; "format.mli"]
 

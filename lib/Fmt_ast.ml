@@ -241,6 +241,9 @@ let rec fmt_longident (li : Longident.t) =
 let fmt_longident_loc c ?pre {txt; loc} =
   Cmts.fmt c loc (opt pre str $ fmt_longident txt)
 
+let str_longident x =
+  Format.asprintf "%a" (fun fs x -> eval fs (fmt_longident x)) x
+
 let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
@@ -4000,18 +4003,12 @@ and fmt_with_constraint c ctx ~pre = function
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
   | Pwith_modtype (m1, m2) ->
-      let m1 =
-        { m1 with
-          txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
-      in
+      let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
   | Pwith_modtypesubst (m1, m2) ->
-      let m1 =
-        { m1 with
-          txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
-      in
+      let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2
