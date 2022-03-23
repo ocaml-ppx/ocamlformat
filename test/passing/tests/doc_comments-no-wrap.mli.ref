@@ -584,3 +584,7 @@ type x =
     {@sh[
       echo "this""is""only""a""single"(echo word)(echo also)
     ]} *)
+
+(**a*)
+
+(**b*)
