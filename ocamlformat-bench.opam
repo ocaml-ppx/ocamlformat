@@ -11,8 +11,8 @@ depends: [
   "dune" {>= "2.8"}
   "ocaml" {>= "4.08" & < "4.15"}
   "alcotest" {with-test}
-  "bechamel" {>= "0.2.0"}
-  "bechamel-js" {>= "0.2.0"}
+  "bechamel" {with-test & >= "0.2.0"}
+  "bechamel-js" {with-test & >= "0.2.0"}
   "ocamlformat" {= version}
   "stdio" {< "v0.15"}
   "yojson"

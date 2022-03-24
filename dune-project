@@ -86,9 +86,13 @@
     (< 4.15)))
   (alcotest :with-test)
   (bechamel
-   (>= 0.2.0))
+   (and
+    :with-test
+    (>= 0.2.0)))
   (bechamel-js
-   (>= 0.2.0))
+   (and
+    :with-test
+    (>= 0.2.0)))
   (ocamlformat
    (= :version))
   (stdio
