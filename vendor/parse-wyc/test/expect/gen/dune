@@ -1,0 +1,8 @@
+(executable
+ (name gen)
+ (modules gen))
+
+(executable
+ (name pwyc_driver)
+ (modules pwyc_driver)
+ (libraries parse_wyc))

@@ -1,0 +1,6 @@
+let foooooo =
+  ((fooooooooolet foooooooo) = (bar baaaaar barrrmodule K)) =
+    (let k = [%merlin.hole ] in
+     (let x = () in
+      let foooooo = (fooooo foooooooolet k) = ([%merlin.hole ]) in
+      [%merlin.hole ]))
