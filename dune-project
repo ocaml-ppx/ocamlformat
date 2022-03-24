@@ -89,6 +89,11 @@
    (>= 0.2.0))
   (bechamel-js
    (>= 0.2.0))
+  dune
+  (dune
+   (and
+    :with-test
+    (< 3.0)))
   (ocamlformat
    (= :version))
   (stdio
