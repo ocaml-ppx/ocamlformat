@@ -22,12 +22,12 @@ OPTIONS (CODE FORMATTING STYLE)
        file.
 
        (*) .ocamlformat files in current and all ancestor directories for
-       each input file are used, as well as the global ocamlformat file
-       defined in $XDG_CONFIG_HOME or in $HOME/.config if $XDG_CONFIG_HOME is
-       undefined. The global ocamlformat file has the lowest priority, then
-       the closer the directory is to the processed file, the higher the
-       priority. The global ocamlformat file is only used when the option
-       enable-outside-detected-project is set.
+       each input file are used, applied from top to bottom, overriding the
+       settings each time a file is applied, stopping at the project root. If
+       no project root and no ocamlformat file has been found, and if the
+       option enable-outside-detected-project is set, the global ocamlformat
+       file defined in $XDG_CONFIG_HOME (or in $HOME/.config if
+       $XDG_CONFIG_HOME is undefined) is used.
 
        If the disable option is not set, an .ocamlformat-ignore file
        specifies files that OCamlFormat should ignore. Each line in an
@@ -586,11 +586,15 @@ OPTIONS
            Disable .ocamlformat configuration files.
 
        --enable-outside-detected-project
-           Read .ocamlformat config files outside the current project. The
-           project root of an input file is taken to be the nearest ancestor
-           directory that contains a .git or .hg or dune-project file.
-           Formatting is enabled even if no .ocamlformat configuration file
-           is found.
+           Read .ocamlformat config files outside the current project when no
+           project root has been detected for the input file. The project
+           root of an input file is taken to be the nearest ancestor
+           directory that contains a .git or .hg or dune-project file. If
+           .ocamlformat config files are located in the same directory or
+           parents they are applied, if no .ocamlformat file is found then
+           the global configuration defined in $XDG_CONFIG_HOME/.ocamlformat
+           (or in $HOME/.config/.ocamlformat if $XDG_CONFIG_HOME is
+           undefined) is applied.
 
        -g, --debug
            Generate debugging output. The flag is unset by default.

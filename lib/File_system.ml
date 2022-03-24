@@ -61,10 +61,22 @@ let make ~enable_outside_detected_project ~disable_conf_files ~root ~file =
   let dir = Fpath.(file |> split_base |> fst) in
   let volume, dir = Fpath.split_volume dir in
   let segs = Fpath.segs dir |> List.rev in
-  let rec aux fs segs =
+  let rec aux fs ~segs =
     match segs with
-    | [] | [""] -> fs
-    | "" :: upper_segs -> aux fs upper_segs
+    | [] | [""] ->
+        (* Outside of a detected project, only apply the global config file
+           when [--enable-outside-detected-project] is set and no
+           [.ocamlformat] file has been found. *)
+        assert (Option.is_none fs.project_root) ;
+        if
+          List.is_empty fs.configuration_files
+          && enable_outside_detected_project
+        then
+          match xdg_config () with
+          | Some xdg -> {fs with configuration_files= [Ocamlformat xdg]}
+          | None -> fs
+        else fs
+    | "" :: upper_segs -> aux fs ~segs:upper_segs
     | _ :: upper_segs ->
         let sep = Fpath.dir_sep in
         let dir = Fpath.v (volume ^ String.concat ~sep (List.rev segs)) in
@@ -91,18 +103,14 @@ let make ~enable_outside_detected_project ~disable_conf_files ~root ~file =
                 if Fpath.exists f_2 then Ocp_indent f_2 :: files else files
               ) }
         in
-        if is_project_root ~root dir && not enable_outside_detected_project
-        then {fs with project_root= Some dir}
-        else aux fs upper_segs
+        (* Inside a detected project, configs are applied in top-down
+           starting from the project root (i.e. excluding the global config
+           file). *)
+        if is_project_root ~root dir then {fs with project_root= Some dir}
+        else aux fs ~segs:upper_segs
   in
-  let init =
+  aux ~segs
     { ignore_files= []
     ; enable_files= []
     ; configuration_files= []
     ; project_root= None }
-  in
-  let fs = aux init segs in
-  match (xdg_config (), enable_outside_detected_project) with
-  | None, _ | Some _, false -> fs
-  | Some xdg, true ->
-      {fs with configuration_files= Ocamlformat xdg :: fs.configuration_files}
