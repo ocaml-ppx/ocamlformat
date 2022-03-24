@@ -15,6 +15,7 @@ module Error : sig
     | Malformed of string
     | Misplaced of string * string
     | Unknown of string * [`Msg of string] option
+    | Version_mismatch of {read: string; installed: string}
 
   val to_string : t -> string
 end

@@ -102,6 +102,8 @@ let handle_config_error (e : Config_option.Error.t) output =
     | Misplaced (x, y) ->
         Format.sprintf "Misplaced configuration value (%s, %s)" x y
     | Unknown (x, _) -> Format.sprintf "Unknown configuration option %s" x
+    | Version_mismatch {read; installed} ->
+        Format.sprintf "Version mismatch (%s, %s)" read installed
   in
   output stdout (`Error msg)
 

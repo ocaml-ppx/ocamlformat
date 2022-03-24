@@ -15,6 +15,7 @@ module Error = struct
     | Malformed of string
     | Misplaced of string * string
     | Unknown of string * [`Msg of string] option
+    | Version_mismatch of {read: string; installed: string}
 
   let to_string = function
     | Malformed line -> Format.sprintf "Invalid format %S" line
@@ -23,6 +24,11 @@ module Error = struct
     | Unknown (name, Some (`Msg msg)) ->
         Format.sprintf "Unknown option %S: %s" name msg
     | Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
+    | Version_mismatch {read; installed} ->
+        Format.sprintf
+          "Project should be formatted using ocamlformat version %S, but \
+           the installed version is %S"
+          read installed
 end
 
 module type CONFIG = sig
