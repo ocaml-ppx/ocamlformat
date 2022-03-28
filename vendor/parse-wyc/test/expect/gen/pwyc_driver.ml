@@ -15,15 +15,15 @@ let read_file file =
   aux buf
 
 module Pp = struct
-  module Pprintast = Ocaml_413_extended.Pprintast
+  module Printast = Ocaml_413_extended.Printast
 
-  let structure = Pprintast.structure
-  let signature = Pprintast.signature
+  let structure = Printast.implementation
+  let signature = Printast.interface
 
   let use_file fs lx =
     Format.pp_print_list
       ~pp_sep:(fun fs () -> Format.fprintf fs "@\n")
-      (fun fs x -> Format.fprintf fs "%a" Pprintast.toplevel_phrase x)
+      (fun fs x -> Format.fprintf fs "%a" Printast.top_phrase x)
       fs lx
 end
 
