@@ -46,7 +46,6 @@ module Clflags : sig
   val for_package : string option ref
   val transparent_modules : bool ref
   val locations : bool ref
-  val unsafe_string : bool ref
   val color : Misc.Color.setting option ref
   val error_style : Misc.Error_style.setting option ref
   val unboxed_types : bool ref
