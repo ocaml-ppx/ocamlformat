@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        ocaml-compiler:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.13.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v2
+
+      # Setup
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Opam dependencies
+        run: opam install --deps-only -t .
+
+      - name: Runtest
+        run: opam exec -- dune runtest
+
+      - name: Check help files
+        run: opam exec -- dune build @help --auto-promote
