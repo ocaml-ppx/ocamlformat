@@ -278,7 +278,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     if conf.opr_opts.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Std_ast.Pprintast.ast fg fmt ast ) )
+             Std_ast.Printast.ast fg fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =

@@ -24,9 +24,9 @@ module Layout_cache = struct
     type t = layout_cache_key
 
     let expression_to_string e =
-      Caml.Format.asprintf "%a" Pprintast.expression e
+      Caml.Format.asprintf "%a" Printast.expression e
 
-    let pattern_to_string e = Caml.Format.asprintf "%a" Pprintast.pattern e
+    let pattern_to_string e = Caml.Format.asprintf "%a" Printast.pattern e
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"

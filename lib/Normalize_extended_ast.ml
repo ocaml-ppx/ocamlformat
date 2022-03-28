@@ -45,7 +45,7 @@ let normalize_comments dedup fmt comments =
   |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
 
 let normalize_parse_result ast_kind ast comments =
-  Format.asprintf "AST,%a,COMMENTS,[%a]" (Pprintast.ast ast_kind) ast
+  Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast
     (normalize_comments (dedup_cmts ast_kind ast))
     comments
 
