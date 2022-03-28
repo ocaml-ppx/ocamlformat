@@ -3,10 +3,10 @@
 (rule (alias runtest) (action (diff structure/binop.ml.ref binop.ml.stdout)))
 
 (rule (action (with-stdout-to empty.ml.stdout (run ./gen/pwyc_driver.exe -structure %{dep:structure/empty.ml}))))
-(rule (alias runtest) (action (diff structure/empty.ml empty.ml.stdout)))
+(rule (alias runtest) (action (diff structure/empty.ml.ref empty.ml.stdout)))
 
 (rule (action (with-stdout-to empty.mli.stdout (run ./gen/pwyc_driver.exe -signature %{dep:signature/empty.mli}))))
-(rule (alias runtest) (action (diff signature/empty.mli empty.mli.stdout)))
+(rule (alias runtest) (action (diff signature/empty.mli.ref empty.mli.stdout)))
 
 (rule (action (with-stdout-to invalid_after_eq.ml.stdout (run ./gen/pwyc_driver.exe -structure %{dep:structure/invalid_after_eq.ml}))))
 (rule (alias runtest) (action (diff structure/invalid_after_eq.ml.ref invalid_after_eq.ml.stdout)))
