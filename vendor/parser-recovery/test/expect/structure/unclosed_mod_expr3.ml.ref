@@ -7,4 +7,5 @@
         expression ([1,0+16]..[1,0+17])
           Pexp_constant
           constant ([1,0+16]..[1,0+17])
-            PConst_int (3,None)]
+            PConst_int (3,None)
+]
