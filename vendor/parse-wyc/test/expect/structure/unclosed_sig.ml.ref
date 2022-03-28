@@ -1,8 +1,8 @@
 [
   structure_item ([1,0+0]..[1,0+22])
     Pstr_module
-    "K" ([1,0+7]..[1,0+8])
-([1,0+0]..[1,0+22])      module_expr ([1,0+9]..[1,0+22])
+    module_binding "K" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+22])
+      module_expr ([1,0+9]..[1,0+22])
         Pmod_constraint
         module_expr (_none_[0,0+-1]..[0,0+-1]) ghost
           Pmod_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost

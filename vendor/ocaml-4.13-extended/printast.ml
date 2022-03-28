@@ -163,7 +163,6 @@ let option i f ppf x =
 let longident_loc i ppf li = line i ppf "%a\n" fmt_longident_loc li
 let string i ppf s = line i ppf "\"%s\"\n" s
 let string_loc i ppf s = line i ppf "%a\n" fmt_string_loc s
-let str_opt_loc i ppf s = line i ppf "%a\n" fmt_str_opt_loc s
 let arg_label i ppf = function
   | Nolabel -> line i ppf "Nolabel\n"
   | Optional s -> line i ppf "Optional \"%s\"\n" s
@@ -916,14 +915,14 @@ and module_type_declaration i ppf x =
   modtype_declaration (i+1) ppf x.pmtd_type
 
 and module_declaration i ppf pmd =
-  str_opt_loc i ppf pmd.pmd_name;
-  fmt_location ppf pmd.pmd_loc;
+  line i ppf "module_declaration %a %a\n" fmt_str_opt_loc pmd.pmd_name
+    fmt_location pmd.pmd_loc;
   attributes i ppf pmd.pmd_attributes;
   module_type (i+1) ppf pmd.pmd_type;
 
 and module_binding i ppf x =
-  str_opt_loc i ppf x.pmb_name;
-  fmt_location ppf x.pmb_loc;
+  line i ppf "module_binding %a %a\n" fmt_str_opt_loc x.pmb_name
+    fmt_location x.pmb_loc;
   attributes i ppf x.pmb_attributes;
   module_expr (i+1) ppf x.pmb_expr
 
