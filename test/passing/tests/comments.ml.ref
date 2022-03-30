@@ -384,3 +384,26 @@ let _ =
           blah *)
     foooooooooooooooooooooooo
     foooooooooooooooo fooooooooooooooo
+
+let _ =
+  !
+    (*a*)
+    (*b*)
+    x
+
+let _ =
+  (*x*)
+  !
+    (*a*)
+    (*b*)
+    x (*c*) y
+
+let _ =
+  f
+    ((*x*)
+     !
+       (*a*)
+       (*b*)
+       x
+       (*c*) y )
+    y

@@ -1925,9 +1925,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               ( fmt_infix_op_args ~parens:inner_wrap c xexp infix_op_args
               $ fmt_atrs ) ) )
   | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
+      let has_cmts = Cmts.has_before c.cmts e1.pexp_loc in
       hvbox 2
         (Params.Exp.wrap c.conf ~parens
            ( fmt_expression c ~box (sub_exp ~ctx e0)
+           $ fmt_if has_cmts "@,"
            $ fmt_expression c ~box (sub_exp ~ctx e1)
            $ fmt_atrs ) )
   | Pexp_apply (e0, e1N1) -> (

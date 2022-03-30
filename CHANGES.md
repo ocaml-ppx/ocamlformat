@@ -7,6 +7,7 @@
 ### Bug fixes
 
 - emacs: Remove temp files in the event of an error (#2003, @gpetiot)
+- Fix unstable comment formatting around prefix op (#2046, @gpetiot)
 
 ### Changes
 
