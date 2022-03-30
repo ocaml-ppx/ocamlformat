@@ -14,7 +14,7 @@ depends: [
   "bechamel" {>= "0.2.0"}
   "bechamel-js" {>= "0.2.0"}
   "ocamlformat" {= version}
-  "stdio" {< "v0.15"}
+  "stdio" {< "v0.16"}
   "yojson"
   "odoc" {with-doc}
 ]
