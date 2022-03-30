@@ -40,7 +40,7 @@
   (base
    (and
     (>= v0.12.0)
-    (< v0.15)))
+    (< v0.16)))
   (cmdliner
    (>= 1.1.0))
   dune
@@ -66,7 +66,7 @@
   (re
    (>= 1.7.2))
   (stdio
-   (< v0.15))
+   (< v0.16))
   (uuseg
    (>= 10.0.0))
   (uutf
@@ -92,7 +92,7 @@
   (ocamlformat
    (= :version))
   (stdio
-   (< v0.15))
+   (< v0.16))
   yojson))
 
 (package
