@@ -1,6 +1,6 @@
 {0 API}
 
-The entrypoint for OCamlFormat's API is the {{:https://v3.ocaml.org/p/ocamlformat/0.21.0/doc/Ocamlformat/Translation_unit/index.html}Translation_unit} module.
+OCamlformat's library API: {!Ocamlformat}. The entrypoint is the {!Ocamlformat.Translation_unit} module.
 
 A basic usage would be:
 
