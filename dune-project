@@ -38,9 +38,7 @@
     (< 4.15)))
   (alcotest :with-test)
   (base
-   (and
-    (>= v0.12.0)
-    (< v0.16)))
+   (>= v0.12.0))
   (cmdliner
    (>= 1.1.0))
   dune
@@ -65,8 +63,7 @@
    (>= 1.0.0))
   (re
    (>= 1.7.2))
-  (stdio
-   (< v0.16))
+  stdio
   (uuseg
    (>= 10.0.0))
   (uutf
@@ -91,8 +88,7 @@
    (>= 0.2.0))
   (ocamlformat
    (= :version))
-  (stdio
-   (< v0.16))
+  stdio
   yojson))
 
 (package
