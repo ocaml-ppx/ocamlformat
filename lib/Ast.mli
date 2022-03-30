@@ -63,8 +63,6 @@ module String_id : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
-
-  val is_monadic : string -> bool
 end
 
 module Longident : sig
@@ -83,8 +81,6 @@ module Longident : sig
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
 
-  val is_monadic : t -> bool
-
   val field_alias_str : field:t -> string -> bool
 
   val field_alias : field:t -> t -> bool
@@ -101,8 +97,6 @@ module Exp : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
-
-  val is_monadic : expression -> bool
 
   val exposed_left : expression -> bool
   (** [exposed_left exp] holds if the left-most subexpression of [exp] is a

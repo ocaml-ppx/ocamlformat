@@ -1797,7 +1797,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ( Nolabel
           , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
       )
-    when Longident.is_monadic id
+    when Longident.is_infix id
          && (not (Longident.is_monadic_binding id))
          && not c.conf.fmt_opts.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
