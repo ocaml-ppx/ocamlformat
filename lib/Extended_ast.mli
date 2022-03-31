@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocaml_413_extended
+open Parser_extended
 
 include module type of Parsetree
 

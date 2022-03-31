@@ -21,7 +21,7 @@
    -open
    Ocaml_common
    -open
-   Ocaml_413_extended
+   Parser_extended
    -open
    Ocamlformat_stdlib))
  (instrumentation
@@ -29,13 +29,13 @@
  (libraries
   format_
   ocaml_common
-  ocaml_413
-  ocaml_413_extended
+  parser_standard
+  parser_extended
+  parser_recovery
   ocamlformat_stdlib
   ocaml-version
   ocp-indent.lib
   odoc-parser
-  parse_wyc
   re
   uuseg
   uuseg.string

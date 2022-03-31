@@ -42,7 +42,7 @@ let emit_test test_name setup =
   in
   Printf.printf
     {|
-(rule (action (with-stdout-to %s (run ./gen/pwyc_driver.exe %s %%{dep:%s}))))
+(rule (action (with-stdout-to %s (run ./gen/driver.exe %s %%{dep:%s}))))
 (rule (alias runtest) (action (diff %s %s)))
 |}
     out_name kind

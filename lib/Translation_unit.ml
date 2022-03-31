@@ -244,9 +244,9 @@ let with_buffer_formatter ~buffer_size k =
   Buffer.contents buffer
 
 let recover (type a) : a Extended_ast.t -> _ -> a = function
-  | Structure -> Parse_wyc.structure
-  | Signature -> Parse_wyc.signature
-  | Use_file -> Parse_wyc.use_file
+  | Structure -> Parser_recovery.structure
+  | Signature -> Parser_recovery.signature
+  | Use_file -> Parser_recovery.use_file
   | Core_type -> failwith "no recovery for core_type"
   | Module_type -> failwith "no recovery for module_type"
   | Expression -> failwith "no recovery for expression"

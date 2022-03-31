@@ -1,6 +1,6 @@
 (library
- (name ocaml_413)
- (public_name ocamlformat.ocaml_413)
+ (name parser_extended)
+ (public_name ocamlformat.parser_extended)
  (flags
   (:standard -w -9 -open Parser_shims -open Ocaml_common))
  (libraries compiler-libs.common menhirLib parser_shims ocaml_common))

@@ -1,5 +1,5 @@
---- ocaml-4.13/ast_helper.ml
-+++ ocaml-4.13-extended/ast_helper.ml
+--- parser-standard/ast_helper.ml
++++ parser-extended/ast_helper.ml
 @@@@
  
  let with_default_loc l f =
@@ -69,8 +69,8 @@
      {
       pc_lhs = lhs;
       pc_guard = guard;
---- ocaml-4.13/ast_helper.mli
-+++ ocaml-4.13-extended/ast_helper.mli
+--- parser-standard/ast_helper.mli
++++ parser-extended/ast_helper.mli
 @@@@
          of the provided function. *)
  
@@ -141,8 +141,8 @@
  (** Value declarations *)
  module Val:
    sig
---- ocaml-4.13/ast_mapper.ml
-+++ ocaml-4.13-extended/ast_mapper.ml
+--- parser-standard/ast_mapper.ml
++++ parser-extended/ast_mapper.ml
 @@@@
    value_description: mapper -> value_description -> value_description;
    with_constraint: mapper -> with_constraint -> with_constraint;
@@ -280,8 +280,8 @@
        and get_bool pexp =
          match pexp with
          | {pexp_desc = Pexp_construct ({txt = Longident.Lident "true"},
---- ocaml-4.13/ast_mapper.mli
-+++ ocaml-4.13-extended/ast_mapper.mli
+--- parser-standard/ast_mapper.mli
++++ parser-extended/ast_mapper.mli
 @@@@
    value_description: mapper -> value_description -> value_description;
    with_constraint: mapper -> with_constraint -> with_constraint;
@@ -294,8 +294,8 @@
      using an open recursion style: each method takes as its first
      argument the mapper to be applied to children in the syntax
      tree. *)
---- ocaml-4.13/asttypes.mli
-+++ ocaml-4.13-extended/asttypes.mli
+--- parser-standard/asttypes.mli
++++ parser-extended/asttypes.mli
 @@@@
  
  type override_flag = Override | Fresh
@@ -309,8 +309,8 @@
  type arg_label =
      Nolabel
    | Labelled of string (*  label:T -> ... *)
---- ocaml-4.13/docstrings.ml
-+++ ocaml-4.13-extended/docstrings.ml
+--- parser-standard/docstrings.ml
++++ parser-extended/docstrings.ml
 @@@@
  
  let docs_attr ds =
@@ -341,8 +341,8 @@
        pexp_attributes = []; }
    in
    let item =
---- ocaml-4.13/parser.mly
-+++ ocaml-4.13-extended/parser.mly
+--- parser-standard/parser.mly
++++ parser-extended/parser.mly
 @@@@
  let mksig ~loc d = Sig.mk ~loc:(make_loc loc) d
  let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
@@ -560,8 +560,8 @@
  /* Identifiers and long identifiers */
  
  ident:
---- ocaml-4.13/parsetree.mli
-+++ ocaml-4.13-extended/parsetree.mli
+--- parser-standard/parsetree.mli
++++ parser-extended/parsetree.mli
 @@@@
  
  *)
@@ -651,8 +651,8 @@
 +    prepl_phrase : toplevel_phrase;
 +    prepl_output : string;
 +  }
---- ocaml-4.13/printast.ml
-+++ ocaml-4.13-extended/printast.ml
+--- parser-standard/printast.ml
++++ parser-extended/printast.ml
 @@@@
    if l.pos_lnum = -1
    then fprintf f "%s[%d]" fname l.pos_cnum
@@ -1387,8 +1387,8 @@
 +let structure_item ppf x = structure_item 0 ppf x
 +
 +let signature_item ppf x = signature_item 0 ppf x
---- ocaml-4.13/printast.mli
-+++ ocaml-4.13-extended/printast.mli
+--- parser-standard/printast.mli
++++ parser-extended/printast.mli
 @@@@
  open Format
  

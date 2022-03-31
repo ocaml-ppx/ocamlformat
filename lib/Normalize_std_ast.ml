@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocaml_413
+open Parser_standard
 open Std_ast
 
 let is_doc = function

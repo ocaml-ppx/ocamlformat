@@ -1,5 +1,5 @@
---- ocaml-4.13-extended/lexer.mll
-+++ parse-wyc/lib/lexer.mll
+--- parser-extended/lexer.mll
++++ parser-recovery/lib/lexer.mll
 @@@@
  let is_keyword name = Hashtbl.mem keyword_table name
  
@@ -148,8 +148,8 @@
          string lexbuf
        }
    | eof
---- ocaml-4.13-extended/parser.mly
-+++ parse-wyc/lib/parser.mly
+--- parser-extended/parser.mly
++++ parser-recovery/lib/parser.mly
 @@@@
     text comprised between the markers [BEGIN AVOID] and -----------
     [END AVOID] has been removed. This file should be formatted in

@@ -1,5 +1,5 @@
---- ocaml-4.13-upstream/ast_helper.ml
-+++ ocaml-4.13/ast_helper.ml
+--- parser-upstream/ast_helper.ml
++++ parser-standard/ast_helper.ml
 @@@@
    let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
    let letop ?loc ?attrs let_ ands body =
@@ -24,8 +24,8 @@
  module Sig = struct
    let mk ?(loc = !default_loc) d = {psig_desc = d; psig_loc = loc}
  
---- ocaml-4.13-upstream/ast_helper.mli
-+++ ocaml-4.13/ast_helper.mli
+--- parser-upstream/ast_helper.mli
++++ parser-standard/ast_helper.mli
 @@@@
      val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
      val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
@@ -50,8 +50,8 @@
  (** Signature items *)
  module Sig:
    sig
---- ocaml-4.13-upstream/ast_mapper.ml
-+++ ocaml-4.13/ast_mapper.ml
+--- parser-upstream/ast_mapper.ml
++++ parser-standard/ast_mapper.ml
 @@@@
    type_exception: mapper -> type_exception -> type_exception;
    type_kind: mapper -> type_kind -> type_kind;
@@ -117,8 +117,8 @@
  let extension_of_error {kind; main; sub} =
    if kind <> Location.Report_error then
      raise (Invalid_argument "extension_of_error: expected kind Report_error");
---- ocaml-4.13-upstream/ast_mapper.mli
-+++ ocaml-4.13/ast_mapper.mli
+--- parser-upstream/ast_mapper.mli
++++ parser-standard/ast_mapper.mli
 @@@@
    type_exception: mapper -> type_exception -> type_exception;
    type_kind: mapper -> type_kind -> type_kind;
@@ -133,8 +133,8 @@
      using an open recursion style: each method takes as its first
      argument the mapper to be applied to children in the syntax
      tree. *)
---- ocaml-4.13-upstream/lexer.mll
-+++ ocaml-4.13/lexer.mll
+--- parser-upstream/lexer.mll
++++ parser-standard/lexer.mll
 @@@@
  let is_keyword name = Hashtbl.mem keyword_table name
  
@@ -220,8 +220,8 @@
      "(*"
        { comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
          store_lexeme lexbuf;
---- ocaml-4.13-upstream/parse.ml
-+++ ocaml-4.13/parse.ml
+--- parser-upstream/parse.ml
++++ parser-standard/parse.ml
 @@@@
  let maybe_skip_phrase lexbuf =
    match !last_token with
@@ -317,8 +317,8 @@
  (* The code has been moved here so that one can reuse Pprintast.tyvar *)
  
  let prepare_error err =
---- ocaml-4.13-upstream/parser.mly
-+++ ocaml-4.13/parser.mly
+--- parser-upstream/parser.mly
++++ parser-standard/parser.mly
 @@@@
  %token SEMI                   ";"
  %token SEMISEMI               ";;"
@@ -448,8 +448,8 @@
    | mod_ext_longident LPAREN error
        { expecting $loc($3) "module path" }
  ;
---- ocaml-4.13-upstream/parsetree.mli
-+++ ocaml-4.13/parsetree.mli
+--- parser-upstream/parsetree.mli
++++ parser-standard/parsetree.mli
 @@@@
             let* P = E and* P = E in E *)
    | Pexp_extension of extension
@@ -476,8 +476,8 @@
  
  and structure_item =
      {
---- ocaml-4.13-upstream/printast.ml
-+++ ocaml-4.13/printast.ml
+--- parser-upstream/printast.ml
++++ parser-standard/printast.ml
 @@@@
    | Pexp_extension (s, arg) ->
        line i ppf "Pexp_extension \"%s\"\n" s.txt;
@@ -504,8 +504,8 @@
  
  and structure_item i ppf x =
    line i ppf "structure_item %a\n" fmt_location x.pstr_loc;
---- ocaml-4.13-upstream/printast.mli
-+++ ocaml-4.13/printast.mli
+--- parser-upstream/printast.mli
++++ parser-standard/printast.mli
 @@@@
  val top_phrase : formatter -> toplevel_phrase -> unit
  
