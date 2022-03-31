@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocaml_413
+open Parser_standard
 include Parsetree
 
 type use_file = toplevel_phrase list

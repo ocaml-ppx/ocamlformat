@@ -15,7 +15,7 @@ let read_file file =
   aux buf
 
 module Pp = struct
-  module Printast = Ocaml_413_extended.Printast
+  module Printast = Parser_extended.Printast
 
   let structure = Printast.implementation
   let signature = Printast.interface
@@ -33,12 +33,12 @@ let () =
   let lx = Lexing.from_string contents in
   match Sys.argv.(1) with
   | "-structure" ->
-      let x = Parse_wyc.structure lx in
+      let x = Parser_recovery.structure lx in
       Format.fprintf Format.std_formatter "%a%!" Pp.structure x
   | "-signature" ->
-      let x = Parse_wyc.signature lx in
+      let x = Parser_recovery.signature lx in
       Format.fprintf Format.std_formatter "%a%!" Pp.signature x
   | "-use-file" ->
-      let x = Parse_wyc.use_file lx in
+      let x = Parser_recovery.use_file lx in
       Format.fprintf Format.std_formatter "%a%!" Pp.use_file x
   | arg -> Format.fprintf Format.std_formatter "Invalid arg: %s%!" arg

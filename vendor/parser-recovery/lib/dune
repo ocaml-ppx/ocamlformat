@@ -1,10 +1,10 @@
 (library
- (name parse_wyc)
- (public_name ocamlformat.parse_wyc)
+ (name parser_recovery)
+ (public_name ocamlformat.parser_recovery)
  (modules_without_implementation let_binding)
- (libraries menhirLib ocaml_common ocaml_413_extended)
+ (libraries menhirLib ocaml_common parser_extended)
  (flags
-  (:standard -w -9 -open Ocaml_common -open Ocaml_413_extended)))
+  (:standard -w -9 -open Ocaml_common -open Parser_extended)))
 
 (ocamllex lexer)
 

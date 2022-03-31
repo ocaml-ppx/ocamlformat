@@ -1,0 +1,8 @@
+(executable
+ (name gen)
+ (modules gen))
+
+(executable
+ (name driver)
+ (modules driver)
+ (libraries parser_recovery))

@@ -9,5 +9,4 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val repl_file :
-  Lexing.lexbuf -> Ocaml_413_extended.Parsetree.repl_phrase list
+val repl_file : Lexing.lexbuf -> Parser_extended.Parsetree.repl_phrase list

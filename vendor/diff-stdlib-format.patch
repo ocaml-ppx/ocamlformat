@@ -1,4 +1,4 @@
---- ocaml-4.13-upstream/format.ml
+--- parser-upstream/format.ml
 +++ ocamlformat_support/format.ml
 @@@@
    | Pp_tbegin of tbox          (* beginning of a tabulation box *)
@@ -630,7 +630,7 @@
 +  pp_set_formatter_tag_functions std_formatter
 +and get_formatter_tag_functions =
 +  pp_get_formatter_tag_functions std_formatter
---- ocaml-4.13-upstream/format.mli
+--- parser-upstream/format.mli
 +++ ocamlformat_support/format.mli
 @@@@
     functions.
