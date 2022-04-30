@@ -47,6 +47,15 @@ The most common usecase involves using the `dune` build system, once your projec
 dune build @fmt
 ```
 
+### Format on save with your editor
+
+Alternatively, you may want to see your files reformatted on save. If you're running on Linux or macOS, you may enable this workflow easily regardless of your editor:
+
+```bash
+# apt install entr or brew install entr
+find ./bin ./test -name "*.ml" | entr -p ocamlformat --inplace /_
+```
+
 ## Community
 
 * forum: <https://discuss.ocaml.org/tags/ocamlformat>
