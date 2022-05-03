@@ -8,7 +8,7 @@ authors: ["Josh Berdine <jjb@fb.com>"]
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
-  "ocaml" {>= "5.00"}
+  "ocaml" {>= "4.08"}
   "alcotest" {with-test}
   "base" {>= "v0.12.0"}
   "cmdliner" {>= "1.1.0"}
