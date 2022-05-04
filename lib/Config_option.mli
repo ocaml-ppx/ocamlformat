@@ -91,11 +91,7 @@ module Make (C : CONFIG) : sig
   val flag : default:bool -> bool option_decl
 
   val any :
-       ?default_doc:string
-    -> 'a Cmdliner.Arg.conv
-    -> default:'a
-    -> docv:string
-    -> 'a option_decl
+    'a Cmdliner.Arg.conv -> default:'a -> docv:string -> 'a option_decl
 
   val removed_option :
     names:string list -> since:Version.t -> msg:string -> unit

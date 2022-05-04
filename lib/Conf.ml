@@ -1189,10 +1189,9 @@ module Operational = struct
   let ocaml_version =
     let docv = "V" in
     let doc = "Version of OCaml syntax of the output." in
-    let default = Ocaml_version.sys_version in
-    let default_doc = "the version of OCaml used to build OCamlFormat" in
-    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
-      ~doc ~docv ~kind
+    let default = Ocaml_version.Releases.v4_04_0 in
+    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~doc ~docv
+      ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with ocaml_version= x}))
       (fun conf -> conf.opr_opts.ocaml_version)
 

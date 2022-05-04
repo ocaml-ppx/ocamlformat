@@ -3,7 +3,7 @@ NAME
        code.
 
 SYNOPSIS
-       ocamlformat-rpc [OPTION]… 
+       ocamlformat-rpc [OPTION]…
 
 DESCRIPTION
        ocamlformat-rpc listens to RPC requests, provided on the standard

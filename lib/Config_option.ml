@@ -112,13 +112,8 @@ module Make (C : CONFIG) = struct
       (in_attributes allow_inline kind)
       status_doc status
 
-  let generated_doc ?default_doc conv ~allow_inline ~doc ~kind ~default
-      ~status =
-    let default_doc =
-      match default_doc with
-      | Some x -> x
-      | None -> Format.asprintf "%a" (Arg.conv_printer conv) default
-    in
+  let generated_doc conv ~allow_inline ~doc ~kind ~default ~status =
+    let default_doc = Format.asprintf "%a" (Arg.conv_printer conv) default in
     let default =
       if String.is_empty default_doc then "none" else default_doc
     in
@@ -183,13 +178,12 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let any ?default_doc converter ~default ~docv ~names ~doc ~kind
+  let any converter ~default ~docv ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
       get_value =
     let open Cmdliner in
     let doc =
-      generated_doc converter ?default_doc ~allow_inline ~doc ~kind ~default
-        ~status
+      generated_doc converter ~allow_inline ~doc ~kind ~default ~status
     in
     let docs = section_name kind status in
     let term =
