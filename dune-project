@@ -33,9 +33,7 @@
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.15)))
+   (>= 4.08))
   (alcotest :with-test)
   (base
    (>= v0.12.0))
@@ -78,9 +76,7 @@
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.15)))
+   (>= 4.08))
   (alcotest :with-test)
   (bechamel
    (>= 0.2.0))
@@ -99,8 +95,6 @@
  (license MIT)
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.15)))
+   (>= 4.08))
   (csexp
    (>= 1.4.0))))
