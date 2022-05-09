@@ -1,9 +1,6 @@
 open! Base
 open Ocamlformat
 
-let err =
-  Alcotest.testable Translation_unit.Error.print Translation_unit.Error.equal
-
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =
     Stdlib.Format.sprintf "parse_and_format %s: %s" kind_name test_name
@@ -139,19 +136,13 @@ let test_numeric =
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default
-          |> Result.map ~f:(reindent ~source ~range)
+          |> reindent ~source ~range
         in
-        Alcotest.check Alcotest.(result string err) test_name expected got )
+        Alcotest.check Alcotest.string test_name expected got )
   in
-  [ make_test "invalid low" ~source:"foo\nbar" ~range:(0, 1)
-      (Error (Translation_unit.Error.user_error "Invalid line number 0"))
-  ; make_test "invalid high" ~source:"foo\nbar" ~range:(1, 4)
-      (Error (Translation_unit.Error.user_error "Invalid line number 4"))
-  ; make_test "invalid range" ~source:"foo\nbar" ~range:(2, 1)
-      (Error (Translation_unit.Error.user_error "Invalid range 2-1"))
-  ; make_test "empty buffer" ~source:"" ~range:(1, 1) (Ok "")
+  [ make_test "empty buffer" ~source:"" ~range:(1, 1) ""
   ; make_test "last buffer line" ~source:"foo\nbar" ~range:(2, 3)
-      (Ok "foo\n  bar")
+      "foo\n  bar"
   ; make_test "already formatted"
       ~source:
         {|let foooooo =
@@ -163,15 +154,13 @@ let test_numeric =
   bar
 |}
       ~range:(1, 7)
-      (Ok
-         {|let foooooo =
+      {|let foooooo =
   let baaaaar =
     let woooooo = foooooo in
     let xooooo = bar + foo in
     woooooo
   in
   bar|}
-      )
   ; make_test "not already formatted"
       ~source:
         {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
@@ -183,15 +172,13 @@ in
 hooohoooo
 |}
       ~range:(1, 7)
-      (Ok
-         {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
+      {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
 
 let foooooooooooo = let foooooooooooooo =
     let woooooooooooooooo = koooooooooooooooo in
     baaaaaar
   in
   hooohoooo|}
-      )
   ; make_test "with parens and begin/end"
       ~source:
         {|let x = begin
@@ -207,8 +194,7 @@ let foooooooooooo = let foooooooooooooo =
     foooooo
   end|}
       ~range:(1, 12)
-      (Ok
-         {|let x = begin
+      {|let x = begin
   let y =
     (if (k = x)
        then
@@ -220,7 +206,6 @@ let foooooooooooo = let foooooooooooooo =
   in
     foooooo
 end|}
-      )
   ; make_test "split over multiple lines"
       ~source:{|let fooooo =
 [
@@ -229,12 +214,12 @@ foooooooo ;
 fooooooo
 ]|}
       ~range:(1, 6)
-      (Ok {|let fooooo =
+      {|let fooooo =
   [
     foooooo ;
     foooooooo ;
     fooooooo
-  ]|})
+  ]|}
   ; make_test "invalid file"
       ~source:{|let foooooo =
 let foooooooooooo =
@@ -243,14 +228,12 @@ let foooooooooooo =
 fun x ->
 foooooo|}
       ~range:(1, 6)
-      (Ok
-         {|let foooooo =
+      {|let foooooo =
   let foooooooooooo =
     (
       [
         fun x ->
           foooooo|}
-      )
   ; make_test "already formatted function"
       ~source:
         {|let fmt_expressions c width sub_exp exprs fmt_expr
@@ -267,8 +250,7 @@ foooooo|}
       in
       list_fl grps fmt_grp|}
       ~range:(7, 7)
-      (Ok
-         {|let fmt_expressions c width sub_exp exprs fmt_expr
+      {|let fmt_expressions c width sub_exp exprs fmt_expr
     (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
   | `Fit_or_vertical -> fmt_elements_collection p fmt_expr exprs
@@ -281,7 +263,6 @@ foooooo|}
           fmt_expr exprs
       in
       list_fl grps fmt_grp|}
-      )
   ; make_test "partial let" ~range:(2, 14)
       ~source:
         {|   let () =
@@ -299,8 +280,7 @@ else (d, m)
 
 quot, rem
 |}
-      (Ok
-         {|   let () =
+      {|   let () =
      ffff;
      hhhhhh;
      fff;
@@ -314,18 +294,17 @@ quot, rem
        let rem n k = snd (quot_rem n k) in
 
        quot, rem|}
-      )
   ; make_test "fit on 1 line" ~range:(2, 5)
       ~source:{|
 let x =
   3
      in
    x + y|}
-      (Ok {|
+      {|
 let x =
   3
 in
-x + y|}) ]
+x + y|} ]
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
@@ -344,25 +323,16 @@ let test_numeric_file =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default
         in
-        Alcotest.check
-          Alcotest.(result (list int) err)
-          test_name expected got )
+        Alcotest.check Alcotest.(list int) test_name expected got )
   in
-  [ (* Takes too long! Un-comment once the --numeric feature is optimized:
-
-       make_test "fmt_ast.ml (26)" ~source:fmt_ast_source ~range:(26, 26)
-       ~expected:(Ok [2]) ; make_test "fmt_ast.ml (111)"
-       ~source:fmt_ast_source ~range:(111, 111) ~expected:(Ok [6]) *)
-    make_test "partial.ml (1-14)" ~source:partial_source ~range:(1, 14)
-      ~expected:(Ok [0; 2; 2; 2; 2; 4; 6; 6; 6; 4; 4; 4; 0; 4])
+  [ make_test "partial.ml (1-14)" ~source:partial_source ~range:(1, 14)
+      ~expected:[0; 2; 2; 2; 2; 4; 6; 6; 6; 4; 4; 4; 0; 4]
   ; make_test "partial.ml (2-14)" ~source:partial_source ~range:(2, 14)
-      ~expected:(Ok [5; 5; 5; 5; 7; 9; 9; 9; 7; 7; 7; 0; 7])
+      ~expected:[5; 5; 5; 5; 7; 9; 9; 9; 7; 7; 7; 0; 7]
   ; make_test "format_invalid_files_with_locations.ml (7-11)" ~range:(7, 11)
-      ~source:inv_with_loc_source
-      ~expected:(Ok [21; 21; 0; 21; 21])
+      ~source:inv_with_loc_source ~expected:[21; 21; 0; 21; 21]
   ; make_test "format_invalid_files_with_locations.ml (10-11)"
-      ~range:(10, 11) ~source:inv_with_loc_source
-      ~expected:(Ok [0; 0]) ]
+      ~range:(10, 11) ~source:inv_with_loc_source ~expected:[0; 0] ]
 
 let tests =
   List.concat

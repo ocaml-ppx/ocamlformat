@@ -34,8 +34,9 @@ val numeric :
   -> input_name:string
   -> source:string
   -> range:int * int
+       (** Values of [range] are checked in {!bin/ocamlformat/main.ml}. *)
   -> Conf.t
-  -> (int list, Error.t) Result.t
+  -> int list
 (** [numeric ~input_name ~source ~range conf opts] returns the indentation of
     the range of lines [range] (line numbers ranging from 1 to number of
     lines), where the line numbers are relative to [source] and the

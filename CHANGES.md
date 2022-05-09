@@ -23,6 +23,7 @@
 - More comprehensible error message in case of version mismatch (#2042, @gpetiot)
 - The global configuration file (`$XDG_CONFIG_HOME` or `$HOME/.config`) is only applied when no project is detected, `--enable-outside-detected-project` is set, and no applicable `.ocamlformat` file has been found. Global and local configurations are no longer used at the same time. (#2039, @gpetiot)
 - Set `ocaml-version` to a fixed version (4.04.0) by default to avoid reproducibility issues and surprising behaviours (#2064, @kit-ty-kate)
+- Split option `--numeric=X-Y` into `--range=X-Y` and `--numeric` (flag). For now `--range` can only be used with `--numeric`. (#2073, @gpetiot)
 
 ### New features
 
