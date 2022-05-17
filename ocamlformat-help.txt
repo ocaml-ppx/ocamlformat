@@ -52,6 +52,13 @@ OPTIONS (CODE FORMATTING STYLE)
            assignment expression does not fit on a single line. The default
            value is end-line.
 
+       --break-before-in={fit-or-vertical|auto}
+           Whether the line should break before the in keyword of a let
+           binding. fit-or-vertical will always break the line before the in
+           keyword if the whole let binding does not fit on a single line.
+           auto will only break the line if the in keyword does not fit on
+           the previous line. The default value is fit-or-vertical.
+
        --break-cases={fit|nested|toplevel|fit-or-vertical|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
@@ -59,28 +66,29 @@ OPTIONS (CODE FORMATTING STYLE)
            indicate-nested-or-patterns option is not needed, and so ignored.
            toplevel forces top-level cases (i.e. not nested or-patterns) to
            break across lines, otherwise break naturally at the margin.
-           Warning: Value `toplevel` is deprecated since version 0.20.0. It
-           will be removed by version 1.0.0. fit-or-vertical tries to fit all
-           or-patterns on the same line, otherwise breaks. all forces all
-           pattern matches to break across lines. Warning: Value `all` is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0. The default value is fit.
+           fit-or-vertical tries to fit all or-patterns on the same line,
+           otherwise breaks. all forces all pattern matches to break across
+           lines. The default value is fit.
+
+       --break-collection-expressions={fit-or-vertical|wrap}
+           Break collection expressions (lists and arrays) elements by
+           elements. fit-or-vertical vertically breaks expressions if they do
+           not fit on a single line. wrap will group simple expressions and
+           try to format them in a single line. The default value is
+           fit-or-vertical.
 
        --break-fun-decl={wrap|fit-or-vertical|smart}
            Style for function declarations and types. wrap breaks only if
            necessary. fit-or-vertical vertically breaks arguments if they do
            not fit on a single line. smart is like fit-or-vertical but try to
-           fit arguments on their line if they fit. Warning: Value `smart` is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0. The default value is wrap.
+           fit arguments on their line if they fit. The default value is
+           wrap.
 
        --break-fun-sig={wrap|fit-or-vertical|smart}
            Style for function signatures. wrap breaks only if necessary.
            fit-or-vertical vertically breaks arguments if they do not fit on
            a single line. smart is like fit-or-vertical but try to fit
-           arguments on their line if they fit. Warning: Value `smart` is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0. The default value is wrap.
+           arguments on their line if they fit. The default value is wrap.
 
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple
@@ -104,6 +112,17 @@ OPTIONS (CODE FORMATTING STYLE)
            Force sequence expressions to break irrespective of margin. The
            flag is set by default.
 
+       --break-string-literals={auto|never}
+           Break string literals. auto mode breaks lines at newlines and
+           wraps string literals at the margin. never mode formats string
+           literals as they are parsed, in particular, with escape sequences
+           expanded. The default value is auto.
+
+       --break-struct={force|natural}
+           Break struct-end module items. force will break struct-end phrases
+           unconditionally. natural will break struct-end phrases naturally
+           at the margin. The default value is force.
+
        --cases-exp-indent=COLS
            Indentation of cases expressions (COLS columns). See also the
            cases-matching-exp-indent and nested-match options. The default
@@ -114,6 +133,10 @@ OPTIONS (CODE FORMATTING STYLE)
            expressions. normal indents as it would any other expression.
            compact forces an indentation of 2, unless nested-match is set to
            align and we're on the last case. The default value is normal.
+
+       --disambiguate-non-breaking-match
+           Add parentheses around matching constructs that fit on a single
+           line. The flag is unset by default.
 
        --doc-comments={after-when-possible|before-except-val|before}
            Doc comments position. after-when-possible puts doc comments after
@@ -146,6 +169,10 @@ OPTIONS (CODE FORMATTING STYLE)
            (parentheses or begin/end). The default value is parens. Cannot be
            set in attributes.
 
+       --extension-indent=COLS
+           Indentation of items inside extension nodes (COLS columns). The
+           default value is 2.
+
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. loose does. tight does
@@ -153,27 +180,37 @@ OPTIONS (CODE FORMATTING STYLE)
            (`:` or `=`). tight-decl is tight for declarations and loose for
            instantiations. The default value is loose.
 
+       --function-indent=COLS
+           Indentation of function cases (COLS columns). The default value is
+           2.
+
+       --function-indent-nested={never|always|auto}
+           Whether the function-indent parameter should be applied even when
+           in a sub-block. never only applies function-indent if the function
+           block starts a line. always always apply function-indent. auto
+           applies function-indent when seen fit. The default value is never.
+
        --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
-           branches if they do not fit on a single line. Warning: Value
-           `fit-or-vertical` is deprecated since version 0.20.0. It will be
-           removed by version 1.0.0. keyword-first formats if-then-else
-           expressions such that the if-then-else keywords are the first on
-           the line. k-r formats if-then-else expressions with parentheses
-           that match the K&R style. Warning: Value `k-r` is deprecated since
-           version 0.20.0. It will be removed by version 1.0.0. The default
+           branches if they do not fit on a single line. keyword-first
+           formats if-then-else expressions such that the if-then-else
+           keywords are the first on the line. k-r formats if-then-else
+           expressions with parentheses that match the K&R style. The default
            value is compact.
+
+       --indent-after-in=COLS
+           Indentation (COLS columns) after `let ... in`, unless followed by
+           another `let`. The default value is 0. Cannot be set in
+           attributes.
 
        --indicate-multiline-delimiters={no|space|closing-on-separate-line}
            How to indicate that two matching delimiters live on different
            lines. no doesn't do anything special to indicate the closing
            delimiter. space prints a space inside the delimiter to indicate
            the matching one is on a different line. closing-on-separate-line
-           makes sure that the closing delimiter is on its own line. Warning:
-           Value `closing-on-separate-line` is deprecated since version
-           0.20.0. It will be removed by version 1.0.0. The default value is
-           no.
+           makes sure that the closing delimiter is on its own line. The
+           default value is no.
 
        --indicate-nested-or-patterns={unsafe-no|space}
            Control whether or not to indicate nested or-pattern using
@@ -200,15 +237,18 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact.
 
+       --let-binding-indent=COLS
+           Indentation of let binding expressions (COLS columns) if they do
+           not fit on a single line. The default value is 2. Cannot be set in
+           attributes.
+
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
            places two open lines between a multi-line module-level let
-           binding and the next. Warning: Value `sparse` is deprecated since
-           version 0.20.0. It will be removed by version 1.0.0.
-           double-semicolon places double semicolons and an open line between
-           a multi-line module-level let binding and the next. The default
-           value is compact.
+           binding and the next. double-semicolon places double semicolons
+           and an open line between a multi-line module-level let binding and
+           the next. The default value is compact.
 
        --let-module={compact|sparse}
            Module binding formatting. compact does not break a line after the
@@ -226,6 +266,16 @@ OPTIONS (CODE FORMATTING STYLE)
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
 
+       --match-indent=COLS
+           Indentation of match/try cases (COLS columns). The default value
+           is 0.
+
+       --match-indent-nested={never|always|auto}
+           Whether the match-indent parameter should be applied even when in
+           a sub-block. never only applies match-indent if the match block
+           starts a line. always always apply match-indent. auto applies
+           match-indent when seen fit. The default value is never.
+
        --max-indent=COLS
            Maximum offset (COLS columns) added to a new line in addition to
            the offset of the previous line. The default value is 68. Cannot
@@ -236,15 +286,23 @@ OPTIONS (CODE FORMATTING STYLE)
            not leave open lines between one-liners of similar sorts. sparse
            will always break a line between two items. preserve will not
            leave open lines between one-liners of similar sorts unless there
-           is an open line in the input. Warning: Value `preserve` is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0. The default value is compact.
+           is an open line in the input. The default value is compact.
+
+       --nested-match={wrap|align}
+           Style of a pattern-matching nested in the last case of another
+           pattern-matching. wrap wraps the nested pattern-matching with
+           parentheses and adds indentation. align vertically aligns the
+           nested pattern-matching under the encompassing pattern-matching.
+           The default value is wrap.
 
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
        --no-break-sequences
            Unset break-sequences.
+
+       --no-disambiguate-non-breaking-match
+           Unset disambiguate-non-breaking-match.
 
        --no-dock-collection-brackets
            Unset dock-collection-brackets.
@@ -286,18 +344,12 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. The flag is unset by default.
 
-       -p {conventional|default|compact|sparse|ocamlformat|janestreet},
-       --profile={conventional|default|compact|sparse|ocamlformat|janestreet}
+       -p {conventional|default|ocamlformat|janestreet},
+       --profile={conventional|default|ocamlformat|janestreet}
            Select a preset profile which sets all options, overriding lower
            priority configuration. The conventional profile aims to be as
            familiar and "conventional" appearing as the available options
            allow. default is an alias for the conventional profile. The
-           compact profile is similar to ocamlformat but opts for a generally
-           more compact code style. Warning: Value `compact` is deprecated
-           since version 0.20.0. It will be removed by version 1.0.0. The
-           sparse profile is similar to ocamlformat but opts for a generally
-           more sparse code style. Warning: Value `sparse` is deprecated
-           since version 0.20.0. It will be removed by version 1.0.0. The
            ocamlformat profile aims to take advantage of the strengths of a
            parsetree-based auto-formatter, and to limit the consequences of
            the weaknesses imposed by the current implementation. This is a
@@ -324,6 +376,12 @@ OPTIONS (CODE FORMATTING STYLE)
            tuples. multi-line-only mode will try to skip parens for
            single-line tuples. The default value is always.
 
+       --parens-tuple-patterns={multi-line-only|always}
+           Parens tuple patterns. multi-line-only mode will try to skip
+           parens for single-line tuple patterns. always always uses
+           parentheses around tuples patterns. The default value is
+           multi-line-only.
+
        --parse-docstrings
            Parse and format docstrings. The flag is unset by default.
 
@@ -341,9 +399,7 @@ OPTIONS (CODE FORMATTING STYLE)
        --sequence-style={terminator|separator|before}
            Style of sequence. terminator only puts spaces after semicolons.
            separator puts spaces before and after semicolons. before breaks
-           the sequence before semicolons. Warning: Value `before` is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0. The default value is terminator.
+           the sequence before semicolons. The default value is terminator.
 
        --single-case={compact|sparse}
            Style of pattern matching expressions with only a single case.
@@ -367,11 +423,20 @@ OPTIONS (CODE FORMATTING STYLE)
            Add a space inside the delimiters of variants. The flag is set by
            default.
 
+       --stritem-extension-indent=COLS
+           Indentation of structure items inside extension nodes (COLS
+           columns). The default value is 0.
+
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break
            between constructors and record fields. The default value is
            compact.
+
+       --type-decl-indent=COLS
+           Indentation of type declarations (COLS columns) if they do not fit
+           on a single line. The default value is 2. Cannot be set in
+           attributes.
 
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
@@ -432,98 +497,9 @@ OPTIONS (DEPRECATED)
            default. Warning: This option is deprecated since version 0.20.0.
            It will be removed by version 1.0.0.
 
-       --break-before-in={fit-or-vertical|auto}
-           Whether the line should break before the in keyword of a let
-           binding. fit-or-vertical will always break the line before the in
-           keyword if the whole let binding does not fit on a single line.
-           auto will only break the line if the in keyword does not fit on
-           the previous line. The default value is fit-or-vertical. Warning:
-           This option is deprecated since version 0.20.0. It will be removed
-           by version 1.0.0.
-
-       --break-collection-expressions={fit-or-vertical|wrap}
-           Break collection expressions (lists and arrays) elements by
-           elements. fit-or-vertical vertically breaks expressions if they do
-           not fit on a single line. wrap will group simple expressions and
-           try to format them in a single line. The default value is
-           fit-or-vertical. Warning: This option is deprecated since version
-           0.20.0. It will be removed by version 1.0.0.
-
-       --break-string-literals={auto|never}
-           Break string literals. auto mode breaks lines at newlines and
-           wraps string literals at the margin. never mode formats string
-           literals as they are parsed, in particular, with escape sequences
-           expanded. The default value is auto. Warning: This option is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0.
-
-       --break-struct={force|natural}
-           Break struct-end module items. force will break struct-end phrases
-           unconditionally. natural will break struct-end phrases naturally
-           at the margin. The default value is force. Warning: This option is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0.
-
        --disable-outside-detected-project
            Warning: this option is deprecated and will be removed by
            OCamlFormat v1.0.
-
-       --disambiguate-non-breaking-match
-           Add parentheses around matching constructs that fit on a single
-           line. The flag is unset by default. Warning: This option is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0.
-
-       --extension-indent=COLS
-           Indentation of items inside extension nodes (COLS columns). The
-           default value is 2. Warning: This option is deprecated since
-           version 0.20.0. It will be removed by version 1.0.0.
-
-       --function-indent=COLS
-           Indentation of function cases (COLS columns). The default value is
-           2. Warning: This option is deprecated since version 0.20.0. It
-           will be removed by version 1.0.0.
-
-       --function-indent-nested={never|always|auto}
-           Whether the function-indent parameter should be applied even when
-           in a sub-block. never only applies function-indent if the function
-           block starts a line. always always apply function-indent. auto
-           applies function-indent when seen fit. The default value is never.
-           Warning: This option is deprecated since version 0.20.0. It will
-           be removed by version 1.0.0.
-
-       --indent-after-in=COLS
-           Indentation (COLS columns) after `let ... in`, unless followed by
-           another `let`. The default value is 0. Cannot be set in
-           attributes. Warning: This option is deprecated since version
-           0.20.0. It will be removed by version 1.0.0.
-
-       --let-binding-indent=COLS
-           Indentation of let binding expressions (COLS columns) if they do
-           not fit on a single line. The default value is 2. Cannot be set in
-           attributes. Warning: This option is deprecated since version
-           0.20.0. It will be removed by version 1.0.0.
-
-       --match-indent=COLS
-           Indentation of match/try cases (COLS columns). The default value
-           is 0. Warning: This option is deprecated since version 0.20.0. It
-           will be removed by version 1.0.0.
-
-       --match-indent-nested={never|always|auto}
-           Whether the match-indent parameter should be applied even when in
-           a sub-block. never only applies match-indent if the match block
-           starts a line. always always apply match-indent. auto applies
-           match-indent when seen fit. The default value is never. Warning:
-           This option is deprecated since version 0.20.0. It will be removed
-           by version 1.0.0.
-
-       --nested-match={wrap|align}
-           Style of a pattern-matching nested in the last case of another
-           pattern-matching. wrap wraps the nested pattern-matching with
-           parentheses and adds indentation. align vertically aligns the
-           nested pattern-matching under the encompassing pattern-matching.
-           The default value is wrap. Warning: This option is deprecated
-           since version 0.20.0. It will be removed by version 1.0.0.
 
        --no-align-cases
            Unset align-cases.
@@ -533,28 +509,6 @@ OPTIONS (DEPRECATED)
 
        --no-align-variants-decl
            Unset align-variants-decl.
-
-       --no-disambiguate-non-breaking-match
-           Unset disambiguate-non-breaking-match.
-
-       --parens-tuple-patterns={multi-line-only|always}
-           Parens tuple patterns. multi-line-only mode will try to skip
-           parens for single-line tuple patterns. always always uses
-           parentheses around tuples patterns. The default value is
-           multi-line-only. Warning: This option is deprecated since version
-           0.20.0. It will be removed by version 1.0.0.
-
-       --stritem-extension-indent=COLS
-           Indentation of structure items inside extension nodes (COLS
-           columns). The default value is 0. Warning: This option is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.0.
-
-       --type-decl-indent=COLS
-           Indentation of type declarations (COLS columns) if they do not fit
-           on a single line. The default value is 2. Cannot be set in
-           attributes. Warning: This option is deprecated since version
-           0.20.0. It will be removed by version 1.0.0.
 
 OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in

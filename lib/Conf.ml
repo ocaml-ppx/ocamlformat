@@ -1568,61 +1568,6 @@ let conventional_profile =
 
 let default_profile = conventional_profile
 
-let compact_profile =
-  { ocamlformat_profile with
-    break_before_in= `Auto
-  ; break_cases= `Fit
-  ; break_collection_expressions= `Wrap
-  ; break_infix= `Wrap
-  ; break_fun_decl= `Wrap
-  ; break_fun_sig= `Wrap
-  ; break_sequences= false
-  ; break_struct= false
-  ; doc_comments_tag_only= `Fit
-  ; exp_grouping= `Parens
-  ; field_space= `Tight
-  ; if_then_else= `Compact
-  ; indicate_nested_or_patterns= `Space
-  ; leading_nested_match_parens= false
-  ; let_and= `Compact
-  ; let_binding_spacing= `Compact
-  ; let_module= `Compact
-  ; module_item_spacing= `Compact
-  ; single_case= `Compact
-  ; space_around_arrays= false
-  ; space_around_lists= false
-  ; space_around_records= false
-  ; space_around_variants= false
-  ; type_decl= `Compact
-  ; wrap_fun_args= true }
-
-let sparse_profile =
-  { ocamlformat_profile with
-    break_before_in= `Fit_or_vertical
-  ; break_cases= `Nested
-  ; break_collection_expressions= `Fit_or_vertical
-  ; break_infix= `Fit_or_vertical
-  ; break_fun_decl= `Smart
-  ; break_fun_sig= `Smart
-  ; break_sequences= true
-  ; break_struct= true
-  ; field_space= `Loose
-  ; if_then_else= `Keyword_first
-  ; indicate_nested_or_patterns= `Space
-  ; leading_nested_match_parens= true
-  ; let_and= `Sparse
-  ; let_binding_spacing= `Sparse
-  ; let_module= `Sparse
-  ; module_item_spacing= `Sparse
-  ; single_case= `Sparse
-  ; sequence_blank_line= `Preserve_one
-  ; space_around_arrays= true
-  ; space_around_lists= true
-  ; space_around_records= true
-  ; space_around_variants= true
-  ; type_decl= `Sparse
-  ; wrap_fun_args= false }
-
 let janestreet_profile =
   { align_constructors_decl= false
   ; align_cases= false
@@ -1702,14 +1647,6 @@ let (_profile : fmt_opts option C.t) =
          \"conventional\" appearing as the available options allow."
     ; C.Value.make ~name:"default" (Some default_profile)
         "$(b,default) is an alias for the $(b,conventional) profile."
-    ; C.Value.make ~name:"compact" (Some compact_profile)
-        ~deprecated:deprecated_orphan
-        "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more compact code style."
-    ; C.Value.make ~name:"sparse" (Some sparse_profile)
-        ~deprecated:deprecated_orphan
-        "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more sparse code style."
     ; C.Value.make ~name:"ocamlformat" (Some ocamlformat_profile)
         "The $(b,ocamlformat) profile aims to take advantage of the \
          strengths of a parsetree-based auto-formatter, and to limit the \
@@ -1731,6 +1668,9 @@ let (_profile : fmt_opts option C.t) =
         "The $(b,janestreet) profile is used at Jane Street." ]
   in
   C.choice ~names ~all ~doc ~kind:C.Formatting
+    ~removed_values:
+      [ C.Value_removed.make ~name:"compact" ~since:V0_22_0 ~msg:""
+      ; C.Value_removed.make ~name:"sparse" ~since:V0_22_0 ~msg:"" ]
     (fun conf p ->
       selected_profile_ref := p ;
       let new_fmt_opts = Option.value p ~default:conf.fmt_opts in
