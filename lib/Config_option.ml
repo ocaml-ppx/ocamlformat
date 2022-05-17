@@ -93,13 +93,15 @@ module Make (C : CONFIG) = struct
     | Operational -> ""
     | Formatting -> if cond then "" else " Cannot be set in attributes."
 
+  let maybe_empty = function "" -> "" | x -> " " ^ x
+
   let pp_deprecated ppf {dmsg; dversion= v} =
-    Format.fprintf ppf "This option is deprecated since version %a. %s"
-      Version.pp v dmsg
+    Format.fprintf ppf "This option is deprecated since version %a.%s"
+      Version.pp v (maybe_empty dmsg)
 
   let pp_removed ppf {rmsg; rversion= v} =
-    Format.fprintf ppf "This option has been removed in version %a. %s"
-      Version.pp v rmsg
+    Format.fprintf ppf "This option has been removed in version %a.%s"
+      Version.pp v (maybe_empty rmsg)
 
   let status_doc ppf = function
     | `Valid -> ()
@@ -251,8 +253,8 @@ module Make (C : CONFIG) = struct
         | Some {name; version; msg} ->
             Format.kasprintf
               (fun s -> Error (`Msg s))
-              "value `%s` has been removed in version %a. %s" name Version.pp
-              version msg
+              "value `%s` has been removed in version %a.%s" name Version.pp
+              version (maybe_empty msg)
         | None -> Arg.conv_parser conv s
       in
       Arg.conv (parse, Arg.conv_printer conv)

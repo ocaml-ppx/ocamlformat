@@ -12,10 +12,7 @@
 (** Configuration options *)
 
 type fmt_opts =
-  { align_cases: bool
-  ; align_constructors_decl: bool
-  ; align_variants_decl: bool
-  ; assignment_operator: [`Begin_line | `End_line]
+  { assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
@@ -198,39 +195,23 @@ let ocaml_version_conv =
 let removed_by_v1_0 =
   Format.asprintf "It will be removed by version %a." Version.pp V1_0_0
 
-let deprecated_orphan = C.deprecated ~since:V0_20_0 removed_by_v1_0
-
 (** Options affecting formatting *)
 module Formatting = struct
   let kind = C.Formatting
 
   let update ~f c = {c with fmt_opts= f c.fmt_opts}
 
-  let align_cases =
-    let doc = "Align match/try cases vertically." in
+  let ( (* align_cases *) ) =
     let names = ["align-cases"] in
-    C.flag ~default:false ~names ~doc ~kind
-      ~status:(`Deprecated deprecated_orphan)
-      (fun conf x -> update conf ~f:(fun f -> {f with align_cases= x}))
-      (fun conf -> conf.fmt_opts.align_cases)
+    C.removed_option ~names ~since:V0_22_0 ~msg:""
 
-  let align_constructors_decl =
-    let doc = "Align type declarations vertically." in
+  let ( (* align_constructors_decl *) ) =
     let names = ["align-constructors-decl"] in
-    C.flag ~default:false ~names ~doc ~kind
-      ~status:(`Deprecated deprecated_orphan)
-      (fun conf x ->
-        update conf ~f:(fun f -> {f with align_constructors_decl= x}) )
-      (fun conf -> conf.fmt_opts.align_constructors_decl)
+    C.removed_option ~names ~since:V0_22_0 ~msg:""
 
-  let align_variants_decl =
-    let doc = "Align type variants declarations vertically." in
+  let ( (* align_variants_decl *) ) =
     let names = ["align-variants-decl"] in
-    C.flag ~default:false ~names ~doc ~kind
-      ~status:(`Deprecated deprecated_orphan)
-      (fun conf x ->
-        update conf ~f:(fun f -> {f with align_variants_decl= x}) )
-      (fun conf -> conf.fmt_opts.align_variants_decl)
+    C.removed_option ~names ~since:V0_22_0 ~msg:""
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -1434,10 +1415,7 @@ let ignore_invalid_options =
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
 let ocamlformat_profile =
-  { align_cases= false
-  ; align_constructors_decl= false
-  ; align_variants_decl= false
-  ; assignment_operator= `End_line
+  { assignment_operator= `End_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
@@ -1498,10 +1476,7 @@ let ocamlformat_profile =
   ; wrap_fun_args= true }
 
 let conventional_profile =
-  { align_cases= C.default Formatting.align_cases
-  ; align_constructors_decl= C.default Formatting.align_constructors_decl
-  ; align_variants_decl= C.default Formatting.align_variants_decl
-  ; assignment_operator= C.default Formatting.assignment_operator
+  { assignment_operator= C.default Formatting.assignment_operator
   ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
@@ -1569,10 +1544,7 @@ let conventional_profile =
 let default_profile = conventional_profile
 
 let janestreet_profile =
-  { align_constructors_decl= false
-  ; align_cases= false
-  ; align_variants_decl= false
-  ; assignment_operator= `Begin_line
+  { assignment_operator= `Begin_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
