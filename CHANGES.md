@@ -4,6 +4,7 @@
 
 - Profiles `compact` and `sparse` are now removed (#2075, @gpetiot)
 - Options `align-cases`, `align-constructors-decl` and `align-variants-decl` are now removed (#2076, @gpetiot)
+- Option `disable-outside-detected-project` is now removed (#2077, @gpetiot)
 
 ### Deprecated
 

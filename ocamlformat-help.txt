@@ -459,6 +459,11 @@ OPTIONS (REMOVED)
        --align-variants-decl=VAL
            This option has been removed in version 0.22.0.
 
+       --disable-outside-detected-project=VAL
+           This option has been removed in version 0.22.0. OCamlFormat is
+           disabled outside of a detected project by default, to enable the
+           opposite behavior use `enable-outside-detected-project`.
+
        --doc-comments-val=VAL
            This option has been removed in version 0.16.0. If you are using
            `doc-comments-val=before` in combination with
@@ -489,11 +494,6 @@ OPTIONS (REMOVED)
        --let-open=VAL
            This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
-
-OPTIONS (DEPRECATED)
-       --disable-outside-detected-project
-           Warning: this option is deprecated and will be removed by
-           OCamlFormat v1.0.
 
 OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in
