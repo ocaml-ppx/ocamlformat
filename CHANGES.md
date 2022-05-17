@@ -4,6 +4,8 @@
 
 ### Deprecated
 
+- Cancel the deprecations of options that are not set by the preset profiles (#<PR_NUMBER>, @gpetiot)
+
 ### Bug fixes
 
 - emacs: Remove temp files in the event of an error (#2003, @gpetiot)
