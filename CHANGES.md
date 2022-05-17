@@ -2,7 +2,7 @@
 
 ### Removed
 
-- Profiles `compact` and `sparse` are now removed (#<PR_NUMBER>, @gpetiot)
+- Profiles `compact` and `sparse` are now removed (#2075, @gpetiot)
 
 ### Deprecated
 
