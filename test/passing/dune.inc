@@ -3,42 +3,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to align_cases-break_all.ml.stdout
-   (with-stderr-to align_cases-break_all.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --align-constructors-decl --align-variants-decl --align-cases --break-cases=all %{dep:tests/align_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/align_cases-break_all.ml.ref align_cases-break_all.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/align_cases-break_all.ml.err align_cases-break_all.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to align_cases.ml.stdout
-   (with-stderr-to align_cases.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --align-constructors-decl --align-variants-decl --align-cases %{dep:tests/align_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/align_cases.ml align_cases.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/align_cases.ml.err align_cases.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to align_infix.ml.stdout
    (with-stderr-to align_infix.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-infix=fit-or-vertical %{dep:tests/align_infix.ml})))))

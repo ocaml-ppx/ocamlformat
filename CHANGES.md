@@ -3,6 +3,7 @@
 ### Removed
 
 - Profiles `compact` and `sparse` are now removed (#2075, @gpetiot)
+- Options `align-cases`, `align-constructors-decl` and `align-variants-decl` are now removed (#2076, @gpetiot)
 
 ### Deprecated
 
