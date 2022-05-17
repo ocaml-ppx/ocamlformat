@@ -4,7 +4,7 @@
 
 ### Deprecated
 
-- Cancel the deprecations of options that are not set by the preset profiles (#<PR_NUMBER>, @gpetiot)
+- Cancel the deprecations of options that are not set by the preset profiles (#2074, @gpetiot)
 
 ### Bug fixes
 
