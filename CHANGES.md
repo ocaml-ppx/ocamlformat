@@ -2,6 +2,8 @@
 
 ### Removed
 
+- Profiles `compact` and `sparse` are now removed (#<PR_NUMBER>, @gpetiot)
+
 ### Deprecated
 
 - Cancel the deprecations of options that are not set by the preset profiles (#2074, @gpetiot)
