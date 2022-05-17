@@ -265,7 +265,7 @@ module Formatting = struct
           "$(b,auto) will only break the line if the $(i,in) keyword does \
            not fit on the previous line." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with break_before_in= x}))
       (fun conf -> conf.fmt_opts.break_before_in)
 
@@ -281,14 +281,14 @@ module Formatting = struct
            the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored."
-      ; C.Value.make ~name:"toplevel" `Toplevel ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"toplevel" `Toplevel
           "$(b,toplevel) forces top-level cases (i.e. not nested \
            or-patterns) to break across lines, otherwise break naturally at \
            the margin."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
            line, otherwise breaks."
-      ; C.Value.make ~name:"all" `All ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"all" `All
           "$(b,all) forces all pattern matches to break across lines." ]
     in
     C.choice ~names ~all ~doc ~kind
@@ -308,7 +308,7 @@ module Formatting = struct
           "$(b,wrap) will group simple expressions and try to format them \
            in a single line." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with break_collection_expressions= x}) )
       (fun conf -> conf.fmt_opts.break_collection_expressions)
@@ -321,7 +321,7 @@ module Formatting = struct
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"smart" `Smart
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
            on their line if they fit." ]
     in
@@ -337,7 +337,7 @@ module Formatting = struct
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"smart" `Smart
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
            on their line if they fit." ]
     in
@@ -414,7 +414,7 @@ module Formatting = struct
           "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       ~removed_values:
         (C.Value_removed.make_list
            ~names:["newlines"; "newlines-and-wrap"; "wrap"]
@@ -437,7 +437,7 @@ module Formatting = struct
           "$(b,natural) will break struct-end phrases naturally at the \
            margin." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with break_struct= Poly.(x = `Force)}) )
       (fun conf -> if conf.fmt_opts.break_struct then `Force else `Natural)
@@ -478,7 +478,7 @@ module Formatting = struct
     in
     C.flag
       ~names:["disambiguate-non-breaking-match"]
-      ~default:false ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+      ~default:false ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with disambiguate_non_breaking_match= x})
         )
@@ -599,7 +599,6 @@ module Formatting = struct
     in
     let names = ["extension-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with extension_indent= x}))
       (fun conf -> conf.fmt_opts.extension_indent)
 
@@ -632,7 +631,6 @@ module Formatting = struct
     let doc = "Indentation of function cases ($(docv) columns)." in
     let names = ["function-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with function_indent= x}))
       (fun conf -> conf.fmt_opts.function_indent)
 
@@ -651,7 +649,7 @@ module Formatting = struct
       ; C.Value.make ~name:"auto" `Auto
           "$(b,auto) applies $(b,function-indent) when seen fit." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with function_indent_nested= x}) )
       (fun conf -> conf.fmt_opts.function_indent_nested)
@@ -664,13 +662,12 @@ module Formatting = struct
           "$(b,compact) tries to format an if-then-else expression on a \
            single line."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~deprecated:deprecated_orphan
           "$(b,fit-or-vertical) vertically breaks branches if they do not \
            fit on a single line."
       ; C.Value.make ~name:"keyword-first" `Keyword_first
           "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line."
-      ; C.Value.make ~name:"k-r" `K_R ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"k-r" `K_R
           "$(b,k-r) formats if-then-else expressions with parentheses that \
            match the K&R style." ]
     in
@@ -686,7 +683,6 @@ module Formatting = struct
     in
     let names = ["indent-after-in"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with indent_after_in= x}))
       (fun conf -> conf.fmt_opts.indent_after_in)
 
@@ -703,7 +699,7 @@ module Formatting = struct
           "$(b,space) prints a space inside the delimiter to indicate the \
            matching one is on a different line."
       ; C.Value.make ~name:"closing-on-separate-line"
-          ~deprecated:deprecated_orphan `Closing_on_separate_line
+          `Closing_on_separate_line
           "$(b, closing-on-separate-line) makes sure that the closing \
            delimiter is on its own line." ]
     in
@@ -782,7 +778,6 @@ module Formatting = struct
     in
     let names = ["let-binding-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with let_binding_indent= x}))
       (fun conf -> conf.fmt_opts.let_binding_indent)
 
@@ -793,7 +788,7 @@ module Formatting = struct
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) spacing separates adjacent let bindings in a module \
            according to module-item-spacing."
-      ; C.Value.make ~name:"sparse" `Sparse ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) places two open lines between a multi-line \
            module-level let binding and the next."
       ; C.Value.make ~name:"double-semicolon" `Double_semicolon
@@ -850,7 +845,6 @@ module Formatting = struct
     let doc = "Indentation of match/try cases ($(docv) columns)." in
     let names = ["match-indent"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with match_indent= x}))
       (fun conf -> conf.fmt_opts.match_indent)
 
@@ -869,7 +863,7 @@ module Formatting = struct
       ; C.Value.make ~name:"auto" `Auto
           "$(b,auto) applies $(b,match-indent) when seen fit." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with match_indent_nested= x}) )
       (fun conf -> conf.fmt_opts.match_indent_nested)
@@ -902,7 +896,7 @@ module Formatting = struct
            similar sorts."
       ; C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) will always break a line between two items."
-      ; C.Value.make ~name:"preserve" `Preserve ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"preserve" `Preserve
           "$(b,preserve) will not leave open lines between one-liners of \
            similar sorts unless there is an open line in the input." ]
     in
@@ -925,7 +919,7 @@ module Formatting = struct
           "$(b,align) vertically aligns the nested pattern-matching under \
            the encompassing pattern-matching." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with nested_match= x}))
       (fun conf -> conf.fmt_opts.nested_match)
 
@@ -973,7 +967,7 @@ module Formatting = struct
       ; C.Value.make ~name:"always" `Always
           "$(b,always) always uses parentheses around tuples patterns." ]
     in
-    C.choice ~names ~all ~doc ~kind ~status:(`Deprecated deprecated_orphan)
+    C.choice ~names ~all ~doc ~kind
       (fun conf x ->
         update conf ~f:(fun f -> {f with parens_tuple_patterns= x}) )
       (fun conf -> conf.fmt_opts.parens_tuple_patterns)
@@ -1017,7 +1011,7 @@ module Formatting = struct
           "$(b,terminator) only puts spaces after semicolons."
       ; C.Value.make ~name:"separator" `Separator
           "$(b,separator) puts spaces before and after semicolons."
-      ; C.Value.make ~name:"before" `Before ~deprecated:deprecated_orphan
+      ; C.Value.make ~name:"before" `Before
           "$(b,before) breaks the sequence before semicolons." ]
     in
     C.choice ~names ~all ~doc ~kind
@@ -1078,7 +1072,6 @@ module Formatting = struct
     in
     let names = ["stritem-extension-indent"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x ->
         update conf ~f:(fun f -> {f with stritem_extension_indent= x}) )
       (fun conf -> conf.fmt_opts.stritem_extension_indent)
@@ -1106,7 +1099,6 @@ module Formatting = struct
     in
     let names = ["type-decl-indent"] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
-      ~status:(`Deprecated deprecated_orphan)
       (fun conf x -> update conf ~f:(fun f -> {f with type_decl_indent= x}))
       (fun conf -> conf.fmt_opts.type_decl_indent)
 
