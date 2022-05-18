@@ -117,6 +117,7 @@ let tests =
   ; ("Indent", Test_indent.tests)
   ; ("Literal_lexer", Test_literal_lexer.tests)
   ; ("Fmt", Test_fmt.tests)
+  ; ("Range", Test_range.tests)
   ; ("Translation_unit", Test_translation_unit.tests) ]
 
 let () = Alcotest.run "ocamlformat" tests
