@@ -33,9 +33,9 @@ val numeric :
      Syntax.t
   -> input_name:string
   -> source:string
-  -> range:int * int
+  -> range:Range.t
   -> Conf.t
-  -> (int list, Error.t) Result.t
+  -> int list
 (** [numeric ~input_name ~source ~range conf opts] returns the indentation of
     the range of lines [range] (line numbers ranging from 1 to number of
     lines), where the line numbers are relative to [source] and the

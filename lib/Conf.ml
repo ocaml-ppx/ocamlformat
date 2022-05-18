@@ -79,7 +79,8 @@ type opr_opts =
   ; margin_check: bool
   ; max_iters: int
   ; ocaml_version: Ocaml_version.t
-  ; quiet: bool }
+  ; quiet: bool
+  ; range: string -> Range.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -1170,6 +1171,19 @@ module Operational = struct
     C.flag ~default:false ~names:["q"; "quiet"] ~doc ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with quiet= x}))
       (fun conf -> conf.opr_opts.quiet)
+
+  let range =
+    let doc =
+      "Apply the formatting to a range of lines. Must be included between 1 \
+       and the number of lines of the input. If a range is invalid the \
+       whole input is considered. Warning: only supported in conbination \
+       with `--numeric` for now."
+    in
+    let default = Range.make ?range:None in
+    let docv = "X-Y" in
+    C.any Range.conv ~names:["range"] ~default ~doc ~docv ~kind
+      (fun conf x -> update conf ~f:(fun f -> {f with range= x}))
+      (fun conf -> conf.opr_opts.range)
 end
 
 let disable_conf_attrs =
@@ -1297,15 +1311,10 @@ let numeric =
   let doc =
     "Instead of re-formatting the file, output one integer per line \
      corresponding to the indentation value, printing as many values as \
-     lines in the range between lines X and Y (included)."
+     lines in the document."
   in
-  let default = None in
-  let docv = "X-Y" in
-  mk ~default
-    Arg.(
-      value
-      & opt (some (pair ~sep:'-' int int)) default
-      & info ["numeric"] ~doc ~docs ~docv)
+  let default = false in
+  mk ~default Arg.(value & flag & info ["numeric"] ~doc ~docs)
 
 let ocp_indent_options =
   let unsupported ocp_indent = (ocp_indent, ([], "")) in
@@ -1841,7 +1850,8 @@ let default =
       ; margin_check= C.default Operational.margin_check
       ; max_iters= C.default Operational.max_iters
       ; ocaml_version= C.default Operational.ocaml_version
-      ; quiet= C.default Operational.quiet } }
+      ; quiet= C.default Operational.quiet
+      ; range= C.default Operational.range } }
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
@@ -1949,7 +1959,7 @@ let validate_action () =
       ; Option.some_if !inplace (`Inplace, "--inplace")
       ; Option.some_if !check (`Check, "--check")
       ; Option.some_if !print_config (`Print_config, "--print-config")
-      ; Option.map ~f:(fun r -> (`Numeric r, "--numeric")) !numeric ]
+      ; Option.some_if !numeric (`Numeric, "--numeric") ]
   with
   | [] -> Ok `No_action
   | [(action, _)] -> Ok action
@@ -1963,15 +1973,15 @@ type action =
   | Inplace of input list
   | Check of input list
   | Print_config of t
-  | Numeric of input * (int * int)
+  | Numeric of input
 
 let make_action ~enable_outside_detected_project ~root action inputs =
   let open Result in
-  let make_file ?(with_conf = fun c -> c) ?name kind file =
+  let make_file ?name kind file =
     let name = Option.value ~default:file name in
     build_config ~enable_outside_detected_project ~root ~file:name
       ~is_stdin:false
-    >>= fun conf -> Ok {kind; name; file= File file; conf= with_conf conf}
+    >>= fun conf -> Ok {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
     build_config ~enable_outside_detected_project ~root ~file:name
@@ -2003,9 +2013,9 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       in
       build_config ~enable_outside_detected_project ~root ~file ~is_stdin
       >>= fun conf -> Ok (Print_config conf)
-  | (`No_action | `Output _ | `Inplace | `Check | `Numeric _), `No_input ->
+  | (`No_action | `Output _ | `Inplace | `Check | `Numeric), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
-  | (`No_action | `Output _ | `Numeric _), `Several_files _ ->
+  | (`No_action | `Output _ | `Numeric), `Several_files _ ->
       Error
         "Must specify exactly one input file without --inplace or --check"
   | `Inplace, `Stdin _ ->
@@ -2018,8 +2028,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       make_inputs inputs >>= fun inputs -> Ok (Inplace inputs)
   | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
       make_inputs inputs >>= fun inputs -> Ok (Check inputs)
-  | `Numeric range, ((`Stdin _ | `Single_file _) as inp) ->
-      make_input inp >>= fun inp -> Ok (Numeric (inp, range))
+  | `Numeric, ((`Stdin _ | `Single_file _) as inp) ->
+      make_input inp >>= fun inp -> Ok (Numeric inp)
 
 let validate () =
   let root =

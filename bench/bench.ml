@@ -52,6 +52,7 @@ let tests =
               (Translation_unit.parse_and_format kind ~input_name ~source
                  conf )
         | `Numeric range ->
+            let range = Range.make source ~range in
             ignore
               (Translation_unit.numeric kind ~input_name ~source ~range conf)
         ) )

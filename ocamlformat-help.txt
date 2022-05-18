@@ -584,10 +584,10 @@ OPTIONS
            Do not check that the version matches the one specified in
            .ocamlformat.
 
-       --numeric=X-Y
+       --numeric
            Instead of re-formatting the file, output one integer per line
            corresponding to the indentation value, printing as many values as
-           lines in the range between lines X and Y (included).
+           lines in the document.
 
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
@@ -616,6 +616,12 @@ OPTIONS
 
        -q, --quiet
            Quiet. May be set in .ocamlformat. The flag is unset by default.
+
+       --range=X-Y
+           Apply the formatting to a range of lines. Must be included between
+           1 and the number of lines of the input. If a range is invalid the
+           whole input is considered. Warning: only supported in conbination
+           with `--numeric` for now. The default value is <whole input>.
 
        --repl-file
            Parse input as toplevel phrases with their output.

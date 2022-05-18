@@ -1826,7 +1826,7 @@
  (action
   (with-stdout-to format_invalid_files-0.ml.stdout
    (with-stderr-to format_invalid_files-0.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric=11-13 %{dep:tests/format_invalid_files.ml})))))
+     (run %{bin:ocamlformat} --margin-check --numeric --range=11-13 %{dep:tests/format_invalid_files.ml})))))
 
 (rule
  (alias runtest)
@@ -1844,7 +1844,7 @@
  (action
   (with-stdout-to format_invalid_files.ml.stdout
    (with-stderr-to format_invalid_files.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric=7-8 %{dep:tests/format_invalid_files.ml})))))
+     (run %{bin:ocamlformat} --margin-check --numeric --range=7-8 %{dep:tests/format_invalid_files.ml})))))
 
 (rule
  (alias runtest)
@@ -1862,7 +1862,7 @@
  (action
   (with-stdout-to format_invalid_files_with_locations.ml.stdout
    (with-stderr-to format_invalid_files_with_locations.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric=1-11 %{dep:tests/format_invalid_files_with_locations.ml})))))
+     (run %{bin:ocamlformat} --margin-check --numeric --range=1-11 %{dep:tests/format_invalid_files_with_locations.ml})))))
 
 (rule
  (alias runtest)
@@ -3964,7 +3964,7 @@
  (action
   (with-stdout-to partial.ml.stdout
    (with-stderr-to partial.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric=2-14 %{dep:tests/partial.ml})))))
+     (run %{bin:ocamlformat} --margin-check --numeric --range=2-14 %{dep:tests/partial.ml})))))
 
 (rule
  (alias runtest)
@@ -3982,7 +3982,7 @@
  (action
   (with-stdout-to partial_double_quotes.ml.stdout
    (with-stderr-to partial_double_quotes.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric=1-1 %{dep:tests/partial_double_quotes.ml})))))
+     (run %{bin:ocamlformat} --margin-check --numeric --range=1-1 %{dep:tests/partial_double_quotes.ml})))))
 
 (rule
  (alias runtest)

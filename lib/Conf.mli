@@ -90,7 +90,8 @@ type opr_opts =
             [max_iters] iterations. *)
   ; ocaml_version: Ocaml_version.t
         (** Version of OCaml syntax of the output. *)
-  ; quiet: bool }
+  ; quiet: bool
+  ; range: string -> Range.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -113,7 +114,7 @@ type action =
   | Check of input list
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
-  | Numeric of input * (int * int)
+  | Numeric of input
 
 val action :
   unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t

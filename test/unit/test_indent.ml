@@ -11,6 +11,7 @@ module Partial_ast = struct
       ( test_name
       , `Quick
       , fun () ->
+          let range = Range.make ~range source in
           let indent = Indent.Partial_ast.indent_range ~source ~range in
           let output =
             Test_translation_unit.reindent ~source ~range indent

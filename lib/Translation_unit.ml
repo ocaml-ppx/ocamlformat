@@ -501,26 +501,9 @@ let parse_and_format = function
   | Syntax.Expression -> parse_and_format Expression Expression
   | Syntax.Repl_file -> parse_and_format Repl_file Repl_file
 
-let check_line nlines i =
-  (* the last line of the buffer (nlines + 1) should not raise an error *)
-  if 1 <= i && i <= nlines + 1 then Ok ()
-  else Error (Error.User_error (Format.sprintf "Invalid line number %i" i))
-
-let check_range nlines (low, high) =
-  check_line nlines low
-  >>= fun () ->
-  check_line nlines high
-  >>= fun () ->
-  if low <= high then Ok ()
-  else
-    Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
-
 let numeric (type a b) (fg : a list Extended_ast.t)
     (std_fg : b list Std_ast.t) ~input_name ~source ~range (conf : Conf.t) =
   let lines = String.split_lines source in
-  let nlines = List.length lines in
-  check_range nlines range
-  >>| fun () ->
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
   let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in

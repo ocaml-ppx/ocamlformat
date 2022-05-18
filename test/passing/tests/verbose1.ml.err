@@ -1,4 +1,5 @@
 profile=ocamlformat (file tests/.ocamlformat:1)
+range=<whole input> (profile ocamlformat (file tests/.ocamlformat:1))
 quiet=false (profile ocamlformat (file tests/.ocamlformat:1))
 ocaml-version=4.13.0 (file tests/.ocamlformat:7)
 max-iters=2 (file tests/.ocamlformat:6)

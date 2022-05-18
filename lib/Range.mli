@@ -9,16 +9,12 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Valid_ast : sig
-  val indent_range :
-       'a Extended_ast.t
-    -> unformatted:'a * string
-    -> formatted:'a * Source.t
-    -> lines:string list
-    -> range:Range.t
-    -> int list
-end
+type t
 
-module Partial_ast : sig
-  val indent_range : source:string -> range:Range.t -> int list
-end
+val make : ?range:int * int -> string -> t
+
+val get : t -> int * int
+
+val is_whole : t -> bool
+
+val conv : (string -> t) Cmdliner.Arg.conv
