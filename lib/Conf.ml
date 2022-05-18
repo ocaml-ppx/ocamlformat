@@ -80,7 +80,7 @@ type opr_opts =
   ; max_iters: int
   ; ocaml_version: Ocaml_version.t
   ; quiet: bool
-  ; range: (int * int) option }
+  ; range: string -> Range.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -1179,11 +1179,9 @@ module Operational = struct
        whole input is considered. Warning: only supported in conbination \
        with `--numeric` for now."
     in
-    let default = None in
+    let default = Range.make ?range:None in
     let docv = "X-Y" in
-    C.any
-      Arg.(some (pair ~sep:'-' int int))
-      ~names:["range"] ~default ~doc ~docv ~kind
+    C.any Range.conv ~names:["range"] ~default ~doc ~docv ~kind
       (fun conf x -> update conf ~f:(fun f -> {f with range= x}))
       (fun conf -> conf.opr_opts.range)
 end

@@ -45,12 +45,6 @@ let print_error (conf : Conf.t) e =
   Translation_unit.Error.print Format.err_formatter
     ~debug:conf.opr_opts.debug ~quiet:conf.opr_opts.quiet e
 
-let check_range (conf : Conf.t) s =
-  let lines_nb = List.length @@ String.split_lines s in
-  match conf.opr_opts.range with
-  | Some (x, y) when 1 <= x && x <= y && y <= lines_nb -> (x, y)
-  | _ -> (1, lines_nb)
-
 let run_action action =
   match action with
   | Conf.Inplace inputs ->
@@ -91,14 +85,11 @@ let run_action action =
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
   | Numeric {kind; file; name= input_name; conf} ->
+      let conf = {conf with opr_opts= {conf.opr_opts with quiet= true}} in
       let source = source_from_file file in
-      let range = check_range conf source in
-      let opr_opts = {conf.opr_opts with quiet= true; range= Some range} in
-      let conf = {conf with opr_opts} in
-      let indents =
-        Translation_unit.numeric kind ~input_name ~source ~range conf
-      in
-      List.iter indents ~f:(fun i -> Stdio.print_endline (Int.to_string i)) ;
+      let range = conf.opr_opts.range source in
+      Translation_unit.numeric kind ~input_name ~source ~range conf
+      |> List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i)) ;
       Ok ()
 ;;
 

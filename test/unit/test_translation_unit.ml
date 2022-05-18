@@ -114,7 +114,8 @@ let test_parse_and_format_expression =
   [ make_test "List.map" ~input:"List.map (fun x->\nx*x) [(1 + 9); 2;3] "
       ~expected:(Ok "List.map (fun x -> x * x) [ 1 + 9; 2; 3 ]\n") ]
 
-let reindent ~source ~range:(low, high) indents =
+let reindent ~source ~range indents =
+  let low, high = Range.get range in
   let lines = String.split_lines source in
   let low = low - 1 and high = high - 1 in
   String.concat ~sep:"\n"
@@ -133,6 +134,7 @@ let test_numeric =
     ( test_name
     , `Quick
     , fun () ->
+        let range = Range.make ~range source in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default
@@ -319,6 +321,7 @@ let test_numeric_file =
     ( test_name
     , `Quick
     , fun () ->
+        let range = Range.make ~range source in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default

@@ -91,7 +91,7 @@ type opr_opts =
   ; ocaml_version: Ocaml_version.t
         (** Version of OCaml syntax of the output. *)
   ; quiet: bool
-  ; range: (int * int) option }
+  ; range: string -> Range.t }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
