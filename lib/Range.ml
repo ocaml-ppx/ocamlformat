@@ -29,7 +29,7 @@ let conv =
   let pair_conv = Arg.(pair ~sep:'-' int int) in
   let parse x = Arg.conv_parser pair_conv x >>| fun range -> make ~range in
   let pp fs x =
-    match x "" with
+    match x "this string is not important" with
     | {whole= true; _} -> Format.fprintf fs "<whole input>"
     | {lower; upper; _} -> Arg.conv_printer pair_conv fs (lower, upper)
   in
