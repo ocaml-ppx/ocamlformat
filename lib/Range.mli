@@ -15,4 +15,6 @@ val make : ?range:int * int -> string -> t
 
 val get : t -> int * int
 
+val is_whole : t -> bool
+
 val conv : (string -> t) Cmdliner.Arg.conv

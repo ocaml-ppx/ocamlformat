@@ -17,12 +17,15 @@ let make ?range source =
   let lines_nb = List.length @@ String.split_lines source in
   match range with
   | Some (lower, upper)
-    when 1 <= lower && lower <= upper && upper <= lines_nb ->
-      let whole = lower = 1 && lower = lines_nb in
+    when 1 <= lower && lower <= upper && upper <= lines_nb + 1 ->
+      (* the last line of the buffer (lines_nb + 1) should be valid *)
+      let whole = lower = 1 && upper >= lines_nb in
       {lower; upper; whole}
   | _ -> {lower= 1; upper= lines_nb; whole= true}
 
 let get t = (t.lower, t.upper)
+
+let is_whole t = t.whole
 
 let conv =
   let open Cmdliner in
