@@ -51,7 +51,10 @@ module Make (C : CONFIG) = struct
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type from =
-    [`Default | `Profile of string * updated_from | `Updated of updated_from]
+    [ `Default
+    | `Profile of string * updated_from
+    | `Updated of updated_from * from option (* when redundant definition *)
+    ]
 
   type deprecated = {dmsg: string; dversion: Version.t}
 
@@ -102,6 +105,23 @@ module Make (C : CONFIG) = struct
   let pp_removed ppf {rmsg; rversion= v} =
     Format.fprintf ppf "This option has been removed in version %a.%s"
       Version.pp v (maybe_empty rmsg)
+
+  let pp_from_src fs = function
+    | `Parsed (`File (p, i)) ->
+        Format.fprintf fs " (file %s:%i)"
+          (Fpath.to_string ~relativize:true p)
+          i
+    | `Parsed `Attribute -> Format.fprintf fs " (attribute)"
+    | `Env -> Format.fprintf fs " (environment variable)"
+    | `Commandline -> Format.fprintf fs " (command line)"
+
+  let rec pp_from fs = function
+    | `Default -> ()
+    | `Profile (s, p) -> Format.fprintf fs " (profile %s%a)" s pp_from_src p
+    | `Updated (x, None) -> pp_from_src fs x
+    | `Updated (x, Some r) ->
+        Format.fprintf fs "%a -- Warning (redundant): %a" pp_from_src x
+          pp_from r
 
   let status_doc ppf = function
     | `Valid -> ()
@@ -322,7 +342,7 @@ module Make (C : CONFIG) = struct
     in
     store := Pack opt :: !store
 
-  let update_from config name from =
+  let update_from config name from redundant =
     let is_profile_option_name x =
       List.exists C.profile_option_names ~f:(String.equal x)
     in
@@ -335,7 +355,7 @@ module Make (C : CONFIG) = struct
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
-          Pack {p with from= `Updated from}
+          Pack {p with from= `Updated (from, redundant)}
         else
           let profile_name = List.find_map_exn !store ~f:on_pack in
           (* updating other options when --profile is set *)
@@ -345,23 +365,42 @@ module Make (C : CONFIG) = struct
         ( match status with
         | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
         | _ -> () ) ;
-        Pack {p with from= `Updated from} )
+        Pack {p with from= `Updated (from, redundant)} )
       else Pack p
     in
     store := List.map !store ~f:on_pack
 
-  let update ~config ~from ~name ~value ~inline =
+  let update ~config ~from:new_from ~name ~value ~inline =
     List.find_map !store
-      ~f:(fun (Pack {names; parse; update; allow_inline; _}) ->
+      ~f:(fun
+           (Pack
+             { names
+             ; parse
+             ; update
+             ; allow_inline
+             ; from
+             ; get_value
+             ; to_string
+             ; _ } )
+         ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
             Some (Error (Error.Misplaced (name, value)))
           else
             match parse value with
             | Ok packed_value ->
-                let config = update config packed_value in
-                update_from config name from ;
-                Some (Ok config)
+                let new_config = update config packed_value in
+                let redundant =
+                  match from with
+                  | `Profile _ ->
+                      let old_value = to_string @@ get_value config in
+                      let new_value = to_string @@ get_value new_config in
+                      if String.equal old_value new_value then Some from
+                      else None
+                  | _ -> None
+                in
+                update_from new_config name new_from redundant ;
+                Some (Ok new_config)
             | Error (`Msg error) ->
                 Some (Error (Error.Bad_value (name, error)))
         else
@@ -388,7 +427,7 @@ module Make (C : CONFIG) = struct
       | None -> config
       | Some x ->
           let config = update config x in
-          update_from config (List.hd_exn names) `Commandline ;
+          update_from config (List.hd_exn names) `Commandline None ;
           config
     in
     List.fold !store ~init:config ~f:on_pack
@@ -397,23 +436,9 @@ module Make (C : CONFIG) = struct
     let on_pack (Pack {names; to_string; get_value; from; status; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
-      let aux_from = function
-        | `Parsed (`File (p, i)) ->
-            Format.sprintf " (file %s:%i)"
-              (Fpath.to_string ~relativize:true p)
-              i
-        | `Parsed `Attribute -> " (attribute)"
-        | `Env -> " (environment variable)"
-        | `Commandline -> " (command line)"
-      in
-      let aux_from = function
-        | `Default -> ""
-        | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
-        | `Updated x -> aux_from x
-      in
       match status with
       | `Valid | `Deprecated _ ->
-          Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
+          Format.eprintf "%s=%s%a\n%!" name value pp_from from
       | `Removed _ -> ()
     in
     List.iter !store ~f:on_pack
