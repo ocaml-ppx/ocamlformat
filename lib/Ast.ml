@@ -282,6 +282,8 @@ module Ext = struct
 end
 
 module Exp = struct
+  let location x = x.pexp_loc
+
   let test_id ~f = function
     | {pexp_desc= Pexp_ident {txt= i; _}; _} -> f i
     | _ -> false
@@ -356,6 +358,8 @@ module Exp = struct
 end
 
 module Pat = struct
+  let location x = x.ppat_loc
+
   let is_simple {ppat_desc; _} =
     match ppat_desc with
     | Ppat_any | Ppat_constant _ | Ppat_var _

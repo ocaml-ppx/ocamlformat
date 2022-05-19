@@ -29,6 +29,7 @@
 
 - New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
 - Preserve the begin-end construction in the AST (#1785, @hhugo, @gpetiot)
+- Preserve position of comments located after the semi-colon of the last element of lists/arrays/records (#2032, @gpetiot)
 
 ## 0.21.0 (2022-02-25)
 

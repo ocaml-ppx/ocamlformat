@@ -867,6 +867,60 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to collections-conventional.ml.stdout
+   (with-stderr-to collections-conventional.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=conventional --max-iters=3 %{dep:tests/collections.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections-conventional.ml.ref collections-conventional.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections-conventional.ml.err collections-conventional.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to collections-janestreet.ml.stdout
+   (with-stderr-to collections-janestreet.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/collections.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections-janestreet.ml.ref collections-janestreet.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections-janestreet.ml.err collections-janestreet.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to collections.ml.stdout
+   (with-stderr-to collections.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --max-iters=3 %{dep:tests/collections.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections.ml.ref collections.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/collections.ml.err collections.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comment_breaking.ml.stdout
    (with-stderr-to comment_breaking.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/comment_breaking.ml})))))
