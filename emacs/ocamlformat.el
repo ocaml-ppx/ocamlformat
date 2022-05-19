@@ -323,7 +323,8 @@ is nil."
             (list
              "-"
              "--name" name
-             "--numeric" (format "%d-%d" start-line end-line)))))
+             "--numeric"
+             "--range" (format "%d-%d" start-line end-line)))))
 
 (defun ocamlformat-region (start end)
   (interactive "r")
