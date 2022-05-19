@@ -588,15 +588,14 @@ module Formatting = struct
 
   let field_space =
     let doc =
-      "Whether or not to use a space between a field name and the rhs. This \
-       option affects records and objects."
+      "Whether or not to use a space between a field name and the \
+       punctuation symbol (`:` or `=`) preceding the rhs. This option \
+       affects records and objects."
     in
     let names = ["field-space"] in
     let all =
-      [ C.Value.make ~name:"loose" `Loose "$(b,loose) does."
-      ; C.Value.make ~name:"tight" `Tight
-          "$(b,tight) does not use a space between a field name and the \
-           punctuation symbol (`:` or `=`)."
+      [ C.Value.make ~name:"loose" `Loose "$(b,loose) uses a space."
+      ; C.Value.make ~name:"tight" `Tight "$(b,tight) does not use a space."
       ; C.Value.make ~name:"tight-decl" `Tight_decl
           "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
            for instantiations." ]
