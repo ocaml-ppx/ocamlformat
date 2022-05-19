@@ -174,10 +174,10 @@ OPTIONS (CODE FORMATTING STYLE)
            default value is 2.
 
        --field-space={loose|tight|tight-decl}
-           Whether or not to use a space between a field name and the rhs.
-           This option affects records and objects. loose does. tight does
-           not use a space between a field name and the punctuation symbol
-           (`:` or `=`). tight-decl is tight for declarations and loose for
+           Whether or not to use a space between a field name and the
+           punctuation symbol (`:` or `=`) preceding the rhs. This option
+           affects records and objects. loose uses a space. tight does not
+           use a space. tight-decl is tight for declarations and loose for
            instantiations. The default value is loose.
 
        --function-indent=COLS
