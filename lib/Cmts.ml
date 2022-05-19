@@ -445,8 +445,8 @@ let pop_if_debug t loc =
 let find_cmts ?(filter = Fn.const true) t pos loc =
   pop_if_debug t loc ;
   Option.map (find_at_position t loc pos) ~f:(fun cmts ->
-      let picked, left = List.partition_tf cmts ~f:filter in
-      update_cmts t pos ~f:(Map.set ~key:loc ~data:left) ;
+      let picked, not_picked = List.partition_tf cmts ~f:filter in
+      update_cmts t pos ~f:(Map.set ~key:loc ~data:not_picked) ;
       picked )
 
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
