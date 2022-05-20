@@ -48,3 +48,7 @@ set -eu
 dune subst
 
 dune build -p ocamlformat
+
+echo "Version check:"
+
+dune exec -- ocamlformat --version
