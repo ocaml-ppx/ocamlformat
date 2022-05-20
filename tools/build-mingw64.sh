@@ -45,8 +45,6 @@ set +eu
 opam install -y --deps-only ./ocamlformat.opam
 set -eu
 
-dune subst
-
 dune build -p ocamlformat
 
 echo "Version check:"
