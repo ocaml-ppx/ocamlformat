@@ -14,8 +14,10 @@
 set -o errexit
 set -o nounset
 
-user=
-user_set=0
+github_user_=
+github_user_set=0
+gitlab_user_=
+gitlab_user_set=0
 version=
 version_set=0
 update_repos=0
@@ -24,14 +26,18 @@ prefix_set=0
 
 function usage()
 {
-    echo "usage: $0 -u <GITHUB_USERNAME> -v <RELEASE> [-U] [-p <PREFIX>]"
+    echo "usage: $0 -u <GITHUB_USERNAME> -y <GITLAB_USERNAME> -v <RELEASE> [-U] [-p <PREFIX>]"
 }
 
-while getopts ":u:v:Up:" opt; do
+while getopts ":u:y:v:Up:" opt; do
     case "$opt" in
         u)
-            user=$OPTARG;
-            user_set=1;
+            github_user=$OPTARG;
+            github_user_set=1;
+            ;;
+        y)
+            gitlab_user=$OPTARG;
+            gitlab_user_set=1;
             ;;
         v)
             version=$OPTARG;
@@ -51,7 +57,7 @@ while getopts ":u:v:Up:" opt; do
     esac
 done;
 
-if [ "$user_set" = 0 ] || [ "$version_set" = 0 ]; then
+if [ "$github_user_set" = 0 ] || [ "$gitlab_user_set" = 0 ] || [ "$version_set" = 0 ]; then
     usage;
     exit 1;
 fi;
@@ -84,13 +90,25 @@ dirname=`dirname $0`;
 while read line; do
     cd $prefix;
 
-    namespace=`echo $line | cut -d "," -f 1`;
-    dir=`echo $line | cut -d "," -f 2`;
+    git_platform=`echo $line | cut -d "," -f 1`;
+    namespace=`echo $line | cut -d "," -f 2`;
+    dir=`echo $line | cut -d "," -f 3`;
     echo "=> Checking $namespace/$dir";
 
+    case "$git_platform" in
+        "github")
+            user=$github_user;
+            ;;
+        "gitlab")
+            user=$gitlab_user;
+            ;;
+        *)
+            ;;
+    esac;
+
     if [ ! -d "$dir" ] ; then
-        fork="git@github.com:$user/$dir.git";
-        upstream="git@github.com:$namespace/$dir.git";
+        fork="git@$git_platform.com:$user/$dir.git";
+        upstream="git@$git_platform.com:$namespace/$dir.git";
         git clone --recurse-submodules $fork $dir;
         cd $dir;
         git remote add upstream $upstream;
@@ -124,6 +142,14 @@ while read line; do
     ocamlformat_file=`readlink -f .ocamlformat`;
     cat $ocamlformat_file | sed -e "/^version/d" > .ocamlformat.tmp;
     mv .ocamlformat.tmp $ocamlformat_file;
+
+    if [ "$namespace/$dir" == "tezos/tezos" ]; then
+        cat scripts/lint.sh | sed -e "/^version/d" > lint.sh.tmp;
+        mv lint.sh.tmp scripts/lint.sh;
+        git commit --all -m "Update .ocamlformat files";
+        bash scripts/lint.sh --update-ocamlformat;
+    fi;
+
     $dune build @fmt &> $log_dir/$dir.log || true;
     $dune promote &> /dev/null;
     cat $ocamlformat_file | sed -e "1s/^/version = $version\n/" > .ocamlformat.tmp;
