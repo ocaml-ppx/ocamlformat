@@ -24,30 +24,25 @@ prefix_set=0
 
 function usage()
 {
-    echo "usage: $0 -user <GITHUB_USERNAME> -version <RELEASE> [--update-repositories] [--prefix <PREFIX>]"
+    echo "usage: $0 -u <GITHUB_USERNAME> -v <RELEASE> [-U] [-p <PREFIX>]"
 }
 
-while [[ $# -gt 0 ]] && [[ "$1" == "--"* ]]; do
-    opt="$1";
-    shift 1
+while getopts ":u:v:Up:" opt; do
     case "$opt" in
-        "--user")
-            user="$1";
+        u)
+            user=$OPTARG;
             user_set=1;
-            shift 1;
             ;;
-        "--version")
-            version="$1";
+        v)
+            version=$OPTARG;
             version_set=1;
-            shift 1;
             ;;
-        "--update-repositories")
+        U)
             update_repos=1;
             ;;
-        "--prefix")
-            prefix="$1";
+        p)
+            prefix=$OPTARG;
             prefix_set=1;
-            shift 1;
             ;;
         *)
             usage;
