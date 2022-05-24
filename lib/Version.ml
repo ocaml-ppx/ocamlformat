@@ -16,7 +16,7 @@ type t =
   | V0_16_0
   | V0_17_0
   | V0_20_0
-  | V0_22_0
+  | V0_22_2
   | V1_0_0
 
 let to_string = function
@@ -26,7 +26,7 @@ let to_string = function
   | V0_16_0 -> "0.16.0"
   | V0_17_0 -> "0.17.0"
   | V0_20_0 -> "0.20.0"
-  | V0_22_0 -> "0.22.0"
+  | V0_22_2 -> "0.22.2"
   | V1_0_0 -> "1.0.0"
 
 let pp fs v = Format.fprintf fs "%s" (to_string v)

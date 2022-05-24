@@ -201,15 +201,15 @@ module Formatting = struct
 
   let ( (* align_cases *) ) =
     let names = ["align-cases"] in
-    C.removed_option ~names ~since:V0_22_0 ~msg:""
+    C.removed_option ~names ~since:V0_22_2 ~msg:""
 
   let ( (* align_constructors_decl *) ) =
     let names = ["align-constructors-decl"] in
-    C.removed_option ~names ~since:V0_22_0 ~msg:""
+    C.removed_option ~names ~since:V0_22_2 ~msg:""
 
   let ( (* align_variants_decl *) ) =
     let names = ["align-variants-decl"] in
-    C.removed_option ~names ~since:V0_22_0 ~msg:""
+    C.removed_option ~names ~since:V0_22_2 ~msg:""
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -1201,7 +1201,7 @@ let ( (* disable_outside_detected_project *) ) =
      enable the opposite behavior use `enable-outside-detected-project`."
   in
   let names = ["disable-outside-detected-project"] in
-  C.removed_option ~names ~since:V0_22_0 ~msg
+  C.removed_option ~names ~since:V0_22_2 ~msg
 
 let enable_outside_detected_project =
   let witness =
@@ -1642,8 +1642,8 @@ let (_profile : fmt_opts option C.t) =
   in
   C.choice ~names ~all ~doc ~kind:C.Formatting
     ~removed_values:
-      [ C.Value_removed.make ~name:"compact" ~since:V0_22_0 ~msg:""
-      ; C.Value_removed.make ~name:"sparse" ~since:V0_22_0 ~msg:"" ]
+      [ C.Value_removed.make ~name:"compact" ~since:V0_22_2 ~msg:""
+      ; C.Value_removed.make ~name:"sparse" ~since:V0_22_2 ~msg:"" ]
     (fun conf p ->
       selected_profile_ref := p ;
       let new_fmt_opts = Option.value p ~default:conf.fmt_opts in

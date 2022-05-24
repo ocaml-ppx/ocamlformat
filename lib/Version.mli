@@ -16,7 +16,7 @@ type t =
   | V0_16_0
   | V0_17_0
   | V0_20_0
-  | V0_22_0
+  | V0_22_2
   | V1_0_0
 
 val to_string : t -> string

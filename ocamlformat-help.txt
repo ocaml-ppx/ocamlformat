@@ -451,16 +451,16 @@ OPTIONS (CODE FORMATTING STYLE)
 
 OPTIONS (REMOVED)
        --align-cases=VAL
-           This option has been removed in version 0.22.0.
+           This option has been removed in version 0.22.2.
 
        --align-constructors-decl=VAL
-           This option has been removed in version 0.22.0.
+           This option has been removed in version 0.22.2.
 
        --align-variants-decl=VAL
-           This option has been removed in version 0.22.0.
+           This option has been removed in version 0.22.2.
 
        --disable-outside-detected-project=VAL
-           This option has been removed in version 0.22.0. OCamlFormat is
+           This option has been removed in version 0.22.2. OCamlFormat is
            disabled outside of a detected project by default, to enable the
            opposite behavior use `enable-outside-detected-project`.
 
