@@ -64,28 +64,6 @@ fi;
 
 log_dir=$prefix/logs;
 
-projects=(
-#    'facebook/flow' # not interested in upgrading
-    'facebook/infer'
-    'mirage/alcotest'
-    'mirage/decompress'
-    'mirage/digestif'
-    'mirage/index'
-    'mirage/irmin'
-    'mirage/mirage'
-    'mirage/ocaml-cohttp'
-#    'mirage/ocaml-conduit' # not interested in upgrading
-    'mirage/ocaml-git'
-    'ocaml/dune'
-    'ocaml/ocaml-lsp'
-    'ocaml/odoc'
-    'ocamllabs/dune-release'
-    'ocaml-ppx/ppxlib'
-    'ocsigen/js_of_ocaml'
-    'owlbarn/owl'
-    'realworldocaml/mdx'
-);
-
 function get_main_branch() {
     gitHeadsDir="$(git rev-parse --show-toplevel)/.git/refs/heads";
 
@@ -101,12 +79,14 @@ function get_main_branch() {
 rm -rf $log_dir &> /dev/null || true;
 mkdir --parents $log_dir;
 
-for project in "${projects[@]}"; do
+dirname=`dirname $0`;
+
+while read line; do
     cd $prefix;
 
-    namespace=`echo $project | cut -d "/" -f 1`;
-    dir=`echo $project | cut -d "/" -f 2`;
-    echo "=> Checking $project";
+    namespace=`echo $line | cut -d "," -f 1`;
+    dir=`echo $line | cut -d "," -f 2`;
+    echo "=> Checking $namespace/$dir";
 
     if [ ! -d "$dir" ] ; then
         fork="git@github.com:$user/$dir.git";
@@ -136,7 +116,7 @@ for project in "${projects[@]}"; do
     fi;
     git checkout -b $preview_branch --quiet;
 
-    if [ "$project" == "ocaml/dune" ]; then
+    if [ "$namespace/$dir" == "ocaml/dune" ]; then
         make release;
         dune=_build/default/bin/dune.exe;
     fi;
@@ -149,4 +129,4 @@ for project in "${projects[@]}"; do
     cat $ocamlformat_file | sed -e "1s/^/version = $version\n/" > .ocamlformat.tmp;
     mv .ocamlformat.tmp $ocamlformat_file;
     git commit --all -m "Preview: upgrade to ocamlformat $version";
-done;
+done < $dirname/projects.data;
