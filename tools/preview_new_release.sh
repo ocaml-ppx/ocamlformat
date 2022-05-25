@@ -93,7 +93,7 @@ while read line; do
 
     fork="git@$git_platform.com:$user/$dir.git";
     upstream="git@$git_platform.com:$namespace/$dir.git";
-    git clone --recurse-submodules $fork $dir;
+    git clone --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules $fork $dir;
     cd $dir;
     git remote add upstream $upstream;
     git checkout -b $preview_branch --quiet;
