@@ -125,8 +125,6 @@ while read line; do
         fi;
     fi;
 
-    dune=dune;
-
     if git show-ref --verify --quiet "refs/heads/$preview_branch"; then
         get_main_branch;
         git checkout $main_branch --quiet;
@@ -134,25 +132,29 @@ while read line; do
     fi;
     git checkout -b $preview_branch --quiet;
 
+    dune=dune;
     if [ "$namespace/$dir" == "ocaml/dune" ]; then
         make release;
         dune=_build/default/bin/dune.exe;
     fi;
 
-    ocamlformat_file=`readlink -f .ocamlformat`;
-    cat $ocamlformat_file | sed -e "/^version/d" > .ocamlformat.tmp;
-    mv .ocamlformat.tmp $ocamlformat_file;
+    sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" .ocamlformat;
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
-        cat scripts/lint.sh | sed -e "/^version/d" > lint.sh.tmp;
-        mv lint.sh.tmp scripts/lint.sh;
+        sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" scripts/lint.sh;
         git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
     fi;
 
     $dune build @fmt &> $log_dir/$dir.log || true;
     $dune promote &> /dev/null;
-    cat $ocamlformat_file | sed -e "1s/^/version = $version\n/" > .ocamlformat.tmp;
-    mv .ocamlformat.tmp $ocamlformat_file;
+    sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" .ocamlformat;
+
     git commit --all -m "Preview: upgrade to ocamlformat $version";
+
+    if [ "$namespace/$dir" == "tezos/tezos" ]; then
+        sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" scripts/lint.sh;
+        git commit --all -m "Update .ocamlformat files";
+        bash scripts/lint.sh --update-ocamlformat;
+    fi;
 done < $dirname/projects.data;
