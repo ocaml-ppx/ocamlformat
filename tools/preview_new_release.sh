@@ -20,16 +20,15 @@ gitlab_user_=
 gitlab_user_set=0
 version=
 version_set=0
-update_repos=0
 prefix=
 prefix_set=0
 
 function usage()
 {
-    echo "usage: $0 -u <GITHUB_USERNAME> -y <GITLAB_USERNAME> -v <RELEASE> [-U] [-p <PREFIX>]"
+    echo "usage: $0 -u <GITHUB_USERNAME> -y <GITLAB_USERNAME> -v <RELEASE> [-p <PREFIX>]"
 }
 
-while getopts ":u:y:v:Up:" opt; do
+while getopts ":u:y:v:p:" opt; do
     case "$opt" in
         u)
             github_user=$OPTARG;
@@ -42,9 +41,6 @@ while getopts ":u:y:v:Up:" opt; do
         v)
             version=$OPTARG;
             version_set=1;
-            ;;
-        U)
-            update_repos=1;
             ;;
         p)
             prefix=$OPTARG;
@@ -71,18 +67,6 @@ fi;
 preview_dir=$prefix/$preview_branch;
 log_dir=$preview_dir/logs;
 
-function get_main_branch() {
-    gitHeadsDir="$(git rev-parse --show-toplevel)/.git/refs/heads";
-
-    if [ -f "$gitHeadsDir/main" ]; then
-        main_branch='main';
-    elif [ -f "$gitHeadsDir/master" ]; then
-        main_branch='master';
-    else
-        main_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5);
-    fi;
-}
-
 rm -rf $preview_dir &> /dev/null || true;
 mkdir --parents $log_dir;
 
@@ -107,30 +91,11 @@ while read line; do
             ;;
     esac;
 
-    if [ ! -d "$dir" ] ; then
-        fork="git@$git_platform.com:$user/$dir.git";
-        upstream="git@$git_platform.com:$namespace/$dir.git";
-        git clone --recurse-submodules $fork $dir;
-        cd $dir;
-        git remote add upstream $upstream;
-        get_main_branch;
-    else
-        cd $dir;
-
-        if [ "$update_repos" = 1 ]; then
-            get_main_branch;
-            git checkout $main_branch --quiet;
-            git fetch upstream --quiet;
-            git rebase upstream/$main_branch --quiet;
-            git push origin $main_branch --quiet;
-        fi;
-    fi;
-
-    if git show-ref --verify --quiet "refs/heads/$preview_branch"; then
-        get_main_branch;
-        git checkout $main_branch --quiet;
-        git branch -D $preview_branch --quiet;
-    fi;
+    fork="git@$git_platform.com:$user/$dir.git";
+    upstream="git@$git_platform.com:$namespace/$dir.git";
+    git clone --recurse-submodules $fork $dir;
+    cd $dir;
+    git remote add upstream $upstream;
     git checkout -b $preview_branch --quiet;
 
     dune=dune;
