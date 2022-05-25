@@ -65,10 +65,11 @@ fi;
 preview_branch=preview-ocamlformat-$version
 
 if [ "$prefix_set" = 0 ]; then
-    prefix=$HOME/$preview_branch;
+    prefix=$HOME;
 fi;
 
-log_dir=$prefix/logs;
+preview_dir=$prefix/$preview_branch;
+log_dir=$preview_dir/logs;
 
 function get_main_branch() {
     gitHeadsDir="$(git rev-parse --show-toplevel)/.git/refs/heads";
@@ -82,13 +83,13 @@ function get_main_branch() {
     fi;
 }
 
-rm -rf $log_dir &> /dev/null || true;
+rm -rf $preview_dir &> /dev/null || true;
 mkdir --parents $log_dir;
 
 dirname=`dirname $0`;
 
 while read line; do
-    cd $prefix;
+    cd $preview_dir;
 
     git_platform=`echo $line | cut -d "," -f 1`;
     namespace=`echo $line | cut -d "," -f 2`;
