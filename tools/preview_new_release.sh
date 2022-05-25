@@ -98,18 +98,18 @@ while read line; do
     git remote add upstream $upstream;
     git checkout -b $preview_branch --quiet;
 
-    dune=dune;
-    if [ "$namespace/$dir" == "ocaml/dune" ]; then
-        make release;
-        dune=_build/default/bin/dune.exe;
-    fi;
-
     sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" .ocamlformat;
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
         sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" scripts/lint.sh;
         git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
+    fi;
+
+    dune=dune;
+    if [ "$namespace/$dir" == "ocaml/dune" ]; then
+        make release;
+        dune=_build/default/bin/dune.exe;
     fi;
 
     $dune build @fmt &> $log_dir/$dir.log || true;
