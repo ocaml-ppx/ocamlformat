@@ -451,21 +451,21 @@ OPTIONS (CODE FORMATTING STYLE)
 
 OPTIONS (REMOVED)
        --align-cases=VAL
-           This option has been removed in version 0.22.2.
+           This option has been removed in version 0.22.
 
        --align-constructors-decl=VAL
-           This option has been removed in version 0.22.2.
+           This option has been removed in version 0.22.
 
        --align-variants-decl=VAL
-           This option has been removed in version 0.22.2.
+           This option has been removed in version 0.22.
 
        --disable-outside-detected-project=VAL
-           This option has been removed in version 0.22.2. OCamlFormat is
+           This option has been removed in version 0.22. OCamlFormat is
            disabled outside of a detected project by default, to enable the
            opposite behavior use `enable-outside-detected-project`.
 
        --doc-comments-val=VAL
-           This option has been removed in version 0.16.0. If you are using
+           This option has been removed in version 0.16. If you are using
            `doc-comments-val=before` in combination with
            `doc-comments=before` then only `doc-comments=before` is now
            required to achive the same behavior. If you are using
@@ -480,20 +480,20 @@ OPTIONS (REMOVED)
            setting `doc-comments` only.
 
        --escape-chars=VAL
-           This option has been removed in version 0.16.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.16. Concrete syntax will
+           now always be preserved.
 
        --escape-strings=VAL
-           This option has been removed in version 0.16.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.16. Concrete syntax will
+           now always be preserved.
 
        --extension-sugar=VAL
-           This option has been removed in version 0.17.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.17. Concrete syntax will
+           now always be preserved.
 
        --let-open=VAL
-           This option has been removed in version 0.17.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.17. Concrete syntax will
+           now always be preserved.
 
 OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in

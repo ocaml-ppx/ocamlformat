@@ -193,6 +193,18 @@ let ocaml_version_conv =
   in
   (parse, Ocaml_version.pp)
 
+module V = struct
+  let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
+
+  let v0_14 = Version.make ~major:0 ~minor:14 ~patch:None
+
+  let v0_16 = Version.make ~major:0 ~minor:16 ~patch:None
+
+  let v0_17 = Version.make ~major:0 ~minor:17 ~patch:None
+
+  let v0_22 = Version.make ~major:0 ~minor:22 ~patch:None
+end
+
 (** Options affecting formatting *)
 module Formatting = struct
   let kind = C.Formatting
@@ -201,15 +213,15 @@ module Formatting = struct
 
   let ( (* align_cases *) ) =
     let names = ["align-cases"] in
-    C.removed_option ~names ~since:V0_22_2 ~msg:""
+    C.removed_option ~names ~since:V.v0_22 ~msg:""
 
   let ( (* align_constructors_decl *) ) =
     let names = ["align-constructors-decl"] in
-    C.removed_option ~names ~since:V0_22_2 ~msg:""
+    C.removed_option ~names ~since:V.v0_22 ~msg:""
 
   let ( (* align_variants_decl *) ) =
     let names = ["align-variants-decl"] in
-    C.removed_option ~names ~since:V0_22_2 ~msg:""
+    C.removed_option ~names ~since:V.v0_22 ~msg:""
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -365,7 +377,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
-        [ C.Value_removed.make ~name:"after-and-docked" ~since:V0_12_0
+        [ C.Value_removed.make ~name:"after-and-docked" ~since:V.v0_12
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
@@ -397,7 +409,7 @@ module Formatting = struct
       ~removed_values:
         (C.Value_removed.make_list
            ~names:["newlines"; "newlines-and-wrap"; "wrap"]
-           ~since:V0_12_0
+           ~since:V.v0_12
            ~msg:
              "It has been replaced by the new default `auto` value, which \
               breaks lines at newlines and wraps string literals at the \
@@ -481,7 +493,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
-        [ C.Value_removed.make ~name:"after" ~since:V0_14_2
+        [ C.Value_removed.make ~name:"after" ~since:V.v0_14
             ~msg:
               "This value has been renamed `after-when-possible` to take \
                into account the technical limitations of ocamlformat, the \
@@ -530,7 +542,7 @@ module Formatting = struct
        the same behavior can now be achieved by setting `doc-comments` \
        only."
     in
-    C.removed_option ~names ~since:V0_16_0 ~msg
+    C.removed_option ~names ~since:V.v0_16 ~msg
 
   let dock_collection_brackets =
     let doc =
@@ -550,12 +562,12 @@ module Formatting = struct
   let ( (* escape_chars *) ) =
     let names = ["escape-chars"] in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~since:V0_16_0 ~msg
+    C.removed_option ~names ~since:V.v0_16 ~msg
 
   let ( (* escape_strings *) ) =
     let names = ["escape-strings"] in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~since:V0_16_0 ~msg
+    C.removed_option ~names ~since:V.v0_16 ~msg
 
   let exp_grouping =
     let doc = "Style of expression grouping." in
@@ -584,7 +596,7 @@ module Formatting = struct
   let ( (* extension_sugar *) ) =
     let names = ["extension-sugar"] in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~since:V0_17_0 ~msg
+    C.removed_option ~names ~since:V.v0_17 ~msg
 
   let field_space =
     let doc =
@@ -797,7 +809,7 @@ module Formatting = struct
   let ( (* let_open *) ) =
     let names = ["let-open"] in
     let msg = concrete_syntax_preserved_msg in
-    C.removed_option ~names ~since:V0_17_0 ~msg
+    C.removed_option ~names ~since:V.v0_17 ~msg
 
   let line_endings =
     let doc = "Line endings used." in
@@ -1201,7 +1213,7 @@ let ( (* disable_outside_detected_project *) ) =
      enable the opposite behavior use `enable-outside-detected-project`."
   in
   let names = ["disable-outside-detected-project"] in
-  C.removed_option ~names ~since:V0_22_2 ~msg
+  C.removed_option ~names ~since:V.v0_22 ~msg
 
 let enable_outside_detected_project =
   let witness =
@@ -1642,8 +1654,8 @@ let (_profile : fmt_opts option C.t) =
   in
   C.choice ~names ~all ~doc ~kind:C.Formatting
     ~removed_values:
-      [ C.Value_removed.make ~name:"compact" ~since:V0_22_2 ~msg:""
-      ; C.Value_removed.make ~name:"sparse" ~since:V0_22_2 ~msg:"" ]
+      [ C.Value_removed.make ~name:"compact" ~since:V.v0_22 ~msg:""
+      ; C.Value_removed.make ~name:"sparse" ~since:V.v0_22 ~msg:"" ]
     (fun conf p ->
       selected_profile_ref := p ;
       let new_fmt_opts = Option.value p ~default:conf.fmt_opts in
