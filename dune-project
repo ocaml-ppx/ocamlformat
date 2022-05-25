@@ -56,6 +56,11 @@
    (>= 20201216))
   (ocaml-version
    (>= 3.3.0))
+  (ocamlformat-rpc-lib
+   (and
+    :with-test
+    :post
+    (= :version)))
   ocp-indent
   (odoc-parser
    (>= 1.0.0))
