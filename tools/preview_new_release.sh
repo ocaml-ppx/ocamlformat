@@ -101,6 +101,7 @@ while read line; do
     sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" .ocamlformat;
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
+        sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" devtools/git-gas-diff/.ocamlformat;
         sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" scripts/lint.sh;
         git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
@@ -119,6 +120,7 @@ while read line; do
     git commit --all -m "Preview: upgrade to ocamlformat $version";
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
+        sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" devtools/git-gas-diff/.ocamlformat;
         sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" scripts/lint.sh;
         git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
