@@ -42,8 +42,8 @@ let emit_test test_name setup =
   in
   Printf.printf
     {|
-(rule (action (with-stdout-to %s (run ./gen/driver.exe %s %%{dep:%s}))))
-(rule (alias runtest) (action (diff %s %s)))
+(rule (action (with-stdout-to %s (run ./gen/driver.exe %s %%{dep:%s}))) (package ocamlformat))
+(rule (alias runtest) (action (diff %s %s)) (package ocamlformat))
 |}
     out_name kind
     (setup.dir ^ "/" ^ test_name)
