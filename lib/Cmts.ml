@@ -565,8 +565,7 @@ module Verbatim = struct
     $ wrap "(*" "*)" @@ str s
 end
 
-let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
-    pos =
+let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~fmt_code pos =
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
@@ -601,7 +600,6 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
   | `Verbatim x -> Verbatim.fmt x pos
   | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
-  | `Unwrapped x when ocp_indent_compat -> Verbatim.fmt x.txt pos
   | `Unwrapped x -> Unwrapped.fmt x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
 
@@ -617,7 +615,6 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [] -> impossible "previous match"
          | [cmt] ->
              fmt_cmt cmt ~wrap:conf.fmt_opts.wrap_comments
-               ~ocp_indent_compat:conf.fmt_opts.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->

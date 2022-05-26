@@ -675,6 +675,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to break_separators-after_docked_wrap.ml.stdout
+   (with-stderr-to break_separators-after_docked_wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_separators.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-after_docked_wrap.ml.ref break_separators-after_docked_wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-after_docked_wrap.ml.err break_separators-after_docked_wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_separators-after_wrap.ml.stdout
+   (with-stderr-to break_separators-after_wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_separators.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-after_wrap.ml.ref break_separators-after_wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-after_wrap.ml.err break_separators-after_wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to break_separators-before_docked.ml.stdout
    (with-stderr-to break_separators-before_docked.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-separators=before --dock-collection-brackets --max-iter=3 %{dep:tests/break_separators.ml})))))
@@ -688,6 +724,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/break_separators-before_docked.ml.err break_separators-before_docked.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_separators-before_docked_wrap.ml.stdout
+   (with-stderr-to break_separators-before_docked_wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_separators.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-before_docked_wrap.ml.ref break_separators-before_docked_wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-before_docked_wrap.ml.err break_separators-before_docked_wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_separators-wrap.ml.stdout
+   (with-stderr-to break_separators-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_separators.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-wrap.ml.ref break_separators-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_separators-wrap.ml.err break_separators-wrap.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -3033,18 +3105,6 @@
  (action (diff tests/js_source.ml.err js_source.ml.stderr)))
 
 (rule
- (deps tests/.ocp-indent )
- (package ocamlformat)
- (action
-   (with-outputs-to js_source.ml.ocp.output
-     (run %{bin:ocp-indent} %{dep:tests/js_source.ml.ref}))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/js_source.ml.ocp js_source.ml.ocp.output)))
-
-(rule
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
@@ -3966,24 +4026,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/obuild.ml.err obuild.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to ocp_indent_compat.ml.stdout
-   (with-stderr-to ocp_indent_compat.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/ocp_indent_compat.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/ocp_indent_compat.ml ocp_indent_compat.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/ocp_indent_compat.ml.err ocp_indent_compat.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

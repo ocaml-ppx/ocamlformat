@@ -315,9 +315,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-leading-nested-match-parens
            Unset leading-nested-match-parens.
 
-       --no-ocp-indent-compat
-           Unset ocp-indent-compat.
-
        --no-parens-ite
            Unset parens-ite.
 
@@ -344,10 +341,6 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --no-wrap-fun-args
            Unset wrap-fun-args.
-
-       --ocp-indent-compat
-           Attempt to generate output which does not change (much) when
-           post-processing with ocp-indent. The flag is unset by default.
 
        -p {conventional|default|ocamlformat|janestreet},
        --profile={conventional|default|ocamlformat|janestreet}
@@ -499,6 +492,9 @@ OPTIONS (REMOVED)
        --let-open=VAL
            This option has been removed in version 0.17. Concrete syntax will
            now always be preserved.
+
+       --ocp-indent-compat=VAL
+           This option has been removed in version 0.25.
 
 OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in

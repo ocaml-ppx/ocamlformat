@@ -3,7 +3,6 @@ module StringMap = Map.Make (String)
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
-  ; mutable has_ocp: bool
   ; mutable base_file: string option
   ; mutable extra_deps: string list
   ; mutable should_fail: bool
@@ -37,7 +36,6 @@ let add_test ?base_file map src_test_name =
   let s =
     { has_ref= false
     ; has_opts= false
-    ; has_ocp= false
     ; base_file
     ; extra_deps= []
     ; should_fail= false
@@ -66,10 +64,9 @@ let register_file tests fname =
       in
       match rest with
       | [] -> ()
-      | ["output"] | ["ocp"; "output"] -> ()
+      | ["output"] -> ()
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
-      | ["ocp"] -> setup.has_ocp <- true
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
@@ -133,26 +130,7 @@ let emit_test test_name setup =
     (cmd setup.should_fail
        ( ["%{bin:ocamlformat}"] @ opts
        @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
-    enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
-  if setup.has_ocp then
-    Printf.printf
-      {|
-(rule
- (deps tests/.ocp-indent %s)%s
- (package ocamlformat)
- (action
-   (with-outputs-to %s.ocp.output
-     %s)))
-
-(rule
- (alias runtest)%s
- (package ocamlformat)
- (action (diff tests/%s.ocp %s.ocp.output)))
-|}
-      extra_deps enabled_if_line test_name
-      (cmd setup.should_fail
-         ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name] )
-      enabled_if_line test_name test_name
+    enabled_if_line ref_name test_name enabled_if_line err_name test_name
 
 let () =
   let map = ref StringMap.empty in

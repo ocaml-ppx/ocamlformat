@@ -148,7 +148,6 @@ let box_fun_decl_args c =
 (** Handle the `break-fun-sig` option *)
 let box_fun_sig_args c =
   match c.conf.fmt_opts.break_fun_sig with
-  | _ when c.conf.fmt_opts.ocp_indent_compat -> hvbox
   | `Fit_or_vertical -> hvbox
   | `Wrap | `Smart -> hovbox
 
@@ -475,10 +474,6 @@ let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
 
-let is_arrow_or_poly = function
-  | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
-  | _ -> false
-
 let fmt_assign_arrow c =
   match c.conf.fmt_opts.assignment_operator with
   | `Begin_line -> fmt "@;<1 2><- "
@@ -605,11 +600,7 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
 and fmt_attributes_aux c ?pre ?suf ~key attrs =
   let num = List.length attrs in
   fmt_if_k (num > 0)
-    ( opt pre (function
-        (* Breaking before an attribute can confuse ocp-indent that will
-           produce a suboptimal indentation. *)
-        | Space when c.conf.fmt_opts.ocp_indent_compat -> sp Blank
-        | pre -> sp pre )
+    ( opt pre sp
     $ hvbox_if (num > 1) 0
         (hvbox 0 (list attrs "@ " (fmt_attribute c ~key)) $ opt suf str) )
 
@@ -800,18 +791,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.ptyp_loc ;
       let ct2 = {pap_label= Nolabel; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
       let xt1N = List.rev (ct2 :: List.rev ctl) in
-      let indent =
-        if Poly.(c.conf.fmt_opts.break_separators = `Before) then 2 else 0
-      in
-      ( match pro with
-      | Some pro when c.conf.fmt_opts.ocp_indent_compat ->
-          fits_breaks ""
-            (String.make (Int.max 1 (indent - String.length pro)) ' ')
-      | _ ->
-          fmt_if_k
-            Poly.(c.conf.fmt_opts.break_separators = `Before)
-            (fmt_or_k c.conf.fmt_opts.ocp_indent_compat (fits_breaks "" "")
-               (fits_breaks "" "   ") ) )
+      fmt_if_k
+        Poly.(c.conf.fmt_opts.break_separators = `Before)
+        (fits_breaks "" "   ")
       $ parenze_constraint_ctx
           (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
@@ -3113,12 +3095,7 @@ and fmt_value_description ?ext c ctx vd =
         $ str " "
         $ Cmts.fmt c loc
             (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
-        $ fmt_core_type c ~pro:":"
-            ~box:
-              (not
-                 ( c.conf.fmt_opts.ocp_indent_compat
-                 && is_arrow_or_poly pval_type ) )
-            ~pro_space:true (sub_typ ~ctx pval_type)
+        $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ list pval_prim " " fmt_val_prim )
     $ fmt_item_attributes c ~pre:(Break (1, 2)) atrs
@@ -3767,10 +3744,7 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
     $ doc_after
     $ opt epi (fun epi ->
           fmt_or_k compact
-            (fmt_or
-               ( Option.is_some blk_b.epi
-               && not c.conf.fmt_opts.ocp_indent_compat )
-               " " "@ " )
+            (fmt_or (Option.is_some blk_b.epi) " " "@ ")
             (fmt "@;<1 -2>")
           $ epi ) )
 
@@ -4319,10 +4293,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
                               $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                               ) )
                       $ fmt_cstr )
-                  $ fmt_if_k (not lb_pun)
-                      (fmt_or_k c.conf.fmt_opts.ocp_indent_compat
-                         (fits_breaks " =" ~hint:(1000, 0) "=")
-                         (fmt "@;<1 2>=") )
+                  $ fmt_if_k (not lb_pun) (fmt "@;<1 2>=")
                   $ fmt_if_k (not lb_pun) pre_body )
               $ fmt_if (not lb_pun) "@ "
               $ fmt_if_k (not lb_pun) body )

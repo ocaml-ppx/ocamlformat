@@ -57,7 +57,6 @@ type fmt_opts =
   ; max_indent: int option
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]

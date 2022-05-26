@@ -56,8 +56,7 @@ let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
 let ([%foo: include S with type t = t] :
       [%foo:
         val x : t
-        val y : t])
-  =
+        val y : t]) =
   [%foo: type t = t]
 ;;
 
@@ -84,7 +83,8 @@ let () =
   and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ()) [@foo]];
+    ())
+    [@foo]];
   [%foo
     (let open M in
     ()) [@foo]];
@@ -99,18 +99,21 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo
     for x = () to () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo assert true [@foo]];
   [%foo lazy x [@foo]];
   [%foo object end [@foo]];
   [%foo
     begin
       3
-    end [@foo]];
+    end
+    [@foo]];
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
@@ -132,7 +135,8 @@ class x =
       method virtual x : t [@@foo]
       method! private x = 3 [@@foo]
       initializer x [@@foo]
-    end [@foo]
+    end
+    [@foo]
 
 (* Class type expressions *)
 class type t =
@@ -716,8 +720,7 @@ let create (type s) to_string apply x =
     let to_string = to_string
     let apply = apply
     let x = x
-  end
-  in
+  end in
   (module M : S with type t = s)
 ;;
 
@@ -737,8 +740,7 @@ let apply x =
     include M
 
     let x = apply x
-  end
-  in
+  end in
   (module N : S)
 ;;
 
@@ -810,8 +812,7 @@ let pair (type s1 s2) t1 t2 =
     let eq = TypEq.refl
     let t1 = t1
     let t2 = t2
-  end
-  in
+  end in
   let pair = (module P : PAIR with type t = s1 * s2) in
   Pair pair
 ;;
@@ -909,7 +910,7 @@ let g (type t) (x : t) (tag : t ty) =
 ;;
 
 (* Error: This expression has type bool but an expression was expected of type
-t = int *)
+   t = int *)
 
 let id x = x
 
@@ -1163,8 +1164,7 @@ let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option 
 (* Auxiliary function to get the type of a case from its selector *)
 let rec get_case
   : type a b e.
-    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
-  =
+    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option =
  fun sel cases ->
   match cases with
   | (name, TCnoarg sel') :: rem ->
@@ -1274,7 +1274,7 @@ let ty_abc =
   and inj
     : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
-    = function
+      = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
     | Ttl (Ttl Thd), Noarg -> `C
@@ -1411,7 +1411,7 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ]
 
        method inj
-         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+         : type c.    (int -> string -> noarg -> unit, c) ty_sel * c
                    -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
@@ -1619,12 +1619,11 @@ let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equ
 
 let rec plus_assoc
   : type a b c ab bc m n.
-    (a, b, ab) plus
+       (a, b, ab) plus
     -> (ab, c, m) plus
     -> (b, c, bc) plus
     -> (a, bc, n) plus
-    -> (m, n) equal
-  =
+    -> (m, n) equal =
  fun p1 p2 p3 p4 ->
   match p1, p4 with
   | PlusZ b, PlusZ bc ->
@@ -1727,7 +1726,7 @@ let rec elem : type h. int -> h avl -> bool =
 
 let rec rotr
   : type n. n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
-  =
+    =
  fun tL y tR ->
   match tL with
   | Node (Same, a, x, b) -> Inr (Node (Less, a, x, Node (More, b, y, tR)))
@@ -1742,7 +1741,7 @@ let rec rotr
 
 let rec rotl
   : type n. n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
-  =
+    =
  fun tL u tR ->
   match tR with
   | Node (Same, a, x, b) -> Inr (Node (More, Node (Less, tL, u, a), x, b))
@@ -2240,8 +2239,7 @@ type closed = rnil
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
 let rec rule
-  : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
-  =
+  : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
  fun v1 v2 ->
   match v1, v2 with
   | Lam (x, body), v ->
@@ -2407,8 +2405,7 @@ type (_, _, _) binop =
   | Add : (int, int, int) binop
 
 let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
-  : c constant
-  =
+  : c constant =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
   | Leq, Int x, Int y -> Bool (x <= y)
@@ -2637,21 +2634,20 @@ type ('a, 'result, 'visit_action) context =
   | Local : ('a, ('a * insert as 'result), 'a local_visit_action) context
   | Global : ('a, 'a, 'a visit_action) context
 
-let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action
-  = function
+let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action =
+  function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
 
 let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
-  = function
+    = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
 
 let vexpr (type result visit_action)
-  : (unit, result, visit_action) context -> unit -> visit_action
-  = function
+  : (unit, result, visit_action) context -> unit -> visit_action = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -2754,8 +2750,7 @@ let f (type a) (x : a t) =
   let module M = struct
     let (I : a t) = x (* fail because of toplevel let *)
     let x = (I : a t)
-  end
-  in
+  end in
   ()
 ;;
 
@@ -2771,8 +2766,7 @@ let bad (type a) =
       let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
       let e : (int, a) eq = Refl
     end
-  end
-  in
+  end in
   N.M.e
 ;;
 
@@ -2868,8 +2862,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(*  val comp_subst :
-    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(* val comp_subst :
+   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -3213,8 +3207,8 @@ val test_bar : unit -> unit = <fun>
 |}]
 
 (* Uncomment these to test. Should see substantial speedup!
-let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
-let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
+   let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
+   let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
 
 (* INVALID DECLARATIONS *)
 
@@ -3489,8 +3483,7 @@ let pair (type s1 s2) t1 t2 =
     let eq = TypEq.refl
     let t1 = t1
     let t2 = t2
-  end
-  in
+  end in
   Typ.Pair (module P)
 ;;
 
@@ -3554,8 +3547,7 @@ let ssmap =
 let ssmap =
   (let module S = struct
      include SSMap
-   end
-   in
+   end in
    (module S)
     : (module MapT with type key = string and type data = string and type map = SSMap.map))
 ;;
@@ -4587,8 +4579,7 @@ let f : type t. t prod -> _ = function
   | Prod ->
     let module M = struct
       type d = d * d
-    end
-    in
+    end in
     ()
 ;;
 
@@ -4625,20 +4616,20 @@ module M' : module type of Std'.M = Std2.M
 let f3 (x : M'.t) : Std2.M.t = x
 
 (* original report required Core_kernel:
-module type S = sig
-open Core_kernel.Std
+   module type S = sig
+   open Core_kernel.Std
 
-module Hashtbl1 : module type of Hashtbl
-module Hashtbl2 : sig
-  include (module type of Hashtbl)
-end
+   module Hashtbl1 : module type of Hashtbl
+   module Hashtbl2 : sig
+     include (module type of Hashtbl)
+   end
 
-module Coverage : Core_kernel.Std.Hashable
+   module Coverage : Core_kernel.Std.Hashable
 
-type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
-type doesnt_type = unit
-  constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-end
+   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
+   type doesnt_type = unit
+     constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
+   end
 *)
 module type INCLUDING = sig
   include module type of List
@@ -4805,20 +4796,20 @@ module type PR6513 = sig
 end
 
 (* Requires -package tyxml
-module type PR6513_orig = sig
-module type S =
-sig
-        type t
-        type u
-end
+   module type PR6513_orig = sig
+   module type S =
+   sig
+           type t
+           type u
+   end
 
-module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
-end
+   module Make: functor (Html5: Html5_sigs.T
+                                with type 'a Xml.wrap = 'a and
+                                type 'a wrap = 'a and
+                                type 'a list_wrap = 'a list)
+                        -> S with type t = Html5_types.div Html5.elt and
+                                  type u = < foo: Html5.uri >
+   end
 *)
 module type S = sig
   include Set.S
@@ -5023,9 +5014,9 @@ struct
 end
 
 (* This would allow:
-module FixId = Fix (struct type 'a f = 'a end)
- let bad : (int, string) eq = FixId.uniq Eq Eq
- let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+   module FixId = Fix (struct type 'a f = 'a end)
+    let bad : (int, string) eq = FixId.uniq Eq Eq
+    let _ = Printf.printf "Oh dear: %s" (cast bad 42)
 *)
 module M = struct
   module type S = sig
@@ -5338,8 +5329,7 @@ C3.chr 66
 let f x =
   let module M = struct
     module L = List
-  end
-  in
+  end in
   M.L.length x
 ;;
 
@@ -5613,7 +5603,7 @@ struct end
 module G = F (M.Y)
 
 (*module N = G (M);;
-module N = F (M.Y) (M);;*)
+  module N = F (M.Y) (M);;*)
 
 (* PR#6307 *)
 
@@ -5672,16 +5662,16 @@ end
 (* fail *)
 
 (* (* if the above succeeded, one could break invariants *)
-module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
+   module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
 
-let M2.W eq = W Eq;;
+   let M2.W eq = W Eq;;
 
-let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
-module SInt2 = Set.Make(Int2);;
-let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-let s' : SInt2.t = conv eq s;;
-SInt2.elements s';;
-SInt2.mem 2 s';; (* invariants are broken *)
+   let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
+   module SInt2 = Set.Make(Int2);;
+   let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
+   let s' : SInt2.t = conv eq s;;
+   SInt2.elements s';;
+   SInt2.mem 2 s';; (* invariants are broken *)
 *)
 
 (* Check behavior with submodules *)
@@ -5865,7 +5855,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+   module C : sig module L : module type of List end = A
 *)
 
 include D'
@@ -5886,7 +5876,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+   module C : sig module L : module type of List end = A
 *)
 
 (* No dependency on D *)
@@ -7379,8 +7369,7 @@ let _ =
             fun x -> x + y
           ;;
         end
-      end
-      in
+      end in
       false
     with
     | Undefined_recursive_module _ -> true
@@ -7787,8 +7776,7 @@ let _ =
       end = struct
         let x = (new BadClass1.c)#m
       end
-    end
-    in
+    end in
     test 71 true false
   with
   | Undefined_recursive_module _ -> test 71 true true
@@ -8406,8 +8394,7 @@ with type 'a t := unit
 let property (type t) () =
   let module M = struct
     exception E of t
-  end
-  in
+  end in
   ( (fun x -> M.E x)
   , function
     | M.E x -> Some x
@@ -8630,8 +8617,8 @@ type v =
 
 let f
   : type a b c d e f g.
-    a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
-  = function
+    a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int =
+  function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
@@ -9419,8 +9406,7 @@ and ['a] d () =
 let _ =
   let module M = struct
     type t = { x : int }
-  end
-  in
+  end in
   let f M.(x) = () in
   let g M.{ x } = () in
   let h = function
@@ -9489,7 +9475,8 @@ fun contents -> { contents = contents [@foo] };;
 
 ();
 (();
- ()) [@foo]
+ ())
+[@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
@@ -9545,7 +9532,8 @@ type t = |
 include struct
   let%test_module "as" =
     (module struct
-      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx" =
+      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx"
+          =
         ()
       ;;
     end)
@@ -9560,15 +9548,13 @@ else aaaaaaaaaaaa qqqqqqqqqqq
 include Base.Fn (** @open *)
 
 let ssmap
-  : (module MapT with type key = string and type data = string and type map = SSMap.map)
-  =
+  : (module MapT with type key = string and type data = string and type map = SSMap.map) =
   ()
 ;;
 
 let ssmap
-  :  (module MapT with type key = string and type data = string and type map = SSMap.map)
-  -> unit
-  =
+  :    (module MapT with type key = string and type data = string and type map = SSMap.map)
+  -> unit =
   ()
 ;;
 
@@ -9675,7 +9661,7 @@ let g =
   f
     ~x
       (* this is a multiple-line-spanning
-                comment *)
+         comment *)
     ~y
 ;;
 
@@ -9683,7 +9669,7 @@ let f =
   very_long_function_name
     ~x:very_long_variable_name
       (* this is a multiple-line-spanning
-       comment *)
+         comment *)
     ~y
 ;;
 
@@ -9722,9 +9708,9 @@ type t =
 type t =
   { field : ty
       (* Here is some verbatim formatted text:
-     {v
-       starting at column 7
-     v}*)
+         {v
+           starting at column 7
+         v}*)
   }
 
 module Intro_sort = struct
@@ -9775,8 +9761,11 @@ let foo () =
 ;;
 
 let xxxxxx =
-  let%map (* _____________________________
-             __________ *) () = yyyyyyyy in
+  let%map
+    (* _____________________________
+       __________ *) () =
+    yyyyyyyy
+  in
   { zzzzzzzzzzzzz }
 ;;
 
@@ -9793,8 +9782,7 @@ let[@a
      foo
      (* ....................... *)
      (* ................................. *)
-     (* ...................... *)] _
-  =
+     (* ...................... *)] _ =
   match[@ocaml.warning (* ....................................... *) "-4"]
     x [@attr (* .......................... .................. *) some_attr]
   with
@@ -9817,10 +9805,11 @@ let[@a
                         and y = b in
                         x + y]
               | _ -> .) ->
-    y [@attr
-        (* ... *)
-        (* ... *)
-        attr (* ... *)]
+    y
+    [@attr
+      (* ... *)
+      (* ... *)
+      attr (* ... *)]
 ;;
 
 let x =

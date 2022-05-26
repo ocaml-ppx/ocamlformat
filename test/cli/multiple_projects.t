@@ -19,8 +19,7 @@ Second project formatted with the 'ocamlformat' profile:
     ?cccccccccccc:_
     ?ddddddddddddd:_
     ?eeeeeeeeeeee:_
-    ()
-    =
+    () =
     ()
   ;;
 

@@ -57,7 +57,6 @@ type fmt_opts =
   ; max_indent: int option
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
-  ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
@@ -196,6 +195,8 @@ module V = struct
   let v0_17 = Version.make ~major:0 ~minor:17 ~patch:None
 
   let v0_22 = Version.make ~major:0 ~minor:22 ~patch:None
+
+  let v0_25 = Version.make ~major:0 ~minor:25 ~patch:None
 end
 
 (** Options affecting formatting *)
@@ -922,16 +923,9 @@ module Formatting = struct
       (fun conf x _ -> update conf ~f:(fun f -> {f with nested_match= x}))
       (fun conf -> conf.fmt_opts.nested_match)
 
-  let ocp_indent_compat =
-    let doc =
-      "Attempt to generate output which does not change (much) when \
-       post-processing with ocp-indent."
-    in
+  let ( (* ocp_indent_compat *) ) =
     let names = ["ocp-indent-compat"] in
-    C.flag ~default:false ~names ~doc ~kind
-      (fun conf x _ ->
-        update conf ~f:(fun f -> {f with ocp_indent_compat= x}) )
-      (fun conf -> conf.fmt_opts.ocp_indent_compat)
+    C.removed_option ~names ~since:V.v0_25 ~msg:""
 
   let parens_ite =
     let doc =
@@ -1470,7 +1464,6 @@ let ocamlformat_profile =
   ; max_indent= None
   ; module_item_spacing= `Sparse
   ; nested_match= `Wrap
-  ; ocp_indent_compat= false
   ; parens_ite= false
   ; parens_tuple= `Always
   ; parens_tuple_patterns= `Multi_line_only
@@ -1538,7 +1531,6 @@ let conventional_profile =
   ; max_indent= C.default Formatting.max_indent
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
-  ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
@@ -1604,7 +1596,6 @@ let janestreet_profile =
   ; max_indent= Some 2
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap
-  ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
   ; parens_tuple_patterns= `Multi_line_only
@@ -2151,7 +2142,6 @@ module UI = struct
     ; C.to_ui max_indent
     ; C.to_ui module_item_spacing
     ; C.to_ui nested_match
-    ; C.to_ui ocp_indent_compat
     ; C.to_ui parens_ite
     ; C.to_ui parens_tuple
     ; C.to_ui parens_tuple_patterns
