@@ -101,6 +101,19 @@
  module Attr : sig
    val mk: ?loc:loc -> str -> payload -> attribute
 @@@@
+     val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type -> core_type
+                -> core_type
+     val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
+     val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
+     val object_: ?loc:loc -> ?attrs:attrs -> object_field list
+-                   -> closed_flag -> core_type
++                   -> obj_closed_flag -> core_type
+     val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
+     val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
+     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
+                  -> label list option -> core_type
+     val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
+@@@@
      val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
      val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
      val construct: ?loc:loc -> ?attrs:attrs ->
@@ -109,7 +122,7 @@
 -    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list -> closed_flag
 -                -> pattern
 +    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list
-+                -> closed_flag_loc -> pattern
++                -> obj_closed_flag -> pattern
      val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
 +    val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
      val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
@@ -155,9 +168,15 @@
  let map_fst f (x, y) = (f x, y)
  let map_snd f (x, y) = (x, f y)
  let map_tuple f1 f2 (x, y) = (f1 x, f2 y)
-@@@@
+ let map_tuple3 f1 f2 f3 (x, y, z) = (f1 x, f2 y, f3 z)
+ let map_opt f = function None -> None | Some x -> Some (f x)
+ 
  let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
  
++let map_obj_closed_flag sub = function
++  | Asttypes.OClosed -> Asttypes.OClosed
++  | OOpen loc -> OOpen (sub.location sub loc)
++
  module C = struct
    (* Constants *)
  
@@ -186,6 +205,20 @@
  module T = struct
    (* Type expressions for the core language *)
  
+@@@@
+         arrow ~loc ~attrs lab (sub.typ sub t1) (sub.typ sub t2)
+     | Ptyp_tuple tyl -> tuple ~loc ~attrs (List.map (sub.typ sub) tyl)
+     | Ptyp_constr (lid, tl) ->
+         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
+     | Ptyp_object (l, o) ->
+-        object_ ~loc ~attrs (List.map (object_field sub) l) o
++        object_ ~loc ~attrs (List.map (object_field sub) l)
++          (map_obj_closed_flag sub o)
+     | Ptyp_class (lid, tl) ->
+         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
+     | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+     | Ptyp_variant (rl, b, ll) ->
+         variant ~loc ~attrs (List.map (row_field sub) rl) b ll
 @@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
@@ -218,9 +251,7 @@
          record ~loc ~attrs
 -               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl) cf
 +               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
-+               (match cf with
-+                | Closed -> Closed
-+                | Open loc -> Open (sub.location sub loc))
++               (map_obj_closed_flag sub cf)
      | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
 +    | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
      | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
@@ -302,7 +333,9 @@
  
  type closed_flag = Closed | Open
  
-+type closed_flag_loc = Closed | Open of Location.t
++type obj_closed_flag =
++  | OClosed
++  | OOpen of Location.t
 +
  type label = string
  
@@ -515,14 +548,49 @@
    listx(SEMI, record_pat_field, UNDERSCORE)
      { let fields, closed = $1 in
 -      let closed = match closed with Some () -> Open | None -> Closed in
-+      let closed : closed_flag_loc =
-+        match closed with Some {loc; _} -> Open loc | None -> Closed
++      let closed =
++        match closed with
++        | None -> OClosed
++        | Some { txt = (); loc } -> OOpen loc
 +      in
        fields, closed }
  ;
  %inline record_pat_field:
    label = mkrhs(label_longident)
    octy = preceded(COLON, core_type)?
+@@@@
+       tid = mkrhs(type_longident)
+         { Ptyp_constr(tid, tys) }
+     | LESS meth_list GREATER
+         { let (f, c) = $2 in Ptyp_object (f, c) }
+     | LESS GREATER
+-        { Ptyp_object ([], Closed) }
++        { Ptyp_object ([], OClosed) }
+     | tys = actual_type_parameters
+       HASH
+       cid = mkrhs(clty_longident)
+         { Ptyp_class(cid, tys) }
+     | LBRACKET tag_field RBRACKET
+@@@@
+     head = field_semi         tail = meth_list
+   | head = inherit_field SEMI tail = meth_list
+       { let (f, c) = tail in (head :: f, c) }
+   | head = field_semi
+   | head = inherit_field SEMI
+-      { [head], Closed }
++      { [head], OClosed }
+   | head = field
+   | head = inherit_field
+-      { [head], Closed }
++      { [head], OClosed }
+   | DOTDOT
+-      { [], Open }
++      { [], OOpen (make_loc $sloc) }
+ ;
+ %inline field:
+   mkrhs(label) COLON poly_type_no_attr attributes
+     { let info = symbol_info $endpos in
+       let attrs = add_info_attrs info $4 in
 @@@@
  ;
  
@@ -592,13 +660,26 @@
  
  type attribute = {
 @@@@
+       (** [Ptyp_constr(lident, l)] represents:
+             - [tconstr]               when [l=[]],
+             - [T tconstr]             when [l=[T]],
+             - [(T1, ..., Tn) tconstr] when [l=[T1 ; ... ; Tn]].
+          *)
+-  | Ptyp_object of object_field list * closed_flag
++  | Ptyp_object of object_field list * obj_closed_flag
+       (** [Ptyp_object([ l1:T1; ...; ln:Tn ], flag)] represents:
+             - [< l1:T1; ...; ln:Tn >]     when [flag] is
+                                        {{!Asttypes.closed_flag.Closed}[Closed]},
+             - [< l1:T1; ...; ln:Tn; .. >] when [flag] is
+                                            {{!Asttypes.closed_flag.Open}[Open]}.
+@@@@
    | Ppat_variant of label * pattern option
        (** [Ppat_variant(`A, pat)] represents:
              - [`A]   when [pat] is [None],
              - [`A P] when [pat] is [Some P]
           *)
 -  | Ppat_record of (Longident.t loc * pattern) list * closed_flag
-+  | Ppat_record of (Longident.t loc * pattern) list * closed_flag_loc
++  | Ppat_record of (Longident.t loc * pattern) list * obj_closed_flag
        (** [Ppat_record([(l1, P1) ; ... ; (ln, Pn)], flag)] represents:
              - [{ l1=P1; ...; ln=Pn }]
                   when [flag] is {{!Asttypes.closed_flag.Closed}[Closed]}
@@ -736,20 +817,15 @@
    | Immutable -> fprintf f "Immutable"
    | Mutable -> fprintf f "Mutable"
 @@@@
-   match x with
-   | Override -> fprintf f "Override"
-   | Fresh -> fprintf f "Fresh"
- 
  let fmt_closed_flag f x =
--  match x with
-+  match (x : closed_flag) with
+   match x with
    | Closed -> fprintf f "Closed"
    | Open -> fprintf f "Open"
  
-+let fmt_closed_flag_loc f x =
-+  match (x : closed_flag_loc) with
-+  | Closed -> fprintf f "Closed"
-+  | Open loc -> fprintf f "Open %a" fmt_location loc
++let fmt_obj_closed_flag f x =
++  match x with
++  | OClosed -> fprintf f "OClosed"
++  | OOpen loc -> fprintf f "OOpen %a" fmt_location loc
 +
  let fmt_rec_flag f x =
    match x with
@@ -802,7 +878,7 @@
 +      list i row_field ppf l;
        option i (fun i -> list i string) ppf low
    | Ptyp_object (l, c) ->
-       line i ppf "Ptyp_object %a\n" fmt_closed_flag c;
+-      line i ppf "Ptyp_object %a\n" fmt_closed_flag c;
 -      let i = i + 1 in
 -      List.iter (fun field ->
 -        match field.pof_desc with
@@ -814,6 +890,7 @@
 -              line i ppf "Oinherit\n";
 -              core_type (i + 1) ppf ct
 -      ) l
++      line i ppf "Ptyp_object %a\n" fmt_obj_closed_flag c;
 +      list i object_field ppf l
    | Ptyp_class (li, l) ->
        line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
@@ -874,7 +951,7 @@
        option i pattern ppf po;
    | Ppat_record (l, c) ->
 -      line i ppf "Ppat_record %a\n" fmt_closed_flag c;
-+      line i ppf "Ppat_record %a\n" fmt_closed_flag_loc c;
++      line i ppf "Ppat_record %a\n" fmt_obj_closed_flag c;
        list i longident_x_pattern ppf l;
    | Ppat_array (l) ->
        line i ppf "Ppat_array\n";

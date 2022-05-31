@@ -883,11 +883,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
             $ list ls "@ " (str "`" >$ str)
             $ closing
         | Open, Some _, _ -> impossible "not produced by parser" )
-  | Ptyp_object ([], o_c) ->
+  | Ptyp_object ([], closed_flag) ->
       wrap "<@ " ">"
-        ( fmt_if (is_open o_c) "..@ "
-        $ Cmts.fmt_within c ~pro:noop ~epi:(str " ") ptyp_loc )
-  | Ptyp_object (fields, closedness) ->
+        ( match closed_flag with
+        | OClosed -> Cmts.fmt_within c ~pro:noop ~epi:(str " ") ptyp_loc
+        | OOpen loc -> Cmts.fmt c loc (str "..") $ fmt "@ " )
+  | Ptyp_object (fields, closed_flag) ->
       let fmt_field {pof_desc; pof_attributes; pof_loc} =
         let fmt_field =
           match pof_desc with
@@ -910,7 +911,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       hvbox 0
         (wrap "< " " >"
            ( list fields "@ ; " fmt_field
-           $ fmt_if (is_open closedness) "@ ; .." ) )
+           $
+           match closed_flag with
+           | OClosed -> noop
+           | OOpen loc -> fmt "@ ; " $ Cmts.fmt c loc @@ str ".." ) )
   | Ptyp_class (lid, []) -> fmt_longident_loc c ~pre:"#" lid
   | Ptyp_class (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1)
@@ -1083,8 +1087,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
       let last_sep, fmt_underscore =
         match closed_flag with
-        | Closed -> (true, noop)
-        | Open loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
+        | OClosed -> (true, noop)
+        | OOpen loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
       in
       let fmt_fields =
         fmt_elements_collection c ~last_sep p1 (snd >> Pat.location) ppat_loc

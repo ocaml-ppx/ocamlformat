@@ -121,14 +121,14 @@ let fmt_override_flag f x =
   | Fresh -> fprintf f "Fresh"
 
 let fmt_closed_flag f x =
-  match (x : closed_flag) with
+  match x with
   | Closed -> fprintf f "Closed"
   | Open -> fprintf f "Open"
 
-let fmt_closed_flag_loc f x =
-  match (x : closed_flag_loc) with
-  | Closed -> fprintf f "Closed"
-  | Open loc -> fprintf f "Open %a" fmt_location loc
+let fmt_obj_closed_flag f x =
+  match x with
+  | OClosed -> fprintf f "OClosed"
+  | OOpen loc -> fprintf f "OOpen %a" fmt_location loc
 
 let fmt_rec_flag f x =
   match x with
@@ -195,7 +195,7 @@ let rec core_type i ppf x =
       list i row_field ppf l;
       option i (fun i -> list i string) ppf low
   | Ptyp_object (l, c) ->
-      line i ppf "Ptyp_object %a\n" fmt_closed_flag c;
+      line i ppf "Ptyp_object %a\n" fmt_obj_closed_flag c;
       list i object_field ppf l
   | Ptyp_class (li, l) ->
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
@@ -260,7 +260,7 @@ and pattern i ppf x =
       line i ppf "Ppat_variant \"%s\"\n" l;
       option i pattern ppf po;
   | Ppat_record (l, c) ->
-      line i ppf "Ppat_record %a\n" fmt_closed_flag_loc c;
+      line i ppf "Ppat_record %a\n" fmt_obj_closed_flag c;
       list i longident_x_pattern ppf l;
   | Ppat_array (l) ->
       line i ppf "Ppat_array\n";

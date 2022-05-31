@@ -77,7 +77,7 @@ module Typ :
     val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
     val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
     val object_: ?loc:loc -> ?attrs:attrs -> object_field list
-                   -> closed_flag -> core_type
+                   -> obj_closed_flag -> core_type
     val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
     val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
@@ -115,7 +115,7 @@ module Pat:
       lid -> (str list * pattern) option -> pattern
     val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
     val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list
-                -> closed_flag_loc -> pattern
+                -> obj_closed_flag -> pattern
     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern

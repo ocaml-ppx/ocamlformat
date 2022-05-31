@@ -47,8 +47,6 @@ module Asttypes : sig
 
   val is_private : private_flag -> bool
 
-  val is_open : closed_flag -> bool
-
   val is_override : override_flag -> bool
 
   val is_mutable : mutable_flag -> bool

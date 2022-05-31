@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Preserve comments around object open/close flag (#<PR_NUMBER>, @gpetiot)
+
 ### Changes
 
 ### New features

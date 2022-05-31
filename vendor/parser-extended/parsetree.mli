@@ -113,7 +113,7 @@ and core_type_desc =
             - [T tconstr]             when [l=[T]],
             - [(T1, ..., Tn) tconstr] when [l=[T1 ; ... ; Tn]].
          *)
-  | Ptyp_object of object_field list * closed_flag
+  | Ptyp_object of object_field list * obj_closed_flag
       (** [Ptyp_object([ l1:T1; ...; ln:Tn ], flag)] represents:
             - [< l1:T1; ...; ln:Tn >]     when [flag] is
                                        {{!Asttypes.closed_flag.Closed}[Closed]},
@@ -251,7 +251,7 @@ and pattern_desc =
             - [`A]   when [pat] is [None],
             - [`A P] when [pat] is [Some P]
          *)
-  | Ppat_record of (Longident.t loc * pattern) list * closed_flag_loc
+  | Ppat_record of (Longident.t loc * pattern) list * obj_closed_flag
       (** [Ppat_record([(l1, P1) ; ... ; (ln, Pn)], flag)] represents:
             - [{ l1=P1; ...; ln=Pn }]
                  when [flag] is {{!Asttypes.closed_flag.Closed}[Closed]}
