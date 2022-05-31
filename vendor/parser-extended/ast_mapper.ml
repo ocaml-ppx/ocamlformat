@@ -90,6 +90,10 @@ let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
+let map_obj_closed_flag sub = function
+  | Asttypes.OClosed -> Asttypes.OClosed
+  | OOpen loc -> OOpen (sub.location sub loc)
+
 module C = struct
   (* Constants *)
 
@@ -149,7 +153,8 @@ module T = struct
     | Ptyp_constr (lid, tl) ->
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_object (l, o) ->
-        object_ ~loc ~attrs (List.map (object_field sub) l) o
+        object_ ~loc ~attrs (List.map (object_field sub) l)
+          (map_obj_closed_flag sub o)
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
@@ -510,9 +515,7 @@ module P = struct
     | Ppat_record (lpl, cf) ->
         record ~loc ~attrs
                (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
-               (match cf with
-                | Closed -> Closed
-                | Open loc -> Open (sub.location sub loc))
+               (map_obj_closed_flag sub cf)
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)

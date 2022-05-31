@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Preserve comments around object open/close flag (#2097, @trefis, @gpetiot)
+
 ### Changes
 
 ### New features

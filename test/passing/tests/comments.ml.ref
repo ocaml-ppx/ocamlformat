@@ -252,19 +252,9 @@ let%map
 type t = < (* a *)
          a: int [@atr] (* b *) ; b: int (* c *) >
 
-type t =
-  < a:
-      int
-      (* a *)
-      (* b *)
-      (* c *)
-  ; .. >
+type t = < a: int (* a *) ; (* b *) .. (* c *) >
 
-type t =
-  <
-  ..
-  (* a *)
-  (* b *) >
+type t = < (* a *) .. (* b *) >
 
 class type i =
   object

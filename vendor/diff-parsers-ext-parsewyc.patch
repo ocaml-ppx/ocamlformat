@@ -960,19 +960,6 @@
     means that the list is empty, or a nonempty BAR-separated list of
     declarations, with an optional leading BAR. *)
 @@@@
-       { [head], Closed }
-   | head = field
-   | head = inherit_field
-       { [head], Closed }
-   | DOTDOT
--      { [], Open }
-+      { [], (Open : closed_flag) }
- ;
- %inline field:
-   mkrhs(label) COLON poly_type_no_attr attributes
-     { let info = symbol_info $endpos in
-       let attrs = add_info_attrs info $4 in
-@@@@
      UIDENT                    { $1 }
    | LIDENT                    { $1 }
  ;

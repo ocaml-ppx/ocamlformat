@@ -2832,8 +2832,10 @@ pattern_comma_list(self):
 %inline record_pat_content:
   listx(SEMI, record_pat_field, UNDERSCORE)
     { let fields, closed = $1 in
-      let closed : closed_flag_loc =
-        match closed with Some {loc; _} -> Open loc | None -> Closed
+      let closed =
+        match closed with
+        | None -> OClosed
+        | Some { txt = (); loc } -> OOpen loc
       in
       fields, closed }
 ;
@@ -3372,7 +3374,7 @@ atomic_type:
     | LESS meth_list GREATER
         { let (f, c) = $2 in Ptyp_object (f, c) }
     | LESS GREATER
-        { Ptyp_object ([], Closed) }
+        { Ptyp_object ([], OClosed) }
     | tys = actual_type_parameters
       HASH
       cid = mkrhs(clty_longident)
@@ -3461,12 +3463,12 @@ meth_list:
       { let (f, c) = tail in (head :: f, c) }
   | head = field_semi
   | head = inherit_field SEMI
-      { [head], Closed }
+      { [head], OClosed }
   | head = field
   | head = inherit_field
-      { [head], Closed }
+      { [head], OClosed }
   | DOTDOT
-      { [], (Open : closed_flag) }
+      { [], OOpen (make_loc $sloc) }
 ;
 %inline field:
   mkrhs(label) COLON poly_type_no_attr attributes
