@@ -47,7 +47,7 @@ code/mirage: URI = https://github.com/mirage/mirage
 code/dune-release: URI = https://github.com/ocamllabs/dune-release
 code/owl: URI = https://github.com/owlbarn/owl
 
-PRUNE_DIRS += code/mirage/test code/owl/examples
+PRUNE_DIRS += code/mirage/test code/owl
 
 code/base: URI = https://github.com/janestreet/base.git
 code/base_bigstring: URI = https://github.com/janestreet/base_bigstring.git
