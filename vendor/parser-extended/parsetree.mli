@@ -660,9 +660,9 @@ and class_type_field =
 
 and class_type_field_desc =
   | Pctf_inherit of class_type  (** [inherit CT] *)
-  | Pctf_val of (label loc * mutable_flag * virtual_flag * core_type)
+  | Pctf_val of (label loc * mutable_virtual * core_type)
       (** [val x: T] *)
-  | Pctf_method of (label loc * private_flag * virtual_flag * core_type)
+  | Pctf_method of (label loc * private_virtual * core_type)
       (** [method x: T]
 
             Note: [T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]}.
@@ -773,7 +773,7 @@ and class_field_desc =
                    when [flag] is {{!Asttypes.override_flag.Override}[Override]}
                     and [s] is [Some x]
   *)
-  | Pcf_val of (label loc * mutable_flag * class_field_kind)
+  | Pcf_val of (label loc * mutable_virtual * class_field_kind)
       (** [Pcf_val(x,flag, kind)] represents:
             - [val x = E]
        when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
@@ -788,7 +788,7 @@ and class_field_desc =
        when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
         and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
   *)
-  | Pcf_method of (label loc * private_flag * class_field_kind)
+  | Pcf_method of (label loc * private_virtual * class_field_kind)
       (** - [method x = E]
                         ([E] can be a {{!expression_desc.Pexp_poly}[Pexp_poly]})
             - [method virtual x: T]

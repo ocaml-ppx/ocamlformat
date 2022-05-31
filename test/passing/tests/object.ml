@@ -106,9 +106,13 @@ module type A = sig
 
       [@@@attr something]
 
-      val virtual mutable a : int
+      val (*x*) virtual (*y*) mutable (*z*) a : int
 
-      method virtual private b : int -> int -> int
+      val (*x*) mutable (*y*) virtual (*z*) a : int
+
+      method (*x*) virtual (*y*) private (*z*) b : int -> int -> int
+
+      method (*x*) private (*y*) virtual (*z*) b : int -> int -> int
     end
 end
 

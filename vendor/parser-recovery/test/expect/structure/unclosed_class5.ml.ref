@@ -15,7 +15,7 @@
                 Ppat_any
               [
                 class_field ([1,0+18]..[1,0+30])
-                  Pcf_method Public
+                  Pcf_method PV_none
                     "x" ([1,0+25]..[1,0+26])
                     Concrete Fresh
                     expression ([1,0+29]..[1,0+30]) ghost

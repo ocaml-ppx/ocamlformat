@@ -54,6 +54,14 @@ let ghost_loc (startpos, endpos) = {
   Location.loc_ghost = true;
 }
 
+let mv_of_mut = function
+  | Immutable -> MV_none
+  | Mutable l -> MV_mutable l
+
+let pv_of_priv = function
+  | Public -> PV_none
+  | Private l -> PV_private l
+
 let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
 let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
 let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
@@ -1947,11 +1955,11 @@ value:
     label = mkrhs(label) COLON ty = core_type
       { (label, mutable_, Cfk_virtual ty), attrs }
   | override_flag attributes mutable_flag mkrhs(label) EQUAL seq_expr
-      { ($4, $3, Cfk_concrete ($1, $6)), $2 }
+      { ($4, mv_of_mut $3, Cfk_concrete ($1, $6)), $2 }
   | override_flag attributes mutable_flag mkrhs(label) type_constraint
     EQUAL seq_expr
       { let e = mkexp_constraint ~loc:$sloc $7 $5 in
-        ($4, $3, Cfk_concrete ($1, e)), $2
+        ($4, mv_of_mut $3, Cfk_concrete ($1, e)), $2
       }
 ;
 method_:
@@ -1963,14 +1971,14 @@ method_:
   | override_flag attributes private_flag mkrhs(label) strict_binding
       { let e = $5 in
         let loc = Location.(e.pexp_loc.loc_start, e.pexp_loc.loc_end) in
-        ($4, $3,
+        ($4, pv_of_priv $3,
         Cfk_concrete ($1, ghexp ~loc (Pexp_poly (e, None)))), $2 }
   | override_flag attributes private_flag mkrhs(label)
     COLON poly_type EQUAL seq_expr
       { let poly_exp =
           let loc = ($startpos($6), $endpos($8)) in
           ghexp ~loc (Pexp_poly($8, Some $6)) in
-        ($4, $3, Cfk_concrete ($1, poly_exp)), $2 }
+        ($4, pv_of_priv $3, Cfk_concrete ($1, poly_exp)), $2 }
   | override_flag attributes private_flag mkrhs(label) COLON TYPE lident_list
     DOT core_type EQUAL seq_expr
       { let poly_exp_loc = ($startpos($7), $endpos($11)) in
@@ -1981,7 +1989,7 @@ method_:
                TODO improve parser.mly *)
             wrap_type_annotation ~loc:$sloc $7 $9 $11 in
           ghexp ~loc:poly_exp_loc (Pexp_poly(exp, Some poly)) in
-        ($4, $3,
+        ($4, pv_of_priv $3,
         Cfk_concrete ($1, poly_exp)), $2 }
 ;
 
@@ -2049,9 +2057,8 @@ class_sig_field:
         mkctf ~loc:$sloc (Pctf_val $3) ~attrs:($2@$4) ~docs }
   | METHOD attributes private_virtual_flags mkrhs(label) COLON poly_type
     post_item_attributes
-      { let (p, v) = $3 in
-        let docs = symbol_docs $sloc in
-        mkctf ~loc:$sloc (Pctf_method ($4, p, v, $6)) ~attrs:($2@$7) ~docs }
+      { let docs = symbol_docs $sloc in
+        mkctf ~loc:$sloc (Pctf_method ($4, $3, $6)) ~attrs:($2@$7) ~docs }
   | CONSTRAINT attributes constrain_field post_item_attributes
       { let docs = symbol_docs $sloc in
         mkctf ~loc:$sloc (Pctf_constraint $3) ~attrs:($2@$4) ~docs }
@@ -2068,8 +2075,7 @@ class_sig_field:
   COLON
   ty = core_type
   {
-    let mut, virt = flags in
-    label, mut, virt, ty
+    label, flags, ty
   }
 ;
 %inline constrain:
@@ -3240,7 +3246,7 @@ with_constraint:
 ;
 with_type_binder:
     EQUAL          { Public }
-  | EQUAL PRIVATE  { Private }
+  | EQUAL PRIVATE  { Private (make_loc $loc($2)) }
 ;
 
 /* Polymorphic types */
@@ -3699,47 +3705,48 @@ private_flag:
 ;
 %inline inline_private_flag:
     /* empty */                                 { Public }
-  | PRIVATE                                     { Private }
+  | PRIVATE                                     { Private (make_loc $sloc) }
 ;
 mutable_flag:
     /* empty */                                 { Immutable }
-  | MUTABLE                                     { Mutable }
+  | MUTABLE                                     { Mutable (make_loc $sloc) }
 ;
 virtual_flag:
     /* empty */                                 { Concrete }
-  | VIRTUAL                                     { Virtual }
+  | VIRTUAL                                     { Virtual (make_loc $sloc) }
 ;
 mutable_virtual_flags:
     /* empty */
-      { Immutable, Concrete }
+      { MV_none }
   | MUTABLE
-      { Mutable, Concrete }
+      { MV_mutable (make_loc $sloc) }
   | VIRTUAL
-      { Immutable, Virtual }
+      { MV_virtual (make_loc $sloc) }
   | MUTABLE VIRTUAL
+      { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
   | VIRTUAL MUTABLE
-      { Mutable, Virtual }
+      { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
 ;
 private_virtual_flags:
-    /* empty */  { Public, Concrete }
-  | PRIVATE { Private, Concrete }
-  | VIRTUAL { Public, Virtual }
-  | PRIVATE VIRTUAL { Private, Virtual }
-  | VIRTUAL PRIVATE { Private, Virtual }
+    /* empty */  { PV_none }
+  | PRIVATE { PV_private (make_loc $sloc) }
+  | VIRTUAL { PV_virtual (make_loc $sloc) }
+  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
+  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
 ;
 (* This nonterminal symbol indicates the definite presence of a VIRTUAL
    keyword and the possible presence of a MUTABLE keyword. *)
 virtual_with_mutable_flag:
-  | VIRTUAL { Immutable }
-  | MUTABLE VIRTUAL { Mutable }
-  | VIRTUAL MUTABLE { Mutable }
+  | VIRTUAL { MV_virtual (make_loc $sloc) }
+  | MUTABLE VIRTUAL { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
+  | VIRTUAL MUTABLE { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
 ;
 (* This nonterminal symbol indicates the definite presence of a VIRTUAL
    keyword and the possible presence of a PRIVATE keyword. *)
 virtual_with_private_flag:
-  | VIRTUAL { Public }
-  | PRIVATE VIRTUAL { Private }
-  | VIRTUAL PRIVATE { Private }
+  | VIRTUAL { PV_virtual (make_loc $sloc) }
+  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
+  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
 ;
 %inline no_override_flag:
     /* empty */                                 { Fresh }

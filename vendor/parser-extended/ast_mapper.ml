@@ -90,9 +90,43 @@ let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
-let map_obj_closed_flag sub = function
-  | Asttypes.OClosed -> Asttypes.OClosed
-  | OOpen loc -> OOpen (sub.location sub loc)
+module Flag = struct
+  open Asttypes
+
+  let map_obj_closed sub = function
+    | OClosed -> OClosed
+    | OOpen loc -> OOpen (sub.location sub loc)
+
+  let map_private sub = function
+    | Private loc -> Private (sub.location sub loc)
+    | Public -> Public
+
+  let map_mutable sub = function
+    | Mutable loc -> Mutable (sub.location sub loc)
+    | Immutable -> Immutable
+
+  let map_virtual sub = function
+    | Virtual loc -> Virtual (sub.location sub loc)
+    | Concrete -> Concrete
+
+  let map_private_virtual sub = function
+    | PV_none -> PV_none
+    | PV_private loc -> PV_private (sub.location sub loc)
+    | PV_virtual loc -> PV_virtual (sub.location sub loc)
+    | PV_private_virtual (loc, loc') ->
+        PV_private_virtual (sub.location sub loc, sub.location sub loc')
+    | PV_virtual_private (loc, loc') ->
+        PV_virtual_private (sub.location sub loc, sub.location sub loc')
+
+  let map_mutable_virtual sub = function
+    | MV_none -> MV_none
+    | MV_mutable loc -> MV_mutable (sub.location sub loc)
+    | MV_virtual loc -> MV_virtual (sub.location sub loc)
+    | MV_mutable_virtual (loc, loc') ->
+        MV_mutable_virtual (sub.location sub loc, sub.location sub loc')
+    | MV_virtual_mutable (loc, loc') ->
+        MV_virtual_mutable (sub.location sub loc, sub.location sub loc')
+end
 
 module C = struct
   (* Constants *)
@@ -154,7 +188,7 @@ module T = struct
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_object (l, o) ->
         object_ ~loc ~attrs (List.map (object_field sub) l)
-          (map_obj_closed_flag sub o)
+          (Flag.map_obj_closed sub o)
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
@@ -178,7 +212,7 @@ module T = struct
     let attrs = sub.attributes sub ptype_attributes in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
-      ~priv:ptype_private
+      ~priv:(Flag.map_private sub ptype_private)
       ~cstrs:(List.map
                 (map_tuple3 (sub.typ sub) (sub.typ sub) (sub.location sub))
                 ptype_cstrs)
@@ -209,7 +243,7 @@ module T = struct
       (map_loc sub ptyext_path)
       (List.map (sub.extension_constructor sub) ptyext_constructors)
       ~params:(List.map (map_fst (sub.typ sub)) ptyext_params)
-      ~priv:ptyext_private
+      ~priv:(Flag.map_private sub ptyext_private)
 
   let map_type_exception sub
       {ptyexn_constructor; ptyexn_loc; ptyexn_attributes} =
@@ -263,10 +297,12 @@ module CT = struct
     let attrs = sub.attributes sub attrs in
     match desc with
     | Pctf_inherit ct -> inherit_ ~loc ~attrs (sub.class_type sub ct)
-    | Pctf_val (s, m, v, t) ->
-        val_ ~loc ~attrs (map_loc sub s) m v (sub.typ sub t)
-    | Pctf_method (s, p, v, t) ->
-        method_ ~loc ~attrs (map_loc sub s) p v (sub.typ sub t)
+    | Pctf_val (s, mv, t) ->
+        val_ ~loc ~attrs (map_loc sub s) (Flag.map_mutable_virtual sub mv)
+          (sub.typ sub t)
+    | Pctf_method (s, pv, t) ->
+        method_ ~loc ~attrs (map_loc sub s) (Flag.map_private_virtual sub pv)
+          (sub.typ sub t)
     | Pctf_constraint (t1, t2) ->
         constraint_ ~loc ~attrs (sub.typ sub t1) (sub.typ sub t2)
     | Pctf_attribute x -> attribute ~loc (sub.attribute sub x)
@@ -515,7 +551,7 @@ module P = struct
     | Ppat_record (lpl, cf) ->
         record ~loc ~attrs
                (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
-               (map_obj_closed_flag sub cf)
+               (Flag.map_obj_closed sub cf)
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
@@ -570,9 +606,12 @@ module CE = struct
     | Pcf_inherit (o, ce, s) ->
         inherit_ ~loc ~attrs o (sub.class_expr sub ce)
           (map_opt (map_loc sub) s)
-    | Pcf_val (s, m, k) -> val_ ~loc ~attrs (map_loc sub s) m (map_kind sub k)
-    | Pcf_method (s, p, k) ->
-        method_ ~loc ~attrs (map_loc sub s) p (map_kind sub k)
+    | Pcf_val (s, mv, k) ->
+        val_ ~loc ~attrs (map_loc sub s) (Flag.map_mutable_virtual sub mv)
+          (map_kind sub k)
+    | Pcf_method (s, pv, k) ->
+        method_ ~loc ~attrs (map_loc sub s) (Flag.map_private_virtual sub pv)
+          (map_kind sub k)
     | Pcf_constraint (t1, t2) ->
         constraint_ ~loc ~attrs (sub.typ sub t1) (sub.typ sub t2)
     | Pcf_initializer e -> initializer_ ~loc ~attrs (sub.expr sub e)
@@ -590,7 +629,7 @@ module CE = struct
     let loc = sub.location sub pci_loc in
     let attrs = sub.attributes sub pci_attributes in
     Ci.mk ~loc ~attrs
-     ~virt:pci_virt
+     ~virt:(Flag.map_virtual sub pci_virt)
      ~params:(List.map (map_fst (sub.typ sub)) pl)
       (map_loc sub pci_name)
       (f pci_expr)
@@ -736,7 +775,7 @@ let default_mapper =
          Type.field
            (map_loc this pld_name)
            (this.typ this pld_type)
-           ~mut:pld_mutable
+           ~mut:(Flag.map_mutable this pld_mutable)
            ~loc:(this.location this pld_loc)
            ~attrs:(this.attributes this pld_attributes)
       );

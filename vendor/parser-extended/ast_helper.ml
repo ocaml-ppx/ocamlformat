@@ -365,8 +365,8 @@ module Ctf = struct
     }
 
   let inherit_ ?loc ?attrs a = mk ?loc ?attrs (Pctf_inherit a)
-  let val_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pctf_val (a, b, c, d))
-  let method_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pctf_method (a, b, c, d))
+  let val_ ?loc ?attrs a b c = mk ?loc ?attrs (Pctf_val (a, b, c))
+  let method_ ?loc ?attrs a b c = mk ?loc ?attrs (Pctf_method (a, b, c))
   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pctf_constraint (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pctf_extension a)
   let attribute ?loc a = mk ?loc (Pctf_attribute a)

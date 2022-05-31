@@ -69,6 +69,21 @@
      {
       pc_lhs = lhs;
       pc_guard = guard;
+@@@@
+      pctf_loc = loc;
+      pctf_attributes = add_docs_attrs docs attrs;
+     }
+ 
+   let inherit_ ?loc ?attrs a = mk ?loc ?attrs (Pctf_inherit a)
+-  let val_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pctf_val (a, b, c, d))
+-  let method_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pctf_method (a, b, c, d))
++  let val_ ?loc ?attrs a b c = mk ?loc ?attrs (Pctf_val (a, b, c))
++  let method_ ?loc ?attrs a b c = mk ?loc ?attrs (Pctf_method (a, b, c))
+   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pctf_constraint (a, b))
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pctf_extension a)
+   let attribute ?loc a = mk ?loc (Pctf_attribute a)
+   let text txt =
+    let f_txt = List.filter (fun ds -> docstring_body ds <> "") txt in
 --- parser-standard/ast_helper.mli
 +++ parser-extended/ast_helper.mli
 @@@@
@@ -154,6 +169,41 @@
  (** Value declarations *)
  module Val:
    sig
+@@@@
+     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
+       class_type_field_desc -> class_type_field
+     val attr: class_type_field -> attribute -> class_type_field
+ 
+     val inherit_: ?loc:loc -> ?attrs:attrs -> class_type -> class_type_field
+-    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
+-      virtual_flag -> core_type -> class_type_field
+-    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
+-      virtual_flag -> core_type -> class_type_field
++    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_virtual ->
++      core_type -> class_type_field
++    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_virtual ->
++      core_type -> class_type_field
+     val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
+       class_type_field
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type_field
+     val attribute: ?loc:loc -> attribute -> class_type_field
+     val text: text -> class_type_field list
+@@@@
+       class_field
+     val attr: class_field -> attribute -> class_field
+ 
+     val inherit_: ?loc:loc -> ?attrs:attrs -> override_flag -> class_expr ->
+       str option -> class_field
+-    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
++    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_virtual ->
+       class_field_kind -> class_field
+-    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
++    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_virtual ->
+       class_field_kind -> class_field
+     val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
+       class_field
+     val initializer_: ?loc:loc -> ?attrs:attrs -> expression -> class_field
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_field
 --- parser-standard/ast_mapper.ml
 +++ parser-extended/ast_mapper.ml
 @@@@
@@ -173,9 +223,43 @@
  
  let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
  
-+let map_obj_closed_flag sub = function
-+  | Asttypes.OClosed -> Asttypes.OClosed
-+  | OOpen loc -> OOpen (sub.location sub loc)
++module Flag = struct
++  open Asttypes
++
++  let map_obj_closed sub = function
++    | OClosed -> OClosed
++    | OOpen loc -> OOpen (sub.location sub loc)
++
++  let map_private sub = function
++    | Private loc -> Private (sub.location sub loc)
++    | Public -> Public
++
++  let map_mutable sub = function
++    | Mutable loc -> Mutable (sub.location sub loc)
++    | Immutable -> Immutable
++
++  let map_virtual sub = function
++    | Virtual loc -> Virtual (sub.location sub loc)
++    | Concrete -> Concrete
++
++  let map_private_virtual sub = function
++    | PV_none -> PV_none
++    | PV_private loc -> PV_private (sub.location sub loc)
++    | PV_virtual loc -> PV_virtual (sub.location sub loc)
++    | PV_private_virtual (loc, loc') ->
++        PV_private_virtual (sub.location sub loc, sub.location sub loc')
++    | PV_virtual_private (loc, loc') ->
++        PV_virtual_private (sub.location sub loc, sub.location sub loc')
++
++  let map_mutable_virtual sub = function
++    | MV_none -> MV_none
++    | MV_mutable loc -> MV_mutable (sub.location sub loc)
++    | MV_virtual loc -> MV_virtual (sub.location sub loc)
++    | MV_mutable_virtual (loc, loc') ->
++        MV_mutable_virtual (sub.location sub loc, sub.location sub loc')
++    | MV_virtual_mutable (loc, loc') ->
++        MV_virtual_mutable (sub.location sub loc, sub.location sub loc')
++end
 +
  module C = struct
    (* Constants *)
@@ -213,12 +297,59 @@
      | Ptyp_object (l, o) ->
 -        object_ ~loc ~attrs (List.map (object_field sub) l) o
 +        object_ ~loc ~attrs (List.map (object_field sub) l)
-+          (map_obj_closed_flag sub o)
++          (Flag.map_obj_closed sub o)
      | Ptyp_class (lid, tl) ->
          class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
      | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
      | Ptyp_variant (rl, b, ll) ->
          variant ~loc ~attrs (List.map (row_field sub) rl) b ll
+@@@@
+        ptype_loc} =
+     let loc = sub.location sub ptype_loc in
+     let attrs = sub.attributes sub ptype_attributes in
+     Type.mk ~loc ~attrs (map_loc sub ptype_name)
+       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
+-      ~priv:ptype_private
++      ~priv:(Flag.map_private sub ptype_private)
+       ~cstrs:(List.map
+                 (map_tuple3 (sub.typ sub) (sub.typ sub) (sub.location sub))
+                 ptype_cstrs)
+       ~kind:(sub.type_kind sub ptype_kind)
+       ?manifest:(map_opt (sub.typ sub) ptype_manifest)
+@@@@
+     let attrs = sub.attributes sub ptyext_attributes in
+     Te.mk ~loc ~attrs
+       (map_loc sub ptyext_path)
+       (List.map (sub.extension_constructor sub) ptyext_constructors)
+       ~params:(List.map (map_fst (sub.typ sub)) ptyext_params)
+-      ~priv:ptyext_private
++      ~priv:(Flag.map_private sub ptyext_private)
+ 
+   let map_type_exception sub
+       {ptyexn_constructor; ptyexn_loc; ptyexn_attributes} =
+     let loc = sub.location sub ptyexn_loc in
+     let attrs = sub.attributes sub ptyexn_attributes in
+@@@@
+     let open Ctf in
+     let loc = sub.location sub loc in
+     let attrs = sub.attributes sub attrs in
+     match desc with
+     | Pctf_inherit ct -> inherit_ ~loc ~attrs (sub.class_type sub ct)
+-    | Pctf_val (s, m, v, t) ->
+-        val_ ~loc ~attrs (map_loc sub s) m v (sub.typ sub t)
+-    | Pctf_method (s, p, v, t) ->
+-        method_ ~loc ~attrs (map_loc sub s) p v (sub.typ sub t)
++    | Pctf_val (s, mv, t) ->
++        val_ ~loc ~attrs (map_loc sub s) (Flag.map_mutable_virtual sub mv)
++          (sub.typ sub t)
++    | Pctf_method (s, pv, t) ->
++        method_ ~loc ~attrs (map_loc sub s) (Flag.map_private_virtual sub pv)
++          (sub.typ sub t)
+     | Pctf_constraint (t1, t2) ->
+         constraint_ ~loc ~attrs (sub.typ sub t1) (sub.typ sub t2)
+     | Pctf_attribute x -> attribute ~loc (sub.attribute sub x)
+     | Pctf_extension x -> extension ~loc ~attrs (sub.extension sub x)
+ 
 @@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
@@ -251,7 +382,7 @@
          record ~loc ~attrs
 -               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl) cf
 +               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
-+               (map_obj_closed_flag sub cf)
++               (Flag.map_obj_closed sub cf)
      | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
 +    | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
      | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
@@ -259,6 +390,52 @@
          constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
      | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
      | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+@@@@
+     let attrs = sub.attributes sub attrs in
+     match desc with
+     | Pcf_inherit (o, ce, s) ->
+         inherit_ ~loc ~attrs o (sub.class_expr sub ce)
+           (map_opt (map_loc sub) s)
+-    | Pcf_val (s, m, k) -> val_ ~loc ~attrs (map_loc sub s) m (map_kind sub k)
+-    | Pcf_method (s, p, k) ->
+-        method_ ~loc ~attrs (map_loc sub s) p (map_kind sub k)
++    | Pcf_val (s, mv, k) ->
++        val_ ~loc ~attrs (map_loc sub s) (Flag.map_mutable_virtual sub mv)
++          (map_kind sub k)
++    | Pcf_method (s, pv, k) ->
++        method_ ~loc ~attrs (map_loc sub s) (Flag.map_private_virtual sub pv)
++          (map_kind sub k)
+     | Pcf_constraint (t1, t2) ->
+         constraint_ ~loc ~attrs (sub.typ sub t1) (sub.typ sub t2)
+     | Pcf_initializer e -> initializer_ ~loc ~attrs (sub.expr sub e)
+     | Pcf_attribute x -> attribute ~loc (sub.attribute sub x)
+     | Pcf_extension x -> extension ~loc ~attrs (sub.extension sub x)
+@@@@
+   let class_infos sub f {pci_virt; pci_params = pl; pci_name; pci_expr;
+                          pci_loc; pci_attributes} =
+     let loc = sub.location sub pci_loc in
+     let attrs = sub.attributes sub pci_attributes in
+     Ci.mk ~loc ~attrs
+-     ~virt:pci_virt
++     ~virt:(Flag.map_virtual sub pci_virt)
+      ~params:(List.map (map_fst (sub.typ sub)) pl)
+       (map_loc sub pci_name)
+       (f pci_expr)
+ end
+ 
+@@@@
+     label_declaration =
+       (fun this {pld_name; pld_type; pld_loc; pld_mutable; pld_attributes} ->
+          Type.field
+            (map_loc this pld_name)
+            (this.typ this pld_type)
+-           ~mut:pld_mutable
++           ~mut:(Flag.map_mutable this pld_mutable)
+            ~loc:(this.location this pld_loc)
+            ~attrs:(this.attributes this pld_attributes)
+       );
+ 
+     cases = (fun this l -> List.map (this.case this) l);
 @@@@
  
      toplevel_phrase =
@@ -328,6 +505,33 @@
 --- parser-standard/asttypes.mli
 +++ parser-extended/asttypes.mli
 @@@@
+ type rec_flag = Nonrecursive | Recursive
+ 
+ type direction_flag = Upto | Downto
+ 
+ (* Order matters, used in polymorphic comparison *)
+-type private_flag = Private | Public
++type private_flag = Private of Location.t | Public
+ 
+-type mutable_flag = Immutable | Mutable
++type mutable_flag = Immutable | Mutable of Location.t
+ 
+-type virtual_flag = Virtual | Concrete
++type virtual_flag = Virtual of Location.t | Concrete
++
++type private_virtual =
++  | PV_none
++  | PV_private of Location.t
++  | PV_virtual of Location.t
++  | PV_private_virtual of Location.t * Location.t
++  | PV_virtual_private of Location.t * Location.t
++
++type mutable_virtual =
++  | MV_none
++  | MV_mutable of Location.t
++  | MV_virtual of Location.t
++  | MV_mutable_virtual of Location.t * Location.t
++  | MV_virtual_mutable of Location.t * Location.t
  
  type override_flag = Override | Fresh
  
@@ -377,6 +581,23 @@
 --- parser-standard/parser.mly
 +++ parser-extended/parser.mly
 @@@@
+   Location.loc_start = startpos;
+   Location.loc_end = endpos;
+   Location.loc_ghost = true;
+ }
+ 
++let mv_of_mut = function
++  | Immutable -> MV_none
++  | Mutable l -> MV_mutable l
++
++let pv_of_priv = function
++  | Public -> PV_none
++  | Private l -> PV_private l
++
+ let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
+ let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
+ let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
+ let mkmty ~loc ?attrs d = Mty.mk ~loc:(make_loc loc) ?attrs d
  let mksig ~loc d = Sig.mk ~loc:(make_loc loc) d
  let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
  let mkstr ~loc d = Str.mk ~loc:(make_loc loc) d
@@ -493,6 +714,87 @@
    tail = listx(delimiter, X, Y)
      { let xs, y = tail in
 @@@@
+     attrs = attributes
+     mutable_ = virtual_with_mutable_flag
+     label = mkrhs(label) COLON ty = core_type
+       { (label, mutable_, Cfk_virtual ty), attrs }
+   | override_flag attributes mutable_flag mkrhs(label) EQUAL seq_expr
+-      { ($4, $3, Cfk_concrete ($1, $6)), $2 }
++      { ($4, mv_of_mut $3, Cfk_concrete ($1, $6)), $2 }
+   | override_flag attributes mutable_flag mkrhs(label) type_constraint
+     EQUAL seq_expr
+       { let e = mkexp_constraint ~loc:$sloc $7 $5 in
+-        ($4, $3, Cfk_concrete ($1, e)), $2
++        ($4, mv_of_mut $3, Cfk_concrete ($1, e)), $2
+       }
+ ;
+ method_:
+     no_override_flag
+     attrs = attributes
+@@@@
+     label = mkrhs(label) COLON ty = poly_type
+       { (label, private_, Cfk_virtual ty), attrs }
+   | override_flag attributes private_flag mkrhs(label) strict_binding
+       { let e = $5 in
+         let loc = Location.(e.pexp_loc.loc_start, e.pexp_loc.loc_end) in
+-        ($4, $3,
++        ($4, pv_of_priv $3,
+         Cfk_concrete ($1, ghexp ~loc (Pexp_poly (e, None)))), $2 }
+   | override_flag attributes private_flag mkrhs(label)
+     COLON poly_type EQUAL seq_expr
+       { let poly_exp =
+           let loc = ($startpos($6), $endpos($8)) in
+           ghexp ~loc (Pexp_poly($8, Some $6)) in
+-        ($4, $3, Cfk_concrete ($1, poly_exp)), $2 }
++        ($4, pv_of_priv $3, Cfk_concrete ($1, poly_exp)), $2 }
+   | override_flag attributes private_flag mkrhs(label) COLON TYPE lident_list
+     DOT core_type EQUAL seq_expr
+       { let poly_exp_loc = ($startpos($7), $endpos($11)) in
+         let poly_exp =
+           let exp, poly =
+             (* it seems odd to use the global ~loc here while poly_exp_loc
+                is tighter, but this is what ocamlyacc does;
+                TODO improve parser.mly *)
+             wrap_type_annotation ~loc:$sloc $7 $9 $11 in
+           ghexp ~loc:poly_exp_loc (Pexp_poly(exp, Some poly)) in
+-        ($4, $3,
++        ($4, pv_of_priv $3,
+         Cfk_concrete ($1, poly_exp)), $2 }
+ ;
+ 
+ /* Class types */
+ 
+@@@@
+   | VAL attributes value_type post_item_attributes
+       { let docs = symbol_docs $sloc in
+         mkctf ~loc:$sloc (Pctf_val $3) ~attrs:($2@$4) ~docs }
+   | METHOD attributes private_virtual_flags mkrhs(label) COLON poly_type
+     post_item_attributes
+-      { let (p, v) = $3 in
+-        let docs = symbol_docs $sloc in
+-        mkctf ~loc:$sloc (Pctf_method ($4, p, v, $6)) ~attrs:($2@$7) ~docs }
++      { let docs = symbol_docs $sloc in
++        mkctf ~loc:$sloc (Pctf_method ($4, $3, $6)) ~attrs:($2@$7) ~docs }
+   | CONSTRAINT attributes constrain_field post_item_attributes
+       { let docs = symbol_docs $sloc in
+         mkctf ~loc:$sloc (Pctf_constraint $3) ~attrs:($2@$4) ~docs }
+   | item_extension post_item_attributes
+       { let docs = symbol_docs $sloc in
+@@@@
+   flags = mutable_virtual_flags
+   label = mkrhs(label)
+   COLON
+   ty = core_type
+   {
+-    let mut, virt = flags in
+-    label, mut, virt, ty
++    label, flags, ty
+   }
+ ;
+ %inline constrain:
+     core_type EQUAL core_type
+     { $1, $3, make_loc $sloc }
+@@@@
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
        { $1 }
@@ -558,6 +860,19 @@
  %inline record_pat_field:
    label = mkrhs(label_longident)
    octy = preceded(COLON, core_type)?
+@@@@
+   | MODULE TYPE l=mkrhs(mty_longident) COLONEQUAL rhs=module_type
+       { Pwith_modtypesubst (l, rhs) }
+ ;
+ with_type_binder:
+     EQUAL          { Public }
+-  | EQUAL PRIVATE  { Private }
++  | EQUAL PRIVATE  { Private (make_loc $loc($2)) }
+ ;
+ 
+ /* Polymorphic types */
+ 
+ %inline typevar:
 @@@@
        tid = mkrhs(type_longident)
          { Ptyp_constr(tid, tys) }
@@ -628,6 +943,77 @@
  /* Identifiers and long identifiers */
  
  ident:
+@@@@
+   inline_private_flag
+     { $1 }
+ ;
+ %inline inline_private_flag:
+     /* empty */                                 { Public }
+-  | PRIVATE                                     { Private }
++  | PRIVATE                                     { Private (make_loc $sloc) }
+ ;
+ mutable_flag:
+     /* empty */                                 { Immutable }
+-  | MUTABLE                                     { Mutable }
++  | MUTABLE                                     { Mutable (make_loc $sloc) }
+ ;
+ virtual_flag:
+     /* empty */                                 { Concrete }
+-  | VIRTUAL                                     { Virtual }
++  | VIRTUAL                                     { Virtual (make_loc $sloc) }
+ ;
+ mutable_virtual_flags:
+     /* empty */
+-      { Immutable, Concrete }
++      { MV_none }
+   | MUTABLE
+-      { Mutable, Concrete }
++      { MV_mutable (make_loc $sloc) }
+   | VIRTUAL
+-      { Immutable, Virtual }
++      { MV_virtual (make_loc $sloc) }
+   | MUTABLE VIRTUAL
++      { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
+   | VIRTUAL MUTABLE
+-      { Mutable, Virtual }
++      { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
+ ;
+ private_virtual_flags:
+-    /* empty */  { Public, Concrete }
+-  | PRIVATE { Private, Concrete }
+-  | VIRTUAL { Public, Virtual }
+-  | PRIVATE VIRTUAL { Private, Virtual }
+-  | VIRTUAL PRIVATE { Private, Virtual }
++    /* empty */  { PV_none }
++  | PRIVATE { PV_private (make_loc $sloc) }
++  | VIRTUAL { PV_virtual (make_loc $sloc) }
++  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
++  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
+ ;
+ (* This nonterminal symbol indicates the definite presence of a VIRTUAL
+    keyword and the possible presence of a MUTABLE keyword. *)
+ virtual_with_mutable_flag:
+-  | VIRTUAL { Immutable }
+-  | MUTABLE VIRTUAL { Mutable }
+-  | VIRTUAL MUTABLE { Mutable }
++  | VIRTUAL { MV_virtual (make_loc $sloc) }
++  | MUTABLE VIRTUAL { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
++  | VIRTUAL MUTABLE { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
+ ;
+ (* This nonterminal symbol indicates the definite presence of a VIRTUAL
+    keyword and the possible presence of a PRIVATE keyword. *)
+ virtual_with_private_flag:
+-  | VIRTUAL { Public }
+-  | PRIVATE VIRTUAL { Private }
+-  | VIRTUAL PRIVATE { Private }
++  | VIRTUAL { PV_virtual (make_loc $sloc) }
++  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
++  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
+ ;
+ %inline no_override_flag:
+     /* empty */                                 { Fresh }
+ ;
+ %inline override_flag:
 --- parser-standard/parsetree.mli
 +++ parser-extended/parsetree.mli
 @@@@
@@ -719,6 +1105,48 @@
      {
       pc_lhs: pattern;
       pc_guard: expression option;
+@@@@
+      pctf_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     }
+ 
+ and class_type_field_desc =
+   | Pctf_inherit of class_type  (** [inherit CT] *)
+-  | Pctf_val of (label loc * mutable_flag * virtual_flag * core_type)
++  | Pctf_val of (label loc * mutable_virtual * core_type)
+       (** [val x: T] *)
+-  | Pctf_method of (label loc * private_flag * virtual_flag * core_type)
++  | Pctf_method of (label loc * private_virtual * core_type)
+       (** [method x: T]
+ 
+             Note: [T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]}.
+         *)
+   | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
+@@@@
+                     and [s] is [None],
+             - [inherit! CE as x]
+                    when [flag] is {{!Asttypes.override_flag.Override}[Override]}
+                     and [s] is [Some x]
+   *)
+-  | Pcf_val of (label loc * mutable_flag * class_field_kind)
++  | Pcf_val of (label loc * mutable_virtual * class_field_kind)
+       (** [Pcf_val(x,flag, kind)] represents:
+             - [val x = E]
+        when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
+         and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
+             - [val virtual x: T]
+@@@@
+         and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
+             - [val mutable virtual x: T]
+        when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
+         and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
+   *)
+-  | Pcf_method of (label loc * private_flag * class_field_kind)
++  | Pcf_method of (label loc * private_virtual * class_field_kind)
+       (** - [method x = E]
+                         ([E] can be a {{!expression_desc.Pexp_poly}[Pexp_poly]})
+             - [method virtual x: T]
+                         ([T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]})
+   *)
 @@@@
  and directive_argument_desc =
    | Pdir_string of string
@@ -815,7 +1243,18 @@
  let fmt_mutable_flag f x =
    match x with
    | Immutable -> fprintf f "Immutable"
-   | Mutable -> fprintf f "Mutable"
+-  | Mutable -> fprintf f "Mutable"
++  | Mutable loc -> fprintf f "Mutable %a" fmt_location loc
+ 
+ let fmt_virtual_flag f x =
+   match x with
+-  | Virtual -> fprintf f "Virtual"
++  | Virtual loc -> fprintf f "Virtual %a" fmt_location loc
+   | Concrete -> fprintf f "Concrete"
+ 
+ let fmt_override_flag f x =
+   match x with
+   | Override -> fprintf f "Override"
 @@@@
  let fmt_closed_flag f x =
    match x with
@@ -833,20 +1272,41 @@
    | Recursive -> fprintf f "Rec"
  
 @@@@
+   | Downto -> fprintf f "Down"
+ 
  let fmt_private_flag f x =
    match x with
    | Public -> fprintf f "Public"
-   | Private -> fprintf f "Private"
+-  | Private -> fprintf f "Private"
++  | Private loc -> fprintf f "Private %a" fmt_location loc
  
 -let line i f s (*...*) =
 -  fprintf f "%s" (String.make ((2*i) mod 72) ' ');
 -  fprintf f s (*...*)
--
++let fmt_private_virtual_flag f x =
++  match x with
++  | PV_none -> fprintf f "PV_none"
++  | PV_private loc -> fprintf f "PV_private %a" fmt_location loc
++  | PV_virtual loc -> fprintf f "PV_virtual %a" fmt_location loc
++  | PV_private_virtual (loc, loc') ->
++      fprintf f "PV_private_virtual (%a, %a)" fmt_location loc fmt_location loc'
++  | PV_virtual_private (loc, loc') ->
++      fprintf f "PV_virtual_private (%a, %a)" fmt_location loc fmt_location loc'
++
++let fmt_mutable_virtual_flag f x =
++  match x with
++  | MV_none -> fprintf f "MV_none"
++  | MV_mutable loc -> fprintf f "MV_mutable %a" fmt_location loc
++  | MV_virtual loc -> fprintf f "MV_virtual %a" fmt_location loc
++  | MV_mutable_virtual (loc, loc') ->
++      fprintf f "MV_mutable_virtual (%a, %a)" fmt_location loc fmt_location loc'
++  | MV_virtual_mutable (loc, loc') ->
++      fprintf f "MV_virtual_mutable (%a, %a)" fmt_location loc fmt_location loc'
+ 
  let list i f ppf l =
    match l with
    | [] -> line i ppf "[]\n"
    | _ :: _ ->
-      line i ppf "[\n";
 @@@@
        f (i+1) ppf x
  
@@ -1133,19 +1593,24 @@
    line i ppf "class_signature\n";
    core_type (i+1) ppf cs.pcsig_self;
 @@@@
+   attributes i ppf x.pctf_attributes;
    match x.pctf_desc with
    | Pctf_inherit (ct) ->
        line i ppf "Pctf_inherit\n";
        class_type i ppf ct;
-   | Pctf_val (s, mf, vf, ct) ->
+-  | Pctf_val (s, mf, vf, ct) ->
 -      line i ppf "Pctf_val \"%s\" %a %a\n" s.txt fmt_mutable_flag mf
-+      line i ppf "Pctf_val %a %a %a\n" fmt_string_loc s fmt_mutable_flag mf
-            fmt_virtual_flag vf;
+-           fmt_virtual_flag vf;
++  | Pctf_val (s, mv, ct) ->
++      line i ppf "Pctf_val %a %a\n" fmt_string_loc s
++        fmt_mutable_virtual_flag mv;
        core_type (i+1) ppf ct;
-   | Pctf_method (s, pf, vf, ct) ->
+-  | Pctf_method (s, pf, vf, ct) ->
 -      line i ppf "Pctf_method \"%s\" %a %a\n" s.txt fmt_private_flag pf
-+      line i ppf "Pctf_method %a %a %a\n" fmt_string_loc s fmt_private_flag pf
-            fmt_virtual_flag vf;
+-           fmt_virtual_flag vf;
++  | Pctf_method (s, pv, ct) ->
++      line i ppf "Pctf_method %a %a\n" fmt_string_loc s
++        fmt_private_virtual_flag pv;
        core_type (i+1) ppf ct;
    | Pctf_constraint (ct1, ct2) ->
        line i ppf "Pctf_constraint\n";
@@ -1180,6 +1645,24 @@
  and class_structure i ppf { pcstr_self = p; pcstr_fields = l } =
    line i ppf "class_structure\n";
    pattern (i+1) ppf p;
+@@@@
+   | Pcf_inherit (ovf, ce, so) ->
+       line i ppf "Pcf_inherit %a\n" fmt_override_flag ovf;
+       class_expr (i+1) ppf ce;
+       option (i+1) string_loc ppf so;
+   | Pcf_val (s, mf, k) ->
+-      line i ppf "Pcf_val %a\n" fmt_mutable_flag mf;
++      line i ppf "Pcf_val %a\n" fmt_mutable_virtual_flag mf;
+       line (i+1) ppf "%a\n" fmt_string_loc s;
+       class_field_kind (i+1) ppf k
+   | Pcf_method (s, pf, k) ->
+-      line i ppf "Pcf_method %a\n" fmt_private_flag pf;
++      line i ppf "Pcf_method %a\n" fmt_private_virtual_flag pf;
+       line (i+1) ppf "%a\n" fmt_string_loc s;
+       class_field_kind (i+1) ppf k
+   | Pcf_constraint (ct1, ct2) ->
+       line i ppf "Pcf_constraint\n";
+       core_type (i+1) ppf ct1;
 @@@@
        line i ppf "Pcf_initializer\n";
        expression (i+1) ppf e;

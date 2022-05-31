@@ -34,11 +34,25 @@ type rec_flag = Nonrecursive | Recursive
 type direction_flag = Upto | Downto
 
 (* Order matters, used in polymorphic comparison *)
-type private_flag = Private | Public
+type private_flag = Private of Location.t | Public
 
-type mutable_flag = Immutable | Mutable
+type mutable_flag = Immutable | Mutable of Location.t
 
-type virtual_flag = Virtual | Concrete
+type virtual_flag = Virtual of Location.t | Concrete
+
+type private_virtual =
+  | PV_none
+  | PV_private of Location.t
+  | PV_virtual of Location.t
+  | PV_private_virtual of Location.t * Location.t
+  | PV_virtual_private of Location.t * Location.t
+
+type mutable_virtual =
+  | MV_none
+  | MV_mutable of Location.t
+  | MV_virtual of Location.t
+  | MV_mutable_virtual of Location.t * Location.t
+  | MV_virtual_mutable of Location.t * Location.t
 
 type override_flag = Override | Fresh
 
