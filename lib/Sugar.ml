@@ -14,37 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
-  let ctx = Typ typ in
-  let {ptyp_desc; ptyp_loc; _} = typ in
-  match ptyp_desc with
-  | Ptyp_arrow (l, t1, t2) ->
-      let before = if i > 0 then ptyp_loc else t1.ptyp_loc in
-      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc ;
-      let rest =
-        match t2.ptyp_attributes with
-        | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
-        | _ -> [(ptyp_loc, Nolabel, sub_typ ~ctx t2)]
-      in
-      (ptyp_loc, l, sub_typ ~ctx t1) :: rest
-  | _ -> [(ptyp_loc, Nolabel, xtyp)]
-
-let arrow_typ cmts t = arrow_typ cmts 0 t
-
-let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
-  let ctx = Cty typ in
-  let {pcty_desc; pcty_loc; _} = typ in
-  match pcty_desc with
-  | Pcty_arrow (l, t1, t2) ->
-      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
-      let rest =
-        match t2.pcty_attributes with
-        | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
-        | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
-      in
-      (l, `core_type (sub_typ ~ctx t1)) :: rest
-  | _ -> [(Nolabel, `class_type xtyp)]
-
 let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
   let ctx = Pat pat in
   match pat with

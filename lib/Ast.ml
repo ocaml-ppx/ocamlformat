@@ -451,7 +451,7 @@ module Cty = struct
     | Pcty_signature {pcsig_fields= _ :: _; _}
      |Pcty_open _ | Pcty_extension _ ->
         false
-    | Pcty_arrow (_, _, t) -> is_simple t
+    | Pcty_arrow (_, t) -> is_simple t
 end
 
 module Cl = struct
@@ -1028,7 +1028,8 @@ end = struct
           ||
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
-          | Pcty_arrow (_, t, _) -> t == typ
+          | Pcty_arrow (t, _) ->
+              List.exists t ~f:(fun x -> x.pap_type == typ)
           | _ -> false )
     in
     match ctx with
@@ -1039,7 +1040,8 @@ end = struct
       | Ptyp_extension _ -> ()
       | Ptyp_any | Ptyp_var _ -> assert false
       | Ptyp_alias (t1, _) | Ptyp_poly (_, t1) -> assert (typ == t1)
-      | Ptyp_arrow (_, t1, t2) -> assert (typ == t1 || typ == t2)
+      | Ptyp_arrow (t, t2) ->
+          assert (List.exists t ~f:(fun x -> typ == x.pap_type) || typ == t2)
       | Ptyp_tuple t1N | Ptyp_constr (_, t1N) -> assert (List.exists t1N ~f)
       | Ptyp_variant (r1N, _, _) ->
           assert (
@@ -1061,7 +1063,8 @@ end = struct
         assert (
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f
-          | Pcty_arrow (_, t, _) -> t == typ
+          | Pcty_arrow (t, _) ->
+              List.exists t ~f:(fun x -> x.pap_type == typ)
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
           | Pcty_signature {pcsig_self; pcsig_fields; _} ->
@@ -1187,9 +1190,7 @@ end = struct
           let rec loop x =
             x == cty
             ||
-            match x.pcty_desc with
-            | Pcty_arrow (_, _, x) -> loop x
-            | _ -> false
+            match x.pcty_desc with Pcty_arrow (_, x) -> loop x | _ -> false
           in
           loop pci_expr )
     in
@@ -1218,7 +1219,7 @@ end = struct
       | _ -> assert false )
     | Cty {pcty_desc; _} -> (
       match pcty_desc with
-      | Pcty_arrow (_, _, t) -> assert (t == cty)
+      | Pcty_arrow (_, t) -> assert (t == cty)
       | Pcty_signature {pcsig_fields; _} ->
           assert (
             List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->
@@ -1681,8 +1682,12 @@ end = struct
     | {ctx= Str _; ast= Typ _; _} -> None
     | {ctx= Typ {ptyp_desc; _}; ast= Typ typ; _} -> (
       match ptyp_desc with
-      | Ptyp_arrow (_, t1, _) ->
-          Some (MinusGreater, if t1 == typ then Left else Right)
+      | Ptyp_arrow (t, _) ->
+          let assoc =
+            if List.exists t ~f:(fun x -> x.pap_type == typ) then Left
+            else Right
+          in
+          Some (MinusGreater, assoc)
       | Ptyp_tuple _ -> Some (InfixOp3, Non)
       | Ptyp_alias _ -> Some (As, Non)
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
@@ -1693,12 +1698,16 @@ end = struct
     | {ctx= Cty {pcty_desc; _}; ast= Typ typ; _} -> (
       match pcty_desc with
       | Pcty_constr (_, _ :: _ :: _) -> Some (Comma, Non)
-      | Pcty_arrow (_, t1, _) ->
-          Some (MinusGreater, if t1 == typ then Left else Right)
+      | Pcty_arrow (t, _) ->
+          let assoc =
+            if List.exists t ~f:(fun x -> x.pap_type == typ) then Left
+            else Right
+          in
+          Some (MinusGreater, assoc)
       | _ -> None )
     | {ctx= Cty {pcty_desc; _}; ast= Cty typ; _} -> (
       match pcty_desc with
-      | Pcty_arrow (_, _, t2) ->
+      | Pcty_arrow (_, t2) ->
           Some (MinusGreater, if t2 == typ then Right else Left)
       | _ -> None )
     | {ast= Cty _; _} -> None

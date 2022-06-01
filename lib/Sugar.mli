@@ -13,22 +13,6 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-val arrow_typ :
-     Cmts.t
-  -> core_type Ast.xt
-  -> (Location.t * arg_label * core_type Ast.xt) list
-(** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
-    type [ty]. *)
-
-val class_arrow_typ :
-     Cmts.t
-  -> class_type Ast.xt
-  -> ( arg_label
-     * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt] )
-     list
-(** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
-    the class type [ty]. *)
-
 val or_pat :
   ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
 (** [or_pat allow_attribute cmts pat] returns the list of patterns of a
