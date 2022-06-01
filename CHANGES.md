@@ -7,7 +7,7 @@
 ### Bug fixes
 
 - Preserve comments around object open/close flag (#2097, @trefis, @gpetiot)
-- Preserve comments around private/mutable/virtual keywords (#<PR_NUMBER>, @trefis, @gpetiot)
+- Preserve comments around private/mutable/virtual keywords (#2098, @trefis, @gpetiot)
 
 ### Changes
 
