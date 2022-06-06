@@ -11,6 +11,8 @@
 
 ### Changes
 
+- JaneStreet profile: set `max-indent = 2` (#<PR_NUMBER>, @gpetiot)
+
 ### New features
 
 ## 0.22.4 (2022-05-26)
