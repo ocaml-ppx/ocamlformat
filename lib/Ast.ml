@@ -1069,8 +1069,8 @@ end = struct
               || List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->
                      match pctf_desc with
                      | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
-                     | Pctf_val (_, _, _, t) -> t == typ
-                     | Pctf_method (_, _, _, t) -> t == typ
+                     | Pctf_val (_, _, t) -> t == typ
+                     | Pctf_method (_, _, t) -> t == typ
                      | Pctf_inherit _ -> false
                      | Pctf_attribute _ -> false
                      | Pctf_extension _ -> false ) )

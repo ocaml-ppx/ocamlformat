@@ -404,10 +404,10 @@ module Ctf:
     val attr: class_type_field -> attribute -> class_type_field
 
     val inherit_: ?loc:loc -> ?attrs:attrs -> class_type -> class_type_field
-    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
-      virtual_flag -> core_type -> class_type_field
-    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
-      virtual_flag -> core_type -> class_type_field
+    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_virtual ->
+      core_type -> class_type_field
+    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_virtual ->
+      core_type -> class_type_field
     val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
       class_type_field
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type_field
@@ -445,9 +445,9 @@ module Cf:
 
     val inherit_: ?loc:loc -> ?attrs:attrs -> override_flag -> class_expr ->
       str option -> class_field
-    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
+    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_virtual ->
       class_field_kind -> class_field
-    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
+    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_virtual ->
       class_field_kind -> class_field
     val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
       class_field

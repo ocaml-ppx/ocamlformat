@@ -108,11 +108,11 @@ let fmt_constant i f x =
 let fmt_mutable_flag f x =
   match x with
   | Immutable -> fprintf f "Immutable"
-  | Mutable -> fprintf f "Mutable"
+  | Mutable loc -> fprintf f "Mutable %a" fmt_location loc
 
 let fmt_virtual_flag f x =
   match x with
-  | Virtual -> fprintf f "Virtual"
+  | Virtual loc -> fprintf f "Virtual %a" fmt_location loc
   | Concrete -> fprintf f "Concrete"
 
 let fmt_override_flag f x =
@@ -143,7 +143,21 @@ let fmt_direction_flag f x =
 let fmt_private_flag f x =
   match x with
   | Public -> fprintf f "Public"
-  | Private -> fprintf f "Private"
+  | Private loc -> fprintf f "Private %a" fmt_location loc
+
+let fmt_opt f ppf = function
+  | None -> fprintf ppf "None"
+  | Some x -> fprintf ppf "Some(%a)" f x
+
+let fmt_private_virtual_flag ppf { pv_priv; pv_virt } =
+  fprintf ppf "(private=%a, virtual=%a)"
+    (fmt_opt fmt_location) pv_priv
+    (fmt_opt fmt_location) pv_virt
+
+let fmt_mutable_virtual_flag ppf { mv_mut; mv_virt } =
+  fprintf ppf "(mutable=%a, virtual=%a)"
+    (fmt_opt fmt_location) mv_mut
+    (fmt_opt fmt_location) mv_virt
 
 let list i f ppf l =
   match l with
@@ -576,13 +590,13 @@ and class_type_field i ppf x =
   | Pctf_inherit (ct) ->
       line i ppf "Pctf_inherit\n";
       class_type i ppf ct;
-  | Pctf_val (s, mf, vf, ct) ->
-      line i ppf "Pctf_val %a %a %a\n" fmt_string_loc s fmt_mutable_flag mf
-           fmt_virtual_flag vf;
+  | Pctf_val (s, mv, ct) ->
+      line i ppf "Pctf_val %a %a\n" fmt_string_loc s
+        fmt_mutable_virtual_flag mv;
       core_type (i+1) ppf ct;
-  | Pctf_method (s, pf, vf, ct) ->
-      line i ppf "Pctf_method %a %a %a\n" fmt_string_loc s fmt_private_flag pf
-           fmt_virtual_flag vf;
+  | Pctf_method (s, pv, ct) ->
+      line i ppf "Pctf_method %a %a\n" fmt_string_loc s
+        fmt_private_virtual_flag pv;
       core_type (i+1) ppf ct;
   | Pctf_constraint (ct1, ct2) ->
       line i ppf "Pctf_constraint\n";
@@ -668,11 +682,11 @@ and class_field i ppf x =
       class_expr (i+1) ppf ce;
       option (i+1) string_loc ppf so;
   | Pcf_val (s, mf, k) ->
-      line i ppf "Pcf_val %a\n" fmt_mutable_flag mf;
+      line i ppf "Pcf_val %a\n" fmt_mutable_virtual_flag mf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
       class_field_kind (i+1) ppf k
   | Pcf_method (s, pf, k) ->
-      line i ppf "Pcf_method %a\n" fmt_private_flag pf;
+      line i ppf "Pcf_method %a\n" fmt_private_virtual_flag pf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
       class_field_kind (i+1) ppf k
   | Pcf_constraint (ct1, ct2) ->

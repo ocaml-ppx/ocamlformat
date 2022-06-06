@@ -364,17 +364,44 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l $ fmt sep
   | Optional l -> str "?" $ str l $ fmt sep
 
-let fmt_private_flag flag = fmt_if (is_private flag) "@ private"
-
 let fmt_direction_flag = function
   | Upto -> fmt "@ to "
   | Downto -> fmt "@ downto "
 
-let fmt_virtual_flag f =
-  match f with Virtual -> fmt "@ virtual" | Concrete -> noop
+let fmt_private_flag c = function
+  | Private loc -> fmt " " $ Cmts.fmt c loc @@ str "private"
+  | Public -> noop
+
+let fmt_virtual_flag c = function
+  | Virtual loc -> fmt " " $ Cmts.fmt c loc @@ str "virtual"
+  | Concrete -> noop
+
+let fmt_mutable_flag c = function
+  | Mutable loc -> Cmts.fmt c loc @@ str "mutable" $ fmt " "
+  | Immutable -> noop
+
+let fmt_mutable_virtual_flag c = function
+  | {mv_mut= Some m; mv_virt= Some v} when Location.compare_start v m < 1 ->
+      fmt " "
+      $ Cmts.fmt c v @@ str "virtual"
+      $ fmt " "
+      $ Cmts.fmt c m @@ str "mutable"
+  | {mv_mut; mv_virt} ->
+      opt mv_mut (fun m -> fmt " " $ Cmts.fmt c m @@ str "mutable")
+      $ opt mv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
+
+let fmt_private_virtual_flag c = function
+  | {pv_priv= Some p; pv_virt= Some v} when Location.compare_start v p < 1 ->
+      fmt " "
+      $ Cmts.fmt c v @@ str "virtual"
+      $ fmt " "
+      $ Cmts.fmt c p @@ str "private"
+  | {pv_priv; pv_virt} ->
+      opt pv_priv (fun p -> fmt " " $ Cmts.fmt c p @@ str "private")
+      $ opt pv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
 
 let virtual_or_override = function
-  | Cfk_virtual _ -> fmt "@ virtual"
+  | Cfk_virtual _ -> noop
   | Cfk_concrete (Override, _) -> str "!"
   | Cfk_concrete (Fresh, _) -> noop
 
@@ -3020,7 +3047,7 @@ and fmt_class_field c ctx cf =
         $ fmt "@ "
         $ ( fmt_class_expr c (sub_cl ~ctx cl)
           $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
-  | Pcf_method (name, priv, kind) ->
+  | Pcf_method (name, pv, kind) ->
       let typ, args, eq, expr = fmt_class_field_kind c ctx kind in
       hvbox 2
         ( hovbox 2
@@ -3028,12 +3055,12 @@ and fmt_class_field c ctx cf =
                 (box_fun_decl_args c 4
                    ( box_fun_sig_args c 4
                        ( str "method" $ virtual_or_override kind
-                       $ fmt_if (is_private priv) " private"
+                       $ fmt_private_virtual_flag c pv
                        $ str " " $ fmt_str_loc c name $ typ )
                    $ args ) )
             $ eq )
         $ expr )
-  | Pcf_val (name, mut, kind) ->
+  | Pcf_val (name, mv, kind) ->
       let typ, args, eq, expr = fmt_class_field_kind c ctx kind in
       hvbox 2
         ( hovbox 2
@@ -3041,7 +3068,7 @@ and fmt_class_field c ctx cf =
                 (box_fun_decl_args c 4
                    ( box_fun_sig_args c 4
                        ( str "val" $ virtual_or_override kind
-                       $ fmt_if (is_mutable mut) " mutable"
+                       $ fmt_mutable_virtual_flag c mv
                        $ str " " $ fmt_str_loc c name $ typ )
                    $ args ) )
             $ eq )
@@ -3074,18 +3101,19 @@ and fmt_class_type_field c ctx cf =
   match cf.pctf_desc with
   | Pctf_inherit ct ->
       hovbox 2 (fmt "inherit@ " $ fmt_class_type c (sub_cty ~ctx ct))
-  | Pctf_method (name, priv, virt, ty) ->
+  | Pctf_method (name, pv, ty) ->
       box_fun_sig_args c 2
         ( hovbox 4
-            ( str "method" $ fmt_virtual_flag virt $ fmt_private_flag priv
+            ( str "method"
+            $ fmt_private_virtual_flag c pv
             $ fmt "@ " $ fmt_str_loc c name )
         $ fmt " :@ "
         $ fmt_core_type c (sub_typ ~ctx ty) )
-  | Pctf_val (name, mut, virt, ty) ->
+  | Pctf_val (name, mv, ty) ->
       box_fun_sig_args c 2
         ( hovbox 4
-            ( str "val" $ fmt_virtual_flag virt
-            $ fmt_if (is_mutable mut) "@ mutable"
+            ( str "val"
+            $ fmt_mutable_virtual_flag c mv
             $ fmt "@ " $ fmt_str_loc c name )
         $ fmt " :@ "
         $ fmt_core_type c (sub_typ ~ctx ty) )
@@ -3226,7 +3254,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?name ?(eq = "=") decl =
   @@ fun c ->
   let fmt_abstract_manifest = function
     | Some m ->
-        str " " $ str eq $ fmt_private_flag priv $ fmt "@ "
+        str " " $ str eq $ fmt_private_flag c priv $ fmt "@ "
         $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
     | None -> noop
   in
@@ -3234,8 +3262,8 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?name ?(eq = "=") decl =
     | Some m ->
         str " " $ str eq $ break 1 4
         $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
-        $ str " =" $ fmt_private_flag priv
-    | None -> str " " $ str eq $ fmt_private_flag priv
+        $ str " =" $ fmt_private_flag c priv
+    | None -> str " " $ str eq $ fmt_private_flag c priv
   in
   let box_manifest k =
     hvbox c.conf.fmt_opts.type_decl_indent
@@ -3331,7 +3359,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
         ( hvbox 3
             ( hvbox 4
                 ( hvbox 2
-                    ( fmt_if (is_mutable pld_mutable) "mutable "
+                    ( fmt_mutable_flag c pld_mutable
                     $ fmt_str_loc c pld_name $ fmt_if field_loose " "
                     $ fmt ":@ "
                     $ fmt_core_type c (sub_typ ~ctx pld_type)
@@ -3427,7 +3455,7 @@ and fmt_type_extension ?ext c ctx
                (fmt_tydcl_params c ctx ptyext_params)
            $ fmt_longident_loc c ptyext_path
            $ str " +="
-           $ fmt_private_flag ptyext_private
+           $ fmt_private_flag c ptyext_private
            $ list_fl ptyext_constructors (fun ~first ~last:_ x ->
                  let bar_fits = if first then "" else "| " in
                  cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
@@ -3680,7 +3708,7 @@ and fmt_class_types ?ext c ctx ~pre ~sep cls =
           ( hvbox 2
               ( str (if first then pre else "and")
               $ fmt_if_k first (fmt_extension_suffix c ext)
-              $ fmt_virtual_flag cl.pci_virt
+              $ fmt_virtual_flag c cl.pci_virt
               $ fmt "@ "
               $ fmt_class_params c ctx cl.pci_params
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
@@ -3720,7 +3748,7 @@ and fmt_class_exprs ?ext c ctx cls =
                      ( hovbox 2
                          ( str (if first then "class" else "and")
                          $ fmt_if_k first (fmt_extension_suffix c ext)
-                         $ fmt_virtual_flag cl.pci_virt
+                         $ fmt_virtual_flag c cl.pci_virt
                          $ fmt "@ "
                          $ fmt_class_params c ctx cl.pci_params
                          $ fmt_str_loc c cl.pci_name )
