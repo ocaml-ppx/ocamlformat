@@ -242,23 +242,15 @@
 +    | Virtual loc -> Virtual (sub.location sub loc)
 +    | Concrete -> Concrete
 +
-+  let map_private_virtual sub = function
-+    | PV_none -> PV_none
-+    | PV_private loc -> PV_private (sub.location sub loc)
-+    | PV_virtual loc -> PV_virtual (sub.location sub loc)
-+    | PV_private_virtual (loc, loc') ->
-+        PV_private_virtual (sub.location sub loc, sub.location sub loc')
-+    | PV_virtual_private (loc, loc') ->
-+        PV_virtual_private (sub.location sub loc, sub.location sub loc')
++  let map_private_virtual sub { pv_priv; pv_virt } =
++    let pv_priv = map_opt (sub.location sub) pv_priv in
++    let pv_virt = map_opt (sub.location sub) pv_virt in
++    { pv_priv; pv_virt }
 +
-+  let map_mutable_virtual sub = function
-+    | MV_none -> MV_none
-+    | MV_mutable loc -> MV_mutable (sub.location sub loc)
-+    | MV_virtual loc -> MV_virtual (sub.location sub loc)
-+    | MV_mutable_virtual (loc, loc') ->
-+        MV_mutable_virtual (sub.location sub loc, sub.location sub loc')
-+    | MV_virtual_mutable (loc, loc') ->
-+        MV_virtual_mutable (sub.location sub loc, sub.location sub loc')
++  let map_mutable_virtual sub { mv_mut; mv_virt } =
++    let mv_mut = map_opt (sub.location sub) mv_mut in
++    let mv_virt = map_opt (sub.location sub) mv_virt in
++    { mv_mut; mv_virt }
 +end
 +
  module C = struct
@@ -519,19 +511,9 @@
 -type virtual_flag = Virtual | Concrete
 +type virtual_flag = Virtual of Location.t | Concrete
 +
-+type private_virtual =
-+  | PV_none
-+  | PV_private of Location.t
-+  | PV_virtual of Location.t
-+  | PV_private_virtual of Location.t * Location.t
-+  | PV_virtual_private of Location.t * Location.t
++type private_virtual = {pv_priv: Location.t option; pv_virt: Location.t option}
 +
-+type mutable_virtual =
-+  | MV_none
-+  | MV_mutable of Location.t
-+  | MV_virtual of Location.t
-+  | MV_mutable_virtual of Location.t * Location.t
-+  | MV_virtual_mutable of Location.t * Location.t
++type mutable_virtual = {mv_mut: Location.t option; mv_virt: Location.t option}
  
  type override_flag = Override | Fresh
  
@@ -586,13 +568,16 @@
    Location.loc_ghost = true;
  }
  
++let mk_mv ?mut ?virt () = { mv_mut= mut; mv_virt= virt }
++let mk_pv ?priv ?virt () = { pv_priv= priv; pv_virt= virt }
++
 +let mv_of_mut = function
-+  | Immutable -> MV_none
-+  | Mutable l -> MV_mutable l
++  | Immutable -> mk_mv ()
++  | Mutable mut -> mk_mv ~mut ()
 +
 +let pv_of_priv = function
-+  | Public -> PV_none
-+  | Private l -> PV_private l
++  | Public -> mk_pv ()
++  | Private priv -> mk_pv ~priv ()
 +
  let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
  let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
@@ -965,18 +950,18 @@
  mutable_virtual_flags:
      /* empty */
 -      { Immutable, Concrete }
-+      { MV_none }
++      { mk_mv () }
    | MUTABLE
 -      { Mutable, Concrete }
-+      { MV_mutable (make_loc $sloc) }
++      { mk_mv ~mut:(make_loc $sloc) () }
    | VIRTUAL
 -      { Immutable, Virtual }
-+      { MV_virtual (make_loc $sloc) }
++      { mk_mv ~virt:(make_loc $sloc) () }
    | MUTABLE VIRTUAL
-+      { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
++      { mk_mv ~mut:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
    | VIRTUAL MUTABLE
 -      { Mutable, Virtual }
-+      { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
++      { mk_mv ~virt:(make_loc $loc($1)) ~mut:(make_loc $loc($2)) () }
  ;
  private_virtual_flags:
 -    /* empty */  { Public, Concrete }
@@ -984,11 +969,16 @@
 -  | VIRTUAL { Public, Virtual }
 -  | PRIVATE VIRTUAL { Private, Virtual }
 -  | VIRTUAL PRIVATE { Private, Virtual }
-+    /* empty */  { PV_none }
-+  | PRIVATE { PV_private (make_loc $sloc) }
-+  | VIRTUAL { PV_virtual (make_loc $sloc) }
-+  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
-+  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
++    /* empty */
++      { mk_pv () }
++  | PRIVATE
++      { mk_pv ~priv:(make_loc $sloc) () }
++  | VIRTUAL
++      { mk_pv ~virt:(make_loc $sloc) () }
++  | PRIVATE VIRTUAL
++      { mk_pv ~priv:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
++  | VIRTUAL PRIVATE
++      { mk_pv ~virt:(make_loc $loc($1)) ~priv:(make_loc $loc($2)) () }
  ;
  (* This nonterminal symbol indicates the definite presence of a VIRTUAL
     keyword and the possible presence of a MUTABLE keyword. *)
@@ -996,9 +986,12 @@
 -  | VIRTUAL { Immutable }
 -  | MUTABLE VIRTUAL { Mutable }
 -  | VIRTUAL MUTABLE { Mutable }
-+  | VIRTUAL { MV_virtual (make_loc $sloc) }
-+  | MUTABLE VIRTUAL { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
-+  | VIRTUAL MUTABLE { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
++  | VIRTUAL
++      { mk_mv ~virt:(make_loc $sloc) () }
++  | MUTABLE VIRTUAL
++      { mk_mv ~mut:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
++  | VIRTUAL MUTABLE
++      { mk_mv ~virt:(make_loc $loc($1)) ~mut:(make_loc $loc($2)) () }
  ;
  (* This nonterminal symbol indicates the definite presence of a VIRTUAL
     keyword and the possible presence of a PRIVATE keyword. *)
@@ -1006,9 +999,12 @@
 -  | VIRTUAL { Public }
 -  | PRIVATE VIRTUAL { Private }
 -  | VIRTUAL PRIVATE { Private }
-+  | VIRTUAL { PV_virtual (make_loc $sloc) }
-+  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
-+  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
++  | VIRTUAL
++      { mk_pv ~virt:(make_loc $sloc) () }
++  | PRIVATE VIRTUAL
++      { mk_pv ~priv:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
++  | VIRTUAL PRIVATE
++      { mk_pv ~virt:(make_loc $loc($1)) ~priv:(make_loc $loc($2)) () }
  ;
  %inline no_override_flag:
      /* empty */                                 { Fresh }
@@ -1283,25 +1279,19 @@
 -let line i f s (*...*) =
 -  fprintf f "%s" (String.make ((2*i) mod 72) ' ');
 -  fprintf f s (*...*)
-+let fmt_private_virtual_flag f x =
-+  match x with
-+  | PV_none -> fprintf f "PV_none"
-+  | PV_private loc -> fprintf f "PV_private %a" fmt_location loc
-+  | PV_virtual loc -> fprintf f "PV_virtual %a" fmt_location loc
-+  | PV_private_virtual (loc, loc') ->
-+      fprintf f "PV_private_virtual (%a, %a)" fmt_location loc fmt_location loc'
-+  | PV_virtual_private (loc, loc') ->
-+      fprintf f "PV_virtual_private (%a, %a)" fmt_location loc fmt_location loc'
++let fmt_opt f ppf = function
++  | None -> fprintf ppf "None"
++  | Some x -> fprintf ppf "Some(%a)" f x
 +
-+let fmt_mutable_virtual_flag f x =
-+  match x with
-+  | MV_none -> fprintf f "MV_none"
-+  | MV_mutable loc -> fprintf f "MV_mutable %a" fmt_location loc
-+  | MV_virtual loc -> fprintf f "MV_virtual %a" fmt_location loc
-+  | MV_mutable_virtual (loc, loc') ->
-+      fprintf f "MV_mutable_virtual (%a, %a)" fmt_location loc fmt_location loc'
-+  | MV_virtual_mutable (loc, loc') ->
-+      fprintf f "MV_virtual_mutable (%a, %a)" fmt_location loc fmt_location loc'
++let fmt_private_virtual_flag ppf { pv_priv; pv_virt } =
++  fprintf ppf "(private=%a, virtual=%a)"
++    (fmt_opt fmt_location) pv_priv
++    (fmt_opt fmt_location) pv_virt
++
++let fmt_mutable_virtual_flag ppf { mv_mut; mv_virt } =
++  fprintf ppf "(mutable=%a, virtual=%a)"
++    (fmt_opt fmt_location) mv_mut
++    (fmt_opt fmt_location) mv_virt
  
  let list i f ppf l =
    match l with

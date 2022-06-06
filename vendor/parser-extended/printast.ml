@@ -145,25 +145,19 @@ let fmt_private_flag f x =
   | Public -> fprintf f "Public"
   | Private loc -> fprintf f "Private %a" fmt_location loc
 
-let fmt_private_virtual_flag f x =
-  match x with
-  | PV_none -> fprintf f "PV_none"
-  | PV_private loc -> fprintf f "PV_private %a" fmt_location loc
-  | PV_virtual loc -> fprintf f "PV_virtual %a" fmt_location loc
-  | PV_private_virtual (loc, loc') ->
-      fprintf f "PV_private_virtual (%a, %a)" fmt_location loc fmt_location loc'
-  | PV_virtual_private (loc, loc') ->
-      fprintf f "PV_virtual_private (%a, %a)" fmt_location loc fmt_location loc'
+let fmt_opt f ppf = function
+  | None -> fprintf ppf "None"
+  | Some x -> fprintf ppf "Some(%a)" f x
 
-let fmt_mutable_virtual_flag f x =
-  match x with
-  | MV_none -> fprintf f "MV_none"
-  | MV_mutable loc -> fprintf f "MV_mutable %a" fmt_location loc
-  | MV_virtual loc -> fprintf f "MV_virtual %a" fmt_location loc
-  | MV_mutable_virtual (loc, loc') ->
-      fprintf f "MV_mutable_virtual (%a, %a)" fmt_location loc fmt_location loc'
-  | MV_virtual_mutable (loc, loc') ->
-      fprintf f "MV_virtual_mutable (%a, %a)" fmt_location loc fmt_location loc'
+let fmt_private_virtual_flag ppf { pv_priv; pv_virt } =
+  fprintf ppf "(private=%a, virtual=%a)"
+    (fmt_opt fmt_location) pv_priv
+    (fmt_opt fmt_location) pv_virt
+
+let fmt_mutable_virtual_flag ppf { mv_mut; mv_virt } =
+  fprintf ppf "(mutable=%a, virtual=%a)"
+    (fmt_opt fmt_location) mv_mut
+    (fmt_opt fmt_location) mv_virt
 
 let list i f ppf l =
   match l with

@@ -109,23 +109,15 @@ module Flag = struct
     | Virtual loc -> Virtual (sub.location sub loc)
     | Concrete -> Concrete
 
-  let map_private_virtual sub = function
-    | PV_none -> PV_none
-    | PV_private loc -> PV_private (sub.location sub loc)
-    | PV_virtual loc -> PV_virtual (sub.location sub loc)
-    | PV_private_virtual (loc, loc') ->
-        PV_private_virtual (sub.location sub loc, sub.location sub loc')
-    | PV_virtual_private (loc, loc') ->
-        PV_virtual_private (sub.location sub loc, sub.location sub loc')
+  let map_private_virtual sub { pv_priv; pv_virt } =
+    let pv_priv = map_opt (sub.location sub) pv_priv in
+    let pv_virt = map_opt (sub.location sub) pv_virt in
+    { pv_priv; pv_virt }
 
-  let map_mutable_virtual sub = function
-    | MV_none -> MV_none
-    | MV_mutable loc -> MV_mutable (sub.location sub loc)
-    | MV_virtual loc -> MV_virtual (sub.location sub loc)
-    | MV_mutable_virtual (loc, loc') ->
-        MV_mutable_virtual (sub.location sub loc, sub.location sub loc')
-    | MV_virtual_mutable (loc, loc') ->
-        MV_virtual_mutable (sub.location sub loc, sub.location sub loc')
+  let map_mutable_virtual sub { mv_mut; mv_virt } =
+    let mv_mut = map_opt (sub.location sub) mv_mut in
+    let mv_virt = map_opt (sub.location sub) mv_virt in
+    { mv_mut; mv_virt }
 end
 
 module C = struct

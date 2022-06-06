@@ -46,13 +46,16 @@ let ghost_loc (startpos, endpos) = {
   Location.loc_ghost = true;
 }
 
+let mk_mv ?mut ?virt () = { mv_mut= mut; mv_virt= virt }
+let mk_pv ?priv ?virt () = { pv_priv= priv; pv_virt= virt }
+
 let mv_of_mut = function
-  | Immutable -> MV_none
-  | Mutable l -> MV_mutable l
+  | Immutable -> mk_mv ()
+  | Mutable mut -> mk_mv ~mut ()
 
 let pv_of_priv = function
-  | Public -> PV_none
-  | Private l -> PV_private l
+  | Public -> mk_pv ()
+  | Private priv -> mk_pv ~priv ()
 
 let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
 let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
@@ -3725,36 +3728,47 @@ virtual_flag:
 ;
 mutable_virtual_flags:
     /* empty */
-      { MV_none }
+      { mk_mv () }
   | MUTABLE
-      { MV_mutable (make_loc $sloc) }
+      { mk_mv ~mut:(make_loc $sloc) () }
   | VIRTUAL
-      { MV_virtual (make_loc $sloc) }
+      { mk_mv ~virt:(make_loc $sloc) () }
   | MUTABLE VIRTUAL
-      { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
+      { mk_mv ~mut:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
   | VIRTUAL MUTABLE
-      { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
+      { mk_mv ~virt:(make_loc $loc($1)) ~mut:(make_loc $loc($2)) () }
 ;
 private_virtual_flags:
-    /* empty */  { PV_none }
-  | PRIVATE { PV_private (make_loc $sloc) }
-  | VIRTUAL { PV_virtual (make_loc $sloc) }
-  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
-  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
+    /* empty */
+      { mk_pv () }
+  | PRIVATE
+      { mk_pv ~priv:(make_loc $sloc) () }
+  | VIRTUAL
+      { mk_pv ~virt:(make_loc $sloc) () }
+  | PRIVATE VIRTUAL
+      { mk_pv ~priv:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
+  | VIRTUAL PRIVATE
+      { mk_pv ~virt:(make_loc $loc($1)) ~priv:(make_loc $loc($2)) () }
 ;
 (* This nonterminal symbol indicates the definite presence of a VIRTUAL
    keyword and the possible presence of a MUTABLE keyword. *)
 virtual_with_mutable_flag:
-  | VIRTUAL { MV_virtual (make_loc $sloc) }
-  | MUTABLE VIRTUAL { MV_mutable_virtual (make_loc $loc($1), make_loc $loc($2)) }
-  | VIRTUAL MUTABLE { MV_virtual_mutable (make_loc $loc($1), make_loc $loc($2)) }
+  | VIRTUAL
+      { mk_mv ~virt:(make_loc $sloc) () }
+  | MUTABLE VIRTUAL
+      { mk_mv ~mut:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
+  | VIRTUAL MUTABLE
+      { mk_mv ~virt:(make_loc $loc($1)) ~mut:(make_loc $loc($2)) () }
 ;
 (* This nonterminal symbol indicates the definite presence of a VIRTUAL
    keyword and the possible presence of a PRIVATE keyword. *)
 virtual_with_private_flag:
-  | VIRTUAL { PV_virtual (make_loc $sloc) }
-  | PRIVATE VIRTUAL { PV_private_virtual (make_loc $loc($1), make_loc $loc($2)) }
-  | VIRTUAL PRIVATE { PV_virtual_private (make_loc $loc($1), make_loc $loc($2)) }
+  | VIRTUAL
+      { mk_pv ~virt:(make_loc $sloc) () }
+  | PRIVATE VIRTUAL
+      { mk_pv ~priv:(make_loc $loc($1)) ~virt:(make_loc $loc($2)) () }
+  | VIRTUAL PRIVATE
+      { mk_pv ~virt:(make_loc $loc($1)) ~priv:(make_loc $loc($2)) () }
 ;
 %inline no_override_flag:
     /* empty */                                 { Fresh }

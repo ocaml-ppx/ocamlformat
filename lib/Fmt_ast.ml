@@ -381,34 +381,24 @@ let fmt_mutable_flag c = function
   | Immutable -> noop
 
 let fmt_mutable_virtual_flag c = function
-  | MV_none -> noop
-  | MV_mutable loc -> fmt " " $ Cmts.fmt c loc @@ str "mutable"
-  | MV_virtual loc -> fmt " " $ Cmts.fmt c loc @@ str "virtual"
-  | MV_mutable_virtual (loc, loc') ->
+  | {mv_mut= Some m; mv_virt= Some v} when Location.compare_start v m < 1 ->
       fmt " "
-      $ Cmts.fmt c loc @@ str "mutable"
+      $ Cmts.fmt c v @@ str "virtual"
       $ fmt " "
-      $ Cmts.fmt c loc' @@ str "virtual"
-  | MV_virtual_mutable (loc, loc') ->
-      fmt " "
-      $ Cmts.fmt c loc @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c loc' @@ str "mutable"
+      $ Cmts.fmt c m @@ str "mutable"
+  | {mv_mut; mv_virt} ->
+      opt mv_mut (fun m -> fmt " " $ Cmts.fmt c m @@ str "mutable")
+      $ opt mv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
 
 let fmt_private_virtual_flag c = function
-  | PV_none -> noop
-  | PV_private loc -> fmt " " $ Cmts.fmt c loc @@ str "private"
-  | PV_virtual loc -> fmt " " $ Cmts.fmt c loc @@ str "virtual"
-  | PV_private_virtual (loc, loc') ->
+  | {pv_priv= Some p; pv_virt= Some v} when Location.compare_start v p < 1 ->
       fmt " "
-      $ Cmts.fmt c loc @@ str "private"
+      $ Cmts.fmt c v @@ str "virtual"
       $ fmt " "
-      $ Cmts.fmt c loc' @@ str "virtual"
-  | PV_virtual_private (loc, loc') ->
-      fmt " "
-      $ Cmts.fmt c loc @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c loc' @@ str "private"
+      $ Cmts.fmt c p @@ str "private"
+  | {pv_priv; pv_virt} ->
+      opt pv_priv (fun p -> fmt " " $ Cmts.fmt c p @@ str "private")
+      $ opt pv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
 
 let virtual_or_override = function
   | Cfk_virtual _ -> noop
