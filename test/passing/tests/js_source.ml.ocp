@@ -9655,7 +9655,8 @@ let _ =
   match () with
   | _ ->
     (match () with
-     | _ -> long_function_name long_argument_name__________________________________________)
+     | _ ->
+       long_function_name long_argument_name__________________________________________)
 ;;
 
 let _ =
@@ -9793,7 +9794,8 @@ let[@a
   with
   | _
     when f
-        ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
+        ~f:
+          (function[@ocaml.warning (* ....................................... *) "-4"]
             | _ -> .)
         ~f:
           (function[@ocaml.warning

@@ -1655,9 +1655,11 @@ and fmt_infix_op_args_pat c ~parens op_args =
 
 and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
   let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
+  let align = Poly.(c.conf.fmt_opts.align_pattern_matching_bar = `Keyword) in
   hvbox indent
-    (Params.Exp.wrap c.conf ~parens ~disambiguate:true
-       ( hvbox 0
+    ( Params.Exp.wrap c.conf ~parens ~disambiguate:true
+    @@ hvbox_if align 0
+    @@ ( hvbox 0
            ( str keyword
            $ fmt_extension_suffix c ext
            $ fmt_attributes c xexp.ast.pexp_attributes
@@ -2239,13 +2241,32 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
       let indent = Params.function_indent c.conf ~ctx in
+      let align =
+        match ctx0 with
+        | Exp
+            { pexp_desc=
+                Pexp_apply
+                  ( { pexp_desc= Pexp_ident {txt= id; loc= _}
+                    ; pexp_attributes= []
+                    ; _ }
+                  , [(Nolabel, _); (Nolabel, {pexp_desc= Pexp_function _; _})]
+                  )
+            ; _ }
+          when Longident.is_infix id && not (Longident.is_monadic_binding id)
+          ->
+            false
+        | _ ->
+            parens
+            && Poly.(c.conf.fmt_opts.align_pattern_matching_bar = `Keyword)
+      in
       Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
-        ( hvbox 2
-            ( str "function"
-            $ fmt_extension_suffix c ext
-            $ fmt_attributes c pexp_attributes )
-        $ break 1 indent
-        $ hvbox 0 (fmt_cases c ctx cs) )
+      @@ hvbox_if align 0
+      @@ ( hvbox 2
+             ( str "function"
+             $ fmt_extension_suffix c ext
+             $ fmt_attributes c pexp_attributes )
+         $ break 1 indent
+         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if Exp.is_symbol exp && not (List.is_empty pexp_attributes) then
