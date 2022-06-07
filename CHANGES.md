@@ -11,6 +11,8 @@
 
 ### Changes
 
+- JaneStreet profile: set `max-indent = 2` (#2099, @gpetiot)
+
 ### New features
 
 ## 0.22.4 (2022-05-26)
