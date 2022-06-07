@@ -11,7 +11,7 @@
 
 (executable
  (name bench)
- (public_name bench)
+ (public_name ocamlformat-bench)
  (package ocamlformat-bench)
  (libraries bechamel bechamel-js ocamlformat stdio yojson))
 
