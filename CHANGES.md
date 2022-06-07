@@ -11,6 +11,7 @@
 
 ### Changes
 
+- `bench` binary renamed to `ocamlformat-bench` to avoid conflicts (#2101, @gpetiot)
 - JaneStreet profile: set `max-indent = 2` (#2099, @gpetiot)
 
 ### New features
