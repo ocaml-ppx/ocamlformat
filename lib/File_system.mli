@@ -26,6 +26,7 @@ type t =
 val make :
      enable_outside_detected_project:bool
   -> disable_conf_files:bool
+  -> ocp_indent_config:bool
   -> root:Fpath.t option
   -> file:Fpath.t (** Absolute path of the file to format. *)
   -> t

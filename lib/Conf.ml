@@ -1780,7 +1780,6 @@ let failwith_user_errors ~from errors =
   raise (Conf_error msg)
 
 let read_config_file conf = function
-  | File_system.Ocp_indent _ when not !ocp_indent_config -> conf
   | File_system.Ocp_indent file | File_system.Ocamlformat file -> (
       let filename = Fpath.to_string file in
       try
@@ -1869,7 +1868,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let fs =
     File_system.make ~enable_outside_detected_project
-      ~disable_conf_files:!disable_conf_files ~root ~file:file_abs
+      ~disable_conf_files:!disable_conf_files
+      ~ocp_indent_config:!ocp_indent_config ~root ~file:file_abs
   in
   let conf =
     List.fold fs.configuration_files ~init:default ~f:read_config_file
