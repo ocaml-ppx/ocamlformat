@@ -2,7 +2,7 @@
 
 ### Removed
 
-- `bench` binary is not distributed anymore to avoid name collisions (#<PR_NUMBER>, @gpetiot)
+- `bench` binary is not distributed anymore to avoid name collisions (#2104, @gpetiot)
 
 ### Deprecated
 
