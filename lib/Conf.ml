@@ -1327,22 +1327,16 @@ let numeric =
   let default = false in
   mk ~default Arg.(value & flag & info ["numeric"] ~doc ~docs)
 
-let ocp_indent_options =
-  let unsupported ocp_indent = (ocp_indent, ([], "")) in
+let ocp_indent_options_doc =
   let alias ocp_indent ocamlformat =
-    ( ocp_indent
-    , ( [ocamlformat]
-      , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
-          ocamlformat ) )
+    Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent ocamlformat
   in
   let multi_alias ocp_indent l_ocamlformat =
-    ( ocp_indent
-    , ( l_ocamlformat
-      , Format.asprintf "$(b,%s) sets %a." ocp_indent
-          (Format.pp_print_list
-             ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
-             (fun fs x -> Format.fprintf fs "$(b,%s)" x) )
-          l_ocamlformat ) )
+    Format.asprintf "$(b,%s) sets %a." ocp_indent
+      (Format.pp_print_list
+         ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
+         (fun fs x -> Format.fprintf fs "$(b,%s)" x) )
+      l_ocamlformat
   in
   [ alias "base" "let-binding-indent"
   ; alias "type" "type-decl-indent"
@@ -1352,27 +1346,20 @@ let ocp_indent_options =
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
   ; multi_alias "strict_with"
-      ["function-indent-nested"; "match-indent-nested"]
-  ; unsupported "strict_else"
-  ; unsupported "strict_comments"
-  ; unsupported "align_ops"
-  ; unsupported "align_params" ]
+      ["function-indent-nested"; "match-indent-nested"] ]
 
 let ocp_indent_config =
   let doc =
     let open Format in
     let supported =
-      let only_doc (_, (_, doc)) =
-        Option.some_if (not (String.is_empty doc)) doc
-      in
-      let l = List.filter_map ocp_indent_options ~f:only_doc in
-      if List.is_empty l then ""
-      else
-        asprintf " %a"
-          (pp_print_list
-             ~pp_sep:(fun fs () -> fprintf fs "@ ")
-             (fun fs s -> fprintf fs "%s" s) )
-          l
+      match ocp_indent_options_doc with
+      | [] -> ""
+      | docs ->
+          asprintf " %a"
+            (pp_print_list
+               ~pp_sep:(fun fs () -> fprintf fs "@ ")
+               (fun fs s -> fprintf fs "%s" s) )
+            docs
     in
     asprintf "Read .ocp-indent configuration files.%s" supported
   in
@@ -1662,47 +1649,6 @@ let (_profile : fmt_opts option C.t) =
       {conf with fmt_opts= new_fmt_opts} )
     (fun _ -> !selected_profile_ref)
 
-let ocp_indent_normal_profile =
-  [ ("base", "2")
-  ; ("type", "2")
-  ; ("in", "0")
-  ; ("with", "0")
-  ; ("match_clause", "2")
-  ; ("ppx_stritem_ext", "2")
-  ; ("max_indent", "4")
-  ; ("strict_with", "never")
-  ; ("strict_else", "always")
-  ; ("strict_comments", "false")
-  ; ("align_ops", "true")
-  ; ("align_params", "auto") ]
-
-let ocp_indent_apprentice_profile =
-  [ ("base", "2")
-  ; ("type", "4")
-  ; ("in", "2")
-  ; ("with", "2")
-  ; ("match_clause", "4")
-  ; ("ppx_stritem_ext", "2")
-  ; ("strict_with", "never")
-  ; ("strict_else", "always")
-  ; ("strict_comments", "false")
-  ; ("align_ops", "true")
-  ; ("align_params", "always") ]
-
-let ocp_indent_janestreet_profile =
-  [ ("base", "2")
-  ; ("type", "2")
-  ; ("in", "0")
-  ; ("with", "0")
-  ; ("match_clause", "2")
-  ; ("ppx_stritem_ext", "2")
-  ; ("max_indent", "2")
-  ; ("strict_with", "auto")
-  ; ("strict_else", "always")
-  ; ("strict_comments", "true")
-  ; ("align_ops", "true")
-  ; ("align_params", "always") ]
-
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1725,21 +1671,6 @@ let parse_line config ~from s =
           C.update ~config ~from:(`Parsed `Attribute) ~name ~value
             ~inline:true
   in
-  let update_ocp_indent_option ~config ~from ~name ~value =
-    let equal = String.equal in
-    match List.Assoc.find ocp_indent_options ~equal name with
-    | None -> Ok config
-    | Some (l, _doc) ->
-        let update_one config name = update ~config ~from ~name ~value in
-        List.fold_result l ~init:config ~f:update_one
-  in
-  let rec update_many ~config ~from = function
-    | [] -> Ok config
-    | (name, value) :: t -> (
-      match update_ocp_indent_option ~config ~from ~name ~value with
-      | Ok c -> update_many ~config:c ~from t
-      | Error e -> Error e )
-  in
   let s =
     match String.index s '#' with
     | Some i -> String.sub s ~pos:0 ~len:i
@@ -1751,21 +1682,12 @@ let parse_line config ~from s =
   | [name; value] ->
       let name = String.strip name in
       let value = String.strip value in
-      if List.Assoc.mem ocp_indent_options ~equal:String.equal name then
-        update_ocp_indent_option ~config ~from ~name ~value
-      else update ~config ~from ~name ~value
+      update ~config ~from ~name ~value
   | [s] -> (
     match String.strip s with
     | "" -> impossible "previous match"
     (* special case for disable/enable *)
     | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
-    | "normal" -> update_many ~config ~from ocp_indent_normal_profile
-    | "apprentice" -> update_many ~config ~from ocp_indent_apprentice_profile
-    | "JaneStreet" ->
-        Result.( >>= )
-          (update ~config ~from ~name:"profile" ~value:"janestreet")
-          (fun config ->
-            update_many ~config ~from ocp_indent_janestreet_profile )
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (Config_option.Error.Malformed s)
 
@@ -1779,8 +1701,53 @@ let failwith_user_errors ~from errors =
   let msg = asprintf "Error while parsing %s:@ %a" from pp_errors errors in
   raise (Conf_error msg)
 
+let update_from_ocp_indent c (oic : IndentConfig.t) =
+  let convert_threechoices = function
+    | IndentConfig.Always -> `Always
+    | Never -> `Never
+    | Auto -> `Auto
+  in
+  { c with
+    fmt_opts=
+      { c.fmt_opts with
+        let_binding_indent= oic.i_base
+      ; type_decl_indent= oic.i_type
+      ; indent_after_in= oic.i_in
+      ; function_indent= oic.i_with
+      ; match_indent= oic.i_with
+      ; cases_exp_indent= oic.i_match_clause
+      ; stritem_extension_indent= oic.i_ppx_stritem_ext
+      ; max_indent= oic.i_max_indent
+      ; function_indent_nested= convert_threechoices oic.i_strict_with
+      ; match_indent_nested= convert_threechoices oic.i_strict_with } }
+
 let read_config_file conf = function
-  | File_system.Ocp_indent file | File_system.Ocamlformat file -> (
+  | File_system.Ocp_indent file -> (
+      let filename = Fpath.to_string file in
+      try
+        let ocp_indent_conf = IndentConfig.default in
+        In_channel.with_file filename ~f:(fun ic ->
+            let ocp_indent_conf, errors, _ =
+              In_channel.fold_lines ic ~init:(ocp_indent_conf, [], 1)
+                ~f:(fun (conf, errors, lnum) line ->
+                  try
+                    ( IndentConfig.update_from_string ocp_indent_conf line
+                    , errors
+                    , lnum + 1 )
+                  with
+                  | Invalid_argument e when !ignore_invalid_options ->
+                      warn ~filename:file ~lnum "%s" e ;
+                      (conf, errors, lnum + 1)
+                  | Invalid_argument e ->
+                      ( conf
+                      , Config_option.Error.Unknown (e, None) :: errors
+                      , lnum + 1 ) )
+            in
+            match List.rev errors with
+            | [] -> update_from_ocp_indent conf ocp_indent_conf
+            | l -> failwith_user_errors ~from:filename l )
+      with Sys_error _ -> conf )
+  | File_system.Ocamlformat file -> (
       let filename = Fpath.to_string file in
       try
         In_channel.with_file filename ~f:(fun ic ->
