@@ -2,6 +2,8 @@
 
 ### Removed
 
+- `bench` binary is not distributed anymore to avoid name collisions (#2104, @gpetiot)
+
 ### Deprecated
 
 ### Bug fixes
@@ -11,7 +13,6 @@
 
 ### Changes
 
-- `bench` binary renamed to `ocamlformat-bench` to avoid conflicts (#2101, @gpetiot)
 - Use the API of ocp-indent to parse the `.ocp-indent` files (#2103, @gpetiot)
 - JaneStreet profile: set `max-indent = 2` (#2099, @gpetiot)
 
