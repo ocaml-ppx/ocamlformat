@@ -28,10 +28,6 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 
 type configuration_file = Ocamlformat of Fpath.t | Ocp_indent of Fpath.t
 
-let is_ocp_indent_file = function
-  | Ocamlformat _ -> false
-  | Ocp_indent _ -> true
-
 let root_ocamlformat_file ~root =
   let root = Option.value root ~default:(Fpath.cwd ()) in
   Fpath.(root / dot_ocamlformat)
@@ -57,7 +53,8 @@ type t =
   ; configuration_files: configuration_file list
   ; project_root: Fpath.t option }
 
-let make ~enable_outside_detected_project ~disable_conf_files ~root ~file =
+let make ~enable_outside_detected_project ~disable_conf_files
+    ~ocp_indent_config ~root ~file =
   let dir = Fpath.(file |> split_base |> fst) in
   let volume, dir = Fpath.split_volume dir in
   let segs = Fpath.segs dir |> List.rev in
@@ -99,9 +96,10 @@ let make ~enable_outside_detected_project ~disable_conf_files ~root ~file =
                     Ocamlformat f_1 :: fs.configuration_files
                   else fs.configuration_files
                 in
-                let f_2 = Fpath.(dir / dot_ocp_indent) in
-                if Fpath.exists f_2 then Ocp_indent f_2 :: files else files
-              ) }
+                if ocp_indent_config then
+                  let f_2 = Fpath.(dir / dot_ocp_indent) in
+                  if Fpath.exists f_2 then Ocp_indent f_2 :: files else files
+                else files ) }
         in
         (* Inside a detected project, configs are applied in top-down
            starting from the project root (i.e. excluding the global config
@@ -114,3 +112,8 @@ let make ~enable_outside_detected_project ~disable_conf_files ~root ~file =
     ; enable_files= []
     ; configuration_files= []
     ; project_root= None }
+
+let has_ocamlformat_file fs =
+  List.exists fs.configuration_files ~f:(function
+    | Ocamlformat _ -> true
+    | Ocp_indent _ -> false )
