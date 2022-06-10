@@ -1842,11 +1842,9 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     List.fold fs.configuration_files ~init:default ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
-  let no_ocamlformat_files =
-    List.for_all fs.configuration_files ~f:File_system.is_ocp_indent_file
-  in
   if
-    (not is_stdin) && no_ocamlformat_files
+    (not is_stdin)
+    && (not (File_system.has_ocamlformat_file fs))
     && not enable_outside_detected_project
   then (
     (let why =

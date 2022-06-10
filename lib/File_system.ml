@@ -28,10 +28,6 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 
 type configuration_file = Ocamlformat of Fpath.t | Ocp_indent of Fpath.t
 
-let is_ocp_indent_file = function
-  | Ocamlformat _ -> false
-  | Ocp_indent _ -> true
-
 let root_ocamlformat_file ~root =
   let root = Option.value root ~default:(Fpath.cwd ()) in
   Fpath.(root / dot_ocamlformat)
@@ -116,3 +112,8 @@ let make ~enable_outside_detected_project ~disable_conf_files
     ; enable_files= []
     ; configuration_files= []
     ; project_root= None }
+
+let has_ocamlformat_file fs =
+  List.exists fs.configuration_files ~f:(function
+    | Ocamlformat _ -> true
+    | Ocp_indent _ -> false )

@@ -13,8 +13,6 @@ val project_root_witness : string list
 
 type configuration_file = Ocamlformat of Fpath.t | Ocp_indent of Fpath.t
 
-val is_ocp_indent_file : configuration_file -> bool
-
 val root_ocamlformat_file : root:Fpath.t option -> Fpath.t
 
 type t =
@@ -30,3 +28,5 @@ val make :
   -> root:Fpath.t option
   -> file:Fpath.t (** Absolute path of the file to format. *)
   -> t
+
+val has_ocamlformat_file : t -> bool
