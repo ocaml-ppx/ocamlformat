@@ -170,6 +170,32 @@
  module Val:
    sig
 @@@@
+ 
+ (** Type declarations *)
+ module Type:
+   sig
+     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
+-      ?params:(core_type * (variance * injectivity)) list ->
++      ?params:(core_type * variance_and_injectivity) list ->
+       ?cstrs:(core_type * core_type * loc) list ->
+       ?kind:type_kind -> ?priv:private_flag -> ?manifest:core_type -> str ->
+       type_declaration
+ 
+     val constructor: ?loc:loc -> ?attrs:attrs -> ?info:info ->
+@@@@
+ 
+ (** Type extensions *)
+ module Te:
+   sig
+     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
+-      ?params:(core_type * (variance * injectivity)) list ->
++      ?params:(core_type * variance_and_injectivity) list ->
+       ?priv:private_flag -> lid -> extension_constructor list -> type_extension
+ 
+     val mk_exception: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
+       extension_constructor -> type_exception
+ 
+@@@@
      val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
        class_type_field_desc -> class_type_field
      val attr: class_type_field -> attribute -> class_type_field
@@ -204,6 +230,19 @@
        class_field
      val initializer_: ?loc:loc -> ?attrs:attrs -> expression -> class_field
      val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_field
+@@@@
+ (** Classes *)
+ module Ci:
+   sig
+     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
+       ?virt:virtual_flag ->
+-      ?params:(core_type * (variance * injectivity)) list ->
++      ?params:(core_type * variance_and_injectivity) list ->
+       str -> 'a -> 'a class_infos
+   end
+ 
+ (** Class signatures *)
+ module Csig:
 --- parser-standard/ast_mapper.ml
 +++ parser-extended/ast_mapper.ml
 @@@@
@@ -528,6 +567,22 @@
  type arg_label =
      Nolabel
    | Labelled of string (** [label:T -> ...] *)
+@@@@
+ type 'a loc = 'a Location.loc = {
+   txt : 'a;
+   loc : Location.t;
+ }
+ 
+-
+-type variance =
+-  | Covariant
+-  | Contravariant
+-  | NoVariance
+-
+-type injectivity =
+-  | Injective
+-  | NoInjectivity
++type variance_and_injectivity = string loc list
 --- parser-standard/docstrings.ml
 +++ parser-extended/docstrings.ml
 @@@@
@@ -579,6 +634,7 @@
 +  | Public -> mk_pv ()
 +  | Private priv -> mk_pv ~priv ()
 +
++let mkvarinj s l = mkloc s (make_loc l)
  let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
  let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
  let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
@@ -846,6 +902,43 @@
    label = mkrhs(label_longident)
    octy = preceded(COLON, core_type)?
 @@@@
+       { Ptyp_any }
+   ) { $1 }
+ ;
+ 
+ type_variance:
+-    /* empty */                             { NoVariance, NoInjectivity }
+-  | PLUS                                    { Covariant, NoInjectivity }
+-  | MINUS                                   { Contravariant, NoInjectivity }
+-  | BANG                                    { NoVariance, Injective }
+-  | PLUS BANG | BANG PLUS                   { Covariant, Injective }
+-  | MINUS BANG | BANG MINUS                 { Contravariant, Injective }
++    /* empty */                             { [] }
++  | PLUS                                    { [ mkvarinj "+" $sloc ] }
++  | MINUS                                   { [ mkvarinj "-" $sloc ] }
++  | BANG                                    { [ mkvarinj "!" $sloc ] }
++  | PLUS BANG   { [ mkvarinj "+" $loc($1); mkvarinj "!" $loc($2) ] }
++  | BANG PLUS   { [ mkvarinj "!" $loc($1); mkvarinj "+" $loc($2) ] }
++  | MINUS BANG  { [ mkvarinj "-" $loc($1); mkvarinj "!" $loc($2) ] }
++  | BANG MINUS  { [ mkvarinj "!" $loc($1); mkvarinj "-" $loc($2) ] }
+   | INFIXOP2
+-      { if $1 = "+!" then Covariant, Injective else
+-        if $1 = "-!" then Contravariant, Injective else
+-        expecting $loc($1) "type_variance" }
++      { if ($1 = "+!") || ($1 = "-!") then [ mkvarinj $1 $sloc ]
++        else expecting $loc($1) "type_variance" }
+   | PREFIXOP
+-      { if $1 = "!+" then Covariant, Injective else
+-        if $1 = "!-" then Contravariant, Injective else
+-        expecting $loc($1) "type_variance" }
++      { if ($1 = "!+") || ($1 = "!-") then [ mkvarinj $1 $sloc ]
++        else expecting $loc($1) "type_variance" }
+ ;
+ 
+ (* A sequence of constructor declarations is either a single BAR, which
+    means that the list is empty, or a nonempty BAR-separated list of
+    declarations, with an optional leading BAR. *)
+@@@@
    | MODULE TYPE l=mkrhs(mty_longident) COLONEQUAL rhs=module_type
        { Pwith_modtypesubst (l, rhs) }
  ;
@@ -1102,6 +1195,32 @@
       pc_lhs: pattern;
       pc_guard: expression option;
 @@@@
+ (** {2 Type declarations} *)
+ 
+ and type_declaration =
+     {
+      ptype_name: string loc;
+-     ptype_params: (core_type * (variance * injectivity)) list;
++     ptype_params: (core_type * variance_and_injectivity) list;
+       (** [('a1,...'an) t] *)
+      ptype_cstrs: (core_type * core_type * Location.t) list;
+       (** [... constraint T1=T1'  ... constraint Tn=Tn'] *)
+      ptype_kind: type_kind;
+      ptype_private: private_flag;  (** for [= private ...] *)
+@@@@
+ *)
+ 
+ and type_extension =
+     {
+      ptyext_path: Longident.t loc;
+-     ptyext_params: (core_type * (variance * injectivity)) list;
++     ptyext_params: (core_type * variance_and_injectivity) list;
+      ptyext_constructors: extension_constructor list;
+      ptyext_private: private_flag;
+      ptyext_loc: Location.t;
+      ptyext_attributes: attributes;  (** ... [\@\@id1] [\@\@id2] *)
+     }
+@@@@
       pctf_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      }
  
@@ -1117,6 +1236,19 @@
              Note: [T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]}.
          *)
    | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
+@@@@
+   | Pctf_extension of extension  (** [[%%id]] *)
+ 
+ and 'a class_infos =
+     {
+      pci_virt: virtual_flag;
+-     pci_params: (core_type * (variance * injectivity)) list;
++     pci_params: (core_type * variance_and_injectivity) list;
+      pci_name: string loc;
+      pci_expr: 'a;
+      pci_loc: Location.t;
+      pci_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     }
 @@@@
                      and [s] is [None],
              - [inherit! CE as x]

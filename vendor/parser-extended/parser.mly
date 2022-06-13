@@ -57,6 +57,7 @@ let pv_of_priv = function
   | Public -> mk_pv ()
   | Private priv -> mk_pv ~priv ()
 
+let mkvarinj s l = mkloc s (make_loc l)
 let mktyp ~loc ?attrs d = Typ.mk ~loc:(make_loc loc) ?attrs d
 let mkpat ~loc d = Pat.mk ~loc:(make_loc loc) d
 let mkexp ~loc d = Exp.mk ~loc:(make_loc loc) d
@@ -3036,20 +3037,20 @@ type_variable:
 ;
 
 type_variance:
-    /* empty */                             { NoVariance, NoInjectivity }
-  | PLUS                                    { Covariant, NoInjectivity }
-  | MINUS                                   { Contravariant, NoInjectivity }
-  | BANG                                    { NoVariance, Injective }
-  | PLUS BANG | BANG PLUS                   { Covariant, Injective }
-  | MINUS BANG | BANG MINUS                 { Contravariant, Injective }
+    /* empty */                             { [] }
+  | PLUS                                    { [ mkvarinj "+" $sloc ] }
+  | MINUS                                   { [ mkvarinj "-" $sloc ] }
+  | BANG                                    { [ mkvarinj "!" $sloc ] }
+  | PLUS BANG   { [ mkvarinj "+" $loc($1); mkvarinj "!" $loc($2) ] }
+  | BANG PLUS   { [ mkvarinj "!" $loc($1); mkvarinj "+" $loc($2) ] }
+  | MINUS BANG  { [ mkvarinj "-" $loc($1); mkvarinj "!" $loc($2) ] }
+  | BANG MINUS  { [ mkvarinj "!" $loc($1); mkvarinj "-" $loc($2) ] }
   | INFIXOP2
-      { if $1 = "+!" then Covariant, Injective else
-        if $1 = "-!" then Contravariant, Injective else
-        expecting $loc($1) "type_variance" }
+      { if ($1 = "+!") || ($1 = "-!") then [ mkvarinj $1 $sloc ]
+        else expecting $loc($1) "type_variance" }
   | PREFIXOP
-      { if $1 = "!+" then Covariant, Injective else
-        if $1 = "!-" then Contravariant, Injective else
-        expecting $loc($1) "type_variance" }
+      { if ($1 = "!+") || ($1 = "!-") then [ mkvarinj $1 $sloc ]
+        else expecting $loc($1) "type_variance" }
 ;
 
 (* A sequence of constructor declarations is either a single BAR, which
