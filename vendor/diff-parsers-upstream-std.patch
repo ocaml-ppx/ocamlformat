@@ -117,6 +117,28 @@
  let extension_of_error {kind; main; sub} =
    if kind <> Location.Report_error then
      raise (Invalid_argument "extension_of_error: expected kind Report_error");
+@@@@
+       | "tool_name" ->
+           tool_name_ref := get_string payload
+       | "include_dirs" ->
+           Clflags.include_dirs := get_list get_string payload
+       | "load_path" ->
+-          (* Duplicates Compmisc.auto_include, since we can't reference Compmisc
+-             from this module. *)
+-          let auto_include find_in_dir fn =
+-            if !Clflags.no_std_include then
+-              raise Not_found
+-            else
+-              let alert = Location.auto_include_alert in
+-              Load_path.auto_include_otherlibs alert find_in_dir fn
+-          in
+-          Load_path.init ~auto_include (get_list get_string payload)
++          ()
+       | "open_modules" ->
+           Clflags.open_modules := get_list get_string payload
+       | "for_package" ->
+           Clflags.for_package := get_option get_string payload
+       | "debug" ->
 --- parser-upstream/ast_mapper.mli
 +++ parser-standard/ast_mapper.mli
 @@@@
