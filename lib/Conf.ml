@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type fmt_opts =
-  { assignment_operator: [`Begin_line | `End_line]
+  { align_pattern_matching_bar: [`Paren | `Keyword]
+  ; assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
@@ -1415,7 +1416,8 @@ let ignore_invalid_options =
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
 let ocamlformat_profile =
-  { assignment_operator= `End_line
+  { align_pattern_matching_bar= `Paren
+  ; assignment_operator= `End_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
@@ -1476,7 +1478,8 @@ let ocamlformat_profile =
   ; wrap_fun_args= true }
 
 let conventional_profile =
-  { assignment_operator= C.default Formatting.assignment_operator
+  { align_pattern_matching_bar= `Paren
+  ; assignment_operator= C.default Formatting.assignment_operator
   ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
@@ -1544,7 +1547,8 @@ let conventional_profile =
 let default_profile = conventional_profile
 
 let janestreet_profile =
-  { assignment_operator= `Begin_line
+  { align_pattern_matching_bar= `Keyword
+  ; assignment_operator= `Begin_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
