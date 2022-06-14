@@ -64,12 +64,4 @@ type 'a loc = 'a Location.loc = {
   loc : Location.t;
 }
 
-
-type variance =
-  | Covariant
-  | Contravariant
-  | NoVariance
-
-type injectivity =
-  | Injective
-  | NoInjectivity
+type variance_and_injectivity = string loc list
