@@ -95,7 +95,7 @@ let () =
   [%foo
     try[@foo] () with
     | _ -> ()];
-  [%foo if [@foo] () then () else ()];
+  if%foo [@foo] () then () else ();
   [%foo
     while () do
       ()

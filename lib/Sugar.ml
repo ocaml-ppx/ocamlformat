@@ -134,21 +134,6 @@ module Exp = struct
     infix_ None ~relocate:false xexp
 end
 
-let rec ite cmts ({ast= exp; _} as xexp) =
-  let ctx = Exp exp in
-  let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
-  match pexp_desc with
-  | Pexp_ifthenelse (cnd, thn, Some els) ->
-      Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:els.pexp_loc ;
-      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)
-      :: ite cmts (sub_exp ~ctx els)
-  | Pexp_ifthenelse (cnd, thn, None) ->
-      Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:thn.pexp_loc ;
-      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
-  | _ -> [(None, xexp, pexp_attributes)]
-
 let sequence cmts xexp =
   let rec sequence_ ?(allow_attribute = true) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in

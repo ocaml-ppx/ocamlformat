@@ -2150,36 +2150,55 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       Cmts.fmt c loc
       @@ wrap
            (wrap_ident (fmt_longident txt $ Cmts.fmt_within c loc) $ fmt_atrs)
-  | Pexp_ifthenelse _ ->
-      let cnd_exps = Sugar.ite c.cmts xexp in
+  | Pexp_ifthenelse (if_branches, else_) ->
+      let last_loc =
+        match else_ with
+        | Some e -> e.pexp_loc
+        | None -> (List.last_exn if_branches).if_body.pexp_loc
+      in
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:pexp_loc ~after:last_loc ;
       let parens_prev_bch = ref false in
+      let cnd_exps =
+        let with_conds =
+          List.map if_branches ~f:(fun x ->
+              ( Some (sub_exp ~ctx x.if_cond)
+              , sub_exp ~ctx x.if_body
+              , x.if_attrs ) )
+        in
+        match else_ with
+        | Some x ->
+            List.rev ((None, sub_exp ~ctx x, []) :: List.rev with_conds)
+        | None -> with_conds
+      in
       hvbox 0
-        (Params.Exp.wrap c.conf ~parens
-           (list_fl cnd_exps
-              (fun ~first ~last (xcond, xbch, pexp_attributes) ->
-                let symbol_parens = Exp.is_symbol xbch.ast in
-                let parens_bch = parenze_exp xbch && not symbol_parens in
-                let p =
-                  Params.get_if_then_else c.conf ~first ~last ~parens
-                    ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
-                    ~xbch ~expr_loc:pexp_loc
-                    ~fmt_extension_suffix:
-                      (Option.map ext ~f:(fun _ ->
-                           fmt_extension_suffix c ext ) )
-                    ~fmt_attributes:
-                      (fmt_attributes c ~pre:Blank pexp_attributes)
-                    ~fmt_cond:(fmt_expression c)
-                in
-                parens_prev_bch := parens_bch ;
-                p.box_branch
-                  ( p.cond
-                  $ p.box_keyword_and_expr
-                      ( p.branch_pro
-                      $ p.wrap_parens
-                          ( fmt_expression c ~box:false ~parens:symbol_parens
-                              ?pro:p.expr_pro ?eol:p.expr_eol xbch
-                          $ p.break_end_branch ) ) )
-                $ fmt_if_k (not last) p.space_between_branches ) ) )
+        ( Params.Exp.wrap c.conf ~parens:(parens || has_attr)
+            (list_fl cnd_exps
+               (fun ~first ~last (xcond, xbch, pexp_attributes) ->
+                 let symbol_parens = Exp.is_symbol xbch.ast in
+                 let parens_bch = parenze_exp xbch && not symbol_parens in
+                 let p =
+                   Params.get_if_then_else c.conf ~first ~last ~parens
+                     ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
+                     ~xbch ~expr_loc:pexp_loc
+                     ~fmt_extension_suffix:
+                       (Option.map ext ~f:(fun _ ->
+                            fmt_extension_suffix c ext ) )
+                     ~fmt_attributes:
+                       (fmt_attributes c ~pre:Blank pexp_attributes)
+                     ~fmt_cond:(fmt_expression c)
+                 in
+                 parens_prev_bch := parens_bch ;
+                 p.box_branch
+                   ( p.cond
+                   $ p.box_keyword_and_expr
+                       ( p.branch_pro
+                       $ p.wrap_parens
+                           ( fmt_expression c ~box:false
+                               ~parens:symbol_parens ?pro:p.expr_pro
+                               ?eol:p.expr_eol xbch
+                           $ p.break_end_branch ) ) )
+                 $ fmt_if_k (not last) p.space_between_branches ) )
+        $ fmt_atrs )
   | Pexp_let (rec_flag, bd, body) ->
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
@@ -2590,11 +2609,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match ctx0 with
         (* begin-end keywords are handled when printing if-then-else
            branch *)
-        | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some z); _}
+        | Exp {pexp_desc= Pexp_ifthenelse (_, Some z); _}
           when Base.phys_equal xexp.ast z ->
             Fn.id
-        | Exp {pexp_desc= Pexp_ifthenelse (_, y, _); _}
-          when Base.phys_equal xexp.ast y ->
+        | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}
+          when List.exists eN ~f:(fun x ->
+                   Base.phys_equal xexp.ast x.if_body ) ->
             Fn.id
         (* begin-end keywords are handled when printing pattern-matching
            cases *)

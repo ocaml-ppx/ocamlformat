@@ -439,6 +439,12 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
+  let map_if_branch sub {if_cond; if_body; if_attrs} =
+    let if_cond = sub.expr sub if_cond in
+    let if_body = sub.expr sub if_body in
+    let if_attrs = sub.attributes sub if_attrs in
+    { if_cond; if_body; if_attrs }
+
   let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} =
     let open Exp in
     let loc = sub.location sub loc in
@@ -480,9 +486,9 @@ module E = struct
           (sub.expr sub e2)
     | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
-    | Pexp_ifthenelse (e1, e2, e3) ->
-        ifthenelse ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
-          (map_opt (sub.expr sub) e3)
+    | Pexp_ifthenelse (eN, e2) ->
+        ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)
+          (map_opt (sub.expr sub) e2)
     | Pexp_sequence (e1, e2) ->
         sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
     | Pexp_while (e1, e2) ->
