@@ -166,6 +166,11 @@ module T = struct
     in
     Of.mk ~loc ~attrs desc
 
+  let map_arrow_param sub {pap_label; pap_loc; pap_type} =
+    let pap_loc = sub.location sub pap_loc in
+    let pap_type = sub.typ sub pap_type in
+    {pap_label; pap_loc; pap_type}
+
   let map sub {ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs} =
     let open Typ in
     let loc = sub.location sub loc in
@@ -173,8 +178,9 @@ module T = struct
     match desc with
     | Ptyp_any -> any ~loc ~attrs ()
     | Ptyp_var s -> var ~loc ~attrs s
-    | Ptyp_arrow (lab, t1, t2) ->
-        arrow ~loc ~attrs lab (sub.typ sub t1) (sub.typ sub t2)
+    | Ptyp_arrow (params, t2) ->
+        arrow ~loc ~attrs (List.map (map_arrow_param sub) params)
+          (sub.typ sub t2)
     | Ptyp_tuple tyl -> tuple ~loc ~attrs (List.map (sub.typ sub) tyl)
     | Ptyp_constr (lid, tl) ->
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
@@ -276,8 +282,9 @@ module CT = struct
     | Pcty_constr (lid, tys) ->
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tys)
     | Pcty_signature x -> signature ~loc ~attrs (sub.class_signature sub x)
-    | Pcty_arrow (lab, t, ct) ->
-        arrow ~loc ~attrs lab (sub.typ sub t) (sub.class_type sub ct)
+    | Pcty_arrow (params, ct) ->
+        arrow ~loc ~attrs (List.map (T.map_arrow_param sub) params)
+          (sub.class_type sub ct)
     | Pcty_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pcty_open (o, ct) ->
         open_ ~loc ~attrs (sub.open_description sub o) (sub.class_type sub ct)

@@ -72,7 +72,7 @@ module Typ :
 
     val any: ?loc:loc -> ?attrs:attrs -> unit -> core_type
     val var: ?loc:loc -> ?attrs:attrs -> string -> core_type
-    val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type -> core_type
+    val arrow: ?loc:loc -> ?attrs:attrs -> arrow_param list -> core_type
                -> core_type
     val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
     val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
@@ -389,7 +389,7 @@ module Cty:
 
     val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> class_type
     val signature: ?loc:loc -> ?attrs:attrs -> class_signature -> class_type
-    val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type ->
+    val arrow: ?loc:loc -> ?attrs:attrs -> arrow_param list ->
       class_type -> class_type
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type
     val open_: ?loc:loc -> ?attrs:attrs -> open_description -> class_type

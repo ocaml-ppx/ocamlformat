@@ -500,6 +500,11 @@ let fmt_assign_arrow c =
   | `Begin_line -> fmt "@;<1 2><- "
   | `End_line -> fmt " <-@;<1 2>"
 
+let arrow_sep c ~parens : Fmt.s =
+  match c.conf.fmt_opts.break_separators with
+  | `Before -> if parens then "@;<1 1>-> " else "@ -> "
+  | `After -> " ->@;<1 0>"
+
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.fmt_opts.doc_comments_padding 0) doc
 
@@ -748,6 +753,21 @@ and type_constr_and_body c xbody =
       fmt_cstr_and_xbody typ exp
   | _ -> (None, xbody)
 
+and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
+  let arg_label lbl =
+    match lbl with
+    | Nolabel -> None
+    | Labelled l -> Some (str l $ fmt ":@,")
+    | Optional l -> Some (str "?" $ str l $ fmt ":@,")
+  in
+  let xtI = sub_typ ~ctx tI in
+  let arg =
+    match arg_label lI with
+    | None -> fmt_core_type c xtI
+    | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
+  in
+  hvbox 0 (Cmts.fmt_before c locI $ arg)
+
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
@@ -796,8 +816,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
            ( fmt_core_type c (sub_typ ~ctx typ)
            $ fmt "@ as@ " $ fmt_type_var txt ) )
   | Ptyp_any -> str "_"
-  | Ptyp_arrow _ ->
-      let xt1N = Sugar.arrow_typ c.cmts xtyp in
+  | Ptyp_arrow (ctl, ct2) ->
+      Cmts.relocate c.cmts ~src:ptyp_loc
+        ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.ptyp_loc ;
+      let ct2 = {pap_label= Nolabel; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
+      let xt1N = List.rev (ct2 :: List.rev ctl) in
       let indent =
         if Poly.(c.conf.fmt_opts.break_separators = `Before) then 2 else 0
       in
@@ -811,23 +834,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
             (fmt_or_k c.conf.fmt_opts.ocp_indent_compat (fits_breaks "" "")
                (fits_breaks "" "   ") ) )
       $ parenze_constraint_ctx
-        @@ list xt1N
-             ( if Poly.(c.conf.fmt_opts.break_separators = `Before) then
-               if parens then "@;<1 1>-> " else "@ -> "
-             else " ->@;<1 0>" )
-             (fun (locI, lI, xtI) ->
-               let arg_label lbl =
-                 match lbl with
-                 | Nolabel -> None
-                 | Labelled l -> Some (str l $ fmt ":@,")
-                 | Optional l -> Some (str "?" $ str l $ fmt ":@,")
-               in
-               let arg =
-                 match arg_label lI with
-                 | None -> fmt_core_type c xtI
-                 | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
-               in
-               hvbox 0 (Cmts.fmt_before c locI $ arg) )
+          (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -2869,21 +2876,14 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
   | Pcty_signature {pcsig_self; pcsig_fields} ->
       fmt_class_signature c ~ctx ~parens pcsig_self pcsig_fields
       $ fmt_attributes c atrs
-  | Pcty_arrow (_, _, _) ->
-      let arg_label lbl =
-        match lbl with
-        | Nolabel -> noop
-        | Labelled l -> str l $ fmt ":@,"
-        | Optional l -> str "?" $ str l $ fmt ":@,"
-      in
-      let xt1N = Sugar.class_arrow_typ c.cmts (sub_cty ~ctx typ) in
-      let fmt_arg (lI, xtI) =
-        hvbox 2
-          ( match xtI with
-          | `core_type ct -> arg_label lI $ fmt_core_type c ct
-          | `class_type ct -> arg_label lI $ fmt_class_type c ct )
-      in
-      hvbox 0 (list xt1N "@;-> " fmt_arg) $ fmt_attributes c atrs
+  | Pcty_arrow (ctl, ct2) ->
+      Cmts.relocate c.cmts ~src:pcty_loc
+        ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.pcty_loc ;
+      let xct2 = sub_cty ~ctx ct2 in
+      list ctl "@;-> " (fmt_arrow_param c ctx)
+      $ fmt "@;-> "
+      $ hvbox 0 (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
+      $ fmt_attributes c atrs
   | Pcty_extension ext -> fmt_extension c ctx ext $ fmt_attributes c atrs
   | Pcty_open (popen, cl) ->
       hvbox 0

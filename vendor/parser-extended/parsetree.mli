@@ -89,10 +89,17 @@ and core_type =
      ptyp_attributes: attributes;  (** [... [\@id1] [\@id2]] *)
     }
 
+and arrow_param =
+  {
+    pap_label: arg_label;
+    pap_loc: Location.t; (** Location also including the codomain. *)
+    pap_type: core_type;
+  }
+
 and core_type_desc =
   | Ptyp_any  (** [_] *)
   | Ptyp_var of string  (** A type variable such as ['a] *)
-  | Ptyp_arrow of arg_label * core_type * core_type
+  | Ptyp_arrow of arrow_param list * core_type
       (** [Ptyp_arrow(lbl, T1, T2)] represents:
             - [T1 -> T2]    when [lbl] is
                                      {{!Asttypes.arg_label.Nolabel}[Nolabel]},
@@ -628,7 +635,7 @@ and class_type_desc =
       (** - [c]
             - [['a1, ..., 'an] c] *)
   | Pcty_signature of class_signature  (** [object ... end] *)
-  | Pcty_arrow of arg_label * core_type * class_type
+  | Pcty_arrow of arrow_param list * class_type
       (** [Pcty_arrow(lbl, T, CT)] represents:
             - [T -> CT]
                      when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]},

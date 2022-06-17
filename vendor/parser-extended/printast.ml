@@ -193,10 +193,9 @@ let rec core_type i ppf x =
   match x.ptyp_desc with
   | Ptyp_any -> line i ppf "Ptyp_any\n";
   | Ptyp_var (s) -> line i ppf "Ptyp_var %s\n" s;
-  | Ptyp_arrow (l, ct1, ct2) ->
+  | Ptyp_arrow (params, ct2) ->
       line i ppf "Ptyp_arrow\n";
-      arg_label i ppf l;
-      core_type i ppf ct1;
+      list i arrow_param ppf params;
       core_type i ppf ct2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
@@ -226,6 +225,11 @@ let rec core_type i ppf x =
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
+
+and arrow_param i ppf {pap_label; pap_loc; pap_type} =
+  line i ppf "arrow_param %a\n" fmt_location pap_loc;
+  arg_label i ppf pap_label;
+  core_type i ppf pap_type
 
 and object_field i ppf x =
   line i ppf "object_field %a\n" fmt_location x.pof_loc;
@@ -564,10 +568,9 @@ and class_type i ppf x =
   | Pcty_signature (cs) ->
       line i ppf "Pcty_signature\n";
       class_signature i ppf cs;
-  | Pcty_arrow (l, co, cl) ->
+  | Pcty_arrow (params, cl) ->
       line i ppf "Pcty_arrow\n";
-      arg_label i ppf l;
-      core_type i ppf co;
+      list i arrow_param ppf params;
       class_type i ppf cl;
   | Pcty_extension (s, arg) ->
       line i ppf "Pcty_extension %a\n" fmt_string_loc s;

@@ -2006,7 +2006,18 @@ class_type:
       domain = tuple_type
       MINUSGREATER
       codomain = class_type
-        { Pcty_arrow(label, domain, codomain) }
+        { let arrow_type = {
+            pap_label = label;
+            pap_loc = make_loc $sloc;
+            pap_type = domain;
+          }
+          in
+          let params, codomain =
+            match codomain.pcty_attributes, codomain.pcty_desc with
+            | [], Pcty_arrow (params, codomain) -> params, codomain
+            | _, _ -> [], codomain
+          in
+          Pcty_arrow (arrow_type :: params, codomain) }
     ) { $1 }
  ;
 class_signature:
@@ -3333,7 +3344,19 @@ function_type:
       domain = extra_rhs(tuple_type)
       MINUSGREATER
       codomain = function_type
-        { Ptyp_arrow(label, domain, codomain) }
+        { let arrow_type = {
+            pap_label = label;
+            pap_loc = make_loc $sloc;
+            pap_type = domain;
+          }
+          in
+          let params, codomain =
+            match codomain.ptyp_attributes, codomain.ptyp_desc with
+            | [], Ptyp_arrow (params, codomain) -> params, codomain
+            | _, _ -> [], codomain
+          in
+          Ptyp_arrow (arrow_type :: params, codomain)
+        }
     )
     { $1 }
 ;

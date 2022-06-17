@@ -813,6 +813,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to class_type.ml.stdout
+   (with-stderr-to class_type.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/class_type.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_type.ml.ref class_type.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_type.ml.err class_type.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to cmdline_override.ml.stdout
    (with-stderr-to cmdline_override.ml.stderr
      (run %{bin:ocamlformat} --margin-check --config=module-item-spacing=compact --module-item-spacing=sparse %{dep:tests/cmdline_override.ml})))))
