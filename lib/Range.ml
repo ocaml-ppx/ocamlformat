@@ -11,8 +11,6 @@
 
 type t = {lower: int; upper: int; whole: bool}
 
-open Result.Monad_infix
-
 let make ?range source =
   let lines_nb = List.length @@ String.split_lines source in
   match range with
@@ -30,7 +28,10 @@ let is_whole t = t.whole
 let conv =
   let open Cmdliner in
   let pair_conv = Arg.(pair ~sep:'-' int int) in
-  let parse x = Arg.conv_parser pair_conv x >>| fun range -> make ~range in
+  let parse x =
+    let+ range = Arg.conv_parser pair_conv x in
+    Ok (make ~range)
+  in
   let pp fs x =
     match x "this string is not important" with
     | {whole= true; _} -> Format.fprintf fs "<whole input>"

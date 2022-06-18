@@ -23,7 +23,9 @@
    -open
    Parser_extended
    -open
-   Ocamlformat_stdlib))
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_result.Global_scope))
  (instrumentation
   (backend bisect_ppx))
  (libraries
@@ -32,6 +34,7 @@
   parser_standard
   parser_extended
   parser_recovery
+  ocamlformat_result
   ocamlformat_stdlib
   ocaml-version
   ocp-indent.lib

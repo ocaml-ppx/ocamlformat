@@ -1956,17 +1956,20 @@ type action =
   | Numeric of input
 
 let make_action ~enable_outside_detected_project ~root action inputs =
-  let open Result in
   let make_file ?name kind file =
     let name = Option.value ~default:file name in
-    build_config ~enable_outside_detected_project ~root ~file:name
-      ~is_stdin:false
-    >>= fun conf -> Ok {kind; name; file= File file; conf}
+    let+ conf =
+      build_config ~enable_outside_detected_project ~root ~file:name
+        ~is_stdin:false
+    in
+    Ok {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
-    build_config ~enable_outside_detected_project ~root ~file:name
-      ~is_stdin:false
-    >>= fun conf -> Ok {kind; name; file= Stdin; conf}
+    let+ conf =
+      build_config ~enable_outside_detected_project ~root ~file:name
+        ~is_stdin:false
+    in
+    Ok {kind; name; file= Stdin; conf}
   in
   let make_input = function
     | `Single_file (kind, name, f) -> make_file ?name kind f
@@ -1974,12 +1977,16 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   in
   let make_inputs = function
     | (`Single_file _ | `Stdin _) as inp ->
-        make_input inp >>= fun inp -> Ok [inp]
-    | `Several_files files -> (
-        let f (kind, f) = make_file kind f in
-        match List.map files ~f |> List.partition_result with
-        | _, e :: _ -> Error e
-        | inputs, [] -> Ok inputs )
+        let+ inp = make_input inp in
+        Ok [inp]
+    | `Several_files files ->
+        let+ inputs =
+          List.fold_left files ~init:(Ok []) ~f:(fun acc (kind, file) ->
+              let+ acc = acc in
+              let+ file = make_file kind file in
+              Ok (file :: acc) )
+        in
+        Ok (List.rev inputs)
   in
   match (action, inputs) with
   | `Print_config, inputs ->
@@ -1991,8 +1998,10 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         | `Several_files [] | `No_input ->
             (File_system.root_ocamlformat_file ~root |> Fpath.to_string, true)
       in
-      build_config ~enable_outside_detected_project ~root ~file ~is_stdin
-      >>= fun conf -> Ok (Print_config conf)
+      let+ conf =
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
+      in
+      Ok (Print_config conf)
   | (`No_action | `Output _ | `Inplace | `Check | `Numeric), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
   | (`No_action | `Output _ | `Numeric), `Several_files _ ->
@@ -2001,15 +2010,20 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Inplace, `Stdin _ ->
       Error "Cannot specify stdin together with --inplace"
   | `No_action, ((`Single_file _ | `Stdin _) as inp) ->
-      make_input inp >>= fun inp -> Ok (In_out (inp, None))
+      let+ inp = make_input inp in
+      Ok (In_out (inp, None))
   | `Output output, ((`Single_file _ | `Stdin _) as inp) ->
-      make_input inp >>= fun inp -> Ok (In_out (inp, Some output))
+      let+ inp = make_input inp in
+      Ok (In_out (inp, Some output))
   | `Inplace, ((`Single_file _ | `Several_files _) as inputs) ->
-      make_inputs inputs >>= fun inputs -> Ok (Inplace inputs)
+      let+ inputs = make_inputs inputs in
+      Ok (Inplace inputs)
   | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
-      make_inputs inputs >>= fun inputs -> Ok (Check inputs)
+      let+ inputs = make_inputs inputs in
+      Ok (Check inputs)
   | `Numeric, ((`Stdin _ | `Single_file _) as inp) ->
-      make_input inp >>= fun inp -> Ok (Numeric inp)
+      let+ inp = make_input inp in
+      Ok (Numeric inp)
 
 let validate () =
   let root =
@@ -2019,11 +2033,8 @@ let validate () =
     !enable_outside_detected_project && Option.is_none root
   in
   match
-    let open Result in
-    validate_action ()
-    >>= fun action ->
-    validate_inputs ()
-    >>= fun inputs ->
+    let+ action = validate_action () in
+    let+ inputs = validate_inputs () in
     make_action ~enable_outside_detected_project ~root action inputs
   with
   | Error e -> `Error (false, e)

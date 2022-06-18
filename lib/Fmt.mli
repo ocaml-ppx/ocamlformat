@@ -226,4 +226,4 @@ val hovbox_if : ?name:string -> bool -> int -> t -> t
 val fill_text : ?epi:string -> string -> t
 (** Format a non-empty string as filled text wrapped at the margin. *)
 
-type code_formatter = string -> (t, [`Msg of string]) Result.t
+type code_formatter = string -> t or_error
