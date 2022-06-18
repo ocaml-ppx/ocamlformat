@@ -13,7 +13,6 @@
 
 module Location = Migrate_ast.Location
 open Parse_with_comments
-open Result.Monad_infix
 
 exception
   Internal_error of
@@ -273,7 +272,6 @@ let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
     =
-  let open Result.Monad_infix in
   let dump_ast fg ~suffix ast =
     if conf.opr_opts.debug then
       Some
@@ -335,17 +333,20 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         Poly.(conf.fmt_opts.exp_grouping = `Preserve)
       in
       let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
-      ( match parse parse_ast ~disable_w50:true fg conf ~source:fmted with
-      | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
-      | t_new -> Ok t_new )
-      >>= fun t_new ->
-      ( match parse Std_ast.Parse.ast std_fg conf ~source:fmted with
-      | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
-      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
-      | std_t_new -> Ok std_t_new )
-      >>= fun std_t_new ->
+      let+ t_new =
+        match parse parse_ast ~disable_w50:true fg conf ~source:fmted with
+        | exception Sys_error msg -> Error (Error.User_error msg)
+        | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
+        | t_new -> Ok t_new
+      in
+      let+ std_t_new =
+        match parse Std_ast.Parse.ast std_fg conf ~source:fmted with
+        | exception Sys_error msg -> Error (Error.User_error msg)
+        | exception Warning50 l ->
+            internal_error (`Warning50 l) (exn_args ())
+        | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
+        | std_t_new -> Ok std_t_new
+      in
       (* Ast not preserved ? *)
       ( if
         (not
@@ -480,17 +481,19 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
+  let line_endings = conf.fmt_opts.line_endings in
   let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
-  parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
-  >>= fun parsed ->
-  parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
-  >>= fun std_parsed ->
-  format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
-    ~std_parsed conf
-  >>= fun (strlocs, formatted) ->
-  Ok
-    (normalize_eol ~strlocs ~line_endings:conf.fmt_opts.line_endings
-       formatted )
+  let+ parsed =
+    parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
+  in
+  let+ std_parsed =
+    parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+  in
+  let+ strlocs, formatted =
+    format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
+      ~std_parsed conf
+  in
+  Ok (normalize_eol ~strlocs ~line_endings formatted)
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure
@@ -507,31 +510,30 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
   let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
-  let fallback () = Indent.Partial_ast.indent_range ~source ~range in
-  let indent_parsed parsed std_parsed ~src ~range =
-    let {ast= parsed_ast; _} = parsed in
-    match
-      format fg std_fg ~input_name ~prev_source:src ~parsed ~std_parsed conf
-    with
-    | Ok (_, fmted_src) -> (
-      match parse_result parse_ast fg ~source:fmted_src conf ~input_name with
-      | Ok {ast= fmted_ast; source= fmted_src; _} ->
-          Indent.Valid_ast.indent_range fg ~lines ~range
-            ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
-      | Error _ -> fallback () )
-    | Error _ -> fallback ()
-  in
   let parse_or_recover ~src =
     match parse_result parse_ast fg conf ~source:src ~input_name with
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result recover fg conf ~source:src ~input_name
   in
-  match parse_or_recover ~src:source with
-  | Ok parsed -> (
-    match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
-    | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
-    | Error _ -> fallback () )
-  | Error _ -> fallback ()
+  match
+    let+ parsed = parse_or_recover ~src:source in
+    let+ std_parsed =
+      parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+    in
+    let+ _, fmted_src =
+      format fg std_fg ~input_name ~prev_source:source ~parsed ~std_parsed
+        conf
+    in
+    let+ {ast= fmted_ast; source= fmted_src; _} =
+      parse_result parse_ast fg ~source:fmted_src conf ~input_name
+    in
+    let unformatted = (parsed.ast, source) in
+    let formatted = (fmted_ast, fmted_src) in
+    Ok
+      (Indent.Valid_ast.indent_range fg ~lines ~range ~unformatted ~formatted)
+  with
+  | Ok x -> x
+  | Error _ -> Indent.Partial_ast.indent_range ~source ~range
 
 let numeric = function
   | Syntax.Structure -> numeric Structure Structure

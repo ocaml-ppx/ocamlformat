@@ -354,4 +354,4 @@ let fill_text ?(epi = "") text =
                | _ -> noop )
          $ str epi ) )
 
-type code_formatter = string -> (t, [`Msg of string]) Result.t
+type code_formatter = string -> t or_error
