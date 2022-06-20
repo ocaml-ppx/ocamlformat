@@ -572,52 +572,337 @@
        (fun this -> function
           | Ptop_def s -> Ptop_def (this.structure this s)
           | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
-+
+-  }
+-
+-let extension_of_error {kind; main; sub} =
+-  if kind <> Location.Report_error then
+-    raise (Invalid_argument "extension_of_error: expected kind Report_error");
+-  let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
+-  let extension_of_sub sub =
+-    { loc = sub.loc; txt = "ocaml.error" },
+-    PStr ([Str.eval (Exp.constant
+-                       (Pconst_string (str_of_pp sub.txt, sub.loc, None)))])
+-  in
+-  { loc = main.loc; txt = "ocaml.error" },
+-  PStr (Str.eval (Exp.constant
+-                    (Pconst_string (str_of_pp main.txt, main.loc, None))) ::
+-        List.map (fun msg -> Str.extension (extension_of_sub msg)) sub)
+-
+-let attribute_of_warning loc s =
+-  Attr.mk
+-    {loc; txt = "ocaml.ppwarning" }
+-    (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, loc, None)))]))
+-
+-let cookies = ref String.Map.empty
+-
+-let get_cookie k =
+-  try Some (String.Map.find k !cookies)
+-  with Not_found -> None
+-
+-let set_cookie k v =
+-  cookies := String.Map.add k v !cookies
+-
+-let tool_name_ref = ref "_none_"
+-
+-let tool_name () = !tool_name_ref
+-
+-
+-module PpxContext = struct
+-  open Longident
+-  open Asttypes
+-  open Ast_helper
+-
+-  let lid name = { txt = Lident name; loc = Location.none }
+-
+-  let make_string s = Exp.constant (Const.string s)
+-
+-  let make_bool x =
+-    if x
+-    then Exp.construct (lid "true") None
+-    else Exp.construct (lid "false") None
+-
+-  let rec make_list f lst =
+-    match lst with
+-    | x :: rest ->
+-      Exp.construct (lid "::") (Some (Exp.tuple [f x; make_list f rest]))
+-    | [] ->
+-      Exp.construct (lid "[]") None
+-
+-  let make_pair f1 f2 (x1, x2) =
+-    Exp.tuple [f1 x1; f2 x2]
+-
+-  let make_option f opt =
+-    match opt with
+-    | Some x -> Exp.construct (lid "Some") (Some (f x))
+-    | None   -> Exp.construct (lid "None") None
+-
+-  let get_cookies () =
+-    lid "cookies",
+-    make_list (make_pair make_string (fun x -> x))
+-      (String.Map.bindings !cookies)
+ 
+-  let mk fields =
+-    {
+-      attr_name = { txt = "ocaml.ppx.context"; loc = Location.none };
+-      attr_payload = Parsetree.PStr [Str.eval (Exp.record fields None)];
+-      attr_loc = Location.none
+-    }
+-
+-  let make ~tool_name () =
+-    let fields =
+-      [
+-        lid "tool_name",    make_string tool_name;
+-        lid "include_dirs", make_list make_string !Clflags.include_dirs;
+-        lid "load_path",    make_list make_string (Load_path.get_paths ());
+-        lid "open_modules", make_list make_string !Clflags.open_modules;
+-        lid "for_package",  make_option make_string !Clflags.for_package;
+-        lid "debug",        make_bool !Clflags.debug;
+-        lid "use_threads",  make_bool !Clflags.use_threads;
+-        lid "use_vmthreads", make_bool false;
+-        lid "recursive_types", make_bool !Clflags.recursive_types;
+-        lid "principal", make_bool !Clflags.principal;
+-        lid "transparent_modules", make_bool !Clflags.transparent_modules;
+-        lid "unboxed_types", make_bool !Clflags.unboxed_types;
+-        lid "unsafe_string", make_bool false; (* kept for compatibility *)
+-        get_cookies ()
+-      ]
+-    in
+-    mk fields
+-
+-  let get_fields = function
+-    | PStr [{pstr_desc = Pstr_eval
+-                 ({ pexp_desc = Pexp_record (fields, None) }, [])}] ->
+-        fields
+-    | _ ->
+-        raise_errorf "Internal error: invalid [@@@ocaml.ppx.context] syntax"
+-
+-  let restore fields =
+-    let field name payload =
+-      let rec get_string = function
+-        | { pexp_desc = Pexp_constant (Pconst_string (str, _, None)) } -> str
+-        | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+-                             { %s }] string syntax" name
+-      and get_bool pexp =
+-        match pexp with
+-        | {pexp_desc = Pexp_construct ({txt = Longident.Lident "true"},
+-                                       None)} ->
+-            true
+-        | {pexp_desc = Pexp_construct ({txt = Longident.Lident "false"},
+-                                       None)} ->
+-            false
+-        | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+-                             { %s }] bool syntax" name
+-      and get_list elem = function
+-        | {pexp_desc =
+-             Pexp_construct ({txt = Longident.Lident "::"},
+-                             Some {pexp_desc = Pexp_tuple [exp; rest]}) } ->
+-            elem exp :: get_list elem rest
+-        | {pexp_desc =
+-             Pexp_construct ({txt = Longident.Lident "[]"}, None)} ->
+-            []
+-        | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+-                             { %s }] list syntax" name
+-      and get_pair f1 f2 = function
+-        | {pexp_desc = Pexp_tuple [e1; e2]} ->
+-            (f1 e1, f2 e2)
+-        | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+-                             { %s }] pair syntax" name
+-      and get_option elem = function
+-        | { pexp_desc =
+-              Pexp_construct ({ txt = Longident.Lident "Some" }, Some exp) } ->
+-            Some (elem exp)
+-        | { pexp_desc =
+-              Pexp_construct ({ txt = Longident.Lident "None" }, None) } ->
+-            None
+-        | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+-                             { %s }] option syntax" name
+-      in
+-      match name with
+-      | "tool_name" ->
+-          tool_name_ref := get_string payload
+-      | "include_dirs" ->
+-          Clflags.include_dirs := get_list get_string payload
+-      | "load_path" ->
+-          ()
+-      | "open_modules" ->
+-          Clflags.open_modules := get_list get_string payload
+-      | "for_package" ->
+-          Clflags.for_package := get_option get_string payload
+-      | "debug" ->
+-          Clflags.debug := get_bool payload
+-      | "use_threads" ->
+-          Clflags.use_threads := get_bool payload
+-      | "use_vmthreads" ->
+-          if get_bool payload then
+-            raise_errorf "Internal error: vmthreads not supported after 4.09.0"
+-      | "recursive_types" ->
+-          Clflags.recursive_types := get_bool payload
+-      | "principal" ->
+-          Clflags.principal := get_bool payload
+-      | "transparent_modules" ->
+-          Clflags.transparent_modules := get_bool payload
+-      | "unboxed_types" ->
+-          Clflags.unboxed_types := get_bool payload
+-      | "cookies" ->
+-          let l = get_list (get_pair get_string (fun x -> x)) payload in
+-          cookies :=
+-            List.fold_left
+-              (fun s (k, v) -> String.Map.add k v s) String.Map.empty
+-              l
+-      | _ ->
+-          ()
+-    in
+-    List.iter (function ({txt=Lident name}, x) -> field name x | _ -> ()) fields
+-
+-  let update_cookies fields =
+-    let fields =
+-      List.filter
+-        (function ({txt=Lident "cookies"}, _) -> false | _ -> true)
+-        fields
+-    in
+-    fields @ [get_cookies ()]
+-end
+-
+-let ppx_context = PpxContext.make
+-
+-let extension_of_exn exn =
+-  match error_of_exn exn with
+-  | Some (`Ok error) -> extension_of_error error
+-  | Some `Already_displayed ->
+-      { loc = Location.none; txt = "ocaml.error" }, PStr []
+-  | None -> raise exn
+-
+-
+-let apply_lazy ~source ~target mapper =
+-  let implem ast =
+-    let fields, ast =
+-      match ast with
+-      | {pstr_desc = Pstr_attribute ({attr_name = {txt = "ocaml.ppx.context"};
+-                                      attr_payload = x})} :: l ->
+-          PpxContext.get_fields x, l
+-      | _ -> [], ast
+-    in
+-    PpxContext.restore fields;
+-    let ast =
+-      try
+-        let mapper = mapper () in
+-        mapper.structure mapper ast
+-      with exn ->
+-        [{pstr_desc = Pstr_extension (extension_of_exn exn, []);
+-          pstr_loc  = Location.none}]
+-    in
+-    let fields = PpxContext.update_cookies fields in
+-    Str.attribute (PpxContext.mk fields) :: ast
+-  in
+-  let iface ast =
+-    let fields, ast =
+-      match ast with
+-      | {psig_desc = Psig_attribute ({attr_name = {txt = "ocaml.ppx.context"};
+-                                      attr_payload = x;
+-                                      attr_loc = _})} :: l ->
+-          PpxContext.get_fields x, l
+-      | _ -> [], ast
+-    in
+-    PpxContext.restore fields;
+-    let ast =
+-      try
+-        let mapper = mapper () in
+-        mapper.signature mapper ast
+-      with exn ->
+-        [{psig_desc = Psig_extension (extension_of_exn exn, []);
+-          psig_loc  = Location.none}]
+-    in
+-    let fields = PpxContext.update_cookies fields in
+-    Sig.attribute (PpxContext.mk fields) :: ast
+-  in
+-
+-  let ic = open_in_bin source in
+-  let magic =
+-    really_input_string ic (String.length Config.ast_impl_magic_number)
+-  in
+-
+-  let rewrite transform =
+-    Location.input_name := input_value ic;
+-    let ast = input_value ic in
+-    close_in ic;
+-    let ast = transform ast in
+-    let oc = open_out_bin target in
+-    output_string oc magic;
+-    output_value oc !Location.input_name;
+-    output_value oc ast;
+-    close_out oc
+-  and fail () =
+-    close_in ic;
+-    failwith "Ast_mapper: OCaml version mismatch or malformed input";
+-  in
+-
+-  if magic = Config.ast_impl_magic_number then
+-    rewrite (implem : structure -> structure)
+-  else if magic = Config.ast_intf_magic_number then
+-    rewrite (iface : signature -> signature)
+-  else fail ()
+-
+-let drop_ppx_context_str ~restore = function
+-  | {pstr_desc = Pstr_attribute
+-                   {attr_name = {Location.txt = "ocaml.ppx.context"};
+-                    attr_payload = a;
+-                    attr_loc = _}}
+-    :: items ->
+-      if restore then
+-        PpxContext.restore (PpxContext.get_fields a);
+-      items
+-  | items -> items
+-
+-let drop_ppx_context_sig ~restore = function
+-  | {psig_desc = Psig_attribute
+-                   {attr_name = {Location.txt = "ocaml.ppx.context"};
+-                    attr_payload = a;
+-                    attr_loc = _}}
+-    :: items ->
+-      if restore then
+-        PpxContext.restore (PpxContext.get_fields a);
+-      items
+-  | items -> items
+-
+-let add_ppx_context_str ~tool_name ast =
+-  Ast_helper.Str.attribute (ppx_context ~tool_name ()) :: ast
+-
+-let add_ppx_context_sig ~tool_name ast =
+-  Ast_helper.Sig.attribute (ppx_context ~tool_name ()) :: ast
+-
+-
+-let apply ~source ~target mapper =
+-  apply_lazy ~source ~target (fun () -> mapper)
+-
+-let run_main mapper =
+-  try
+-    let a = Sys.argv in
+-    let n = Array.length a in
+-    if n > 2 then
+-      let mapper () =
+-        try mapper (Array.to_list (Array.sub a 1 (n - 3)))
+-        with exn ->
+-          (* PR#6463 *)
+-          let f _ _ = raise exn in
+-          {default_mapper with structure = f; signature = f}
+-      in
+-      apply_lazy ~source:a.(n - 2) ~target:a.(n - 1) mapper
+-    else begin
+-      Printf.eprintf "Usage: %s [extra_args] <infile> <outfile>\n%!"
+-                     Sys.executable_name;
+-      exit 2
+-    end
+-  with exn ->
+-    prerr_endline (Printexc.to_string exn);
+-    exit 2
+-
+-let register_function = ref (fun _name f -> run_main f)
+-let register name f = !register_function name f
 +    repl_phrase =
 +      (fun this p ->
 +         { prepl_phrase= this.toplevel_phrase this p.prepl_phrase
 +         ; prepl_output= p.prepl_output } );
-   }
- 
- let extension_of_error {kind; main; sub} =
-   if kind <> Location.Report_error then
-     raise (Invalid_argument "extension_of_error: expected kind Report_error");
-   let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
-   let extension_of_sub sub =
-     { loc = sub.loc; txt = "ocaml.error" },
-     PStr ([Str.eval (Exp.constant
--                       (Pconst_string (str_of_pp sub.txt, sub.loc, None)))])
-+                       (Const.mk (Pconst_string (str_of_pp sub.txt, sub.loc, None))))])
-   in
-   { loc = main.loc; txt = "ocaml.error" },
-   PStr (Str.eval (Exp.constant
--                    (Pconst_string (str_of_pp main.txt, main.loc, None))) ::
-+                    (Const.mk (Pconst_string (str_of_pp main.txt, main.loc, None)))) ::
-         List.map (fun msg -> Str.extension (extension_of_sub msg)) sub)
- 
- let attribute_of_warning loc s =
-   Attr.mk
-     {loc; txt = "ocaml.ppwarning" }
--    (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, loc, None)))]))
-+    (PStr ([Str.eval ~loc (Exp.constant (Const.mk (Pconst_string (s, loc, None))))]))
- 
- let cookies = ref String.Map.empty
- 
- let get_cookie k =
-   try Some (String.Map.find k !cookies)
-@@@@
-         raise_errorf "Internal error: invalid [@@@ocaml.ppx.context] syntax"
- 
-   let restore fields =
-     let field name payload =
-       let rec get_string = function
--        | { pexp_desc = Pexp_constant (Pconst_string (str, _, None)) } -> str
-+        | { pexp_desc = Pexp_constant {pconst_desc= Pconst_string (str, _, None); _ } } -> str
-         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
-                              { %s }] string syntax" name
-       and get_bool pexp =
-         match pexp with
-         | {pexp_desc = Pexp_construct ({txt = Longident.Lident "true"},
++  }
 --- parser-standard/ast_mapper.mli
 +++ parser-extended/ast_mapper.mli
 @@@@
@@ -632,6 +917,102 @@
      using an open recursion style: each method takes as its first
      argument the mapper to be applied to children in the syntax
      tree. *)
+ 
+ val default_mapper: mapper
+ (** A default mapper, which implements a "deep identity" mapping. *)
+-
+-(** {1 Apply mappers to compilation units} *)
+-
+-val tool_name: unit -> string
+-(** Can be used within a ppx preprocessor to know which tool is
+-    calling it ["ocamlc"], ["ocamlopt"], ["ocamldoc"], ["ocamldep"],
+-    ["ocaml"], ...  Some global variables that reflect command-line
+-    options are automatically synchronized between the calling tool
+-    and the ppx preprocessor: {!Clflags.include_dirs},
+-    {!Load_path}, {!Clflags.open_modules}, {!Clflags.for_package},
+-    {!Clflags.debug}. *)
+-
+-
+-val apply: source:string -> target:string -> mapper -> unit
+-(** Apply a mapper (parametrized by the unit name) to a dumped
+-    parsetree found in the [source] file and put the result in the
+-    [target] file. The [structure] or [signature] field of the mapper
+-    is applied to the implementation or interface.  *)
+-
+-val run_main: (string list -> mapper) -> unit
+-(** Entry point to call to implement a standalone -ppx rewriter from a
+-    mapper, parametrized by the command line arguments.  The current
+-    unit name can be obtained from {!Location.input_name}.  This
+-    function implements proper error reporting for uncaught
+-    exceptions. *)
+-
+-(** {1 Registration API} *)
+-
+-val register_function: (string -> (string list -> mapper) -> unit) ref
+-
+-val register: string -> (string list -> mapper) -> unit
+-(** Apply the [register_function].  The default behavior is to run the
+-    mapper immediately, taking arguments from the process command
+-    line.  This is to support a scenario where a mapper is linked as a
+-    stand-alone executable.
+-
+-    It is possible to overwrite the [register_function] to define
+-    "-ppx drivers", which combine several mappers in a single process.
+-    Typically, a driver starts by defining [register_function] to a
+-    custom implementation, then lets ppx rewriters (linked statically
+-    or dynamically) register themselves, and then run all or some of
+-    them.  It is also possible to have -ppx drivers apply rewriters to
+-    only specific parts of an AST.
+-
+-    The first argument to [register] is a symbolic name to be used by
+-    the ppx driver.  *)
+-
+-
+-(** {1 Convenience functions to write mappers} *)
+-
+-val map_opt: ('a -> 'b) -> 'a option -> 'b option
+-
+-val extension_of_error: Location.error -> extension
+-(** Encode an error into an 'ocaml.error' extension node which can be
+-    inserted in a generated Parsetree.  The compiler will be
+-    responsible for reporting the error. *)
+-
+-val attribute_of_warning: Location.t -> string -> attribute
+-(** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
+-    inserted in a generated Parsetree.  The compiler will be
+-    responsible for reporting the warning. *)
+-
+-(** {1 Helper functions to call external mappers} *)
+-
+-val add_ppx_context_str:
+-    tool_name:string -> Parsetree.structure -> Parsetree.structure
+-(** Extract information from the current environment and encode it
+-    into an attribute which is prepended to the list of structure
+-    items in order to pass the information to an external
+-    processor. *)
+-
+-val add_ppx_context_sig:
+-    tool_name:string -> Parsetree.signature -> Parsetree.signature
+-(** Same as [add_ppx_context_str], but for signatures. *)
+-
+-val drop_ppx_context_str:
+-    restore:bool -> Parsetree.structure -> Parsetree.structure
+-(** Drop the ocaml.ppx.context attribute from a structure.  If
+-    [restore] is true, also restore the associated data in the current
+-    process. *)
+-
+-val drop_ppx_context_sig:
+-    restore:bool -> Parsetree.signature -> Parsetree.signature
+-(** Same as [drop_ppx_context_str], but for signatures. *)
+-
+-(** {1 Cookies} *)
+-
+-(** Cookies are used to pass information from a ppx processor to
+-    a further invocation of itself, when called from the OCaml
+-    toplevel (or other tools that support cookies). *)
+-
+-val set_cookie: string -> Parsetree.expression -> unit
+-val get_cookie: string -> Parsetree.expression option
 --- parser-standard/asttypes.mli
 +++ parser-extended/asttypes.mli
 @@@@
