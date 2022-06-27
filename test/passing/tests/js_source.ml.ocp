@@ -175,6 +175,7 @@ let%foo[@foo] x = 4
 and[@foo] y = x
 
 type%foo t = int [@@foo]
+
 and t = int [@@foo]
 
 type%foo t += T [@@foo]
@@ -197,6 +198,7 @@ module type S = sig
   external%foo x : t = "" [@@foo]
 
   type%foo t = int [@@foo]
+
   and t' = int [@@foo]
 
   type%foo t += T [@@foo]
@@ -233,6 +235,7 @@ open M
 
 (* By using two types we can have a recursive constraint *)
 type 'a class_name = .. constraint 'a = < cast : 'a. 'a name -> 'a ; .. >
+
 and 'a name = Class : 'a class_name -> (< cast : 'a. 'a name -> 'a ; .. > as 'a) name
 
 exception Bad_cast
@@ -2695,6 +2698,7 @@ type 'a t = [< `Foo | `Bar ] as 'a
 type 'a s = [< `Foo | `Bar | `Baz > `Bar ] as 'a
 
 type 'a first = First : 'a second -> ('b t as 'a) first
+
 and 'a second = Second : ('b s as 'a) second
 
 type aux = Aux : 'a t second * ('a -> int) -> aux
@@ -3114,6 +3118,7 @@ module A = struct
 
   (* Mutually recursive declarations work as well *)
   type p = q [@@immediate]
+
   and q = int
 end
 
@@ -3299,6 +3304,7 @@ Error: Signature mismatch:
 (* Can't use a non-immediate type even if mutually recursive *)
 module E = struct
   type t = s [@@immediate]
+
   and s = string
 end
 
@@ -3477,7 +3483,9 @@ end
 module rec Typ : sig
   module type PAIR = sig
     type t
+
     and t1
+
     and t2
 
     val eq : (t, t1 * t2) TypEq.t
@@ -4400,7 +4408,9 @@ type 'a t = [ `A of 'a t ] constraint 'a = 'a t
 type 'a t = [ `A of 'a ] as 'a
 
 type 'a v = [ `A of u v ] constraint 'a = t
+
 and t = u
+
 and u = t
 
 (* fails *)
@@ -4416,6 +4426,7 @@ let f (x : 'a t) (y : 'a) = x = y
 (* PR#6505 *)
 module type PR6505 = sig
   type 'o is_an_object = < .. > as 'o
+
   and 'o abs constraint 'o = 'o is_an_object
 
 val abs : 'o is_an_object -> 'o abs
@@ -5240,6 +5251,7 @@ end
 
 module type S = sig
   type t
+
   and s = t
 end
 
@@ -6716,7 +6728,9 @@ type untyped
 type -'a typed = private untyped
 
 type -'typing wrapped = private sexp
+
 and +'a t = 'a typed wrapped
+
 and sexp = private untyped wrapped
 
 class type ['a] s3 =
@@ -7144,6 +7158,7 @@ end
 module PR_4450_2 = struct
   module type MyT = sig
     type 'a wrap = My of 'a t
+
     and 'a t = private < map : 'b. ('a -> 'b) -> 'b wrap ; .. >
 
     val create : 'a list -> 'a t
@@ -7160,6 +7175,7 @@ module PR_4450_2 = struct
 
   module rec MyList : sig
     type 'a wrap = My of 'a t
+
     and 'a t = < map : 'b. ('a -> 'b) -> 'b wrap >
 
     val create : 'a list -> 'a t
@@ -8066,6 +8082,7 @@ module M : sig
   type 'a t
 
   type u = u t
+
   and v = v t
 
   val f : int -> u
@@ -8074,6 +8091,7 @@ end = struct
   type 'a t = 'a
 
   type u = int
+
   and v = bool
 
   let f x = x
@@ -8202,11 +8220,13 @@ type t1 = A
 
 module M1 = struct
   type u = v
+
   and v = t1
 end
 
 module N1 = struct
   type u = v
+
   and v = M1.v
 end
 
@@ -8214,6 +8234,7 @@ type t1 = B
 
 module N2 = struct
   type u = v
+
   and v = M1.v
 end
 
@@ -8244,9 +8265,14 @@ end
    by Norman Ramsey, Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value (* a Lua value *)
-  type state (* the state of a Lua interpreter *)
-  type usert (* a user-defined value *)
+  type value
+
+  (* a Lua value *)
+  type state
+
+  (* the state of a Lua interpreter *)
+  type usert
+  (* a user-defined value *)
 end
 
 module type CORE0 = sig

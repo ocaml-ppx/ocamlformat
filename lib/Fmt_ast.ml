@@ -4139,18 +4139,17 @@ and fmt_structure c ctx itms =
   fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?ext ?eq rec_flag decls ctx =
-  let update_config c td = update_config c td.ptype_attributes in
   let is_rec = Asttypes.is_recursive rec_flag in
-  let fmt_decl c ctx ~prev ~next:_ decl =
+  let fmt_decl c ctx ~prev decl ~next =
     let first = Option.is_none prev in
+    let last = Option.is_none next in
     let pre =
       if first then if is_rec then "type" else "type nonrec" else "and"
     in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ctx decl
+    fmt_type_declaration c ~pre ?eq ?ext ctx decl $ fmt_if (not last) "\n@ "
   in
-  let ast x = Td x in
-  fmt_item_list c ctx update_config ast fmt_decl decls
+  vbox 0 (list_pn decls (fmt_decl c ctx))
 
 and fmt_structure_item c ~first:first_item ~last:last_item ?ext {ctx; ast= si}
     =

@@ -7975,11 +7975,14 @@ end
    Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value (* a Lua value *)
+  type value
+  (* a Lua value *)
 
-  type state (* the state of a Lua interpreter *)
+  type state
+  (* the state of a Lua interpreter *)
 
-  type usert (* a user-defined value *)
+  type usert
+  (* a user-defined value *)
 end
 
 module type CORE0 = sig
