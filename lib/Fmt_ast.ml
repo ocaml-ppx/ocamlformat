@@ -543,7 +543,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
       hvbox 0 (fmt_quoted_string (Ext.Key.to_string key) ext str delim)
   | _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
-      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
+      fmt_structure_item c ~first:true ~last:true ~ext (sub_str ~ctx si)
   | _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
@@ -4131,8 +4131,9 @@ and fmt_structure c ctx itms =
     | Pstr_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next i =
-    fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
+  let fmt_item c ctx ~prev ~next i =
+    fmt_structure_item c ~first:(Option.is_none prev)
+      ~last:(Option.is_none next) (sub_str ~ctx i)
   in
   let ast x = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
@@ -4151,11 +4152,12 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
 
-and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item c ~first:first_item ~last:last_item ?ext {ctx; ast= si}
+    =
   protect c (Str si)
   @@
   let skip_double_semi =
-    match ctx with Pld (PStr [_]) -> true | _ -> false
+    match ctx with Pld (PStr [_]) -> true | _ -> first_item && last_item
   in
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
@@ -4412,10 +4414,11 @@ let fmt_toplevel c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next itm =
+  let fmt_item c ctx ~prev ~next itm =
+    let first = Option.is_none prev in
     let last = Option.is_none next in
     match itm with
-    | `Item i -> fmt_structure_item c ~last (sub_str ~ctx i)
+    | `Item i -> fmt_structure_item c ~first ~last (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
   let ast x = Tli x in
