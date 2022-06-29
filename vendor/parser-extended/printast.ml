@@ -311,6 +311,9 @@ and pattern i ppf x =
   | Ppat_extension (s, arg) ->
       line i ppf "Ppat_extension %a\n" fmt_string_loc s;
       payload i ppf arg
+  | Ppat_cons l ->
+      line i ppf "Ppat_cons\n";
+      list i pattern ppf l
 
 and expression i ppf x =
   line i ppf "expression %a\n" fmt_location x.pexp_loc;

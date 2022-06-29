@@ -360,12 +360,18 @@ end
 module Pat = struct
   let location x = x.ppat_loc
 
+  let is_any = function {ppat_desc= Ppat_any; _} -> true | _ -> false
+
   let is_simple {ppat_desc; _} =
     match ppat_desc with
     | Ppat_any | Ppat_constant _ | Ppat_var _
-     |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any; _}))
-     |Ppat_construct (_, (None | Some ([], {ppat_desc= Ppat_any; _}))) ->
+     |Ppat_variant (_, None)
+     |Ppat_construct (_, None) ->
         true
+    | (Ppat_variant (_, Some p) | Ppat_construct (_, Some ([], p)))
+      when is_any p ->
+        true
+    | Ppat_cons pl when List.for_all pl ~f:is_any -> true
     | _ -> false
 
   let has_trailing_attributes {ppat_desc; ppat_attributes; _} =
@@ -1354,14 +1360,10 @@ end = struct
         let f pI = pI == pat in
         let snd_f (_, pI) = pI == pat in
         match ctx.ppat_desc with
-        | Ppat_array p1N | Ppat_list p1N | Ppat_tuple p1N ->
+        | Ppat_array p1N | Ppat_list p1N | Ppat_tuple p1N | Ppat_cons p1N ->
             assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
-        | Ppat_construct
-            ( {txt= Lident "::"; _}
-            , Some (_, {ppat_desc= Ppat_tuple [p1; p2]; _}) )
-         |Ppat_or (p1, p2) ->
-            assert (p1 == pat || p2 == pat)
+        | Ppat_or (p1, p2) -> assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
          |Ppat_construct (_, Some (_, p1))
@@ -1979,32 +1981,19 @@ end = struct
     Pat.has_trailing_attributes pat
     ||
     match (ctx, pat.ppat_desc) with
-    | ( Pat
-          { ppat_desc=
-              Ppat_construct
-                ( {txt= Lident "::"; _}
-                , Some (_, {ppat_desc= Ppat_tuple [_; tl]; _}) )
-          ; _ }
-      , Ppat_construct ({txt= Lident "::"; _}, _) )
-      when tl == pat ->
+    | Pat {ppat_desc= Ppat_cons pl; _}, Ppat_cons _
+      when List.last_exn pl == pat ->
         false
-    | ( Pat
-          { ppat_desc=
-              Ppat_construct
-                ( {txt= Lident "::"; _}
-                , Some (_, {ppat_desc= Ppat_tuple [_; _]; _}) )
-          ; _ }
-      , inner ) -> (
+    | Pat {ppat_desc= Ppat_cons _; _}, inner -> (
       match inner with
-      | Ppat_construct ({txt= Lident "::"; _}, _) -> true
+      | Ppat_cons _ -> true
       | Ppat_construct _ | Ppat_record _ | Ppat_variant _ -> false
       | _ -> true )
-    | ( Pat {ppat_desc= Ppat_construct _; _}
-      , Ppat_construct ({txt= Lident "::"; _}, _) ) ->
-        true
+    | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
         | Str {pstr_desc= Pstr_value _; _} )
       , ( Ppat_construct (_, Some _)
+        | Ppat_cons _
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
@@ -2037,7 +2026,9 @@ end = struct
         | Exp {pexp_desc= Pexp_fun _; _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _; _}
-      , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
+      , ( Ppat_construct _ | Ppat_cons _
+        | Ppat_variant (_, Some _)
+        | Ppat_or _ ) )
      |( Pat
           { ppat_desc=
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
@@ -2056,11 +2047,13 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _; _}
-      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
+      , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
+        | Ppat_variant _ ) ) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
-      , (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) ) ->
+      , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
+      ) ->
         true
     | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _); _}
         | Str {pstr_desc= Pstr_value (_, bindings); _} )

@@ -227,7 +227,8 @@ let rec fooooooooooo = function
   (* AA*)
   (*BB*)
   (* CC *)
-  | x (* DD *)
+  | x
+    (* DD *)
     (* XX *)
     :: (* YY *)
        (* EE *) t
@@ -238,8 +239,8 @@ let rec fooooooooooo = function
   (* AA *)
   (* BB *)
   | (module (* CC *)
-            (* DD *) F (* EE *) : (* FF *) M (* GG *) )
-    (* HH *) :: (* II *) t
+            (* DD *) F (* EE *) : (* FF *) M (* GG *) ) (* HH *)
+    :: (* II *) t
   (* JJ *)
   (* KK *) ->
       foo
