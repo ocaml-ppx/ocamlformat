@@ -75,6 +75,15 @@
    let type_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_type a)
    let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
    let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
+   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_open (a, b))
+   let exception_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_exception a)
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Ppat_extension a)
++  let cons ?loc ?attrs a = mk ?loc ?attrs (Ppat_cons a)
+ end
+ 
+ module Exp = struct
+   let mk ?(loc = !default_loc) ?(attrs = []) d =
+     {pexp_desc = d;
 @@@@
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Pexp_variant (a, b))
    let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
@@ -194,6 +203,15 @@
      val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
      val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
      val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
+     val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
+     val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
++    val cons: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
+   end
+ 
+ (** Expressions *)
+ module Exp:
+   sig
 @@@@
                  -> expression option -> expression
      val field: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
@@ -520,6 +538,16 @@
          constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
      | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
      | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+     | Ppat_unpack s -> unpack ~loc ~attrs (map_loc sub s)
+     | Ppat_open (lid,p) -> open_ ~loc ~attrs (map_loc sub lid) (sub.pat sub p)
+     | Ppat_exception p -> exception_ ~loc ~attrs (sub.pat sub p)
+     | Ppat_extension x -> extension ~loc ~attrs (sub.extension sub x)
++    | Ppat_cons pl -> cons ~loc ~attrs (List.map (sub.pat sub) pl)
+ end
+ 
+ module CE = struct
+   (* Value expressions for the class language *)
+ 
 @@@@
      let attrs = sub.attributes sub attrs in
      match desc with
@@ -1172,11 +1200,16 @@
  (* TODO define an abstraction boundary between locations-as-pairs
     and locations-as-Location.t; it should be clear when we move from
 @@@@
- let mkpat_cons_desc consloc args =
-   Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
- let mkpat_cons ~loc consloc args =
-   mkpat ~loc (mkpat_cons_desc consloc args)
+ let mkexp_cons_desc consloc args =
+   Pexp_construct(mkrhs (Lident "::") consloc, Some args)
+ let mkexp_cons ~loc consloc args =
+   mkexp ~loc (mkexp_cons_desc consloc args)
  
+-let mkpat_cons_desc consloc args =
+-  Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
+-let mkpat_cons ~loc consloc args =
+-  mkpat ~loc (mkpat_cons_desc consloc args)
+-
 -let ghexp_cons_desc consloc args =
 -  Pexp_construct(ghrhs (Lident "::") consloc, Some args)
 -let ghpat_cons_desc consloc args =
@@ -1375,6 +1408,23 @@
        { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
    | mod_longident DOT
      LBRACKET expr_semi_list error
+@@@@
+     pattern_(pattern_no_exn)
+       { $1 }
+ ;
+ 
+ %inline pattern_(self):
+-  | self COLONCOLON pattern
+-      { mkpat_cons ~loc:$sloc $loc($2) (ghpat ~loc:$sloc (Ppat_tuple[$1;$3])) }
++  | self COLONCOLON p = pattern
++      { match p.ppat_desc, p.ppat_attributes with
++        | Ppat_cons pl, [] -> Pat.cons ~loc:(make_loc $sloc) ($1 :: pl)
++        | _ -> Pat.cons ~loc:(make_loc $sloc) [$1; p] }
+   | self attribute
+       { Pat.attr $1 $2 }
+   | pattern_gen
+       { $1 }
+   | mkpat(
 @@@@
        { let (fields, closed) = $2 in
          Ppat_record(fields, closed) }
@@ -1722,6 +1772,18 @@
    | Ppat_type of Longident.t loc  (** Pattern [#tconst] *)
    | Ppat_lazy of pattern  (** Pattern [lazy P] *)
    | Ppat_unpack of string option loc
+@@@@
+            [Ppat_constraint(Ppat_unpack(Some "P"), Ptyp_package S)]
+          *)
+   | Ppat_exception of pattern  (** Pattern [exception P] *)
+   | Ppat_extension of extension  (** Pattern [[%id]] *)
+   | Ppat_open of Longident.t loc * pattern  (** Pattern [M.(P)] *)
++  | Ppat_cons of pattern list  (** Pattern [P1 :: ... :: Pn] *)
+ 
+ (** {2 Value expressions} *)
+ 
+ and expression =
+     {
 @@@@
           *)
    | Pexp_field of expression * Longident.t loc  (** [E.l] *)
@@ -2137,6 +2199,9 @@
 -      line i ppf "Ppat_extension \"%s\"\n" s.txt;
 +      line i ppf "Ppat_extension %a\n" fmt_string_loc s;
        payload i ppf arg
++  | Ppat_cons l ->
++      line i ppf "Ppat_cons\n";
++      list i pattern ppf l
  
  and expression i ppf x =
    line i ppf "expression %a\n" fmt_location x.pexp_loc;

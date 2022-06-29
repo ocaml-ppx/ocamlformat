@@ -185,11 +185,6 @@ let mkexp_cons_desc consloc args =
 let mkexp_cons ~loc consloc args =
   mkexp ~loc (mkexp_cons_desc consloc args)
 
-let mkpat_cons_desc consloc args =
-  Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
-let mkpat_cons ~loc consloc args =
-  mkpat ~loc (mkpat_cons_desc consloc args)
-
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -2723,8 +2718,10 @@ pattern_no_exn:
 ;
 
 %inline pattern_(self):
-  | self COLONCOLON pattern
-      { mkpat_cons ~loc:$sloc $loc($2) (ghpat ~loc:$sloc (Ppat_tuple[$1;$3])) }
+  | self COLONCOLON p = pattern
+      { match p.ppat_desc, p.ppat_attributes with
+        | Ppat_cons pl, [] -> Pat.cons ~loc:(make_loc $sloc) ($1 :: pl)
+        | _ -> Pat.cons ~loc:(make_loc $sloc) [$1; p] }
   | self attribute
       { Pat.attr $1 $2 }
   | pattern_gen

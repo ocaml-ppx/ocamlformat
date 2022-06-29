@@ -164,39 +164,6 @@ module Exp = struct
     List.rev @@ infix_cons_ xexp []
 end
 
-module Pat = struct
-  let infix_cons cmts xpat =
-    let rec infix_cons_ ?cons_opt ({ast= pat; _} as xpat) acc =
-      let ctx = Pat pat in
-      let {ppat_desc; ppat_loc= l1; _} = pat in
-      match ppat_desc with
-      | Ppat_construct
-          ( ({txt= Lident "::"; _} as cons)
-          , Some
-              ( []
-              , { ppat_desc= Ppat_tuple [hd; tl]
-                ; ppat_loc= l3
-                ; ppat_attributes= []
-                ; _ } ) ) -> (
-          ( match acc with
-          | [] -> ()
-          | _ ->
-              Cmts.relocate cmts ~src:l1 ~before:hd.ppat_loc
-                ~after:tl.ppat_loc ) ;
-          Cmts.relocate cmts ~src:l3 ~before:hd.ppat_loc ~after:tl.ppat_loc ;
-          match tl.ppat_attributes with
-          | [] ->
-              infix_cons_ ~cons_opt:cons (sub_pat ~ctx tl)
-                ((cons_opt, sub_pat ~ctx hd) :: acc)
-          | _ ->
-              (Some cons, sub_pat ~ctx tl)
-              :: (cons_opt, sub_pat ~ctx hd)
-              :: acc )
-      | _ -> (cons_opt, xpat) :: acc
-    in
-    List.rev @@ infix_cons_ xpat []
-end
-
 let rec ite cmts ({ast= exp; _} as xexp) =
   let ctx = Exp exp in
   let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in

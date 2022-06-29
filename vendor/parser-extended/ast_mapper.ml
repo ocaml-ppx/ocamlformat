@@ -562,6 +562,7 @@ module P = struct
     | Ppat_open (lid,p) -> open_ ~loc ~attrs (map_loc sub lid) (sub.pat sub p)
     | Ppat_exception p -> exception_ ~loc ~attrs (sub.pat sub p)
     | Ppat_extension x -> extension ~loc ~attrs (sub.extension sub x)
+    | Ppat_cons pl -> cons ~loc ~attrs (List.map (sub.pat sub) pl)
 end
 
 module CE = struct

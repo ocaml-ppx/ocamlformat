@@ -60,15 +60,6 @@ module Exp : sig
       expression corresponding to a list ((::) application). *)
 end
 
-module Pat : sig
-  val infix_cons :
-       Cmts.t
-    -> pattern Ast.xt
-    -> (Longident.t loc option * pattern Ast.xt) list
-  (** [infix_cons pat] returns a list of patterns if [pat] is a pattern
-      corresponding to a list ((::) application). *)
-end
-
 val ite :
      Cmts.t
   -> expression Ast.xt
