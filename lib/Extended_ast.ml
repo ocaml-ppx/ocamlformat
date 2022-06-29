@@ -52,22 +52,17 @@ module Parse = struct
     Ast_mapper.{default_mapper with binding_op}
 
   let list_pat pat =
-    let rec list_pat_ pat acc =
-      match pat.ppat_desc with
-      | Ppat_construct ({txt= Lident "[]"; loc= _}, None) -> (
-        (* Empty lists are always represented as Lident [] *)
-        match acc with [] -> None | _ -> Some (List.rev acc) )
-      | Ppat_construct
-          ( {txt= Lident "::"; loc= _}
-          , Some
-              ( []
-              , { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
-                ; ppat_attributes= []
-                ; _ } ) ) ->
-          list_pat_ tl (hd :: acc)
-      | _ -> None
-    in
-    list_pat_ pat []
+    match pat.ppat_desc with
+    (* Do not normalize (x :: []) *)
+    | Ppat_cons (_ :: _ :: _ :: _ as l) -> (
+      match List.last_exn l with
+      (* Empty lists are always represented as Lident [] *)
+      | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
+        ; ppat_attributes= []
+        ; _ } ->
+          Some List.(rev (tl_exn (rev l)))
+      | _ -> None )
+    | _ -> None
 
   let list_exp exp =
     let rec list_exp_ exp acc =
