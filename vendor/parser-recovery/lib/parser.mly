@@ -188,11 +188,6 @@ let mkuplus ~oploc name arg =
    and locations-as-Location.t; it should be clear when we move from
    one world to the other *)
 
-let mkexp_cons_desc consloc args =
-  Pexp_construct(mkrhs (Lident "::") consloc, Some args)
-let mkexp_cons ~loc consloc args =
-  mkexp ~loc (mkexp_cons_desc consloc args)
-
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -2275,8 +2270,10 @@ expr [@recover.expr Annot.Exp.mk ()]:
         let pbop_loc = make_loc $sloc in
         let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
-  | expr COLONCOLON expr
-      { mkexp_cons ~loc:$sloc $loc($2) (ghexp ~loc:$sloc (Pexp_tuple[$1;$3])) }
+  | expr COLONCOLON e = expr
+      { match e.pexp_desc, e.pexp_attributes with
+        | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc $sloc) ($1 :: l)
+        | _ -> Exp.cons ~loc:(make_loc $sloc) [$1; e] }
   | mkrhs(label) LESSMINUS expr
       { mkexp ~loc:$sloc (Pexp_setinstvar($1, $3)) }
   | simple_expr DOT mkrhs(label_longident) LESSMINUS expr

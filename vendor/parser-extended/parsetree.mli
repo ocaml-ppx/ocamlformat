@@ -433,6 +433,7 @@ and expression_desc =
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
   | Pexp_beginend of expression  (** [begin E end] *)
+  | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
 
 and case =
     {
