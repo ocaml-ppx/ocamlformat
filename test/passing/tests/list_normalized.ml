@@ -8,3 +8,13 @@ let x = (* a *) 1 (* b *) :: (* c *) 2 :: 3 :: 4 (* d *) :: (* e *) ([][@attr]) 
 
 (* comments preserved when no normalization required *)
 let x = (* a *) [ (* b *) 1 (* c *) ; (* d *) 2 ; 3 ; 4 (* e *) ] (* f *)
+
+let x :: [] = e
+let x :: y = e
+let x :: y :: [] = e
+let x :: y :: ([][@attr]) = e
+let x :: (y[@attr]) :: [] = e
+let (*a*)x(*b*) :: (*c*)y(*d*) = e
+let (*a*)x(*b*) :: (*c*)y(*d*) :: (*e*)[](*f*) = e
+let (*a*)x(*b*) :: (*c*)y(*d*) :: (*e*)([][@attr])(*f*) = e
+let (*a*)x(*b*) :: (*c*)(y[@attr])(*d*) :: (*e*)[](*f*) = e
