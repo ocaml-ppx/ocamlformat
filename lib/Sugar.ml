@@ -90,48 +90,48 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
-    let rec infix_ ?(relocate = true) xop ((lbl, {ast= exp; _}) as xexp) =
-      assert (Poly.(lbl = Nolabel)) ;
-      let ctx = Exp exp in
-      match (assoc, exp) with
-      | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-        when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
-          let op_args1 = infix_ None (l1, sub_exp ~ctx e1) in
-          let src = pexp_loc in
-          let after = e2.pexp_loc in
-          ( match op_args1 with
-          | (Some {ast= {pexp_loc= before; _}; _}, _) :: _
-           |(None, (_, {ast= {pexp_loc= before; _}; _}) :: _) :: _ ->
-              if relocate then Cmts.relocate cmts ~src ~before ~after
-          | _ ->
-              if relocate then
-                Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
-          op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
-      | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-        when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
-          let op_args2 =
-            infix_ (Some (sub_exp ~ctx e0)) (l2, sub_exp ~ctx e2)
-          in
-          let src = pexp_loc in
-          let after = e1.pexp_loc in
+    let rec infix_ ?(relocate = true) xop xexp =
+      let ctx = Exp xexp.ast in
+      match (assoc, xexp.ast) with
+      | ( Left
+        , { pexp_desc=
+              Pexp_apply
+                ( {pexp_desc= Pexp_ident {txt= Lident op; loc}; _}
+                , [(_, e1); (_, e2)] )
+          ; pexp_loc= src
+          ; _ } )
+        when Option.equal Prec.equal prec (prec_ast ctx) ->
+          let op_args1 = infix_ None (sub_exp ~ctx e1) in
           let before =
-            match xop with
-            | Some {ast; _} -> ast.pexp_loc
+            match op_args1 with
+            | (Some {loc; _}, _) :: _ -> loc
+            | (None, {ast= {pexp_loc; _}; _}) :: _ -> pexp_loc
+            | _ -> loc
+          in
+          if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
+          op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
+      | ( Right
+        , { pexp_desc=
+              Pexp_apply
+                ( {pexp_desc= Pexp_ident {txt= Lident op; loc}; _}
+                , [(_, e1); (_, e2)] )
+          ; pexp_loc= src
+          ; _ } )
+        when Option.equal Prec.equal prec (prec_ast ctx) ->
+          let op_args2 = infix_ (Some {txt= op; loc}) (sub_exp ~ctx e2) in
+          let before =
+            match xop with Some op -> op.loc | None -> e1.pexp_loc
+          in
+          let after =
+            match List.last op_args2 with
+            | Some (_, {ast= {pexp_loc; _}; _}) -> pexp_loc
             | None -> e1.pexp_loc
           in
-          let may_relocate ~after =
-            if relocate then Cmts.relocate cmts ~src ~before ~after
-          in
-          ( match List.last op_args2 with
-          | Some (_, args2) -> (
-            match List.last args2 with
-            | Some (_, {ast= {pexp_loc= after; _}; _}) -> may_relocate ~after
-            | None -> may_relocate ~after )
-          | _ -> may_relocate ~after ) ;
-          (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
-      | _ -> [(xop, [xexp])]
+          if relocate then Cmts.relocate cmts ~src ~before ~after ;
+          (xop, sub_exp ~ctx e1) :: op_args2
+      | _ -> [(xop, xexp)]
     in
-    infix_ None ~relocate:false (Nolabel, xexp)
+    infix_ None ~relocate:false xexp
 end
 
 let rec ite cmts ({ast= exp; _} as xexp) =
