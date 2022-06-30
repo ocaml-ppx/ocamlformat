@@ -603,9 +603,9 @@
        { Pexp_ident ($1) }
    | constant
 @@@@
-       { Pexp_apply($1, [Nolabel,$2]) }
+       { Pexp_prefix($1, $2) }
    | op(BANG {"!"}) simple_expr
-       { Pexp_apply($1, [Nolabel,$2]) }
+       { Pexp_prefix($1, $2) }
    | LBRACELESS object_expr_content GREATERRBRACE
        { Pexp_override $2 }
 -  | LBRACELESS object_expr_content error
