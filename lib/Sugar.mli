@@ -51,13 +51,6 @@ module Exp : sig
   (** [infix cmts prec exp] returns the infix operator and the list of
       operands applied to this operator from expression [exp]. [prec] is the
       precedence of the infix operator. *)
-
-  val infix_cons :
-       Cmts.t
-    -> expression Ast.xt
-    -> (Longident.t loc option * expression Ast.xt) list
-  (** [infix_cons exp] returns a list of expressions if [exp] is an
-      expression corresponding to a list ((::) application). *)
 end
 
 val ite :

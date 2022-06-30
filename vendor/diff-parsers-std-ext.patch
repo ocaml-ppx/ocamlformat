@@ -103,6 +103,7 @@
    let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
    let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
 +  let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
++  let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
  
    let case lhs ?guard rhs =
      {
@@ -231,6 +232,7 @@
      val binding_op: str -> pattern -> expression -> loc -> binding_op
      val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
 +    val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
++    val cons: ?loc:loc -> ?attrs:attrs -> expression list -> expression
    end
  
  (** Value declarations *)
@@ -517,6 +519,7 @@
      | Pexp_unreachable -> unreachable ~loc ~attrs ()
      | Pexp_hole -> hole ~loc ~attrs ()
 +    | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
++    | Pexp_cons l -> cons ~loc ~attrs (List.map (sub.expr sub) l)
  
    let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
      let open Exp in
@@ -1199,12 +1202,13 @@
  
  (* TODO define an abstraction boundary between locations-as-pairs
     and locations-as-Location.t; it should be clear when we move from
-@@@@
- let mkexp_cons_desc consloc args =
-   Pexp_construct(mkrhs (Lident "::") consloc, Some args)
- let mkexp_cons ~loc consloc args =
-   mkexp ~loc (mkexp_cons_desc consloc args)
+    one world to the other *)
  
+-let mkexp_cons_desc consloc args =
+-  Pexp_construct(mkrhs (Lident "::") consloc, Some args)
+-let mkexp_cons ~loc consloc args =
+-  mkexp ~loc (mkexp_cons_desc consloc args)
+-
 -let mkpat_cons_desc consloc args =
 -  Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
 -let mkpat_cons ~loc consloc args =
@@ -1372,6 +1376,23 @@
  %inline constrain:
      core_type EQUAL core_type
      { $1, $3, make_loc $sloc }
+@@@@
+       { let (pbop_pat, pbop_exp, rev_ands) = bindings in
+         let ands = List.rev rev_ands in
+         let pbop_loc = make_loc $sloc in
+         let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
+         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
+-  | expr COLONCOLON expr
+-      { mkexp_cons ~loc:$sloc $loc($2) (ghexp ~loc:$sloc (Pexp_tuple[$1;$3])) }
++  | expr COLONCOLON e = expr
++      { match e.pexp_desc, e.pexp_attributes with
++        | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc $sloc) ($1 :: l)
++        | _ -> Exp.cons ~loc:(make_loc $sloc) [$1; e] }
+   | mkrhs(label) LESSMINUS expr
+       { mkexp ~loc:$sloc (Pexp_setinstvar($1, $3)) }
+   | simple_expr DOT mkrhs(label_longident) LESSMINUS expr
+       { mkexp ~loc:$sloc (Pexp_setfield($1, $3, $5)) }
+   | indexop_expr(DOT, seq_expr, LESSMINUS v=expr {Some v})
 @@@@
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
@@ -1803,6 +1824,7 @@
    | Pexp_unreachable  (** [.] *)
    | Pexp_hole  (** [_] *)
 +  | Pexp_beginend of expression  (** [begin E end] *)
++  | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
  
  and case =
      {
@@ -2279,6 +2301,9 @@
 +  | Pexp_beginend e ->
 +      line i ppf "Pexp_beginend\n";
 +      expression i ppf e
++  | Pexp_cons l ->
++      line i ppf "Pexp_cons\n";
++      list i expression ppf l
  
  and value_description i ppf x =
    line i ppf "value_description %a %a\n" fmt_string_loc

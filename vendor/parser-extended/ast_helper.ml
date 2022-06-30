@@ -225,6 +225,7 @@ module Exp = struct
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
+  let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
 
   let case lhs ?guard rhs =
     {

@@ -1388,7 +1388,7 @@ end = struct
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ ->
+       |Pexp_beginend _ | Pexp_cons _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
@@ -1478,10 +1478,6 @@ end = struct
         let f eI = eI == exp in
         let snd_f (_, eI) = eI == exp in
         match ctx.pexp_desc with
-        | Pexp_construct
-            ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [e1; e2]; _})
-          ->
-            assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
          |Pexp_unreachable | Pexp_hole ->
@@ -1517,7 +1513,7 @@ end = struct
             assert (e0 == exp || op.lhs == exp || in_args || in_rhs)
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
-        | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N ->
+        | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N | Pexp_cons e1N ->
             assert (List.exists e1N ~f)
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
             assert (Option.exists e ~f)
@@ -1610,10 +1606,8 @@ end = struct
      |Pexp_construct (_, None)
      |Pexp_variant (_, None) ->
         true
-    | Pexp_construct
-        ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [e1; e2]; _}) ->
-        is_simple c width (sub_exp ~ctx e1)
-        && is_simple c width (sub_exp ~ctx e2)
+    | Pexp_cons l ->
+        List.for_all l ~f:(fun e -> is_simple c width (sub_exp ~ctx e))
         && fit_margin c (width xexp)
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         Exp.is_trivial e0
@@ -1718,9 +1712,8 @@ end = struct
       match pexp_desc with
       | Pexp_tuple (e0 :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
-      | Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
-          Some (ColonColon, if exp == e2 then Right else Left)
+      | Pexp_cons l ->
+          Some (ColonColon, if exp == List.last_exn l then Right else Left)
       | Pexp_construct
           ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [_; _]; _}) ->
           Some (Semi, Non)
@@ -1820,9 +1813,7 @@ end = struct
     | Exp {pexp_desc; _} -> (
       match pexp_desc with
       | Pexp_tuple _ -> Some Comma
-      | Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple _; _}) ->
-          Some ColonColon
+      | Pexp_cons _ -> Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant
           {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _} -> (
@@ -2105,8 +2096,6 @@ end = struct
         in
         match exp.pexp_desc with
         | Pexp_assert e
-         |Pexp_construct
-            ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e]; _})
          |Pexp_construct (_, Some e)
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, e, None)
@@ -2119,6 +2108,7 @@ end = struct
          |Pexp_setinstvar (_, e)
          |Pexp_variant (_, Some e) ->
             continue e
+        | Pexp_cons l -> continue (List.last_exn l)
         | Pexp_extension
             ( ext
             , PStr
@@ -2181,8 +2171,6 @@ end = struct
       in
       match exp.pexp_desc with
       | Pexp_assert e
-       |Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e]; _})
        |Pexp_construct (_, Some e)
        |Pexp_ifthenelse (_, e, None)
        |Pexp_ifthenelse (_, _, Some e)
@@ -2195,6 +2183,7 @@ end = struct
        |Pexp_setinstvar (_, e)
        |Pexp_variant (_, Some e) ->
           continue e
+      | Pexp_cons l -> continue (List.last_exn l)
       | Pexp_let (_, _, e)
        |Pexp_letop {body= e; _}
        |Pexp_letexception (_, e)
@@ -2317,6 +2306,7 @@ end = struct
       , {pexp_attributes= _ :: _; _} )
       when Longident.is_infix id ->
         true
+    | Exp {pexp_desc= Pexp_cons _; _}, {pexp_attributes= _ :: _; _} -> true
     | Exp {pexp_desc= Pexp_extension _; _}, {pexp_desc= Pexp_tuple _; _} ->
         false
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
@@ -2335,7 +2325,7 @@ end = struct
       when Exp.is_infix op && not (e1 == exp) ->
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _); _}
-      , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
+      , {pexp_desc= Pexp_construct _ | Pexp_cons _ | Pexp_variant _; _} )
       when e == exp ->
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _ :: _); _}
@@ -2345,7 +2335,7 @@ end = struct
       | [(Nolabel, _)], [] -> false
       | _ -> true )
     | ( Exp {pexp_desc= Pexp_apply (e0, ((_, e) :: _ as args)); _}
-      , {pexp_desc= Pexp_construct _; _} )
+      , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )
       when e == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
         true
     | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
@@ -2359,7 +2349,8 @@ end = struct
         ; _ } )
       when exp == left && Exp.is_index_op op ->
         true
-    | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}
+    | ( Exp {pexp_desc= Pexp_field (e, _); _}
+      , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )
       when e == exp ->
         true
     | Exp {pexp_desc; _}, _ -> (
@@ -2458,13 +2449,7 @@ end = struct
       match ast with
       | Exp {pexp_desc= Pexp_apply (e, _); _} when Exp.is_infix e ->
           prec_ast ast
-      | Exp
-          { pexp_desc=
-              Pexp_construct
-                ( {txt= Lident "::"; loc= _}
-                , Some {pexp_desc= Pexp_tuple [_; _]; _} )
-          ; _ } ->
-          prec_ast ast
+      | Exp {pexp_desc= Pexp_cons _; _} -> prec_ast ast
       | _ -> None
     in
     (* Make the precedence explicit for infix operators *)

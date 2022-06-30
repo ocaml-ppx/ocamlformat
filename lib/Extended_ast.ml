@@ -65,21 +65,17 @@ module Parse = struct
     | _ -> None
 
   let list_exp exp =
-    let rec list_exp_ exp acc =
-      match exp.pexp_desc with
-      | Pexp_construct ({txt= Lident "[]"; loc= _}, None) -> (
-        (* Empty lists are always represented as Lident [] *)
-        match acc with [] -> None | _ -> Some (List.rev acc) )
-      | Pexp_construct
-          ( {txt= Lident "::"; loc= _}
-          , Some
-              { pexp_desc= Pexp_tuple [hd; ({pexp_attributes= []; _} as tl)]
-              ; pexp_attributes= []
-              ; _ } ) ->
-          list_exp_ tl (hd :: acc)
-      | _ -> None
-    in
-    list_exp_ exp []
+    match exp.pexp_desc with
+    (* Do not normalize (x :: []) *)
+    | Pexp_cons (_ :: _ :: _ :: _ as l) -> (
+      match List.last_exn l with
+      (* Empty lists are always represented as Lident [] *)
+      | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
+        ; pexp_attributes= []
+        ; _ } ->
+          Some List.(rev (tl_exn (rev l)))
+      | _ -> None )
+    | _ -> None
 
   let normalize_lists =
     let expr (m : Ast_mapper.mapper) e =
