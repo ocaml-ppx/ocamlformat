@@ -350,7 +350,8 @@ module Exp = struct
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
+            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _
+            | Pexp_letopen _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
         true
@@ -1388,7 +1389,7 @@ end = struct
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_cons _ ->
+       |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
@@ -1538,6 +1539,7 @@ end = struct
          |Pexp_letmodule (_, _, e)
          |Pexp_newtype (_, e)
          |Pexp_open (_, e)
+         |Pexp_letopen (_, e)
          |Pexp_poly (e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
@@ -2103,6 +2105,7 @@ end = struct
          |Pexp_lazy e
          |Pexp_newtype (_, e)
          |Pexp_open (_, e)
+         |Pexp_letopen (_, e)
          |Pexp_sequence (_, e)
          |Pexp_setfield (_, _, e)
          |Pexp_setinstvar (_, e)
@@ -2177,6 +2180,7 @@ end = struct
        |Pexp_lazy e
        |Pexp_newtype (_, e)
        |Pexp_open (_, e)
+       |Pexp_letopen (_, e)
        |Pexp_fun (_, _, _, e)
        |Pexp_sequence (_, e)
        |Pexp_setfield (_, _, e)

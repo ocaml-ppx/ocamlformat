@@ -104,18 +104,6 @@ let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   else
     {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
 
-let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
-  let filter = Poly.( = ) tok in
-  let from = from.loc_start and upto = upto.loc_start in
-  Source_code_position.ascending from upto < 0
-  && not (List.is_empty (tokens_between t ~filter from upto))
-
-let is_long_pexp_open source {pexp_desc; _} =
-  match pexp_desc with
-  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
-      contains_token_between source ~from ~upto Parser.IN
-  | _ -> false
-
 let is_long_functor_syntax (t : t) ~(from : Location.t) = function
   | Unit -> false
   | Named ({loc= _; _}, _) -> (

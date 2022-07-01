@@ -506,8 +506,9 @@ module E = struct
     | Pexp_newtype (s, e) ->
         newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
     | Pexp_pack me -> pack ~loc ~attrs (sub.module_expr sub me)
-    | Pexp_open (o, e) ->
-        open_ ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
+    | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
+    | Pexp_letopen (o, e) ->
+        letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
     | Pexp_letop {let_; ands; body} ->
         letop ~loc ~attrs (sub.binding_op sub let_)
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)

@@ -97,6 +97,12 @@
    let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
    let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
 @@@@
+   let poly ?loc ?attrs a b = mk ?loc ?attrs (Pexp_poly (a, b))
+   let object_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_object a)
+   let newtype ?loc ?attrs a b = mk ?loc ?attrs (Pexp_newtype (a, b))
+   let pack ?loc ?attrs a = mk ?loc ?attrs (Pexp_pack a)
+   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
++  let letopen ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letopen (a, b))
    let letop ?loc ?attrs let_ ands body =
      mk ?loc ?attrs (Pexp_letop {let_; ands; body})
    let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
@@ -226,6 +232,18 @@
                    -> expression
      val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
 @@@@
+     val poly: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
+               -> expression
+     val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
+     val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
+     val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
+-    val open_: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
++    val open_: ?loc:loc -> ?attrs:attrs -> lid -> expression -> expression
++    val letopen: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
+                -> expression
+     val letop: ?loc:loc -> ?attrs:attrs -> binding_op
+                -> binding_op list -> expression -> expression
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
      val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
  
      val case: pattern -> ?guard:expression -> expression -> case
@@ -513,6 +531,17 @@
      | Pexp_sequence (e1, e2) ->
          sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
 @@@@
+         poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
+     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
+     | Pexp_newtype (s, e) ->
+         newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+     | Pexp_pack me -> pack ~loc ~attrs (sub.module_expr sub me)
+-    | Pexp_open (o, e) ->
+-        open_ ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
++    | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
++    | Pexp_letopen (o, e) ->
++        letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
+     | Pexp_letop {let_; ands; body} ->
          letop ~loc ~attrs (sub.binding_op sub let_)
            (List.map (sub.binding_op sub) ands) (sub.expr sub body)
      | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
@@ -1272,6 +1301,21 @@
    tail = listx(delimiter, X, Y)
      { let xs, y = tail in
 @@@@
+     Opn.mk id ~override ~attrs ~loc ~docs, ext
+   }
+ ;
+ 
+ %inline open_dot_declaration: mkrhs(mod_longident)
+-  { let loc = make_loc $loc($1) in
+-    let me = Mod.ident ~loc $1 in
+-    Opn.mk ~loc me }
++  { $1 }
+ ;
+ 
+ (* -------------------------------------------------------------------------- *)
+ 
+ /* Module types */
+@@@@
      attrs = attributes
      mutable_ = virtual_with_mutable_flag
      label = mkrhs(label) COLON ty = core_type
@@ -1393,6 +1437,19 @@
    | simple_expr DOT mkrhs(label_longident) LESSMINUS expr
        { mkexp ~loc:$sloc (Pexp_setfield($1, $3, $5)) }
    | indexop_expr(DOT, seq_expr, LESSMINUS v=expr {Some v})
+@@@@
+   | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
+       { Pexp_letexception($4, $6), $3 }
+   | LET OPEN override_flag ext_attributes module_expr IN seq_expr
+       { let open_loc = make_loc ($startpos($2), $endpos($5)) in
+         let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
+-        Pexp_open(od, $7), $4 }
++        Pexp_letopen(od, $7), $4 }
+   | FUNCTION ext_attributes match_cases
+       { Pexp_function $3, $2 }
+   | FUN ext_attributes labeled_simple_pattern fun_def
+       { let (l,o,p) = $3 in
+         Pexp_fun(l, o, p, $4), $2 }
 @@@@
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
@@ -1818,6 +1875,20 @@
    | Pexp_while of expression * expression  (** [while E1 do E2 done] *)
    | Pexp_for of pattern * expression * expression * direction_flag * expression
 @@@@
+   | Pexp_pack of module_expr
+       (** [(module ME)].
+ 
+            [(module ME : S)] is represented as
+            [Pexp_constraint(Pexp_pack ME, Ptyp_package S)] *)
+-  | Pexp_open of open_declaration * expression
+-      (** - [M.(E)]
+-            - [let open M in E]
+-            - [let open! M in E] *)
++  | Pexp_open of Longident.t loc * expression  (** [M.(E)] *)
++  | Pexp_letopen of open_declaration * expression
++      (** - [let open M in E]
++          - [let open! M in E] *)
+   | Pexp_letop of letop
        (** - [let* P = E0 in E1]
              - [let* P0 = E00 and* P1 = E01 in E1] *)
    | Pexp_extension of extension  (** [[%id]] *)
@@ -2279,10 +2350,15 @@
    | Pexp_pack me ->
        line i ppf "Pexp_pack\n";
        module_expr i ppf me
-   | Pexp_open (o, e) ->
+-  | Pexp_open (o, e) ->
 -      line i ppf "Pexp_open %a\n" fmt_override_flag o.popen_override;
 -      module_expr i ppf o.popen_expr;
++  | Pexp_open (lid, e) ->
 +      line i ppf "Pexp_open\n";
++      longident_loc i ppf lid;
++      expression i ppf e
++  | Pexp_letopen (o, e) ->
++      line i ppf "Pexp_letopen\n";
 +      open_declaration i ppf o;
        expression i ppf e
    | Pexp_letop {let_; ands; body} ->
