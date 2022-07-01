@@ -2402,23 +2402,22 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hovbox 0
         (Params.parens_if outer_parens c.conf
            ( hvbox 0
-               ( hvbox 0
-                   ( fmt_if inner_parens "("
-                   $ fmt_module_statement c ~attributes
-                       ~keyword:
-                         ( hvbox 0
-                             ( str "let" $ break 1 0
-                             $ Cmts.fmt_before c popen_loc
-                             $ fmt_or override "open!" "open"
-                             $ opt ext (fun _ -> fmt_if override " ")
-                             $ fmt_extension_suffix c ext )
-                         $ break 1 0 )
-                       (sub_mod ~ctx popen_expr)
-                   $ Cmts.fmt_after c popen_loc
-                   $ str " in" )
-               $ break 1000 0
-               $ fmt_expression c (sub_exp ~ctx e0)
-               $ fmt_if_k inner_parens (closing_paren c) )
+               (Params.parens_if inner_parens c.conf
+                  ( hvbox 0
+                      ( fmt_module_statement c ~attributes
+                          ~keyword:
+                            ( hvbox 0
+                                ( str "let" $ break 1 0
+                                $ Cmts.fmt_before c popen_loc
+                                $ fmt_or override "open!" "open"
+                                $ opt ext (fun _ -> fmt_if override " ")
+                                $ fmt_extension_suffix c ext )
+                            $ break 1 0 )
+                          (sub_mod ~ctx popen_expr)
+                      $ Cmts.fmt_after c popen_loc
+                      $ str " in" )
+                  $ break 1000 0
+                  $ fmt_expression c (sub_exp ~ctx e0) ) )
            $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
     when Poly.(
