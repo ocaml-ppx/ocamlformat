@@ -1413,7 +1413,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
     when String.equal l i
          && List.is_empty arg.pexp_attributes
          && Ocaml_version.(
-              compare c.conf.opr_opts.ocaml_version Releases.v4_14 >= 0) ->
+              compare c.conf.opr_opts.ocaml_version Releases.v4_14 >= 0 ) ->
       let lbl =
         match lbl with
         | Labelled _ -> str "~"
@@ -2380,11 +2380,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let outer_parens = has_attr && parens in
       let inner_parens = not can_skip_parens in
-      let closing_break =
-        match c.conf.fmt_opts.indicate_multiline_delimiters with
-        | `No | `Space -> noop
-        | `Closing_on_separate_line -> fmt_if_k inner_parens (break 0 0)
-      in
       hovbox 0
         (Params.parens_if outer_parens c.conf
            ( hvbox 0
@@ -2393,7 +2388,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ str "." $ fmt_if inner_parens "(" )
                $ fmt "@;<0 2>"
                $ fmt_expression c (sub_exp ~ctx e0)
-               $ closing_break $ fmt_if inner_parens ")" )
+               $ fmt_if_k inner_parens (closing_paren c) )
            $ fmt_atrs ) )
   | Pexp_letopen
       ( { popen_override= flag
@@ -2404,11 +2399,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let override = is_override flag in
       let outer_parens = has_attr && parens in
       let inner_parens = has_attr || parens in
-      let closing =
-        match c.conf.fmt_opts.indicate_multiline_delimiters with
-        | `No | `Space -> fmt_if inner_parens ")"
-        | `Closing_on_separate_line -> fmt_if inner_parens "@;<1000 0>)"
-      in
       hovbox 0
         (Params.parens_if outer_parens c.conf
            ( hvbox 0
@@ -2428,12 +2418,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ str " in" )
                $ break 1000 0
                $ fmt_expression c (sub_exp ~ctx e0)
-               $ closing )
+               $ fmt_if_k inner_parens (closing_paren c) )
            $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
     when Poly.(
            c.conf.fmt_opts.single_case = `Compact
-           && c.conf.fmt_opts.break_cases <> `All) ->
+           && c.conf.fmt_opts.break_cases <> `All ) ->
       (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)
       let xpc_rhs = sub_exp ~ctx pc_rhs in
       let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
@@ -4321,7 +4311,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   @@ fun c ->
   let lb_pun =
     Ocaml_version.(
-      compare c.conf.opr_opts.ocaml_version Releases.v4_13_0 >= 0)
+      compare c.conf.opr_opts.ocaml_version Releases.v4_13_0 >= 0 )
     && lb_pun
   in
   let doc1, atrs = doc_atrs lb_attrs in

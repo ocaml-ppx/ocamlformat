@@ -16,7 +16,7 @@ let _ =
       (*comment*)
       (let open M in
       let x = x in
-      e)
+      e )
   in
   ()
 
