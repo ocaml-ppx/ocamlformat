@@ -1260,7 +1260,7 @@ let config =
   let list_assoc = Arg.(list ~sep:',' assoc) in
   mk ~default
     Arg.(
-      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
+      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env )
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
@@ -1378,7 +1378,7 @@ let output =
     Arg.(
       value
       & opt (some string) default
-      & info ["o"; "output"] ~doc ~docs ~docv)
+      & info ["o"; "output"] ~doc ~docs ~docv )
 
 let print_config =
   let doc =

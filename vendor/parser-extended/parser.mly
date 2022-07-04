@@ -1564,9 +1564,7 @@ open_description:
 ;
 
 %inline open_dot_declaration: mkrhs(mod_longident)
-  { let loc = make_loc $loc($1) in
-    let me = Mod.ident ~loc $1 in
-    Opn.mk ~loc me }
+  { $1 }
 ;
 
 (* -------------------------------------------------------------------------- *)
@@ -2298,7 +2296,7 @@ expr:
   | LET OPEN override_flag ext_attributes module_expr IN seq_expr
       { let open_loc = make_loc ($startpos($2), $endpos($5)) in
         let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
-        Pexp_open(od, $7), $4 }
+        Pexp_letopen(od, $7), $4 }
   | FUNCTION ext_attributes match_cases
       { Pexp_function $3, $2 }
   | FUN ext_attributes labeled_simple_pattern fun_def

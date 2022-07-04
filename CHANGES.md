@@ -10,6 +10,7 @@
 
 - Preserve comments around object open/close flag (#2097, @trefis, @gpetiot)
 - Preserve comments around private/mutable/virtual keywords (#2098, @trefis, @gpetiot)
+- Closing parentheses of local open now comply with `indicate-multiline-delimiters` (#2116, @gpetiot)
 
 ### Changes
 

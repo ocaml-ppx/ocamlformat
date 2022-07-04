@@ -442,8 +442,12 @@ and expression i ppf x =
   | Pexp_pack me ->
       line i ppf "Pexp_pack\n";
       module_expr i ppf me
-  | Pexp_open (o, e) ->
+  | Pexp_open (lid, e) ->
       line i ppf "Pexp_open\n";
+      longident_loc i ppf lid;
+      expression i ppf e
+  | Pexp_letopen (o, e) ->
+      line i ppf "Pexp_letopen\n";
       open_declaration i ppf o;
       expression i ppf e
   | Pexp_letop {let_; ands; body} ->
