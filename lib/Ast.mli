@@ -105,37 +105,6 @@ module Exp : sig
       prefix operators. *)
 end
 
-module Indexing_op : sig
-  type brackets = Round | Square | Curly
-
-  type custom_operator =
-    { path: string list  (** eg. [a.X.Y.*{b}] *)
-    ; opchars: string
-    ; brackets: brackets }
-
-  type indexing_op =
-    | Defined of expression * custom_operator
-        (** [.*( a )]: take a single argument *)
-    | Extended of expression list * custom_operator
-        (** [.*( a; b; c )]: take several arguments, separated by [;] *)
-    | Special of expression list * brackets
-        (** [.()], [.\[\]] and bigarray operators: take several arguments,
-            separated by [,] *)
-
-  type t =
-    { lhs: expression
-    ; op: indexing_op
-    ; rhs: expression option  (** eg. [a.*{b} <- exp] *)
-    ; loc: Location.t }
-
-  val get_sugar :
-    expression -> (Asttypes.arg_label * expression) list -> t option
-  (** [get_sugar e args] is [Some all] if [e] is an identifier that is an
-      indexing operator and if the sugar syntax is already used in the
-      source, [None] otherwise. [args] should be the arguments of the
-      corresponding [Pexp_apply]. *)
-end
-
 val doc_atrs :
      ?acc:(string Location.loc * bool) list
   -> attributes

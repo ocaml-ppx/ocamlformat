@@ -207,17 +207,21 @@
 -let not_expecting loc nonterm =
 -    raise Syntaxerr.(Error(Not_expecting(make_loc loc, nonterm)))
 -
- (* Helper functions for desugaring array indexing operators *)
- type paren_kind = Paren | Brace | Bracket
+ let mk_builtin_indexop_expr ~loc (pia_lhs, _dot, pia_paren, idx, pia_rhs) =
+   mkexp ~loc
+     (Pexp_indexop_access
+        { pia_lhs; pia_kind= Builtin idx; pia_paren; pia_rhs })
  
- (* We classify the dimension of indices: Bigarray distinguishes
-    indices of dimension 1,2,3, or more. Similarly, user-defined
-@@@@
-     | None -> []
-     | Some expr -> [Nolabel, expr] in
-   let args = (Nolabel,array) :: index @ set_arg in
-   mkexp ~loc (Pexp_apply(ghexp ~loc (Pexp_ident fn), args))
+ let mk_dotop_indexop_expr ~loc (pia_lhs, (path, op), pia_paren, idx, pia_rhs) =
+   mkexp ~loc
+     (Pexp_indexop_access
+        { pia_lhs; pia_kind= Dotop (path, op, idx); pia_paren; pia_rhs })
  
+-let paren_to_strings = function
+-  | Paren -> "(", ")"
+-  | Bracket -> "[", "]"
+-  | Brace -> "{", "}"
+-
 -let indexop_unclosed_error loc_s s loc_e =
 -  let left, right = paren_to_strings s in
 -  unclosed left loc_s right loc_e
@@ -530,7 +534,7 @@
 -    { indexop_unclosed_error $loc(_p) Bracket $loc(_e) }
 -;
 -
- %inline qualified_dotop: ioption(DOT mod_longident {$2}) DOTOP { $1, $2 };
+ %inline qualified_dotop: ioption(DOT mkrhs(mod_longident) {$2}) DOTOP { $1, $2 };
  
 -expr:
 +expr [@recover.expr Annot.Exp.mk ()]:
@@ -563,9 +567,9 @@
    | LPAREN seq_expr type_constraint RPAREN
        { mkexp_constraint ~loc:$sloc $2 $3 }
    | indexop_expr(DOT, seq_expr, { None })
-       { mk_indexop_expr builtin_indexing_operators ~loc:$sloc $1 }
+       { mk_builtin_indexop_expr ~loc:$sloc $1 }
    | indexop_expr(qualified_dotop, expr_semi_list, { None })
-       { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
+       { mk_dotop_indexop_expr ~loc:$sloc $1 }
 -  | indexop_error (DOT, seq_expr) { $1 }
 -  | indexop_error (qualified_dotop, expr_semi_list) { $1 }
    | simple_expr_attrs

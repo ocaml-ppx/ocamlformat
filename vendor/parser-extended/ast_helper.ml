@@ -209,6 +209,8 @@ module Exp = struct
   let send ?loc ?attrs a b = mk ?loc ?attrs (Pexp_send (a, b))
   let new_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_new a)
   let setinstvar ?loc ?attrs a b = mk ?loc ?attrs (Pexp_setinstvar (a, b))
+  let indexop_access ?loc ?attrs pia_lhs pia_kind pia_paren pia_rhs =
+    mk ?loc ?attrs (Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs})
   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
   let letmodule ?loc ?attrs a b c= mk ?loc ?attrs (Pexp_letmodule (a, b, c))
   let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))

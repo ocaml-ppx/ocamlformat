@@ -97,7 +97,17 @@
    let while_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_while (a, b))
    let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
    let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
-@@@@
+   let coerce ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_coerce (a, b, c))
+   let send ?loc ?attrs a b = mk ?loc ?attrs (Pexp_send (a, b))
+   let new_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_new a)
+   let setinstvar ?loc ?attrs a b = mk ?loc ?attrs (Pexp_setinstvar (a, b))
++  let indexop_access ?loc ?attrs pia_lhs pia_kind pia_paren pia_rhs =
++    mk ?loc ?attrs (Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs})
+   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
+   let letmodule ?loc ?attrs a b c= mk ?loc ?attrs (Pexp_letmodule (a, b, c))
+   let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))
+   let assert_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_assert a)
+   let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_lazy a)
    let poly ?loc ?attrs a b = mk ?loc ?attrs (Pexp_poly (a, b))
    let object_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_object a)
    let newtype ?loc ?attrs a b = mk ?loc ?attrs (Pexp_newtype (a, b))
@@ -246,6 +256,20 @@
      val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
                    -> expression
      val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
+@@@@
+     val constraint_: ?loc:loc -> ?attrs:attrs -> expression -> core_type
+                      -> expression
+     val send: ?loc:loc -> ?attrs:attrs -> expression -> str -> expression
+     val new_: ?loc:loc -> ?attrs:attrs -> lid -> expression
+     val setinstvar: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
++    val indexop_access: ?loc:loc -> ?attrs:attrs
++      -> expression -> indexop_access_kind -> paren_kind -> expression option
++      -> expression
+     val override: ?loc:loc -> ?attrs:attrs -> (str * expression) list
+                   -> expression
+     val letmodule: ?loc:loc -> ?attrs:attrs -> str_opt -> module_expr
+                    -> expression -> expression
+     val letexception:
 @@@@
      val poly: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
                -> expression
@@ -586,6 +610,26 @@
            (map_opt (sub.expr sub) e3)
      | Pexp_sequence (e1, e2) ->
          sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
+@@@@
+     | Pexp_send (e, s) ->
+         send ~loc ~attrs (sub.expr sub e) (map_loc sub s)
+     | Pexp_new lid -> new_ ~loc ~attrs (map_loc sub lid)
+     | Pexp_setinstvar (s, e) ->
+         setinstvar ~loc ~attrs (map_loc sub s) (sub.expr sub e)
++    | Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs} ->
++        let pia_kind =
++          match pia_kind with
++          | Builtin idx -> Builtin (sub.expr sub idx)
++          | Dotop (path, op, idx) ->
++              Dotop(map_opt (map_loc sub) path, op, List.map (sub.expr sub) idx)
++        in
++        indexop_access ~loc ~attrs (sub.expr sub pia_lhs) pia_kind pia_paren
++          (map_opt (sub.expr sub) pia_rhs)
+     | Pexp_override sel ->
+         override ~loc ~attrs
+           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)
+     | Pexp_letmodule (s, me, e) ->
+         letmodule ~loc ~attrs (map_loc sub s) (sub.module_expr sub me)
 @@@@
          poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
      | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
@@ -1171,7 +1215,8 @@
    loc : Location.t;
  }
  
--
++type variance_and_injectivity = string loc list
+ 
 -type variance =
 -  | Covariant
 -  | Contravariant
@@ -1180,7 +1225,8 @@
 -type injectivity =
 -  | Injective
 -  | NoInjectivity
-+type variance_and_injectivity = string loc list
++(* For Pexp_indexop_access *)
++type paren_kind = Paren | Brace | Bracket
 --- parser-standard/docstrings.ml
 +++ parser-extended/docstrings.ml
 @@@@
@@ -1261,6 +1307,18 @@
    then acc
    else x :: acc
 @@@@
+   it must be ghost.
+ *)
+ let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
+ let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
+ let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
+-let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
+ let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
+ let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
+ 
+ let mkinfix arg1 op arg2 =
+   Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2])
+@@@@
    then String.sub f 1 (String.length f - 1)
    else "-" ^ f
  
@@ -1331,6 +1389,147 @@
  
  let mkexp_constraint ~loc e (t1, t2) =
    match t1, t2 with
+@@@@
+    [not_expecting] should be marked with AVOID. *)
+ 
+ let not_expecting loc nonterm =
+     raise Syntaxerr.(Error(Not_expecting(make_loc loc, nonterm)))
+ 
+-(* Helper functions for desugaring array indexing operators *)
+-type paren_kind = Paren | Brace | Bracket
+-
+-(* We classify the dimension of indices: Bigarray distinguishes
+-   indices of dimension 1,2,3, or more. Similarly, user-defined
+-   indexing operator behave differently for indices of dimension 1
+-   or more.
+-*)
+-type index_dim =
+-  | One
+-  | Two
+-  | Three
+-  | Many
+-type ('dot,'index) array_family = {
+-
+-  name:
+-    Lexing.position * Lexing.position -> 'dot -> assign:bool -> paren_kind
+-  -> index_dim -> Longident.t Location.loc
+-  (*
+-    This functions computes the name of the explicit indexing operator
+-    associated with a sugared array indexing expression.
+-
+-    For instance, for builtin arrays, if Clflags.unsafe is set,
+-    * [ a.[index] ]     =>  [String.unsafe_get]
+-    * [ a.{x,y} <- 1 ]  =>  [ Bigarray.Array2.unsafe_set]
+-
+-    User-defined indexing operator follows a more local convention:
+-    * [ a .%(index)]     => [ (.%()) ]
+-    * [ a.![1;2] <- 0 ]  => [(.![;..]<-)]
+-    * [ a.My.Map.?(0) => [My.Map.(.?())]
+-  *);
+-
+-  index:
+-    Lexing.position * Lexing.position -> paren_kind -> 'index
+-    -> index_dim * (arg_label * expression) list
+-   (*
+-     [index (start,stop) paren index] computes the dimension of the
+-     index argument and how it should be desugared when transformed
+-     to a list of arguments for the indexing operator.
+-     In particular, in both the Bigarray case and the user-defined case,
+-     beyond a certain dimension, multiple indices are packed into a single
+-     array argument:
+-     * [ a.(x) ]       => [ [One, [Nolabel, <<x>>] ]
+-     * [ a.{1,2} ]     => [ [Two, [Nolabel, <<1>>; Nolabel, <<2>>] ]
+-     * [ a.{1,2,3,4} ] => [ [Many, [Nolabel, <<[|1;2;3;4|]>>] ] ]
+-   *);
+-
+-}
+-
+-let bigarray_untuplify = function
+-    { pexp_desc = Pexp_tuple explist; pexp_loc = _ } -> explist
+-  | exp -> [exp]
+-
+-let builtin_arraylike_name loc _ ~assign paren_kind n =
+-  let opname = if assign then "set" else "get" in
+-  let opname = if !Clflags.unsafe then "unsafe_" ^ opname else opname in
+-  let prefix = match paren_kind with
+-    | Paren -> Lident "Array"
+-    | Bracket -> Lident "String"
+-    | Brace ->
+-       let submodule_name = match n with
+-         | One -> "Array1"
+-         | Two -> "Array2"
+-         | Three -> "Array3"
+-         | Many -> "Genarray" in
+-       Ldot(Lident "Bigarray", submodule_name) in
+-   ghloc ~loc (Ldot(prefix,opname))
+-
+-let builtin_arraylike_index loc paren_kind index = match paren_kind with
+-    | Paren | Bracket -> One, [Nolabel, index]
+-    | Brace ->
+-       (* Multi-indices for bigarray are comma-separated ([a.{1,2,3,4}]) *)
+-       match bigarray_untuplify index with
+-     | [x] -> One, [Nolabel, x]
+-     | [x;y] -> Two, [Nolabel, x; Nolabel, y]
+-     | [x;y;z] -> Three, [Nolabel, x; Nolabel, y; Nolabel, z]
+-     | coords -> Many, [Nolabel, ghexp ~loc (Pexp_array coords)]
+-
+-let builtin_indexing_operators : (unit, expression) array_family  =
+-  { index = builtin_arraylike_index; name = builtin_arraylike_name }
++let mk_builtin_indexop_expr ~loc (pia_lhs, _dot, pia_paren, idx, pia_rhs) =
++  mkexp ~loc
++    (Pexp_indexop_access
++       { pia_lhs; pia_kind= Builtin idx; pia_paren; pia_rhs })
++
++let mk_dotop_indexop_expr ~loc (pia_lhs, (path, op), pia_paren, idx, pia_rhs) =
++  mkexp ~loc
++    (Pexp_indexop_access
++       { pia_lhs; pia_kind= Dotop (path, op, idx); pia_paren; pia_rhs })
+ 
+ let paren_to_strings = function
+   | Paren -> "(", ")"
+   | Bracket -> "[", "]"
+   | Brace -> "{", "}"
+ 
+-let user_indexing_operator_name loc (prefix,ext) ~assign paren_kind n =
+-  let name =
+-    let assign = if assign then "<-" else "" in
+-    let mid = match n with
+-        | Many | Three | Two  -> ";.."
+-        | One -> "" in
+-    let left, right = paren_to_strings paren_kind in
+-    String.concat "" ["."; ext; left; mid; right; assign] in
+-  let lid = match prefix with
+-    | None -> Lident name
+-    | Some p -> Ldot(p,name) in
+-  ghloc ~loc lid
+-
+-let user_index loc _ index =
+-  (* Multi-indices for user-defined operators are semicolon-separated
+-     ([a.%[1;2;3;4]]) *)
+-  match index with
+-    | [a] -> One, [Nolabel, a]
+-    | l -> Many, [Nolabel, mkexp ~loc (Pexp_array l)]
+-
+-let user_indexing_operators:
+-      (Longident.t option * string, expression list) array_family
+-  = { index = user_index; name = user_indexing_operator_name }
+-
+-let mk_indexop_expr array_indexing_operator ~loc
+-      (array,dot,paren,index,set_expr) =
+-  let assign = match set_expr with None -> false | Some _ -> true in
+-  let n, index = array_indexing_operator.index loc paren index in
+-  let fn = array_indexing_operator.name loc dot ~assign paren n in
+-  let set_arg = match set_expr with
+-    | None -> []
+-    | Some expr -> [Nolabel, expr] in
+-  let args = (Nolabel,array) :: index @ set_arg in
+-  mkexp ~loc (Pexp_apply(ghexp ~loc (Pexp_ident fn), args))
+-
+ let indexop_unclosed_error loc_s s loc_e =
+   let left, right = paren_to_strings s in
+   unclosed left loc_s right loc_e
+ 
+ let lapply ~loc p1 p2 =
 @@@@
  let wrap_mksig_ext ~loc (item, ext) =
    wrap_sig_ext ~loc (mksig ~loc item) ext
@@ -1515,6 +1714,19 @@
      core_type EQUAL core_type
      { $1, $3, make_loc $sloc }
 @@@@
+     { indexop_unclosed_error $loc(_p) Brace $loc(_e) }
+   | simple_expr dot _p=LBRACKET index  _e=error
+     { indexop_unclosed_error $loc(_p) Bracket $loc(_e) }
+ ;
+ 
+-%inline qualified_dotop: ioption(DOT mod_longident {$2}) DOTOP { $1, $2 };
++%inline qualified_dotop: ioption(DOT mkrhs(mod_longident) {$2}) DOTOP { $1, $2 };
+ 
+ expr:
+     simple_expr %prec below_HASH
+       { $1 }
+   | expr_attrs
+@@@@
        { let (pbop_pat, pbop_exp, rev_ands) = bindings in
          let ands = List.rev rev_ands in
          let pbop_loc = make_loc $sloc in
@@ -1531,6 +1743,16 @@
    | simple_expr DOT mkrhs(label_longident) LESSMINUS expr
        { mkexp ~loc:$sloc (Pexp_setfield($1, $3, $5)) }
    | indexop_expr(DOT, seq_expr, LESSMINUS v=expr {Some v})
+-    { mk_indexop_expr builtin_indexing_operators ~loc:$sloc $1 }
++    { mk_builtin_indexop_expr ~loc:$sloc $1 }
+   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
+-    { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
++    { mk_dotop_indexop_expr ~loc:$sloc $1 }
+   | expr attribute
+       { Exp.attr $1 $2 }
+ /* BEGIN AVOID */
+   (*
+   | UNDERSCORE
 @@@@
    | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
        { Pexp_letexception($4, $6), $3 }
@@ -1545,6 +1767,20 @@
        { let (l,o,p) = $3 in
          Pexp_fun(l, o, p, $4), $2 }
 @@@@
+   | LPAREN seq_expr error
+       { unclosed "(" $loc($1) ")" $loc($3) }
+   | LPAREN seq_expr type_constraint RPAREN
+       { mkexp_constraint ~loc:$sloc $2 $3 }
+   | indexop_expr(DOT, seq_expr, { None })
+-      { mk_indexop_expr builtin_indexing_operators ~loc:$sloc $1 }
++      { mk_builtin_indexop_expr ~loc:$sloc $1 }
+   | indexop_expr(qualified_dotop, expr_semi_list, { None })
+-      { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
++      { mk_dotop_indexop_expr ~loc:$sloc $1 }
+   | indexop_error (DOT, seq_expr) { $1 }
+   | indexop_error (qualified_dotop, expr_semi_list) { $1 }
+   | simple_expr_attrs
+     { let desc, attrs = $1 in
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
        { $1 }
@@ -2084,6 +2320,26 @@
    | Pexp_hole  (** [_] *)
 +  | Pexp_beginend of expression  (** [begin E end] *)
 +  | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
++  | Pexp_indexop_access of indexop_access
++
++and indexop_access =
++  {
++    pia_lhs: expression;
++    pia_kind: indexop_access_kind;
++    pia_paren: paren_kind;
++    pia_rhs: expression option;
++  }
++
++and indexop_access_kind =
++  | Builtin of expression
++      (** [arr.(i)]
++          [arr.(i) <- e]
++          [str.[i]]
++          [str.[i] <- c]
++          [bar.{i1; i2; ..}]
++          [bar.{i1; i2; ..} <- e] *)
++  | Dotop of Longident.t loc option * string * expression list
++      (** [foo.Path.%{i1, i2, ..} <- e] *)
  
  and case =
      {
@@ -2361,6 +2617,11 @@
    | Optional s -> line i ppf "Optional \"%s\"\n" s
    | Labelled s -> line i ppf "Labelled \"%s\"\n" s
  
++let paren_kind i ppf = function
++  | Paren -> line i ppf "Paren\n"
++  | Brace -> line i ppf "Brace\n"
++  | Bracket -> line i ppf "Bracket\n"
++
  let typevars ppf vs =
 -  List.iter (fun x -> fprintf ppf " %a" Pprintast.tyvar x.txt) vs
 +  List.iter (fun x ->
@@ -2596,6 +2857,20 @@
 +  | Pexp_cons l ->
 +      line i ppf "Pexp_cons\n";
 +      list i expression ppf l
++  | Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs} ->
++      line i ppf "Pexp_index_access\n";
++      expression i ppf pia_lhs;
++      begin
++        match pia_kind with
++        | Builtin idx ->
++            expression i ppf idx
++        | Dotop (path, op, idx) ->
++            option i longident_loc ppf path;
++            string i ppf op;
++            list i expression ppf idx
++      end;
++      paren_kind i ppf pia_paren;
++      option i expression ppf pia_rhs
  
  and value_description i ppf x =
    line i ppf "value_description %a %a\n" fmt_string_loc
