@@ -47,7 +47,7 @@
 (require 'vc)
 
 (defcustom ocamlformat-command "ocamlformat"
-  "The 'ocamlformat' command."
+  "The `ocamlformat' command."
   :type 'string
   :group 'ocamlformat)
 
@@ -84,11 +84,11 @@ echo output if used from inside a `before-save-hook'."
 (defcustom ocamlformat-file-kind nil
   "Add a parse argument to ocamlformat if using an unrecognized extension.
 
-It can either be set to 'implementation, 'interface or
+It can either be set to \\='implementation, \\='interface or
 nil (default)."
   :type '(choice
-          (const :tag "implementation" 'implementation)
-          (const :tag "interface" 'interface)
+          (const :tag "implementation" implementation)
+          (const :tag "interface" interface)
           (const :tag "none" nil))
   :group 'ocamlformat)
 
@@ -96,7 +96,7 @@ nil (default)."
 (defun ocamlformat-before-save ()
   "Add this to .emacs to run ocamlformat on the current buffer when saving:
 
-\(add-hook 'before-save-hook 'ocamlformat-before-save)."
+\(add-hook \\='before-save-hook \\='ocamlformat-before-save)."
   (interactive)
   (when (eq major-mode 'tuareg-mode) (ocamlformat)))
 
