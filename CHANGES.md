@@ -2,7 +2,7 @@
 
 ### New features
 
-- Support `odoc-parser.2.0.0` (#<PR_NUMBER>, @gpetiot)
+- Support `odoc-parser.2.0.0` (#2123, @gpetiot)
   * Breaking change: incompatible with earlier versions of `odoc-parser`
   * New inline math elements `{m ...}` available in doc-comments
   * New block math elements `{math ...}` available in doc-comments
