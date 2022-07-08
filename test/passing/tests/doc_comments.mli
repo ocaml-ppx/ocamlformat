@@ -611,6 +611,10 @@ type x =
 
     \infty
 
+   \pi
+
+       \pi
+
     \pi
 
     }
