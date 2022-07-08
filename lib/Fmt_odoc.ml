@@ -107,7 +107,8 @@ let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
 
 let fmt_math_block s =
   let lines =
-    List.rev
+    List.drop_while ~f:String.is_empty
+    @@ List.rev
     @@ List.drop_while ~f:String.is_empty
     @@ List.rev_map ~f:String.strip
     @@ String.split_lines s
