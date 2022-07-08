@@ -63,7 +63,9 @@
     (= :version)))
   ocp-indent
   (odoc-parser
-   (>= 1.0.0))
+   (and
+    (>= 1.0.0)
+    (< 2.0.0)))
   (re
    (>= 1.7.2))
   stdio

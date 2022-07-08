@@ -24,7 +24,7 @@ depends: [
   "ocaml-version" {>= "3.3.0"}
   "ocamlformat-rpc-lib" {with-test & post & = version}
   "ocp-indent"
-  "odoc-parser" {>= "1.0.0"}
+  "odoc-parser" {>= "1.0.0" & < "2.0.0"}
   "re" {>= "1.7.2"}
   "stdio"
   "uuseg" {>= "10.0.0"}
