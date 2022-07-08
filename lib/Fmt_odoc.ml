@@ -103,6 +103,17 @@ let fmt_code_block conf s1 s2 =
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 
+let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
+
+let fmt_math_block s =
+  let lines =
+    List.rev
+    @@ List.drop_while ~f:String.is_empty
+    @@ List.rev_map ~f:String.strip
+    @@ String.split_lines s
+  in
+  hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list lines "@;" str))
+
 let fmt_reference = ign_loc ~f:str_normalized
 
 (* Decide between using light and heavy syntax for lists *)
@@ -161,6 +172,7 @@ let rec fmt_inline_elements elements =
     | `Space _ :: t -> fmt "@ " $ aux t
     | `Word w :: t -> str_normalized w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
+    | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
@@ -193,6 +205,7 @@ let rec fmt_inline_elements elements =
 and fmt_nestable_block_element c = function
   | `Paragraph elems -> fmt_inline_elements elems
   | `Code_block (s1, s2) -> fmt_code_block c s1 s2
+  | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->
       hovbox 0
