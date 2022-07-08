@@ -1,10 +1,17 @@
+## (unreleased)
+
+### New features
+
+- Support `odoc-parser.2.0.0` (#<PR_NUMBER>, @gpetiot)
+  * Breaking change: incompatible with earlier versions of `odoc-parser`
+  * New inline math elements `{m ...}` available in doc-comments
+  * New block math elements `{math ...}` available in doc-comments
+
 ## 0.23.0 (2022-07-07)
 
 ### Removed
 
 - `bench` binary is not distributed anymore to avoid name collisions (#2104, @gpetiot)
-
-### Deprecated
 
 ### Bug fixes
 
@@ -18,8 +25,6 @@
 - Use the API of ocp-indent to parse the `.ocp-indent` files (#2103, @gpetiot)
 - JaneStreet profile: set `max-indent = 2` (#2099, @gpetiot)
 - JaneStreet profile: align pattern-matching bar `|` under keyword instead of parenthesis (#2102, @gpetiot)
-
-### New features
 
 ## 0.22.4 (2022-05-26)
 
