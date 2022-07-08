@@ -113,7 +113,12 @@ let fmt_math_block s =
     @@ List.rev_map ~f:String.strip
     @@ String.split_lines s
   in
-  hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list lines "@;" str))
+  let fmt ~first ~last:_ line =
+    if first then str line
+    else if String.is_empty line then str "\n"
+    else fmt "@;<1000 0>" $ str line
+  in
+  hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list_fl lines fmt))
 
 let fmt_reference = ign_loc ~f:str_normalized
 
