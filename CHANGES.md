@@ -1,4 +1,4 @@
-## (unreleased)
+## 0.24.0 (2022-07-11)
 
 ### New features
 
