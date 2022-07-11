@@ -588,3 +588,34 @@ type x =
 (**a*)
 
 (**b*)
+
+(** Inline math: {m \infty}
+
+    Inline math elements can wrap as well
+    {m \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty}
+    or
+    {m \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi}.
+
+    Block math:
+
+    {math \infty}
+    {math \infty}
+    {math \pi}
+    {math
+      \infty
+
+      \pi
+
+      \pi
+
+      \pi
+    }
+    {math
+      {m \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi}
+    }
+    {math
+      % \f is defined as #1f(#2) using the macro
+      \f\relax{x} = \int_{-\infty}^\infty
+      \f\hat\xi\,e^{2 \pi i \xi x}
+      \,d\xi
+    } *)

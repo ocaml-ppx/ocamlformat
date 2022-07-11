@@ -75,6 +75,7 @@ let rec odoc_inline_element fmt = function
       in
       fpf fmt "Word(%a)" str txt
   | `Code_span txt -> fpf fmt "Code_span(%a)" str txt
+  | `Math_span txt -> fpf fmt "Math_span(%a)" str txt
   | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_markup(%s,%a)" lang str txt
   | `Raw_markup (None, txt) -> fpf fmt "Raw_markup(%a)" str txt
   | `Styled (style, elems) ->
@@ -97,6 +98,7 @@ let rec odoc_nestable_block_element c fmt = function
         option (pair (ign_loc str) (option (ign_loc str)))
       in
       fpf fmt "Code_block(%a, %a)" fmt_metadata metadata str txt
+  | `Math_block txt -> fpf fmt "Math_block(%a)" str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->
