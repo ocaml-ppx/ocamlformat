@@ -1,4 +1,4 @@
-  $ touch .ocamlformat
+  $ echo profile=default > .ocamlformat
 
 One of '--impl', '--intf' or '--name' is required when the input is read from stdin:
 

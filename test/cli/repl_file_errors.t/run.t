@@ -1,4 +1,4 @@
-  $ touch .ocamlformat
+  $ echo profile=default > .ocamlformat
 
 Make sure the locations of errors in repl files are right.
 
@@ -27,5 +27,5 @@ Make sure the locations of errors in repl files are right.
   [1]
 
   $ ocamlformat --repl-file empty_line_begin.repl
-  # foo bar ;;
+  # foo bar;;
   - : 0
