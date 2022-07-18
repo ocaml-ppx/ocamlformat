@@ -55,7 +55,6 @@
   (ocamlformat-rpc-lib
    (and
     :with-test
-    :post
     (= :version)))
   ocp-indent
   (odoc-parser
