@@ -21,7 +21,7 @@ depends: [
   "menhirLib" {>= "20201216"}
   "menhirSdk" {>= "20201216"}
   "ocaml-version" {>= "3.3.0"}
-  "ocamlformat-rpc-lib" {with-test & post & = version}
+  "ocamlformat-rpc-lib" {with-test & = version}
   "ocp-indent"
   "odoc-parser" {>= "2.0.0" & < "3.0.0"}
   "re" {>= "1.7.2"}
