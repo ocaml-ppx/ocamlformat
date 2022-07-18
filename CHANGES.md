@@ -1,3 +1,9 @@
+## (unreleased)
+
+### Bug fixes
+
+- Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
+
 ## 0.24.1 (2022-07-18)
 
 ### New features
