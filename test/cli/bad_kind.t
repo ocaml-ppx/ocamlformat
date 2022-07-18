@@ -1,4 +1,4 @@
-  $ touch .ocamlformat
+  $ echo profile=default > .ocamlformat
 
   $ echo 'module X : S' > a.mli
 

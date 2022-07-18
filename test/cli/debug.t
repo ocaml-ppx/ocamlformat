@@ -1,4 +1,4 @@
-  $ touch .ocamlformat
+  $ echo profile=default > .ocamlformat
 
   $ cat > a.ml << EOF
   > (* Intentionally not formatted *)
