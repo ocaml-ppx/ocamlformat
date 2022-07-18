@@ -166,29 +166,13 @@ let closing_paren ?force ?(offset = 0) c =
   | `Space -> fits_breaks ")" " )" ?force
   | `Closing_on_separate_line -> fits_breaks ")" ")" ~hint:(1000, offset)
 
-let drop_while ~f s =
-  let i = ref 0 in
-  while !i < String.length s && f !i s.[!i] do
-    Int.incr i
-  done ;
-  String.sub s ~pos:!i ~len:(String.length s - !i)
-
 let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   if not c.conf.opr_opts.disable then f c
   else
     let loc = Source.extend_loc_to_include_attributes loc l in
     Cmts.drop_inside c.cmts loc ;
     let s = Source.string_at c.source loc in
-    let indent_of_first_line = Position.column loc.loc_start in
-    let l = String.split ~on:'\n' s in
-    let l =
-      List.mapi l ~f:(fun i s ->
-          if i = 0 then s
-          else
-            drop_while s ~f:(fun i c ->
-                Char.is_whitespace c && i < indent_of_first_line ) )
-    in
-    k (Cmts.fmt c loc (list l "@\n" str))
+    k (Cmts.fmt c loc (str s))
 
 let maybe_disabled c loc l f = maybe_disabled_k c loc l f Fn.id
 

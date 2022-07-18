@@ -1,3 +1,9 @@
+## (unreleased)
+
+### Bug fixes
+
+- Preserve linebreaks when ocamlformat is disabled (#<PR_NUMBER>, @gpetiot)
+
 ## 0.24.1 (2022-07-18)
 
 ### New features
