@@ -26,5 +26,5 @@ Second project formatted with the 'ocamlformat' profile:
 
   $ cat project2/main.ml
   let _machin ?aaaaaaaaaa:_ ?bbbbbbbbbbb:_ ?cccccccccccc:_ ?ddddddddddddd:_
-    ?eeeeeeeeeeee:_ () =
+      ?eeeeeeeeeeee:_ () =
     ()

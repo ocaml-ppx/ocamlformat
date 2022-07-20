@@ -296,7 +296,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         with_buffer_formatter
           ~buffer_size:(String.length prev_source)
           ( set_margin conf.fmt_opts.margin
-          $ opt conf.fmt_opts.max_indent set_max_indent
+          $ set_max_indent conf.fmt_opts.max_indent
           $ fmt_if_k
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")

@@ -82,7 +82,7 @@ let set_margin n =
 
 let max_indent = ref None
 
-let set_max_indent n = with_pp (fun _ -> max_indent := Some n)
+let set_max_indent x = with_pp (fun _ -> max_indent := x)
 
 (** Debug of formatting -------------------------------------------------*)
 
