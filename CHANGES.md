@@ -3,6 +3,7 @@
 ### Bug fixes
 
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
+- Reset max-indent when the `max-indent` option is not set (#2131, @hhugo, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 

@@ -42,7 +42,7 @@ val lazy_ : (unit -> t) -> t
 val set_margin : int -> t
 (** Set the margin. *)
 
-val set_max_indent : int -> t
+val set_max_indent : int option -> t
 (** Set the maximum indentation. *)
 
 val eval : Format.formatter -> t -> unit
