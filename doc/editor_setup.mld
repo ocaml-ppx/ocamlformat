@@ -88,3 +88,12 @@ let g:neoformat_ocaml_ocamlformat = {
 
 let g:neoformat_enabled_ocaml = ['ocamlformat']
 ]}
+
+{1 Format on save using entr}
+
+Alternatively, you may want to see your files reformatted on save. If you are running on Linux or macOS, you may enable this workflow easily regardless of your editor by using [entr]:
+
+{[
+# `apt install entr` or `brew install entr`
+find ./bin ./test -name "*.ml*" | entr -p ocamlformat --inplace /_
+]}
