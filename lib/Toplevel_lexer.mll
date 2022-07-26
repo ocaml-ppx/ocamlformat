@@ -16,7 +16,7 @@ open Migrate_ast
 let newline lexbuf = Lexing.new_line lexbuf
 }
 
-let eol = '\n'
+let eol = ('\013'* '\010')
 let ws = ' ' | '\t' | eol
 
 rule token = parse
@@ -42,11 +42,11 @@ and phrase buf = parse
   | eof      {
      let msg = "a toplevel phrase must end with `;;`." in
      raise (Syntaxerr.Error (Expecting (Location.curr lexbuf, msg))) }
-  | (("\n"* "\n") as nl) ("  " | "\t")
-      { for _ = 1 to (String.length nl) do
-          newline lexbuf
+  | ((eol* eol) as nl) ("  " | "\t")
+      { for _ = 1 to (Base.String.count ~f:(Char.equal '\n') nl) do
+          newline lexbuf;
+          Buffer.add_char buf '\n'
         done;
-        Buffer.add_string buf nl;
         phrase buf lexbuf }
   | ";;"     { Buffer.add_string buf ";;"; Buffer.contents buf }
   | _ as c   { Buffer.add_char buf c; phrase buf lexbuf }

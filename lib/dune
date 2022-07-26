@@ -29,6 +29,7 @@
  (instrumentation
   (backend bisect_ppx))
  (libraries
+  eol_compat
   format_
   ocaml_common
   parser_standard

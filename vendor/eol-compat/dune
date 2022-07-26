@@ -1,0 +1,3 @@
+(library
+ (name eol_compat)
+ (public_name ocamlformat.eol_compat))

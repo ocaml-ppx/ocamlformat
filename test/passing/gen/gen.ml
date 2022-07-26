@@ -87,7 +87,7 @@ let cmd should_fail args =
       cmd_string
   else Printf.sprintf {|(run %s)|} cmd_string
 
-let emit_test test_name setup =
+let emit_test buf test_name setup =
   let opts =
     "--margin-check"
     ::
@@ -108,8 +108,9 @@ let emit_test test_name setup =
     | None -> ""
     | Some clause -> Printf.sprintf "\n (enabled_if %s)" clause
   in
-  Printf.printf
-    {|
+  Buffer.add_string buf
+    (Printf.sprintf
+       {|
 (rule
  (deps tests/.ocamlformat %s)%s
  (package ocamlformat)
@@ -128,14 +129,15 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff %s %s.stderr)))
 |}
-    extra_deps enabled_if_line test_name test_name
-    (cmd setup.should_fail
-       ( ["%{bin:ocamlformat}"] @ opts
-       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
-    enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
+       extra_deps enabled_if_line test_name test_name
+       (cmd setup.should_fail
+          ( ["%{bin:ocamlformat}"] @ opts
+          @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
+       enabled_if_line ref_name test_name enabled_if_line err_name test_name ) ;
   if setup.has_ocp then
-    Printf.printf
-      {|
+    Buffer.add_string buf
+      (Printf.sprintf
+         {|
 (rule
  (deps tests/.ocp-indent %s)%s
  (package ocamlformat)
@@ -148,12 +150,15 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff tests/%s.ocp %s.ocp.output)))
 |}
-      extra_deps enabled_if_line test_name
-      (cmd setup.should_fail
-         ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name] )
-      enabled_if_line test_name test_name
+         extra_deps enabled_if_line test_name
+         (cmd setup.should_fail
+            ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name] )
+         enabled_if_line test_name test_name )
 
 let () =
   let map = ref StringMap.empty in
+  let buf = Buffer.create 128 in
   Sys.readdir "./tests" |> Array.iter (register_file map) ;
-  StringMap.iter emit_test !map
+  StringMap.iter (emit_test buf) !map ;
+  Format.print_string
+    (Eol_compat.normalize_eol ~line_endings:`Lf (Buffer.contents buf))

@@ -79,7 +79,7 @@ let cmd args =
   Printf.sprintf {|(with-accepted-exit-codes 1
        (run %s))|} cmd_string
 
-let emit_test test_name setup =
+let emit_test buf test_name setup =
   let opts =
     if setup.has_opts then
       read_lines (Printf.sprintf "tests/%s.opts" test_name)
@@ -97,8 +97,9 @@ let emit_test test_name setup =
     | None -> ""
     | Some v -> Printf.sprintf "\n (enabled_if %s)" v
   in
-  Printf.printf
-    {|
+  Buffer.add_string buf
+    (Printf.sprintf
+       {|
 (rule
  (deps tests/.ocamlformat %s)%s
  (package ocamlformat)
@@ -111,14 +112,15 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff %s %s.output)))
 |}
-    extra_deps enabled_if_line test_name
-    (cmd
-       ( ["%{bin:ocamlformat}"] @ opts
-       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
-    enabled_if_line ref_name test_name ;
+       extra_deps enabled_if_line test_name
+       (cmd
+          ( ["%{bin:ocamlformat}"] @ opts
+          @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
+       enabled_if_line ref_name test_name ) ;
   if setup.has_ocp then
-    Printf.printf
-      {|
+    Buffer.add_string buf
+      (Printf.sprintf
+         {|
 (rule
  (deps tests/.ocp-indent %s)%s
  (package ocamlformat)
@@ -131,11 +133,14 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff tests/%s.ocp %s.ocp.output)))
 |}
-      extra_deps enabled_if_line test_name
-      (cmd ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
-      enabled_if_line test_name test_name
+         extra_deps enabled_if_line test_name
+         (cmd ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
+         enabled_if_line test_name test_name )
 
 let () =
   let map = ref StringMap.empty in
+  let buf = Buffer.create 128 in
   Sys.readdir "./tests" |> Array.iter (register_file map) ;
-  StringMap.iter emit_test !map
+  StringMap.iter (emit_test buf) !map ;
+  Format.print_string
+    (Eol_compat.normalize_eol ~line_endings:`Lf (Buffer.contents buf))

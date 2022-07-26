@@ -24,11 +24,13 @@ let x =
 y
 in
 2|}
-        ~expected:{|let f =
+        ~expected:
+          (Eol_compat.normalize_eol ~line_endings:`Lf
+             {|let f =
   let x =
     y
   in
-  2|}
+  2|} )
     ; test "after in" ~range:(1, 12)
         ~input:
           {|let f =
@@ -45,7 +47,8 @@ in
 in
 |}
         ~expected:
-          {|let f =
+          (Eol_compat.normalize_eol ~line_endings:`Lf
+             {|let f =
   let x =
     let y =
       foooooooooooooooooooo
@@ -56,10 +59,11 @@ in
     in
     foooooooooooooooooooooooooo
       foooooooooooooooooooo foooooooooooooooo fooooooooo
-  in|}
+  in|} )
     ; test "partial let" ~range:(2, 14) ~input:partial_let
         ~expected:
-          {|   let () =
+          (Eol_compat.normalize_eol ~line_endings:`Lf
+             {|   let () =
      ffff;
      hhhhhh;
      fff;
@@ -72,7 +76,7 @@ in
        let quot n k = fst (quot_rem n k) in
        let rem n k = snd (quot_rem n k) in
 
-       quot, rem|}
+       quot, rem|} )
     ]
 
   let tests = tests_indent_range

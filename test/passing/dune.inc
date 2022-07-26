@@ -1369,6 +1369,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-no-wrap.mli.stdout
@@ -1377,11 +1378,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments-no-wrap.mli.ref doc_comments-no-wrap.mli.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments-no-wrap.mli.err doc_comments-no-wrap.mli.stderr)))
 
@@ -1405,6 +1408,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments.mli.stdout
@@ -1413,11 +1417,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments.mli.ref doc_comments.mli.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments.mli.err doc_comments.mli.stderr)))
 
@@ -1606,6 +1612,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to escaped_nl.ml.stdout
@@ -1614,11 +1621,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/escaped_nl.ml.ref escaped_nl.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/escaped_nl.ml.err escaped_nl.ml.stderr)))
 
@@ -4395,6 +4404,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to reformat_string.ml.stdout
@@ -4403,11 +4413,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/reformat_string.ml.ref reformat_string.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/reformat_string.ml.err reformat_string.ml.stderr)))
 

@@ -35,10 +35,11 @@ let test_parse_and_format_core_type =
   ; make_test ";;" ~input:";;"
       ~expected:
         (Error
-           {|test_unit: ignoring "<test>" (syntax error)
+           (Eol_compat.normalize_eol ~line_endings:`Lf
+              {|test_unit: ignoring "<test>" (syntax error)
 File "<test>", line 1, characters 0-2:
 Error: Syntax error
-|}
+|} )
         ) ]
 
 let test_parse_and_format_module_type =
@@ -61,12 +62,13 @@ let test_parse_and_format_module_type =
   ; make_test "sig" ~input:"sig"
       ~expected:
         (Error
-           {|test_unit: ignoring "<test>" (syntax error)
+           (Eol_compat.normalize_eol ~line_endings:`Lf
+              {|test_unit: ignoring "<test>" (syntax error)
 File "<test>", line 1, characters 3-3:
 Error: Syntax error: 'end' expected
 File "<test>", line 1, characters 0-3:
   This 'sig' might be unmatched
-|}
+|} )
         )
   ; make_test "full sig"
       ~input:
@@ -156,13 +158,14 @@ let test_numeric =
   bar
 |}
       ~range:(1, 7)
-      {|let foooooo =
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let foooooo =
   let baaaaar =
     let woooooo = foooooo in
     let xooooo = bar + foo in
     woooooo
   in
-  bar|}
+  bar|} )
   ; make_test "not already formatted"
       ~source:
         {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
@@ -174,13 +177,14 @@ in
 hooohoooo
 |}
       ~range:(1, 7)
-      {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let foooooooooooo = let foooooooo = foooooooooooo in foooooooooooo
 
 let foooooooooooo = let foooooooooooooo =
     let woooooooooooooooo = koooooooooooooooo in
     baaaaaar
   in
-  hooohoooo|}
+  hooohoooo|} )
   ; make_test "with parens and begin/end"
       ~source:
         {|let x = begin
@@ -196,7 +200,8 @@ let foooooooooooo = let foooooooooooooo =
     foooooo
   end|}
       ~range:(1, 12)
-      {|let x = begin
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let x = begin
   let y =
     (if (k = x)
        then
@@ -207,7 +212,7 @@ let foooooooooooo = let foooooooooooooo =
          foo)
   in
     foooooo
-end|}
+end|} )
   ; make_test "split over multiple lines"
       ~source:{|let fooooo =
 [
@@ -216,12 +221,13 @@ foooooooo ;
 fooooooo
 ]|}
       ~range:(1, 6)
-      {|let fooooo =
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let fooooo =
   [
     foooooo ;
     foooooooo ;
     fooooooo
-  ]|}
+  ]|} )
   ; make_test "invalid file"
       ~source:{|let foooooo =
 let foooooooooooo =
@@ -230,12 +236,13 @@ let foooooooooooo =
 fun x ->
 foooooo|}
       ~range:(1, 6)
-      {|let foooooo =
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let foooooo =
   let foooooooooooo =
     (
       [
         fun x ->
-          foooooo|}
+          foooooo|} )
   ; make_test "already formatted function"
       ~source:
         {|let fmt_expressions c width sub_exp exprs fmt_expr
@@ -252,7 +259,8 @@ foooooo|}
       in
       list_fl grps fmt_grp|}
       ~range:(7, 7)
-      {|let fmt_expressions c width sub_exp exprs fmt_expr
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|let fmt_expressions c width sub_exp exprs fmt_expr
     (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
   | `Fit_or_vertical -> fmt_elements_collection p fmt_expr exprs
@@ -264,7 +272,7 @@ foooooo|}
         fmt_elements_collection ~first_sep:first_grp ~last_sep:last_grp p
           fmt_expr exprs
       in
-      list_fl grps fmt_grp|}
+      list_fl grps fmt_grp|} )
   ; make_test "partial let" ~range:(2, 14)
       ~source:
         {|   let () =
@@ -282,7 +290,8 @@ else (d, m)
 
 quot, rem
 |}
-      {|   let () =
+      (Eol_compat.normalize_eol ~line_endings:`Lf
+         {|   let () =
      ffff;
      hhhhhh;
      fff;
@@ -295,18 +304,19 @@ quot, rem
        let quot n k = fst (quot_rem n k) in
        let rem n k = snd (quot_rem n k) in
 
-       quot, rem|}
+       quot, rem|} )
   ; make_test "fit on 1 line" ~range:(2, 5)
       ~source:{|
 let x =
   3
      in
    x + y|}
-      {|
+      (Eol_compat.normalize_eol ~line_endings:`Lf {|
 let x =
   3
 in
-x + y|} ]
+x + y|} )
+  ]
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
