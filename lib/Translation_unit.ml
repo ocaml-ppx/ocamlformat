@@ -448,35 +448,6 @@ let parse_result ?disable_w50 f fragment conf ~source ~input_name =
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
-let normalize_eol ~strlocs ~line_endings s =
-  let buf = Buffer.create (String.length s) in
-  let add_cr n = Buffer.add_string buf (String.init n ~f:(fun _ -> '\r')) in
-  let rec normalize_segment ~seen_cr i stop =
-    if i = stop then add_cr seen_cr
-    else
-      match s.[i] with
-      | '\r' -> normalize_segment ~seen_cr:(seen_cr + 1) (i + 1) stop
-      | '\n' ->
-          Buffer.add_string buf
-            (match line_endings with `Crlf -> "\r\n" | `Lf -> "\n") ;
-          normalize_segment ~seen_cr:0 (i + 1) stop
-      | c ->
-          add_cr seen_cr ;
-          Buffer.add_char buf c ;
-          normalize_segment ~seen_cr:0 (i + 1) stop
-  in
-  let rec loop locs i =
-    match locs with
-    | [] ->
-        normalize_segment ~seen_cr:0 i (String.length s) ;
-        Buffer.contents buf
-    | (start, stop) :: xs ->
-        normalize_segment ~seen_cr:0 i start ;
-        Buffer.add_substring buf s ~pos:start ~len:(stop - start) ;
-        loop xs stop
-  in
-  loop strlocs 0
-
 let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
@@ -493,7 +464,7 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
     format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
       ~std_parsed conf
   in
-  Ok (normalize_eol ~strlocs ~line_endings formatted)
+  Ok (Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted)
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure

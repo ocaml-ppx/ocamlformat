@@ -271,6 +271,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-align.ml.stdout
@@ -279,16 +280,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-align.ml.ref break_cases-align.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-align.ml.err break_cases-align.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-all.ml.stdout
@@ -297,16 +301,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-all.ml.ref break_cases-all.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-all.ml.err break_cases-all.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-closing_on_separate_line.ml.stdout
@@ -315,16 +322,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-closing_on_separate_line.ml.ref break_cases-closing_on_separate_line.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-closing_on_separate_line.ml.err break_cases-closing_on_separate_line.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stdout
@@ -333,16 +343,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-closing_on_separate_line_leading_nested_match_parens.ml.ref break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-closing_on_separate_line_leading_nested_match_parens.ml.err break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-cosl_lnmp_cmei.ml.stdout
@@ -351,16 +364,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-cosl_lnmp_cmei.ml.ref break_cases-cosl_lnmp_cmei.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-cosl_lnmp_cmei.ml.err break_cases-cosl_lnmp_cmei.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-fit_or_vertical.ml.stdout
@@ -369,16 +385,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-fit_or_vertical.ml.ref break_cases-fit_or_vertical.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-fit_or_vertical.ml.err break_cases-fit_or_vertical.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-nested.ml.stdout
@@ -387,16 +406,19 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-nested.ml.ref break_cases-nested.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-nested.ml.err break_cases-nested.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-normal_indent.ml.stdout
@@ -405,11 +427,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-normal_indent.ml.ref break_cases-normal_indent.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-normal_indent.ml.err break_cases-normal_indent.ml.stderr)))
 
@@ -775,6 +799,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to cinaps.ml.stdout
@@ -783,11 +808,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/cinaps.ml.ref cinaps.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/cinaps.ml.err cinaps.ml.stderr)))
 
@@ -955,6 +982,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to comment_header.ml.stdout
@@ -963,11 +991,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/comment_header.ml.ref comment_header.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/comment_header.ml.err comment_header.ml.stderr)))
 
@@ -1369,6 +1399,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-no-wrap.mli.stdout
@@ -1377,11 +1408,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments-no-wrap.mli.ref doc_comments-no-wrap.mli.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments-no-wrap.mli.err doc_comments-no-wrap.mli.stderr)))
 
@@ -1405,6 +1438,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments.mli.stdout
@@ -1413,11 +1447,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments.mli.ref doc_comments.mli.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/doc_comments.mli.err doc_comments.mli.stderr)))
 
@@ -1606,6 +1642,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to escaped_nl.ml.stdout
@@ -1614,11 +1651,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/escaped_nl.ml.ref escaped_nl.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/escaped_nl.ml.err escaped_nl.ml.stderr)))
 
@@ -3004,6 +3043,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to js_to_do.ml.stdout
@@ -3012,11 +3052,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/js_to_do.ml.ref js_to_do.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/js_to_do.ml.err js_to_do.ml.stderr)))
 
@@ -4395,6 +4437,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to reformat_string.ml.stdout
@@ -4403,11 +4446,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/reformat_string.ml.ref reformat_string.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/reformat_string.ml.err reformat_string.ml.stderr)))
 
@@ -5154,6 +5199,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to wrap_comments.ml.stdout
@@ -5162,11 +5208,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/wrap_comments.ml.ref wrap_comments.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/wrap_comments.ml.err wrap_comments.ml.stderr)))
 

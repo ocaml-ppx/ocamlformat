@@ -1,6 +1,8 @@
 open! Base
 open Ocamlformat
 
+let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
+
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =
     Stdlib.Format.sprintf "parse_and_format %s: %s" kind_name test_name
@@ -15,6 +17,7 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
                Translation_unit.Error.print Stdlib.Format.str_formatter e ;
                Stdlib.Format.flush_str_formatter () )
       in
+      let expected = Result.map_error expected ~f:normalize_eol in
       Alcotest.(check (result string string)) test_name expected actual )
 
 let test_parse_and_format_signature =
@@ -140,6 +143,7 @@ let test_numeric =
             Conf.default
           |> reindent ~source ~range
         in
+        let expected = normalize_eol expected in
         Alcotest.check Alcotest.string test_name expected got )
   in
   [ make_test "empty buffer" ~source:"" ~range:(1, 1) ""
