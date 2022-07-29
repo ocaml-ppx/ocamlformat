@@ -2,7 +2,6 @@
  (name gen)
  (public_name ocamlformat.parser_recovery.test_gen)
  (package ocamlformat)
- (libraries eol_compat)
  (modules gen))
 
 (executable

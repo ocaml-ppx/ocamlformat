@@ -29,7 +29,7 @@ let register_file dir kind tests fname =
   (* ignore dune file, .foo.whatever.swp, etc *)
   | _ -> ()
 
-let emit_test buf test_name setup =
+let emit_test test_name setup =
   let out_name = test_name ^ ".stdout" in
   let ref_name =
     setup.dir ^ "/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
@@ -40,15 +40,14 @@ let emit_test buf test_name setup =
     | Signature -> "-signature"
     | Use_file -> "-use-file"
   in
-  Buffer.add_string buf
-    (Printf.sprintf
-       {|
+  Printf.printf
+    {|
 (rule (action (with-stdout-to %s (run ./gen/driver.exe %s %%{dep:%s}))) (package ocamlformat))
 (rule (alias runtest) (action (diff %s %s)) (package ocamlformat))
 |}
-       out_name kind
-       (setup.dir ^ "/" ^ test_name)
-       ref_name out_name)
+    out_name kind
+    (setup.dir ^ "/" ^ test_name)
+    ref_name out_name
 
 let read_dir map kind =
   let dir =
@@ -61,10 +60,7 @@ let read_dir map kind =
 
 let () =
   let map = ref StringMap.empty in
-  let buf = Buffer.create 128 in
   read_dir map Structure;
   read_dir map Signature;
   read_dir map Use_file;
-  StringMap.iter (emit_test buf) !map;
-  Format.print_string
-    (Eol_compat.normalize_eol ~line_endings:`Lf (Buffer.contents buf))
+  StringMap.iter emit_test !map

@@ -1,3 +1,2 @@
 (executable
- (name gen)
- (libraries eol_compat))
+ (name gen))
