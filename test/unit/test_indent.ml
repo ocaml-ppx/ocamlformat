@@ -4,6 +4,8 @@ let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
 let partial_let = read_file "../passing/tests/partial.ml"
 
+let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
+
 module Partial_ast = struct
   let tests_indent_range =
     let test name ~input:source ~range ~expected =
@@ -16,6 +18,7 @@ module Partial_ast = struct
           let output =
             Test_translation_unit.reindent ~source ~range indent
           in
+          let expected = normalize_eol expected in
           Alcotest.(check string) test_name expected output )
     in
     [ test "empty" ~input:"" ~range:(1, 1) ~expected:""
@@ -24,13 +27,11 @@ let x =
 y
 in
 2|}
-        ~expected:
-          (Eol_compat.normalize_eol ~line_endings:`Lf
-             {|let f =
+        ~expected:{|let f =
   let x =
     y
   in
-  2|} )
+  2|}
     ; test "after in" ~range:(1, 12)
         ~input:
           {|let f =
@@ -47,8 +48,7 @@ in
 in
 |}
         ~expected:
-          (Eol_compat.normalize_eol ~line_endings:`Lf
-             {|let f =
+          {|let f =
   let x =
     let y =
       foooooooooooooooooooo
@@ -59,11 +59,10 @@ in
     in
     foooooooooooooooooooooooooo
       foooooooooooooooooooo foooooooooooooooo fooooooooo
-  in|} )
+  in|}
     ; test "partial let" ~range:(2, 14) ~input:partial_let
         ~expected:
-          (Eol_compat.normalize_eol ~line_endings:`Lf
-             {|   let () =
+          {|   let () =
      ffff;
      hhhhhh;
      fff;
@@ -76,7 +75,7 @@ in
        let quot n k = fst (quot_rem n k) in
        let rem n k = snd (quot_rem n k) in
 
-       quot, rem|} )
+       quot, rem|}
     ]
 
   let tests = tests_indent_range
