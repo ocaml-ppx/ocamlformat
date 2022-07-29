@@ -112,6 +112,7 @@ end
 
 let tests =
   [ ("Location", Test_location.tests)
+  ; ("Eol_compat", Test_eol_compat.tests)
   ; ("non overlapping interval tree", Test_noit.tests)
   ; ("Ast", Test_ast.tests)
   ; ("Indent", Test_indent.tests)
