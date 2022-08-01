@@ -282,6 +282,7 @@ module Mod:
     val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
       module_expr
     val unpack: ?loc:loc -> ?attrs:attrs -> expression -> module_expr
+    val gen_apply: ?loc:loc -> ?attrs:attrs -> module_expr -> loc -> module_expr
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> module_expr
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> module_expr
   end

@@ -3898,11 +3898,69 @@ and fmt_with_constraint c ctx ~pre = function
       $ fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2
           []
 
-and maybe_generative c ~ctx = function
-  | {pmod_desc= Pmod_structure []; pmod_attributes= []; pmod_loc}
-    when not (Cmts.has_within c.cmts pmod_loc) ->
-      empty
-  | m -> fmt_module_expr c (sub_mod ~ctx m)
+and fmt_mod_apply c ctx loc attrs ~parens ~can_break_before_struct me_f arg =
+  match (me_f.pmod_desc, arg) with
+  | Pmod_ident _, `Unit x ->
+      { empty with
+        bdy=
+          Cmts.fmt c loc
+            ( hvbox 2
+                ( compose_module
+                    (fmt_module_expr c (sub_mod ~ctx me_f))
+                    ~f:Fn.id
+                $ break 1 0 $ x )
+            $ fmt_attributes_and_docstrings c attrs ) }
+  | Pmod_ident _, `Block (blk_a, arg_is_simple) ->
+      let fmt_rator =
+        let break_struct =
+          c.conf.fmt_opts.break_struct && can_break_before_struct
+          && not arg_is_simple
+        in
+        compose_module (fmt_module_expr c (sub_mod ~ctx me_f)) ~f:Fn.id
+        $ break (if break_struct then 1000 else 1) 0
+        $ str "("
+      in
+      let epi =
+        fmt_opt blk_a.epi $ str ")"
+        $ fmt_attributes_and_docstrings c attrs
+        $ Cmts.fmt_after c loc
+      in
+      if Option.is_some blk_a.pro then
+        { blk_a with
+          pro=
+            Some
+              (Cmts.fmt_before c loc $ hvbox 2 fmt_rator $ fmt_opt blk_a.pro)
+        ; epi= Some epi }
+      else
+        { blk_a with
+          opn= open_hvbox 2 $ blk_a.opn
+        ; bdy= Cmts.fmt_before c loc $ open_hvbox 2 $ fmt_rator $ blk_a.bdy
+        ; cls= close_box $ blk_a.cls $ close_box
+        ; epi= Some epi }
+  | _ ->
+      let can_break_before_struct =
+        match me_f.pmod_desc with Pmod_apply _ -> true | _ -> false
+      in
+      let blk_f =
+        fmt_module_expr ~can_break_before_struct c (sub_mod ~ctx me_f)
+      in
+      let has_epi = Cmts.has_after c.cmts loc || not (List.is_empty attrs) in
+      { empty with
+        opn= blk_f.opn $ open_hvbox 2
+      ; bdy=
+          hvbox 2
+            ( Cmts.fmt_before c loc
+            $ wrap_if parens "(" ")"
+                (fmt_opt blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
+            $ fmt_opt blk_f.epi $ break 1 0
+            $
+            match arg with
+            | `Unit x -> x
+            | `Block (x, _) -> wrap "(" ")" (compose_module x ~f:Fn.id) )
+      ; cls= close_box $ blk_f.cls
+      ; epi=
+          Option.some_if has_epi
+            (Cmts.fmt_after c loc $ fmt_attributes_and_docstrings c attrs) }
 
 and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
     =
@@ -3912,61 +3970,21 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   @@ fun c ->
   let parens = parenze_mod xmod in
   match pmod_desc with
-  | Pmod_apply (({pmod_desc= Pmod_ident _; _} as me_f), me_a) ->
-      let blk_a = maybe_generative c ~ctx me_a in
-      let fmt_rator =
-        let break_struct =
-          c.conf.fmt_opts.break_struct && can_break_before_struct
-          && not (Mod.is_simple me_a)
-        in
-        compose_module (fmt_module_expr c (sub_mod ~ctx me_f)) ~f:Fn.id
-        $ break (if break_struct then 1000 else 1) 0
-        $ str "("
-      in
-      let epi =
-        fmt_opt blk_a.epi $ str ")"
-        $ fmt_attributes_and_docstrings c pmod_attributes
-        $ Cmts.fmt_after c pmod_loc
-      in
-      if Option.is_some blk_a.pro then
-        { blk_a with
-          pro=
-            Some
-              ( Cmts.fmt_before c pmod_loc
-              $ hvbox 2 fmt_rator $ fmt_opt blk_a.pro )
-        ; epi= Some epi }
-      else
-        { blk_a with
-          opn= open_hvbox 2 $ blk_a.opn
-        ; bdy=
-            Cmts.fmt_before c pmod_loc $ open_hvbox 2 $ fmt_rator $ blk_a.bdy
-        ; cls= close_box $ blk_a.cls $ close_box
-        ; epi= Some epi }
+  | Pmod_gen_apply (me, loc) ->
+      let arg = Cmts.fmt c loc @@ wrap "(" ")" @@ Cmts.fmt_within c loc in
+      fmt_mod_apply c ctx ~parens ~can_break_before_struct pmod_loc
+        pmod_attributes me (`Unit arg)
   | Pmod_apply (me_f, me_a) ->
       let can_break_before_struct =
-        match me_f.pmod_desc with Pmod_apply _ -> true | _ -> false
+        match me_f.pmod_desc with
+        | Pmod_apply _ -> true
+        | Pmod_ident _ -> can_break_before_struct
+        | _ -> false
       in
-      let blk_f =
-        fmt_module_expr ~can_break_before_struct c (sub_mod ~ctx me_f)
-      in
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
-      in
-      { empty with
-        opn= blk_f.opn $ open_hvbox 2
-      ; bdy=
-          hvbox 2
-            ( Cmts.fmt_before c pmod_loc
-            $ wrap_if parens "(" ")"
-                (fmt_opt blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
-            $ fmt_opt blk_f.epi
-            $ wrap "@ (" ")"
-                (compose_module (maybe_generative c ~ctx me_a) ~f:Fn.id) )
-      ; cls= close_box $ blk_f.cls
-      ; epi=
-          Option.some_if has_epi
-            ( Cmts.fmt_after c pmod_loc
-            $ fmt_attributes_and_docstrings c pmod_attributes ) }
+      let blk_a = fmt_module_expr c (sub_mod ~ctx me_a) in
+      fmt_mod_apply c ctx ~parens ~can_break_before_struct pmod_loc
+        pmod_attributes me_f
+        (`Block (blk_a, Mod.is_simple me_a))
   | Pmod_constraint (me, mt) ->
       let blk_e = fmt_module_expr c (sub_mod ~ctx me) in
       let blk_t = fmt_module_type c (sub_mty ~ctx mt) in

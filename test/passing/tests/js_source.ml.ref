@@ -5343,7 +5343,7 @@ let g x =
 ;;
 
 module F (X : sig end) = Char
-module C4 = F ();;
+module C4 = F (struct end);;
 
 C4.chr 66
 
@@ -5352,7 +5352,7 @@ module G (X : sig end) = struct
 end
 
 (* does not alias X *)
-module M = G ()
+module M = G (struct end)
 
 module M' = struct
   module N = struct
@@ -5430,7 +5430,7 @@ module G : functor (X : sig end) -> sig
 end =
   F
 
-module M5 = G ();;
+module M5 = G (struct end);;
 
 M5.N'.x
 
@@ -5982,7 +5982,7 @@ module H () = F ()
 
 (* Alias *)
 module U = struct end
-module M = F ()
+module M = F (struct end)
 
 (* ok *)
 module M = F (U)
@@ -6534,7 +6534,7 @@ module Make (Unit : sig end) : Priv = struct
   type t = int
 end
 
-module A = Make ()
+module A = Make (struct end)
 
 module type Priv' = sig
   type t = private [> `A ]
@@ -6544,7 +6544,7 @@ module Make' (Unit : sig end) : Priv' = struct
   type t = [ `A ]
 end
 
-module A' = Make' ()
+module A' = Make' (struct end)
 (* PR5057 *)
 
 module TT = struct
@@ -9325,7 +9325,7 @@ type foo += private A of int
 let f : 'a 'b 'c. < .. > = assert false
 
 let () =
-  let module M = (functor (T : sig end) -> struct end) () in
+  let module M = (functor (T : sig end) -> struct end) (struct end) in
   ()
 ;;
 

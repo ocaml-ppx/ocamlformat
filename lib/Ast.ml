@@ -436,6 +436,7 @@ and mod_is_simple x =
   | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
   | Pmod_constraint (e, t) -> mod_is_simple e && mty_is_simple t
   | Pmod_apply (a, b) -> mod_is_simple a && mod_is_simple b
+  | Pmod_gen_apply (a, _) -> mod_is_simple a
 
 module Mty = struct
   let is_simple = mty_is_simple
@@ -528,7 +529,8 @@ module Structure_item = struct
           let rec is_simple_mod me =
             match me.pmod_desc with
             | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-            | Pmod_functor (_, me) -> is_simple_mod me
+            | Pmod_functor (_, me) | Pmod_gen_apply (me, _) ->
+                is_simple_mod me
             | Pmod_ident i -> Longident.is_simple c i.txt
             | _ -> false
           in
@@ -1965,6 +1967,7 @@ end = struct
     | Mod {pmod_desc= Pmod_apply (_, x); _}, Pmod_functor _ when m == x ->
         false
     | Mod {pmod_desc= Pmod_apply _; _}, Pmod_functor _ -> true
+    | Mod {pmod_desc= Pmod_gen_apply _; _}, Pmod_functor _ -> true
     | _ -> false
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
