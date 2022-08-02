@@ -9,6 +9,7 @@
 ### Changes
 
 - Indent 2 columns after `initializer` keyword (#2145, @gpetiot)
+- Preserve syntax of generative  modules (`(struct end)` vs `()`) and preserve comments position inside `()` (#PR_NUMBER, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 
