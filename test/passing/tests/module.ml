@@ -77,3 +77,24 @@ module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
 
 module GZZZZZZZZZZZZZZ : functor (X : sig end) () (Z : sig end) -> sig end =
   _
+
+module M = struct end
+
+module M = F ()
+module M = F (* xxx *) ( (* xxx *) ) (* xxx *)
+
+module M = F (struct end)
+
+module M = F (G) ()
+module M = F (G) ( (* xxx *) )
+
+module M = F (G) (struct end)
+
+module M =
+  F
+    (struct
+      val x : t
+
+      val y : t
+    end)
+    ()
