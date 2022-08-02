@@ -116,6 +116,18 @@
       pc_lhs = lhs;
       pc_guard = guard;
 @@@@
+   let functor_ ?loc ?attrs arg body =
+     mk ?loc ?attrs (Pmod_functor (arg, body))
+   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
+   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
+   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
++  let gen_apply ?loc ?attrs a b = mk ?loc ?attrs (Pmod_gen_apply (a, b))
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
+   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+ end
+ 
+ module Sig = struct
+@@@@
      }
    let attr d a = {d with pcty_attributes = d.pcty_attributes @ [a]}
  
@@ -282,6 +294,18 @@
      val mk_exception: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
        extension_constructor -> type_exception
  
+@@@@
+     val apply: ?loc:loc -> ?attrs:attrs -> module_expr -> module_expr ->
+       module_expr
+     val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
+       module_expr
+     val unpack: ?loc:loc -> ?attrs:attrs -> expression -> module_expr
++    val gen_apply: ?loc:loc -> ?attrs:attrs -> module_expr -> loc -> module_expr
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> module_expr
+     val hole: ?loc:loc -> ?attrs:attrs -> unit -> module_expr
+   end
+ 
+ (** Signature items *)
 @@@@
      val mk: ?loc:loc -> ?attrs:attrs -> class_type_desc -> class_type
      val attr: class_type -> attribute -> class_type
@@ -518,6 +542,19 @@
      | Pctf_attribute x -> attribute ~loc (sub.attribute sub x)
      | Pctf_extension x -> extension ~loc ~attrs (sub.extension sub x)
  
+@@@@
+         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
+     | Pmod_constraint (m, mty) ->
+         constraint_ ~loc ~attrs (sub.module_expr sub m)
+                     (sub.module_type sub mty)
+     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
++    | Pmod_gen_apply (me, lc) ->
++        gen_apply ~loc ~attrs (sub.module_expr sub me) (sub.location sub lc)
+     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
+     | Pmod_hole -> hole ~loc ~attrs ()
+ 
+   let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
+     let open Str in
 @@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
@@ -1301,6 +1338,23 @@
    tail = listx(delimiter, X, Y)
      { let xs, y = tail in
 @@@@
+       x = mkrhs(mod_longident)
+         { Pmod_ident x }
+     | (* In a functor application, the actual argument must be parenthesized. *)
+       me1 = module_expr me2 = paren_module_expr
+         { Pmod_apply(me1, me2) }
+-    | (* Application to unit is sugar for application to an empty structure. *)
+-      me1 = module_expr LPAREN RPAREN
+-        { (* TODO review mkmod location *)
+-          Pmod_apply(me1, mkmod ~loc:$sloc (Pmod_structure [])) }
++    | me = module_expr LPAREN RPAREN
++        { Pmod_gen_apply (me, make_loc ($startpos($2), $endpos($3))) }
+     | (* An extension. *)
+       ex = extension
+         { Pmod_extension ex }
+     | (* A hole. *)
+       UNDERSCORE
+@@@@
      Opn.mk id ~override ~attrs ~loc ~docs, ext
    }
  ;
@@ -1996,6 +2050,18 @@
                          ([T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]})
    *)
 @@@@
+   | Pmod_functor of functor_parameter * module_expr
+       (** [functor(X : MT1) -> ME] *)
+   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
+   | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
+   | Pmod_unpack of expression  (** [(val E)] *)
++  | Pmod_gen_apply of module_expr * Location.t  (** [ME()] *)
+   | Pmod_extension of extension  (** [[%id]] *)
+   | Pmod_hole  (** [_] *)
+ 
+ and structure = structure_item list
+ 
+@@@@
  and directive_argument_desc =
    | Pdir_string of string
    | Pdir_int of string * char option
@@ -2625,10 +2691,15 @@
        attribute i ppf "Psig_attribute" a
  
 @@@@
+       module_expr i ppf me;
        module_type i ppf mt;
    | Pmod_unpack (e) ->
        line i ppf "Pmod_unpack\n";
        expression i ppf e;
++  | Pmod_gen_apply (x, loc) ->
++      line i ppf "Pmod_gen_apply\n";
++      module_expr i ppf x;
++      line (i+1) ppf "() %a" fmt_location loc
    | Pmod_extension (s, arg) ->
 -      line i ppf "Pmod_extension \"%s\"\n" s.txt;
 +      line i ppf "Pmod_extension %a\n" fmt_string_loc s;
