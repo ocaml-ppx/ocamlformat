@@ -2289,7 +2289,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> (xbody, None)
       in
       let can_sparse =
-        match xbody.ast.pmod_desc with Pmod_apply _ -> true | _ -> false
+        match xbody.ast.pmod_desc with
+        | Pmod_apply _ | Pmod_gen_apply _ -> true
+        | _ -> false
       in
       hvbox 0
         ( Params.parens_if
