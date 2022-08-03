@@ -1090,6 +1090,8 @@ end = struct
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
       | Ppat_extension (_, PTyp t) -> assert (typ == t)
+      | Ppat_unpack (_, Some (_, l)) ->
+          assert (List.exists l ~f:(fun (_, t) -> typ == t))
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
@@ -2002,10 +2004,6 @@ end = struct
         | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
         false
-    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
-        | Str {pstr_desc= Pstr_value _; _} )
-      , Ppat_constraint _ ) ->
-        true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
