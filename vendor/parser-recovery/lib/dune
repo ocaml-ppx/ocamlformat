@@ -18,4 +18,11 @@
  (action
   (with-stdout-to
    %{targets}
-   (run ../menhir-recover/main.exe parser.cmly))))
+   (with-stderr-to
+    recovery_parser.stderr
+    (run ../menhir-recover/main.exe parser.cmly)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff recovery_parser.log recovery_parser.stderr)))
