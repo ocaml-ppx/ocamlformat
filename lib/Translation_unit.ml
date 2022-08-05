@@ -130,35 +130,35 @@ module Error = struct
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) added.\n\
                          %!"
-                        Location.print loc msg
+                        Location.print_loc loc msg
                   | Removed (loc, msg) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) dropped.\n\
                          %!"
-                        Location.print loc msg
+                        Location.print_loc loc msg
                   | Moved (loc_before, loc_after, msg) ->
                       if Location.compare loc_before Location.none = 0 then
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) added.\n\
                            %!"
-                          Location.print loc_after msg
+                          Location.print_loc loc_after msg
                       else if Location.compare loc_after Location.none = 0
                       then
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) dropped.\n\
                            %!"
-                          Location.print loc_before msg
+                          Location.print_loc loc_before msg
                       else
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) moved to \
                            @{<loc>%a@}.\n\
                            %!"
-                          Location.print loc_before msg Location.print
-                          loc_after
+                          Location.print_loc loc_before msg
+                          Location.print_loc loc_after
                   | Unstable (loc, x, y) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
@@ -166,7 +166,7 @@ module Error = struct
                          unstable (e.g. parses as a list or not depending \
                          on the margin):\n\
                          %!"
-                        Location.print loc ;
+                        Location.print_loc loc ;
                       print_diff input_name ~prev:x ~next:y ;
                       Format.fprintf fmt
                         "Please tighten up this comment in the source or \
@@ -179,7 +179,7 @@ module Error = struct
                       "%!@{<loc>%a@}:@,\
                        @{<error>Error@}: Comment (* %s *) dropped.\n\
                        %!"
-                      Location.print loc msg )
+                      Location.print_loc loc msg )
             | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
                 if debug then Location.report_exception fmt exn
             | `Warning50 l ->
@@ -220,7 +220,7 @@ let check_all_locations fmt cmts_t =
   match Cmts.remaining_locs cmts_t with
   | [] -> ()
   | l ->
-      let print l = Format.fprintf fmt "%a\n%!" Location.print l in
+      let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
       Format.fprintf fmt
         "Warning: Some locations have not been considered\n%!" ;
       List.iter ~f:print (List.sort l ~compare:Location.compare)

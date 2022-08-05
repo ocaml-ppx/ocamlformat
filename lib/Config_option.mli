@@ -25,7 +25,8 @@ module type CONFIG = sig
 
   val profile_option_names : string list
 
-  val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
+  val warn_deprecated :
+    config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
 module Make (C : CONFIG) : sig
@@ -35,7 +36,7 @@ module Make (C : CONFIG) : sig
 
   type kind = Formatting | Operational
 
-  type parsed_from = [`File of Fpath.t * int | `Attribute]
+  type parsed_from = [`File of Location.t | `Attribute of Location.t]
 
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
@@ -51,7 +52,7 @@ module Make (C : CONFIG) : sig
     -> kind:kind
     -> ?allow_inline:bool
     -> ?status:[`Valid | `Deprecated of deprecated]
-    -> (config -> 'a -> config)
+    -> (config -> 'a -> updated_from -> config)
     -> (config -> 'a)
     -> 'a t
 

@@ -36,7 +36,8 @@ module type CONFIG = sig
 
   val profile_option_names : string list
 
-  val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
+  val warn_deprecated :
+    config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
 module Make (C : CONFIG) = struct
@@ -46,7 +47,7 @@ module Make (C : CONFIG) = struct
 
   type kind = Formatting | Operational
 
-  type parsed_from = [`File of Fpath.t * int | `Attribute]
+  type parsed_from = [`File of Location.t | `Attribute of Location.t]
 
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
@@ -65,7 +66,7 @@ module Make (C : CONFIG) = struct
   type 'a t =
     { names: string list
     ; parse: string -> ('a, [`Msg of string]) Result.t
-    ; update: config -> 'a -> config
+    ; update: config -> 'a -> updated_from -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
     ; to_string: 'a -> string
@@ -80,7 +81,7 @@ module Make (C : CONFIG) = struct
     -> kind:kind
     -> ?allow_inline:bool
     -> ?status:[`Valid | `Deprecated of deprecated]
-    -> (config -> 'a -> config)
+    -> (config -> 'a -> updated_from -> config)
     -> (config -> 'a)
     -> 'a t
 
@@ -107,11 +108,14 @@ module Make (C : CONFIG) = struct
       Version.pp v (maybe_empty rmsg)
 
   let pp_from_src fs = function
-    | `Parsed (`File (p, i)) ->
-        Format.fprintf fs " (file %s:%i)"
-          (Fpath.to_string ~relativize:true p)
-          i
-    | `Parsed `Attribute -> Format.fprintf fs " (attribute)"
+    | `Parsed pf ->
+        let kind, Location.{loc_start= {pos_fname; pos_lnum; _}; _} =
+          match pf with
+          | `File loc -> ("file", loc)
+          | `Attribute loc -> ("attribute", loc)
+        in
+        let fname = Fpath.to_string ~relativize:true (Fpath.v pos_fname) in
+        Format.fprintf fs " (%s %s:%i)" kind fname pos_lnum
     | `Env -> Format.fprintf fs " (environment variable)"
     | `Commandline -> Format.fprintf fs " (command line)"
 
@@ -122,6 +126,12 @@ module Make (C : CONFIG) = struct
     | `Updated (x, Some r) ->
         Format.fprintf fs "%a -- Warning (redundant): %a" pp_from_src x
           pp_from r
+
+  let loc_from = function
+    | `Commandline -> Location.in_file "<command-line>"
+    | `Env -> Location.in_file "<env>"
+    | `Parsed (`File loc) -> loc
+    | `Parsed (`Attribute loc) -> loc
 
   let status_doc ppf = function
     | `Valid -> ()
@@ -252,11 +262,13 @@ module Make (C : CONFIG) = struct
       | `Deprecated x ->
           Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
 
-    let warn_if_deprecated conf opt (s, _, _, status) =
+    let warn_if_deprecated conf from opt (s, _, _, status) =
       match status with
       | `Valid -> ()
       | `Deprecated d ->
-          C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
+          C.warn_deprecated conf (loc_from from) "%a"
+            (pp_deprecated_with_name ~opt ~val_:s)
+            d
   end
 
   module Value_removed = struct
@@ -305,11 +317,11 @@ module Make (C : CONFIG) = struct
            (fun fs (v, _, _, _) -> fprintf fs "%s" v) )
         all
     in
-    let update conf x =
+    let update conf x from =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
-      | Some value -> Value.warn_if_deprecated conf name value
+      | Some value -> Value.warn_if_deprecated conf from name value
       | None -> () ) ;
-      update conf x
+      update conf x from
     in
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
 
@@ -319,7 +331,7 @@ module Make (C : CONFIG) = struct
     let msg = Format.asprintf "%a" pp_removed removed in
     let parse _ = Error (`Msg msg) in
     let converter = Arg.conv (parse, fun _ () -> ()) in
-    let update conf _ = conf and get_value _ = () in
+    let update conf _ _ = conf and get_value _ = () in
     let kind = (* not used *) Formatting in
     let docs = section_name kind status in
     let term =
@@ -363,7 +375,9 @@ module Make (C : CONFIG) = struct
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
         ( match status with
-        | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
+        | `Deprecated d ->
+            C.warn_deprecated config (loc_from from) "%s: %a" name
+              pp_deprecated d
         | _ -> () ) ;
         Pack {p with from= `Updated (from, redundant)} )
       else Pack p
@@ -389,7 +403,7 @@ module Make (C : CONFIG) = struct
           else
             match parse value with
             | Ok packed_value ->
-                let new_config = update config packed_value in
+                let new_config = update config packed_value new_from in
                 let redundant =
                   match from with
                   | `Profile _ ->
@@ -426,7 +440,7 @@ module Make (C : CONFIG) = struct
       match cmdline_get () with
       | None -> config
       | Some x ->
-          let config = update config x in
+          let config = update config x `Commandline in
           update_from config (List.hd_exn names) `Commandline None ;
           config
     in

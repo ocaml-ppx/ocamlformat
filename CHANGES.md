@@ -11,6 +11,7 @@
 - Indent 2 columns after `initializer` keyword (#2145, @gpetiot)
 - Preserve syntax of generative modules (`(struct end)` vs `()`) (#2135, #2146, @trefis, @gpetiot)
 - Preserve syntax of module unpack with type constraint (`((module X) : (module Y))` vs `(module X : Y)`) (#2136, @trefis, @gpetiot)
+- Normalize location format for warning and error messages (#2139, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 
