@@ -876,6 +876,10 @@ and module_expr i ppf x =
   | Pmod_unpack (e) ->
       line i ppf "Pmod_unpack\n";
       expression i ppf e;
+  | Pmod_gen_apply (x, loc) ->
+      line i ppf "Pmod_gen_apply\n";
+      module_expr i ppf x;
+      line (i+1) ppf "() %a" fmt_location loc
   | Pmod_extension (s, arg) ->
       line i ppf "Pmod_extension %a\n" fmt_string_loc s;
       payload i ppf arg

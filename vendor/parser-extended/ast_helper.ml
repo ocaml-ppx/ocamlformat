@@ -270,6 +270,7 @@ let mk ?(loc = !default_loc) ?(attrs = []) d =
   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
+  let gen_apply ?loc ?attrs a b = mk ?loc ?attrs (Pmod_gen_apply (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
 end
