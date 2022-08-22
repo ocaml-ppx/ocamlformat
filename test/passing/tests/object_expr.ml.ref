@@ -14,3 +14,10 @@ ignore
   (object
      method one = 1
   end )
+
+let () =
+  f
+    (object
+       method m x = x
+    end
+    [@xxx] )

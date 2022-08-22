@@ -2303,7 +2303,7 @@ end = struct
         false
     (* Object fields do not require parens, even with trailing attributes *)
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
-    | _, {pexp_desc= Pexp_object _; _}
+    | _, {pexp_desc= Pexp_object _; pexp_attributes= []; _}
       when Ocaml_version.(compare !ocaml_version Releases.v4_14 >= 0) ->
         false
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
