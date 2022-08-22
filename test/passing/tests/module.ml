@@ -97,4 +97,4 @@ module M =
 
       val y : t
     end)
-    ()
+    ( (* struct type z = K.y end *) )

@@ -3970,7 +3970,9 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
   let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_gen_apply (me, loc) ->
-      let arg = Cmts.fmt c loc @@ wrap "(" ")" @@ Cmts.fmt_within c loc in
+      let arg =
+        Cmts.fmt c loc @@ hvbox 0 @@ wrap "(" ")" @@ Cmts.fmt_within c loc
+      in
       fmt_mod_apply c ctx ~parens ~dock_struct pmod_loc pmod_attributes me
         (`Unit arg)
   | Pmod_apply (me_f, me_a) ->
