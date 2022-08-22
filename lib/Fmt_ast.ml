@@ -3005,7 +3005,7 @@ and fmt_class_field c ctx cf =
       $ str " = "
       $ fmt_core_type c (sub_typ ~ctx t2)
   | Pcf_initializer e ->
-      fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
+      str "initializer" $ break 1 2 $ fmt_expression c (sub_exp ~ctx e)
   | Pcf_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pcf_extension ext -> fmt_item_extension c ctx ext
 

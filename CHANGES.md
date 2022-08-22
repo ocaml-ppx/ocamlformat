@@ -6,6 +6,10 @@
 - Reset max-indent when the `max-indent` option is not set (#2131, @hhugo, @gpetiot)
 - Add missing parentheses around immediate objects having attributes attached in 4.14 (#2144, @gpetiot)
 
+### Changes
+
+- Indent 2 columns after `initializer` keyword (#2145, @gpetiot)
+
 ## 0.24.1 (2022-07-18)
 
 ### New features

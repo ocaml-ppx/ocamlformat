@@ -38,6 +38,10 @@ let _ =
 
     initializer f x ; 9
 
+    initializer
+      let x = y in
+      z
+
     method x =
       let f = {<a; b = e>} in
       x <- expr
