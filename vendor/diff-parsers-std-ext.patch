@@ -74,7 +74,8 @@
    let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_constraint (a, b))
    let type_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_type a)
    let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
-   let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
+-  let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
++  let unpack ?loc ?attrs a b = mk ?loc ?attrs (Ppat_unpack (a, b))
    let open_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_open (a, b))
    let exception_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_exception a)
    let extension ?loc ?attrs a = mk ?loc ?attrs (Ppat_extension a)
@@ -221,7 +222,9 @@
      val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
      val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
      val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-     val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
+-    val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
++    val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> package_type option
++      -> pattern
      val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
      val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
      val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
@@ -386,6 +389,9 @@
  
  let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
  
++let map_package_type sub (lid, l) =
++  (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
++
 +module Flag = struct
 +  open Asttypes
 +
@@ -479,6 +485,19 @@
      | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
      | Ptyp_variant (rl, b, ll) ->
          variant ~loc ~attrs (List.map (row_field sub) rl) b ll
+     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
+                              (List.map (map_loc sub) sl) (sub.typ sub t)
+-    | Ptyp_package (lid, l) ->
+-        package ~loc ~attrs (map_loc sub lid)
+-          (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
++    | Ptyp_package pt ->
++        let lid, l = map_package_type sub pt in
++        package ~loc ~attrs lid l
+     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
+ 
+   let map_type_declaration sub
+       {ptype_name; ptype_params; ptype_cstrs;
+        ptype_kind;
 @@@@
         ptype_loc} =
      let loc = sub.location sub ptype_loc in
@@ -607,7 +626,9 @@
          constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
      | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
      | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
-     | Ppat_unpack s -> unpack ~loc ~attrs (map_loc sub s)
+-    | Ppat_unpack s -> unpack ~loc ~attrs (map_loc sub s)
++    | Ppat_unpack (s, pt) ->
++        unpack ~loc ~attrs (map_loc sub s) (map_opt (map_package_type sub) pt)
      | Ppat_open (lid,p) -> open_ ~loc ~attrs (map_loc sub lid) (sub.pat sub p)
      | Ppat_exception p -> exception_ ~loc ~attrs (sub.pat sub p)
      | Ppat_extension x -> extension ~loc ~attrs (sub.extension sub x)
@@ -1355,6 +1376,25 @@
      | (* A hole. *)
        UNDERSCORE
 @@@@
+ (* The various ways of annotating a core language expression that
+    produces a first-class module that we wish to unpack. *)
+ %inline expr_colon_package_type:
+     e = expr
+       { e }
+-  | e = expr COLON ty = package_type
++  | e = expr COLON ty = package_core_type
+       { ghexp ~loc:$loc (Pexp_constraint (e, ty)) }
+-  | e = expr COLON ty1 = package_type COLONGREATER ty2 = package_type
++  | e = expr COLON ty1 = package_core_type COLONGREATER ty2 = package_core_type
+       { ghexp ~loc:$loc (Pexp_coerce (e, Some ty1, ty2)) }
+-  | e = expr COLONGREATER ty2 = package_type
++  | e = expr COLONGREATER ty2 = package_core_type
+       { ghexp ~loc:$loc (Pexp_coerce (e, None, ty2)) }
+ ;
+ 
+ (* A structure, which appears between STRUCT and END (among other places),
+    begins with an optional standalone expression, and continues with a list
+@@@@
      Opn.mk id ~override ~attrs ~loc ~docs, ext
    }
  ;
@@ -1519,6 +1559,16 @@
    | BEGIN ext_attributes seq_expr error
        { unclosed "begin" $loc($1) "end" $loc($4) }
    | NEW ext_attributes mkrhs(class_longident)
+       { Pexp_new($3), $2 }
+   | LPAREN MODULE ext_attributes module_expr RPAREN
+       { Pexp_pack $4, $3 }
+-  | LPAREN MODULE ext_attributes module_expr COLON package_type RPAREN
++  | LPAREN MODULE ext_attributes module_expr COLON package_core_type RPAREN
+       { Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $4), $6), $3 }
+   | LPAREN MODULE ext_attributes module_expr COLON error
+       { unclosed "(" $loc($1) ")" $loc($6) }
+   | OBJECT ext_attributes class_structure END
+       { Pexp_object $3, $2 }
 @@@@
          Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
    | mod_longident DOT
@@ -1540,6 +1590,15 @@
        { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
    | mod_longident DOT
      LBRACKET expr_semi_list error
+       { unclosed "[" $loc($3) "]" $loc($5) }
+   | od=open_dot_declaration DOT LPAREN MODULE ext_attributes module_expr COLON
+-    package_type RPAREN
++    package_core_type RPAREN
+       { let modexp =
+           mkexp_attrs ~loc:($startpos($3), $endpos)
+             (Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $6), $8)) $5 in
+         Pexp_open(od, modexp) }
+   | mod_longident DOT
 @@@@
      pattern_(pattern_no_exn)
        { $1 }
@@ -1557,6 +1616,38 @@
    | pattern_gen
        { $1 }
    | mkpat(
+@@@@
+   | LPAREN pattern RPAREN
+       { reloc_pat ~loc:$sloc $2 }
+   | simple_delimited_pattern
+       { $1 }
+   | LPAREN MODULE ext_attributes mkrhs(module_name) RPAREN
+-      { mkpat_attrs ~loc:$sloc (Ppat_unpack $4) $3 }
++      { mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, None)) $3 }
+   | LPAREN MODULE ext_attributes mkrhs(module_name) COLON package_type RPAREN
+-      { mkpat_attrs ~loc:$sloc
+-          (Ppat_constraint(mkpat ~loc:$loc($4) (Ppat_unpack $4), $6))
+-          $3 }
++      { let (lid, cstrs, _attrs) = $6 in
++        mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, Some (lid, cstrs))) $3 }
+   | mkpat(simple_pattern_not_ident_)
+       { $1 }
+ ;
+ %inline simple_pattern_not_ident_:
+   | UNDERSCORE
+@@@@
+       { Ppat_constraint($2, $4) }
+   | LPAREN pattern COLON core_type error
+       { unclosed "(" $loc($1) ")" $loc($5) }
+   | LPAREN pattern COLON error
+       { expecting $loc($4) "type" }
+-  | LPAREN MODULE ext_attributes module_name COLON package_type
++  | LPAREN MODULE ext_attributes module_name COLON package_core_type
+     error
+       { unclosed "(" $loc($1) ")" $loc($7) }
+   | extension
+       { Ppat_extension $1 }
+ ;
 @@@@
        { let (fields, closed) = $2 in
          Ppat_record(fields, closed) }
@@ -1663,6 +1754,19 @@
  %inline arg_label:
    | label = optlabel
 @@@@
+    - variant types:                       [`A]
+  *)
+ atomic_type:
+   | LPAREN core_type RPAREN
+       { $2 }
+-  | LPAREN MODULE ext_attributes package_type RPAREN
++  | LPAREN MODULE ext_attributes package_core_type RPAREN
+       { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
+   | mktyp( /* begin mktyp group */
+       QUOTE ident
+         { Ptyp_var $2 }
+     | UNDERSCORE
+@@@@
        tid = mkrhs(type_longident)
          { Ptyp_constr(tid, tys) }
      | LESS meth_list GREATER
@@ -1675,6 +1779,26 @@
        cid = mkrhs(clty_longident)
          { Ptyp_class(cid, tys) }
      | LBRACKET tag_field RBRACKET
+@@@@
+       { [ty] }
+   | LPAREN tys = separated_nontrivial_llist(COMMA, core_type) RPAREN
+       { tys }
+ ;
+ 
+-%inline package_type: module_type
++%inline package_core_type: module_type
+       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
+         let descr = Ptyp_package (lid, cstrs) in
+         mktyp ~loc:$sloc ~attrs descr }
+ ;
++%inline package_type: module_type
++      { package_type_of_module_type $1 }
++;
+ %inline row_field_list:
+   separated_nonempty_llist(BAR, row_field)
+     { $1 }
+ ;
+ row_field:
 @@@@
      head = field_semi         tail = meth_list
    | head = inherit_field SEMI tail = meth_list
@@ -1903,9 +2027,19 @@
    | Ppat_constraint of pattern * core_type  (** Pattern [(P : T)] *)
    | Ppat_type of Longident.t loc  (** Pattern [#tconst] *)
    | Ppat_lazy of pattern  (** Pattern [lazy P] *)
-   | Ppat_unpack of string option loc
-@@@@
-            [Ppat_constraint(Ppat_unpack(Some "P"), Ptyp_package S)]
+-  | Ppat_unpack of string option loc
+-      (** [Ppat_unpack(s)] represents:
+-            - [(module P)] when [s] is [Some "P"]
+-            - [(module _)] when [s] is [None]
+-
+-           Note: [(module P : S)] is represented as
+-           [Ppat_constraint(Ppat_unpack(Some "P"), Ptyp_package S)]
++  | Ppat_unpack of string option loc * package_type option
++      (** [Ppat_unpack(p, s)] represents:
++            - [(module P)] when [p] is [Some "P"] and [s] is [None]
++            - [(module _)] when [p] is [None] and [s] is [None]
++            - [(module P : S)] when [p] is [Some "P"] and [s] is [Some "S"]
++            - [(module _ : S)] when [p] is [None] and [s] is [Some "S"]
           *)
    | Ppat_exception of pattern  (** Pattern [exception P] *)
    | Ppat_extension of extension  (** Pattern [[%id]] *)
@@ -2350,6 +2484,20 @@
        pattern i ppf p2;
    | Ppat_lazy p ->
 @@@@
+       pattern i ppf p;
+       core_type i ppf ct;
+   | Ppat_type (li) ->
+       line i ppf "Ppat_type\n";
+       longident_loc i ppf li
+-  | Ppat_unpack s ->
++  | Ppat_unpack (s, pt) ->
+       line i ppf "Ppat_unpack %a\n" fmt_str_opt_loc s;
++      option i (fun i ppf (s, l) ->
++          line i ppf "package_type %a\n" fmt_longident_loc s;
++          list i package_with ppf l)
++        ppf pt
+   | Ppat_exception p ->
+       line i ppf "Ppat_exception\n";
        pattern i ppf p
    | Ppat_open (m,p) ->
        line i ppf "Ppat_open \"%a\"\n" fmt_longident_loc m;

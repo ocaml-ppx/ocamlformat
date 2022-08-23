@@ -90,6 +90,9 @@ let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
+let map_package_type sub (lid, l) =
+  (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+
 module Flag = struct
   open Asttypes
 
@@ -194,9 +197,9 @@ module T = struct
         variant ~loc ~attrs (List.map (row_field sub) rl) b ll
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
                              (List.map (map_loc sub) sl) (sub.typ sub t)
-    | Ptyp_package (lid, l) ->
-        package ~loc ~attrs (map_loc sub lid)
-          (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+    | Ptyp_package pt ->
+        let lid, l = map_package_type sub pt in
+        package ~loc ~attrs lid l
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
   let map_type_declaration sub
@@ -562,7 +565,8 @@ module P = struct
         constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
     | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
     | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
-    | Ppat_unpack s -> unpack ~loc ~attrs (map_loc sub s)
+    | Ppat_unpack (s, pt) ->
+        unpack ~loc ~attrs (map_loc sub s) (map_opt (map_package_type sub) pt)
     | Ppat_open (lid,p) -> open_ ~loc ~attrs (map_loc sub lid) (sub.pat sub p)
     | Ppat_exception p -> exception_ ~loc ~attrs (sub.pat sub p)
     | Ppat_extension x -> extension ~loc ~attrs (sub.extension sub x)

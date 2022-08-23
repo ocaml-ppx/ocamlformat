@@ -1342,11 +1342,11 @@ paren_module_expr:
 %inline expr_colon_package_type:
     e = expr
       { e }
-  | e = expr COLON ty = package_type
+  | e = expr COLON ty = package_core_type
       { ghexp ~loc:$loc (Pexp_constraint (e, ty)) }
-  | e = expr COLON ty1 = package_type COLONGREATER ty2 = package_type
+  | e = expr COLON ty1 = package_core_type COLONGREATER ty2 = package_core_type
       { ghexp ~loc:$loc (Pexp_coerce (e, Some ty1, ty2)) }
-  | e = expr COLONGREATER ty2 = package_type
+  | e = expr COLONGREATER ty2 = package_core_type
       { ghexp ~loc:$loc (Pexp_coerce (e, None, ty2)) }
 ;
 
@@ -2369,7 +2369,7 @@ simple_expr:
       { Pexp_new($3), $2 }
   | LPAREN MODULE ext_attributes module_expr RPAREN
       { Pexp_pack $4, $3 }
-  | LPAREN MODULE ext_attributes module_expr COLON package_type RPAREN
+  | LPAREN MODULE ext_attributes module_expr COLON package_core_type RPAREN
       { Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $4), $6), $3 }
   | LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($1) ")" $loc($6) }
@@ -2456,7 +2456,7 @@ simple_expr:
     LBRACKET expr_semi_list error
       { unclosed "[" $loc($3) "]" $loc($5) }
   | od=open_dot_declaration DOT LPAREN MODULE ext_attributes module_expr COLON
-    package_type RPAREN
+    package_core_type RPAREN
       { let modexp =
           mkexp_attrs ~loc:($startpos($3), $endpos)
             (Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $6), $8)) $5 in
@@ -2763,11 +2763,10 @@ simple_pattern_not_ident:
   | simple_delimited_pattern
       { $1 }
   | LPAREN MODULE ext_attributes mkrhs(module_name) RPAREN
-      { mkpat_attrs ~loc:$sloc (Ppat_unpack $4) $3 }
+      { mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, None)) $3 }
   | LPAREN MODULE ext_attributes mkrhs(module_name) COLON package_type RPAREN
-      { mkpat_attrs ~loc:$sloc
-          (Ppat_constraint(mkpat ~loc:$loc($4) (Ppat_unpack $4), $6))
-          $3 }
+      { let (lid, cstrs, _attrs) = $6 in
+        mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, Some (lid, cstrs))) $3 }
   | mkpat(simple_pattern_not_ident_)
       { $1 }
 ;
@@ -2804,7 +2803,7 @@ simple_pattern_not_ident:
       { unclosed "(" $loc($1) ")" $loc($5) }
   | LPAREN pattern COLON error
       { expecting $loc($4) "type" }
-  | LPAREN MODULE ext_attributes module_name COLON package_type
+  | LPAREN MODULE ext_attributes module_name COLON package_core_type
     error
       { unclosed "(" $loc($1) ")" $loc($7) }
   | extension
@@ -3385,7 +3384,7 @@ tuple_type:
 atomic_type:
   | LPAREN core_type RPAREN
       { $2 }
-  | LPAREN MODULE ext_attributes package_type RPAREN
+  | LPAREN MODULE ext_attributes package_core_type RPAREN
       { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
   | mktyp( /* begin mktyp group */
       QUOTE ident
@@ -3443,10 +3442,13 @@ atomic_type:
       { tys }
 ;
 
-%inline package_type: module_type
+%inline package_core_type: module_type
       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
         let descr = Ptyp_package (lid, cstrs) in
         mktyp ~loc:$sloc ~attrs descr }
+;
+%inline package_type: module_type
+      { package_type_of_module_type $1 }
 ;
 %inline row_field_list:
   separated_nonempty_llist(BAR, row_field)

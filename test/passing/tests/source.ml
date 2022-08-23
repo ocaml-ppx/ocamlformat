@@ -4325,11 +4325,13 @@ module M' = M
 module B' = B
 
 class b : B.a = object
+ method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
  method a : 'a. 'a M.s -> 'a = fun (type a) ((module X) : (module M.S with type
 a = a)) -> X.v
 end
 
 class b' : B.a = object
+ method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
  method a : 'a. 'a M'.s -> 'a = fun (type a) ((module X) : (module M'.S with
 type a = a)) -> X.v
 end

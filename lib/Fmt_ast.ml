@@ -1067,9 +1067,6 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                 ~after:lid1.loc ;
               let typ = sub_typ ~ctx:(Pat pat) t in
               Cmts.fmt c ppat_loc @@ fmt_record_field c ~typ lid1
-          | Ppat_constraint ({ppat_desc= Ppat_unpack _; ppat_loc; _}, _) ->
-              Cmts.fmt c ppat_loc
-              @@ fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1
           | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
               let typ = sub_typ ~ctx:(Pat pat) t
               and rhs = fmt_rhs ~ctx:(Pat pat) p in
@@ -1171,24 +1168,6 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         $ fmt_or_k nested
             (fits_breaks (if parens then ")" else "") "")
             (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )
-  | Ppat_constraint
-      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc; _}
-      , ( { ptyp_desc= Ptyp_package (id, cnstrs)
-          ; ptyp_attributes= []
-          ; ptyp_loc= (* TODO: use ptyp_loc *) _
-          ; _ } as typ ) ) ->
-      let ctx = Typ typ in
-      hovbox 0
-        (Params.parens_if parens c.conf
-           (hvbox 1
-              (Cmts.fmt c typ.ptyp_loc
-                 ( hovbox 0
-                     ( Cmts.fmt c ppat_loc
-                         ( str "module"
-                         $ fmt_extension_suffix c ext
-                         $ char ' ' $ fmt_str_loc_opt c name )
-                     $ fmt "@ : " $ fmt_longident_loc c id )
-                 $ fmt_package_type c ctx cnstrs ) ) ) )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (Params.parens_if parens c.conf
@@ -1205,11 +1184,21 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            $ fmt_extension_suffix c ext
            $ fmt "@ "
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
-  | Ppat_unpack name ->
-      wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
+  | Ppat_unpack (name, pt) ->
+      let fmt_constraint_opt pt k =
+        match pt with
+        | Some (id, cnstrs) ->
+            hovbox 0
+              (Params.parens_if parens c.conf
+                 (hvbox 1
+                    ( hovbox 0 (k $ fmt "@ : " $ fmt_longident_loc c id)
+                    $ fmt_package_type c ctx cnstrs ) ) )
+        | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
+      in
+      fmt_constraint_opt pt
         ( str "module"
         $ fmt_extension_suffix c ext
-        $ fmt "@ " $ fmt_str_loc_opt c name )
+        $ char ' ' $ fmt_str_loc_opt c name )
   | Ppat_exception pat ->
       cbox 2
         (Params.parens_if parens c.conf
@@ -1220,11 +1209,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_extension
       ( ext
       , PPat
-          ( ( { ppat_desc=
-                  ( Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
-                  | Ppat_constraint
-                      ( {ppat_desc= Ppat_unpack _; _}
-                      , {ptyp_desc= Ptyp_package _; _} ) )
+          ( ( { ppat_desc= Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
               ; ppat_loc
               ; ppat_attributes= []
               ; _ } as pat )
