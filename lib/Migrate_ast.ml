@@ -111,11 +111,22 @@ module Location = struct
     ; loc_end= lexbuf.lex_curr_p
     ; loc_ghost= false }
 
-  let print ppf t =
-    Caml.Format.fprintf ppf "File \"%s\", line %d, characters %d-%d:"
-      t.loc_start.pos_fname t.loc_start.pos_lnum
-      (t.loc_start.pos_cnum - t.loc_start.pos_bol)
-      (t.loc_end.pos_cnum - t.loc_start.pos_bol)
+  let of_lines ~filename:pos_fname lines =
+    List.folding_mapi ~init:0 lines ~f:(fun i c s ->
+        let loc =
+          let pos_lnum = i + 1 in
+          let loc_start : Lexing.position =
+            {pos_fname; pos_lnum; pos_bol= c; pos_cnum= c}
+          in
+          let loc_end : Lexing.position =
+            { pos_fname
+            ; pos_lnum
+            ; pos_bol= c
+            ; pos_cnum= c + String.length (String.strip s) }
+          in
+          {loc_start; loc_end; loc_ghost= false}
+        in
+        (c + String.length (String.strip s) + 1, mkloc (String.strip s) loc) )
 end
 
 module Longident = struct

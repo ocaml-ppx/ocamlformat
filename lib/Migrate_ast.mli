@@ -76,7 +76,7 @@ module Location : sig
 
   val of_lexbuf : Lexing.lexbuf -> t
 
-  val print : Format.formatter -> t -> unit
+  val of_lines : filename:string -> string list -> string loc list
 end
 
 module Longident : sig

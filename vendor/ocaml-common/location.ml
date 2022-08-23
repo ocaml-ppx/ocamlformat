@@ -16,21 +16,18 @@
 open Lexing
 
 type t = Warnings.loc =
-  { loc_start: position; loc_end: position; loc_ghost: bool };;
+  { loc_start: position; loc_end: position; loc_ghost: bool }
 
-let in_file name =
-  let loc = { dummy_pos with pos_fname = name } in
-  { loc_start = loc; loc_end = loc; loc_ghost = true }
-;;
+let in_file = Warnings.ghost_loc_in_file
 
-let none = in_file "_none_";;
-let is_none l = (l = none);;
+let none = in_file "_none_"
+let is_none l = (l = none)
 
 let curr lexbuf = {
   loc_start = lexbuf.lex_start_p;
   loc_end = lexbuf.lex_curr_p;
   loc_ghost = false
-};;
+}
 
 let init lexbuf fname =
   lexbuf.lex_curr_p <- {
@@ -39,36 +36,34 @@ let init lexbuf fname =
     pos_bol = 0;
     pos_cnum = 0;
   }
-;;
 
 let symbol_rloc () = {
   loc_start = Parsing.symbol_start_pos ();
   loc_end = Parsing.symbol_end_pos ();
   loc_ghost = false;
-};;
+}
 
 let symbol_gloc () = {
   loc_start = Parsing.symbol_start_pos ();
   loc_end = Parsing.symbol_end_pos ();
   loc_ghost = true;
-};;
+}
 
 let rhs_loc n = {
   loc_start = Parsing.rhs_start_pos n;
   loc_end = Parsing.rhs_end_pos n;
   loc_ghost = false;
-};;
+}
 
 let rhs_interval m n = {
   loc_start = Parsing.rhs_start_pos m;
   loc_end = Parsing.rhs_end_pos n;
   loc_ghost = false;
-};;
+}
 
 (* return file, line, char from the given position *)
 let get_pos_info pos =
   (pos.pos_fname, pos.pos_lnum, pos.pos_cnum - pos.pos_bol)
-;;
 
 type 'a loc = {
   txt : 'a;
@@ -464,14 +459,20 @@ let highlight_quote ppf
         (* Single-line error *)
         Format.fprintf ppf "%s | %s@," line_nb line;
         Format.fprintf ppf "%*s   " (String.length line_nb) "";
-        for pos = line_start_cnum to rightmost.pos_cnum - 1 do
+        String.iteri (fun i c ->
+          let pos = line_start_cnum + i in
           if ISet.is_start iset ~pos <> None then
             Format.fprintf ppf "@{<%s>" highlight_tag;
           if ISet.mem iset ~pos then Format.pp_print_char ppf '^'
-          else Format.pp_print_char ppf ' ';
+          else if pos < rightmost.pos_cnum then begin
+            (* For alignment purposes, align using a tab for each tab in the
+               source code *)
+            if c = '\t' then Format.pp_print_char ppf '\t'
+            else Format.pp_print_char ppf ' '
+          end;
           if ISet.is_end iset ~pos <> None then
             Format.fprintf ppf "@}"
-        done;
+        ) line;
         Format.fprintf ppf "@}@,"
     | _ ->
         (* Multi-line error *)

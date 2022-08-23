@@ -1,7 +1,7 @@
 ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
   BUG: doc comments changed.
-File "_none_", line 0, characters -1--1::
+File "_none_", line 1:
 Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depending on the margin):
 @@ -1,6 +1,7 @@
   Blablabla. Otherwise, the given protocol can not be:
