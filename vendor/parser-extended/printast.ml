@@ -97,13 +97,13 @@ let fmt_constant i f x =
   line i f "constant %a\n" fmt_location x.pconst_loc;
   let i = i+1 in
   match x.pconst_desc with
-  | Pconst_integer (j,m) -> line i f "PConst_int (%s,%a)" j fmt_char_option m
-  | Pconst_char (c) -> line i f "PConst_char %02x" (Char.code c)
+  | Pconst_integer (j,m) -> line i f "PConst_int (%s,%a)\n" j fmt_char_option m
+  | Pconst_char (c) -> line i f "PConst_char %02x\n" (Char.code c)
   | Pconst_string (s, strloc, None) ->
-      line i f "PConst_string(%S,%a,None)" s fmt_location strloc
+      line i f "PConst_string(%S,%a,None)\n" s fmt_location strloc
   | Pconst_string (s, strloc, Some delim) ->
-      line i f "PConst_string (%S,%a,Some %S)" s fmt_location strloc delim
-  | Pconst_float (s,m) -> line i f "PConst_float (%s,%a)" s fmt_char_option m
+      line i f "PConst_string (%S,%a,Some %S)\n" s fmt_location strloc delim
+  | Pconst_float (s,m) -> line i f "PConst_float (%s,%a)\n" s fmt_char_option m
 
 let fmt_mutable_flag f x =
   match x with
@@ -463,9 +463,9 @@ and expression i ppf x =
       line i ppf "Pexp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pexp_unreachable ->
-      line i ppf "Pexp_unreachable"
+      line i ppf "Pexp_unreachable\n"
   | Pexp_hole ->
-      line i ppf "Pexp_hole"
+      line i ppf "Pexp_hole\n"
   | Pexp_beginend e ->
       line i ppf "Pexp_beginend\n";
       expression i ppf e
@@ -888,7 +888,7 @@ and module_expr i ppf x =
       line i ppf "Pmod_extension %a\n" fmt_string_loc s;
       payload i ppf arg
   | Pmod_hole ->
-      line i ppf "Pmod_hole"
+      line i ppf "Pmod_hole\n"
 
 and structure i ppf x = list i structure_item ppf x
 
