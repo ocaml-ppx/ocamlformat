@@ -29,16 +29,26 @@ module type CONFIG = sig
     config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type typ = Int | Bool | Range | Ocaml_version | Choice of string list
+
+module UI : sig
+  type 'config t =
+    { names: string list
+    ; values: typ
+    ; doc: string
+    ; update: 'config -> string -> updated_from -> 'config }
+end
+
 module Make (C : CONFIG) : sig
   type config = C.config
 
   type 'a t
 
   type kind = Formatting | Operational
-
-  type parsed_from = [`File of Location.t | `Attribute of Location.t]
-
-  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type deprecated
 
@@ -91,8 +101,21 @@ module Make (C : CONFIG) : sig
 
   val flag : default:bool -> bool option_decl
 
+  val int : default:int -> docv:string -> int option_decl
+
+  val range :
+       default:(string -> Range.t)
+    -> docv:string
+    -> (string -> Range.t) option_decl
+
+  val ocaml_version : default:Ocaml_version.t -> Ocaml_version.t option_decl
+
   val any :
-    'a Cmdliner.Arg.conv -> default:'a -> docv:string -> 'a option_decl
+       'a Cmdliner.Arg.conv
+    -> values:typ
+    -> default:'a
+    -> docv:string
+    -> 'a option_decl
 
   val removed_option :
     names:string list -> since:Version.t -> msg:string -> unit
@@ -110,6 +133,8 @@ module Make (C : CONFIG) : sig
     -> value:string
     -> inline:bool
     -> (config, Error.t) Result.t
+
+  val to_ui : 'a t -> config UI.t
 
   val print_config : config -> unit
 end

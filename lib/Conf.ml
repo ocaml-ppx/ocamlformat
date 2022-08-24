@@ -185,14 +185,6 @@ let info =
   in
   Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
 
-let ocaml_version_conv =
-  let parse x =
-    match Ocaml_version.of_string x with
-    | Ok x -> `Ok x
-    | Error (`Msg x) -> `Error x
-  in
-  (parse, Ocaml_version.pp)
-
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
 
@@ -440,7 +432,7 @@ module Formatting = struct
        $(b,cases-matching-exp-indent) and $(b,nested-match) options."
     in
     let names = ["cases-exp-indent"] in
-    C.any Arg.int ~names ~default:4 ~doc ~docv ~kind ~allow_inline:false
+    C.int ~names ~default:4 ~doc ~docv ~kind ~allow_inline:false
       (fun conf x _ -> update conf ~f:(fun f -> {f with cases_exp_indent= x}))
       (fun conf -> conf.fmt_opts.cases_exp_indent)
 
@@ -507,7 +499,7 @@ module Formatting = struct
       "Add $(docv) spaces before doc comments in type declarations."
     in
     let names = ["doc-comments-padding"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
+    C.int ~names ~default:2 ~doc ~docv ~kind
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with doc_comments_padding= x}) )
       (fun conf -> conf.fmt_opts.doc_comments_padding)
@@ -589,7 +581,7 @@ module Formatting = struct
       "Indentation of items inside extension nodes ($(docv) columns)."
     in
     let names = ["extension-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
+    C.int ~names ~default:2 ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with extension_indent= x}))
       (fun conf -> conf.fmt_opts.extension_indent)
 
@@ -620,7 +612,7 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
     let names = ["function-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
+    C.int ~names ~default:2 ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with function_indent= x}))
       (fun conf -> conf.fmt_opts.function_indent)
 
@@ -672,7 +664,7 @@ module Formatting = struct
        another `let`."
     in
     let names = ["indent-after-in"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
+    C.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
       (fun conf x _ -> update conf ~f:(fun f -> {f with indent_after_in= x}))
       (fun conf -> conf.fmt_opts.indent_after_in)
 
@@ -767,7 +759,7 @@ module Formatting = struct
        not fit on a single line."
     in
     let names = ["let-binding-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
+    C.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with let_binding_indent= x}) )
       (fun conf -> conf.fmt_opts.let_binding_indent)
@@ -826,7 +818,7 @@ module Formatting = struct
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
-    C.any Arg.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~kind
+    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~kind
       ~allow_inline:false
       (fun conf x _ -> update conf ~f:(fun f -> {f with margin= x}))
       (fun conf -> conf.fmt_opts.margin)
@@ -835,7 +827,7 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of match/try cases ($(docv) columns)." in
     let names = ["match-indent"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
+    C.int ~names ~default:0 ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with match_indent= x}))
       (fun conf -> conf.fmt_opts.match_indent)
 
@@ -874,7 +866,7 @@ module Formatting = struct
     C.any
       Arg.(some ~none:default_max_indent int)
       ~names:["max-indent"] ~doc ~docv ~kind ~default:None
-      ~allow_inline:false
+      ~allow_inline:false ~values:Int
       (fun conf x _ -> update conf ~f:(fun f -> {f with max_indent= x}))
       (fun conf -> conf.fmt_opts.max_indent)
 
@@ -1064,7 +1056,7 @@ module Formatting = struct
        columns)."
     in
     let names = ["stritem-extension-indent"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
+    C.int ~names ~default:0 ~doc ~docv ~kind
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with stritem_extension_indent= x}) )
       (fun conf -> conf.fmt_opts.stritem_extension_indent)
@@ -1091,7 +1083,7 @@ module Formatting = struct
        fit on a single line."
     in
     let names = ["type-decl-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
+    C.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
       (fun conf x _ -> update conf ~f:(fun f -> {f with type_decl_indent= x}))
       (fun conf -> conf.fmt_opts.type_decl_indent)
 
@@ -1167,16 +1159,14 @@ module Operational = struct
       "Fail if output of formatting does not stabilize within $(docv) \
        iterations. May be set in $(b,.ocamlformat)."
     in
-    C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
+    C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with max_iters= x}))
       (fun conf -> conf.opr_opts.max_iters)
 
   let ocaml_version =
-    let docv = "V" in
     let doc = "Version of OCaml syntax of the output." in
     let default = Ocaml_version.Releases.v4_04_0 in
-    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~doc ~docv
-      ~kind
+    C.ocaml_version ~names:["ocaml-version"] ~default ~doc ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with ocaml_version= x}))
       (fun conf -> conf.opr_opts.ocaml_version)
 
@@ -1195,7 +1185,7 @@ module Operational = struct
     in
     let default = Range.make ?range:None in
     let docv = "X-Y" in
-    C.any Range.conv ~names:["range"] ~default ~doc ~docv ~kind
+    C.range ~names:["range"] ~default ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with range= x}))
       (fun conf -> conf.opr_opts.range)
 end
@@ -1613,7 +1603,7 @@ let janestreet_profile =
 
 let selected_profile_ref = ref (Some default_profile)
 
-let (_profile : fmt_opts option C.t) =
+let profile =
   let doc =
     "Select a preset profile which sets $(i,all) options, overriding lower \
      priority configuration."
@@ -2081,3 +2071,73 @@ let update_value config ~name ~value =
   C.update ~config ~from:`Commandline ~name ~value ~inline:false
 
 let print_config = C.print_config
+
+module UI = struct
+  let profile = C.to_ui profile
+
+  let opr_opts =
+    let open Operational in
+    [C.to_ui ocaml_version; C.to_ui range]
+
+  let fmt_opts =
+    let open Formatting in
+    [ C.to_ui assignment_operator
+    ; C.to_ui break_before_in
+    ; C.to_ui break_cases
+    ; C.to_ui break_collection_expressions
+    ; C.to_ui break_infix
+    ; C.to_ui break_infix_before_func
+    ; C.to_ui break_fun_decl
+    ; C.to_ui break_fun_sig
+    ; C.to_ui break_separators
+    ; C.to_ui break_sequences
+    ; C.to_ui break_string_literals
+    ; C.to_ui break_struct
+    ; C.to_ui cases_exp_indent
+    ; C.to_ui cases_matching_exp_indent
+    ; C.to_ui disambiguate_non_breaking_match
+    ; C.to_ui doc_comments
+    ; C.to_ui doc_comments_padding
+    ; C.to_ui doc_comments_tag_only
+    ; C.to_ui dock_collection_brackets
+    ; C.to_ui exp_grouping
+    ; C.to_ui extension_indent
+    ; C.to_ui field_space
+    ; C.to_ui function_indent
+    ; C.to_ui function_indent_nested
+    ; C.to_ui if_then_else
+    ; C.to_ui indent_after_in
+    ; C.to_ui indicate_multiline_delimiters
+    ; C.to_ui indicate_nested_or_patterns
+    ; C.to_ui infix_precedence
+    ; C.to_ui leading_nested_match_parens
+    ; C.to_ui let_and
+    ; C.to_ui let_binding_indent
+    ; C.to_ui let_binding_spacing
+    ; C.to_ui let_module
+    ; C.to_ui line_endings
+    ; C.to_ui margin
+    ; C.to_ui match_indent
+    ; C.to_ui match_indent_nested
+    ; C.to_ui max_indent
+    ; C.to_ui module_item_spacing
+    ; C.to_ui nested_match
+    ; C.to_ui ocp_indent_compat
+    ; C.to_ui parens_ite
+    ; C.to_ui parens_tuple
+    ; C.to_ui parens_tuple_patterns
+    ; C.to_ui parse_docstrings
+    ; C.to_ui parse_toplevel_phrases
+    ; C.to_ui sequence_blank_line
+    ; C.to_ui sequence_style
+    ; C.to_ui single_case
+    ; C.to_ui space_around_arrays
+    ; C.to_ui space_around_lists
+    ; C.to_ui space_around_records
+    ; C.to_ui space_around_variants
+    ; C.to_ui stritem_extension_indent
+    ; C.to_ui type_decl
+    ; C.to_ui type_decl_indent
+    ; C.to_ui wrap_comments
+    ; C.to_ui wrap_fun_args ]
+end

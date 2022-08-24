@@ -31,6 +31,14 @@ module Error = struct
           read installed
 end
 
+let ocaml_version_conv =
+  let parse x =
+    match Ocaml_version.of_string x with
+    | Ok x -> `Ok x
+    | Error (`Msg x) -> `Error x
+  in
+  (parse, Ocaml_version.pp)
+
 module type CONFIG = sig
   type config
 
@@ -40,16 +48,26 @@ module type CONFIG = sig
     config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type typ = Int | Bool | Range | Ocaml_version | Choice of string list
+
+module UI = struct
+  type 'config t =
+    { names: string list
+    ; values: typ
+    ; doc: string
+    ; update: 'config -> string -> updated_from -> 'config }
+end
+
 module Make (C : CONFIG) = struct
   open Cmdliner
 
   type config = C.config
 
   type kind = Formatting | Operational
-
-  type parsed_from = [`File of Location.t | `Attribute of Location.t]
-
-  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type from =
     [ `Default
@@ -65,6 +83,8 @@ module Make (C : CONFIG) = struct
 
   type 'a t =
     { names: string list
+    ; values: typ
+    ; doc: string
     ; parse: string -> ('a, [`Msg of string]) Result.t
     ; update: config -> 'a -> updated_from -> config
     ; allow_inline: bool
@@ -74,6 +94,14 @@ module Make (C : CONFIG) = struct
     ; get_value: config -> 'a
     ; from: from
     ; status: status }
+
+  let to_ui option =
+    let update conf str from =
+      match option.parse str with
+      | Ok x -> option.update conf x from
+      | Error _ -> conf
+    in
+    UI.{names= option.names; values= option.values; doc= option.doc; update}
 
   type 'a option_decl =
        names:string list
@@ -197,6 +225,8 @@ module Make (C : CONFIG) = struct
     let cmdline_get () = !r in
     let opt =
       { names
+      ; values= Bool
+      ; doc
       ; parse
       ; update
       ; cmdline_get
@@ -210,7 +240,7 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let any converter ~default ~docv ~names ~doc ~kind
+  let any converter ~values ~default ~docv ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
       get_value =
     let open Cmdliner in
@@ -227,6 +257,8 @@ module Make (C : CONFIG) = struct
     let cmdline_get () = !r in
     let opt =
       { names
+      ; values
+      ; doc
       ; parse
       ; update
       ; cmdline_get
@@ -239,6 +271,12 @@ module Make (C : CONFIG) = struct
     in
     store := Pack opt :: !store ;
     opt
+
+  let int = any ~values:Int Arg.int
+
+  let range = any ~values:Range Range.conv
+
+  let ocaml_version = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 
   module Value = struct
     type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
@@ -309,13 +347,14 @@ module Make (C : CONFIG) = struct
              fprintf fs "%s%a" d (Value.status_doc s) st ) )
         all
     in
+    let values = List.map all ~f:(fun (v, _, _, _) -> v) in
     let docv =
       let open Format in
       asprintf "@[<1>{%a}@]"
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,|")
-           (fun fs (v, _, _, _) -> fprintf fs "%s" v) )
-        all
+           pp_print_string )
+        values
     in
     let update conf x from =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
@@ -324,24 +363,27 @@ module Make (C : CONFIG) = struct
       update conf x from
     in
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
+      ~values:(Choice values)
 
   let removed_option ~names ~since ~msg =
     let removed = {rversion= since; rmsg= msg} in
     let status = `Removed removed in
-    let msg = Format.asprintf "%a" pp_removed removed in
-    let parse _ = Error (`Msg msg) in
+    let doc = Format.asprintf "%a" pp_removed removed in
+    let parse _ = Error (`Msg doc) in
     let converter = Arg.conv (parse, fun _ () -> ()) in
     let update conf _ _ = conf and get_value _ = () in
     let kind = (* not used *) Formatting in
     let docs = section_name kind status in
     let term =
-      Arg.(value & opt (some converter) None & info names ~doc:msg ~docs)
+      Arg.(value & opt (some converter) None & info names ~doc ~docs)
     in
     let r = mk ~default:None term in
     let to_string _ = "" in
     let cmdline_get () = !r in
     let opt =
       { names
+      ; values= Choice []
+      ; doc
       ; parse
       ; update
       ; cmdline_get

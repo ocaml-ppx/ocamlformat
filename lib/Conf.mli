@@ -129,3 +129,11 @@ val update_value :
   t -> name:string -> value:string -> (t, Config_option.Error.t) Result.t
 
 val print_config : t -> unit
+
+module UI : sig
+  val profile : t Config_option.UI.t
+
+  val fmt_opts : t Config_option.UI.t list
+
+  val opr_opts : t Config_option.UI.t list
+end
