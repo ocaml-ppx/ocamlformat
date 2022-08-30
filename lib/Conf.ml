@@ -19,6 +19,7 @@ type fmt_opts =
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
+  ; break_colon: [`Before | `After]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
@@ -295,6 +296,21 @@ module Formatting = struct
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with break_collection_expressions= x}) )
       (fun conf -> conf.fmt_opts.break_collection_expressions)
+
+  let break_colon =
+    let doc =
+      "Break before or after colon in value binding declarations and type \
+       constraints."
+    in
+    let names = ["break-colon"] in
+    let all =
+      [ C.Value.make ~name:"after" `After "$(b,after) breaks after the colon."
+      ; C.Value.make ~name:"before" `Before
+          "$(b,before) breaks before the colon." ]
+    in
+    C.choice ~names ~all ~doc ~kind
+      (fun conf x _ -> update conf ~f:(fun f -> {f with break_colon= x}))
+      (fun conf -> conf.fmt_opts.break_colon)
 
   let break_fun_decl =
     let doc = "Style for function declarations and types." in
@@ -1413,6 +1429,7 @@ let ocamlformat_profile =
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
+  ; break_colon= `After
   ; break_infix= `Wrap
   ; break_infix_before_func= true
   ; break_fun_decl= `Wrap
@@ -1476,6 +1493,7 @@ let conventional_profile =
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
+  ; break_colon= C.default Formatting.break_colon
   ; break_infix= C.default Formatting.break_infix
   ; break_infix_before_func= C.default Formatting.break_infix_before_func
   ; break_fun_decl= C.default Formatting.break_fun_decl
@@ -1545,6 +1563,7 @@ let janestreet_profile =
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
+  ; break_colon= `Before
   ; break_infix= `Fit_or_vertical
   ; break_infix_before_func= true
   ; break_fun_decl= `Fit_or_vertical
@@ -2085,6 +2104,7 @@ module UI = struct
     ; C.to_ui break_before_in
     ; C.to_ui break_cases
     ; C.to_ui break_collection_expressions
+    ; C.to_ui break_colon
     ; C.to_ui break_infix
     ; C.to_ui break_infix_before_func
     ; C.to_ui break_fun_decl

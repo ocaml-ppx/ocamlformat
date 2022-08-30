@@ -705,14 +705,11 @@ and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
 
 and fmt_type_cstr c ?constraint_ctx xtyp =
-  fmt_or_k c.conf.fmt_opts.ocp_indent_compat
-    (fits_breaks " " ~hint:(1000, 0) "")
-    (fmt "@;<0 -1>")
-  $ cbox_if c.conf.fmt_opts.ocp_indent_compat 0
-      (fmt_core_type c ~pro:":" ?constraint_ctx
-         ~pro_space:(not c.conf.fmt_opts.ocp_indent_compat)
-         ~box:(not c.conf.fmt_opts.ocp_indent_compat)
-         xtyp )
+  let colon_before = Poly.(c.conf.fmt_opts.break_colon = `Before) in
+  fmt_or_k colon_before (fits_breaks " " ~hint:(1000, 0) "") (fmt "@;<0 -1>")
+  $ cbox_if colon_before 0
+      (fmt_core_type c ~pro:":" ?constraint_ctx ~pro_space:(not colon_before)
+         ~box:(not colon_before) xtyp )
 
 and type_constr_and_body c xbody =
   let body = xbody.ast in
@@ -764,14 +761,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
-  ( match (ptyp_desc, pro) with
-  | (Ptyp_arrow _ | Ptyp_poly _), Some pro
-    when c.conf.fmt_opts.ocp_indent_compat ->
-      fmt_if pro_space "@;" $ str pro $ str " "
-  | _, Some pro when c.conf.fmt_opts.ocp_indent_compat ->
-      fmt_if pro_space "@ " $ str pro $ str " "
-  | _, Some pro -> fmt_if pro_space " " $ str pro $ fmt "@ "
-  | _ -> noop )
+  ( match pro with
+  | Some pro -> (
+    match c.conf.fmt_opts.break_colon with
+    | `Before -> fmt_if pro_space "@;" $ str pro $ str " "
+    | `After -> fmt_if pro_space " " $ str pro $ fmt "@ " )
+  | None -> noop )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c ptyp_loc
@@ -4255,10 +4250,15 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
   let xargs, fmt_cstr =
+    let fmt_sep x =
+      match c.conf.fmt_opts.break_colon with
+      | `Before -> fmt "@ " $ str x $ char ' '
+      | `After -> char ' ' $ str x $ fmt "@ "
+    in
     match lb_typ with
     | `Polynewtype (pvars, xtyp) ->
         let fmt_cstr =
-          fmt_or c.conf.fmt_opts.ocp_indent_compat "@ : " " :@ "
+          fmt_sep ":"
           $ hvbox 0
               ( str "type "
               $ list pvars " " (fmt_str_loc c)
@@ -4267,11 +4267,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
         ([], fmt_cstr)
     | `Coerce (xtyp1, xtyp2) ->
         let fmt_cstr =
-          opt xtyp1 (fun xtyp1 ->
-              fmt_or c.conf.fmt_opts.ocp_indent_compat "@ : " " :@ "
-              $ fmt_core_type c xtyp1 )
-          $ fmt_or c.conf.fmt_opts.ocp_indent_compat "@ :> " " :>@ "
-          $ fmt_core_type c xtyp2
+          opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
+          $ fmt_sep ":>" $ fmt_core_type c xtyp2
         in
         ([], fmt_cstr)
     | `Other (xargs, xtyp) -> (xargs, fmt_type_cstr c xtyp)

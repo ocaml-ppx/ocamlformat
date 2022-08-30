@@ -1,5 +1,7 @@
 [@@@ocamlformat "ocp-indent-compat=true"]
 
+[@@@ocamlformat "break-colon=before"]
+
 (* Bad: unboxing the function type *)
 external i : (int -> float[@unboxed]) = "i" "i_nat"
 
@@ -88,6 +90,8 @@ let long_function_name
  fun () -> ()
 
 [@@@ocamlformat "ocp-indent-compat=false"]
+
+[@@@ocamlformat "break-colon=after"]
 
 module type M = sig
   val transl_modtype_longident (* from Typemod *) :
