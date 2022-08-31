@@ -77,6 +77,11 @@ OPTIONS (CODE FORMATTING STYLE)
            try to format them in a single line. The default value is
            fit-or-vertical.
 
+       --break-colon={after|before}
+           Break before or after colon in value binding declarations and type
+           constraints. after breaks after the colon. before breaks before
+           the colon. The default value is after.
+
        --break-fun-decl={wrap|fit-or-vertical|smart}
            Style for function declarations and types. wrap breaks only if
            necessary. fit-or-vertical vertically breaks arguments if they do

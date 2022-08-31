@@ -13,6 +13,10 @@
 - Preserve syntax of module unpack with type constraint (`((module X) : (module Y))` vs `(module X : Y)`) (#2136, @trefis, @gpetiot)
 - Normalize location format for warning and error messages (#2139, @gpetiot)
 
+### New features
+
+- Add a `break-colon` option to decide whether to break before or after the `:` symbol in value binding declarations and type constraints. This behavior is no longer ensured by `ocp-indent-compat`. (#2149, @gpetiot)
+
 ## 0.24.1 (2022-07-18)
 
 ### New features

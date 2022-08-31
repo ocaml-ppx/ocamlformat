@@ -477,6 +477,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to break_colon-before.ml.stdout
+   (with-stderr-to break_colon-before.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-colon=before %{dep:tests/break_colon.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_colon-before.ml.ref break_colon-before.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_colon-before.ml.err break_colon-before.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_colon.ml.stdout
+   (with-stderr-to break_colon.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-colon=after %{dep:tests/break_colon.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_colon.ml break_colon.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_colon.ml.err break_colon.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to break_fun_decl-fit_or_vertical.ml.stdout
    (with-stderr-to break_fun_decl-fit_or_vertical.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-fun-decl=fit-or-vertical --break-fun-sig=fit-or-vertical %{dep:tests/break_fun_decl.ml})))))
