@@ -15,7 +15,7 @@
 
 ### New features
 
-- Add a `break-colon` option to decide whether to break before or after the `:` symbol in value binding declarations and type constraints. This behavior is no longer ensured by `ocp-indent-compat`. (#<PR_NUMBER>, @gpetiot)
+- Add a `break-colon` option to decide whether to break before or after the `:` symbol in value binding declarations and type constraints. This behavior is no longer ensured by `ocp-indent-compat`. (#2149, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 
