@@ -1,5 +1,9 @@
 ## (unreleased)
 
+### Removed
+
+- Option `ocp-indent-compat` is now removed (#2094, @gpetiot)
+
 ### Bug fixes
 
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
