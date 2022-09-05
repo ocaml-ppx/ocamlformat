@@ -16,6 +16,7 @@
   + Break sequences containing indexop-access assignments
   + Remove unnecessary parentheses around indices
 - Mute warnings for odoc code blocks whose syntax is not specified (#2151, @gpetiot)
+- Improve formatting of odoc links (#<PR_NUMBER>, @gpetiot)
 
 ### New features
 
