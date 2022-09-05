@@ -65,3 +65,6 @@ type 'a loc = 'a Location.loc = {
 }
 
 type variance_and_injectivity = string loc list
+
+(* For Pexp_indexop_access *)
+type paren_kind = Paren | Brace | Bracket

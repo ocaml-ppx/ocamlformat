@@ -493,6 +493,15 @@ module E = struct
     | Pexp_new lid -> new_ ~loc ~attrs (map_loc sub lid)
     | Pexp_setinstvar (s, e) ->
         setinstvar ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+    | Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs} ->
+        let pia_kind =
+          match pia_kind with
+          | Builtin idx -> Builtin (sub.expr sub idx)
+          | Dotop (path, op, idx) ->
+              Dotop(map_opt (map_loc sub) path, op, List.map (sub.expr sub) idx)
+        in
+        indexop_access ~loc ~attrs (sub.expr sub pia_lhs) pia_kind pia_paren
+          (map_opt (sub.expr sub) pia_rhs)
     | Pexp_override sel ->
         override ~loc ~attrs
           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)

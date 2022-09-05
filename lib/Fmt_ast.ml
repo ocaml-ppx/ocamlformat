@@ -1331,38 +1331,33 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
-and fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op =
-  let open Ast.Indexing_op in
-  let wrap_brackets = function
-    | Round -> wrap "(" ")"
-    | Square -> wrap "[" "]"
-    | Curly -> wrap "{" "}"
+and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
+  let {pia_lhs; pia_kind; pia_paren; pia_rhs} = x in
+  let wrap_paren =
+    match pia_paren with
+    | Paren -> wrap "(" ")"
+    | Bracket -> wrap "[" "]"
+    | Brace -> wrap "{" "}"
   in
-  let fmt_cop cop =
-    list cop.path "" (fun p -> str p $ str ".") $ str cop.opchars
-  in
-  let fmt_args, fmt_op, brackets =
-    let fmt_arg exp = fmt_expression c (sub_exp ~ctx exp) in
-    match op.op with
-    | Defined (arg, cop) -> (fmt_arg arg, fmt_cop cop, cop.brackets)
-    | Extended (args, cop) ->
-        ( list args (Params.semi_sep c.conf) fmt_arg
-        , fmt_cop cop
-        , cop.brackets )
-    | Special (args, brackets) ->
-        (list args (Params.comma_sep c.conf) fmt_arg, noop, brackets)
-  in
-  let inner_wrap =
-    (* No parens needed if no RHS, e.g. [a.(b) \[@attr\]]*)
-    has_attr && Option.is_some op.rhs
-  in
+  let inner_wrap = has_attr && Option.is_some pia_rhs in
   Params.parens_if parens c.conf
     (hovbox 0
        ( Params.parens_if inner_wrap c.conf
-           ( fmt_expression c (sub_exp ~ctx op.lhs)
-           $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
-           $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)
-           $ opt op.rhs (fun e ->
+           ( fmt_expression c (sub_exp ~ctx pia_lhs)
+           $ str "."
+           $ ( match pia_kind with
+             | Builtin idx ->
+                 wrap_paren (fmt_expression c (sub_exp ~ctx idx))
+             | Dotop (path, op, [idx]) ->
+                 opt path (fun x -> fmt_longident_loc c x $ str ".")
+                 $ str op
+                 $ wrap_paren (fmt_expression c (sub_exp ~ctx idx))
+             | Dotop (path, op, idx) ->
+                 opt path (fun x -> fmt_longident_loc c x $ str ".")
+                 $ str op
+                 $ wrap_paren
+                     (list idx ";@ " (sub_exp ~ctx >> fmt_expression c)) )
+           $ opt pia_rhs (fun e ->
                  fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ) )
 
@@ -1674,11 +1669,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
                       )
                   $ fmt "@ " $ fmt_expression c xbody ) ) ) )
-  | Pexp_apply (({pexp_desc= Pexp_ident ident; pexp_loc; _} as e0), args)
-    when Option.is_some (Indexing_op.get_sugar e0 args) ->
-      let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
         ; pexp_attributes= []
@@ -2453,6 +2443,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let parens =
         match xexp.ctx with
         | Str {pstr_desc= Pstr_eval _; pstr_loc= _} -> false
+        | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}
+          when phys_equal exp idx ->
+            false
+        | Exp
+            { pexp_desc= Pexp_indexop_access {pia_kind= Dotop (_, _, idx); _}
+            ; _ }
+          when List.exists idx ~f:(phys_equal exp) ->
+            false
         | _ -> parens || Poly.(c.conf.fmt_opts.parens_tuple = `Always)
       in
       let no_parens_if_break =
@@ -2633,6 +2631,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                ( fmt_str_loc c name $ fmt_assign_arrow c
                $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) )
            $ fmt_atrs ) )
+  | Pexp_indexop_access x ->
+      fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)

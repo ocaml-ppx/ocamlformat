@@ -75,28 +75,9 @@ module Token = struct
 end
 
 module Indexing_op = struct
-  type brackets = Round | Square | Curly
-
-  type custom_operator =
-    {path: string list; opchars: string; brackets: brackets}
-
-  type indexing_op =
-    | Defined of expression * custom_operator
-    | Extended of expression list * custom_operator
-        (** Take a [Pexp_array] of at least 2 elements *)
-    | Special of expression list * brackets
-        (** Desugared to the application of the corresponding [get] function
-            by the parser. (eg. [Array.get], [String.get]) *)
-
-  type t =
-    { lhs: expression
-    ; op: indexing_op
-    ; rhs: expression option
-    ; loc: Location.t }
-
   type raw =
     { opchars: string
-    ; brackets: brackets
+    ; brackets: Asttypes.paren_kind
     ; extended: bool  (** eg. [.*{;..}] *)
     ; has_rhs: bool  (** eg. [.*{}<-] *) }
 
@@ -115,75 +96,12 @@ module Indexing_op = struct
           | Some opchars -> Some {opchars; brackets; extended; has_rhs}
         in
         List.find_map ~f:find_suffix
-          [ ("{}", Curly, false)
-          ; ("[]", Square, false)
-          ; ("()", Round, false)
-          ; ("{;..}", Curly, true)
-          ; ("[;..]", Square, true)
-          ; ("(;..)", Round, true) ]
-
-  let special ~id_tl ~args_tl brackets args =
-    let op = Special (args, brackets) in
-    match (id_tl, args_tl) with
-    | "get", [] -> Some (op, None)
-    | "set", [rhs] -> Some (op, Some rhs)
-    | _ -> None
-
-  let custom ~extended ~rhs op arg1 =
-    match (extended, arg1) with
-    | true, {pexp_desc= Pexp_array (_ :: _ :: _ as args); _} ->
-        Some (Extended (args, op), rhs)
-    | true, _ -> None
-    | false, arg1 -> Some (Defined (arg1, op), rhs)
-
-  let get_sugar_ident ident args =
-    match (Longident.flatten ident, args) with
-    | ["String"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Square [arg1]
-    | ["Array"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Round [arg1]
-    | ["Bigarray"; "Array1"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1]
-    | ["Bigarray"; "Array2"; id_tl], arg1 :: arg2 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1; arg2]
-    | ["Bigarray"; "Array3"; id_tl], arg1 :: arg2 :: arg3 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1; arg2; arg3]
-    | ( ["Bigarray"; "Genarray"; id_tl]
-      , {pexp_desc= Pexp_array args; _} :: args_tl )
-      when List.length args > 3 ->
-        special ~id_tl ~args_tl Curly args
-    | ident, args -> (
-      match List.rev ident with
-      | [] -> None
-      | ident :: path_rev -> (
-          let path = List.rev path_rev in
-          match parse ident with
-          | None -> None
-          | Some {opchars; brackets; extended; has_rhs} -> (
-              let op = {path; opchars; brackets} in
-              match (has_rhs, args) with
-              | true, [arg1; rhs] -> custom ~extended ~rhs:(Some rhs) op arg1
-              | false, [arg1] -> custom ~extended ~rhs:None op arg1
-              | _, _ -> None ) ) )
-
-  let rec all_args_unlabeled acc = function
-    | [] -> Some (List.rev acc)
-    | (Asttypes.Nolabel, e) :: tl -> all_args_unlabeled (e :: acc) tl
-    | _ :: _ -> None
-
-  let get_sugar ident args =
-    match all_args_unlabeled [] args with
-    | None | Some [] -> None
-    | Some (lhs :: args) -> (
-      match ident with
-      | {pexp_desc= Pexp_ident {txt= ident; loc}; pexp_attributes= []; _}
-      (* We only use the sugared form if it was already used in the
-         source. *)
-        when loc.loc_ghost -> (
-        match get_sugar_ident ident args with
-        | None -> None
-        | Some (op, rhs) -> Some {lhs; op; rhs; loc} )
-      | _ -> None )
+          [ ("{}", Asttypes.Brace, false)
+          ; ("[]", Bracket, false)
+          ; ("()", Paren, false)
+          ; ("{;..}", Brace, true)
+          ; ("[;..]", Bracket, true)
+          ; ("(;..)", Paren, true) ]
 end
 
 module String_id = struct
@@ -291,8 +209,6 @@ module Exp = struct
   let is_prefix = test_id ~f:Longident.is_prefix
 
   let is_infix = test_id ~f:Longident.is_infix
-
-  let is_index_op = test_id ~f:Longident.is_index_op
 
   let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
 
@@ -1393,7 +1309,8 @@ end = struct
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _ ->
+       |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _
+       |Pexp_indexop_access _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
@@ -1506,16 +1423,15 @@ end = struct
                 | _ -> false ) )
         | Pexp_fun (_, default, _, body) ->
             assert (Option.value_map default ~default:false ~f || body == exp)
-        | Pexp_apply (e0, args)
-          when Option.is_some (Indexing_op.get_sugar e0 args) ->
-            let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
-            let in_args =
-              match op.op with
-              | Defined (e2, _) -> e2 == exp
-              | Extended (args, _) | Special (args, _) -> List.exists args ~f
-            in
-            let in_rhs = Option.value_map ~default:false ~f op.rhs in
-            assert (e0 == exp || op.lhs == exp || in_args || in_rhs)
+        | Pexp_indexop_access {pia_lhs; pia_kind= Builtin idx; pia_rhs; _} ->
+            assert (
+              pia_lhs == exp || idx == exp
+              || Option.value_map pia_rhs ~default:false ~f )
+        | Pexp_indexop_access
+            {pia_lhs; pia_kind= Dotop (_, _, idx); pia_rhs; _} ->
+            assert (
+              pia_lhs == exp || List.exists ~f idx
+              || Option.value_map pia_rhs ~default:false ~f )
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N | Pexp_cons e1N ->
@@ -1629,6 +1545,12 @@ end = struct
         Exp.is_trivial e0
         && List.for_all e1N ~f:(snd >> Exp.is_trivial)
         && fit_margin c (width xexp)
+    | Pexp_indexop_access {pia_lhs; pia_kind; pia_rhs= None; _} ->
+        Exp.is_trivial pia_lhs
+        && ( match pia_kind with
+           | Builtin idx -> Exp.is_trivial idx
+           | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
+        && fit_margin c (width xexp)
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
@@ -1741,12 +1663,10 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply (e0, args)
-        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
-          let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
-          if op.lhs == exp then Some (Dot, Left)
+      | Pexp_indexop_access {pia_lhs= lhs; pia_rhs= rhs; _} -> (
+          if lhs == exp then Some (Dot, Left)
           else
-            match op.rhs with
+            match rhs with
             | Some e when e == exp -> Some (LessMinus, Right)
             | _ -> Some (Low, Left) )
       | Pexp_apply
@@ -1836,10 +1756,8 @@ end = struct
         | "!=" -> Some Apply
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
-      | Pexp_apply (e0, args)
-        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
-          let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
-          match op.rhs with Some _ -> Some LessMinus | _ -> Some Dot )
+      | Pexp_indexop_access {pia_rhs= rhs; _} -> (
+        match rhs with Some _ -> Some LessMinus | _ -> Some Dot )
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
         -> (
         match (i.[0], i) with
@@ -2130,9 +2048,6 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             continue (List.last_exn cases).pc_rhs
-        | Pexp_apply (e0, args)
-          when Option.is_some (Indexing_op.get_sugar e0 args) ->
-            false
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
@@ -2142,7 +2057,8 @@ end = struct
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
          |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
-         |Pexp_hole | Pexp_while _ | Pexp_beginend _ ->
+         |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_indexop_access _
+          ->
             false
       in
       Exp.mem_cls cls exp
@@ -2207,11 +2123,8 @@ end = struct
           List.iter cases ~f:(fun case ->
               mark_parenzed_inner_nested_match case.pc_rhs ) ;
           true
-      | Pexp_apply (e0, args)
-        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
-        match Option.value_exn (Indexing_op.get_sugar e0 args) with
-        | {rhs= Some e; _} -> continue e
-        | {rhs= None; _} -> false )
+      | Pexp_indexop_access {pia_rhs= rhs; _} -> (
+        match rhs with Some e -> continue e | None -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
       | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
@@ -2239,9 +2152,6 @@ end = struct
           when e2 == exp && Longident.is_infix i
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       Prec.compare p Apply < 0 ) ->
-            true
-        | Pexp_apply (e0, (_ :: (_, e2) :: _ as args))
-          when e2 == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
@@ -2339,20 +2249,35 @@ end = struct
       match (args, pexp_attributes) with
       | [(Nolabel, _)], [] -> false
       | _ -> true )
-    | ( Exp {pexp_desc= Pexp_apply (e0, ((_, e) :: _ as args)); _}
+    | ( Exp {pexp_desc= Pexp_indexop_access {pia_lhs= lhs; _}; _}
       , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )
-      when e == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
+      when lhs == exp ->
         true
+    | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}, _
+      when idx == exp ->
+        false
+    | ( Exp
+          { pexp_desc=
+              Pexp_indexop_access
+                {pia_kind= Dotop (_, _, [idx]); pia_paren= Paren; _}
+          ; _ }
+      , _ )
+      when idx == exp && not (Exp.is_sequence idx) ->
+        false
     | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
       , {pexp_desc= Pexp_apply (_, [(_, x); _]); _} )
       when e == exp && Exp.is_prefix op1 && Exp.exposed_left x ->
         true
+    | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
+      , {pexp_desc= Pexp_indexop_access {pia_lhs= lhs; _}; _} )
+      when e == exp && Exp.is_prefix op1 && Exp.exposed_left lhs ->
+        true
     (* Integers without suffixes must be parenthesised on the lhs of an
        indexing operator *)
-    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, left) :: _); _}
+    | ( Exp {pexp_desc= Pexp_indexop_access {pia_lhs= lhs; _}; _}
       , { pexp_desc= Pexp_constant {pconst_desc= Pconst_integer (_, None); _}
         ; _ } )
-      when exp == left && Exp.is_index_op op ->
+      when exp == lhs ->
         true
     | ( Exp {pexp_desc= Pexp_field (e, _); _}
       , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )

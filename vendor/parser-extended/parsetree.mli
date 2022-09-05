@@ -433,6 +433,26 @@ and expression_desc =
   | Pexp_hole  (** [_] *)
   | Pexp_beginend of expression  (** [begin E end] *)
   | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
+  | Pexp_indexop_access of indexop_access
+
+and indexop_access =
+  {
+    pia_lhs: expression;
+    pia_kind: indexop_access_kind;
+    pia_paren: paren_kind;
+    pia_rhs: expression option;
+  }
+
+and indexop_access_kind =
+  | Builtin of expression
+      (** [arr.(i)]
+          [arr.(i) <- e]
+          [str.[i]]
+          [str.[i] <- c]
+          [bar.{i1; i2; ..}]
+          [bar.{i1; i2; ..} <- e] *)
+  | Dotop of Longident.t loc option * string * expression list
+      (** [foo.Path.%{i1, i2, ..} <- e] *)
 
 and case =
     {

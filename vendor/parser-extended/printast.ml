@@ -182,6 +182,11 @@ let arg_label i ppf = function
   | Optional s -> line i ppf "Optional \"%s\"\n" s
   | Labelled s -> line i ppf "Labelled \"%s\"\n" s
 
+let paren_kind i ppf = function
+  | Paren -> line i ppf "Paren\n"
+  | Brace -> line i ppf "Brace\n"
+  | Bracket -> line i ppf "Bracket\n"
+
 let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
@@ -472,6 +477,20 @@ and expression i ppf x =
   | Pexp_cons l ->
       line i ppf "Pexp_cons\n";
       list i expression ppf l
+  | Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs} ->
+      line i ppf "Pexp_index_access\n";
+      expression i ppf pia_lhs;
+      begin
+        match pia_kind with
+        | Builtin idx ->
+            expression i ppf idx
+        | Dotop (path, op, idx) ->
+            option i longident_loc ppf path;
+            string i ppf op;
+            list i expression ppf idx
+      end;
+      paren_kind i ppf pia_paren;
+      option i expression ppf pia_rhs
 
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc

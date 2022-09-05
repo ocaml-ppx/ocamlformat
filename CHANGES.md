@@ -12,6 +12,9 @@
 - Preserve syntax of generative modules (`(struct end)` vs `()`) (#2135, #2146, @trefis, @gpetiot)
 - Preserve syntax of module unpack with type constraint (`((module X) : (module Y))` vs `(module X : Y)`) (#2136, @trefis, @gpetiot)
 - Normalize location format for warning and error messages (#2139, @gpetiot)
+- Preserve syntax and improve readability of indexop-access expressions (#2150, @trefis, @gpetiot)
+  + Break sequences containing indexop-access assignments
+  + Remove unnecessary parentheses around indices
 
 ### New features
 
