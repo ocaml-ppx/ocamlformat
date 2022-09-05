@@ -4428,6 +4428,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
+  | Documentation, d -> Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in
@@ -4437,7 +4438,8 @@ let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
 let fmt_code ~debug =
   let rec fmt_code (conf : Conf.t) s =
     let warn = conf.fmt_opts.parse_toplevel_phrases in
-    match Parse_with_comments.parse_toplevel conf ~source:s with
+    let input_name = !Location.input_name in
+    match Parse_with_comments.parse_toplevel conf ~input_name ~source:s with
     | Either.First {ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Use_file ast source comments ~fmt_code
     | Second {ast; comments; source; prefix= _} ->

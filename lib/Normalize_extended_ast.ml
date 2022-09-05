@@ -50,7 +50,8 @@ let normalize_parse_result ast_kind ast comments =
     comments
 
 let normalize_code conf (m : Ast_mapper.mapper) txt =
-  match Parse_with_comments.parse_toplevel conf ~source:txt with
+  let input_name = "<output>" in
+  match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
   | First {ast; comments; _} ->
       normalize_parse_result Use_file
         (List.map ~f:(m.toplevel_phrase m) ast)

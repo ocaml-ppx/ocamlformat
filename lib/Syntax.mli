@@ -17,3 +17,4 @@ type t =
   | Module_type
   | Expression
   | Repl_file
+  | Documentation

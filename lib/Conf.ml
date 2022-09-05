@@ -1311,8 +1311,11 @@ let kind : Syntax.t option ref =
   let repl_file =
     (Some Syntax.Repl_file, Arg.info ["repl-file"] ~doc ~docs)
   in
+  let doc = "Parse input as an odoc documentation." in
+  let doc_file = (Some Syntax.Documentation, Arg.info ["doc"] ~doc ~docs) in
   let default = None in
-  mk ~default Arg.(value & vflag default [impl; intf; use_file; repl_file])
+  mk ~default
+    Arg.(value & vflag default [impl; intf; use_file; repl_file; doc_file])
 
 let name =
   let docv = "NAME" in
@@ -1904,6 +1907,7 @@ let kind_of_ext fname =
   match Filename.extension fname with
   | ".ml" | ".mlt" | ".eliom" -> Some Syntax.Use_file
   | ".mli" | ".eliomi" -> Some Syntax.Signature
+  | ".mld" -> Some Syntax.Documentation
   | _ -> None
 
 let validate_inputs () =

@@ -21,7 +21,9 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  (* not implemented *)
   | Repl_file : unit t
+  | Documentation : unit t
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -34,9 +36,12 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Module_type -> m.module_type m
   | Expression -> m.expr m
   | Repl_file -> Fn.id
+  | Documentation -> Fn.id
 
 module Parse = struct
-  let ast (type a) (fg : a t) lexbuf : a =
+  let ast (type a) (fg : a t) ~input_name str : a =
+    let lexbuf = Lexing.from_string str in
+    Location.init lexbuf input_name ;
     match fg with
     | Structure -> Parse.implementation lexbuf
     | Signature -> Parse.interface lexbuf
@@ -45,6 +50,7 @@ module Parse = struct
     | Module_type -> Parse.module_type lexbuf
     | Expression -> Parse.expression lexbuf
     | Repl_file -> ()
+    | Documentation -> ()
 end
 
 module Printast = struct
@@ -60,4 +66,5 @@ module Printast = struct
     | Module_type -> module_type 0
     | Expression -> expression 0
     | Repl_file -> fun _ _ -> ()
+    | Documentation -> fun _ _ -> ()
 end

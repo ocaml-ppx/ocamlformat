@@ -43,7 +43,11 @@ let dedup_cmts fragment ast comments =
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
 let normalize_code conf (m : Ast_mapper.mapper) txt =
-  match Parse_with_comments.parse Parse.ast Structure conf ~source:txt with
+  let input_name = "<output>" in
+  match
+    Parse_with_comments.parse Parse.ast Structure conf ~input_name
+      ~source:txt
+  with
   | {ast; comments; _} ->
       let comments = dedup_cmts Structure ast comments in
       let print_comments fmt (l : Cmt.t list) =

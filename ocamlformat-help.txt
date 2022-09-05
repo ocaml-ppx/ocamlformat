@@ -529,6 +529,9 @@ OPTIONS
        --disable-conf-files
            Disable .ocamlformat configuration files.
 
+       --doc
+           Parse input as an odoc documentation.
+
        --enable-outside-detected-project
            Read .ocamlformat config files outside the current project when no
            project root has been detected for the input file. The project

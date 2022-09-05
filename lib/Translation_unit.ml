@@ -242,14 +242,18 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let recover (type a) : a Extended_ast.t -> _ -> a = function
-  | Structure -> Parser_recovery.structure
-  | Signature -> Parser_recovery.signature
-  | Use_file -> Parser_recovery.use_file
+let recover (type a) (fg : a Extended_ast.t) ~input_name str : a =
+  let lexbuf = Lexing.from_string str in
+  Location.init lexbuf input_name ;
+  match fg with
+  | Structure -> Parser_recovery.structure lexbuf
+  | Signature -> Parser_recovery.signature lexbuf
+  | Use_file -> Parser_recovery.use_file lexbuf
   | Core_type -> failwith "no recovery for core_type"
   | Module_type -> failwith "no recovery for module_type"
   | Expression -> failwith "no recovery for expression"
   | Repl_file -> failwith "no recovery for repl_file"
+  | Documentation -> failwith "no recovery for .mld files"
 
 let strconst_mapper locs =
   let constant self c =
@@ -334,13 +338,17 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       in
       let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
       let+ t_new =
-        match parse parse_ast ~disable_w50:true fg conf ~source:fmted with
+        match
+          parse parse_ast ~disable_w50:true fg conf ~input_name ~source:fmted
+        with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
         | t_new -> Ok t_new
       in
       let+ std_t_new =
-        match parse Std_ast.Parse.ast std_fg conf ~source:fmted with
+        match
+          parse Std_ast.Parse.ast std_fg conf ~input_name ~source:fmted
+        with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception Warning50 l ->
             internal_error (`Warning50 l) (exn_args ())
@@ -444,7 +452,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
 let parse_result ?disable_w50 f fragment conf ~source ~input_name =
-  match parse ?disable_w50 f fragment conf ~source with
+  match parse ?disable_w50 f fragment conf ~input_name ~source with
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
@@ -474,6 +482,7 @@ let parse_and_format = function
   | Syntax.Module_type -> parse_and_format Module_type Module_type
   | Syntax.Expression -> parse_and_format Expression Expression
   | Syntax.Repl_file -> parse_and_format Repl_file Repl_file
+  | Syntax.Documentation -> parse_and_format Documentation Documentation
 
 let numeric (type a b) (fg : a list Extended_ast.t)
     (std_fg : b list Std_ast.t) ~input_name ~source ~range (conf : Conf.t) =
@@ -514,3 +523,4 @@ let numeric = function
   | Syntax.Module_type -> failwith "numeric not implemented for Module_type"
   | Syntax.Expression -> failwith "numeric not implemented for Expression"
   | Syntax.Repl_file -> failwith "numeric not implemented for Repl_file"
+  | Syntax.Documentation -> failwith "numeric not implemented for .mld files"

@@ -26,9 +26,10 @@ type 'a t =
   | Expression : expression t
   (* not implemented *)
   | Repl_file : unit t
+  | Documentation : unit t
 
 module Parse : sig
-  val ast : 'a t -> Lexing.lexbuf -> 'a
+  val ast : 'a t -> input_name:string -> string -> 'a
 end
 
 val equal : 'a t -> 'a -> 'a -> bool

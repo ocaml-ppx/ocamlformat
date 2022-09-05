@@ -52,7 +52,17 @@ let fresh_lexbuf source =
   in
   (lexbuf, hash_bang)
 
-let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
+let split_hash_bang source =
+  let lexbuf = Lexing.from_string source in
+  Location.init lexbuf !Location.input_name ;
+  Lexer.skip_hash_bang lexbuf ;
+  let len = lexbuf.lex_last_pos in
+  let hash_bang = String.sub source ~pos:0 ~len in
+  let rest = String.sub source ~pos:len ~len:(String.length source - len) in
+  (rest, hash_bang)
+
+let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
+    ~source =
   let warnings =
     if conf.opr_opts.quiet then List.map ~f:W.disable W.in_lexer else []
   in
@@ -60,7 +70,7 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
   ignore @@ Warnings.parse_options false (W.to_string warnings) ;
   let w50 = ref [] in
   let t =
-    let lexbuf, hash_bang = fresh_lexbuf source in
+    let source, hash_bang = split_hash_bang source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
         if
@@ -70,7 +80,7 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
           false )
         else not conf.opr_opts.quiet )
       ~f:(fun () ->
-        let ast = parse fragment lexbuf in
+        let ast = parse fragment ~input_name source in
         Warnings.check_fatal () ;
         let comments =
           List.map
@@ -96,10 +106,13 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
 let is_repl_block x =
   String.length x >= 2 && Char.equal x.[0] '#' && Char.is_whitespace x.[1]
 
-let parse_toplevel ?disable_w50 (conf : Conf.t) ~source =
+let parse_toplevel ?disable_w50 (conf : Conf.t) ~input_name ~source =
   let open Extended_ast in
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
-  let parse_ast = Parse.ast ~preserve_beginend in
+  let parse_ast fg ~input_name s =
+    Parse.ast fg ~preserve_beginend ~input_name s
+  in
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases then
-    Either.Second (parse ?disable_w50 parse_ast Repl_file conf ~source)
-  else First (parse ?disable_w50 parse_ast Use_file conf ~source)
+    Either.Second
+      (parse ?disable_w50 parse_ast Repl_file conf ~input_name ~source)
+  else First (parse ?disable_w50 parse_ast Use_file conf ~input_name ~source)
