@@ -15,6 +15,7 @@
 - Preserve syntax and improve readability of indexop-access expressions (#2150, @trefis, @gpetiot)
   + Break sequences containing indexop-access assignments
   + Remove unnecessary parentheses around indices
+- Mute warnings for odoc code blocks whose syntax is not specified (#<PR_NUMBER>, @gpetiot)
 
 ### New features
 
