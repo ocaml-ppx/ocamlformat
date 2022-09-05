@@ -205,7 +205,7 @@ let rec fmt_inline_elements elements =
         wrap_elements "{" "}" ~always_wrap:false rf txt $ aux t
     | `Link (url, txt) :: t ->
         let url = wrap "{:" "}" (str_normalized url) in
-        wrap_elements "{" "}" ~always_wrap:false url txt $ aux t
+        hovbox 2 @@ wrap_elements "{" "}" ~always_wrap:false url txt $ aux t
   in
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
 

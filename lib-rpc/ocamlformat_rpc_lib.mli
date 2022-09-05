@@ -128,7 +128,7 @@ end
 
 (** For a basic working example, see:
     {{:https://github.com/ocaml-ppx/ocamlformat/blob/93a6b2f46cf31237c413c1d0ac604a8d69676297/test/rpc/rpc_test.ml}
-    test/rpc/rpc_test.ml}. *)
+      test/rpc/rpc_test.ml}. *)
 
 (** Disclaimer:
 
