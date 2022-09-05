@@ -20,7 +20,7 @@ type t = k
     ]}
 
     A toplevel phrase with output:
-    {[
+    {@ocaml[
     # let x = 2;;
     val x : int = 2
     ]}

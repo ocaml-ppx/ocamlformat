@@ -94,6 +94,7 @@ let fmt_code_block conf s1 s2 =
     | Error (`Msg message) ->
         ( match message with
         | "" -> ()
+        | _ when Option.is_none s1 -> ()
         | _ ->
             Docstring.warn Caml.Format.err_formatter
               { location
