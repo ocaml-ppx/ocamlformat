@@ -2292,8 +2292,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.parens_if outer_parens c.conf
            ( hvbox 0
                ( hvbox 0
-                   ( fmt_longident lid.txt $ Cmts.fmt_after c lid.loc
-                   $ str "." $ fmt_if inner_parens "(" )
+                   ( fmt_longident_loc c lid $ str "."
+                   $ fmt_if inner_parens "(" )
                $ fmt "@;<0 2>"
                $ fmt_expression c (sub_exp ~ctx e0)
                $ fmt_if_k inner_parens (closing_paren c) )
