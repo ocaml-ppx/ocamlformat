@@ -121,7 +121,7 @@ let fmt_math_block s =
   in
   hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list_fl lines fmt))
 
-let fmt_reference = ign_loc ~f:str_normalized
+let fmt_reference = ign_loc ~f:str
 
 (* Decide between using light and heavy syntax for lists *)
 let list_should_use_heavy_syntax items =
