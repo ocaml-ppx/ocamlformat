@@ -1,7 +1,7 @@
-(* cmts *)
+(* cmts before *)
 
 [@@@ocamlformat "disable"]
 let () = ()
 [@@@ocamlformat "enable"]
 
-(* cmts *)
+(* cmts after *)

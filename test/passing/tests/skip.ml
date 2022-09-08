@@ -2,7 +2,6 @@
 
 let this_won't_be_formatted =
                1
-
 [@@@ocamlformat "enable"]
 
 let x = function
