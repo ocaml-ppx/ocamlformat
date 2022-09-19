@@ -5,6 +5,7 @@
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
 - Reset max-indent when the `max-indent` option is not set (#2131, @hhugo, @gpetiot)
 - Add missing parentheses around immediate objects having attributes attached in 4.14 (#2144, @gpetiot)
+- Fix dropped comment attached to the identifier of an open-expression (#2155, @gpetiot)
 
 ### Changes
 

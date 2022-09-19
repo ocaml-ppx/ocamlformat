@@ -274,3 +274,10 @@ let _ =
       ]
   in
   ()
+
+let _ =
+  match Uri.scheme uri with
+  | Some _ -> (
+      (* we have an absoluteURI *)
+      Uri.(
+        match path uri with "" -> with_path uri "/" | _ -> uri))

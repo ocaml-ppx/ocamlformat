@@ -337,3 +337,10 @@ let _ =
       ; (swap_3_c, {minimum_transfert_amount= 0.}) ]
   in
   ()
+
+let _ =
+  match Uri.scheme uri with
+  | Some _ -> (
+      (* we have an absoluteURI *)
+      Uri.(
+        match path uri with "" -> with_path uri "/" | _ -> uri ) )

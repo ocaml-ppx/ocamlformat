@@ -39,7 +39,7 @@ ocamlformat [OPTION]... [SRC]...
 ```
 See `ocamlformat --help` or `man ocamlformat` for the detail about options.
 
-You can also view it [online](ocamlformat-help.txt).
+You can also view it [online](https://github.com/ocaml-ppx/ocamlformat/blob/main/ocamlformat-help.txt).
 
 The most common usecase involves using the `dune` build system, once your project is correctly setup (see [Dune's manual](https://dune.readthedocs.io/en/stable/formatting.html#formatting-a-project)) you can reformat your project using:
 
