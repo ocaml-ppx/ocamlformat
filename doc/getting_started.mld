@@ -47,7 +47,7 @@ The available profiles are:
 - [ocamlformat];
 - [janestreet].
 
-It is considered a good practice to set a profile in the [.ocamlformat] configuration file of a project, even if you plan on using the [default] profile, explicitly setting [project = default] is recommended.
+It is considered a good practice to set a profile in the [.ocamlformat] configuration file of a project, even if you plan on using the [default] profile, explicitly setting [profile = default] is recommended.
 
 Each profile is a collection of settings for all options, overriding lower priority configuration of individual options. So a profile can be selected and then individual options can be overridden if desired.
 
