@@ -4413,7 +4413,9 @@ let fmt_repl_file c _ itms =
 (** Entry points *)
 
 module Chunk = struct
-  type 'a t = Enable of 'a | Disable of Location.t * 'a
+  type state = Enable | Disable of Location.t
+
+  type 'a t = state * 'a
 
   let disabling (c : c) attr =
     (not c.conf.opr_opts.disable)
@@ -4437,7 +4439,7 @@ module Chunk = struct
     in
     Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
 
-  let split c l ~is_attr =
+  let split c l ~is_attr : 'a list t list =
     let is_state_attr ~f c x =
       match is_attr x with
       | Some (attr, loc) when f c attr -> Some loc
@@ -4445,29 +4447,28 @@ module Chunk = struct
     in
     List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
         match is_state_attr ~f:disabling c x with
-        | Some loc -> (Disable (loc, [x]) :: acc, update c true)
+        | Some loc -> ((Disable loc, [x]) :: acc, update c true)
         | None -> (
           match is_state_attr ~f:enabling c x with
-          | Some _ -> (Enable [x] :: acc, update c false)
+          | Some _ -> ((Enable, [x]) :: acc, update c false)
           | None -> (
             match acc with
             | [] ->
                 let chunk =
-                  if c.conf.opr_opts.disable then Disable (init_loc, [x])
-                  else Enable [x]
+                  if c.conf.opr_opts.disable then (Disable init_loc, [x])
+                  else (Enable, [x])
                 in
                 (chunk :: acc, c)
-            | Disable (loc, h) :: t -> (Disable (loc, x :: h) :: t, c)
-            | Enable h :: t -> (Enable (x :: h) :: t, c) ) ) )
+            | (st, h) :: t -> ((st, x :: h) :: t, c) ) ) )
     |> fst
     |> List.map ~f:(function
-         | Enable lx -> Enable (List.rev lx)
-         | Disable (loc, lx) -> Disable (loc, List.rev lx) )
+         | Enable, lx -> (Enable, List.rev lx)
+         | Disable loc, lx -> (Disable loc, List.rev lx) )
     |> List.rev
 
   let fmt c ctx chunks ~fmt_item ~loc_end =
     List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
-      | Disable (item_loc, lx) ->
+      | Disable item_loc, lx ->
           let c = update c true in
           let loc_end = loc_end lx in
           let loc = Location.{item_loc with loc_end} in
@@ -4476,7 +4477,7 @@ module Chunk = struct
             $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
             $ fmt_if (i > 0) "\n@;<1000 0>"
             $ str (String.strip (Source.string_at c.source loc)) )
-      | Enable lx ->
+      | Enable, lx ->
           let c = update c false in
           (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item c ctx lx) )
     |> snd
