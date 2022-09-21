@@ -4420,8 +4420,13 @@ let enabling (c : c) attr =
   c.conf.opr_opts.disable
   && not (update_config ~quiet:true c [attr]).conf.opr_opts.disable
 
-let split_format_chunks (type a) c ctx (l : a list) ~is_disabling
-    ~is_enabling ~fmt_item ~loc_end =
+let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
+    ~loc_end =
+  let is_state_attr ~f c x =
+    match is_attr x with
+    | Some (attr, loc) when f c attr -> Some loc
+    | _ -> None
+  in
   let update c disable =
     let opr_opts = {c.conf.opr_opts with disable} in
     {c with conf= {c.conf with opr_opts}}
@@ -4430,20 +4435,22 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_disabling
     let ref_c = ref c in
     List.group l ~break:(fun x y ->
         match (x, y) with
-        | _, k when Option.is_some (is_disabling !ref_c k) -> true
-        | _, k when Option.is_some (is_enabling !ref_c k) -> true
-        | k, _ when Option.is_some (is_disabling !ref_c k) ->
+        | _, k when Option.is_some (is_state_attr ~f:disabling !ref_c k) ->
+            true
+        | _, k when Option.is_some (is_state_attr ~f:enabling !ref_c k) ->
+            true
+        | k, _ when Option.is_some (is_state_attr ~f:disabling !ref_c k) ->
             ref_c := update !ref_c true ;
             false
-        | k, _ when Option.is_some (is_enabling !ref_c k) ->
+        | k, _ when Option.is_some (is_state_attr ~f:enabling !ref_c k) ->
             ref_c := update !ref_c false ;
             false
         | _ -> false )
   in
   List.foldi groups ~init:(c, noop) ~f:(fun i (c, output) g ->
       match g with
-      | k :: _ when Option.is_some (is_disabling c k) ->
-          let item_loc = Option.value_exn (is_disabling c k) in
+      | k :: _ when Option.is_some (is_state_attr ~f:disabling c k) ->
+          let item_loc = Option.value_exn (is_state_attr ~f:disabling c k) in
           let c = update c true in
           let loc_end = loc_end g in
           let loc = Location.{item_loc with loc_end} in
@@ -4452,7 +4459,7 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_disabling
             $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
             $ fmt_if (i > 0) "\n@;<1000 0>"
             $ str (String.strip (Source.string_at c.source loc)) )
-      | k :: _ when Option.is_some (is_enabling c k) ->
+      | k :: _ when Option.is_some (is_state_attr ~f:enabling c k) ->
           let c = update c false in
           (c, output $ fmt "@;<1000 0>" $ fmt_item c ctx g)
       | _ -> (c, output $ fmt_item c ctx g) )
@@ -4466,50 +4473,26 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
       Cmts.fmt_after ~pro:noop c Location.none
   | Structure, l ->
       split_format_chunks c ctx l
-        ~is_disabling:
-          (fun c -> function
-            | {pstr_desc= Pstr_attribute attr; pstr_loc}
-              when disabling c attr ->
-                Some pstr_loc
-            | _ -> None )
-        ~is_enabling:
-          (fun c -> function
-            | {pstr_desc= Pstr_attribute attr; pstr_loc} when enabling c attr
-              ->
-                Some pstr_loc
-            | _ -> None )
+        ~is_attr:(function
+          | {pstr_desc= Pstr_attribute attr; pstr_loc} ->
+              Some (attr, pstr_loc)
+          | _ -> None )
         ~fmt_item:fmt_structure
         ~loc_end:(fun l -> (List.last_exn l).pstr_loc.loc_end)
   | Signature, l ->
       split_format_chunks c ctx l
-        ~is_disabling:
-          (fun c -> function
-            | {psig_desc= Psig_attribute attr; psig_loc}
-              when disabling c attr ->
-                Some psig_loc
-            | _ -> None )
-        ~is_enabling:
-          (fun c -> function
-            | {psig_desc= Psig_attribute attr; psig_loc} when enabling c attr
-              ->
-                Some psig_loc
-            | _ -> None )
+        ~is_attr:(function
+          | {psig_desc= Psig_attribute attr; psig_loc} ->
+              Some (attr, psig_loc)
+          | _ -> None )
         ~fmt_item:fmt_signature
         ~loc_end:(fun l -> (List.last_exn l).psig_loc.loc_end)
   | Use_file, l ->
       split_format_chunks c ctx l
-        ~is_disabling:
-          (fun c -> function
-            | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _)
-              when disabling c attr ->
-                Some pstr_loc
-            | _ -> None )
-        ~is_enabling:
-          (fun c -> function
-            | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _)
-              when enabling c attr ->
-                Some pstr_loc
-            | _ -> None )
+        ~is_attr:(function
+          | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
+              Some (attr, pstr_loc)
+          | _ -> None )
         ~fmt_item:fmt_toplevel
         ~loc_end:(fun l ->
           let item =
