@@ -65,6 +65,4 @@ let split fg c l =
               (chunk :: acc, c)
           | (st, h) :: t -> ((st, x :: h) :: t, c) ) ) )
   |> fst
-  |> List.rev_map ~f:(function
-       | Enable, lx -> (Enable, List.rev lx)
-       | Disable loc, lx -> (Disable loc, List.rev lx) )
+  |> List.rev_map ~f:(function state, lx -> (state, List.rev lx))
