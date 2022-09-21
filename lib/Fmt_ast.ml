@@ -4413,59 +4413,16 @@ let fmt_repl_file c _ itms =
 (** Entry points *)
 
 module Chunk = struct
-  type state = Enable | Disable of Location.t
+  open Chunk
 
-  type 'a t =
-    | Structure : structure t
-    | Signature : signature t
-    | Use_file : use_file t
-
-  let disabling (c : c) attr =
-    (not c.conf.opr_opts.disable)
-    && (update_config ~quiet:true c [attr]).conf.opr_opts.disable
-
-  let enabling (c : c) attr =
-    c.conf.opr_opts.disable
-    && not (update_config ~quiet:true c [attr]).conf.opr_opts.disable
-
-  let update c disable =
-    let opr_opts = {c.conf.opr_opts with disable} in
-    {c with conf= {c.conf with opr_opts}}
-
-  let init_loc =
-    let pos =
-      Lexing.
-        { pos_cnum= 0
-        ; pos_bol= 0
-        ; pos_lnum= 0
-        ; pos_fname= !Location.input_name }
-    in
-    Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
-
-  let is_attr (type a) (x : a list t) : a -> _ =
-    match x with
-    | Structure -> (
-        function
-        | {pstr_desc= Pstr_attribute attr; pstr_loc} -> Some (attr, pstr_loc)
-        | _ -> None )
-    | Signature -> (
-        function
-        | {psig_desc= Psig_attribute attr; psig_loc} -> Some (attr, psig_loc)
-        | _ -> None )
-    | Use_file -> (
-        function
-        | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
-            Some (attr, pstr_loc)
-        | _ -> None )
-
-  let fmt_item (type a) (x : a list t) : c -> Ast.t -> a list -> Fmt.t =
-    match x with
+  let fmt_item (type a) (fg : a list t) : c -> Ast.t -> a list -> Fmt.t =
+    match fg with
     | Structure -> fmt_structure
     | Signature -> fmt_signature
     | Use_file -> fmt_toplevel ?force_semisemi:None
 
-  let loc_end (type a) (x : a list t) (l : a list) =
-    match x with
+  let loc_end (type a) (fg : a list t) (l : a list) =
+    match fg with
     | Structure -> (List.last_exn l).pstr_loc.loc_end
     | Signature -> (List.last_exn l).psig_loc.loc_end
     | Use_file ->
@@ -4476,36 +4433,12 @@ module Chunk = struct
         in
         (Ast.location (Tli item)).loc_end
 
-  let is_state_attr fg ~f c x =
-    match is_attr fg x with
-    | Some (attr, loc) when f c attr -> Some loc
-    | _ -> None
-
-  let split fg c l =
-    List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
-        match is_state_attr fg ~f:disabling c x with
-        | Some loc -> ((Disable loc, [x]) :: acc, update c true)
-        | None -> (
-          match is_state_attr fg ~f:enabling c x with
-          | Some _ -> ((Enable, [x]) :: acc, update c false)
-          | None -> (
-            match acc with
-            | [] ->
-                let chunk =
-                  if c.conf.opr_opts.disable then (Disable init_loc, [x])
-                  else (Enable, [x])
-                in
-                (chunk :: acc, c)
-            | (st, h) :: t -> ((st, x :: h) :: t, c) ) ) )
-    |> fst
-    |> List.rev_map ~f:(function
-         | Enable, lx -> (Enable, List.rev lx)
-         | Disable loc, lx -> (Disable loc, List.rev lx) )
+  let update_conf c state = {c with conf= Conf.update_state c.conf state}
 
   let fmt fg c ctx chunks =
     List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
       | Disable item_loc, lx ->
-          let c = update c true in
+          let c = update_conf c `Disable in
           let loc_end = loc_end fg lx in
           let loc = Location.{item_loc with loc_end} in
           ( c
@@ -4514,11 +4447,11 @@ module Chunk = struct
             $ fmt_if (i > 0) "\n@;<1000 0>"
             $ str (String.strip (Source.string_at c.source loc)) )
       | Enable, lx ->
-          let c = update c false in
+          let c = update_conf c `Enable in
           (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item fg c ctx lx) )
     |> snd
 
-  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c l
+  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c.conf l
 end
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)

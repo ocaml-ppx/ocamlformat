@@ -129,6 +129,8 @@ val update : ?quiet:bool -> t -> Parsetree.attribute -> t
 val update_value :
   t -> name:string -> value:string -> (t, Config_option.Error.t) Result.t
 
+val update_state : t -> [`Enable | `Disable] -> t
+
 val print_config : t -> unit
 
 module UI : sig
