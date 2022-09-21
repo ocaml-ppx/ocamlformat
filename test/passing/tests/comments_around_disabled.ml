@@ -1,7 +1,8 @@
 (* cmts *)
 
 [@@@ocamlformat "disable"]
-let () = ()
+let () =
+  ()
 [@@@ocamlformat "enable"]
 
 (* cmts *)

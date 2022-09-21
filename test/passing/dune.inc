@@ -1293,6 +1293,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to disable_attr.ml.stdout
+   (with-stderr-to disable_attr.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/disable_attr.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_attr.ml disable_attr.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_attr.ml.err disable_attr.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to disabled.ml.stdout
    (with-stderr-to disabled.ml.stderr
      (run %{bin:ocamlformat} --margin-check --disable %{dep:tests/disabled.ml})))))

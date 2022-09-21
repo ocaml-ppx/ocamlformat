@@ -2093,6 +2093,11 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
 let update_value config ~name ~value =
   C.update ~config ~from:`Commandline ~name ~value ~inline:false
 
+let update_state c state =
+  let disable = match state with `Enable -> false | `Disable -> true in
+  let opr_opts = {c.opr_opts with disable} in
+  {c with opr_opts}
+
 let print_config = C.print_config
 
 module UI = struct

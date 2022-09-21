@@ -4412,15 +4412,57 @@ let fmt_repl_file c _ itms =
 
 (** Entry points *)
 
+module Chunk = struct
+  open Chunk
+
+  let fmt_item (type a) (fg : a list t) : c -> Ast.t -> a list -> Fmt.t =
+    match fg with
+    | Structure -> fmt_structure
+    | Signature -> fmt_signature
+    | Use_file -> fmt_toplevel ?force_semisemi:None
+
+  let loc_end (type a) (fg : a list t) (l : a list) =
+    match fg with
+    | Structure -> (List.last_exn l).pstr_loc.loc_end
+    | Signature -> (List.last_exn l).psig_loc.loc_end
+    | Use_file ->
+        let item =
+          match List.last_exn l with
+          | Ptop_def x -> `Item (List.last_exn x)
+          | Ptop_dir x -> `Directive x
+        in
+        (Ast.location (Tli item)).loc_end
+
+  let update_conf c state = {c with conf= Conf.update_state c.conf state}
+
+  let fmt fg c ctx chunks =
+    List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
+      | Disable item_loc, lx ->
+          let c = update_conf c `Disable in
+          let loc_end = loc_end fg lx in
+          let loc = Location.{item_loc with loc_end} in
+          ( c
+          , output
+            $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
+            $ fmt_if (i > 0) "\n@;<1000 0>"
+            $ str (String.strip (Source.string_at c.source loc)) )
+      | Enable, lx ->
+          let c = update_conf c `Enable in
+          (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item fg c ctx lx) )
+    |> snd
+
+  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c.conf l
+end
+
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
     source cmts conf (itms : a) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
   | Structure, [] | Signature, [] | Use_file, [] ->
       Cmts.fmt_after ~pro:noop c Location.none
-  | Structure, l -> fmt_structure c ctx l
-  | Signature, l -> fmt_signature c ctx l
-  | Use_file, l -> fmt_toplevel c ctx l
+  | Structure, l -> Chunk.split_and_fmt Structure c ctx l
+  | Signature, l -> Chunk.split_and_fmt Signature c ctx l
+  | Use_file, l -> Chunk.split_and_fmt Use_file c ctx l
   | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
   | Module_type, mty ->
       compose_module ~f:Fn.id
