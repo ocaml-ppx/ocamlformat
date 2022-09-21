@@ -4431,23 +4431,38 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
     let opr_opts = {c.conf.opr_opts with disable} in
     {c with conf= {c.conf with opr_opts}}
   in
+  let init_loc =
+    let pos =
+      Lexing.
+        { pos_cnum= 0
+        ; pos_bol= 0
+        ; pos_lnum= 0
+        ; pos_fname= !Location.input_name }
+    in
+    Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
+  in
   let groups =
     List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
         match is_state_attr ~f:disabling c x with
-        | Some loc -> ((Some (`Disable loc), [x]) :: acc, update c true)
+        | Some loc -> ((`Disable loc, [x]) :: acc, update c true)
         | None -> (
           match is_state_attr ~f:enabling c x with
-          | Some _ -> ((Some `Enable, [x]) :: acc, update c false)
+          | Some _ -> ((`Enable, [x]) :: acc, update c false)
           | None -> (
             match acc with
-            | [] -> ((None, [x]) :: acc, c)
+            | [] ->
+                let st =
+                  if c.conf.opr_opts.disable then `Disable init_loc
+                  else `Enable
+                in
+                ((st, [x]) :: acc, c)
             | (state, h) :: t -> ((state, x :: h) :: t, c) ) ) )
     |> fst
     |> List.map ~f:(fun (x, l) -> (x, List.rev l))
     |> List.rev
   in
   List.foldi groups ~init:(c, noop) ~f:(fun i (c, output) -> function
-    | Some (`Disable item_loc), g ->
+    | `Disable item_loc, g ->
         let c = update c true in
         let loc_end = loc_end g in
         let loc = Location.{item_loc with loc_end} in
@@ -4456,10 +4471,9 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
           $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
           $ fmt_if (i > 0) "\n@;<1000 0>"
           $ str (String.strip (Source.string_at c.source loc)) )
-    | Some `Enable, g ->
+    | `Enable, g ->
         let c = update c false in
-        (c, output $ fmt "@;<1000 0>" $ fmt_item c ctx g)
-    | None, g -> (c, output $ fmt_item c ctx g) )
+        (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item c ctx g) )
   |> snd
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
