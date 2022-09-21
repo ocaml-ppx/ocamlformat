@@ -4432,37 +4432,34 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
     {c with conf= {c.conf with opr_opts}}
   in
   let groups =
-    let ref_c = ref c in
-    List.group l ~break:(fun x y ->
-        match (x, y) with
-        | _, k when Option.is_some (is_state_attr ~f:disabling !ref_c k) ->
-            true
-        | _, k when Option.is_some (is_state_attr ~f:enabling !ref_c k) ->
-            true
-        | k, _ when Option.is_some (is_state_attr ~f:disabling !ref_c k) ->
-            ref_c := update !ref_c true ;
-            false
-        | k, _ when Option.is_some (is_state_attr ~f:enabling !ref_c k) ->
-            ref_c := update !ref_c false ;
-            false
-        | _ -> false )
+    List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
+        match is_state_attr ~f:disabling c x with
+        | Some loc -> ((Some (`Disable loc), [x]) :: acc, update c true)
+        | None -> (
+          match is_state_attr ~f:enabling c x with
+          | Some _ -> ((Some `Enable, [x]) :: acc, update c false)
+          | None -> (
+            match acc with
+            | [] -> ((None, [x]) :: acc, c)
+            | (state, h) :: t -> ((state, x :: h) :: t, c) ) ) )
+    |> fst
+    |> List.map ~f:(fun (x, l) -> (x, List.rev l))
+    |> List.rev
   in
-  List.foldi groups ~init:(c, noop) ~f:(fun i (c, output) g ->
-      match g with
-      | k :: _ when Option.is_some (is_state_attr ~f:disabling c k) ->
-          let item_loc = Option.value_exn (is_state_attr ~f:disabling c k) in
-          let c = update c true in
-          let loc_end = loc_end g in
-          let loc = Location.{item_loc with loc_end} in
-          ( c
-          , output
-            $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
-            $ fmt_if (i > 0) "\n@;<1000 0>"
-            $ str (String.strip (Source.string_at c.source loc)) )
-      | k :: _ when Option.is_some (is_state_attr ~f:enabling c k) ->
-          let c = update c false in
-          (c, output $ fmt "@;<1000 0>" $ fmt_item c ctx g)
-      | _ -> (c, output $ fmt_item c ctx g) )
+  List.foldi groups ~init:(c, noop) ~f:(fun i (c, output) -> function
+    | Some (`Disable item_loc), g ->
+        let c = update c true in
+        let loc_end = loc_end g in
+        let loc = Location.{item_loc with loc_end} in
+        ( c
+        , output
+          $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
+          $ fmt_if (i > 0) "\n@;<1000 0>"
+          $ str (String.strip (Source.string_at c.source loc)) )
+    | Some `Enable, g ->
+        let c = update c false in
+        (c, output $ fmt "@;<1000 0>" $ fmt_item c ctx g)
+    | None, g -> (c, output $ fmt_item c ctx g) )
   |> snd
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
