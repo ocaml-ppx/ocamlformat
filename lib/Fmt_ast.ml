@@ -4415,7 +4415,10 @@ let fmt_repl_file c _ itms =
 module Chunk = struct
   type state = Enable | Disable of Location.t
 
-  type 'a t = state * 'a
+  type 'a t =
+    | Structure : structure t
+    | Signature : signature t
+    | Use_file : use_file t
 
   let disabling (c : c) attr =
     (not c.conf.opr_opts.disable)
@@ -4439,9 +4442,43 @@ module Chunk = struct
     in
     Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
 
-  let split c l ~is_attr : 'a list t list =
+  let is_attr (type a) (x : a list t) : a -> _ =
+    match x with
+    | Structure -> (
+        function
+        | {pstr_desc= Pstr_attribute attr; pstr_loc} -> Some (attr, pstr_loc)
+        | _ -> None )
+    | Signature -> (
+        function
+        | {psig_desc= Psig_attribute attr; psig_loc} -> Some (attr, psig_loc)
+        | _ -> None )
+    | Use_file -> (
+        function
+        | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
+            Some (attr, pstr_loc)
+        | _ -> None )
+
+  let fmt_item (type a) (x : a list t) : c -> Ast.t -> a list -> Fmt.t =
+    match x with
+    | Structure -> fmt_structure
+    | Signature -> fmt_signature
+    | Use_file -> fmt_toplevel ?force_semisemi:None
+
+  let loc_end (type a) (x : a list t) (l : a list) =
+    match x with
+    | Structure -> (List.last_exn l).pstr_loc.loc_end
+    | Signature -> (List.last_exn l).psig_loc.loc_end
+    | Use_file ->
+        let item =
+          match List.last_exn l with
+          | Ptop_def x -> `Item (List.last_exn x)
+          | Ptop_dir x -> `Directive x
+        in
+        (Ast.location (Tli item)).loc_end
+
+  let split fg c l =
     let is_state_attr ~f c x =
-      match is_attr x with
+      match is_attr fg x with
       | Some (attr, loc) when f c attr -> Some loc
       | _ -> None
     in
@@ -4466,11 +4503,11 @@ module Chunk = struct
          | Disable loc, lx -> (Disable loc, List.rev lx) )
     |> List.rev
 
-  let fmt c ctx chunks ~fmt_item ~loc_end =
+  let fmt fg c ctx chunks =
     List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
       | Disable item_loc, lx ->
           let c = update c true in
-          let loc_end = loc_end lx in
+          let loc_end = loc_end fg lx in
           let loc = Location.{item_loc with loc_end} in
           ( c
           , output
@@ -4479,12 +4516,10 @@ module Chunk = struct
             $ str (String.strip (Source.string_at c.source loc)) )
       | Enable, lx ->
           let c = update c false in
-          (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item c ctx lx) )
+          (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item fg c ctx lx) )
     |> snd
 
-  let split_and_fmt c ctx l ~is_attr ~fmt_item ~loc_end =
-    let chunks = split c l ~is_attr in
-    fmt c ctx chunks ~fmt_item ~loc_end
+  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c l
 end
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
@@ -4493,35 +4528,9 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   match (fragment, itms) with
   | Structure, [] | Signature, [] | Use_file, [] ->
       Cmts.fmt_after ~pro:noop c Location.none
-  | Structure, l ->
-      let is_attr = function
-        | {pstr_desc= Pstr_attribute attr; pstr_loc} -> Some (attr, pstr_loc)
-        | _ -> None
-      in
-      let loc_end l = (List.last_exn l).pstr_loc.loc_end in
-      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_structure ~loc_end
-  | Signature, l ->
-      let is_attr = function
-        | {psig_desc= Psig_attribute attr; psig_loc} -> Some (attr, psig_loc)
-        | _ -> None
-      in
-      let loc_end l = (List.last_exn l).psig_loc.loc_end in
-      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_signature ~loc_end
-  | Use_file, l ->
-      let is_attr = function
-        | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
-            Some (attr, pstr_loc)
-        | _ -> None
-      in
-      let loc_end l =
-        let item =
-          match List.last_exn l with
-          | Ptop_def x -> `Item (List.last_exn x)
-          | Ptop_dir x -> `Directive x
-        in
-        (Ast.location (Tli item)).loc_end
-      in
-      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_toplevel ~loc_end
+  | Structure, l -> Chunk.split_and_fmt Structure c ctx l
+  | Signature, l -> Chunk.split_and_fmt Signature c ctx l
+  | Use_file, l -> Chunk.split_and_fmt Use_file c ctx l
   | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
   | Module_type, mty ->
       compose_module ~f:Fn.id
