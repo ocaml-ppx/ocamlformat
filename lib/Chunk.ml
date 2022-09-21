@@ -35,21 +35,13 @@ let init_loc =
   in
   Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
 
-let is_attr (type a) (x : a list t) : a -> _ =
-  match x with
-  | Structure -> (
-      function
-      | {pstr_desc= Pstr_attribute attr; pstr_loc} -> Some (attr, pstr_loc)
-      | _ -> None )
-  | Signature -> (
-      function
-      | {psig_desc= Psig_attribute attr; psig_loc} -> Some (attr, psig_loc)
-      | _ -> None )
-  | Use_file -> (
-      function
-      | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
-          Some (attr, pstr_loc)
-      | _ -> None )
+let is_attr (type a) (fg : a list t) (x : a) =
+  match (fg, x) with
+  | Structure, {pstr_desc= Pstr_attribute x; pstr_loc} -> Some (x, pstr_loc)
+  | Signature, {psig_desc= Psig_attribute x; psig_loc} -> Some (x, psig_loc)
+  | Use_file, Ptop_def ({pstr_desc= Pstr_attribute x; pstr_loc} :: _) ->
+      Some (x, pstr_loc)
+  | _ -> None
 
 let is_state_attr fg ~f c x =
   match is_attr fg x with
