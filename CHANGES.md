@@ -6,7 +6,7 @@
 - Reset max-indent when the `max-indent` option is not set (#2131, @hhugo, @gpetiot)
 - Add missing parentheses around immediate objects having attributes attached in 4.14 (#2144, @gpetiot)
 - Fix dropped comment attached to the identifier of an open-expression (#2155, @gpetiot)
-- Correctly format chunks of file in presence of `enable`/`disable` floating attributes (#<PR_NUMBER>, @gpetiot)
+- Correctly format chunks of file in presence of `enable`/`disable` floating attributes (#2156, @gpetiot)
 
 ### Changes
 
