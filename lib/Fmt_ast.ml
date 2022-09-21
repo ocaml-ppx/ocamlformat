@@ -4476,17 +4476,17 @@ module Chunk = struct
         in
         (Ast.location (Tli item)).loc_end
 
+  let is_state_attr fg ~f c x =
+    match is_attr fg x with
+    | Some (attr, loc) when f c attr -> Some loc
+    | _ -> None
+
   let split fg c l =
-    let is_state_attr ~f c x =
-      match is_attr fg x with
-      | Some (attr, loc) when f c attr -> Some loc
-      | _ -> None
-    in
     List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
-        match is_state_attr ~f:disabling c x with
+        match is_state_attr fg ~f:disabling c x with
         | Some loc -> ((Disable loc, [x]) :: acc, update c true)
         | None -> (
-          match is_state_attr ~f:enabling c x with
+          match is_state_attr fg ~f:enabling c x with
           | Some _ -> ((Enable, [x]) :: acc, update c false)
           | None -> (
             match acc with
@@ -4498,10 +4498,9 @@ module Chunk = struct
                 (chunk :: acc, c)
             | (st, h) :: t -> ((st, x :: h) :: t, c) ) ) )
     |> fst
-    |> List.map ~f:(function
+    |> List.rev_map ~f:(function
          | Enable, lx -> (Enable, List.rev lx)
          | Disable loc, lx -> (Disable loc, List.rev lx) )
-    |> List.rev
 
   let fmt fg c ctx chunks =
     List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
