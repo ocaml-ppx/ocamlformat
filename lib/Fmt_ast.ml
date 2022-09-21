@@ -4412,25 +4412,21 @@ let fmt_repl_file c _ itms =
 
 (** Entry points *)
 
-let disabling (c : c) attr =
-  (not c.conf.opr_opts.disable)
-  && (update_config ~quiet:true c [attr]).conf.opr_opts.disable
+module Chunk = struct
+  type 'a t = Enable of 'a | Disable of Location.t * 'a
 
-let enabling (c : c) attr =
-  c.conf.opr_opts.disable
-  && not (update_config ~quiet:true c [attr]).conf.opr_opts.disable
+  let disabling (c : c) attr =
+    (not c.conf.opr_opts.disable)
+    && (update_config ~quiet:true c [attr]).conf.opr_opts.disable
 
-let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
-    ~loc_end =
-  let is_state_attr ~f c x =
-    match is_attr x with
-    | Some (attr, loc) when f c attr -> Some loc
-    | _ -> None
-  in
+  let enabling (c : c) attr =
+    c.conf.opr_opts.disable
+    && not (update_config ~quiet:true c [attr]).conf.opr_opts.disable
+
   let update c disable =
     let opr_opts = {c.conf.opr_opts with disable} in
     {c with conf= {c.conf with opr_opts}}
-  in
+
   let init_loc =
     let pos =
       Lexing.
@@ -4440,41 +4436,55 @@ let split_format_chunks (type a) c ctx (l : a list) ~is_attr ~fmt_item
         ; pos_fname= !Location.input_name }
     in
     Location.{loc_ghost= false; loc_start= pos; loc_end= pos}
-  in
-  let groups =
+
+  let split c l ~is_attr =
+    let is_state_attr ~f c x =
+      match is_attr x with
+      | Some (attr, loc) when f c attr -> Some loc
+      | _ -> None
+    in
     List.fold_left l ~init:([], c) ~f:(fun (acc, c) x ->
         match is_state_attr ~f:disabling c x with
-        | Some loc -> ((`Disable loc, [x]) :: acc, update c true)
+        | Some loc -> (Disable (loc, [x]) :: acc, update c true)
         | None -> (
           match is_state_attr ~f:enabling c x with
-          | Some _ -> ((`Enable, [x]) :: acc, update c false)
+          | Some _ -> (Enable [x] :: acc, update c false)
           | None -> (
             match acc with
             | [] ->
-                let st =
-                  if c.conf.opr_opts.disable then `Disable init_loc
-                  else `Enable
+                let chunk =
+                  if c.conf.opr_opts.disable then Disable (init_loc, [x])
+                  else Enable [x]
                 in
-                ((st, [x]) :: acc, c)
-            | (state, h) :: t -> ((state, x :: h) :: t, c) ) ) )
+                (chunk :: acc, c)
+            | Disable (loc, h) :: t -> (Disable (loc, x :: h) :: t, c)
+            | Enable h :: t -> (Enable (x :: h) :: t, c) ) ) )
     |> fst
-    |> List.map ~f:(fun (x, l) -> (x, List.rev l))
+    |> List.map ~f:(function
+         | Enable lx -> Enable (List.rev lx)
+         | Disable (loc, lx) -> Disable (loc, List.rev lx) )
     |> List.rev
-  in
-  List.foldi groups ~init:(c, noop) ~f:(fun i (c, output) -> function
-    | `Disable item_loc, g ->
-        let c = update c true in
-        let loc_end = loc_end g in
-        let loc = Location.{item_loc with loc_end} in
-        ( c
-        , output
-          $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
-          $ fmt_if (i > 0) "\n@;<1000 0>"
-          $ str (String.strip (Source.string_at c.source loc)) )
-    | `Enable, g ->
-        let c = update c false in
-        (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item c ctx g) )
-  |> snd
+
+  let fmt c ctx chunks ~fmt_item ~loc_end =
+    List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
+      | Disable (item_loc, lx) ->
+          let c = update c true in
+          let loc_end = loc_end lx in
+          let loc = Location.{item_loc with loc_end} in
+          ( c
+          , output
+            $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
+            $ fmt_if (i > 0) "\n@;<1000 0>"
+            $ str (String.strip (Source.string_at c.source loc)) )
+      | Enable lx ->
+          let c = update c false in
+          (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item c ctx lx) )
+    |> snd
+
+  let split_and_fmt c ctx l ~is_attr ~fmt_item ~loc_end =
+    let chunks = split c l ~is_attr in
+    fmt c ctx chunks ~fmt_item ~loc_end
+end
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
     source cmts conf (itms : a) =
@@ -4483,35 +4493,34 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Structure, [] | Signature, [] | Use_file, [] ->
       Cmts.fmt_after ~pro:noop c Location.none
   | Structure, l ->
-      split_format_chunks c ctx l
-        ~is_attr:(function
-          | {pstr_desc= Pstr_attribute attr; pstr_loc} ->
-              Some (attr, pstr_loc)
-          | _ -> None )
-        ~fmt_item:fmt_structure
-        ~loc_end:(fun l -> (List.last_exn l).pstr_loc.loc_end)
+      let is_attr = function
+        | {pstr_desc= Pstr_attribute attr; pstr_loc} -> Some (attr, pstr_loc)
+        | _ -> None
+      in
+      let loc_end l = (List.last_exn l).pstr_loc.loc_end in
+      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_structure ~loc_end
   | Signature, l ->
-      split_format_chunks c ctx l
-        ~is_attr:(function
-          | {psig_desc= Psig_attribute attr; psig_loc} ->
-              Some (attr, psig_loc)
-          | _ -> None )
-        ~fmt_item:fmt_signature
-        ~loc_end:(fun l -> (List.last_exn l).psig_loc.loc_end)
+      let is_attr = function
+        | {psig_desc= Psig_attribute attr; psig_loc} -> Some (attr, psig_loc)
+        | _ -> None
+      in
+      let loc_end l = (List.last_exn l).psig_loc.loc_end in
+      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_signature ~loc_end
   | Use_file, l ->
-      split_format_chunks c ctx l
-        ~is_attr:(function
-          | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
-              Some (attr, pstr_loc)
-          | _ -> None )
-        ~fmt_item:fmt_toplevel
-        ~loc_end:(fun l ->
-          let item =
-            match List.last_exn l with
-            | Ptop_def x -> `Item (List.last_exn x)
-            | Ptop_dir x -> `Directive x
-          in
-          (Ast.location (Tli item)).loc_end )
+      let is_attr = function
+        | Ptop_def ({pstr_desc= Pstr_attribute attr; pstr_loc} :: _) ->
+            Some (attr, pstr_loc)
+        | _ -> None
+      in
+      let loc_end l =
+        let item =
+          match List.last_exn l with
+          | Ptop_def x -> `Item (List.last_exn x)
+          | Ptop_dir x -> `Directive x
+        in
+        (Ast.location (Tli item)).loc_end
+      in
+      Chunk.split_and_fmt c ctx l ~is_attr ~fmt_item:fmt_toplevel ~loc_end
   | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
   | Module_type, mty ->
       compose_module ~f:Fn.id
