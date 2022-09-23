@@ -222,7 +222,7 @@ module Make (C : CONFIG) = struct
     let parse = Arg.conv_parser Arg.bool in
     let r = mk ~default:None term in
     let to_string = Bool.to_string in
-    let cmdline_get () = !r in
+    let cmdline_get = r in
     let opt =
       { names
       ; values= Bool
@@ -254,7 +254,7 @@ module Make (C : CONFIG) = struct
     let parse = Arg.conv_parser converter in
     let r = mk ~default:None term in
     let to_string = Format.asprintf "%a%!" (Arg.conv_printer converter) in
-    let cmdline_get () = !r in
+    let cmdline_get = r in
     let opt =
       { names
       ; values
@@ -379,7 +379,7 @@ module Make (C : CONFIG) = struct
     in
     let r = mk ~default:None term in
     let to_string _ = "" in
-    let cmdline_get () = !r in
+    let cmdline_get = r in
     let opt =
       { names
       ; values= Choice []
