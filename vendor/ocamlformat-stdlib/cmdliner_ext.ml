@@ -22,7 +22,7 @@ let mk ~default arg =
   let var = ref default in
   let set x = var := x in
   args := Arg (arg, set) :: !args ;
-  var
+  (fun () -> !var)
 
 let parse info validate =
   Cmd.eval_value (Cmd.v info (Term.(ret (const validate $ tuple !args))))

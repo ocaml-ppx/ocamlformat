@@ -2,7 +2,7 @@
 
 include module type of struct include Cmdliner end
 
-val mk : default:'a -> 'a Term.t -> 'a ref
+val mk : default:'a -> 'a Term.t -> (unit -> 'a)
 (** [mk ~default term] is a ref which, after [parse] is called, contains
     the value of the command line option specified by [term]. *)
 

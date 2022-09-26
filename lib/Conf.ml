@@ -1300,7 +1300,7 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
-let kind : Syntax.t option ref =
+let kind : unit -> Syntax.t option =
   let doc = "Parse input as an implementation." in
   let impl = (Some Syntax.Use_file, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse input as an interface." in
@@ -1673,7 +1673,7 @@ let parse_line config ~from s =
     let value = String.strip value in
     match (name, from) with
     | "version", `File _ ->
-        if String.equal Version.current value || !no_version_check then
+        if String.equal Version.current value || no_version_check () then
           Ok config
         else
           Error
@@ -1682,7 +1682,7 @@ let parse_line config ~from s =
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute loc ->
-        if !disable_conf_attrs then (
+        if disable_conf_attrs () then (
           warn ~loc "Configuration in attribute %S ignored." s ;
           Ok config )
         else
@@ -1756,7 +1756,7 @@ let read_config_file conf = function
                     ( IndentConfig.update_from_string ocp_indent_conf line
                     , errors )
                   with
-                  | Invalid_argument e when !ignore_invalid_options ->
+                  | Invalid_argument e when ignore_invalid_options () ->
                       warn ~loc "%s" e ; (conf, errors)
                   | Invalid_argument e ->
                       (conf, Config_option.Error.Unknown (e, None) :: errors) )
@@ -1778,7 +1778,7 @@ let read_config_file conf = function
                   let from = `File loc in
                   match parse_line conf ~from line with
                   | Ok conf -> (conf, errors)
-                  | Error _ when !ignore_invalid_options ->
+                  | Error _ when ignore_invalid_options () ->
                       warn ~loc "ignoring invalid options %S" line ;
                       (conf, errors)
                   | Error e -> (conf, e :: errors) )
@@ -1794,7 +1794,7 @@ let update_using_env conf =
     | Ok c -> (c, errors)
     | Error e -> (config, e :: errors)
   in
-  let conf, errors = List.fold_left !config ~init:(conf, []) ~f in
+  let conf, errors = List.fold_left (config ()) ~init:(conf, []) ~f in
   match List.rev errors with
   | [] -> conf
   | l -> failwith_user_errors ~from:"OCAMLFORMAT environment variable" l
@@ -1854,8 +1854,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let fs =
     File_system.make ~enable_outside_detected_project
-      ~disable_conf_files:!disable_conf_files
-      ~ocp_indent_config:!ocp_indent_config ~root ~file:file_abs
+      ~disable_conf_files:(disable_conf_files ())
+      ~ocp_indent_config:(ocp_indent_config ()) ~root ~file:file_abs
   in
   let conf =
     List.fold fs.configuration_files ~init:default ~f:read_config_file
@@ -1911,7 +1911,7 @@ let kind_of_ext fname =
   | _ -> None
 
 let validate_inputs () =
-  match (!inputs, !kind, !name) with
+  match (inputs (), kind (), name ()) with
   | [], _, _ -> Ok `No_input
   | [Stdin], None, None ->
       Error
@@ -1950,11 +1950,11 @@ let validate_action () =
   match
     List.filter_map
       ~f:(fun s -> s)
-      [ Option.map ~f:(fun o -> (`Output o, "--output")) !output
-      ; Option.some_if !inplace (`Inplace, "--inplace")
-      ; Option.some_if !check (`Check, "--check")
-      ; Option.some_if !print_config (`Print_config, "--print-config")
-      ; Option.some_if !numeric (`Numeric, "--numeric") ]
+      [ Option.map ~f:(fun o -> (`Output o, "--output")) (output ())
+      ; Option.some_if (inplace ()) (`Inplace, "--inplace")
+      ; Option.some_if (check ()) (`Check, "--check")
+      ; Option.some_if (print_config ()) (`Print_config, "--print-config")
+      ; Option.some_if (numeric ()) (`Numeric, "--numeric") ]
   with
   | [] -> Ok `No_action
   | [(action, _)] -> Ok action
@@ -2042,10 +2042,10 @@ let make_action ~enable_outside_detected_project ~root action inputs =
 
 let validate () =
   let root =
-    Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
+    Option.map (root ()) ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
   in
   let enable_outside_detected_project =
-    !enable_outside_detected_project && Option.is_none root
+    enable_outside_detected_project () && Option.is_none root
   in
   match
     let+ action = validate_action () in
