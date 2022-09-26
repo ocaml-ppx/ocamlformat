@@ -64,8 +64,8 @@ let run_config conf c =
 
 let run_path path =
   match
-    Ocamlformat.Conf.build_config ~enable_outside_detected_project:false
-      ~root:None ~file:path ~is_stdin:false
+    Bin_conf.build_config ~enable_outside_detected_project:false ~root:None
+      ~file:path ~is_stdin:false
   with
   | Ok _ as ok -> ok
   | Error e -> Error (`Path_error e)

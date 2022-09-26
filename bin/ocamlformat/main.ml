@@ -38,7 +38,7 @@ let to_output_file output_file data =
   | Some output_file -> write_all output_file ~data
 
 let source_from_file = function
-  | Conf.Stdin -> In_channel.input_all In_channel.stdin
+  | Bin_conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
 let print_error (conf : Conf.t) e =
@@ -47,8 +47,8 @@ let print_error (conf : Conf.t) e =
 
 let run_action action =
   match action with
-  | Conf.Inplace inputs ->
-      let f {Conf.kind; name= input_name; file= input_file; conf} =
+  | Bin_conf.Inplace inputs ->
+      let f {Bin_conf.kind; name= input_name; file= input_file; conf} =
         let input_file =
           match input_file with
           | File f -> f
@@ -74,7 +74,7 @@ let run_action action =
           Ok ()
       | Error e -> Error [(fun () -> print_error conf e)] )
   | Check inputs ->
-      let f {Conf.kind; name= input_name; file; conf} =
+      let f {Bin_conf.kind; name= input_name; file; conf} =
         let source = source_from_file file in
         let result = format ~kind ~input_name ~source conf in
         match result with
@@ -93,7 +93,7 @@ let run_action action =
       Ok ()
 ;;
 
-match Conf.action () with
+match Bin_conf.action () with
 | Ok (`Ok action) -> (
   match run_action action with
   | Ok () -> Caml.exit 0

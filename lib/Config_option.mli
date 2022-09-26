@@ -43,8 +43,8 @@ module UI : sig
     ; update: 'config -> string -> updated_from -> 'config }
 end
 
-module Make (C : CONFIG) : sig
-  type config = C.config
+module type S = sig
+  type config
 
   type 'a t
 
@@ -138,3 +138,5 @@ module Make (C : CONFIG) : sig
 
   val print_config : config -> unit
 end
+
+module Make (C : CONFIG) : S with type config = C.config
