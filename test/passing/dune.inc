@@ -477,6 +477,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to break_collection_expressions-wrap.ml.stdout
+   (with-stderr-to break_collection_expressions-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=wrap --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_collection_expressions-wrap.ml.ref break_collection_expressions-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_collection_expressions-wrap.ml.err break_collection_expressions-wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_collection_expressions.ml.stdout
+   (with-stderr-to break_collection_expressions.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-collection-expressions=fit-or-vertical --max-iters=3 %{dep:tests/break_collection_expressions.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_collection_expressions.ml.ref break_collection_expressions.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_collection_expressions.ml.err break_collection_expressions.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to break_colon-before.ml.stdout
    (with-stderr-to break_colon-before.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-colon=before %{dep:tests/break_colon.ml})))))
@@ -639,42 +675,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_separators-after_docked_wrap.ml.stdout
-   (with-stderr-to break_separators-after_docked_wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-separators=after --break-collection-expressions=wrap --dock-collection-brackets %{dep:tests/break_separators.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-after_docked_wrap.ml.ref break_separators-after_docked_wrap.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-after_docked_wrap.ml.err break_separators-after_docked_wrap.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_separators-after_wrap.ml.stdout
-   (with-stderr-to break_separators-after_wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-separators=after --break-collection-expressions=wrap %{dep:tests/break_separators.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-after_wrap.ml.ref break_separators-after_wrap.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-after_wrap.ml.err break_separators-after_wrap.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_separators-before_docked.ml.stdout
    (with-stderr-to break_separators-before_docked.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-separators=before --dock-collection-brackets --max-iter=3 %{dep:tests/break_separators.ml})))))
@@ -688,42 +688,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/break_separators-before_docked.ml.err break_separators-before_docked.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_separators-before_docked_wrap.ml.stdout
-   (with-stderr-to break_separators-before_docked_wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-separators=before --break-collection-expressions=wrap --dock-collection-brackets %{dep:tests/break_separators.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-before_docked_wrap.ml.ref break_separators-before_docked_wrap.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-before_docked_wrap.ml.err break_separators-before_docked_wrap.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_separators-wrap.ml.stdout
-   (with-stderr-to break_separators-wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-separators=before --break-collection-expressions=wrap %{dep:tests/break_separators.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-wrap.ml.ref break_separators-wrap.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-wrap.ml.err break_separators-wrap.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -943,60 +907,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/coerce.ml.err coerce.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to collections-conventional.ml.stdout
-   (with-stderr-to collections-conventional.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=conventional --max-iters=3 %{dep:tests/collections.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections-conventional.ml.ref collections-conventional.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections-conventional.ml.err collections-conventional.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to collections-janestreet.ml.stdout
-   (with-stderr-to collections-janestreet.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/collections.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections-janestreet.ml.ref collections-janestreet.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections-janestreet.ml.err collections-janestreet.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to collections.ml.stdout
-   (with-stderr-to collections.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --max-iters=3 %{dep:tests/collections.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections.ml.ref collections.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/collections.ml.err collections.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

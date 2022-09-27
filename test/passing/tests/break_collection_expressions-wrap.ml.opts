@@ -1,2 +1,2 @@
---break-separators=after
 --break-collection-expressions=wrap
+--max-iters=3
