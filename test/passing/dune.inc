@@ -2455,6 +2455,27 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action
+  (with-stdout-to invalid_docstrings.mli.stdout
+   (with-stderr-to invalid_docstrings.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/invalid_docstrings.mli})))))
+
+(rule
+ (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action (diff tests/invalid_docstrings.mli.ref invalid_docstrings.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action (diff tests/invalid_docstrings.mli.err invalid_docstrings.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue114.ml.stdout
