@@ -1113,24 +1113,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to compact_lists_arrays.ml.stdout
-   (with-stderr-to compact_lists_arrays.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/compact_lists_arrays.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/compact_lists_arrays.ml compact_lists_arrays.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/compact_lists_arrays.ml.err compact_lists_arrays.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to crlf_to_crlf.ml.stdout
    (with-stderr-to crlf_to_crlf.ml.stderr
      (run %{bin:ocamlformat} --margin-check --line-endings=crlf %{dep:tests/crlf_to_crlf.ml})))))
