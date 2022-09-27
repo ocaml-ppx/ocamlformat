@@ -7,6 +7,7 @@
 - Add missing parentheses around immediate objects having attributes attached in 4.14 (#2144, @gpetiot)
 - Fix dropped comment attached to the identifier of an open-expression (#2155, @gpetiot)
 - Correctly format chunks of file in presence of `enable`/`disable` floating attributes (#2156, @gpetiot)
+- Remove abusive normalization in docstrings references (#2159, #2162, @EmileTrotignon)
 
 ### Changes
 
