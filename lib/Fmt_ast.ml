@@ -1671,11 +1671,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ hvbox 0 (fmt_str_loc c op)
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_infix
-      ( ({txt= id; loc= _} as op)
-      , l
-      , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) )
-    when (not (String_id.is_monadic_binding id))
-         && not c.conf.fmt_opts.break_infix_before_func ->
+      (op, l, ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r))
+    when not c.conf.fmt_opts.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
@@ -1713,11 +1710,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ body $ fmt_if parens_r ")" $ cmts_after ) )
         $ fmt_atrs )
   | Pexp_infix
-      ( ({txt= id; loc= _} as op)
+      ( op
       , l
       , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r) )
-    when (not (String_id.is_monadic_binding id))
-         && not c.conf.fmt_opts.break_infix_before_func ->
+    when not c.conf.fmt_opts.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
@@ -2068,11 +2064,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let align =
         match ctx0 with
         | Exp
-            { pexp_desc=
-                Pexp_infix
-                  ({txt= id; loc= _}, _, {pexp_desc= Pexp_function _; _})
-            ; _ }
-          when not (String_id.is_monadic_binding id) ->
+            {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
+          ->
             false
         | _ ->
             parens
@@ -2430,13 +2423,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , PStr
           [ ( { pstr_desc=
                   Pstr_eval
-                    ( ( { pexp_desc= Pexp_infix ({txt= id; loc= _}, _, _)
-                        ; pexp_attributes= []
-                        ; _ } as e1 )
+                    ( ( {pexp_desc= Pexp_infix _; pexp_attributes= []; _} as
+                      e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
-    when (not (String_id.is_monadic_binding id))
-         && List.is_empty pexp_attributes
+    when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
