@@ -94,13 +94,8 @@ module Exp = struct
       let ctx = Exp xexp.ast in
       match (assoc, xexp.ast) with
       | ( Left
-        , { pexp_desc=
-              ( Pexp_apply
-                  ( {pexp_desc= Pexp_ident {txt= Lident op; loc}; _}
-                  , [(_, e1); (_, e2)] )
-              | Pexp_infix ({txt= op; loc}, e1, e2) )
-          ; pexp_loc= src
-          ; _ } )
+        , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
+        )
         when Option.equal Prec.equal prec (prec_ast ctx) ->
           let op_args1 = infix_ None (sub_exp ~ctx e1) in
           let before =
@@ -112,13 +107,8 @@ module Exp = struct
           if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
           op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
       | ( Right
-        , { pexp_desc=
-              ( Pexp_apply
-                  ( {pexp_desc= Pexp_ident {txt= Lident op; loc}; _}
-                  , [(_, e1); (_, e2)] )
-              | Pexp_infix ({txt= op; loc}, e1, e2) )
-          ; pexp_loc= src
-          ; _ } )
+        , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
+        )
         when Option.equal Prec.equal prec (prec_ast ctx) ->
           let op_args2 = infix_ (Some {txt= op; loc}) (sub_exp ~ctx e2) in
           let before =
