@@ -145,3 +145,9 @@ let _ =
   else if bar then ( * )
   else if foobar then ( / )
   else ( - )
+
+let _ =
+  if x then fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+  else fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz

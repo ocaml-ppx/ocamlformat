@@ -2133,7 +2133,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ p.box_keyword_and_expr
                        ( p.branch_pro
                        $ p.wrap_parens
-                           ( fmt_expression c ~box:false
+                           ( fmt_expression c ?box:p.box_expr
                                ~parens:symbol_parens ?pro:p.expr_pro
                                ?eol:p.expr_eol xbch
                            $ p.break_end_branch ) ) )

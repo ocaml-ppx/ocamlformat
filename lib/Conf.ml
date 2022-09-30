@@ -40,7 +40,8 @@ type fmt_opts =
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]
-  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
+  ; if_then_else:
+      [`Compact | `Fit_or_vertical | `Vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
@@ -662,6 +663,8 @@ module Formatting = struct
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks branches if they do not \
            fit on a single line."
+      ; C.Value.make ~name:"vertical" `Vertical
+          "$(b,vertical) always vertically breaks branches."
       ; C.Value.make ~name:"keyword-first" `Keyword_first
           "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line."
