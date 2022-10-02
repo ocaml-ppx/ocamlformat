@@ -1,0 +1,18 @@
+FROM ocaml/opam:alpine as builder
+
+USER opam
+
+WORKDIR /src
+
+ADD --chown=opam:opam ocamlformat.opam .
+RUN opam pin add -yn ocamlformat . && \
+    opam install --deps-only ocamlformat
+
+ADD --chown=opam:opam . .
+RUN opam exec -- dune subst && \
+    opam exec -- dune build @install
+
+FROM alpine
+
+COPY --from=builder --chown=root:root /src/_build/default/bin/ocamlformat/main.exe /usr/bin/ocamlformat
+ENTRYPOINT [ "/usr/bin/ocamlformat" ]
