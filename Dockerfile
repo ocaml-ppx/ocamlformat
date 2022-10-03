@@ -1,4 +1,8 @@
-FROM ocaml/opam:alpine as builder
+ARG VARIANT=debian
+ARG VARIANT_VERSION=11
+ARG OCAML_VERION=4.14
+
+FROM ocaml/opam:${VARIANT}-${VARIANT_VERSION}-ocaml-${OCAML_VERION} as builder
 
 USER opam
 
@@ -12,7 +16,7 @@ ADD --chown=opam:opam . .
 RUN opam exec -- dune subst && \
     opam exec -- dune build @install
 
-FROM alpine
+FROM ${VARIANT}:${VARIANT_VERSION}
 
 COPY --from=builder --chown=root:root /src/_build/default/bin/ocamlformat/main.exe /usr/bin/ocamlformat
 ENTRYPOINT [ "/usr/bin/ocamlformat" ]
