@@ -195,8 +195,11 @@ let foo =
     foo
 
 let _ =
-  if fooo then ( +
-   ) else if bar then ( *
-   ) else if foobar then ( /
-   ) else ( -
-   )
+  if fooo then
+    ( + )
+  else if bar then
+    ( * )
+  else if foobar then
+    ( / )
+  else
+    ( - )

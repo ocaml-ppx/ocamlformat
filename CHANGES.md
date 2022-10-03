@@ -8,6 +8,7 @@
 - Fix dropped comment attached to the identifier of an open-expression (#2155, @gpetiot)
 - Correctly format chunks of file in presence of `enable`/`disable` floating attributes (#2156, @gpetiot)
 - Remove abusive normalization in docstrings references (#2159, #2162, @EmileTrotignon)
+- Fix parentheses around symbols in if-then-else branches (#<PR_NUMBER>, @gpetiot)
 
 ### Changes
 

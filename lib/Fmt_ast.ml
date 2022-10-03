@@ -2191,7 +2191,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.Exp.wrap c.conf ~parens
            (list_fl cnd_exps
               (fun ~first ~last (xcond, xbch, pexp_attributes) ->
-                let parens_bch = parenze_exp xbch in
+                let symbol_parens = Exp.is_symbol xbch.ast in
+                let parens_bch = parenze_exp xbch && not symbol_parens in
                 let p =
                   Params.get_if_then_else c.conf ~first ~last ~parens
                     ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
@@ -2203,17 +2204,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       (fmt_attributes c ~pre:Blank pexp_attributes)
                     ~fmt_cond:(fmt_expression c)
                 in
-                let wrap_parens =
-                  if Exp.is_symbol xbch.ast then wrap "( " " )"
-                  else p.wrap_parens
-                in
                 parens_prev_bch := parens_bch ;
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr
                       ( p.branch_pro
-                      $ wrap_parens
-                          ( fmt_expression c ~box:false ~parens:false
+                      $ p.wrap_parens
+                          ( fmt_expression c ~box:false ~parens:symbol_parens
                               ?pro:p.expr_pro ?eol:p.expr_eol xbch
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches ) ) )
