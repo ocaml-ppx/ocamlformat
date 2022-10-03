@@ -464,8 +464,15 @@ module E = struct
     | Pexp_variant (lab, eo) ->
         variant ~loc ~attrs lab (map_opt (sub.expr sub) eo)
     | Pexp_record (l, eo) ->
-        record ~loc ~attrs (List.map (map_tuple (map_loc sub) (sub.expr sub)) l)
-          (map_opt (sub.expr sub) eo)
+        let fields =
+          List.map
+            (map_tuple3
+               (map_loc sub)
+               (map_tuple (map_opt (sub.typ sub)) (map_opt (sub.typ sub)))
+               (map_opt (sub.expr sub)))
+            l
+        in
+        record ~loc ~attrs fields (map_opt (sub.expr sub) eo)
     | Pexp_field (e, lid) ->
         field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
     | Pexp_setfield (e1, lid, e2) ->
@@ -564,9 +571,15 @@ module P = struct
              p)
     | Ppat_variant (l, p) -> variant ~loc ~attrs l (map_opt (sub.pat sub) p)
     | Ppat_record (lpl, cf) ->
-        record ~loc ~attrs
-               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
-               (Flag.map_obj_closed sub cf)
+        let fields =
+          List.map
+            (map_tuple3
+               (map_loc sub)
+               (map_opt (sub.typ sub))
+               (map_opt (sub.pat sub)))
+            lpl
+        in
+        record ~loc ~attrs fields (Flag.map_obj_closed sub cf)
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
