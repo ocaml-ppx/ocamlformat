@@ -668,37 +668,19 @@ and fmt_payload c ctx pld =
       in
       fmt "?@ " $ fmt_pattern c (sub_pat ~ctx pat) $ opt exp fmt_when
 
-and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
-  let fmt_type ?(parens = false) t =
-    str ": " $ fmt_core_type c t $ fmt_if parens ")"
-  in
-  let fmt_rhs ?(parens = false) r =
-    fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
-  in
+and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
   let field_space =
     match c.conf.fmt_opts.field_space with
     | `Loose | `Tight_decl -> str " "
     | `Tight -> noop
   in
+  let t1 = Option.map typ1 ~f:(fun x -> fmt ": " $ fmt_core_type c x) in
+  let t2 = Option.map typ2 ~f:(fun x -> fmt ":> " $ fmt_core_type c x) in
+  let r = Option.map rhs ~f:(fun x -> fmt "=@;<1 2>" $ cbox 0 x) in
   let fmt_type_rhs =
-    match (typ, rhs) with
-    | Some t, Some r -> (
-      match constraint_loc with
-      | Some (`Constraint_lid loc) ->
-          field_space
-          $ Cmts.fmt_before c loc ~pro:(Fmt.break 1 0) ~epi:noop
-          $ fmt_type t $ fmt "@ " $ fmt_rhs r $ Cmts.fmt_after c loc
-      | Some (`Constraint_exp loc) ->
-          field_space $ fmt "=@;<1 2>"
-          $ hvbox 0
-            @@ Cmts.fmt c loc
-                 (str "(" $ cbox 0 r $ str " " $ fmt_type ~parens:true t)
-      | None ->
-          field_space $ fmt_rhs ~parens:true r $ str " "
-          $ fmt_type ~parens:true t )
-    | Some t, None -> field_space $ fmt_type t
-    | None, Some r -> field_space $ fmt_rhs r
-    | None, None -> noop
+    match List.filter_opt [t1; t2; r] with
+    | [] -> noop
+    | l -> field_space $ list l "@ " Fn.id
   in
   Cmts.fmt_before c lid1.loc
   $ cbox 0
@@ -1044,34 +1026,12 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         (Params.parens_if parens c.conf
            (str "`" $ str lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
   | Ppat_record (flds, closed_flag) ->
-      let fmt_field (lid1, pat) =
-        let {ppat_desc; ppat_loc; ppat_attributes; _} = pat in
-        let fmt_rhs ~ctx p = fmt_pattern c (sub_pat ~ctx p) in
-        hvbox 0
-          ( Cmts.fmt c ppat_loc
-          @@
-          match ppat_desc with
-          | Ppat_var {txt= txt'; _}
-            when Longident.field_alias_str ~field:lid1.txt txt'
-                 && List.is_empty ppat_attributes ->
-              fmt_record_field c lid1
-          | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc; _}, t)
-            when Longident.field_alias_str ~field:lid1.txt txt
-                 && List.is_empty ppat_attributes ->
-              Cmts.relocate c.cmts ~src:ppat_loc ~before:lid1.loc
-                ~after:lid1.loc ;
-              let typ = sub_typ ~ctx:(Pat pat) t in
-              Cmts.fmt c ppat_loc @@ fmt_record_field c ~typ lid1
-          | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
-              let typ = sub_typ ~ctx:(Pat pat) t
-              and rhs = fmt_rhs ~ctx:(Pat pat) p in
-              let constraint_loc =
-                if Source.type_constraint_is_first t p.ppat_loc then
-                  `Constraint_lid ppat_loc
-                else `Constraint_exp ppat_loc
-              in
-              fmt_record_field c ~typ ~rhs ~constraint_loc lid1
-          | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
+      let fmt_field (lid, typ1, pat) =
+        let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
+        let rhs =
+          Option.map pat ~f:(fun p -> fmt_pattern c (sub_pat ~ctx p))
+        in
+        hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
       let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
       let last_sep, fmt_underscore =
@@ -1079,9 +1039,15 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         | OClosed -> (true, noop)
         | OOpen loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
       in
+      let last_loc (lid, t, p) =
+        match (t, p) with
+        | _, Some p -> p.ppat_loc
+        | Some t, _ -> t.ptyp_loc
+        | _ -> lid.loc
+      in
       let fmt_fields =
-        fmt_elements_collection c ~last_sep p1 (snd >> Pat.location) ppat_loc
-          fmt_field flds
+        fmt_elements_collection c ~last_sep p1 last_loc ppat_loc fmt_field
+          flds
       in
       hvbox_if parens 0
         (Params.parens_if parens c.conf
@@ -2373,39 +2339,25 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
   | Pexp_record (flds, default) ->
-      let fmt_field (lid1, f) =
-        let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
-        hvbox 0
-          ( match f.pexp_desc with
-          | Pexp_ident {txt; loc= _}
-            when Longident.field_alias ~field:lid1.txt txt
-                 && List.is_empty f.pexp_attributes ->
-              Cmts.fmt c f.pexp_loc @@ fmt_record_field c lid1
-          | Pexp_constraint
-              ({pexp_desc= Pexp_ident {txt; loc= _}; pexp_loc; _}, t)
-            when Longident.field_alias ~field:lid1.txt txt
-                 && List.is_empty f.pexp_attributes ->
-              Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
-              @@ fmt_record_field c lid1 ~typ:(sub_typ ~ctx t)
-          | Pexp_constraint ({pexp_desc= Pexp_pack _; _}, _) ->
-              Cmts.fmt c f.pexp_loc
-              @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
-          | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
-              let constraint_loc =
-                if Source.type_constraint_is_first t e.pexp_loc then
-                  `Constraint_lid f.pexp_loc
-                else `Constraint_exp f.pexp_loc
-              in
-              fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
-                ~constraint_loc lid1
-          | _ ->
-              Cmts.fmt c f.pexp_loc
-              @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
+      let fmt_field (lid, (typ1, typ2), exp) =
+        let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
+        let typ2 = Option.map typ2 ~f:(sub_typ ~ctx) in
+        let rhs =
+          Option.map exp ~f:(fun e -> fmt_expression c (sub_exp ~ctx e))
+        in
+        hvbox 0 @@ fmt_record_field c ?typ1 ?typ2 ?rhs lid
       in
       let p1, p2 = Params.get_record_expr c.conf in
+      let last_loc (lid, (t1, t2), e) =
+        match (t1, t2, e) with
+        | _, _, Some e -> e.pexp_loc
+        | _, Some t2, _ -> t2.ptyp_loc
+        | Some t1, _, _ -> t1.ptyp_loc
+        | _ -> lid.loc
+      in
       let fmt_fields =
-        fmt_elements_collection c p1 (snd >> Exp.location) pexp_loc fmt_field
-          flds ~pro:(break 1 2)
+        fmt_elements_collection c p1 last_loc pexp_loc fmt_field flds
+          ~pro:(break 1 2)
       in
       hvbox_if has_attr 0
         ( p1.box

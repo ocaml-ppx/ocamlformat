@@ -1005,9 +1005,10 @@ and label_decl i ppf {pld_name; pld_mutable; pld_type; pld_loc; pld_attributes}=
   line (i+1) ppf "%a" fmt_string_loc pld_name;
   core_type (i+1) ppf pld_type
 
-and longident_x_pattern i ppf (li, p) =
+and longident_x_pattern i ppf (li, t, p) =
   line i ppf "%a\n" fmt_longident_loc li;
-  pattern (i+1) ppf p;
+  option (i+1) core_type ppf t;
+  option (i+1) pattern ppf p;
 
 and case i ppf {pc_lhs; pc_guard; pc_rhs} =
   line i ppf "<case>\n";
@@ -1059,9 +1060,11 @@ and string_x_expression i ppf (s, e) =
   line i ppf "<override> %a\n" fmt_string_loc s;
   expression (i+1) ppf e;
 
-and longident_x_expression i ppf (li, e) =
+and longident_x_expression i ppf (li, (t1, t2), e) =
   line i ppf "%a\n" fmt_longident_loc li;
-  expression (i+1) ppf e;
+  option (i+1) core_type ppf t1;
+  option (i+1) core_type ppf t2;
+  option (i+1) expression ppf e;
 
 and label_x_expression i ppf (l,e) =
   line i ppf "<arg>\n";

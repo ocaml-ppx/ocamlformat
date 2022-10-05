@@ -1008,6 +1008,8 @@ end = struct
       | Ppat_extension (_, PTyp t) -> assert (typ == t)
       | Ppat_unpack (_, Some (_, l)) ->
           assert (List.exists l ~f:(fun (_, t) -> typ == t))
+      | Ppat_record (l, _) ->
+          assert (List.exists l ~f:(fun (_, t, _) -> Option.exists t ~f))
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
@@ -1025,12 +1027,8 @@ end = struct
           assert (check_pcstr_fields pcstr_fields)
       | Pexp_record (en1, _) ->
           assert (
-            List.exists en1 ~f:(fun (_, e) ->
-                match e with
-                | {pexp_desc= Pexp_constraint (_, t); pexp_attributes= []; _}
-                  ->
-                    t == typ
-                | _ -> false ) )
+            List.exists en1 ~f:(fun (_, (t1, t2), _) ->
+                Option.exists t1 ~f || Option.exists t2 ~f ) )
       | _ -> assert false )
     | Vb _ -> assert false
     | Cl {pcl_desc; _} ->
@@ -1279,11 +1277,11 @@ end = struct
     | Td _ -> assert false
     | Pat ctx -> (
         let f pI = pI == pat in
-        let snd_f (_, pI) = pI == pat in
         match ctx.ppat_desc with
         | Ppat_array p1N | Ppat_list p1N | Ppat_tuple p1N | Ppat_cons p1N ->
             assert (List.exists p1N ~f)
-        | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
+        | Ppat_record (p1N, _) ->
+            assert (List.exists p1N ~f:(fun (_, _, x) -> Option.exists x ~f))
         | Ppat_or (p1, p2) -> assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
@@ -1441,14 +1439,7 @@ end = struct
         | Pexp_record (e1N, e0) ->
             assert (
               Option.exists e0 ~f
-              || List.exists e1N ~f:(fun (_, e) ->
-                     match e with
-                     | { pexp_desc= Pexp_constraint (e, _)
-                       ; pexp_attributes= []
-                       ; _ }
-                       when e == exp ->
-                         true
-                     | _ -> e == e ) )
+              || List.exists e1N ~f:(fun (_, _, e) -> Option.exists e ~f) )
         | Pexp_assert e
          |Pexp_beginend e
          |Pexp_constraint (e, _)
@@ -1537,7 +1528,9 @@ end = struct
         List.for_all e1N ~f:Exp.is_trivial && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
         Option.for_all e0 ~f:Exp.is_trivial
-        && List.for_all e1N ~f:(snd >> Exp.is_trivial)
+        && List.for_all e1N ~f:(fun (_, (ct1, ct2), eo) ->
+               Option.is_none ct1 && Option.is_none ct2
+               && Option.for_all eo ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="; _}; _}, _) ->
         false
@@ -2328,12 +2321,8 @@ end = struct
         when exp2 == exp ->
           false
       | Pexp_record (flds, _)
-        when List.exists flds ~f:(fun (_, e0) ->
-                 match e0 with
-                 | {pexp_desc= Pexp_constraint (e, _); pexp_attributes= []; _}
-                   when e == exp ->
-                     true
-                 | _ -> e0 == exp ) ->
+        when List.exists flds ~f:(fun (_, _, e0) ->
+                 Option.exists e0 ~f:(fun x -> x == exp) ) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))

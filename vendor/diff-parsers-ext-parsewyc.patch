@@ -178,10 +178,10 @@
  
  let make_loc (startpos, endpos) = {
 @@@@
- 
- let mkpat_opt_constraint ~loc p = function
-   | None -> p
-   | Some typ -> mkpat ~loc (Ppat_constraint(p, typ))
+   match t1, t2 with
+   | Some t, None -> mkexp ~loc (Pexp_constraint(e, t))
+   | _, Some t -> mkexp ~loc (Pexp_coerce(e, t1, t))
+   | None, None -> assert false
  
 -let syntax_error () =
 -  raise Syntaxerr.Escape_error
