@@ -22,17 +22,6 @@
 
 (rule
  (deps
-  (source_tree parser-standard/)
-  (source_tree parser-extended/)
-  (:diff-ocaml ../tools/diff-ocaml/diff_ocaml.exe))
- (mode promote)
- (action
-  (with-stdout-to
-   diff-parsers-std-ext.patch
-   (run %{diff-ocaml} diff parser parser-standard parser-extended))))
-
-(rule
- (deps
   (source_tree parser-extended/)
   (source_tree parser-recovery/lib/)
   (:diff-ocaml ../tools/diff-ocaml/diff_ocaml.exe))
