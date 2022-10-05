@@ -21,7 +21,7 @@ XDIRS=code/ocaml
 
 # Directories to ignore (given to find, compared literally)
 PRUNE_DIRS= \
-	code/ocamlformat/test \
+	code/ocamlformat/test code/ocamlformat/vendor/parser-recovery \
 	code/ocaml/experimental code/ocaml/testsuite/tests/parse-errors \
 	code/dune/test code/dune/vendor code/dune/otherlibs code/dune/example \
 	code/infer/sledge/vendor/llvm-dune
