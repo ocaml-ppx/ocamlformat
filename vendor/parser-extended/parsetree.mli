@@ -441,6 +441,8 @@ and expression_desc =
   | Pexp_beginend of expression  (** [begin E end] *)
   | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
   | Pexp_indexop_access of indexop_access
+  | Pexp_prefix of string loc * expression  (** [op E] *)
+  | Pexp_infix of string loc * expression * expression  (** [E1 op E2] *)
 
 and indexop_access =
   {

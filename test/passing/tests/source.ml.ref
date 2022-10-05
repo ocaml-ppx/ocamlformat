@@ -9075,7 +9075,7 @@ let f ~l:(l [@foo]) = l
 
 let test x y = (( + ) [@foo]) x y
 
-let test x = (( ~- ) [@foo])x
+let test x = (( ~- ) [@foo]) x
 
 let test contents = {contents= contents [@foo]}
 

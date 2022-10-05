@@ -239,7 +239,7 @@ module Exp = struct
     | Pexp_constant {pconst_desc= Pconst_string (_, _, None); _} -> true
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
-    | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial e1
+    | Pexp_prefix (_, e) -> is_trivial e
     | Pexp_apply
         ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
         is_trivial e1
@@ -250,7 +250,8 @@ module Exp = struct
 
   let rec exposed_left e =
     match e.pexp_desc with
-    | Pexp_apply (op, _) -> is_prefix op || exposed_left op
+    | Pexp_prefix _ -> true
+    | Pexp_apply (op, _) -> exposed_left op
     | Pexp_field (e, _) -> exposed_left e
     | _ -> false
 
@@ -1308,7 +1309,7 @@ end = struct
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
        |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _
-       |Pexp_indexop_access _ ->
+       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
@@ -1430,6 +1431,8 @@ end = struct
             assert (
               pia_lhs == exp || List.exists ~f idx
               || Option.value_map pia_rhs ~default:false ~f )
+        | Pexp_prefix (_, e) -> assert (f e)
+        | Pexp_infix (_, e1, e2) -> assert (f e1 || f e2)
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N | Pexp_cons e1N ->
@@ -1534,17 +1537,19 @@ end = struct
                Option.is_none ct1 && Option.is_none ct2
                && Option.for_all eo ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
-    | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="; _}; _}, _) ->
-        false
-    | Pexp_apply (e0, e1N) ->
-        Exp.is_trivial e0
-        && List.for_all e1N ~f:(snd >> Exp.is_trivial)
-        && fit_margin c (width xexp)
     | Pexp_indexop_access {pia_lhs; pia_kind; pia_rhs= None; _} ->
         Exp.is_trivial pia_lhs
         && ( match pia_kind with
            | Builtin idx -> Exp.is_trivial idx
            | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
+        && fit_margin c (width xexp)
+    | Pexp_prefix (_, e) -> Exp.is_trivial e && fit_margin c (width xexp)
+    | Pexp_infix ({txt= ":="; _}, _, _) -> false
+    | Pexp_infix (_, e1, e2) ->
+        Exp.is_trivial e1 && Exp.is_trivial e2 && fit_margin c (width xexp)
+    | Pexp_apply (e0, e1N) ->
+        Exp.is_trivial e0
+        && List.for_all e1N ~f:(snd >> Exp.is_trivial)
         && fit_margin c (width xexp)
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
@@ -1645,8 +1650,13 @@ end = struct
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}; _}, [_])
-        -> (
+      | Pexp_indexop_access {pia_lhs= lhs; pia_rhs= rhs; _} -> (
+          if lhs == exp then Some (Dot, Left)
+          else
+            match rhs with
+            | Some e when e == exp -> Some (LessMinus, Right)
+            | _ -> Some (Low, Left) )
+      | Pexp_prefix ({txt= i; loc}, _) -> (
         match i with
         | "~-" | "~-." | "~+" | "~+." ->
             if
@@ -1658,14 +1668,7 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_indexop_access {pia_lhs= lhs; pia_rhs= rhs; _} -> (
-          if lhs == exp then Some (Dot, Left)
-          else
-            match rhs with
-            | Some e when e == exp -> Some (LessMinus, Right)
-            | _ -> Some (Low, Left) )
-      | Pexp_apply
-          ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
+      | Pexp_infix ({txt= i; _}, e1, _) -> (
           let child = if e1 == exp then Left else Right in
           match (i.[0], i) with
           | _, ":=" -> Some (ColonEqual, child)
@@ -1681,7 +1684,7 @@ end = struct
               Some (InfixOp3, child)
           | _, ("lsl" | "lsr" | "asr") -> Some (InfixOp4, child)
           | '#', _ -> Some (HashOp, child)
-          | _ -> Some (Apply, if String_id.is_infix i then child else Non) )
+          | _ -> Some (Apply, child) )
       | Pexp_apply _ -> Some (Apply, Non)
       | Pexp_setfield (e0, _, _) when e0 == exp -> Some (Dot, Left)
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
@@ -1739,8 +1742,9 @@ end = struct
       | Pexp_constant
           {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _} -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc; _}; _}, [_])
-        -> (
+      | Pexp_indexop_access {pia_rhs= rhs; _} -> (
+        match rhs with Some _ -> Some LessMinus | _ -> Some Dot )
+      | Pexp_prefix ({txt= i; loc; _}, _) -> (
         match i with
         | "~-" | "~-." | "~+." | "~+" ->
             if
@@ -1751,10 +1755,7 @@ end = struct
         | "!=" -> Some Apply
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
-      | Pexp_indexop_access {pia_rhs= rhs; _} -> (
-        match rhs with Some _ -> Some LessMinus | _ -> Some Dot )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
-        -> (
+      | Pexp_infix ({txt= i; _}, _, _) -> (
         match (i.[0], i) with
         | _, ":=" -> Some ColonEqual
         | _, ("or" | "||") -> Some BarBar
@@ -1974,21 +1975,12 @@ end = struct
   (** Check if an exp is a prefix op that is not fully applied *)
   let is_displaced_prefix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)]); _}
-      , Pexp_ident {txt= i; _} )
-      when e0 == exp && Longident.is_prefix i ->
-        false
     | _, Pexp_ident {txt= i; _} when Longident.is_prefix i -> true
     | _ -> false
 
   (** Check if an exp is an infix op that is not fully applied *)
   let is_displaced_infix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)]); _}
-      , Pexp_ident {txt= i; _} )
-      when e0 == exp && Longident.is_infix i
-           && List.is_empty exp.pexp_attributes ->
-        false
     | _, Pexp_ident {txt= i; _} when Longident.is_infix i ->
         List.is_empty exp.pexp_attributes
     | _ -> false
@@ -2015,6 +2007,8 @@ end = struct
          |Pexp_construct (_, Some e)
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, Some e)
+         |Pexp_prefix (_, e)
+         |Pexp_infix (_, _, e)
          |Pexp_lazy e
          |Pexp_newtype (_, e)
          |Pexp_open (_, e)
@@ -2088,6 +2082,8 @@ end = struct
       | Pexp_assert e
        |Pexp_construct (_, Some e)
        |Pexp_ifthenelse (_, Some e)
+       |Pexp_prefix (_, e)
+       |Pexp_infix (_, _, e)
        |Pexp_lazy e
        |Pexp_newtype (_, e)
        |Pexp_open (_, e)
@@ -2142,9 +2138,8 @@ end = struct
     let parenze () =
       let is_right_infix_arg ctx_desc exp =
         match ctx_desc with
-        | Pexp_apply
-            ({pexp_desc= Pexp_ident {txt= i; _}; _}, _ :: (_, e2) :: _)
-          when e2 == exp && Longident.is_infix i
+        | Pexp_infix (_, _, e2)
+          when e2 == exp
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       Prec.compare p Apply < 0 ) ->
             true
@@ -2193,13 +2188,7 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
-    | ( _
-      , { pexp_desc=
-            Pexp_apply ({pexp_desc= Pexp_ident {txt= id; _}; _}, _ :: _)
-        ; pexp_attributes= _ :: _
-        ; _ } )
-      when Longident.is_infix id ->
-        true
+    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
     | ( Str
           { pstr_desc=
               Pstr_value
@@ -2229,23 +2218,20 @@ end = struct
     | Exp {pexp_desc= Pexp_ifthenelse (_, Some e); _}, {pexp_desc; _}
       when !parens_ite && e == exp && ifthenelse pexp_desc ->
         true
-    | ( Exp
-          {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _); _}
+    | ( Exp {pexp_desc= Pexp_infix (_, _, e1); _}
       , { pexp_desc=
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, _)
         ; _ } )
-      when Exp.is_infix op && not (e1 == exp) ->
+      when not (e1 == exp) ->
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _); _}
       , {pexp_desc= Pexp_construct _ | Pexp_cons _ | Pexp_variant _; _} )
       when e == exp ->
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _ :: _); _}
-      , {pexp_desc= Pexp_apply (op1, args); pexp_attributes; _} )
-      when e == exp && Exp.is_prefix op1 -> (
-      match (args, pexp_attributes) with
-      | [(Nolabel, _)], [] -> false
-      | _ -> true )
+      , {pexp_desc= Pexp_prefix _; pexp_attributes= _ :: _; _} )
+      when e == exp ->
+        true
     | ( Exp {pexp_desc= Pexp_indexop_access {pia_lhs= lhs; _}; _}
       , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )
       when lhs == exp ->
@@ -2261,13 +2247,13 @@ end = struct
       , _ )
       when idx == exp && not (Exp.is_sequence idx) ->
         false
-    | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
-      , {pexp_desc= Pexp_apply (_, [(_, x); _]); _} )
-      when e == exp && Exp.is_prefix op1 && Exp.exposed_left x ->
-        true
-    | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
-      , {pexp_desc= Pexp_indexop_access {pia_lhs= lhs; _}; _} )
-      when e == exp && Exp.is_prefix op1 && Exp.exposed_left lhs ->
+    | ( Exp {pexp_desc= Pexp_prefix (_, e); _}
+      , { pexp_desc=
+            ( Pexp_indexop_access {pia_lhs= x; _}
+            | Pexp_infix (_, x, _)
+            | Pexp_apply (_, [(_, x); _]) )
+        ; _ } )
+      when e == exp && Exp.exposed_left x ->
         true
     (* Integers without suffixes must be parenthesised on the lhs of an
        indexing operator *)
@@ -2331,8 +2317,8 @@ end = struct
                  Option.exists e0 ~f:(fun x -> x == exp) ) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
-      | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))
-        when e0 == exp && Exp.is_prefix ident ->
+      | Pexp_record (_, Some ({pexp_desc= Pexp_prefix _; _} as e0))
+        when e0 == exp ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
       | Pexp_record
@@ -2372,6 +2358,7 @@ end = struct
   let parenze_nested_exp {ctx; ast= exp} =
     let infix_prec ast =
       match ast with
+      | Exp {pexp_desc= Pexp_infix _; _} -> prec_ast ast
       | Exp {pexp_desc= Pexp_apply (e, _); _} when Exp.is_infix e ->
           prec_ast ast
       | Exp {pexp_desc= Pexp_cons _; _} -> prec_ast ast

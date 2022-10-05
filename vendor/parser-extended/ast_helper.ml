@@ -229,6 +229,8 @@ module Exp = struct
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
+  let prefix ?loc ?attrs a b = mk ?loc ?attrs (Pexp_prefix (a, b))
+  let infix ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_infix (a, b, c))
 
   let case lhs ?guard rhs =
     {

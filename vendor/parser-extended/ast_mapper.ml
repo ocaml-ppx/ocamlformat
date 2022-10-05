@@ -544,6 +544,10 @@ module E = struct
     | Pexp_hole -> hole ~loc ~attrs ()
     | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
     | Pexp_cons l -> cons ~loc ~attrs (List.map (sub.expr sub) l)
+    | Pexp_prefix (op, e) ->
+        prefix ~loc ~attrs (map_loc sub op) (sub.expr sub e)
+    | Pexp_infix (op, e1, e2) ->
+        infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
 
   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
     let open Exp in

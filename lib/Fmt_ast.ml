@@ -1604,21 +1604,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   $ fmt "@ " $ fmt_expression c xbody ) )
            $ fmt "@ ;@ "
            $ list grps " ;@;<1000 0>" fmt_grp ) )
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= Lident "|>"; loc}
-        ; pexp_attributes= []
-        ; _ }
-      , [ (Nolabel, e0)
-        ; ( Nolabel
-          , { pexp_desc=
-                Pexp_extension
-                  ( name
-                  , PStr
-                      [ ( { pstr_desc=
-                              Pstr_eval
-                                (({pexp_desc= Pexp_fun _; _} as retn), [])
-                          ; pstr_loc= _ } as pld ) ] )
-            ; _ } ) ] ) ->
+  | Pexp_infix
+      ( {txt= "|>"; loc}
+      , e0
+      , { pexp_desc=
+            Pexp_extension
+              ( name
+              , PStr
+                  [ ( { pstr_desc=
+                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as retn), [])
+                      ; pstr_loc= _ } as pld ) ] )
+        ; _ } ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
       hvbox 0
@@ -1635,14 +1631,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
                       )
                   $ fmt "@ " $ fmt_expression c xbody ) ) ) )
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
-        ; pexp_attributes= []
-        ; pexp_loc
-        ; _ }
-      , [(Nolabel, r); (Nolabel, v)] )
+  | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       let cmts_before =
         let adj =
           fmt_if Poly.(c.conf.fmt_opts.assignment_operator = `End_line) "@,"
@@ -1663,14 +1653,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  $ str " :=" )
                $ fmt "@;<1 2>" $ cmts_after
                $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
-  | Pexp_apply
-      ( { pexp_desc=
-            Pexp_ident
-              {txt= Lident (("~-" | "~-." | "~+" | "~+.") as op); loc}
-        ; pexp_loc
-        ; pexp_attributes= []
-        ; _ }
-      , [(Nolabel, e1)] ) ->
+  | Pexp_prefix ({txt= ("~-" | "~-." | "~+" | "~+.") as op; loc}, e1) ->
       let op =
         if Location.width loc = String.length op - 1 then
           String.sub op ~pos:1 ~len:(String.length op - 1)
@@ -1681,30 +1664,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( Cmts.fmt c pexp_loc
           @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1))
         $ fmt_atrs )
-  | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= id; loc}
-          ; pexp_attributes= []
-          ; pexp_loc
-          ; _ } as op )
-      , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_ident _; _} as r))] )
-    when Longident.is_hash_getter id ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+  | Pexp_infix (({txt= id; _} as op), l, ({pexp_desc= Pexp_ident _; _} as r))
+    when String_id.is_hash_getter id ->
       Params.parens_if parens c.conf
         ( fmt_expression c (sub_exp ~ctx l)
-        $ fmt_expression c (sub_exp ~ctx op)
+        $ hvbox 0 (fmt_str_loc c op)
         $ fmt_expression c (sub_exp ~ctx r) )
-  | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-          ; pexp_attributes= []
-          ; pexp_loc= _
-          ; _ } as op )
-      , [ (Nolabel, l)
-        ; ( Nolabel
-          , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
-      )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
-         && not c.conf.fmt_opts.break_infix_before_func ->
+  | Pexp_infix
+      (op, l, ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r))
+    when not c.conf.fmt_opts.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
@@ -1716,13 +1684,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let pre_body, body = fmt_body c ?ext xbody in
       let followed_by_infix_op =
         match xbody.ast.pexp_desc with
-        | Pexp_apply
-            ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-              ; pexp_attributes= []
-              ; _ }
-            , [ (Nolabel, _)
-              ; (Nolabel, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ] )
-          when Longident.is_infix id ->
+        | Pexp_infix (_, _, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ->
             true
         | _ -> false
       in
@@ -1735,9 +1697,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@;"
                        $ hovbox 2
                            ( hvbox 0
-                               ( fmt_expression c (sub_exp ~ctx op)
-                               $ fmt "@ " $ cmts_before $ fmt_if parens_r "("
-                               $ str "fun " )
+                               ( fmt_str_loc c op $ fmt "@ " $ cmts_before
+                               $ fmt_if parens_r "(" $ str "fun " )
                            $ fmt_attributes c pexp_attributes ~suf:" "
                            $ hvbox_if
                                (not c.conf.fmt_opts.wrap_fun_args)
@@ -1748,16 +1709,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
                $ body $ fmt_if parens_r ")" $ cmts_after ) )
         $ fmt_atrs )
-  | Pexp_apply
-      ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}
-        as op )
-      , [ (Nolabel, l)
-        ; ( Nolabel
-          , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r)
-          ) ] )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
-         && not c.conf.fmt_opts.break_infix_before_func ->
+  | Pexp_infix
+      ( op
+      , l
+      , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r) )
+    when not c.conf.fmt_opts.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
@@ -1770,20 +1726,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@;"
                $ hovbox 2
                    ( hvbox 0
-                       ( fmt_expression c (sub_exp ~ctx op)
-                       $ fmt "@ " $ cmts_before $ fmt_if parens_r "( "
-                       $ str "function"
+                       ( fmt_str_loc c op $ fmt "@ " $ cmts_before
+                       $ fmt_if parens_r "( " $ str "function"
                        $ fmt_extension_suffix c ext )
                    $ fmt_attributes c pexp_attributes ) )
            $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )"
            $ cmts_after ) )
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-        ; pexp_attributes= []
-        ; pexp_loc= _
-        ; _ }
-      , [(Nolabel, _); (Nolabel, _)] )
-    when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
+  | Pexp_infix _ ->
       let op_args = Sugar.Exp.infix c.cmts (prec_ast (Exp exp)) xexp in
       let inner_wrap = parens || has_attr in
       let outer_wrap =
@@ -1828,13 +1777,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            (hvbox indent_wrap
               ( fmt_infix_op_args ~parens:inner_wrap c xexp infix_op_args
               $ fmt_atrs ) ) )
-  | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
-      let has_cmts = Cmts.has_before c.cmts e1.pexp_loc in
+  | Pexp_prefix (op, e) ->
+      let has_cmts = Cmts.has_before c.cmts e.pexp_loc in
       hvbox 2
         (Params.Exp.wrap c.conf ~parens
-           ( fmt_expression c ~box (sub_exp ~ctx e0)
-           $ fmt_if has_cmts "@,"
-           $ fmt_expression c ~box (sub_exp ~ctx e1)
+           ( fmt_str_loc c op $ fmt_if has_cmts "@,"
+           $ fmt_expression c ~box (sub_exp ~ctx e)
            $ fmt_atrs ) )
   | Pexp_apply (e0, e1N1) -> (
       let wrap = if c.conf.fmt_opts.wrap_fun_args then Fn.id else hvbox 2 in
@@ -2116,15 +2064,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let align =
         match ctx0 with
         | Exp
-            { pexp_desc=
-                Pexp_apply
-                  ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , [(Nolabel, _); (Nolabel, {pexp_desc= Pexp_function _; _})]
-                  )
-            ; _ }
-          when Longident.is_infix id && not (Longident.is_monadic_binding id)
+            {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
           ->
             false
         | _ ->
@@ -2483,20 +2423,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , PStr
           [ ( { pstr_desc=
                   Pstr_eval
-                    ( ( { pexp_desc=
-                            Pexp_apply
-                              ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-                                ; pexp_attributes= []
-                                ; pexp_loc= _
-                                ; _ }
-                              , [(Nolabel, _); (Nolabel, _)] )
-                        ; pexp_attributes= []
-                        ; _ } as e1 )
+                    ( ( {pexp_desc= Pexp_infix _; pexp_attributes= []; _} as
+                      e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
-    when Longident.is_infix id
-         && (not (Longident.is_monadic_binding id))
-         && List.is_empty pexp_attributes
+    when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)

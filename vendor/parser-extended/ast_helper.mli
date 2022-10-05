@@ -207,6 +207,9 @@ module Exp:
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
     val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
     val cons: ?loc:loc -> ?attrs:attrs -> expression list -> expression
+    val prefix: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
+    val infix:
+      ?loc:loc -> ?attrs:attrs -> str -> expression -> expression -> expression
   end
 
 (** Value declarations *)

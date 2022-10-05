@@ -129,8 +129,8 @@ let reloc_typ ~loc x =
 let mkexpvar ~loc (name : string) =
   mkexp ~loc (Pexp_ident(mkrhs (Lident name) loc))
 
-let mkoperator =
-  mkexpvar
+let mkoperator ~loc (name : string) =
+  mkrhs name loc
 
 let mkpatvar ~loc name =
   mkpat ~loc (Ppat_var (mkrhs name loc))
@@ -159,7 +159,7 @@ let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
 let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 
 let mkinfix arg1 op arg2 =
-  Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2])
+  Pexp_infix(op, arg1, arg2)
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -173,7 +173,7 @@ let mkuminus ~oploc name arg =
   | ("-" | "-."), Pexp_constant({pconst_desc= Pconst_float (f, m); _} as c) ->
       Pexp_constant({c with pconst_desc= Pconst_float(neg_string f, m)})
   | _ ->
-      Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
+      Pexp_prefix(mkoperator ~loc:oploc ("~" ^ name), arg)
 
 let mkuplus ~oploc name arg =
   let desc = arg.pexp_desc in
@@ -181,7 +181,7 @@ let mkuplus ~oploc name arg =
   | "+", Pexp_constant({pconst_desc= Pconst_integer _; _})
   | ("+" | "+."), Pexp_constant({pconst_desc= Pconst_float _; _}) -> desc
   | _ ->
-      Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
+      Pexp_prefix(mkoperator ~loc:oploc ("~" ^ name), arg)
 
 (* TODO define an abstraction boundary between locations-as-pairs
    and locations-as-Location.t; it should be clear when we move from
@@ -2210,9 +2210,9 @@ simple_expr:
   | name_tag %prec prec_constant_constructor
       { Pexp_variant($1, None) }
   | op(PREFIXOP) simple_expr
-      { Pexp_apply($1, [Nolabel,$2]) }
+      { Pexp_prefix($1, $2) }
   | op(BANG {"!"}) simple_expr
-      { Pexp_apply($1, [Nolabel,$2]) }
+      { Pexp_prefix($1, $2) }
   | LBRACELESS object_expr_content GREATERRBRACE
       { Pexp_override $2 }
   | LBRACELESS GREATERRBRACE

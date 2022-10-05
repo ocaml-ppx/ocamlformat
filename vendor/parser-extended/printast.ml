@@ -490,6 +490,13 @@ and expression i ppf x =
       end;
       paren_kind i ppf pia_paren;
       option i expression ppf pia_rhs
+  | Pexp_prefix (op, e) ->
+      line i ppf "Pexp_prefix %a\n" fmt_string_loc op;
+      expression i ppf e
+  | Pexp_infix (op, e1, e2) ->
+      line i ppf "Pexp_infix %a\n" fmt_string_loc op;
+      expression i ppf e1;
+      expression i ppf e2
 
 and if_branch i ppf { if_cond; if_body } =
   line i ppf "if_branch\n";
