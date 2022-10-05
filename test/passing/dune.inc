@@ -2840,7 +2840,7 @@
  (action
   (with-stdout-to ite-vertical.ml.stdout
    (with-stderr-to ite-vertical.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --if-then-else=vertical --max-iters=3 %{dep:tests/ite.ml})))))
+     (run %{bin:ocamlformat} --margin-check --if-then-else=vertical %{dep:tests/ite.ml})))))
 
 (rule
  (alias runtest)
