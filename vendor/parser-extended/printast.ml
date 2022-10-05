@@ -386,10 +386,9 @@ and expression i ppf x =
   | Pexp_list (l) ->
       line i ppf "Pexp_list\n";
       list i expression ppf l;
-  | Pexp_ifthenelse (e1, e2, eo) ->
+  | Pexp_ifthenelse (eN, eo) ->
       line i ppf "Pexp_ifthenelse\n";
-      expression i ppf e1;
-      expression i ppf e2;
+      list i if_branch ppf eN;
       option i expression ppf eo;
   | Pexp_sequence (e1, e2) ->
       line i ppf "Pexp_sequence\n";
@@ -491,6 +490,11 @@ and expression i ppf x =
       end;
       paren_kind i ppf pia_paren;
       option i expression ppf pia_rhs
+
+and if_branch i ppf { if_cond; if_body } =
+  line i ppf "if_branch\n";
+  expression i ppf if_cond;
+  expression i ppf if_body
 
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc

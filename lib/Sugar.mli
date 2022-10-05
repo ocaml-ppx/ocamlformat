@@ -53,20 +53,6 @@ module Exp : sig
       precedence of the infix operator. *)
 end
 
-val ite :
-     Cmts.t
-  -> expression Ast.xt
-  -> (expression Ast.xt option * expression Ast.xt * attributes) list
-(** [ite cmts exp] returns a list of conditional expressions from cascading
-    if-then-else expressions, e.g.:
-
-    {[
-      if c1 then e1 else if c2 then e2 else e3
-    ]}
-
-    will return the following list:
-    [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
-
 val sequence :
   Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
 (** [sequence cmts exp] returns the list of expressions (with the optional

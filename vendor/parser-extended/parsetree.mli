@@ -383,7 +383,7 @@ and expression_desc =
       (** [E1.l <- E2] *)
   | Pexp_array of expression list  (** [[| E1; ...; En |]] *)
   | Pexp_list of expression list  (** [[ E1; ...; En ]] *)
-  | Pexp_ifthenelse of expression * expression * expression option
+  | Pexp_ifthenelse of if_branch list * expression option
       (** [if E1 then E2 else E3] *)
   | Pexp_sequence of expression * expression  (** [E1; E2] *)
   | Pexp_while of expression * expression  (** [while E1 do E2 done] *)
@@ -460,6 +460,13 @@ and indexop_access_kind =
           [bar.{i1; i2; ..} <- e] *)
   | Dotop of Longident.t loc option * string * expression list
       (** [foo.Path.%{i1, i2, ..} <- e] *)
+
+and if_branch =
+  {
+    if_cond: expression;
+    if_body: expression;
+    if_attrs: attributes;  (** [... [\@id1] [\@id2]] *)
+  }
 
 and case =
     {

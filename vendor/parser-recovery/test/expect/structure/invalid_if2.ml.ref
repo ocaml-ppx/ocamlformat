@@ -7,10 +7,13 @@
           Ppat_var "x" ([1,0+4]..[1,0+5])
         expression ([1,0+8]..[1,0+24])
           Pexp_ifthenelse
-          expression ([1,0+11]..[1,0+12])
-            Pexp_ident "k" ([1,0+11]..[1,0+12])
-          expression ([1,0+18]..[1,0+19])
-            Pexp_ident "x" ([1,0+18]..[1,0+19])
+          [
+            if_branch
+            expression ([1,0+11]..[1,0+12])
+              Pexp_ident "k" ([1,0+11]..[1,0+12])
+            expression ([1,0+18]..[1,0+19])
+              Pexp_ident "x" ([1,0+18]..[1,0+19])
+          ]
           Some
             expression (_none_[0,0+-1]..[0,0+-1]) ghost
               Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost

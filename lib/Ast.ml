@@ -258,7 +258,7 @@ module Exp = struct
       [cls]. *)
   let mem_cls cls ast =
     match (ast, cls) with
-    | {pexp_desc= Pexp_ifthenelse (_, _, None); _}, (Non_apply | ThenElse)
+    | {pexp_desc= Pexp_ifthenelse (_, None); _}, (Non_apply | ThenElse)
      |{pexp_desc= Pexp_ifthenelse _; _}, Non_apply
      |( {pexp_desc= Pexp_sequence _; _}
       , (Non_apply | Sequence | Then | ThenElse) )
@@ -1458,8 +1458,10 @@ end = struct
         | Pexp_sequence (e1, e2) -> assert (e1 == exp || e2 == exp)
         | Pexp_setfield (e1, _, e2) | Pexp_while (e1, e2) ->
             assert (e1 == exp || e2 == exp)
-        | Pexp_ifthenelse (e1, e2, e3) ->
-            assert (e1 == exp || e2 == exp || Option.exists e3 ~f)
+        | Pexp_ifthenelse (eN, e) ->
+            assert (
+              List.exists eN ~f:(fun x -> f x.if_cond || f x.if_body)
+              || Option.exists e ~f )
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
@@ -2012,8 +2014,7 @@ end = struct
         | Pexp_assert e
          |Pexp_construct (_, Some e)
          |Pexp_fun (_, _, _, e)
-         |Pexp_ifthenelse (_, e, None)
-         |Pexp_ifthenelse (_, _, Some e)
+         |Pexp_ifthenelse (_, Some e)
          |Pexp_lazy e
          |Pexp_newtype (_, e)
          |Pexp_open (_, e)
@@ -2024,6 +2025,7 @@ end = struct
          |Pexp_variant (_, Some e) ->
             continue e
         | Pexp_cons l -> continue (List.last_exn l)
+        | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
         | Pexp_extension
             ( ext
             , PStr
@@ -2085,8 +2087,7 @@ end = struct
       match exp.pexp_desc with
       | Pexp_assert e
        |Pexp_construct (_, Some e)
-       |Pexp_ifthenelse (_, e, None)
-       |Pexp_ifthenelse (_, _, Some e)
+       |Pexp_ifthenelse (_, Some e)
        |Pexp_lazy e
        |Pexp_newtype (_, e)
        |Pexp_open (_, e)
@@ -2103,6 +2104,7 @@ end = struct
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, e) ->
           continue e
+      | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc -> (
         match e.pexp_desc with
@@ -2219,10 +2221,12 @@ end = struct
         false
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
     | Cl {pcl_desc= Pcl_apply _; _}, _ -> parenze ()
-    | Exp {pexp_desc= Pexp_ifthenelse (_, e, _); _}, {pexp_desc; _}
-      when !parens_ite && e == exp && ifthenelse pexp_desc ->
+    | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}, {pexp_desc; _}
+      when !parens_ite
+           && List.exists eN ~f:(fun x -> x.if_body == exp)
+           && ifthenelse pexp_desc ->
         true
-    | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some e); _}, {pexp_desc; _}
+    | Exp {pexp_desc= Pexp_ifthenelse (_, Some e); _}, {pexp_desc; _}
       when !parens_ite && e == exp && ifthenelse pexp_desc ->
         true
     | ( Exp
@@ -2298,13 +2302,15 @@ end = struct
                 mark_parenzed_inner_nested_match pc_rhs ) ;
           List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
           && exposed_right_exp Match exp
-      | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
-      | Pexp_ifthenelse (_, thn, None) when thn == exp ->
+      | Pexp_ifthenelse (eN, _)
+        when List.exists eN ~f:(fun x -> x.if_cond == exp) ->
+          false
+      | Pexp_ifthenelse (eN, None) when (List.last_exn eN).if_body == exp ->
           exposed_right_exp Then exp
-      | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
+      | Pexp_ifthenelse (eN, _)
+        when List.exists eN ~f:(fun x -> x.if_body == exp) ->
           exposed_right_exp ThenElse exp
-      | Pexp_ifthenelse (_, _, Some els) when els == exp ->
-          Exp.is_sequence exp
+      | Pexp_ifthenelse (_, Some els) when els == exp -> Exp.is_sequence exp
       | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _) when exp2 == exp
         ->
           false

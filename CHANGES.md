@@ -21,6 +21,7 @@
   + Remove unnecessary parentheses around indices
 - Mute warnings for odoc code blocks whose syntax is not specified (#2151, @gpetiot)
 - Improve formatting of odoc links (#2152, @gpetiot)
+- Preserve sugared extension node attached to an `if` carrying attributes (#2167, @trefis, @gpetiot)
 
 ### New features
 

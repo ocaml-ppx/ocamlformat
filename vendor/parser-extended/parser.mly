@@ -2186,10 +2186,19 @@ expr:
       { Pexp_try($3, $5), $2 }
   | TRY ext_attributes seq_expr WITH error
       { syntax_error() }
-  | IF ext_attributes seq_expr THEN expr ELSE expr
-      { Pexp_ifthenelse($3, $5, Some $7), $2 }
+  | IF ext_attributes seq_expr THEN expr ELSE else_=expr
+      { let ext, attrs = $2 in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        let ite =
+          match else_.pexp_desc with
+          | Pexp_ifthenelse(brs, else_) -> Pexp_ifthenelse(br :: brs, else_)
+          | _ -> Pexp_ifthenelse([br], Some else_)
+        in
+        ite, (ext, []) }
   | IF ext_attributes seq_expr THEN expr
-      { Pexp_ifthenelse($3, $5, None), $2 }
+      { let ext, attrs = $2 in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        Pexp_ifthenelse ([br], None), (ext, []) }
   | WHILE ext_attributes seq_expr DO seq_expr DONE
       { Pexp_while($3, $5), $2 }
   | FOR ext_attributes pattern EQUAL seq_expr direction_flag seq_expr DO

@@ -162,7 +162,7 @@ module Exp:
                   -> expression
     val array: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val list: ?loc:loc -> ?attrs:attrs -> expression list -> expression
-    val ifthenelse: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val ifthenelse: ?loc:loc -> ?attrs:attrs -> if_branch list
                     -> expression option -> expression
     val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
                   -> expression
