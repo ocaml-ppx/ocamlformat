@@ -101,6 +101,7 @@ type if_then_else =
   ; box_keyword_and_expr: Fmt.t -> Fmt.t
   ; branch_pro: Fmt.t
   ; wrap_parens: Fmt.t -> Fmt.t
+  ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
   ; break_end_branch: Fmt.t

@@ -321,6 +321,7 @@ type if_then_else =
   ; box_keyword_and_expr: Fmt.t -> Fmt.t
   ; branch_pro: Fmt.t
   ; wrap_parens: Fmt.t -> Fmt.t
+  ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
   ; break_end_branch: Fmt.t
@@ -385,6 +386,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
               (get_parens_breaks
                  ~opn_hint:((1, 0), (0, 0))
                  ~cls_hint:((1, 0), (1000, -2)) )
+      ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
@@ -395,6 +397,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
       ; wrap_parens= wrap_parens ~wrap_breaks:(wrap_k (break 1000 2) noop)
+      ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch=
@@ -415,6 +418,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
               (get_parens_breaks
                  ~opn_hint:((1, 2), (0, 2))
                  ~cls_hint:((1, 0), (1000, 0)) )
+      ; box_expr= Some false
       ; expr_pro=
           Some
             (fmt_if_k
@@ -426,6 +430,26 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
           fmt
             ( match imd with
             | `Closing_on_separate_line when beginend || parens_bch -> " "
+            | _ -> "@ " ) }
+  | `Vertical ->
+      { box_branch= Fn.id
+      ; cond= cond ()
+      ; box_keyword_and_expr= Fn.id
+      ; branch_pro
+      ; wrap_parens=
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 2), (0, 2))
+                 ~cls_hint:((1, 0), (1000, 0)) )
+      ; box_expr= None
+      ; expr_pro= Some (break_unless_newline 1000 2)
+      ; expr_eol= None
+      ; break_end_branch= noop
+      ; space_between_branches=
+          fmt
+            ( match imd with
+            | `Closing_on_separate_line when parens_bch -> " "
             | _ -> "@ " ) }
   | `Keyword_first ->
       { box_branch= Fn.id
@@ -448,6 +472,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
               (get_parens_breaks
                  ~opn_hint:((1, 0), (0, 0))
                  ~cls_hint:((1, 0), (1000, -2)) )
+      ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop

@@ -17,12 +17,12 @@ File "tests/option.ml", line 28, characters 3-14:
 28 | [@@ocamlformat "if-then-else=bad"]
         ^^^^^^^^^^^
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
-For option "if-then-else": invalid value 'bad', expected one of 'compact', 'fit-or-vertical', 'keyword-first' or 'k-r'
+For option "if-then-else": invalid value 'bad', expected one of 'compact', 'fit-or-vertical', 'vertical', 'keyword-first' or 'k-r'
 File "tests/option.ml", line 39, characters 14-25:
 39 |            [@@ocamlformat "if-then-else=bad"]
                    ^^^^^^^^^^^
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
-For option "if-then-else": invalid value 'bad', expected one of 'compact', 'fit-or-vertical', 'keyword-first' or 'k-r'
+For option "if-then-else": invalid value 'bad', expected one of 'compact', 'fit-or-vertical', 'vertical', 'keyword-first' or 'k-r'
 Warning: tests/option.ml:36 exceeds the margin
 Warning: tests/option.ml:44 exceeds the margin
 Warning: tests/option.ml:51 exceeds the margin

@@ -2838,6 +2838,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to ite-vertical.ml.stdout
+   (with-stderr-to ite-vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --if-then-else=vertical %{dep:tests/ite.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ite-vertical.ml.ref ite-vertical.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ite-vertical.ml.err ite-vertical.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to ite.ml.stdout
    (with-stderr-to ite.ml.stderr
      (run %{bin:ocamlformat} --margin-check --if-then-else=compact %{dep:tests/ite.ml})))))
