@@ -71,7 +71,9 @@ let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     | `Nested -> break nspaces 0 $ str "| "
     | _ -> (
         let nspaces =
-          match c.fmt_opts.break_cases with `All -> 1000 | _ -> nspaces
+          match c.fmt_opts.break_cases with
+          | `All | `Vertical -> 1000
+          | _ -> nspaces
         in
         match c.fmt_opts.indicate_nested_or_patterns with
         | `Space ->
@@ -153,6 +155,16 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
+      ; close_paren_branch }
+  | `Vertical ->
+      { leading_space= break_unless_newline 1000 0
+      ; bar= str "| "
+      ; box_all= hvbox indent
+      ; box_pattern_arrow= hovbox 0
+      ; break_before_arrow= fmt "@;<1 2>"
+      ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
+      ; open_paren_branch
+      ; break_after_opening_paren= break 1000 0
       ; close_paren_branch }
 
 let wrap_collec c ~space_around opn cls =

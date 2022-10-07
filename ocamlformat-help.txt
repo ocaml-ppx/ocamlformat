@@ -59,7 +59,7 @@ OPTIONS (CODE FORMATTING STYLE)
            auto will only break the line if the in keyword does not fit on
            the previous line. The default value is fit-or-vertical.
 
-       --break-cases={fit|nested|toplevel|fit-or-vertical|all}
+       --break-cases={fit|nested|toplevel|fit-or-vertical|vertical|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
            or-patterns to highlight the case body. Note that with nested, the
@@ -67,8 +67,9 @@ OPTIONS (CODE FORMATTING STYLE)
            toplevel forces top-level cases (i.e. not nested or-patterns) to
            break across lines, otherwise break naturally at the margin.
            fit-or-vertical tries to fit all or-patterns on the same line,
-           otherwise breaks. all forces all pattern matches to break across
-           lines. The default value is fit.
+           otherwise breaks. vertical vertically breaks branches. all forces
+           all pattern matches to break across lines. The default value is
+           fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by

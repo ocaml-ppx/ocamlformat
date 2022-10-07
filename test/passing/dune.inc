@@ -457,6 +457,27 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_cases-vertical.ml.stdout
+   (with-stderr-to break_cases-vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-cases=vertical %{dep:tests/break_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action (diff tests/break_cases-vertical.ml.ref break_cases-vertical.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
+ (action (diff tests/break_cases-vertical.ml.err break_cases-vertical.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_cases.ml.stdout

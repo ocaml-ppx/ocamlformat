@@ -1092,7 +1092,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       in
       let open_box =
         match c.conf.fmt_opts.break_cases with
-        | `Fit_or_vertical -> open_hvbox
+        | `Fit_or_vertical | `Vertical -> open_hvbox
         | `Fit | `Nested | `Toplevel | `All -> open_hovbox
       in
       hvbox 0
@@ -2252,7 +2252,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
     when Poly.(
            c.conf.fmt_opts.single_case = `Compact
-           && c.conf.fmt_opts.break_cases <> `All ) ->
+           && c.conf.fmt_opts.break_cases <> `All
+           && c.conf.fmt_opts.break_cases <> `Vertical ) ->
       (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)
       let xpc_rhs = sub_exp ~ctx pc_rhs in
       let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in

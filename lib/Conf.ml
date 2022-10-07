@@ -17,7 +17,8 @@ type fmt_opts =
   { align_pattern_matching_bar: [`Paren | `Keyword]
   ; assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
-  ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
+  ; break_cases:
+      [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_colon: [`Before | `After]
   ; break_infix: [`Wrap | `Fit_or_vertical]
@@ -273,6 +274,8 @@ module Formatting = struct
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
            line, otherwise breaks."
+      ; C.Value.make ~name:"vertical" `Vertical
+          "$(b,vertical) vertically breaks branches."
       ; C.Value.make ~name:"all" `All
           "$(b,all) forces all pattern matches to break across lines." ]
     in
