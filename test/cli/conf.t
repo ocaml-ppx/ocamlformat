@@ -10,6 +10,12 @@ Exit code is printed by hand because sed succeeding would hide the error.
                Project should be formatted using ocamlformat version "bad", but the installed version is "..."
   [1]
 
+Disable version check:
+
+  $ (<a.ml ocamlformat --impl --no-version-check -; echo [$?]) 2>&1 | sed 's/version is "[^"]*"/version is "..."/g'
+  let x = "Hello World"
+  [0]
+
 Invalid syntax in .ocamlformat file:
 
   $ echo 'a = b = c' > .ocamlformat
