@@ -16,7 +16,8 @@ type fmt_opts =
   { align_pattern_matching_bar: [`Paren | `Keyword]
   ; assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
-  ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
+  ; break_cases:
+      [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_colon: [`Before | `After]
   ; break_infix: [`Wrap | `Fit_or_vertical]
