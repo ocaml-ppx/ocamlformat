@@ -457,6 +457,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-vertical.ml.stdout
@@ -465,11 +466,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-vertical.ml.ref break_cases-vertical.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/break_cases-vertical.ml.err break_cases-vertical.ml.stderr)))
 
