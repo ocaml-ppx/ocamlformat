@@ -90,6 +90,9 @@ let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
+let variant_var sub x =
+  {loc = sub.location sub x.loc; txt= map_loc sub x.txt}
+
 let map_package_type sub (lid, l) =
   (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
 
@@ -151,7 +154,7 @@ module T = struct
     let loc = sub.location sub prf_loc in
     let attrs = sub.attributes sub prf_attributes in
     let desc = match prf_desc with
-      | Rtag (l, b, tl) -> Rtag (map_loc sub l, b, List.map (sub.typ sub) tl)
+      | Rtag (l, b, tl) -> Rtag (variant_var sub l, b, List.map (sub.typ sub) tl)
       | Rinherit t -> Rinherit (sub.typ sub t)
     in
     Rf.mk ~loc ~attrs desc
@@ -194,7 +197,8 @@ module T = struct
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
     | Ptyp_variant (rl, b, ll) ->
-        variant ~loc ~attrs (List.map (row_field sub) rl) b ll
+        variant ~loc ~attrs (List.map (row_field sub) rl) b
+          (map_opt (List.map (variant_var sub)) ll)
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
                              (List.map (map_loc sub) sl) (sub.typ sub t)
     | Ptyp_package pt ->
@@ -468,7 +472,7 @@ module E = struct
     | Pexp_construct (lid, arg) ->
         construct ~loc ~attrs (map_loc sub lid) (map_opt (sub.expr sub) arg)
     | Pexp_variant (lab, eo) ->
-        variant ~loc ~attrs lab (map_opt (sub.expr sub) eo)
+        variant ~loc ~attrs (variant_var sub lab) (map_opt (sub.expr sub) eo)
     | Pexp_record (l, eo) ->
         let fields =
           List.map
@@ -579,7 +583,8 @@ module P = struct
           (map_opt
              (fun (vl, p) -> List.map (map_loc sub) vl, sub.pat sub p)
              p)
-    | Ppat_variant (l, p) -> variant ~loc ~attrs l (map_opt (sub.pat sub) p)
+    | Ppat_variant (l, p) ->
+        variant ~loc ~attrs (variant_var sub l) (map_opt (sub.pat sub) p)
     | Ppat_record (lpl, cf) ->
         let fields =
           List.map

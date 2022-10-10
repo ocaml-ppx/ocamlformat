@@ -64,6 +64,8 @@ type 'a loc = 'a Location.loc = {
   loc : Location.t;
 }
 
+type variant_var = string loc loc  (** [`A] *)
+
 type variance_and_injectivity = string loc list
 
 (* For Pexp_indexop_access *)

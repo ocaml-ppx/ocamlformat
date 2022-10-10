@@ -81,7 +81,7 @@ module Typ :
     val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
     val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
-                 -> label list option -> core_type
+                 -> variant_var list option -> core_type
     val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
     val package: ?loc:loc -> ?attrs:attrs -> lid -> (lid * core_type) list
                  -> core_type
@@ -102,7 +102,7 @@ module Pat:
     val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val construct: ?loc:loc -> ?attrs:attrs ->
       lid -> (str list * pattern) option -> pattern
-    val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
+    val variant: ?loc:loc -> ?attrs:attrs -> variant_var -> pattern option -> pattern
     val record: ?loc:loc -> ?attrs:attrs
       -> (lid * core_type option * pattern option) list
       -> obj_closed_flag -> pattern
@@ -141,7 +141,7 @@ module Exp:
     val tuple: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val construct: ?loc:loc -> ?attrs:attrs -> lid -> expression option
                    -> expression
-    val variant: ?loc:loc -> ?attrs:attrs -> label -> expression option
+    val variant: ?loc:loc -> ?attrs:attrs -> variant_var -> expression option
                  -> expression
     val record: ?loc:loc -> ?attrs:attrs
       -> (lid * (core_type option * core_type option) * expression option) list
@@ -489,7 +489,7 @@ module Rf:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> row_field_desc -> row_field
     val tag: ?loc:loc -> ?attrs:attrs ->
-      label with_loc -> bool -> core_type list -> row_field
+      variant_var -> bool -> core_type list -> row_field
     val inherit_: ?loc:loc -> core_type -> row_field
   end
 

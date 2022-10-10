@@ -5204,6 +5204,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to variants.ml.stdout
+   (with-stderr-to variants.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/variants.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variants.ml variants.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variants.ml.err variants.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to verbatim_comments-wrap.ml.stdout
    (with-stderr-to verbatim_comments-wrap.ml.stderr
      (run %{bin:ocamlformat} --margin-check --wrap-comments %{dep:tests/verbatim_comments.ml})))))
