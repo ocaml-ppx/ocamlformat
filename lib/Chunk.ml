@@ -21,12 +21,12 @@ type 'a t =
 let update_conf ?quiet c l = List.fold ~init:c l ~f:(Conf.update ?quiet)
 
 let disabling (c : Conf.t) attr =
-  (not c.opr_opts.disable)
-  && (update_conf ~quiet:true c [attr]).opr_opts.disable
+  (not c.opr_opts.disable.v)
+  && (update_conf ~quiet:true c [attr]).opr_opts.disable.v
 
 let enabling (c : Conf.t) attr =
-  c.opr_opts.disable
-  && not (update_conf ~quiet:true c [attr]).opr_opts.disable
+  c.opr_opts.disable.v
+  && not (update_conf ~quiet:true c [attr]).opr_opts.disable.v
 
 let init_loc =
   let pos =
@@ -59,7 +59,7 @@ let split fg c l =
           match acc with
           | [] ->
               let chunk =
-                if c.opr_opts.disable then (Disable init_loc, [x])
+                if c.opr_opts.disable.v then (Disable init_loc, [x])
                 else (Enable, [x])
               in
               (chunk :: acc, c)

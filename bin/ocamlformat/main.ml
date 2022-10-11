@@ -18,7 +18,7 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
-  if conf.opr_opts.disable then Ok source
+  if conf.opr_opts.disable.v then Ok source
   else
     Translation_unit.parse_and_format kind ?output_file ~input_name ~source
       conf
@@ -43,7 +43,7 @@ let source_from_file = function
 
 let print_error (conf : Conf.t) e =
   Translation_unit.Error.print Format.err_formatter
-    ~debug:conf.opr_opts.debug ~quiet:conf.opr_opts.quiet e
+    ~debug:conf.opr_opts.debug.v ~quiet:conf.opr_opts.quiet.v e
 
 let run_action action =
   match action with
@@ -85,9 +85,14 @@ let run_action action =
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
   | Numeric {kind; file; name= input_name; conf} ->
-      let conf = {conf with opr_opts= {conf.opr_opts with quiet= true}} in
+      let conf =
+        { conf with
+          opr_opts=
+            { conf.opr_opts with
+              quiet= {v= true; from= conf.opr_opts.quiet.from} } }
+      in
       let source = source_from_file file in
-      let range = conf.opr_opts.range source in
+      let range = conf.opr_opts.range.v source in
       Translation_unit.numeric kind ~input_name ~source ~range conf
       |> List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i)) ;
       Ok ()

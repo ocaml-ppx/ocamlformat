@@ -63,7 +63,7 @@ let normalize_code conf (m : Ast_mapper.mapper) txt =
   | exception _ -> txt
 
 let docstring (c : Conf.t) =
-  Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings
+  Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings.v
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare

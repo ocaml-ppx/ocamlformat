@@ -227,7 +227,7 @@ let check_all_locations fmt cmts_t =
 
 let check_margin (conf : Conf.t) ~filename ~fmted =
   List.iteri (String.split_lines fmted) ~f:(fun i line ->
-      if String.length line > conf.fmt_opts.margin then
+      if String.length line > conf.fmt_opts.margin.v then
         Format.fprintf Format.err_formatter
           "Warning: %s:%i exceeds the margin\n%!" filename i )
 
@@ -277,14 +277,14 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
     =
   let dump_ast fg ~suffix ast =
-    if conf.opr_opts.debug then
+    if conf.opr_opts.debug.v then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
              Std_ast.Printast.ast fg fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =
-    if conf.opr_opts.debug then
+    if conf.opr_opts.debug.v then
       Some (dump_formatted ~input_name ?output_file ~suffix fmted)
     else None
   in
@@ -294,35 +294,39 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     let format ~box_debug =
       let open Fmt in
       let cmts_t =
-        Cmts.init fg ~debug:conf.opr_opts.debug t.source t.ast t.comments
+        Cmts.init fg ~debug:conf.opr_opts.debug.v t.source t.ast t.comments
       in
       let contents =
         with_buffer_formatter
           ~buffer_size:(String.length prev_source)
-          ( set_margin conf.fmt_opts.margin
-          $ set_max_indent conf.fmt_opts.max_indent
+          ( set_margin conf.fmt_opts.margin.v
+          $ set_max_indent conf.fmt_opts.max_indent.v
           $ fmt_if_k
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (Fmt_ast.fmt_ast fg ~debug:conf.opr_opts.debug t.source cmts_t
-                 conf t.ast ) )
+              (Fmt_ast.fmt_ast fg ~debug:conf.opr_opts.debug.v t.source
+                 cmts_t conf t.ast ) )
       in
       (contents, cmts_t)
     in
-    if conf.opr_opts.debug then
+    if conf.opr_opts.debug.v then
       format ~box_debug:true |> fst
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
     let conf =
-      if conf.opr_opts.debug then conf
-      else {conf with opr_opts= {conf.opr_opts with quiet= true}}
+      if conf.opr_opts.debug.v then conf
+      else
+        { conf with
+          opr_opts=
+            { conf.opr_opts with
+              quiet= {v= true; from= conf.opr_opts.quiet.from} } }
     in
     if String.equal prev_source fmted then (
-      if conf.opr_opts.debug then
+      if conf.opr_opts.debug.v then
         check_all_locations Format.err_formatter cmts_t ;
-      if conf.opr_opts.margin_check then
+      if conf.opr_opts.margin_check.v then
         check_margin conf ~fmted
           ~filename:(Option.value output_file ~default:input_name) ;
       let strlocs = collect_strlocs fg t.ast in
@@ -334,7 +338,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
       let preserve_beginend =
-        Poly.(conf.fmt_opts.exp_grouping = `Preserve)
+        Poly.(conf.fmt_opts.exp_grouping.v = `Preserve)
       in
       let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
       let+ t_new =
@@ -359,10 +363,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       ( if
         (not
            (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
-              ~ignore_doc_comments:(not conf.opr_opts.comment_check) ) )
+              ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
         && not
              (Normalize_extended_ast.equal fg conf t.ast t_new.ast
-                ~ignore_doc_comments:(not conf.opr_opts.comment_check) )
+                ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
       then
         let old_ast =
           dump_ast std_fg ~suffix:".old"
@@ -393,7 +397,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           let args = args ~suffix:".unequal-ast" in
           internal_error `Ast_changed args ) ;
       (* Comments not preserved ? *)
-      if conf.opr_opts.comment_check then (
+      if conf.opr_opts.comment_check.v then (
         ( match Cmts.remaining_comments cmts_t with
         | [] -> ()
         | l -> internal_error (`Comment_dropped l) [] ) ;
@@ -406,7 +410,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                  should be dropped. *)
               let txt = String.drop_prefix txt 1 in
               let cmt = Cmt.create txt loc in
-              if conf.fmt_opts.parse_docstrings then Either.First cmt
+              if conf.fmt_opts.parse_docstrings.v then Either.First cmt
               else Either.Second cmt
           | _ -> Either.Second cmt
         in
@@ -438,7 +442,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           in
           internal_error `Comment args ) ;
       (* Too many iteration ? *)
-      if i >= conf.opr_opts.max_iters then (
+      if i >= conf.opr_opts.max_iters.v then (
         Caml.flush_all () ;
         Error
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
@@ -459,8 +463,8 @@ let parse_result ?disable_w50 f fragment conf ~source ~input_name =
 let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
-  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
-  let line_endings = conf.fmt_opts.line_endings in
+  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
+  let line_endings = conf.fmt_opts.line_endings.v in
   let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let+ parsed =
     parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
@@ -488,7 +492,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
     (std_fg : b list Std_ast.t) ~input_name ~source ~range (conf : Conf.t) =
   let lines = String.split_lines source in
   Location.input_name := input_name ;
-  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping = `Preserve) in
+  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
   let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let parse_or_recover ~src =
     match parse_result parse_ast fg conf ~source:src ~input_name with

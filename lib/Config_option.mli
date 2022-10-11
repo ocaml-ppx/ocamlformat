@@ -9,6 +9,18 @@
 (*                                                                        *)
 (**************************************************************************)
 
+(** This module contains ways to declare command-line and config-files
+    options for ocamlformat. To look at declared options, see {!Conf.mli}. *)
+
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type from =
+  [ `Default
+  | `Profile of string * updated_from
+  | `Updated of updated_from * from option (* when redundant definition *) ]
+
 module Error : sig
   type t =
     | Bad_value of string * string
@@ -23,15 +35,24 @@ end
 module type CONFIG = sig
   type config
 
+  module Elt : sig
+    (** 'a Elt.t is the value associated to a set option. It also contains
+        the metadata that indicates where it was set *)
+
+    type 'a t
+
+    val from : 'a t -> from
+
+    val v : 'a t -> 'a
+
+    val make : 'a -> from -> 'a t
+  end
+
   val profile_option_names : string list
 
   val warn_deprecated :
     config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
-
-type parsed_from = [`File of Location.t | `Attribute of Location.t]
-
-type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
 type typ = Int | Bool | Range | Ocaml_version | Choice of string list
 
@@ -45,6 +66,8 @@ end
 
 module type S = sig
   type config
+
+  type 'a config_elt
 
   type 'a t
 
@@ -62,8 +85,8 @@ module type S = sig
     -> kind:kind
     -> ?allow_inline:bool
     -> ?status:[`Valid | `Deprecated of deprecated]
-    -> (config -> 'a -> updated_from -> config)
-    -> (config -> 'a)
+    -> (config -> 'a config_elt -> config)
+    -> (config -> 'a config_elt)
     -> 'a t
 
   val section_name : kind -> status -> string
@@ -73,6 +96,8 @@ module type S = sig
   val removed : since:Version.t -> string -> removed
 
   module Value : sig
+    (** Values of multiple-choice options *)
+
     type 'a t
 
     val make : ?deprecated:deprecated -> name:string -> 'a -> string -> 'a t
@@ -139,4 +164,5 @@ module type S = sig
   val print_config : config -> unit
 end
 
-module Make (C : CONFIG) : S with type config = C.config
+module Make (C : CONFIG) :
+  S with type config = C.config and type 'a config_elt = 'a C.Elt.t

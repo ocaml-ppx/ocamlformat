@@ -6,16 +6,16 @@ No redundant values:
 
   $ ocamlformat empty.ml --print-config
   profile=default (file .ocamlformat:1)
-  version-check=true (profile default (file .ocamlformat:1))
-  disable-conf-attrs=false (profile default (file .ocamlformat:1))
-  range=<whole input> (profile default (file .ocamlformat:1))
-  quiet=false (profile default (file .ocamlformat:1))
-  ocaml-version=4.04.0 (profile default (file .ocamlformat:1))
-  max-iters=10 (profile default (file .ocamlformat:1))
-  margin-check=false (profile default (file .ocamlformat:1))
-  disable=false (profile default (file .ocamlformat:1))
-  debug=false (profile default (file .ocamlformat:1))
-  comment-check=true (profile default (file .ocamlformat:1))
+  version-check=true
+  disable-conf-attrs=false
+  range=<whole input>
+  quiet=false
+  ocaml-version=4.04.0
+  max-iters=10
+  margin-check=false
+  disable=false
+  debug=false
+  comment-check=true
   wrap-fun-args=true (profile default (file .ocamlformat:1))
   wrap-comments=false (profile default (file .ocamlformat:1))
   type-decl-indent=2 (profile default (file .ocamlformat:1))
@@ -85,16 +85,16 @@ Redundant values from the conventional profile:
 
   $ ocamlformat empty.ml --print-config
   profile=default (file .ocamlformat:1)
-  version-check=true (profile default (file .ocamlformat:1))
-  disable-conf-attrs=false (profile default (file .ocamlformat:1))
-  range=<whole input> (profile default (file .ocamlformat:1))
-  quiet=false (profile default (file .ocamlformat:1))
-  ocaml-version=4.04.0 (profile default (file .ocamlformat:1))
-  max-iters=10 (profile default (file .ocamlformat:1))
-  margin-check=false (profile default (file .ocamlformat:1))
-  disable=false (profile default (file .ocamlformat:1))
-  debug=false (profile default (file .ocamlformat:1))
-  comment-check=true (profile default (file .ocamlformat:1))
+  version-check=true
+  disable-conf-attrs=false
+  range=<whole input>
+  quiet=false
+  ocaml-version=4.04.0
+  max-iters=10
+  margin-check=false
+  disable=false
+  debug=false
+  comment-check=true
   wrap-fun-args=true (profile default (file .ocamlformat:1))
   wrap-comments=false (profile default (file .ocamlformat:1))
   type-decl-indent=2 (profile default (file .ocamlformat:1))
@@ -164,16 +164,16 @@ Redundant values from the ocamlformat profile:
 
   $ ocamlformat empty.ml --print-config
   profile=ocamlformat (file .ocamlformat:1)
-  version-check=true (profile ocamlformat (file .ocamlformat:1))
-  disable-conf-attrs=false (profile ocamlformat (file .ocamlformat:1))
-  range=<whole input> (profile ocamlformat (file .ocamlformat:1))
-  quiet=false (profile ocamlformat (file .ocamlformat:1))
-  ocaml-version=4.04.0 (profile ocamlformat (file .ocamlformat:1))
-  max-iters=10 (profile ocamlformat (file .ocamlformat:1))
-  margin-check=false (profile ocamlformat (file .ocamlformat:1))
-  disable=false (profile ocamlformat (file .ocamlformat:1))
-  debug=false (profile ocamlformat (file .ocamlformat:1))
-  comment-check=true (profile ocamlformat (file .ocamlformat:1))
+  version-check=true
+  disable-conf-attrs=false
+  range=<whole input>
+  quiet=false
+  ocaml-version=4.04.0
+  max-iters=10
+  margin-check=false
+  disable=false
+  debug=false
+  comment-check=true
   wrap-fun-args=true (profile ocamlformat (file .ocamlformat:1))
   wrap-comments=false (profile ocamlformat (file .ocamlformat:1))
   type-decl-indent=2 (profile ocamlformat (file .ocamlformat:1))

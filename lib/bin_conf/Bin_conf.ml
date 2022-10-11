@@ -293,19 +293,21 @@ let update_from_ocp_indent c (oic : IndentConfig.t) =
     | Never -> `Never
     | Auto -> `Auto
   in
+  let elt v = Conf.Elt.make v `Default in
   { c with
     fmt_opts=
       { c.fmt_opts with
-        let_binding_indent= oic.i_base
-      ; type_decl_indent= oic.i_type
-      ; indent_after_in= oic.i_in
-      ; function_indent= oic.i_with
-      ; match_indent= oic.i_with
-      ; cases_exp_indent= oic.i_match_clause
-      ; stritem_extension_indent= oic.i_ppx_stritem_ext
-      ; max_indent= oic.i_max_indent
-      ; function_indent_nested= convert_threechoices oic.i_strict_with
-      ; match_indent_nested= convert_threechoices oic.i_strict_with } }
+        let_binding_indent= elt oic.i_base
+      ; type_decl_indent= elt oic.i_type
+      ; indent_after_in= elt oic.i_in
+      ; function_indent= elt oic.i_with
+      ; match_indent= elt oic.i_with
+      ; cases_exp_indent= elt oic.i_match_clause
+      ; stritem_extension_indent= elt oic.i_ppx_stritem_ext
+      ; max_indent= elt oic.i_max_indent
+      ; function_indent_nested= elt @@ convert_threechoices oic.i_strict_with
+      ; match_indent_nested= elt @@ convert_threechoices oic.i_strict_with }
+  }
 
 let read_config_file ?version_check ?disable_conf_attrs conf = function
   | File_system.Ocp_indent file -> (
@@ -456,19 +458,21 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
        why ) ;
-    Operational.update conf ~f:(fun f -> {f with disable= true}) )
+    Operational.update conf ~f:(fun f ->
+        {f with disable= {f.disable with v= true}} ) )
   else
     let listings =
-      if conf.opr_opts.disable then fs.enable_files else fs.ignore_files
+      if conf.opr_opts.disable.v then fs.enable_files else fs.ignore_files
     in
     match is_in_listing_file ~listings ~filename:file_abs with
     | Some loc ->
         let status =
-          if conf.opr_opts.disable then "enabled" else "ignored"
+          if conf.opr_opts.disable.v then "enabled" else "ignored"
         in
-        if conf.opr_opts.debug then
+        if conf.opr_opts.debug.v then
           warn ~loc "%a is %s." Fpath.pp file_abs status ;
-        Operational.update conf ~f:(fun f -> {f with disable= not f.disable})
+        Operational.update conf ~f:(fun f ->
+            {f with disable= {f.disable with v= not f.disable.v}} )
     | None -> conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
@@ -477,7 +481,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       collect_warnings (fun () ->
           build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
     in
-    if not conf.opr_opts.quiet then warn_now () ;
+    if not conf.opr_opts.quiet.v then warn_now () ;
     Ok conf
   with Conf_error msg -> Error msg
 
