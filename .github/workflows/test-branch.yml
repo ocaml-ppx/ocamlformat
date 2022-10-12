@@ -35,10 +35,10 @@ jobs:
         run: opam install --deps-only -t .
 
       - name: Test conventional profile
-        run: tools/test_branch.sh -a main -b '${{ env.BRANCH_NAME }}' 'profile=conventional'
+        run: tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=conventional'
       
       - name: Test ocamlformat profile
-        run: tools/test_branch.sh -a main -b '${{ env.BRANCH_NAME }}' 'profile=ocamlformat'
+        run: tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=ocamlformat'
 
       - name: Test janestreet profile
-        run: tools/test_branch.sh -a main -b '${{ env.BRANCH_NAME }}' 'profile=janestreet'
+        run: tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=janestreet'
