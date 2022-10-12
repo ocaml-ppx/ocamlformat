@@ -29,16 +29,16 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
       - name: Opam dependencies
-        run: opam install --deps-only -t .
+        run: opam install -t .
 
       - name: Test conventional profile
-        run: ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
         shell: bash
 
       - name: Test ocamlformat profile
-        run: ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
         shell: bash
 
       - name: Test janestreet profile
-        run: ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
         shell: bash
