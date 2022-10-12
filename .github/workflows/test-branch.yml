@@ -39,5 +39,5 @@ jobs:
         shell: bash
 
       - name: Test janestreet profile
-        run: ./tools/test_branch.sh -a ${{ github.event.pull_request.base.ref }} -b ${{ github.event.pull_request.head.ref } 'profile=janestreet'
+        run: ./tools/test_branch.sh -a ${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
         shell: bash
