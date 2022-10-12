@@ -38,16 +38,16 @@ jobs:
         run: |
           git fetch origin main --depth 1
           git checkout origin/main
-          tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=conventional'
+          tools/test_branch.sh -- -a origin/main -b '${{ env.BRANCH_NAME }}' 'profile=conventional'
       
       - name: Test ocamlformat profile
         run: |
           git fetch origin main --depth 1
           git checkout origin/main
-          tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=ocamlformat'
+          tools/test_branch.sh -- -a origin/main -b '${{ env.BRANCH_NAME }}' 'profile=ocamlformat'
 
       - name: Test janestreet profile
         run: |
           git fetch origin main --depth 1
           git checkout origin/main
-          tools/test_branch.sh -- -a main -b '${{ env.BRANCH_NAME }}' 'profile=janestreet'
+          tools/test_branch.sh -- -a origin/main -b '${{ env.BRANCH_NAME }}' 'profile=janestreet'
