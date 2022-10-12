@@ -3329,11 +3329,11 @@ row_field:
       { Rf.inherit_ ~loc:(make_loc $sloc) $1 }
 ;
 tag_field:
-    mkrhs(name_tag) OF opt_ampersand amper_type_list attributes
+    name_tag OF opt_ampersand amper_type_list attributes
       { let info = symbol_info $endpos in
         let attrs = add_info_attrs info $5 in
         Rf.tag ~loc:(make_loc $sloc) ~attrs $1 $3 $4 }
-  | mkrhs(name_tag) attributes
+  | name_tag attributes
       { let info = symbol_info $endpos in
         let attrs = add_info_attrs info $2 in
         Rf.tag ~loc:(make_loc $sloc) ~attrs $1 true [] }
@@ -3574,7 +3574,8 @@ toplevel_directive:
 ;
 
 name_tag:
-    BACKQUOTE ident                             { $2 }
+  BACKQUOTE mkrhs(ident)
+    { mkloc $2 (make_loc $sloc) }
 ;
 rec_flag:
     /* empty */                                 { Nonrecursive }

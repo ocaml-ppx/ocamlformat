@@ -134,7 +134,7 @@ and core_type_desc =
             - [(T1, ..., Tn) #tconstr] when [l=[T1 ; ... ; Tn]].
          *)
   | Ptyp_alias of core_type * string  (** [T as 'a]. *)
-  | Ptyp_variant of row_field list * closed_flag * label list option
+  | Ptyp_variant of row_field list * closed_flag * variant_var list option
       (** [Ptyp_variant([`A;`B], flag, labels)] represents:
             - [[ `A|`B ]]
                       when [flag]   is {{!Asttypes.closed_flag.Closed}[Closed]},
@@ -194,7 +194,7 @@ and row_field = {
 }
 
 and row_field_desc =
-  | Rtag of label loc * bool * core_type list
+  | Rtag of variant_var * bool * core_type list
       (** [Rtag(`A, b, l)] represents:
            - [`A]                   when [b] is [true]  and [l] is [[]],
            - [`A of T]              when [b] is [false] and [l] is [[T]],
@@ -253,7 +253,7 @@ and pattern_desc =
                                            [Some ([], Ppat_tuple [P1; ...; Pn])]
             - [C (type a b) P]  when [args] is [Some ([a; b], P)]
          *)
-  | Ppat_variant of label * pattern option
+  | Ppat_variant of variant_var * pattern option
       (** [Ppat_variant(`A, pat)] represents:
             - [`A]   when [pat] is [None],
             - [`A P] when [pat] is [Some P]
@@ -361,7 +361,7 @@ and expression_desc =
            - [C E]             when [exp] is [Some E],
            - [C (E1, ..., En)] when [exp] is [Some (Pexp_tuple[E1;...;En])]
         *)
-  | Pexp_variant of label * expression option
+  | Pexp_variant of variant_var * expression option
       (** [Pexp_variant(`A, exp)] represents
             - [`A]   when [exp] is [None]
             - [`A E] when [exp] is [Some E]

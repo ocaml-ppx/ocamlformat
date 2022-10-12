@@ -191,6 +191,10 @@ let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
 
+let variant_var i ppf (x : variant_var) =
+  line i ppf "variant_var %a\n" fmt_location x.loc;
+  string_loc (i+1) ppf x.txt
+
 let rec core_type i ppf x =
   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
   attributes i ppf x.ptyp_attributes;
@@ -211,7 +215,7 @@ let rec core_type i ppf x =
   | Ptyp_variant (l, closed, low) ->
       line i ppf "Ptyp_variant closed=%a\n" fmt_closed_flag closed;
       list i row_field ppf l;
-      option i (fun i -> list i string) ppf low
+      option i (fun i -> list i variant_var) ppf low
   | Ptyp_object (l, c) ->
       line i ppf "Ptyp_object %a\n" fmt_obj_closed_flag c;
       list i object_field ppf l
@@ -280,7 +284,8 @@ and pattern i ppf x =
           pattern i ppf p)
         ppf po
   | Ppat_variant (l, po) ->
-      line i ppf "Ppat_variant \"%s\"\n" l;
+      line i ppf "Ppat_variant\n";
+      variant_var i ppf l;
       option i pattern ppf po;
   | Ppat_record (l, c) ->
       line i ppf "Ppat_record %a\n" fmt_obj_closed_flag c;
@@ -365,7 +370,8 @@ and expression i ppf x =
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;
   | Pexp_variant (l, eo) ->
-      line i ppf "Pexp_variant \"%s\"\n" l;
+      line i ppf "Pexp_variant\n";
+      variant_var i ppf l;
       option i expression ppf eo;
   | Pexp_record (l, eo) ->
       line i ppf "Pexp_record\n";
@@ -1088,7 +1094,8 @@ and row_field i ppf x =
   let i = i+1 in
   match x.prf_desc with
   | Rtag (l, b, ctl) ->
-      line i ppf "Rtag %a %s\n" fmt_string_loc l (string_of_bool b);
+      line i ppf "Rtag %s\n" (string_of_bool b);
+      variant_var i ppf l;
       list i core_type ppf ctl
   | Rinherit (ct) ->
       line i ppf "Rinherit\n";

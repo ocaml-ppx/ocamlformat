@@ -248,6 +248,9 @@ let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (opt pre str $ str (Option.value ~default txt))
 
+let variant_var c ({txt= x; loc} : variant_var) =
+  Cmts.fmt c loc @@ (str "`" $ fmt_str_loc c x)
+
 let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   Cmts.fmt c loc
   @@
@@ -862,7 +865,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | Closed, Some [], _ -> str "[< " $ row_fields rfs $ closing
         | Closed, Some ls, _ ->
             str "[< " $ row_fields rfs $ str " > "
-            $ list ls "@ " (str "`" >$ str)
+            $ list ls "@ " (variant_var c)
             $ closing
         | Open, Some _, _ -> impossible "not produced by parser" )
   | Ptyp_object ([], closed_flag) ->
@@ -924,7 +927,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
   let row =
     match prf_desc with
     | Rtag (name, const, typs) ->
-        fmt_str_loc c ~pre:"`" name
+        variant_var c name
         $ fmt_if (not (const && List.is_empty typs)) " of@ "
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
@@ -1020,11 +1023,11 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                       (str "type " $ list names "@ " (fmt_str_loc c)) )
                  $ fmt "@ " )
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
-  | Ppat_variant (lbl, None) -> str "`" $ str lbl
+  | Ppat_variant (lbl, None) -> variant_var c lbl
   | Ppat_variant (lbl, Some pat) ->
       cbox 2
         (Params.parens_if parens c.conf
-           (str "`" $ str lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+           (variant_var c lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
   | Ppat_record (flds, closed_flag) ->
       let fmt_field (lid, typ1, pat) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
@@ -2025,7 +2028,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_variant (s, arg) ->
       hvbox 2
         (Params.parens_if parens c.conf
-           ( str "`" $ str s
+           ( variant_var c s
            $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))
            $ fmt_atrs ) )
   | Pexp_field (exp, lid) ->
