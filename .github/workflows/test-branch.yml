@@ -13,6 +13,10 @@ jobs:
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
           - 4.13.x
+        profile:
+          - conventional
+          - ocamlformat
+          - janestreet
 
     runs-on: ${{ matrix.os }}
 
@@ -31,14 +35,6 @@ jobs:
       - name: Opam dependencies
         run: opam install -t ./ocamlformat.opam
 
-      - name: Test conventional profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
-        shell: bash
-
-      - name: Test ocamlformat profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
-        shell: bash
-
-      - name: Test janestreet profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
+      - name: Test ${{ matrix.profile }} profile
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=${{ matrix.profile }}'
         shell: bash
