@@ -31,7 +31,7 @@ jobs:
         run: opam install --deps-only -t .
 
       - name: Test conventional profile
-        run: ./tools/test_branch.sh -a ${{ github.event.pull_request.base.ref }} -b ${{ github.event.pull_request.head.ref }} 'profile=conventional'
+        run: ./tools/test_branch.sh -a ${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
         shell: bash
 
       - name: Test ocamlformat profile
