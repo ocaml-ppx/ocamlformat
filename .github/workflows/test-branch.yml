@@ -29,7 +29,7 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
       - name: Opam dependencies
-        run: opam install -t .
+        run: opam install -t ./ocamlformat.opam
 
       - name: Test conventional profile
         run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
