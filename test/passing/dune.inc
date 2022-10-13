@@ -680,7 +680,7 @@
  (action
   (with-stdout-to break_infix.ml.stdout
    (with-stderr-to break_infix.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-infix=auto %{dep:tests/break_infix.ml})))))
+     (run %{bin:ocamlformat} --margin-check --break-infix=wrap-or-vertical %{dep:tests/break_infix.ml})))))
 
 (rule
  (alias runtest)

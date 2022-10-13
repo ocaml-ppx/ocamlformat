@@ -1473,7 +1473,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       match c.conf.fmt_opts.break_infix with
       | `Wrap -> `Wrap
       | `Fit_or_vertical -> `Fit_or_vertical
-      | `Auto -> (
+      | `Wrap_or_vertical -> (
         match op_prec with
         | Some p when Prec.compare p InfixOp1 < 0 -> `Fit_or_vertical
         | Some _ ->
@@ -1537,12 +1537,12 @@ and fmt_pat_cons c ~parens args =
   let groups =
     let not_simple arg = not (Pat.is_simple arg.ast) in
     let break args1 args2 = not_simple args1 || not_simple args2 in
-    (* [break-infix = auto] is not applicable for patterns as there are no
-       infix operators allowed besides [::], falling back on
+    (* [break-infix = wrap-or-vertical] is not applicable for patterns as
+       there are no infix operators allowed besides [::], falling back on
        [fit-or-vertical] is arbitrary. *)
     match c.conf.fmt_opts.break_infix with
     | `Wrap -> List.group args ~break
-    | `Fit_or_vertical | `Auto -> List.map ~f:(fun x -> [x]) args
+    | `Fit_or_vertical | `Wrap_or_vertical -> List.map ~f:(fun x -> [x]) args
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in

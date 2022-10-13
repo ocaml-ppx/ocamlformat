@@ -30,7 +30,7 @@
 - Format `.mld` files as odoc documentation files (#2008, @gpetiot)
 - New value `vertical` for option `if-then-else` (#2174, @gpetiot)
 - New value `vertical` for option `break-cases` (#2176, @gpetiot)
-- New value `auto` for option `break-infix` that only wraps high precedence infix ops (#1865, @gpetiot)
+- New value `wrap-or-vertical` for option `break-infix` that only wraps high precedence infix ops (#1865, @gpetiot)
 
 ## 0.24.1 (2022-07-18)
 

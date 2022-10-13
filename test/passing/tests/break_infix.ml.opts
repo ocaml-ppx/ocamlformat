@@ -1,1 +1,1 @@
---break-infix=auto
+--break-infix=wrap-or-vertical

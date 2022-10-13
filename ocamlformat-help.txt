@@ -96,13 +96,13 @@ OPTIONS (CODE FORMATTING STYLE)
            a single line. smart is like fit-or-vertical but try to fit
            arguments on their line if they fit. The default value is wrap.
 
-       --break-infix={wrap|fit-or-vertical|auto}
+       --break-infix={wrap|fit-or-vertical|wrap-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
            fit-or-vertical vertically breaks expressions if they do not fit
-           on a single line. auto behaves like wrap for high precedence
-           operators and behaves like fit-or-vertical for low precedence
-           operators. The default value is wrap.
+           on a single line. wrap-or-vertical behaves like wrap for high
+           precedence operators and behaves like fit-or-vertical for low
+           precedence operators. The default value is wrap.
 
        --break-infix-before-func
            Break infix operators whose right arguments are anonymous
