@@ -20,7 +20,7 @@ type fmt_opts =
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_colon: [`Before | `After]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical]
   ; break_infix_before_func: bool
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]

@@ -21,7 +21,7 @@ type fmt_opts =
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_colon: [`Before | `After]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical]
   ; break_infix_before_func: bool
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
@@ -357,7 +357,11 @@ module Formatting = struct
            in a single line."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line." ]
+           not fit on a single line."
+      ; C.Value.make ~name:"wrap-or-vertical" `Wrap_or_vertical
+          "$(b,wrap-or-vertical) behaves like $(b,wrap) for high precedence \
+           operators and behaves like $(b,fit-or-vertical) for low \
+           precedence operators." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with break_infix= x}))
