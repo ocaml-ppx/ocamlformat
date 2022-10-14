@@ -87,7 +87,8 @@ type opr_opts =
   ; ocaml_version: Ocaml_version.t
   ; quiet: bool
   ; range: string -> Range.t
-  ; disable_conf_attrs: bool }
+  ; disable_conf_attrs: bool
+  ; version_check: bool }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -1222,6 +1223,14 @@ module Operational = struct
       (fun conf x _ ->
         update conf ~f:(fun f -> {f with disable_conf_attrs= x}) )
       (fun conf -> conf.opr_opts.disable_conf_attrs)
+
+  let version_check =
+    let doc =
+      "Check that the version matches the one specified in .ocamlformat."
+    in
+    C.flag ~default:true ~names:["version-check"] ~doc ~kind
+      (fun conf x _ -> update conf ~f:(fun f -> {f with version_check= x}))
+      (fun conf -> conf.opr_opts.version_check)
 end
 
 let disable_conf_files =
@@ -1425,14 +1434,6 @@ let root =
   let default = None in
   mk ~default
     Arg.(value & opt (some dir) default & info ["root"] ~doc ~docs ~docv)
-
-let no_version_check =
-  let doc =
-    "Do not check that the version matches the one specified in \
-     .ocamlformat."
-  in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
 let ignore_invalid_options =
   let doc = "Ignore invalid options (e.g. in .ocamlformat)." in
@@ -1680,13 +1681,14 @@ let profile =
       {conf with fmt_opts= new_fmt_opts} )
     (fun _ -> !selected_profile_ref)
 
-let parse_line config ~from s =
+let parse_line config ?(version_check = config.opr_opts.version_check)
+    ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs) ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
     match (name, from) with
     | "version", `File _ ->
-        if String.equal Version.current value || no_version_check () then
+        if String.equal Version.current value || not version_check then
           Ok config
         else
           Error
@@ -1695,7 +1697,7 @@ let parse_line config ~from s =
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute loc ->
-        if config.opr_opts.disable_conf_attrs then (
+        if disable_conf_attrs then (
           warn ~loc "Configuration in attribute %S ignored." s ;
           Ok config )
         else
@@ -1753,7 +1755,7 @@ let update_from_ocp_indent c (oic : IndentConfig.t) =
       ; function_indent_nested= convert_threechoices oic.i_strict_with
       ; match_indent_nested= convert_threechoices oic.i_strict_with } }
 
-let read_config_file conf = function
+let read_config_file ?version_check ?disable_conf_attrs conf = function
   | File_system.Ocp_indent file -> (
       let filename = Fpath.to_string file in
       try
@@ -1789,7 +1791,10 @@ let read_config_file conf = function
               List.fold_left lines ~init:(conf, [])
                 ~f:(fun (conf, errors) {txt= line; loc} ->
                   let from = `File loc in
-                  match parse_line conf ~from line with
+                  match
+                    parse_line ?version_check ?disable_conf_attrs conf ~from
+                      line
+                  with
                   | Ok conf -> (conf, errors)
                   | Error _ when ignore_invalid_options () ->
                       warn ~loc "ignoring invalid options %S" line ;
@@ -1861,7 +1866,8 @@ let default =
       ; ocaml_version= C.default Operational.ocaml_version
       ; quiet= C.default Operational.quiet
       ; range= C.default Operational.range
-      ; disable_conf_attrs= C.default Operational.disable_conf_attrs } }
+      ; disable_conf_attrs= C.default Operational.disable_conf_attrs
+      ; version_check= C.default Operational.version_check } }
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
@@ -1871,8 +1877,26 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ~disable_conf_files:(disable_conf_files ())
       ~ocp_indent_config:(ocp_indent_config ()) ~root ~file:file_abs
   in
-  let conf =
+  (* [version-check] can be modified by cmdline (evaluated last) but could
+     lead to errors when parsing the .ocamlformat files (evaluated first).
+     Similarly, [disable-conf-attrs] could lead to incorrect config. *)
+  let forward_conf =
+    let read_config_file =
+      read_config_file ~version_check:false ~disable_conf_attrs:false
+    in
     List.fold fs.configuration_files ~init:default ~f:read_config_file
+    |> update_using_env |> C.update_using_cmdline
+  in
+  let conf =
+    let opr_opts =
+      { default.opr_opts with
+        version_check= forward_conf.opr_opts.version_check
+      ; disable_conf_attrs= forward_conf.opr_opts.disable_conf_attrs }
+    in
+    {default with opr_opts}
+  in
+  let conf =
+    List.fold fs.configuration_files ~init:conf ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
   if
