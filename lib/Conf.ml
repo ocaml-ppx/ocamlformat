@@ -86,7 +86,8 @@ type opr_opts =
   ; max_iters: int
   ; ocaml_version: Ocaml_version.t
   ; quiet: bool
-  ; range: string -> Range.t }
+  ; range: string -> Range.t
+  ; disable_conf_attrs: bool }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -1214,12 +1215,14 @@ module Operational = struct
     C.range ~names:["range"] ~default ~doc ~docv ~kind
       (fun conf x _ -> update conf ~f:(fun f -> {f with range= x}))
       (fun conf -> conf.opr_opts.range)
-end
 
-let disable_conf_attrs =
-  let doc = "Disable configuration in attributes." in
-  mk ~default:false
-    Arg.(value & flag & info ["disable-conf-attrs"] ~doc ~docs)
+  let disable_conf_attrs =
+    let doc = "Disable configuration in attributes." in
+    C.flag ~default:false ~names:["disable-conf-attrs"] ~doc ~kind
+      (fun conf x _ ->
+        update conf ~f:(fun f -> {f with disable_conf_attrs= x}) )
+      (fun conf -> conf.opr_opts.disable_conf_attrs)
+end
 
 let disable_conf_files =
   let doc = "Disable .ocamlformat configuration files." in
@@ -1692,7 +1695,7 @@ let parse_line config ~from s =
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute loc ->
-        if disable_conf_attrs () then (
+        if config.opr_opts.disable_conf_attrs then (
           warn ~loc "Configuration in attribute %S ignored." s ;
           Ok config )
         else
@@ -1857,7 +1860,8 @@ let default =
       ; max_iters= C.default Operational.max_iters
       ; ocaml_version= C.default Operational.ocaml_version
       ; quiet= C.default Operational.quiet
-      ; range= C.default Operational.range } }
+      ; range= C.default Operational.range
+      ; disable_conf_attrs= C.default Operational.disable_conf_attrs } }
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in

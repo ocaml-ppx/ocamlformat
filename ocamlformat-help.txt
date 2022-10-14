@@ -527,7 +527,7 @@ OPTIONS
            unset by default.
 
        --disable-conf-attrs
-           Disable configuration in attributes.
+           Disable configuration in attributes. The flag is unset by default.
 
        --disable-conf-files
            Disable .ocamlformat configuration files.
@@ -584,6 +584,9 @@ OPTIONS
 
        --no-disable
            Unset disable.
+
+       --no-disable-conf-attrs
+           Unset disable-conf-attrs.
 
        --no-margin-check
            Unset margin-check.
