@@ -595,8 +595,7 @@ OPTIONS
            Unset quiet.
 
        --no-version-check
-           Do not check that the version matches the one specified in
-           .ocamlformat.
+           Unset version-check.
 
        --numeric
            Instead of re-formatting the file, output one integer per line
@@ -647,6 +646,10 @@ OPTIONS
 
        --use-file
            Deprecated. Same as impl.
+
+       --version-check
+           Check that the version matches the one specified in .ocamlformat.
+           The flag is set by default.
 
        SRC Input files. At least one is required, and exactly one without
            --inplace. If - is passed, will read from stdin.
