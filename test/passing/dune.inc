@@ -1278,6 +1278,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to disable_conf_attrs.ml.stdout
+   (with-stderr-to disable_conf_attrs.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --disable-conf-attrs %{dep:tests/disable_conf_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_conf_attrs.ml.ref disable_conf_attrs.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_conf_attrs.ml.err disable_conf_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to disabled.ml.stdout
    (with-stderr-to disabled.ml.stderr
      (run %{bin:ocamlformat} --margin-check --disable %{dep:tests/disabled.ml})))))
