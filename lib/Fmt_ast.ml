@@ -1956,9 +1956,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   p pexp_loc )
            $ fmt_atrs ) )
   | Pexp_assert e0 ->
-      let paren_body, wrap_symbol =
-        if Exp.is_symbol e0 then (false, wrap "( " " )")
-        else (parenze_exp (sub_exp ~ctx e0), Fn.id)
+      let paren_body =
+        if Exp.is_symbol e0 || Exp.is_monadic_binding e0 then
+          not (List.is_empty e0.pexp_attributes)
+        else parenze_exp (sub_exp ~ctx e0)
       in
       hovbox 0
         (Params.parens_if parens c.conf
@@ -1967,8 +1968,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( str "assert"
                   $ fmt_extension_suffix c ext
                   $ fmt_or paren_body " (@," "@ "
-                  $ wrap_symbol
-                    @@ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
+                  $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
               $ fmt_if_k paren_body (closing_paren c)
               $ fmt_atrs ) ) )
   | Pexp_constant const ->
@@ -2105,16 +2105,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
          $ break 1 indent
          $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
-      let wrap, wrap_ident =
-        if Exp.is_symbol exp && not (List.is_empty pexp_attributes) then
-          (wrap_if parens "(" ")", wrap "( " " )")
-        else if Exp.is_monadic_binding exp then (wrap "( " " )", Fn.id)
-        else if Exp.is_symbol exp then (wrap_if parens "( " " )", Fn.id)
-        else (wrap_if parens "(" ")", Fn.id)
-      in
+      let outer_parens = has_attr && parens in
+      let inner_parens = Exp.is_symbol exp || Exp.is_monadic_binding exp in
       Cmts.fmt c loc
-      @@ wrap
-           (wrap_ident (fmt_longident txt $ Cmts.fmt_within c loc) $ fmt_atrs)
+      @@ wrap_if outer_parens "(" ")"
+      @@ ( wrap_if inner_parens "( " " )"
+             (fmt_longident txt $ Cmts.fmt_within c loc)
+         $ fmt_atrs )
   | Pexp_ifthenelse (if_branches, else_) ->
       let last_loc =
         match else_ with

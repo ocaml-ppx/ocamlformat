@@ -2205,6 +2205,7 @@ end = struct
       , {pexp_attributes= _ :: _; _} )
       when Longident.is_infix id ->
         true
+    | Exp _, e when Exp.is_symbol e || Exp.is_monadic_binding e -> true
     | Exp {pexp_desc= Pexp_cons _; _}, {pexp_attributes= _ :: _; _} -> true
     | Exp {pexp_desc= Pexp_extension _; _}, {pexp_desc= Pexp_tuple _; _} ->
         false
