@@ -10,6 +10,7 @@
 - Remove abusive normalization in docstrings references (#2159, #2162, @EmileTrotignon)
 - Fix parentheses around symbols in if-then-else branches (#2169, @gpetiot)
 - Preserve position of comments around variant identifiers (#2179, @gpetiot)
+- Fix parentheses around symbol identifiers (#<PR_NUMBER>, @gpetiot)
 
 ### Changes
 
