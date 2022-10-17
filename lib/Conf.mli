@@ -80,8 +80,6 @@ type fmt_opts =
 
 val default_profile : fmt_opts
 
-type file = Stdin | File of string
-
 (** Options changing the tool's behavior *)
 type opr_opts =
   { comment_check: bool
@@ -103,29 +101,6 @@ type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
 val default : t
 
-type input = {kind: Syntax.t; name: string; file: file; conf: t}
-
-val build_config :
-     enable_outside_detected_project:bool
-  -> root:Ocamlformat_stdlib.Fpath.t option
-  -> file:string
-  -> is_stdin:bool
-  -> (t, string) Result.t
-
-type action =
-  | In_out of input * string option
-      (** Format input file (or [-] for stdin) of given kind to output file,
-          or stdout if None. *)
-  | Inplace of input list  (** Format in-place, overwriting input file(s). *)
-  | Check of input list
-      (** Check whether the input files already are formatted. *)
-  | Print_config of t  (** Print the configuration and exit. *)
-  | Numeric of input
-
-val action :
-  unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
-(** Formatting action: input type and source, and output destination. *)
-
 val update : ?quiet:bool -> t -> Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
@@ -135,7 +110,20 @@ val update_value :
 
 val update_state : t -> [`Enable | `Disable] -> t
 
+val parse_line :
+     t
+  -> ?version_check:bool
+  -> ?disable_conf_attrs:bool
+  -> from:[< `Attribute of Warnings.loc | `File of Warnings.loc]
+  -> string
+  -> (t, Config_option.Error.t) Result.t
+
 val print_config : t -> unit
+
+val collect_warnings : (unit -> t) -> t * (unit -> unit)
+
+val warn :
+  loc:Warnings.loc -> ('a, Format.formatter, unit, unit) format4 -> 'a
 
 module UI : sig
   val profile : t Config_option.UI.t
@@ -143,4 +131,10 @@ module UI : sig
   val fmt_opts : t Config_option.UI.t list
 
   val opr_opts : t Config_option.UI.t list
+end
+
+module C : Config_option.S with type config = t
+
+module Operational : sig
+  val update : f:(opr_opts -> opr_opts) -> t -> t
 end

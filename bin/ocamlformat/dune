@@ -18,7 +18,7 @@
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat))
+ (libraries ocamlformat bin_conf))
 
 (rule
  (with-stdout-to
