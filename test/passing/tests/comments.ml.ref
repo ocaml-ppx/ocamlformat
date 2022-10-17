@@ -15,8 +15,8 @@ let _ =
     f
       (*comment*)
       (let open M in
-      let x = x in
-      e )
+       let x = x in
+       e )
   in
   ()
 
