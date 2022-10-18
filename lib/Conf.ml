@@ -43,7 +43,7 @@ let warn ~loc fmt =
            Location.print_loc loc s ) )
     fmt
 
-module C = Config_option
+module C = Conf_decl
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
@@ -1389,7 +1389,7 @@ let parse_line config ?(version_check = config.opr_opts.version_check.v)
           Ok config
         else
           Error
-            (Config_option.Error.Version_mismatch
+            (Conf_decl.Error.Version_mismatch
                {read= value; installed= Version.current} )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
@@ -1420,7 +1420,7 @@ let parse_line config ?(version_check = config.opr_opts.version_check.v)
     (* special case for disable/enable *)
     | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
     | name -> update ~config ~from ~name ~value:"true" )
-  | _ -> Error (Config_option.Error.Malformed s)
+  | _ -> Error (Conf_decl.Error.Malformed s)
 
 let default =
   let elt content = Elt.make content `Default in
@@ -1456,7 +1456,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
                   , [] )
             ; _ } ] ->
           parse_line ~from:(`Attribute strloc) c str
-          |> Result.map_error ~f:Config_option.Error.to_string
+          |> Result.map_error ~f:Conf_decl.Error.to_string
       | _ -> Error "Invalid format: String expected" )
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error
