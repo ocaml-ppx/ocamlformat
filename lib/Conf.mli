@@ -47,9 +47,6 @@ module UI : sig
   val opr_opts : t Config_option.UI.t list
 end
 
-module C :
-  Config_option.S with type config = t and type 'a config_elt = 'a elt
-
 module Operational : sig
   val update : f:(opr_opts -> opr_opts) -> t -> t
 end

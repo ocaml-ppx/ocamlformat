@@ -1,9 +1,16 @@
-type from = Config_option.from
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type from =
+  [ `Default
+  | `Profile of string * updated_from
+  | `Updated of updated_from * from option (* when redundant definition *) ]
 
 (** Configuration options *)
 
 module Elt = struct
-  type 'a t = {v: 'a; from: Config_option.from}
+  type 'a t = {v: 'a; from: from}
 
   let v elt = elt.v
 
@@ -93,3 +100,10 @@ type opr_opts =
   ; version_check: bool elt }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+
+let warn_deprecated (config : t) loc fmt =
+  Format.kasprintf
+    (fun s ->
+      if not config.opr_opts.quiet.v then
+        Location.deprecated loc ~use:loc ?def:None s )
+    fmt

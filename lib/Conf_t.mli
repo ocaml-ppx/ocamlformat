@@ -1,6 +1,13 @@
 (** Configuration options *)
 
-type from = Config_option.from
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type from =
+  [ `Default
+  | `Profile of string * updated_from
+  | `Updated of updated_from * from option (* when redundant definition *) ]
 
 module Elt : sig
   (** An ['a Elt.t] represent a set config option of type ['a], along with
@@ -103,3 +110,6 @@ type opr_opts =
   ; version_check: bool elt }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+
+val warn_deprecated :
+  t -> Warnings.loc -> ('a, Format.formatter, unit, unit) format4 -> 'a

@@ -10,7 +10,6 @@
 (**************************************************************************)
 
 module Location = Migrate_ast.Location
-
 include Conf_t
 
 let profile_option_names = ["p"; "profile"]
@@ -44,20 +43,7 @@ let warn ~loc fmt =
            Location.print_loc loc s ) )
     fmt
 
-module C = Config_option.Make (struct
-  type config = t
-
-  module Elt = Elt
-
-  let profile_option_names = profile_option_names
-
-  let warn_deprecated (config : config) loc fmt =
-    Format.kasprintf
-      (fun s ->
-        if not config.opr_opts.quiet.v then
-          Location.deprecated loc ~use:loc ?def:None s )
-      fmt
-end)
+module C = Config_option
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None

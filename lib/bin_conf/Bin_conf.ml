@@ -12,6 +12,7 @@
 open Ocamlformat
 open Conf
 open Cmdliner
+module C = Ocamlformat.Config_option
 
 let info =
   let doc = "A tool to format OCaml code." in
