@@ -98,3 +98,21 @@ module M =
       val y : t
     end)
     ( (* struct type z = K.y end *) )
+
+let _ =
+  let module M =
+    (val (* aa *) m (* bb *) : (* cc *) M (* dd *) :> (* ee *) N (* ff *))
+  in
+  let module M =
+    ( val m
+        : M with type t = k and type p = k
+        :> N with type t = t and type k = t )
+  in
+  let module M =
+    ( val (* aa *) m (* bb *)
+        : (* cc *)
+        M with type t = t (* dd *)
+        :> (* ee *)
+        N with type t = t (* ff *) )
+  in
+  ()

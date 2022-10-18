@@ -408,7 +408,11 @@ module M = struct
     | Pmod_constraint (m, mty) ->
         constraint_ ~loc ~attrs (sub.module_expr sub m)
                     (sub.module_type sub mty)
-    | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
+    | Pmod_unpack (e, ty1, ty2) ->
+        unpack ~loc ~attrs
+          (sub.expr sub e)
+          (map_opt (map_package_type sub) ty1)
+          (map_opt (map_package_type sub) ty2)
     | Pmod_gen_apply (me, lc) ->
         gen_apply ~loc ~attrs (sub.module_expr sub me) (sub.location sub lc)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)

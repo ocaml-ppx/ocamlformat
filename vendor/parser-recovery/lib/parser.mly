@@ -1182,20 +1182,21 @@ paren_module_expr:
   | (* A core language expression that produces a first-class module.
        This expression can be annotated in various ways. *)
     LPAREN VAL attrs = attributes e = expr_colon_package_type RPAREN
-      { mkmod ~loc:$sloc ~attrs (Pmod_unpack e) }
+      { let (e, ty1, ty2) = e in
+        mkmod ~loc:$sloc ~attrs (Pmod_unpack (e, ty1, ty2)) }
 ;
 
 (* The various ways of annotating a core language expression that
    produces a first-class module that we wish to unpack. *)
 %inline expr_colon_package_type:
     e = expr
-      { e }
-  | e = expr COLON ty = package_core_type
-      { ghexp ~loc:$loc (Pexp_constraint (e, ty)) }
-  | e = expr COLON ty1 = package_core_type COLONGREATER ty2 = package_core_type
-      { ghexp ~loc:$loc (Pexp_coerce (e, Some ty1, ty2)) }
-  | e = expr COLONGREATER ty2 = package_core_type
-      { ghexp ~loc:$loc (Pexp_coerce (e, None, ty2)) }
+      { e, None, None }
+  | e = expr COLON ty1 = package_type
+      { e, Some ty1, None }
+  | e = expr COLON ty1 = package_type COLONGREATER ty2 = package_type
+      { e, Some ty1, Some ty2 }
+  | e = expr COLONGREATER ty2 = package_type
+      { e, None, Some ty2 }
 ;
 
 (* A structure, which appears between STRUCT and END (among other places),
@@ -2547,8 +2548,7 @@ simple_pattern_not_ident:
   | LPAREN MODULE ext_attributes mkrhs(module_name) RPAREN
       { mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, None)) $3 }
   | LPAREN MODULE ext_attributes mkrhs(module_name) COLON package_type RPAREN
-      { let (lid, cstrs, _attrs) = $6 in
-        mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, Some (lid, cstrs))) $3 }
+      { mkpat_attrs ~loc:$sloc (Ppat_unpack ($4, Some $6)) $3 }
   | mkpat(simple_pattern_not_ident_)
       { $1 }
 ;
@@ -3192,7 +3192,8 @@ atomic_type:
         mktyp ~loc:$sloc ~attrs descr }
 ;
 %inline package_type: module_type
-      { package_type_of_module_type $1 }
+      { let (lid, cstrs, _attrs) = package_type_of_module_type $1 in
+        (lid, cstrs) }
 ;
 %inline row_field_list:
   separated_nonempty_llist(BAR, row_field)

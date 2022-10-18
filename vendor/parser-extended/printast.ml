@@ -228,9 +228,9 @@ let rec core_type i ppf x =
   | Ptyp_poly (sl, ct) ->
       line i ppf "Ptyp_poly%a\n" typevars sl;
       core_type i ppf ct;
-  | Ptyp_package (s, l) ->
-      line i ppf "Ptyp_package %a\n" fmt_longident_loc s;
-      list i package_with ppf l;
+  | Ptyp_package pt ->
+      line i ppf "Ptyp_package\n";
+      package_type i ppf pt
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
@@ -255,6 +255,10 @@ and object_field i ppf x =
 and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
+
+and package_type i ppf (s, l) =
+  line i ppf "package_type %a\n" fmt_longident_loc s;
+  list i package_with ppf l
 
 and pattern i ppf x =
   line i ppf "pattern %a\n" fmt_location x.ppat_loc;
@@ -312,10 +316,7 @@ and pattern i ppf x =
       longident_loc i ppf li
   | Ppat_unpack (s, pt) ->
       line i ppf "Ppat_unpack %a\n" fmt_str_opt_loc s;
-      option i (fun i ppf (s, l) ->
-          line i ppf "package_type %a\n" fmt_longident_loc s;
-          list i package_with ppf l)
-        ppf pt
+      option i package_type ppf pt
   | Ppat_exception p ->
       line i ppf "Ppat_exception\n";
       pattern i ppf p
@@ -913,9 +914,11 @@ and module_expr i ppf x =
       line i ppf "Pmod_constraint\n";
       module_expr i ppf me;
       module_type i ppf mt;
-  | Pmod_unpack (e) ->
+  | Pmod_unpack (e, ty1, ty2) ->
       line i ppf "Pmod_unpack\n";
       expression i ppf e;
+      option i package_type ppf ty1;
+      option i package_type ppf ty2
   | Pmod_gen_apply (x, loc) ->
       line i ppf "Pmod_gen_apply\n";
       module_expr i ppf x;
