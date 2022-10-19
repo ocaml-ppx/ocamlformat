@@ -10,18 +10,11 @@
 (**************************************************************************)
 
 (** This module contains ways to declare command-line and config-files
-    options for ocamlformat. To look at declared options, see {!Conf.mli}. *)
+    options for ocamlformat. To look at declared options, see {!Conf.mli}. To
+    declare a new option :
 
-module Error : sig
-  type t =
-    | Bad_value of string * string
-    | Malformed of string
-    | Misplaced of string * string
-    | Unknown of string * [`Msg of string] option
-    | Version_mismatch of {read: string; installed: string}
-
-  val to_string : t -> string
-end
+    - Add a field to one of the records in [Conf_t]
+    - Declare the option in [Conf], using functions from this module. *)
 
 type typ = Int | Bool | Range | Ocaml_version | Choice of string list
 
@@ -33,6 +26,7 @@ module UI : sig
     ; update: 'config -> string -> Conf_t.updated_from -> 'config }
 end
 
+(** The type of an option declaration *)
 type 'a t
 
 type kind = Formatting | Operational
@@ -43,7 +37,8 @@ type removed
 
 type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 
-type 'a option_decl =
+(** The type of option declarators, that is functions returning a declaration *)
+type 'a declarator =
      names:string list
   -> doc:string
   -> kind:kind
@@ -85,25 +80,25 @@ end
 val choice :
      all:'a Value.t list
   -> ?removed_values:Value_removed.t list
-  -> 'a option_decl
+  -> 'a declarator
 
-val flag : default:bool -> bool option_decl
+val flag : default:bool -> bool declarator
 
-val int : default:int -> docv:string -> int option_decl
+val int : default:int -> docv:string -> int declarator
 
 val range :
      default:(string -> Range.t)
   -> docv:string
-  -> (string -> Range.t) option_decl
+  -> (string -> Range.t) declarator
 
-val ocaml_version : default:Ocaml_version.t -> Ocaml_version.t option_decl
+val ocaml_version : default:Ocaml_version.t -> Ocaml_version.t declarator
 
 val any :
      'a Cmdliner.Arg.conv
   -> values:typ
   -> default:'a
   -> docv:string
-  -> 'a option_decl
+  -> 'a declarator
 
 val removed_option :
   names:string list -> since:Version.t -> msg:string -> unit
@@ -120,7 +115,7 @@ val update :
   -> name:string
   -> value:string
   -> inline:bool
-  -> (Conf_t.t, Error.t) Result.t
+  -> (Conf_t.t, Conf_t.Error.t) Result.t
 
 val to_ui : 'a t -> Conf_t.t UI.t
 

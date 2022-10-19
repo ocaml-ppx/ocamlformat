@@ -9,7 +9,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Configuration options *)
+(** This module contains the types of configuration options, along with small
+    helper functions. It is separated from [Conf] to avoid dependency cycles. *)
 
 type parsed_from = [`File of Location.t | `Attribute of Location.t]
 
@@ -19,6 +20,17 @@ type from =
   [ `Default
   | `Profile of string * updated_from
   | `Updated of updated_from * from option (* when redundant definition *) ]
+
+module Error : sig
+  type t =
+    | Bad_value of string * string
+    | Malformed of string
+    | Misplaced of string * string
+    | Unknown of string * [`Msg of string] option
+    | Version_mismatch of {read: string; installed: string}
+
+  val to_string : t -> string
+end
 
 module Elt : sig
   (** An ['a Elt.t] represent a set config option of type ['a], along with

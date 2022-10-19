@@ -19,8 +19,7 @@ val update : ?quiet:bool -> t -> Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 
-val update_value :
-  t -> name:string -> value:string -> (t, Conf_decl.Error.t) Result.t
+val update_value : t -> name:string -> value:string -> (t, Error.t) Result.t
 
 val update_state : t -> [`Enable | `Disable] -> t
 
@@ -30,7 +29,7 @@ val parse_line :
   -> ?disable_conf_attrs:bool
   -> from:[< `Attribute of Warnings.loc | `File of Warnings.loc]
   -> string
-  -> (t, Conf_decl.Error.t) Result.t
+  -> (t, Error.t) Result.t
 
 val print_config : t -> unit
 

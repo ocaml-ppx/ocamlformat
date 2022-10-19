@@ -12,14 +12,14 @@
 open Ocamlformat
 open Conf
 open Cmdliner
-module C = Ocamlformat.Conf_decl
+module Decl = Ocamlformat.Conf_decl
 
 let info =
   let doc = "A tool to format OCaml code." in
   let man =
     [ `S Cmdliner.Manpage.s_description
     ; `P "$(tname) automatically formats OCaml code."
-    ; `S (C.section_name C.Formatting `Valid)
+    ; `S (Decl.section_name Decl.Formatting `Valid)
     ; `P
         "Unless otherwise noted, any option \
          $(b,--)$(i,option)$(b,=)$(i,VAL) detailed in this section can be \
@@ -61,16 +61,16 @@ let info =
          directory containing the $(b,.ocamlformat-enable) file. \
          Shell-style regular expressions are supported. Lines starting with \
          $(b,#) are ignored and can be used as comments."
-    ; `S (C.section_name C.Operational `Valid)
+    ; `S (Decl.section_name Decl.Operational `Valid)
     ; `P
         "Unless mentioned otherwise non-formatting options cannot be set in \
          attributes or $(b,.ocamlformat) files." ]
   in
   Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
 
-let kind = C.Operational
+let kind = Decl.Operational
 
-let docs = C.section_name kind `Valid
+let docs = Decl.section_name kind `Valid
 
 let enable_outside_detected_project =
   let witness =
@@ -283,7 +283,7 @@ exception Conf_error of string
 
 let failwith_user_errors ~from errors =
   let open Format in
-  let pp_error pp e = pp_print_string pp (Conf_decl.Error.to_string e) in
+  let pp_error pp e = pp_print_string pp (Error.to_string e) in
   let pp_errors = pp_print_list ~pp_sep:pp_print_newline pp_error in
   let msg = asprintf "Error while parsing %s:@ %a" from pp_errors errors in
   raise (Conf_error msg)
@@ -338,7 +338,7 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
                   | Invalid_argument e ->
                       ( ocp_indent_conf
                       , conf
-                      , Config_decl.Error.Unknown (e, None) :: errors ) )
+                      , Error.Unknown (e, None) :: errors ) )
             in
             match List.rev errors with
             | [] -> conf
@@ -424,7 +424,7 @@ let is_in_listing_file ~listings ~filename =
 
 let update_using_env conf =
   let f (config, errors) (name, value) =
-    match C.update ~config ~from:`Env ~name ~value ~inline:false with
+    match Decl.update ~config ~from:`Env ~name ~value ~inline:false with
     | Ok c -> (c, errors)
     | Error e -> (config, e :: errors)
   in
@@ -449,7 +449,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       read_config_file ~version_check:false ~disable_conf_attrs:false
     in
     List.fold fs.configuration_files ~init:default ~f:read_config_file
-    |> update_using_env |> C.update_using_cmdline
+    |> update_using_env |> Decl.update_using_cmdline
   in
   let conf =
     let opr_opts =
@@ -461,7 +461,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   in
   let conf =
     List.fold fs.configuration_files ~init:conf ~f:read_config_file
-    |> update_using_env |> C.update_using_cmdline
+    |> update_using_env |> Decl.update_using_cmdline
   in
   if
     (not is_stdin)
