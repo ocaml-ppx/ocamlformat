@@ -48,7 +48,7 @@ type 'a t =
   ; parse: string -> ('a, [`Msg of string]) Result.t
   ; update: Conf_t.t -> 'a Conf_t.elt -> Conf_t.t
   ; allow_inline: bool
-  ; cmdline_get: unit -> 'a option
+  ; term: 'a option Term.t
   ; to_string: 'a -> string
   ; default: 'a
   ; get_value: Conf_t.t -> 'a Conf_t.elt (* ; from: from *)
@@ -99,7 +99,17 @@ type 'a declarator =
 
 type pack = Pack : 'a t -> pack
 
-let store = ref []
+module Store = struct
+  type t = pack list
+
+  type store = t
+
+  let empty = []
+
+  let add store ele = Pack ele :: store
+
+  let merge s1 s2 = s1 @ s2
+end
 
 let deprecated ~since:dversion dmsg = {dmsg; dversion}
 
@@ -207,23 +217,20 @@ let flag ~default ~names ~doc ~kind
           ; (Some false, info invert_names ~doc:invert_doc ~docs) ] )
   in
   let parse = Arg.conv_parser Arg.bool in
-  let r = mk ~default:None term in
   let to_string = Bool.to_string in
-  let cmdline_get = r in
   let opt =
     { names
     ; values= Bool
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline
     ; default
     ; to_string
-    ; get_value (* ; from *)
+    ; get_value
     ; status= map_status status }
   in
-  store := Pack opt :: !store ;
   opt
 
 let any converter ~values ~default ~docv ~names ~doc ~kind
@@ -238,23 +245,20 @@ let any converter ~values ~default ~docv ~names ~doc ~kind
     Arg.(value & opt (some converter) None & info names ~doc ~docs ~docv)
   in
   let parse = Arg.conv_parser converter in
-  let r = mk ~default:None term in
   let to_string = Format.asprintf "%a%!" (Arg.conv_printer converter) in
-  let cmdline_get = r in
   let opt =
     { names
     ; values
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline
     ; default
     ; to_string
     ; get_value (* ; from *)
     ; status= map_status status }
   in
-  store := Pack opt :: !store ;
   opt
 
 let int = any ~values:Int Arg.int
@@ -369,26 +373,24 @@ let removed_option ~names ~since ~msg =
   let term =
     Arg.(value & opt (some converter) None & info names ~doc ~docs)
   in
-  let r = mk ~default:None term in
   let to_string _ = "" in
-  let cmdline_get = r in
   let opt =
     { names
     ; values= Choice []
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline= true
     ; default= ()
     ; to_string
     ; get_value
     ; status }
   in
-  store := Pack opt :: !store
+  opt
 
-let update ~config ~from:new_from ~name ~value ~inline =
-  List.find_map !store
+let update store ~config ~from:new_from ~name ~value ~inline =
+  List.find_map store
     ~f:(fun
          (Pack {names; parse; update; allow_inline; get_value; to_string; _})
        ->
@@ -431,23 +433,40 @@ let update ~config ~from:new_from ~name ~value ~inline =
 
 let default {default; _} = default
 
-let update_using_cmdline config =
-  let on_pack config (Pack {cmdline_get; update; get_value; to_string; _}) =
-    match cmdline_get () with
-    | None -> config
-    | Some x ->
-        let redundant =
-          String.equal (to_string x)
-            (config |> get_value |> Conf_t.Elt.v |> to_string)
-        in
-        let elt = get_value config in
-        let new_elt = update_elt ~redundant elt x `Commandline in
-        let config = update config new_elt in
-        config
+let term_of_store store =
+  let store = List.rev store in
+  let compose_terms (t1 : ('a -> 'b) Term.t) (t2 : ('b -> 'c) Term.t) :
+      ('a -> 'c) Term.t =
+    let open Term in
+    const (fun f1 f2 a -> f2 (f1 a)) $ t1 $ t2
   in
-  List.fold !store ~init:config ~f:on_pack
+  let compose (acc : (Conf_t.t -> Conf_t.t) Term.t)
+      (Pack {term; update; get_value; to_string; _}) =
+    let open Term in
+    let update_term =
+      const (fun x ->
+          match x with
+          | None -> fun config -> config
+          | Some x ->
+              let a config =
+                let redundant =
+                  String.equal (to_string x)
+                    (config |> get_value |> Conf_t.Elt.v |> to_string)
+                in
+                let elt = get_value config in
+                let new_elt = update_elt ~redundant elt x `Commandline in
+                let config = update config new_elt in
+                config
+              in
+              a )
+      $ term
+    in
+    compose_terms update_term acc
+  in
+  let term = List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store in
+  term
 
-let print_config c =
+let print_config store c =
   let on_pack (Pack {names; to_string; get_value; status; _}) =
     let name = Option.value_exn (longest names) in
     let value = c |> get_value |> Conf_t.Elt.v |> to_string in
@@ -457,4 +476,4 @@ let print_config c =
         Format.eprintf "%s=%s%a\n%!" name value pp_from from
     | `Removed _ -> ()
   in
-  List.iter !store ~f:on_pack
+  List.iter store ~f:on_pack

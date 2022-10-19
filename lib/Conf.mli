@@ -49,3 +49,5 @@ end
 module Operational : sig
   val update : f:(opr_opts -> opr_opts) -> t -> t
 end
+
+val options : Conf_decl.Store.t

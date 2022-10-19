@@ -77,6 +77,18 @@ module Value_removed : sig
       when multiple values are removed at the same time. *)
 end
 
+module Store : sig
+  type store
+
+  val add : store -> 'a t -> store
+
+  type t = store
+
+  val empty : t
+
+  val merge : t -> t -> t
+end
+
 val choice :
      all:'a Value.t list
   -> ?removed_values:Value_removed.t list
@@ -101,16 +113,15 @@ val any :
   -> 'a declarator
 
 val removed_option :
-  names:string list -> since:Version.t -> msg:string -> unit
+  names:string list -> since:Version.t -> msg:string -> unit t
 (** Declare an option as removed. Using such an option will result in an
     helpful error including [msg] and [since]. *)
 
 val default : 'a t -> 'a
 
-val update_using_cmdline : Conf_t.t -> Conf_t.t
-
 val update :
-     config:Conf_t.t
+     Store.t
+  -> config:Conf_t.t
   -> from:Conf_t.updated_from
   -> name:string
   -> value:string
@@ -119,4 +130,6 @@ val update :
 
 val to_ui : 'a t -> Conf_t.t UI.t
 
-val print_config : Conf_t.t -> unit
+val print_config : Store.t -> Conf_t.t -> unit
+
+val term_of_store : Store.t -> (Conf_t.t -> Conf_t.t) Cmdliner.Term.t

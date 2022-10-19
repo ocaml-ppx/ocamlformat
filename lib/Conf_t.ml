@@ -130,4 +130,7 @@ type opr_opts =
   ; disable_conf_attrs: bool elt
   ; version_check: bool elt }
 
-type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+type t =
+  { fmt_opts: fmt_opts
+  ; opr_opts: opr_opts
+  ; profile: [`default | `ocamlformat | `janestreet] elt }
