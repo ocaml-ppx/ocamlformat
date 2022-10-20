@@ -23,12 +23,14 @@ depends: [
   "ocaml-version" {>= "3.3.0"}
   "ocamlformat-rpc-lib" {with-test & = version}
   "ocp-indent"
-  "odoc-parser" {>= "2.0.0" & < "3.0.0"}
   "re" {>= "1.10.3"}
   "stdio"
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}
   "csexp" {>= "1.4.0"}
+  "astring"
+  "result"
+  "camlp-streams"
   "odoc" {with-doc}
 ]
 build: [
