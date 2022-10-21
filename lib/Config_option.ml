@@ -183,9 +183,7 @@ module Make (C : CONFIG) = struct
   type 'a config_elt = 'a C.Elt.t
 
   type kind = Formatting | Operational
-  (* type from = [ `Default | `Profile of string * updated_from | `Updated of
-     updated_from * from option (* when redundant definition *) ] *)
-
+  
   type deprecated = {dmsg: string; dversion: Version.t}
 
   type removed = {rmsg: string; rversion: Version.t}
@@ -202,7 +200,7 @@ module Make (C : CONFIG) = struct
     ; cmdline_get: unit -> 'a option
     ; to_string: 'a -> string
     ; default: 'a
-    ; get_value: config -> 'a config_elt (* ; from: from *)
+    ; get_value: config -> 'a config_elt
     ; status: status }
 
   let update_from_elt ~redundant elt updated_from =
