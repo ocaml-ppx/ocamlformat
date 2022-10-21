@@ -1058,21 +1058,9 @@ end = struct
         assert (loop ctx.pmty_desc)
     | Mod ctx -> (
       match ctx.pmod_desc with
-      | Pmod_unpack e1 -> (
-        match e1.pexp_desc with
-        | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N); _} as ty))
-          ->
-            assert (typ == ty || List.exists it1N ~f:snd_f)
-        | Pexp_constraint (_, t1)
-         |Pexp_coerce (_, None, t1)
-         |Pexp_poly (_, Some t1)
-         |Pexp_extension (_, PTyp t1) ->
-            assert (typ == t1)
-        | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
-        | Pexp_letexception (ext, _) -> assert (check_ext ext)
-        | Pexp_object {pcstr_fields; _} ->
-            assert (check_pcstr_fields pcstr_fields)
-        | _ -> assert false )
+      | Pmod_unpack (_, ty1, ty2) ->
+          let f (_, cstrs) = List.exists cstrs ~f:(fun (_, x) -> f x) in
+          assert (Option.exists ty1 ~f || Option.exists ty2 ~f)
       | _ -> assert false )
     | Sig ctx -> (
       match ctx.psig_desc with
@@ -1481,7 +1469,7 @@ end = struct
        |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
         ->
           assert false )
-    | Mod {pmod_desc= Pmod_unpack e1; _} -> (
+    | Mod {pmod_desc= Pmod_unpack (e1, _, _); _} -> (
       match e1 with
       | { pexp_desc=
             Pexp_constraint

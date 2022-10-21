@@ -403,7 +403,8 @@
    | (* A core language expression that produces a first-class module.
         This expression can be annotated in various ways. *)
      LPAREN VAL attrs = attributes e = expr_colon_package_type RPAREN
-       { mkmod ~loc:$sloc ~attrs (Pmod_unpack e) }
+       { let (e, ty1, ty2) = e in
+         mkmod ~loc:$sloc ~attrs (Pmod_unpack (e, ty1, ty2)) }
 -  | LPAREN VAL attributes expr COLON error
 -      { unclosed "(" $loc($1) ")" $loc($6) }
 -  | LPAREN VAL attributes expr COLONGREATER error

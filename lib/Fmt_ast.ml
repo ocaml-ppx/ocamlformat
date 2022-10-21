@@ -3959,37 +3959,12 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             ( hovbox_if (not empty) 0
                 (str "end" $ fmt_attributes_and_docstrings c pmod_attributes)
             $ after ) }
-  | Pmod_unpack
-      { pexp_desc=
-          Pexp_constraint
-            ( e1
-            , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _}
-            )
-      ; pexp_attributes= []
-      ; pexp_loc
-      ; _ } ->
-      (* TODO: handle ptyp_loc and pexp_loc *)
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
+  | Pmod_unpack (e, ty1, ty2) ->
+      let package_type sep (lid, cstrs) =
+        hvbox 0
+          ( hovbox 0 (str sep $ fmt_longident_loc c lid)
+          $ fmt_package_type c ctx cstrs )
       in
-      { empty with
-        pro= Some (Cmts.fmt_before c pmod_loc)
-      ; bdy=
-          Cmts.fmt c pmod_loc
-          @@ hovbox 0
-               (wrap_fits_breaks ~space:false c.conf "(" ")"
-                  (hvbox 2
-                     (Cmts.fmt c pexp_loc
-                        ( hovbox 0
-                            ( str "val "
-                            $ fmt_expression c (sub_exp ~ctx e1)
-                            $ fmt "@;<1 2>: " $ fmt_longident_loc c id )
-                        $ fmt_package_type c ctx cnstrs ) ) ) )
-      ; epi=
-          Option.some_if has_epi
-            ( Cmts.fmt_after c pmod_loc
-            $ fmt_attributes_and_docstrings c pmod_attributes ) }
-  | Pmod_unpack e1 ->
       { empty with
         opn= open_hvbox 2
       ; cls= close_box
@@ -3997,7 +3972,10 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
           Cmts.fmt c pmod_loc
             ( hvbox 2
                 (wrap_fits_breaks ~space:false c.conf "(" ")"
-                   (str "val " $ fmt_expression c (sub_exp ~ctx e1)) )
+                   ( str "val "
+                   $ fmt_expression c (sub_exp ~ctx e)
+                   $ opt ty1 (fun x -> break 1 2 $ package_type ": " x)
+                   $ opt ty2 (fun x -> break 1 2 $ package_type ":> " x) ) )
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
       { empty with
