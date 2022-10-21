@@ -254,6 +254,7 @@ let recover (type a) (fg : a Extended_ast.t) ~input_name str : a =
   | Expression -> failwith "no recovery for expression"
   | Repl_file -> failwith "no recovery for repl_file"
   | Documentation -> failwith "no recovery for .mld files"
+  | Mly -> failwith "no recovery for .mly files"
 
 let strconst_mapper locs =
   let constant self c =
@@ -487,6 +488,7 @@ let parse_and_format = function
   | Syntax.Expression -> parse_and_format Expression Expression
   | Syntax.Repl_file -> parse_and_format Repl_file Repl_file
   | Syntax.Documentation -> parse_and_format Documentation Documentation
+  | Syntax.Mly -> parse_and_format Mly Mly
 
 let numeric (type a b) (fg : a list Extended_ast.t)
     (std_fg : b list Std_ast.t) ~input_name ~source ~range (conf : Conf.t) =
@@ -528,3 +530,4 @@ let numeric = function
   | Syntax.Expression -> failwith "numeric not implemented for Expression"
   | Syntax.Repl_file -> failwith "numeric not implemented for Repl_file"
   | Syntax.Documentation -> failwith "numeric not implemented for .mld files"
+  | Syntax.Mly -> failwith "numeric not implemented for .mly files"

@@ -858,6 +858,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to calc.mly.stdout
+   (with-stderr-to calc.mly.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/calc.mly})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/calc.mly calc.mly.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/calc.mly.err calc.mly.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to cases_exp_grouping.ml.stdout
    (with-stderr-to cases_exp_grouping.ml.stderr
      (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/cases_exp_grouping.ml})))))

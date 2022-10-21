@@ -27,6 +27,7 @@ type 'a t =
   | Expression : expression t
   | Repl_file : repl_file t
   | Documentation : Odoc_parser.Ast.t t
+  | Mly : Menhir_parser.Syntax.partial_grammar t
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -40,6 +41,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Expression -> m.expr m
   | Repl_file -> List.map ~f:(m.repl_phrase m)
   | Documentation -> Fn.id
+  | Mly -> Fn.id
 
 module Parse = struct
   let normalize_mapper ~preserve_beginend =
@@ -139,6 +141,7 @@ module Parse = struct
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
         Docstring.parse_file pos str
+    | Mly -> Menhir_parser.Front.load_grammar_from_file input_name
 end
 
 module Printast = struct
@@ -157,6 +160,7 @@ module Printast = struct
     | Expression -> expression
     | Repl_file -> repl_file
     | Documentation -> Docstring.dump
+    | Mly -> fun _ _ -> ()
 end
 
 module Asttypes = struct

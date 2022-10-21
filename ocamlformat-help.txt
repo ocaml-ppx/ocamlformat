@@ -565,6 +565,9 @@ OPTIONS
            Emit a warning if the formatted output exceeds the margin. The
            flag is unset by default.
 
+       --mly
+           Parse input as an ocamlyacc (.mly) file.
+
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
            iterations. May be set in .ocamlformat. The default value is 10.

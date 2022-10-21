@@ -31,6 +31,7 @@
  (libraries
   format_
   ocaml_common
+  menhir_parser
   parser_standard
   parser_extended
   parser_recovery

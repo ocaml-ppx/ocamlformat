@@ -147,9 +147,12 @@ let kind : unit -> Syntax.t option =
   in
   let doc = "Parse input as an odoc documentation." in
   let doc_file = (Some Syntax.Documentation, Arg.info ["doc"] ~doc ~docs) in
+  let doc = "Parse input as an ocamlyacc (.mly) file." in
+  let mly = (Some Syntax.Mly, Arg.info ["mly"] ~doc ~docs) in
   let default = None in
   mk ~default
-    Arg.(value & vflag default [impl; intf; use_file; repl_file; doc_file])
+    Arg.(
+      value & vflag default [impl; intf; use_file; repl_file; doc_file; mly] )
 
 let name =
   let docv = "NAME" in
@@ -213,6 +216,7 @@ let kind_of_ext fname =
   | ".ml" | ".mlt" | ".eliom" -> Some Syntax.Use_file
   | ".mli" | ".eliomi" -> Some Syntax.Signature
   | ".mld" -> Some Syntax.Documentation
+  | ".mly" -> Some Syntax.Mly
   | _ -> None
 
 let config =

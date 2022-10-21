@@ -27,6 +27,7 @@ type 'a t =
   (* not implemented *)
   | Repl_file : unit t
   | Documentation : unit t
+  | Mly : unit t
 
 module Parse : sig
   val ast : 'a t -> input_name:string -> string -> 'a

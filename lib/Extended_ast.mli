@@ -26,6 +26,7 @@ type 'a t =
   | Expression : expression t
   | Repl_file : repl_file t
   | Documentation : Odoc_parser.Ast.t t
+  | Mly : Menhir_parser.Syntax.partial_grammar t
 
 module Parse : sig
   val ast :

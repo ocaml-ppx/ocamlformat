@@ -49,7 +49,7 @@ let add_test ?base_file map src_test_name =
 let register_file tests fname =
   match String.split_on_char '.' fname with
   | test_name
-    :: (("ml" | "mli" | "mlt" | "mld" | "eliom" | "eliomi") as ext)
+    :: (("ml" | "mli" | "mlt" | "mld" | "mly" | "eliom" | "eliomi") as ext)
     :: rest -> (
       let fname = "tests/" ^ fname in
       let src_test_name = test_name ^ "." ^ ext in

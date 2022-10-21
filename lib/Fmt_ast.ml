@@ -4393,6 +4393,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
   | Documentation, d -> Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) d
+  | Mly, l -> Fmt_mly.fmt ~fmt_code:(c.fmt_code c.conf) l
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in

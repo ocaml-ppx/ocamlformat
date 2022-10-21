@@ -9,13 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type t =
-  | Structure
-  | Signature
-  | Use_file
-  | Core_type
-  | Module_type
-  | Expression
-  | Repl_file
-  | Documentation
-  | Mly
+val fmt :
+     fmt_code:Fmt.code_formatter
+  -> Menhir_parser.Syntax.partial_grammar
+  -> Fmt.t

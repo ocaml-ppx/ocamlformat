@@ -9,13 +9,12 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type t =
-  | Structure
-  | Signature
-  | Use_file
-  | Core_type
-  | Module_type
-  | Expression
-  | Repl_file
-  | Documentation
-  | Mly
+open Fmt
+open Menhir_parser.Syntax
+
+type conf = {fmt_code: Fmt.code_formatter}
+
+let fmt ~fmt_code (g : partial_grammar) =
+  ignore g ;
+  ignore {fmt_code} ;
+  str "TODO"

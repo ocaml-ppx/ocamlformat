@@ -18,3 +18,4 @@ type t =
   | Expression
   | Repl_file
   | Documentation
+  | Mly
