@@ -553,7 +553,6 @@ module Make (C : CONFIG) = struct
                   update_elt ~redundant elt packed_value new_from
                 in
                 let new_config = update config new_elt in
-                (* update_from new_config name new_from redundant ; *)
                 Some (Ok new_config)
             | Error (`Msg error) ->
                 Some (Error (Error.Bad_value (name, error)))

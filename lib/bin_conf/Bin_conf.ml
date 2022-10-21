@@ -287,13 +287,13 @@ let failwith_user_errors ~from errors =
   let msg = asprintf "Error while parsing %s:@ %a" from pp_errors errors in
   raise (Conf_error msg)
 
-let update_from_ocp_indent c (oic : IndentConfig.t) =
+let update_from_ocp_indent c loc (oic : IndentConfig.t) =
   let convert_threechoices = function
     | IndentConfig.Always -> `Always
     | Never -> `Never
     | Auto -> `Auto
   in
-  let elt v = Conf.Elt.make v `Default in
+  let elt v = Conf.Elt.make v (`Updated (`Parsed (`File loc), None)) in
   { c with
     fmt_opts=
       { c.fmt_opts with
@@ -319,20 +319,28 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
               In_channel.input_lines ic
               |> Migrate_ast.Location.of_lines ~filename
             in
-            let ocp_indent_conf, errors =
-              List.fold_left lines ~init:(ocp_indent_conf, [])
-                ~f:(fun (conf, errors) {txt= line; loc} ->
+            let _ocp_indent_conf, conf, errors =
+              List.fold_left lines ~init:(ocp_indent_conf, conf, [])
+                ~f:(fun (ocp_indent_conf, conf, errors) {txt= line; loc} ->
                   try
-                    ( IndentConfig.update_from_string ocp_indent_conf line
-                    , errors )
+                    let ocp_indent_conf =
+                      IndentConfig.update_from_string ocp_indent_conf line
+                    in
+                    let conf =
+                      update_from_ocp_indent conf loc ocp_indent_conf
+                    in
+                    (ocp_indent_conf, conf, errors)
                   with
                   | Invalid_argument e when ignore_invalid_options () ->
-                      warn ~loc "%s" e ; (conf, errors)
+                      warn ~loc "%s" e ;
+                      (ocp_indent_conf, conf, errors)
                   | Invalid_argument e ->
-                      (conf, Config_option.Error.Unknown (e, None) :: errors) )
+                      ( ocp_indent_conf
+                      , conf
+                      , Config_option.Error.Unknown (e, None) :: errors ) )
             in
             match List.rev errors with
-            | [] -> update_from_ocp_indent conf ocp_indent_conf
+            | [] -> conf
             | l -> failwith_user_errors ~from:filename l )
       with Sys_error _ -> conf )
   | File_system.Ocamlformat file -> (
