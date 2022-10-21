@@ -101,7 +101,7 @@ let () =
     [@foo]] ;
   [%foo
     (let open M in
-    () ) [@foo]] ;
+     () ) [@foo]] ;
   [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;

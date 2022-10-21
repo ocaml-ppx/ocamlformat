@@ -2252,24 +2252,26 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let outer_parens = has_attr && parens in
       let inner_parens = has_attr || parens in
       hovbox 0
-        (Params.parens_if outer_parens c.conf
+        (Params.Exp.wrap c.conf ~parens:outer_parens ~fits_breaks:false
            ( hvbox 0
-               (Params.parens_if inner_parens c.conf
-                  ( hvbox 0
-                      ( fmt_module_statement c ~attributes
-                          ~keyword:
-                            ( hvbox 0
-                                ( str "let" $ break 1 0
-                                $ Cmts.fmt_before c popen_loc
-                                $ fmt_or override "open!" "open"
-                                $ opt ext (fun _ -> fmt_if override " ")
-                                $ fmt_extension_suffix c ext )
-                            $ break 1 0 )
-                          (sub_mod ~ctx popen_expr)
-                      $ Cmts.fmt_after c popen_loc
-                      $ str " in" )
-                  $ break 1000 0
-                  $ fmt_expression c (sub_exp ~ctx e0) ) )
+               (Params.Exp.wrap c.conf ~parens:inner_parens
+                  ~fits_breaks:false
+                  (vbox 0
+                     ( hvbox 0
+                         ( fmt_module_statement c ~attributes
+                             ~keyword:
+                               ( hvbox 0
+                                   ( str "let" $ break 1 0
+                                   $ Cmts.fmt_before c popen_loc
+                                   $ fmt_or override "open!" "open"
+                                   $ opt ext (fun _ -> fmt_if override " ")
+                                   $ fmt_extension_suffix c ext )
+                               $ break 1 0 )
+                             (sub_mod ~ctx popen_expr)
+                         $ Cmts.fmt_after c popen_loc
+                         $ str " in" )
+                     $ break 1000 0
+                     $ fmt_expression c (sub_exp ~ctx e0) ) ) )
            $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
     when Poly.(
