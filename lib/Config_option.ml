@@ -532,9 +532,6 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store
 
   let update ~config ~from:new_from ~name ~value ~inline =
-    let _is_profile_option_name x =
-      List.exists C.profile_option_names ~f:(String.equal x)
-    in
     List.find_map !store
       ~f:(fun
            (Pack
