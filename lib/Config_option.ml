@@ -369,7 +369,7 @@ module Make (C : CONFIG) = struct
       ; allow_inline
       ; default
       ; to_string
-      ; get_value (* ; from *)
+      ; get_value
       ; status= map_status status }
     in
     store := Pack opt :: !store ;
@@ -400,7 +400,7 @@ module Make (C : CONFIG) = struct
       ; allow_inline
       ; default
       ; to_string
-      ; get_value (* ; from *)
+      ; get_value
       ; status= map_status status }
     in
     store := Pack opt :: !store ;
@@ -538,13 +538,7 @@ module Make (C : CONFIG) = struct
     List.find_map !store
       ~f:(fun
            (Pack
-             { names
-             ; parse
-             ; update
-             ; allow_inline (* ; from *)
-             ; get_value
-             ; to_string
-             ; _ } )
+             {names; parse; update; allow_inline; get_value; to_string; _} )
          ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
