@@ -38,6 +38,6 @@
   ocamlformat_stdlib
   ocaml-version
   ocp-indent.lib
-  odoc-parser
+  odoc_parser
   uuseg.string
   dune-build-info))

@@ -57,10 +57,6 @@
     :with-test
     (= :version)))
   ocp-indent
-  (odoc-parser
-   (and
-    (>= 2.0.0)
-    (< 3.0.0)))
   (re
    (>= 1.10.3))
   stdio
@@ -69,7 +65,11 @@
   (uutf
    (>= 1.0.1))
   (csexp
-   (>= 1.4.0))))
+   (>= 1.4.0))
+  ; for vendored odoc-parser
+  astring
+  result
+  camlp-streams))
 
 (package
  (name ocamlformat-bench)

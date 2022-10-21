@@ -1,0 +1,10 @@
+(ocamllex lexer)
+
+(library
+ (name odoc_parser)
+ (public_name ocamlformat.odoc_parser)
+ (instrumentation
+  (backend bisect_ppx))
+ (flags
+  (:standard -w -50))
+ (libraries astring result camlp-streams))

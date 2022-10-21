@@ -7,7 +7,7 @@
  (action
   (with-stdout-to
    diff-stdlib-format.patch
-   (run %{diff-ocaml} diff stdlib parser-upstream ocamlformat_support))))
+   (run %{diff-ocaml} ocaml diff stdlib parser-upstream ocamlformat_support))))
 
 (rule
  (deps
@@ -18,7 +18,7 @@
  (action
   (with-stdout-to
    diff-parsers-upstream-std.patch
-   (run %{diff-ocaml} diff parser parser-upstream parser-standard))))
+   (run %{diff-ocaml} ocaml diff parser parser-upstream parser-standard))))
 
 (rule
  (deps
@@ -29,4 +29,4 @@
  (action
   (with-stdout-to
    diff-parsers-ext-parsewyc.patch
-   (run %{diff-ocaml} diff parser parser-extended parser-recovery/lib))))
+   (run %{diff-ocaml} ocaml diff parser parser-extended parser-recovery/lib))))
