@@ -183,7 +183,7 @@ module Make (C : CONFIG) = struct
   type 'a config_elt = 'a C.Elt.t
 
   type kind = Formatting | Operational
-  
+
   type deprecated = {dmsg: string; dversion: Version.t}
 
   type removed = {rmsg: string; rversion: Version.t}
