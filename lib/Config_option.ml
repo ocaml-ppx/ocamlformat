@@ -9,6 +9,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type parsed_from = [`File of Location.t | `Attribute of Location.t]
+
+type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
+type from =
+  [ `Default
+  | `Profile of string * updated_from
+  | `Updated of updated_from * from option (* when redundant definition *) ]
+
 module Error = struct
   type t =
     | Bad_value of string * string
@@ -42,15 +51,21 @@ let ocaml_version_conv =
 module type CONFIG = sig
   type config
 
+  module Elt : sig
+    type 'a t
+
+    val from : 'a t -> from
+
+    val v : 'a t -> 'a
+
+    val make : 'a -> from -> 'a t
+  end
+
   val profile_option_names : string list
 
   val warn_deprecated :
     config -> Location.t -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
-
-type parsed_from = [`File of Location.t | `Attribute of Location.t]
-
-type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
 type typ = Int | Bool | Range | Ocaml_version | Choice of string list
 
@@ -67,6 +82,8 @@ module type S = sig
 
   type 'a t
 
+  type 'a config_elt
+
   type kind = Formatting | Operational
 
   type deprecated
@@ -81,8 +98,8 @@ module type S = sig
     -> kind:kind
     -> ?allow_inline:bool
     -> ?status:[`Valid | `Deprecated of deprecated]
-    -> (config -> 'a -> updated_from -> config)
-    -> (config -> 'a)
+    -> (config -> 'a config_elt -> config)
+    -> (config -> 'a config_elt)
     -> 'a t
 
   val section_name : kind -> status -> string
@@ -163,13 +180,9 @@ module Make (C : CONFIG) = struct
 
   type config = C.config
 
-  type kind = Formatting | Operational
+  type 'a config_elt = 'a C.Elt.t
 
-  type from =
-    [ `Default
-    | `Profile of string * updated_from
-    | `Updated of updated_from * from option (* when redundant definition *)
-    ]
+  type kind = Formatting | Operational
 
   type deprecated = {dmsg: string; dversion: Version.t}
 
@@ -182,19 +195,43 @@ module Make (C : CONFIG) = struct
     ; values: typ
     ; doc: string
     ; parse: string -> ('a, [`Msg of string]) Result.t
-    ; update: config -> 'a -> updated_from -> config
+    ; update: config -> 'a config_elt -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
     ; to_string: 'a -> string
     ; default: 'a
-    ; get_value: config -> 'a
-    ; from: from
+    ; get_value: config -> 'a config_elt
     ; status: status }
+
+  let update_from_elt ~redundant elt updated_from =
+    let from = C.Elt.from elt in
+    let from =
+      match from with
+      | `Profile _ ->
+          `Updated (updated_from, if redundant then Some from else None)
+      | _ -> `Updated (updated_from, None)
+    in
+    let v = C.Elt.v elt in
+    C.Elt.make v from
+
+  let update_v_elt elt v =
+    let from = C.Elt.from elt in
+    C.Elt.make v from
+
+  let update_elt ~redundant elt new_v updated_from =
+    update_v_elt (update_from_elt ~redundant elt updated_from) new_v
 
   let to_ui option =
     let update conf str from =
       match option.parse str with
-      | Ok x -> option.update conf x from
+      | Ok x ->
+          let elt = option.get_value conf in
+          let redundant =
+            String.equal
+              (option.to_string (C.Elt.v elt))
+              (option.to_string x)
+          in
+          option.update conf (update_elt ~redundant elt x from)
       | Error _ -> conf
     in
     UI.{names= option.names; values= option.values; doc= option.doc; update}
@@ -205,8 +242,8 @@ module Make (C : CONFIG) = struct
     -> kind:kind
     -> ?allow_inline:bool
     -> ?status:[`Valid | `Deprecated of deprecated]
-    -> (config -> 'a -> updated_from -> config)
-    -> (config -> 'a)
+    -> (config -> 'a config_elt -> config)
+    -> (config -> 'a config_elt)
     -> 'a t
 
   type pack = Pack : 'a t -> pack
@@ -251,11 +288,16 @@ module Make (C : CONFIG) = struct
         Format.fprintf fs "%a -- Warning (redundant): %a" pp_from_src x
           pp_from r
 
-  let loc_from = function
+  let loc_udapted_from = function
     | `Commandline -> Location.in_file "<command-line>"
     | `Env -> Location.in_file "<env>"
     | `Parsed (`File loc) -> loc
     | `Parsed (`Attribute loc) -> loc
+
+  let loc_from = function
+    | `Default -> Location.in_file "<default>"
+    | `Profile (_, updated_from) | `Updated (updated_from, _) ->
+        loc_udapted_from updated_from
 
   let status_doc ppf = function
     | `Valid -> ()
@@ -285,8 +327,6 @@ module Make (C : CONFIG) = struct
       | Operational -> Cmdliner.Manpage.s_options )
     | `Deprecated _ -> Cmdliner.Manpage.s_options ^ " (DEPRECATED)"
     | `Removed _ -> Cmdliner.Manpage.s_options ^ " (REMOVED)"
-
-  let from = `Default
 
   let longest =
     let compare x y = compare (String.length x) (String.length y) in
@@ -330,7 +370,6 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from
       ; status= map_status status }
     in
     store := Pack opt :: !store ;
@@ -362,7 +401,6 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from
       ; status= map_status status }
     in
     store := Pack opt :: !store ;
@@ -452,11 +490,13 @@ module Make (C : CONFIG) = struct
            pp_print_string )
         values
     in
-    let update conf x from =
+    let update conf elt =
+      let x = C.Elt.v elt in
+      let from = C.Elt.from elt in
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
       | Some value -> Value.warn_if_deprecated conf from name value
       | None -> () ) ;
-      update conf x from
+      update conf elt
     in
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
       ~values:(Choice values)
@@ -467,7 +507,7 @@ module Make (C : CONFIG) = struct
     let doc = Format.asprintf "%a" pp_removed removed in
     let parse _ = Error (`Msg doc) in
     let converter = Arg.conv (parse, fun _ () -> ()) in
-    let update conf _ _ = conf and get_value _ = () in
+    let update conf _ = conf and get_value _ = C.Elt.make () `Default in
     let kind = (* not used *) Formatting in
     let docs = section_name kind status in
     let term =
@@ -487,53 +527,15 @@ module Make (C : CONFIG) = struct
       ; default= ()
       ; to_string
       ; get_value
-      ; from
       ; status }
     in
     store := Pack opt :: !store
-
-  let update_from config name from redundant =
-    let is_profile_option_name x =
-      List.exists C.profile_option_names ~f:(String.equal x)
-    in
-    let on_pack (Pack {names; get_value; to_string; _}) =
-      if is_profile_option_name (List.hd_exn names) then
-        Some (to_string (get_value config))
-      else None
-    in
-    let on_pack (Pack ({names; status; _} as p)) =
-      if is_profile_option_name name then
-        if is_profile_option_name (List.hd_exn names) then
-          (* updating --profile option *)
-          Pack {p with from= `Updated (from, redundant)}
-        else
-          let profile_name = List.find_map_exn !store ~f:on_pack in
-          (* updating other options when --profile is set *)
-          Pack {p with from= `Profile (profile_name, from)}
-      else if List.exists names ~f:(String.equal name) then (
-        (* updating a single option (without setting a profile) *)
-        ( match status with
-        | `Deprecated d ->
-            C.warn_deprecated config (loc_from from) "%s: %a" name
-              pp_deprecated d
-        | _ -> () ) ;
-        Pack {p with from= `Updated (from, redundant)} )
-      else Pack p
-    in
-    store := List.map !store ~f:on_pack
 
   let update ~config ~from:new_from ~name ~value ~inline =
     List.find_map !store
       ~f:(fun
            (Pack
-             { names
-             ; parse
-             ; update
-             ; allow_inline
-             ; from
-             ; get_value
-             ; to_string
-             ; _ } )
+             {names; parse; update; allow_inline; get_value; to_string; _} )
          ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
@@ -541,17 +543,16 @@ module Make (C : CONFIG) = struct
           else
             match parse value with
             | Ok packed_value ->
-                let new_config = update config packed_value new_from in
+                let elt = get_value config in
                 let redundant =
-                  match from with
-                  | `Profile _ ->
-                      let old_value = to_string @@ get_value config in
-                      let new_value = to_string @@ get_value new_config in
-                      if String.equal old_value new_value then Some from
-                      else None
-                  | _ -> None
+                  let old_value = to_string @@ C.Elt.v @@ get_value config in
+                  let new_value = to_string @@ packed_value in
+                  String.equal old_value new_value
                 in
-                update_from new_config name new_from redundant ;
+                let new_elt =
+                  update_elt ~redundant elt packed_value new_from
+                in
+                let new_config = update config new_elt in
                 Some (Ok new_config)
             | Error (`Msg error) ->
                 Some (Error (Error.Bad_value (name, error)))
@@ -574,20 +575,27 @@ module Make (C : CONFIG) = struct
   let default {default; _} = default
 
   let update_using_cmdline config =
-    let on_pack config (Pack {cmdline_get; update; names; _}) =
+    let on_pack config (Pack {cmdline_get; update; get_value; to_string; _})
+        =
       match cmdline_get () with
       | None -> config
       | Some x ->
-          let config = update config x `Commandline in
-          update_from config (List.hd_exn names) `Commandline None ;
+          let redundant =
+            String.equal (to_string x)
+              (config |> get_value |> C.Elt.v |> to_string)
+          in
+          let elt = get_value config in
+          let new_elt = update_elt ~redundant elt x `Commandline in
+          let config = update config new_elt in
           config
     in
     List.fold !store ~init:config ~f:on_pack
 
   let print_config c =
-    let on_pack (Pack {names; to_string; get_value; from; status; _}) =
+    let on_pack (Pack {names; to_string; get_value; status; _}) =
       let name = Option.value_exn (longest names) in
-      let value = to_string (get_value c) in
+      let value = c |> get_value |> C.Elt.v |> to_string in
+      let from = c |> get_value |> C.Elt.from in
       match status with
       | `Valid | `Deprecated _ ->
           Format.eprintf "%s=%s%a\n%!" name value pp_from from

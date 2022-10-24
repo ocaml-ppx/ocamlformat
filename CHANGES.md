@@ -12,6 +12,7 @@
 - Preserve position of comments around variant identifiers (#2179, @gpetiot)
 - Fix parentheses around symbol identifiers (#2185, @gpetiot)
 - Fix alignment inconsistency between let-binding and let-open (#2187, @gpetiot)
+- Fix reporting of operational settings origin in presence of profiles (#2188, @EmileTrotignon)
 
 ### Changes
 
