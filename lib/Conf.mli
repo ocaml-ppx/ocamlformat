@@ -11,109 +11,91 @@
 
 (** Configuration options *)
 
-type from = Config_option.from
-
-module Elt : sig
-  (** An ['a Elt.t] represent a set config option of type ['a], along with
-      the indication of where the option was set (commandline, config file
-      etc). *)
-  type 'a t = {v: 'a; from: from}
-
-  val v : 'a t -> 'a
-
-  val from : 'a t -> from
-
-  val make : 'a -> from -> 'a t
-end
-
-type 'a elt = 'a Elt.t
-
 (** Formatting options *)
 type fmt_opts =
-  { align_pattern_matching_bar: [`Paren | `Keyword] elt
-  ; assignment_operator: [`Begin_line | `End_line] elt
-  ; break_before_in: [`Fit_or_vertical | `Auto] elt
+  { align_pattern_matching_bar: [`Paren | `Keyword]
+  ; assignment_operator: [`Begin_line | `End_line]
+  ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases:
-      [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All] elt
-  ; break_collection_expressions: [`Wrap | `Fit_or_vertical] elt
-  ; break_colon: [`Before | `After] elt
-  ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical] elt
-  ; break_infix_before_func: bool elt
-  ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart] elt
-  ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart] elt
-  ; break_separators: [`Before | `After] elt
-  ; break_sequences: bool elt
-  ; break_string_literals: [`Auto | `Never] elt
+      [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All]
+  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
+  ; break_colon: [`Before | `After]
+  ; break_infix: [`Wrap | `Fit_or_vertical | `Wrap_or_vertical]
+  ; break_infix_before_func: bool
+  ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
+  ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
+  ; break_separators: [`Before | `After]
+  ; break_sequences: bool
+  ; break_string_literals: [`Auto | `Never]
         (** How to potentially break string literals into new lines. *)
-  ; break_struct: bool elt
-  ; cases_exp_indent: int elt
-  ; cases_matching_exp_indent: [`Normal | `Compact] elt
-  ; disambiguate_non_breaking_match: bool elt
-  ; doc_comments: [`Before | `Before_except_val | `After_when_possible] elt
-  ; doc_comments_padding: int elt
-  ; doc_comments_tag_only: [`Fit | `Default] elt
-  ; dock_collection_brackets: bool elt
-  ; exp_grouping: [`Parens | `Preserve] elt
-  ; extension_indent: int elt
-  ; field_space: [`Tight | `Loose | `Tight_decl] elt
-  ; function_indent: int elt
-  ; function_indent_nested: [`Always | `Auto | `Never] elt
+  ; break_struct: bool
+  ; cases_exp_indent: int
+  ; cases_matching_exp_indent: [`Normal | `Compact]
+  ; disambiguate_non_breaking_match: bool
+  ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
+  ; doc_comments_padding: int
+  ; doc_comments_tag_only: [`Fit | `Default]
+  ; dock_collection_brackets: bool
+  ; exp_grouping: [`Parens | `Preserve]
+  ; extension_indent: int
+  ; field_space: [`Tight | `Loose | `Tight_decl]
+  ; function_indent: int
+  ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else:
-      [`Compact | `Fit_or_vertical | `Keyword_first | `K_R | `Vertical] elt
-  ; indent_after_in: int elt
-  ; indicate_multiline_delimiters:
-      [`No | `Space | `Closing_on_separate_line] elt
-  ; indicate_nested_or_patterns: [`Space | `Unsafe_no] elt
-  ; infix_precedence: [`Indent | `Parens] elt
-  ; leading_nested_match_parens: bool elt
-  ; let_and: [`Compact | `Sparse] elt
-  ; let_binding_indent: int elt
-  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon] elt
-  ; let_module: [`Compact | `Sparse] elt
-  ; line_endings: [`Lf | `Crlf] elt
-  ; margin: int elt  (** Format code to fit within [margin] columns. *)
-  ; match_indent: int elt
-  ; match_indent_nested: [`Always | `Auto | `Never] elt
-  ; max_indent: int option elt
-  ; module_item_spacing: [`Compact | `Preserve | `Sparse] elt
-  ; nested_match: [`Wrap | `Align] elt
-  ; ocp_indent_compat: bool elt  (** Try to indent like ocp-indent *)
-  ; parens_ite: bool elt
-  ; parens_tuple: [`Always | `Multi_line_only] elt
-  ; parens_tuple_patterns: [`Always | `Multi_line_only] elt
-  ; parse_docstrings: bool elt
-  ; parse_toplevel_phrases: bool elt
-  ; sequence_blank_line: [`Compact | `Preserve_one] elt
-  ; sequence_style: [`Before | `Separator | `Terminator] elt
-  ; single_case: [`Compact | `Sparse] elt
-  ; space_around_arrays: bool elt
-  ; space_around_lists: bool elt
-  ; space_around_records: bool elt
-  ; space_around_variants: bool elt
-  ; stritem_extension_indent: int elt
-  ; type_decl: [`Compact | `Sparse] elt
-  ; type_decl_indent: int elt
-  ; wrap_comments: bool elt  (** Wrap comments at margin. *)
-  ; wrap_fun_args: bool elt }
+      [`Compact | `Fit_or_vertical | `Vertical | `Keyword_first | `K_R]
+  ; indent_after_in: int
+  ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
+  ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
+  ; infix_precedence: [`Indent | `Parens]
+  ; leading_nested_match_parens: bool
+  ; let_and: [`Compact | `Sparse]
+  ; let_binding_indent: int
+  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
+  ; let_module: [`Compact | `Sparse]
+  ; line_endings: [`Lf | `Crlf]
+  ; margin: int  (** Format code to fit within [margin] columns. *)
+  ; match_indent: int
+  ; match_indent_nested: [`Always | `Auto | `Never]
+  ; max_indent: int option
+  ; module_item_spacing: [`Compact | `Preserve | `Sparse]
+  ; nested_match: [`Wrap | `Align]
+  ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
+  ; parens_ite: bool
+  ; parens_tuple: [`Always | `Multi_line_only]
+  ; parens_tuple_patterns: [`Always | `Multi_line_only]
+  ; parse_docstrings: bool
+  ; parse_toplevel_phrases: bool
+  ; sequence_blank_line: [`Compact | `Preserve_one]
+  ; sequence_style: [`Before | `Separator | `Terminator]
+  ; single_case: [`Compact | `Sparse]
+  ; space_around_arrays: bool
+  ; space_around_lists: bool
+  ; space_around_records: bool
+  ; space_around_variants: bool
+  ; stritem_extension_indent: int
+  ; type_decl: [`Compact | `Sparse]
+  ; type_decl_indent: int
+  ; wrap_comments: bool  (** Wrap comments at margin. *)
+  ; wrap_fun_args: bool }
 
-val default_profile : from -> fmt_opts
+val default_profile : fmt_opts
 
 (** Options changing the tool's behavior *)
 type opr_opts =
-  { comment_check: bool elt
-  ; debug: bool elt  (** Generate debugging output if true. *)
-  ; disable: bool elt
-  ; margin_check: bool elt
+  { comment_check: bool
+  ; debug: bool  (** Generate debugging output if true. *)
+  ; disable: bool
+  ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
-  ; max_iters: int elt
+  ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
-  ; ocaml_version: Ocaml_version.t elt
+  ; ocaml_version: Ocaml_version.t
         (** Version of OCaml syntax of the output. *)
-  ; quiet: bool elt
-  ; range: (string -> Range.t) elt
-  ; disable_conf_attrs: bool elt
-  ; version_check: bool elt }
+  ; quiet: bool
+  ; range: string -> Range.t
+  ; disable_conf_attrs: bool
+  ; version_check: bool }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
@@ -151,8 +133,7 @@ module UI : sig
   val opr_opts : t Config_option.UI.t list
 end
 
-module C :
-  Config_option.S with type config = t and type 'a config_elt = 'a elt
+module C : Config_option.S with type config = t
 
 module Operational : sig
   val update : f:(opr_opts -> opr_opts) -> t -> t
