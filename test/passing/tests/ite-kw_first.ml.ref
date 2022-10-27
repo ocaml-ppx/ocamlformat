@@ -147,7 +147,7 @@ let _ =
   if fooo
   then ( + )
   else if bar
-  then ( * )
+  then ( * ) [@attr]
   else if foobar
   then ( / )
   else ( - )

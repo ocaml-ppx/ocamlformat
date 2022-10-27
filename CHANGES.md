@@ -26,6 +26,7 @@
 - Mute warnings for odoc code blocks whose syntax is not specified (#2151, @gpetiot)
 - Improve formatting of odoc links (#2152, @gpetiot)
 - Preserve sugared extension node attached to an `if` carrying attributes (#2167, @trefis, @gpetiot)
+- Remove unnecessary parentheses around partially applied infix operators with attributes (#<PR_NUMBER>, @gpetiot)
 
 ### New features
 

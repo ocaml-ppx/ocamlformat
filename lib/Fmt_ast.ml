@@ -2145,6 +2145,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (fun ~first ~last (xcond, xbch, pexp_attributes) ->
                  let symbol_parens = Exp.is_symbol xbch.ast in
                  let parens_bch = parenze_exp xbch && not symbol_parens in
+                 let parens_exp = false in
                  let p =
                    Params.get_if_then_else c.conf ~first ~last ~parens
                      ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
@@ -2163,7 +2164,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        ( p.branch_pro
                        $ p.wrap_parens
                            ( fmt_expression c ?box:p.box_expr
-                               ~parens:symbol_parens ?pro:p.expr_pro
+                               ~parens:parens_exp ?pro:p.expr_pro
                                ?eol:p.expr_eol xbch
                            $ p.break_end_branch ) ) )
                  $ fmt_if_k (not last) p.space_between_branches ) )
@@ -2986,11 +2987,11 @@ and fmt_case c ctx ~first ~last case =
     | (Pexp_match _ | Pexp_try _), `Align -> last
     | _ -> false
   in
+  let symbol_parens = Exp.is_symbol xrhs.ast in
   let parens_branch, parens_for_exp =
     if align_nested_match then (false, Some false)
     else if c.conf.fmt_opts.leading_nested_match_parens.v then (false, None)
-    else if is_displaced_infix_op xrhs then (false, None)
-    else (parenze_exp xrhs, Some false)
+    else (parenze_exp xrhs && not symbol_parens, Some false)
   in
   (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
   let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in

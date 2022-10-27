@@ -866,8 +866,6 @@ and Requires_sub_terms : sig
   val parenze_exp : expression In_ctx.xt -> bool
 
   val parenze_nested_exp : expression In_ctx.xt -> bool
-
-  val is_displaced_infix_op : expression In_ctx.xt -> bool
 end = struct
   open In_ctx
 
@@ -1968,19 +1966,6 @@ end = struct
           | _ -> false )
     | _ -> false
 
-  (** Check if an exp is a prefix op that is not fully applied *)
-  let is_displaced_prefix_op {ctx; ast= exp} =
-    match (ctx, exp.pexp_desc) with
-    | _, Pexp_ident {txt= i; _} when Longident.is_prefix i -> true
-    | _ -> false
-
-  (** Check if an exp is an infix op that is not fully applied *)
-  let is_displaced_infix_op {ctx; ast= exp} =
-    match (ctx, exp.pexp_desc) with
-    | _, Pexp_ident {txt= i; _} when Longident.is_infix i ->
-        List.is_empty exp.pexp_attributes
-    | _ -> false
-
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
@@ -2177,10 +2162,8 @@ end = struct
       | _ -> failwith "exp must be lhs or rhs from the parent expression"
     in
     assert_check_exp xexp ;
-    is_displaced_prefix_op xexp
-    || is_displaced_infix_op xexp
-    || Hashtbl.find marked_parenzed_inner_nested_match exp
-       |> Option.value ~default:false
+    Hashtbl.find marked_parenzed_inner_nested_match exp
+    |> Option.value ~default:false
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
