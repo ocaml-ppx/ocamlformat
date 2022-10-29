@@ -127,7 +127,7 @@ let foo =
 
 let _ =
   if fooo then ( + )
-  else if bar then ( * )
+  else if bar then ( * ) [@attr]
   else if foobar then ( / )
   else ( - )
 

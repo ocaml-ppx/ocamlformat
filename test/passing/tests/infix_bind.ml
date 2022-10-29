@@ -229,3 +229,9 @@ let _ = f (( let* ) x (fun y -> z))
 let _ = f (( let* ) x (function y -> z))
 
 let _ = ((x >>= fun () -> ()) [@a])
+
+let _ = ( >>= ) [@attr]
+
+let _ = f (( >>= ) [@attr]) ;;
+
+( >>= ) [@attr]

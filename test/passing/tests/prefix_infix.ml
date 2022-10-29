@@ -19,3 +19,9 @@ let z = (( ! ) [@attr]) 1 2 ~c:3
 let z = (( ! ) [@attr])
 
 let i x = (!r [@attr]) x
+
+let _ = ( * ) [@attr]
+
+let _ = f (( * ) [@attr]) ;;
+
+( * ) [@attr]

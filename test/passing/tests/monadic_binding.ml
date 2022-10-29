@@ -21,3 +21,9 @@ let _ = ( let* ) x (function y -> z)
 let _ = f (( let* ) x (fun y -> z))
 
 let _ = f (( let* ) x (function y -> z))
+
+let _ = ( let+ ) [@attr]
+
+let _ = f (( let+ ) [@attr]) ;;
+
+( let+ ) [@attr]
