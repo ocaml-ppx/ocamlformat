@@ -1,5 +1,9 @@
 ## (unreleased)
 
+### Library
+
+- The declaration of options is a regular module instead of a functor. (#2193, @EmileTrotignon)
+
 ### Bug fixes
 
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
