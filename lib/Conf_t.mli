@@ -110,6 +110,3 @@ type opr_opts =
   ; version_check: bool elt }
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
-
-val warn_deprecated :
-  t -> Warnings.loc -> ('a, Format.formatter, unit, unit) format4 -> 'a

@@ -101,9 +101,3 @@ type opr_opts =
 
 type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
 
-let warn_deprecated (config : t) loc fmt =
-  Format.kasprintf
-    (fun s ->
-      if not config.opr_opts.quiet.v then
-        Location.deprecated loc ~use:loc ?def:None s )
-    fmt

@@ -283,6 +283,13 @@ let range = any ~values:Range Range.conv
 
 let ocaml_version = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 
+let warn_deprecated (config : Conf_t.t) loc fmt =
+  Format.kasprintf
+    (fun s ->
+      if not Conf_t.(config.opr_opts.quiet.v) then
+        Location.deprecated loc ~use:loc ?def:None s )
+    fmt
+
 module Value = struct
   type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
@@ -308,7 +315,7 @@ module Value = struct
     match status with
     | `Valid -> ()
     | `Deprecated d ->
-        Conf_t.warn_deprecated conf (loc_from from) "%a"
+        warn_deprecated conf (loc_from from) "%a"
           (pp_deprecated_with_name ~opt ~val_:s)
           d
 end
