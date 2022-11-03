@@ -83,10 +83,16 @@ let emit_test test_name setup =
   let opts =
     if setup.has_opts then
       read_lines (Printf.sprintf "tests/%s.opts" test_name)
-    else []
+    else
+      []
   in
   let ref_name =
-    "tests/" ^ if setup.has_ref then test_name ^ ".broken-ref" else test_name
+    "tests/"
+    ^
+    if setup.has_ref then
+      test_name ^ ".broken-ref"
+    else
+      test_name
   in
   let base_test_name =
     "tests/" ^ match setup.base_file with Some n -> n | None -> test_name

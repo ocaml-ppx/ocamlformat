@@ -61,7 +61,8 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           in
           (xargs, xbody)
       | _ -> ([], xexp)
-    else ([], xexp)
+    else
+      ([], xexp)
   in
   fun_ ~will_keep_first_ast_node xexp
 
@@ -83,7 +84,8 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
             :: xargs
           , xbody )
       | _ -> ([], xexp)
-    else ([], xexp)
+    else
+      ([], xexp)
   in
   fun_ ~will_keep_first_ast_node xexp
 
@@ -104,7 +106,8 @@ module Exp = struct
             | (None, {ast= {pexp_loc; _}; _}) :: _ -> pexp_loc
             | _ -> loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
+          if relocate then
+            Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
           op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
       | ( Right
         , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
@@ -119,7 +122,8 @@ module Exp = struct
             | Some (_, {ast= {pexp_loc; _}; _}) -> pexp_loc
             | None -> e1.pexp_loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after ;
+          if relocate then
+            Cmts.relocate cmts ~src ~before ~after ;
           (xop, sub_exp ~ctx e1) :: op_args2
       | _ -> [(xop, xexp)]
     in
@@ -145,7 +149,8 @@ let sequence cmts xexp =
            && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
         let ctx = Exp exp in
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [(None, xexp)]
+        then
+          [(None, xexp)]
         else (
           Cmts.relocate cmts ~src:pstr_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
@@ -163,7 +168,8 @@ let sequence cmts xexp =
             List.append l1 l2 )
     | Pexp_sequence (e1, e2) ->
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [(None, xexp)]
+        then
+          [(None, xexp)]
         else (
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
@@ -315,7 +321,8 @@ module Let_binding = struct
     let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
     if
       (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then (xpat, `None [], xbody)
+    then
+      (xpat, `None [], xbody)
     else
       match polynewtype cmts pat body with
       | Some (xpat, pvars, xtyp, xbody) ->
@@ -370,7 +377,14 @@ module Let_binding = struct
 
   let of_value_binding cmts ~ctx ~first vb =
     let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
-    { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
+    { lb_op=
+        Location.
+          { txt=
+              ( if first then
+                "let"
+              else
+                "and" )
+          ; loc= none }
     ; lb_pat= pat
     ; lb_typ= typ
     ; lb_exp= exp

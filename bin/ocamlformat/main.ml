@@ -18,7 +18,8 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
-  if conf.opr_opts.disable.v then Ok source
+  if conf.opr_opts.disable.v then
+    Ok source
   else
     Translation_unit.parse_and_format kind ?output_file ~input_name ~source
       conf

@@ -62,8 +62,10 @@ let fmt_verbatim_block s =
   let force_break = String.contains s '\n' in
   let content =
     (* Literal newline to avoid indentation *)
-    if force_break then wrap "\n" "@\n" (str s)
-    else fits_breaks " " "\n" $ str s $ fits_breaks " " ~hint:(0, 0) ""
+    if force_break then
+      wrap "\n" "@\n" (str s)
+    else
+      fits_breaks " " "\n" $ str s $ fits_breaks " " ~hint:(0, 0) ""
   in
   hvbox 0 (wrap "{v" "v}" content)
 
@@ -77,9 +79,12 @@ let fmt_code_block conf s1 s2 =
   in
   let fmt_line ~first ~last:_ l =
     let l = String.rstrip l in
-    if first then str l
-    else if String.length l = 0 then str "\n"
-    else fmt "@," $ str l
+    if first then
+      str l
+    else if String.length l = 0 then
+      str "\n"
+    else
+      fmt "@," $ str l
   in
   let fmt_no_code s =
     let lines = String.split_lines s in
@@ -115,9 +120,12 @@ let fmt_math_block s =
     @@ String.split_lines s
   in
   let fmt ~first ~last:_ line =
-    if first then str line
-    else if String.is_empty line then str "\n"
-    else fmt "@;<1000 0>" $ str line
+    if first then
+      str line
+    else if String.is_empty line then
+      str "\n"
+    else
+      fmt "@;<1000 0>" $ str line
   in
   hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list_fl lines fmt))
 
@@ -172,7 +180,8 @@ let rec fmt_inline_elements elements =
         let escape =
           if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then
             "\\"
-          else ""
+          else
+            ""
         in
         cbreak ~fits:("", 1, "") ~breaks:("", 0, escape)
         $ str_normalized w $ aux t
@@ -284,7 +293,10 @@ let fmt_block_element c = function
         | None -> noop
       in
       let elems =
-        if List.is_empty elems then elems else space_elt :: elems
+        if List.is_empty elems then
+          elems
+        else
+          space_elt :: elems
       in
       hovbox 0 (wrap "{" "}" (str lvl $ lbl $ fmt_inline_elements elems))
   | #nestable_block_element as elm ->

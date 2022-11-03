@@ -64,9 +64,17 @@ let split_hash_bang source =
 let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
     ~source =
   let warnings =
-    if conf.opr_opts.quiet.v then List.map ~f:W.disable W.in_lexer else []
+    if conf.opr_opts.quiet.v then
+      List.map ~f:W.disable W.in_lexer
+    else
+      []
   in
-  let warnings = if disable_w50 then warnings else W.enable 50 :: warnings in
+  let warnings =
+    if disable_w50 then
+      warnings
+    else
+      W.enable 50 :: warnings
+  in
   ignore @@ Warnings.parse_options false (W.to_string warnings) ;
   let w50 = ref [] in
   let t =
@@ -79,7 +87,8 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
         then (
           w50 := (loc, warn) :: !w50 ;
           false )
-        else not conf.opr_opts.quiet.v )
+        else
+          not conf.opr_opts.quiet.v )
       ~f:(fun () ->
         let ast = parse fragment ~input_name source in
         Warnings.check_fatal () ;
@@ -116,4 +125,5 @@ let parse_toplevel ?disable_w50 (conf : Conf.t) ~input_name ~source =
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
     Either.Second
       (parse ?disable_w50 parse_ast Repl_file conf ~input_name ~source)
-  else First (parse ?disable_w50 parse_ast Use_file conf ~input_name ~source)
+  else
+    First (parse ?disable_w50 parse_ast Use_file conf ~input_name ~source)

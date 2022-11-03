@@ -123,13 +123,15 @@ let reindent ~source ~range indents =
   let low = low - 1 and high = high - 1 in
   String.concat ~sep:"\n"
   @@ List.mapi lines ~f:(fun i line ->
-         if i < low then line
+         if i < low then
+           line
          else if low <= i && i <= high then
            let indent = List.nth_exn indents (i - low) in
            let line = String.lstrip line in
            let spaces = String.make indent ' ' in
            spaces ^ line
-         else line )
+         else
+           line )
 
 let test_numeric =
   let make_test name ~source ~range expected =

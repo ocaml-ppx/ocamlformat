@@ -28,7 +28,8 @@ let diff d1 d2 f =
       (Printf.sprintf
          {|diff -U 5 -L %s %s -L %s %s | sed 's/^@@ .* @@$/@@@@/g'|} f1 f1 f2
          f2 )
-  else 0
+  else
+    0
 
 let import ~org ~prj ~version ~src ~dst f =
   Sys.command

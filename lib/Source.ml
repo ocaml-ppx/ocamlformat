@@ -47,13 +47,19 @@ let tokens_between (t : t) ~filter loc_start loc_end =
   | None -> []
   | Some i ->
       let rec loop i acc =
-        if i >= Array.length t.tokens then List.rev acc
+        if i >= Array.length t.tokens then
+          List.rev acc
         else
           let ((tok, tok_loc) as x) = t.tokens.(i) in
           if Position.compare tok_loc.Location.loc_end loc_end > 0 then
             List.rev acc
           else
-            let acc = if filter tok then x :: acc else acc in
+            let acc =
+              if filter tok then
+                x :: acc
+              else
+                acc
+            in
             loop (i + 1) acc
       in
       loop i []
@@ -76,10 +82,14 @@ let find_token_before t ~filter pos =
   | None -> None
   | Some i ->
       let rec loop i =
-        if i < 0 then None
+        if i < 0 then
+          None
         else
           let ((tok, _) as elt) = t.tokens.(i) in
-          if filter tok then Some elt else loop (i - 1)
+          if filter tok then
+            Some elt
+          else
+            loop (i - 1)
       in
       loop i
 
@@ -88,19 +98,27 @@ let find_token_after t ~filter pos =
   | None -> None
   | Some i ->
       let rec loop i =
-        if i >= Array.length t.tokens then None
+        if i >= Array.length t.tokens then
+          None
         else
           let ((tok, _) as elt) = t.tokens.(i) in
-          if filter tok then Some elt else loop (i + 1)
+          if filter tok then
+            Some elt
+          else
+            loop (i + 1)
       in
       loop i
 
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
     List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
-        if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
+        if Location.compare_end attr_loc acc <= 0 then
+          acc
+        else
+          attr_loc )
   in
-  if phys_equal loc_end loc then loc
+  if phys_equal loc_end loc then
+    loc
   else
     {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
 
@@ -136,7 +154,8 @@ let char_literal t loc =
     (Literal_lexer.char (string_at t loc))
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
-  if not ignore_spaces then Position.column l.loc_start = 0
+  if not ignore_spaces then
+    Position.column l.loc_start = 0
   else
     match find_token_before t ~filter:(fun _ -> true) l.loc_start with
     | None -> true

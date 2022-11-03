@@ -152,7 +152,8 @@ let odoc_block_element c fmt = function
 let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
 let normalize ~parse_docstrings ~normalize_code text =
-  if not parse_docstrings then normalize_text text
+  if not parse_docstrings then
+    normalize_text text
   else
     let location = Lexing.dummy_pos in
     let parsed = Odoc_parser.parse_comment ~location ~text in

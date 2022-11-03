@@ -103,7 +103,8 @@ let make_mapper conf ~ignore_doc_comments =
     let atrs =
       if ignore_doc_comments then
         List.filter atrs ~f:(fun a -> not (is_doc a))
-      else atrs
+      else
+        atrs
     in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in

@@ -17,7 +17,8 @@ open Fmt
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
-  else if not parens then k
+  else if not parens then
+    k
   else
     match c.fmt_opts.indicate_multiline_delimiters.v with
     | `Space ->
@@ -38,20 +39,24 @@ module Exp = struct
             | `Space -> ("( ", Some (1, 0), ")")
             | `No -> ("(", Some (0, 0), ")")
             | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
-          else ("", None, "")
+          else
+            ("", None, "")
         in
         wrap_if_k (parens || parens_nested) (Fmt.fits_breaks "(" opn)
           (Fmt.fits_breaks ")" ?hint cls)
           k
-      else k
+      else
+        k
   end
 
   let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
       ?(offset_closing_paren = 0) ~parens k =
     if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
       wrap_if_fits_or parens "(" ")" k
-    else if not parens then k
-    else if fits_breaks then wrap_fits_breaks ~space:false c "(" ")" k
+    else if not parens then
+      k
+    else if fits_breaks then
+      wrap_fits_breaks ~space:false c "(" ")" k
     else
       match c.fmt_opts.indicate_multiline_delimiters.v with
       | `Space ->
@@ -64,7 +69,12 @@ end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
-  let nspaces = if cmts_before then 1000 else 1 in
+  let nspaces =
+    if cmts_before then
+      1000
+    else
+      1
+  in
   match ctx with
   | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} -> (
     match c.fmt_opts.break_cases.v with
@@ -78,7 +88,13 @@ let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
         match c.fmt_opts.indicate_nested_or_patterns.v with
         | `Space ->
             cbreak ~fits:("", nspaces, "| ")
-              ~breaks:("", 0, if space then " | " else " |")
+              ~breaks:
+                ( ""
+                , 0
+                , if space then
+                    " | "
+                  else
+                    " |" )
         | `Unsafe_no -> break nspaces 0 $ str "| " ) )
   | _ -> break nspaces 0 $ str "| "
 
@@ -100,7 +116,10 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
     | _ -> false
   in
   let open_paren_branch =
-    if beginend then fmt "@;<1 0>begin" else fmt_if parens_branch " ("
+    if beginend then
+      fmt "@;<1 0>begin"
+    else
+      fmt_if parens_branch " ("
   in
   let close_paren_branch =
     if beginend then
@@ -168,16 +187,21 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; close_paren_branch }
 
 let wrap_collec c ~space_around opn cls =
-  if space_around then wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
-  else wrap_fits_breaks c opn cls
+  if space_around then
+    wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
+  else
+    wrap_fits_breaks c opn cls
 
 let wrap_record (c : Conf.t) =
   wrap_collec c ~space_around:c.fmt_opts.space_around_records.v "{" "}"
 
 let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
-  if parens then wrap_fits_breaks c "(" ")"
-  else if no_parens_if_break then Fn.id
-  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
+  if parens then
+    wrap_fits_breaks c "(" ")"
+  else if no_parens_if_break then
+    Fn.id
+  else
+    wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
 
 type record_type =
   { docked_before: Fmt.t
@@ -191,7 +215,12 @@ type record_type =
 
 let get_record_type (c : Conf.t) =
   let sparse_type_decl = Poly.(c.fmt_opts.type_decl.v = `Sparse) in
-  let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
+  let space =
+    if c.fmt_opts.space_around_records.v then
+      1
+    else
+      0
+  in
   let dock = c.fmt_opts.dock_collection_brackets.v in
   let break_before, sep_before, sep_after =
     match c.fmt_opts.break_separators.v with
@@ -208,7 +237,12 @@ let get_record_type (c : Conf.t) =
   in
   { docked_before= fmt_if dock " {"
   ; break_before
-  ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
+  ; box_record=
+      (fun k ->
+        if dock then
+          k
+        else
+          hvbox 0 (wrap_record c k) )
   ; box_spaced= c.fmt_opts.space_around_records.v
   ; sep_before
   ; sep_after
@@ -226,11 +260,18 @@ type elements_collection_record_expr = {break_after_with: Fmt.t}
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
 let get_record_expr (c : Conf.t) =
-  let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
+  let space =
+    if c.fmt_opts.space_around_records.v then
+      1
+    else
+      0
+  in
   let dock = c.fmt_opts.dock_collection_brackets.v in
   let box k =
-    if dock then hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
-    else hvbox 0 (wrap_record c k)
+    if dock then
+      hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
+    else
+      hvbox 0 (wrap_record c k)
   in
   ( ( match c.fmt_opts.break_separators.v with
     | `Before ->
@@ -251,9 +292,19 @@ let box_collec (c : Conf.t) =
   | `Fit_or_vertical -> hvbox
 
 let collection_expr (c : Conf.t) ~space_around opn cls =
-  let space = if space_around then 1 else 0 in
+  let space =
+    if space_around then
+      1
+    else
+      0
+  in
   let dock = c.fmt_opts.dock_collection_brackets.v in
-  let offset = if dock then -2 else String.length opn - 1 in
+  let offset =
+    if dock then
+      -2
+    else
+      String.length opn - 1
+  in
   match c.fmt_opts.break_separators.v with
   | `Before ->
       { box=
@@ -263,7 +314,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
                 (wrap_k (str opn) (str cls)
                    ( break space (String.length opn + 1)
                    $ box_collec c 0 k $ break space 0 ) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+            else
+              box_collec c 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= break 0 offset $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
@@ -274,7 +326,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
               hvbox 0
                 (wrap_k (str opn) (str cls)
                    (break space 2 $ box_collec c 0 k $ break space 0) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+            else
+              box_collec c 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= noop
       ; sep_after_non_final=
           fmt_or_k dock (fmt ";@;<1 0>")
@@ -288,7 +341,12 @@ let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[|" "|]"
 
 let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
-  let space = if space_around then 1 else 0 in
+  let space =
+    if space_around then
+      1
+    else
+      0
+  in
   let indent_opn, indent_cls =
     match (ctx, c.fmt_opts.break_separators.v) with
     | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `Before ->
@@ -306,7 +364,8 @@ let get_record_pat (c : Conf.t) ~ctx =
     if c.fmt_opts.dock_collection_brackets.v then
       box_pattern_docked c ~ctx
         ~space_around:c.fmt_opts.space_around_records.v "{" "}"
-    else params.box
+    else
+      params.box
   in
   ( {params with box}
   , {wildcard= params.sep_before $ str "_" $ params.sep_after_final} )
@@ -316,7 +375,8 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
       box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
-    else params.box
+    else
+      params.box
   in
   {params with box}
 
@@ -349,9 +409,12 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
     | _ -> false
   in
   let wrap_parens ~wrap_breaks k =
-    if beginend then wrap "begin" "end" (wrap_breaks k)
-    else if parens_bch then wrap "(" ")" (wrap_breaks k)
-    else k
+    if beginend then
+      wrap "begin" "end" (wrap_breaks k)
+    else if parens_bch then
+      wrap "(" ")" (wrap_breaks k)
+    else
+      k
   in
   let get_parens_breaks ~opn_hint:(oh_space, oh_other)
       ~cls_hint:(ch_sp, ch_sl) =
@@ -374,7 +437,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
           | true, `No -> -1
           | true, (`Space | `Closing_on_separate_line) -> -2 )
           ( hvbox
-              (if parens then 0 else 2)
+              ( if parens then
+                0
+              else
+                2 )
               ( fmt_if (not first) "else "
               $ str "if"
               $ fmt_if_k first (fmt_opt fmt_extension_suffix)
@@ -386,7 +452,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
   match c.fmt_opts.if_then_else.v with
   | `Compact ->
       let box_branch =
-        if first && parens && not beginend then hovbox 0 else hovbox 2
+        if first && parens && not beginend then
+          hovbox 0
+        else
+          hovbox 2
       in
       { box_branch
       ; cond= cond ()

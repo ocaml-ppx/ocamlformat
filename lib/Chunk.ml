@@ -59,8 +59,10 @@ let split fg c l =
           match acc with
           | [] ->
               let chunk =
-                if c.opr_opts.disable.v then (Disable init_loc, [x])
-                else (Enable, [x])
+                if c.opr_opts.disable.v then
+                  (Disable init_loc, [x])
+                else
+                  (Enable, [x])
               in
               (chunk :: acc, c)
           | (st, h) :: t -> ((st, x :: h) :: t, c) ) ) )

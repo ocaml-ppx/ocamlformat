@@ -87,7 +87,8 @@ module Error = struct
                %!"
         | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
     | Unstable {iteration; prev; next; input_name} ->
-        if debug then print_diff input_name ~prev ~next ;
+        if debug then
+          print_diff input_name ~prev ~next ;
         if iteration <= 1 then
           Format.fprintf fmt
             "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
@@ -181,7 +182,8 @@ module Error = struct
                        %!"
                       Location.print_loc loc msg )
             | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
-                if debug then Location.report_exception fmt exn
+                if debug then
+                  Location.report_exception fmt exn
             | `Warning50 l ->
                 if debug then
                   List.iter l ~f:(fun (l, w) -> Warning.print_warning l w)
@@ -192,7 +194,8 @@ module Error = struct
         | exn ->
             Format.fprintf fmt
               "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
-            if debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
+            if debug then
+              Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
 end
 
 let with_file input_name output_file suf ext f =
@@ -232,14 +235,18 @@ let check_margin (conf : Conf.t) ~filename ~fmted =
           "Warning: %s:%i exceeds the margin\n%!" filename i )
 
 let with_optional_box_debug ~box_debug k =
-  if box_debug then Fmt.with_box_debug k else k
+  if box_debug then
+    Fmt.with_box_debug k
+  else
+    k
 
 let with_buffer_formatter ~buffer_size k =
   let buffer = Buffer.create buffer_size in
   let fs = Format_.formatter_of_buffer buffer in
   Fmt.eval fs k ;
   Format_.pp_print_flush fs () ;
-  if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
+  if Buffer.length buffer > 0 then
+    Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
 let recover (type a) (fg : a Extended_ast.t) ~input_name str : a =
@@ -281,12 +288,14 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
              Std_ast.Printast.ast fg fmt ast ) )
-    else None
+    else
+      None
   in
   let dump_formatted ~suffix fmted =
     if conf.opr_opts.debug.v then
       Some (dump_formatted ~input_name ?output_file ~suffix fmted)
-    else None
+    else
+      None
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
@@ -316,7 +325,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
     let conf =
-      if conf.opr_opts.debug.v then conf
+      if conf.opr_opts.debug.v then
+        conf
       else
         { conf with
           opr_opts=
@@ -410,8 +420,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                  should be dropped. *)
               let txt = String.drop_prefix txt 1 in
               let cmt = Cmt.create txt loc in
-              if conf.fmt_opts.parse_docstrings.v then Either.First cmt
-              else Either.Second cmt
+              if conf.fmt_opts.parse_docstrings.v then
+                Either.First cmt
+              else
+                Either.Second cmt
           | _ -> Either.Second cmt
         in
         let old_docstrings, old_comments =

@@ -29,8 +29,10 @@ module Position = struct
   let column {pos_bol; pos_cnum; _} = pos_cnum - pos_bol
 
   let fmt fs {pos_lnum; pos_bol; pos_cnum; pos_fname= _} =
-    if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
-    else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
+    if pos_lnum = -1 then
+      Format.fprintf fs "[%d]" pos_cnum
+    else
+      Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
   let to_string x = Format.asprintf "%a" fmt x
 
@@ -39,7 +41,10 @@ module Position = struct
   let compare_col p1 p2 = Int.compare (column p1) (column p2)
 
   let compare p1 p2 =
-    if phys_equal p1 p2 then 0 else Int.compare p1.pos_cnum p2.pos_cnum
+    if phys_equal p1 p2 then
+      0
+    else
+      Int.compare p1.pos_cnum p2.pos_cnum
 
   include (val Comparator.make ~compare ~sexp_of_t)
 
@@ -52,7 +57,10 @@ module Location = struct
   let fmt fs {loc_start; loc_end; loc_ghost} =
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
       loc_end
-      (if loc_ghost then " ghost" else "")
+      ( if loc_ghost then
+        " ghost"
+      else
+        "" )
 
   let to_string x = Format.asprintf "%a" fmt x
 
@@ -103,7 +111,12 @@ module Location = struct
     width x <= margin + 1 && x.loc_start.pos_lnum = x.loc_end.pos_lnum
 
   let smallest loc stack =
-    let min a b = if width a < width b then a else b in
+    let min a b =
+      if width a < width b then
+        a
+      else
+        b
+    in
     List.reduce_exn (loc :: stack) ~f:min
 
   let of_lexbuf (lexbuf : Lexing.lexbuf) =

@@ -31,13 +31,15 @@ module Valid_ast = struct
     let rec aux = function
       | [] -> None
       | (h : Location.t) :: t ->
-          if h.loc_start.pos_lnum = line then Some h
+          if h.loc_start.pos_lnum = line then
+            Some h
           else if h.loc_start.pos_lnum <= line && line <= h.loc_end.pos_lnum
           then
             match Loc_tree.children loctree h with
             | [] -> Some h
             | children -> Some (Option.value (aux children) ~default:h)
-          else aux t
+          else
+            aux t
     in
     aux locs
 
@@ -68,7 +70,8 @@ module Valid_ast = struct
       | None -> None
     in
     let rec aux ?prev acc idx_ocpi i =
-      if i > high then (List.rev acc, idx_ocpi)
+      if i > high then
+        (List.rev acc, idx_ocpi)
       else
         match
           match List.nth lines (i - 1) with
@@ -95,7 +98,13 @@ module Valid_ast = struct
       match aux_ret with
       | [] -> impossible "list expected to contain at least a `Maybe item"
       | `Ok x :: t -> on_indent i (t, x :: res)
-      | `Maybe x :: t -> (t, (if i = 0 then x else i) :: res)
+      | `Maybe x :: t ->
+          ( t
+          , ( if i = 0 then
+              x
+            else
+              i )
+            :: res )
     in
     let aux_ret, ret =
       Ocp_indent.run ~source:txt_src ~init:(aux_ret, []) ~on_indent

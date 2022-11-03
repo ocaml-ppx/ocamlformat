@@ -123,7 +123,11 @@ let utf8_length s =
 
 let str_as n s = with_pp (fun fs -> Format.pp_print_as fs n s)
 
-let str s = if String.is_empty s then noop else str_as (utf8_length s) s
+let str s =
+  if String.is_empty s then
+    noop
+  else
+    str_as (utf8_length s) s
 
 let sp = function
   | Blank -> char ' '
@@ -158,17 +162,31 @@ let list_fl xs pp =
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
 let list_k l sep f =
-  list_fl l (fun ~first:_ ~last x -> f x $ if last then noop else sep)
+  list_fl l (fun ~first:_ ~last x ->
+      f x
+      $
+      if last then
+        noop
+      else
+        sep )
 
 let list xs sep pp = list_k xs (fmt sep) pp
 
 (** Conditional formatting ----------------------------------------------*)
 
-let fmt_if_k cnd x = if cnd then x else noop
+let fmt_if_k cnd x =
+  if cnd then
+    x
+  else
+    noop
 
 let fmt_if cnd f = fmt_if_k cnd (fmt f)
 
-let fmt_or_k cnd t f = if cnd then t else f
+let fmt_or_k cnd t f =
+  if cnd then
+    t
+  else
+    f
 
 let fmt_or cnd t f = fmt_or_k cnd (fmt t) (fmt f)
 
@@ -211,8 +229,10 @@ let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
 let wrap_if_fits_or cnd pre suf k =
-  if cnd then wrap_k (str pre) (str suf) k
-  else fits_breaks pre "" $ k $ fits_breaks suf ""
+  if cnd then
+    wrap_k (str pre) (str suf) k
+  else
+    fits_breaks pre "" $ k $ fits_breaks suf ""
 
 let wrap_fits_breaks_if ?(space = true) (c : Conf.t) cnd pre suf k =
   match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
@@ -254,7 +274,12 @@ let debug_box_open ?name box_kind n fs =
       | Some s -> Format.sprintf "%s:%s" box_kind s
       | None -> box_kind
     in
-    let openning = if n = 0 then name else Format.sprintf "%s<%d" name n in
+    let openning =
+      if n = 0 then
+        name
+      else
+        Format.sprintf "%s<%d" name n
+    in
     pp_color_k (box_depth_color ())
       (fun fs -> Format.fprintf fs "@<0>[@<0>%s@<0>>" openning)
       fs ;
@@ -335,11 +360,17 @@ let fill_text ?(epi = "") text =
       ~equal:(fun x y -> String.is_empty x && String.is_empty y)
       (String.split (String.rstrip text) ~on:'\n')
   in
-  let pro = if String.starts_with_whitespace text then " " else "" in
+  let pro =
+    if String.starts_with_whitespace text then
+      " "
+    else
+      ""
+  in
   let epi =
     if String.length text > 1 && String.ends_with_whitespace text then
       " " ^ epi
-    else epi
+    else
+      epi
   in
   str pro
   $ hvbox 0

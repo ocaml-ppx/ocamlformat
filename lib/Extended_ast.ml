@@ -111,7 +111,10 @@ module Parse = struct
 
   let normalize fg ~preserve_beginend x =
     map fg fix_letop_locs @@ map fg normalize_lists
-    @@ (if preserve_beginend then Fn.id else map fg remove_beginend_nodes)
+    @@ ( if preserve_beginend then
+         Fn.id
+       else
+         map fg remove_beginend_nodes )
     @@ x
 
   let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =

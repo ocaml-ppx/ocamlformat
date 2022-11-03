@@ -86,7 +86,10 @@ let get_client () =
   | Uninitialized -> start ()
   | Running (cl, _) ->
       let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
-      if i = 0 then Ok cl else start ()
+      if i = 0 then
+        Ok cl
+      else
+        start ()
   | Errored -> Error `No_process
 
 let close_client () =
@@ -94,7 +97,10 @@ let close_client () =
   | Uninitialized -> ()
   | Running (cl, close) ->
       let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
-      if i = 0 then close () else ()
+      if i = 0 then
+        close ()
+      else
+        ()
   | Errored -> ()
 
 let config c =

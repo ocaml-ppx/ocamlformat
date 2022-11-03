@@ -215,8 +215,10 @@ end = struct
                 if
                   Location.compare_start_col (List.last_exn cmtl).loc next
                   <= 0
-                then `Before_next
-                else `After_prev
+                then
+                  `Before_next
+                else
+                  `After_prev
             | 1, y when y > 1 && Source.empty_line_after src loc ->
                 `After_prev
             | _, y
@@ -237,7 +239,8 @@ end = struct
                     | `Before_next -> true )
               in
               (prev, next)
-            else ([], cmtl)
+            else
+              ([], cmtl)
           in
           (of_list prev, of_list next)
       | after :: befores -> (of_list after, of_list (List.concat befores))
@@ -255,8 +258,10 @@ let add_cmts t position loc ?deep_loc cmts =
           if
             is_adjacent t.source deep_loc cmt.loc
             && not (Source.begins_line ~ignore_spaces:true t.source cmt.loc)
-          then deep_loc
-          else loc
+          then
+            deep_loc
+          else
+            loc
       | None -> loc
     in
     update_cmts t position ~f:(Map.add_exn ~key ~data:cmtl)
@@ -440,7 +445,8 @@ let preserve ~cache_key f t =
       preserve_nomemo f t )
 
 let pop_if_debug t loc =
-  if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
+  if t.debug then
+    update_remaining t ~f:(fun s -> Set.remove s loc)
 
 let find_cmts ?(filter = Fn.const true) t pos loc =
   pop_if_debug t loc ;
@@ -480,12 +486,14 @@ module Asterisk_prefixed = struct
       | _ ->
           let drop = function ' ' | '\t' -> true | _ -> false in
           let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-          if String.is_empty line then [" "]
+          if String.is_empty line then
+            [" "]
           else if Char.equal line.[String.length line - 1] '\n' then
             [String.drop_suffix line 1; ""]
           else if Char.is_whitespace txt.[String.length txt - 1] then
             [line ^ " "]
-          else [line]
+          else
+            [line]
     in
     split_ 0
 
@@ -527,8 +535,10 @@ module Unwrapped = struct
     let unindented = unindent_lines ~opn_pos first_line tl_lines in
     let fmt_line ~first ~last:_ s =
       let sep, sp =
-        if is_white_line s then (str "\n", noop)
-        else (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
+        if is_white_line s then
+          (str "\n", noop)
+        else
+          (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
       in
       fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
     in
@@ -580,8 +590,20 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
         `Verbatim str
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
-        let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
-        let len = String.length str - if dollar_suf then 2 else 1 in
+        let cls : Fmt.s =
+          if dollar_suf then
+            "$*)"
+          else
+            "*)"
+        in
+        let len =
+          String.length str
+          -
+          if dollar_suf then
+            2
+          else
+            1
+        in
         let source = String.sub ~pos:1 ~len str in
         match fmt_code source with
         | Ok formatted -> `Code (formatted, cls)
@@ -679,7 +701,8 @@ module Toplevel = struct
                 fmt_or
                   (Source.empty_line_before t.source first_loc)
                   "\n@;<1000 0>" "@\n"
-              else break 1 0
+              else
+                break 1 0
         in
         let epi =
           let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
@@ -689,7 +712,8 @@ module Toplevel = struct
                 fmt_or
                   (Source.empty_line_after t.source last_loc)
                   "\n@;<1000 0>" "@\n"
-              else break 1 0
+              else
+                break 1 0
           | After -> noop
         in
         pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi

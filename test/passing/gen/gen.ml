@@ -86,7 +86,8 @@ let cmd should_fail args =
       {|(with-accepted-exit-codes 1
        (run %s))|}
       cmd_string
-  else Printf.sprintf {|(run %s)|} cmd_string
+  else
+    Printf.sprintf {|(run %s)|} cmd_string
 
 let emit_test test_name setup =
   let opts =
@@ -94,10 +95,16 @@ let emit_test test_name setup =
     ::
     ( if setup.has_opts then
       read_lines (Printf.sprintf "tests/%s.opts" test_name)
-    else [] )
+    else
+      [] )
   in
   let ref_name =
-    "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
+    "tests/"
+    ^
+    if setup.has_ref then
+      test_name ^ ".ref"
+    else
+      test_name
   in
   let err_name = "tests/" ^ test_name ^ ".err" in
   let base_test_name =

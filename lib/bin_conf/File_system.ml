@@ -44,7 +44,10 @@ let xdg_config () =
   match xdg_config_home with
   | Some xdg_config_home ->
       let filename = Fpath.(xdg_config_home / "ocamlformat") in
-      if Fpath.exists filename then Some filename else None
+      if Fpath.exists filename then
+        Some filename
+      else
+        None
   | None -> None
 
 type t =
@@ -72,7 +75,8 @@ let make ~enable_outside_detected_project ~disable_conf_files
           match xdg_config () with
           | Some xdg -> {fs with configuration_files= [Ocamlformat xdg]}
           | None -> fs
-        else fs
+        else
+          fs
     | "" :: upper_segs -> aux fs ~segs:upper_segs
     | _ :: upper_segs ->
         let sep = Fpath.dir_sep in
@@ -81,31 +85,43 @@ let make ~enable_outside_detected_project ~disable_conf_files
           { fs with
             ignore_files=
               (let filename = Fpath.(dir / dot_ocamlformat_ignore) in
-               if Fpath.exists filename then filename :: fs.ignore_files
-               else fs.ignore_files )
+               if Fpath.exists filename then
+                 filename :: fs.ignore_files
+               else
+                 fs.ignore_files )
           ; enable_files=
               (let filename = Fpath.(dir / dot_ocamlformat_enable) in
-               if Fpath.exists filename then filename :: fs.enable_files
-               else fs.enable_files )
+               if Fpath.exists filename then
+                 filename :: fs.enable_files
+               else
+                 fs.enable_files )
           ; configuration_files=
-              ( if disable_conf_files then []
+              ( if disable_conf_files then
+                []
               else
                 let f_1 = Fpath.(dir / dot_ocamlformat) in
                 let files =
                   if Fpath.exists f_1 then
                     Ocamlformat f_1 :: fs.configuration_files
-                  else fs.configuration_files
+                  else
+                    fs.configuration_files
                 in
                 if ocp_indent_config then
                   let f_2 = Fpath.(dir / dot_ocp_indent) in
-                  if Fpath.exists f_2 then Ocp_indent f_2 :: files else files
-                else files ) }
+                  if Fpath.exists f_2 then
+                    Ocp_indent f_2 :: files
+                  else
+                    files
+                else
+                  files ) }
         in
         (* Inside a detected project, configs are applied in top-down
            starting from the project root (i.e. excluding the global config
            file). *)
-        if is_project_root ~root dir then {fs with project_root= Some dir}
-        else aux fs ~segs:upper_segs
+        if is_project_root ~root dir then
+          {fs with project_root= Some dir}
+        else
+          aux fs ~segs:upper_segs
   in
   aux ~segs
     { ignore_files= []

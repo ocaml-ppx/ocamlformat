@@ -79,7 +79,12 @@ let update_from_elt ~redundant elt updated_from =
   let from =
     match from with
     | `Profile _ ->
-        `Updated (updated_from, if redundant then Some from else None)
+        `Updated
+          ( updated_from
+          , if redundant then
+              Some from
+            else
+              None )
     | _ -> `Updated (updated_from, None)
   in
   let v = Conf_t.Elt.v elt in
@@ -127,7 +132,11 @@ let removed ~since:rversion rmsg = {rmsg; rversion}
 
 let in_attributes cond = function
   | Operational -> ""
-  | Formatting -> if cond then "" else " Cannot be set in attributes."
+  | Formatting ->
+      if cond then
+        ""
+      else
+        " Cannot be set in attributes."
 
 let maybe_empty = function "" -> "" | x -> " " ^ x
 
@@ -176,7 +185,12 @@ let status_doc ppf = function
   | `Removed _ -> ()
 
 let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
-  let default = if default then "set" else "unset" in
+  let default =
+    if default then
+      "set"
+    else
+      "unset"
+  in
   Format.asprintf "%s The flag is $(b,%s) by default.%s%a" doc default
     (in_attributes allow_inline kind)
     status_doc status
@@ -184,7 +198,10 @@ let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
 let generated_doc conv ~allow_inline ~doc ~kind ~default ~status =
   let default_doc = Format.asprintf "%a" (Arg.conv_printer conv) default in
   let default =
-    if String.is_empty default_doc then "none" else default_doc
+    if String.is_empty default_doc then
+      "none"
+    else
+      default_doc
   in
   Format.asprintf "%s The default value is $(b,%s).%s%a" doc default
     (in_attributes allow_inline kind)
@@ -214,7 +231,10 @@ let flag ~default ~names ~doc ~kind
   let open Cmdliner in
   let invert_names =
     List.filter_map names ~f:(fun n ->
-        if String.length n = 1 then None else Some ("no-" ^ n) )
+        if String.length n = 1 then
+          None
+        else
+          Some ("no-" ^ n) )
   in
   let doc = generated_flag_doc ~allow_inline ~doc ~kind ~default ~status in
   let invert_doc = "Unset $(b," ^ List.last_exn names ^ ")." in

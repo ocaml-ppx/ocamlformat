@@ -110,7 +110,8 @@ let make_mapper conf ~ignore_doc_comments =
     let atrs =
       if ignore_doc_comments then
         List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
-      else atrs
+      else
+        atrs
     in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
@@ -195,12 +196,16 @@ let diff_cmts (conf : Conf.t) x y =
       | str ->
           if Char.equal str.[0] '$' then
             let chars_removed =
-              if Char.equal str.[String.length str - 1] '$' then 2 else 1
+              if Char.equal str.[String.length str - 1] '$' then
+                2
+              else
+                1
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
             normalize_code source
-          else norm_non_code z
+          else
+            norm_non_code z
     in
     Set.of_list (module String) (List.map ~f z)
   in

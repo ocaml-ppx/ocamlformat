@@ -390,7 +390,8 @@ let is_in_listing_file ~listings ~filename =
                 match Fpath.of_string line with
                 | Ok file_on_current_line -> (
                     let f = Fpath.(dir // file_on_current_line) in
-                    if Fpath.equal filename f then Some loc
+                    if Fpath.equal filename f then
+                      Some loc
                     else
                       try
                         let filename = Fpath.to_string filename in
@@ -471,12 +472,18 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
         {f with disable= {f.disable with v= true}} ) )
   else
     let listings =
-      if conf.opr_opts.disable.v then fs.enable_files else fs.ignore_files
+      if conf.opr_opts.disable.v then
+        fs.enable_files
+      else
+        fs.ignore_files
     in
     match is_in_listing_file ~listings ~filename:file_abs with
     | Some loc ->
         let status =
-          if conf.opr_opts.disable.v then "enabled" else "ignored"
+          if conf.opr_opts.disable.v then
+            "enabled"
+          else
+            "ignored"
         in
         if conf.opr_opts.debug.v then
           warn ~loc "%a is %s." Fpath.pp file_abs status ;
@@ -490,7 +497,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       collect_warnings (fun () ->
           build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
     in
-    if not conf.opr_opts.quiet.v then warn_now () ;
+    if not conf.opr_opts.quiet.v then
+      warn_now () ;
     Ok conf
   with Conf_error msg -> Error msg
 

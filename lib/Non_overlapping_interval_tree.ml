@@ -58,7 +58,8 @@ module Make (Itv : IN) = struct
              | Some children -> parents map children ~ancestors elt
              | None -> ancestors )
              |> Option.some
-           else None ) )
+           else
+             None ) )
 
   let add_root t root = {t with roots= root :: t.roots}
 

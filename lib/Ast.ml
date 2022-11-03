@@ -118,7 +118,8 @@ module String_id = struct
          (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char_id.is_kwdop c)))
 
   let is_infix i =
-    if Char_id.is_infixop i.[0] then true
+    if Char_id.is_infixop i.[0] then
+      true
     else
       match i with
       | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
@@ -1602,8 +1603,10 @@ end = struct
       match ptyp_desc with
       | Ptyp_arrow (t, _) ->
           let assoc =
-            if List.exists t ~f:(fun x -> x.pap_type == typ) then Left
-            else Right
+            if List.exists t ~f:(fun x -> x.pap_type == typ) then
+              Left
+            else
+              Right
           in
           Some (MinusGreater, assoc)
       | Ptyp_tuple _ -> Some (InfixOp3, Non)
@@ -1618,24 +1621,41 @@ end = struct
       | Pcty_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Pcty_arrow (t, _) ->
           let assoc =
-            if List.exists t ~f:(fun x -> x.pap_type == typ) then Left
-            else Right
+            if List.exists t ~f:(fun x -> x.pap_type == typ) then
+              Left
+            else
+              Right
           in
           Some (MinusGreater, assoc)
       | _ -> None )
     | {ctx= Cty {pcty_desc; _}; ast= Cty typ; _} -> (
       match pcty_desc with
       | Pcty_arrow (_, t2) ->
-          Some (MinusGreater, if t2 == typ then Right else Left)
+          Some
+            ( MinusGreater
+            , if t2 == typ then
+                Right
+              else
+                Left )
       | _ -> None )
     | {ast= Cty _; _} -> None
     | {ast= Typ _; _} -> None
     | {ctx= Exp {pexp_desc; _}; ast= Exp exp} -> (
       match pexp_desc with
       | Pexp_tuple (e0 :: _) ->
-          Some (Comma, if exp == e0 then Left else Right)
+          Some
+            ( Comma
+            , if exp == e0 then
+                Left
+              else
+                Right )
       | Pexp_cons l ->
-          Some (ColonColon, if exp == List.last_exn l then Right else Left)
+          Some
+            ( ColonColon
+            , if exp == List.last_exn l then
+                Right
+              else
+                Left )
       | Pexp_construct
           ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [_; _]; _}) ->
           Some (Semi, Non)
@@ -1645,7 +1665,8 @@ end = struct
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
       | Pexp_indexop_access {pia_lhs= lhs; pia_rhs= rhs; _} -> (
-          if lhs == exp then Some (Dot, Left)
+          if lhs == exp then
+            Some (Dot, Left)
           else
             match rhs with
             | Some e when e == exp -> Some (LessMinus, Right)
@@ -1656,14 +1677,21 @@ end = struct
             if
               loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
               = String.length i - 1
-            then Some (UMinus, Non)
-            else Some (High, Non)
+            then
+              Some (UMinus, Non)
+            else
+              Some (High, Non)
         | _ -> (
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
       | Pexp_infix ({txt= i; _}, e1, _) -> (
-          let child = if e1 == exp then Left else Right in
+          let child =
+            if e1 == exp then
+              Left
+            else
+              Right
+          in
           match (i.[0], i) with
           | _, ":=" -> Some (ColonEqual, child)
           | _, ("or" | "||") -> Some (BarBar, child)
@@ -1744,8 +1772,10 @@ end = struct
             if
               loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
               = String.length i - 1
-            then Some UMinus
-            else Some High
+            then
+              Some UMinus
+            else
+              Some High
         | "!=" -> Some Apply
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
@@ -1806,7 +1836,10 @@ end = struct
             (* add parens only when the context has a higher prec than ast *)
             | cmp -> cmp >= 0
           in
-          if ambiguous then `Ambiguous else `Non_ambiguous
+          if ambiguous then
+            `Ambiguous
+          else
+            `Non_ambiguous
       | None -> `No_prec_ast )
     | None -> `No_prec_ctx
 
@@ -2133,8 +2166,10 @@ end = struct
       | _ -> (
         match ctx with
         | Exp {pexp_desc; _} ->
-            if is_right_infix_arg pexp_desc exp then Exp.is_sequence exp
-            else exposed_right_exp Non_apply exp
+            if is_right_infix_arg pexp_desc exp then
+              Exp.is_sequence exp
+            else
+              exposed_right_exp Non_apply exp
         | _ -> exposed_right_exp Non_apply exp )
     in
     let rec ifthenelse pexp_desc =

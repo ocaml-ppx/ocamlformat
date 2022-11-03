@@ -20,8 +20,10 @@ let warn_raw, collect_warnings =
   let delay_warning = ref false in
   let delayed_warning_list = ref [] in
   let warn_ s =
-    if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s%!" s
+    if !delay_warning then
+      delayed_warning_list := s :: !delayed_warning_list
+    else
+      Format.eprintf "%s%!" s
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
@@ -312,8 +314,10 @@ module Formatting = struct
         )
       (fun conf ->
         let elt = conf.fmt_opts.break_struct in
-        if elt.v then Elt.make `Force elt.from
-        else Elt.make `Natural elt.from )
+        if elt.v then
+          Elt.make `Force elt.from
+        else
+          Elt.make `Natural elt.from )
 
   let cases_exp_indent =
     let docv = "COLS" in
