@@ -111,7 +111,6 @@ val get_if_then_else :
      Conf.t
   -> first:bool
   -> last:bool
-  -> parens:bool
   -> parens_bch:bool
   -> parens_prev_bch:bool
   -> xcond:expression Ast.xt option

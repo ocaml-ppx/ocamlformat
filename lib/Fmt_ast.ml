@@ -2149,9 +2149,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     let parens_bch = parenze_exp xbch && not symbol_parens in
                     let parens_exp = false in
                     let p =
-                      Params.get_if_then_else c.conf ~first ~last ~parens
-                        ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
-                        ~xbch ~expr_loc:pexp_loc
+                      Params.get_if_then_else c.conf ~first ~last ~parens_bch
+                        ~parens_prev_bch:!parens_prev_bch ~xcond ~xbch
+                        ~expr_loc:pexp_loc
                         ~fmt_extension_suffix:
                           (Option.map ext ~f:(fun _ ->
                                fmt_extension_suffix c ext ) )

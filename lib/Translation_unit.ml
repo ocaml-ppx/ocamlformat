@@ -368,34 +368,34 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                (Normalize_extended_ast.equal fg conf t.ast t_new.ast
                   ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
-        let old_ast =
-          dump_ast std_fg ~suffix:".old"
-            (Normalize_std_ast.ast std_fg conf std_t.ast)
-        in
-        let new_ast =
-          dump_ast std_fg ~suffix:".new"
-            (Normalize_std_ast.ast std_fg conf std_t_new.ast)
-        in
-        let args ~suffix =
-          [ ("output file", dump_formatted ~suffix fmted)
-          ; ("old ast", old_ast)
-          ; ("new ast", new_ast) ]
-          |> List.filter_map ~f:(fun (s, f_opt) ->
-                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
-        in
-        if
-          Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
-            std_t.ast std_t_new.ast
-        then
-          let docstrings =
-            Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
-              std_t_new.ast
+          let old_ast =
+            dump_ast std_fg ~suffix:".old"
+              (Normalize_std_ast.ast std_fg conf std_t.ast)
           in
-          let args = args ~suffix:".unequal-docs" in
-          internal_error (`Doc_comment docstrings) args
-        else
-          let args = args ~suffix:".unequal-ast" in
-          internal_error `Ast_changed args ) ;
+          let new_ast =
+            dump_ast std_fg ~suffix:".new"
+              (Normalize_std_ast.ast std_fg conf std_t_new.ast)
+          in
+          let args ~suffix =
+            [ ("output file", dump_formatted ~suffix fmted)
+            ; ("old ast", old_ast)
+            ; ("new ast", new_ast) ]
+            |> List.filter_map ~f:(fun (s, f_opt) ->
+                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
+          in
+          if
+            Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
+              std_t.ast std_t_new.ast
+          then
+            let docstrings =
+              Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
+                std_t_new.ast
+            in
+            let args = args ~suffix:".unequal-docs" in
+            internal_error (`Doc_comment docstrings) args
+          else
+            let args = args ~suffix:".unequal-ast" in
+            internal_error `Ast_changed args ) ;
       (* Comments not preserved ? *)
       if conf.opr_opts.comment_check.v then (
         ( match Cmts.remaining_comments cmts_t with
