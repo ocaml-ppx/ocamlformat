@@ -31,7 +31,7 @@
 - Improve formatting of odoc links (#2152, @gpetiot)
 - Preserve sugared extension node attached to an `if` carrying attributes (#2167, @trefis, @gpetiot)
 - Remove unnecessary parentheses around partially applied infix operators with attributes (#2198, @gpetiot)
-- JaneStreet profile: doesn't align infix ops with open paren (#<PR_NUMBER>, @gpetiot)
+- JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 
 ### New features
 
