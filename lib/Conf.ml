@@ -1113,7 +1113,7 @@ let ( (* disable_outside_detected_project *) ) =
 
 let ocamlformat_profile from =
   let elt content = Elt.make content from in
-  { align_pattern_matching_bar= elt `Paren
+  { align_symbol_open_paren= elt true
   ; assignment_operator= elt `End_line
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Nested
@@ -1178,7 +1178,7 @@ let ocamlformat_profile from =
 let conventional_profile from =
   let elt content = Elt.make content from in
   let default_elt opt = elt @@ C.default opt in
-  { align_pattern_matching_bar= elt `Paren
+  { align_symbol_open_paren= elt true
   ; assignment_operator= default_elt Formatting.assignment_operator
   ; break_before_in= default_elt Formatting.break_before_in
   ; break_cases= default_elt Formatting.break_cases
@@ -1250,7 +1250,7 @@ let default_profile = conventional_profile
 
 let janestreet_profile from =
   let elt content = Elt.make content from in
-  { align_pattern_matching_bar= elt `Keyword
+  { align_symbol_open_paren= elt false
   ; assignment_operator= elt `Begin_line
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Fit_or_vertical

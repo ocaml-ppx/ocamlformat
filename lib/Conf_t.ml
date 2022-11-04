@@ -22,7 +22,7 @@ end
 type 'a elt = 'a Elt.t
 
 type fmt_opts =
-  { align_pattern_matching_bar: [`Paren | `Keyword] elt
+  { align_symbol_open_paren: bool elt
   ; assignment_operator: [`Begin_line | `End_line] elt
   ; break_before_in: [`Fit_or_vertical | `Auto] elt
   ; break_cases:
