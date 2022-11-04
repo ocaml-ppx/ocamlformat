@@ -94,7 +94,7 @@ let emit_test test_name setup =
     ::
     ( if setup.has_opts then
       read_lines (Printf.sprintf "tests/%s.opts" test_name)
-    else [] )
+      else [] )
   in
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name

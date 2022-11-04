@@ -368,13 +368,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
   let cond () =
     match xcond with
     | Some xcnd ->
-        hvbox
-          ( match (parens, imd) with
-          | false, _ -> 0
-          | true, `No -> -1
-          | true, (`Space | `Closing_on_separate_line) -> -2 )
-          ( hvbox
-              (if parens then 0 else 2)
+        hvbox 0
+          ( hvbox 2
               ( fmt_if (not first) "else "
               $ str "if"
               $ fmt_if_k first (fmt_opt fmt_extension_suffix)

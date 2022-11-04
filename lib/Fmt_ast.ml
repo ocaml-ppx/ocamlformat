@@ -757,8 +757,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( if List.is_empty atrs then Fn.id
-     else fun k ->
-       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
+       else fun k ->
+         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
+     )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -833,10 +834,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | _ ->
             list rfs
               ( if
-                in_type_declaration
-                && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-              then "@;<1000 0>| "
-              else "@ | " )
+                  in_type_declaration
+                  && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
+                then "@;<1000 0>| "
+                else "@ | " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -2141,33 +2142,34 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox 0
         ( Params.Exp.wrap c.conf ~parens:(parens || has_attr)
-            (list_fl cnd_exps
-               (fun ~first ~last (xcond, xbch, pexp_attributes) ->
-                 let symbol_parens = Exp.is_symbol xbch.ast in
-                 let parens_bch = parenze_exp xbch && not symbol_parens in
-                 let parens_exp = false in
-                 let p =
-                   Params.get_if_then_else c.conf ~first ~last ~parens
-                     ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
-                     ~xbch ~expr_loc:pexp_loc
-                     ~fmt_extension_suffix:
-                       (Option.map ext ~f:(fun _ ->
-                            fmt_extension_suffix c ext ) )
-                     ~fmt_attributes:
-                       (fmt_attributes c ~pre:Blank pexp_attributes)
-                     ~fmt_cond:(fmt_expression c)
-                 in
-                 parens_prev_bch := parens_bch ;
-                 p.box_branch
-                   ( p.cond
-                   $ p.box_keyword_and_expr
-                       ( p.branch_pro
-                       $ p.wrap_parens
-                           ( fmt_expression c ?box:p.box_expr
-                               ~parens:parens_exp ?pro:p.expr_pro
-                               ?eol:p.expr_eol xbch
-                           $ p.break_end_branch ) ) )
-                 $ fmt_if_k (not last) p.space_between_branches ) )
+            (hvbox 0
+               (list_fl cnd_exps
+                  (fun ~first ~last (xcond, xbch, pexp_attributes) ->
+                    let symbol_parens = Exp.is_symbol xbch.ast in
+                    let parens_bch = parenze_exp xbch && not symbol_parens in
+                    let parens_exp = false in
+                    let p =
+                      Params.get_if_then_else c.conf ~first ~last ~parens
+                        ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
+                        ~xbch ~expr_loc:pexp_loc
+                        ~fmt_extension_suffix:
+                          (Option.map ext ~f:(fun _ ->
+                               fmt_extension_suffix c ext ) )
+                        ~fmt_attributes:
+                          (fmt_attributes c ~pre:Blank pexp_attributes)
+                        ~fmt_cond:(fmt_expression c)
+                    in
+                    parens_prev_bch := parens_bch ;
+                    p.box_branch
+                      ( p.cond
+                      $ p.box_keyword_and_expr
+                          ( p.branch_pro
+                          $ p.wrap_parens
+                              ( fmt_expression c ?box:p.box_expr
+                                  ~parens:parens_exp ?pro:p.expr_pro
+                                  ?eol:p.expr_eol xbch
+                              $ p.break_end_branch ) ) )
+                    $ fmt_if_k (not last) p.space_between_branches ) ) )
         $ fmt_atrs )
   | Pexp_let (rec_flag, bd, body) ->
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
@@ -4146,7 +4148,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
-         else break 1000 indent_after_in )
+           else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 

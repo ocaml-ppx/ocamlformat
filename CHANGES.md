@@ -17,6 +17,7 @@
 - Fix parentheses around symbol identifiers (#2185, @gpetiot)
 - Fix alignment inconsistency between let-binding and let-open (#2187, @gpetiot)
 - Fix reporting of operational settings origin in presence of profiles (#2188, @EmileTrotignon)
+- Fix alignment inconsistency of if-then-else in apply (#<PR_NUMBER>, @gpetiot)
 
 ### Changes
 
