@@ -5,7 +5,7 @@ on:
     inputs:
       ref:
         required: true
-        default: 'master'
+        default: 'main'
 
 env:
   CYGWINSETUP: setup-x86_64.exe
@@ -18,6 +18,9 @@ jobs:
     env:
       SHELLOPTS: igncr
     steps:
+      - name: Disable Git EOL Conversion
+        run: |
+          git config --global core.autocrlf false
       - name: Checkout Repository
         uses: actions/checkout@v1
         with:
@@ -33,6 +36,7 @@ jobs:
       - name: Run Build Script
         run: |
           cd '${{ github.workspace }}'
+          git config --global --add safe.directory "$(pwd)"
           bash tools/build-mingw64.sh
         shell: C:\cygwin64\bin\bash.exe --login --norc '{0}'
       - name: Upload Artifact
