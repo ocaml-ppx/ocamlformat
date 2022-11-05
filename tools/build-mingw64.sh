@@ -50,7 +50,7 @@ set -eu
 
 dune subst
 
-dune build -p ocamlformat
+dune build -p ocamlformat @install
 
 echo "Version check:"
 
