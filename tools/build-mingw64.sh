@@ -35,6 +35,9 @@ export PATH=$(pwd)/bin:${PATH}
 
 export OPAMROOT="$(cygpath -aml _opam)"
 
+# If the following command fails with a curl error, make sure you have Cygwin's
+# curl in the PATH, and not a native Windows one.
+
 opam init default "https://github.com/fdopen/opam-repository-mingw.git#opam2" -c "ocaml-variants.4.14.0+mingw64c" --disable-sandboxing --no-setup
 
 eval $(opam env)

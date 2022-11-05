@@ -1,6 +1,8 @@
 name: Build mingw64 binary
 
 on:
+  release:
+    types: [released]
   workflow_dispatch:
     inputs:
       ref:
@@ -18,13 +20,21 @@ jobs:
     env:
       SHELLOPTS: igncr
     steps:
+      - name: Set Build Ref for Release Builds
+        if: github.event_name == 'release'
+        run: |
+          "build_ref=${{ github.ref }}" >> $env:GITHUB_ENV
+      - name: Set Build Ref for Manual Builds
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          "build_ref=${{ github.event.inputs.ref }}" >> $env:GITHUB_ENV
       - name: Disable Git EOL Conversion
         run: |
           git config --global core.autocrlf false
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ env.build_ref }}
       - name: Download Cygwin Installer
         run: |
           curl.exe -o C:\${{ env.CYGWINSETUP }} https://www.cygwin.com/${{ env.CYGWINSETUP }}
@@ -38,10 +48,24 @@ jobs:
           cd '${{ github.workspace }}'
           git config --global --add safe.directory "$(pwd)"
           bash tools/build-mingw64.sh
+          echo "short_ref=$(basename ${{ env.build_ref }})" >> $GITHUB_ENV
         shell: C:\cygwin64\bin\bash.exe --login --norc '{0}'
+      - name: Rename Artifact
+        run: |
+          Copy-Item ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe -Destination .\ocamlformat-${{ env.short_ref }}.exe
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ocamlformat-${{ github.event.inputs.ref }}.exe
-          path: ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe
+          name: ocamlformat-${{ env.short_ref }}.exe
+          path: ocamlformat-${{ env.short_ref }}.exe
           if-no-files-found: error
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        run: >
+          curl.exe
+          --data-binary '@ocamlformat-${{ env.short_ref }}.exe'
+          -X POST
+          -H "Content-Type: application/octet-stream"
+          -H "Accept: application/vnd.github+json"
+          -H "Authorization: Bearer ${{ github.token }}"
+          "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=ocamlformat-${{ env.short_ref }}.exe"
