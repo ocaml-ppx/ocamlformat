@@ -48,24 +48,24 @@ jobs:
           cd '${{ github.workspace }}'
           git config --global --add safe.directory "$(pwd)"
           bash tools/build-mingw64.sh
-          echo "short_ref=$(basename ${{ env.build_ref }})" >> $GITHUB_ENV
+          echo "artifact_name=ocamlformat-$(basename ${{ env.build_ref }}).exe" >> $GITHUB_ENV
         shell: C:\cygwin64\bin\bash.exe --login --norc '{0}'
       - name: Rename Artifact
         run: |
-          Copy-Item ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe -Destination .\ocamlformat-${{ env.short_ref }}.exe
+          Copy-Item ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe -Destination .\${{ env.artifact_name }}
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ocamlformat-${{ env.short_ref }}.exe
-          path: ocamlformat-${{ env.short_ref }}.exe
+          name: ${{ env.artifact_name }}
+          path: ${{ env.artifact_name }}
           if-no-files-found: error
       - name: Upload Release Asset
         if: github.event_name == 'release'
         run: >
           curl.exe
-          --data-binary '@ocamlformat-${{ env.short_ref }}.exe'
+          --data-binary '@${{ env.artifact_name }}'
           -X POST
           -H "Content-Type: application/octet-stream"
           -H "Accept: application/vnd.github+json"
           -H "Authorization: Bearer ${{ github.token }}"
-          "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=ocamlformat-${{ env.short_ref }}.exe"
+          "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=${{ env.artifact_name }}"
