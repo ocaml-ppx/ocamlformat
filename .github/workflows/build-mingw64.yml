@@ -22,7 +22,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
       - name: Checkout Repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
       - name: Download Cygwin Installer
@@ -40,7 +40,7 @@ jobs:
           bash tools/build-mingw64.sh
         shell: C:\cygwin64\bin\bash.exe --login --norc '{0}'
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ocamlformat-${{ github.event.inputs.ref }}.exe
           path: ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe

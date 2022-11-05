@@ -35,7 +35,7 @@ export PATH=$(pwd)/bin:${PATH}
 
 export OPAMROOT="$(cygpath -aml _opam)"
 
-opam init default "https://github.com/fdopen/opam-repository-mingw.git#opam2" -c "ocaml-variants.4.12.0+mingw64c" --disable-sandboxing --no-setup
+opam init default "https://github.com/fdopen/opam-repository-mingw.git#opam2" -c "ocaml-variants.4.14.0+mingw64c" --disable-sandboxing --no-setup
 
 eval $(opam env)
 
