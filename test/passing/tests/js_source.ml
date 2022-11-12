@@ -7617,3 +7617,10 @@ let x =
     ~f:(fun thing ->
       something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
+
+let x =
+  f
+    ("A string _____________________"
+    ^ "Another string _____________"
+    ^ "Yet another string _________")
+;;

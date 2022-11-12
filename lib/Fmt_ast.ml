@@ -1530,9 +1530,10 @@ and fmt_infix_op_args c ~parens xexp op_args =
            $ fmt_if_k (not last) (break 1 0) ) )
     $ fmt_if_k (not last_grp) (break 1 0)
   in
+  let align = not c.conf.fmt_opts.align_symbol_open_paren.v in
   Params.Exp.Infix_op_arg.wrap c.conf ~parens
     ~parens_nested:(Ast.parenze_nested_exp xexp)
-    (list_fl groups fmt_op_arg_group)
+    (hvbox_if align 0 (list_fl groups fmt_op_arg_group))
 
 and fmt_pat_cons c ~parens args =
   let groups =
@@ -1562,9 +1563,7 @@ and fmt_pat_cons c ~parens args =
 
 and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
   let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
-  let align =
-    Poly.(c.conf.fmt_opts.align_pattern_matching_bar.v = `Keyword)
-  in
+  let align = not c.conf.fmt_opts.align_symbol_open_paren.v in
   hvbox indent
     ( Params.Exp.wrap c.conf ~parens ~disambiguate:true
     @@ hvbox_if align 0
@@ -2099,9 +2098,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
           ->
             false
-        | _ ->
-            parens
-            && Poly.(c.conf.fmt_opts.align_pattern_matching_bar.v = `Keyword)
+        | _ -> parens && not c.conf.fmt_opts.align_symbol_open_paren.v
       in
       Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
       @@ hvbox_if align 0
