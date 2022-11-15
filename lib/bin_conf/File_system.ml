@@ -89,17 +89,18 @@ let make ~enable_outside_detected_project ~disable_conf_files
                else fs.enable_files )
           ; configuration_files=
               ( if disable_conf_files then []
-              else
-                let f_1 = Fpath.(dir / dot_ocamlformat) in
-                let files =
-                  if Fpath.exists f_1 then
-                    Ocamlformat f_1 :: fs.configuration_files
-                  else fs.configuration_files
-                in
-                if ocp_indent_config then
-                  let f_2 = Fpath.(dir / dot_ocp_indent) in
-                  if Fpath.exists f_2 then Ocp_indent f_2 :: files else files
-                else files ) }
+                else
+                  let f_1 = Fpath.(dir / dot_ocamlformat) in
+                  let files =
+                    if Fpath.exists f_1 then
+                      Ocamlformat f_1 :: fs.configuration_files
+                    else fs.configuration_files
+                  in
+                  if ocp_indent_config then
+                    let f_2 = Fpath.(dir / dot_ocp_indent) in
+                    if Fpath.exists f_2 then Ocp_indent f_2 :: files
+                    else files
+                  else files ) }
         in
         (* Inside a detected project, configs are applied in top-down
            starting from the project root (i.e. excluding the global config
