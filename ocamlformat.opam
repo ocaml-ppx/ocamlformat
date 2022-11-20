@@ -13,6 +13,7 @@ depends: [
   "base" {>= "v0.12.0"}
   "cmdliner" {>= "1.1.0"}
   "dune" {>= "2.8"}
+  "dune" {with-test & < "3.0"}
   "dune-build-info"
   "either"
   "fix"

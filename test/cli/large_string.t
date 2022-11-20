@@ -1,4 +1,4 @@
-  $ echo profile=default > .ocamlformat
+  $ touch .ocamlformat
 
   $ echo "let _ = \"$(printf '%*s' 300000 | sed 's/ /_ _/g')\"" > a.ml
 

@@ -1,4 +1,4 @@
-  $ echo profile=default > .ocamlformat
+  $ touch .ocamlformat
 
   $ echo 'let x = y' > a.ml
 
