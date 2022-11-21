@@ -1,0 +1,22 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                        ;
+;                              OCamlFormat                               ;
+;                                                                        ;
+;            Copyright (c) Facebook, Inc. and its affiliates.            ;
+;                                                                        ;
+;      This source code is licensed under the MIT license found in       ;
+;      the LICENSE file in the root directory of this source tree.       ;
+;                                                                        ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(executable
+ (name bench)
+ (libraries bechamel bechamel-js ocamlformat stdio yojson))
+
+(rule
+ (alias runbench)
+ (deps
+  (source_tree test)
+  %{bin:bench})
+ (action
+  (run %{bin:bench})))

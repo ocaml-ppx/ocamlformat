@@ -1,0 +1,19 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                        ;
+;                              OCamlFormat                               ;
+;                                                                        ;
+;            Copyright (c) Facebook, Inc. and its affiliates.            ;
+;                                                                        ;
+;      This source code is licensed under the MIT license found in       ;
+;      the LICENSE file in the root directory of this source tree.       ;
+;                                                                        ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rule
+ (target source_bench.ml)
+ (deps source.ml)
+ (alias runbench)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:cat} %{deps} %{deps} %{deps} %{deps} %{deps}))))

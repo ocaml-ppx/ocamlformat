@@ -1,0 +1,15 @@
+[
+  structure_item ([1,0+0]..[1,0+14])
+    Pstr_value Nonrec
+    [
+      <def> ([1,0+0]..[1,0+14])
+        pattern ([1,0+4]..[1,0+5])
+          Ppat_var "o" ([1,0+4]..[1,0+5])
+        expression ([1,0+8]..[1,0+14])
+          Pexp_object
+          class_structure
+            pattern ([1,0+14]..[1,0+14]) ghost
+              Ppat_any
+            []
+    ]
+]

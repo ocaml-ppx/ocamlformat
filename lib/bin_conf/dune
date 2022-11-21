@@ -1,0 +1,14 @@
+(library
+ (public_name ocamlformat.bin_conf)
+ (name bin_conf)
+ (flags
+  (:standard
+   -open
+   Ocaml_common
+   -open
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_result.Global_scope))
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries ocamlformat re))

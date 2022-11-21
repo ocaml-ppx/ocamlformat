@@ -1,0 +1,39 @@
+{0 ocamlformat-rpc}
+
+[ocamlformat-rpc] is a RPC mode for OCamlFormat, a tool to format OCaml code.
+
+[ocamlformat-rpc] listens to RPC requests, provided on the standard input, and prints the response on the standard output.
+
+{1 Agreeing on a RPC version}
+
+Before the client and the server agree on a common version to use the following commands are available:
+- [Halt] to close the connection to the RPC. The command is encoded as the canonical s-expression [Atom "Halt"];
+- [Version <v>] to ask the server to use version [v]. The command expects a canonical s-expression of the form [List [Atom "Version"; Atom v]] where [v] is of the version name (e.g. ["v1"]).
+
+If the server agrees upon the version he will send the reply [Version v] and the protocol version is set to [v], to use another version later the client has to close the connexion and start a new one. If the server cannot use version [v] he might propose another version [w] by sending the reply [Version w] that the client can accept by sending the same request for version [w], or propose another version. If the server cannot propose another version it will close the connection. Unknown commands are ignored.
+
+Once the client and the server agree on a common version, the requests you can send may differ from one version to another.
+
+{1 Commands}
+
+[ocamlformat-rpc] accepts different commands depending on the version agreed upon.
+
+{2 Version 1}
+
+- [Halt] to end the communication with the RPC server. The caller must close the input and output channels.
+- [(Config (options...))]: submits a list of formatting options (please refer to [ocamlformat --help] to know more about the available options). The server answer with the accepted configuration. The configuration can be reset to its default value by sending the pair [(profile default)].
+- [(Format x)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
+
+{2 Version 2}
+
+- [Halt] to end the communication with the RPC server. The caller must close the input and output channels.
+- [(Format x options...)]: submits a string to be formatted. It attempts to successively format [x] as a [core_type], a [signature], a [module_type], an [expression] and a [use_file], stopping at the first successful formatting. The formatted output is sent as a reply of the same form.
+  The options are:
+  + [(Path p)] sets the path to the formatted file.
+  + [(Config config)] sets the formatting options. [config] is a list of options, for example:
+    [((profile default) (parse-docstrings true))]
+    See [ocamlformat --help] for the available formatting options.
+
+Unknown commands are ignored.
+
+All the commands take canonical s-expressions. To build your RPC client to interact with [ocamlformat-rpc] please refer to the library [ocamlformat-rpc-lib].

@@ -1,0 +1,107 @@
+{0 Getting started}
+
+{1 Installation}
+
+OCamlFormat can be installed with [opam]:
+
+{[
+opam install ocamlformat
+]}
+
+Alternatively, it can be built manually with:
+
+{[
+# To properly set `ocamlformat --version`
+dune subst
+dune build @install
+]}
+
+{1 Formatting code!}
+
+First of all, make sure you have an [.ocamlformat] file at the root of your project. Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this [.ocamlformat] file is considered good practice:
+{[
+profile = default
+version = 0.24.1
+]}
+
+To manually invoke OCamlformat the general command is:
+
+{[
+ocamlformat [OPTION]... [SRC]...
+]}
+
+The most common usecase involves using the Dune build system, once your project is correctly setup (see {{:https://dune.readthedocs.io/en/stable/formatting.html#formatting-a-project}Dune's manual}) you can reformat your project using:
+
+{[
+dune build @fmt
+]}
+
+With this command, Dune will apply the appropriate autoformatter on each kind of file (where OCamlFormat is the one called on .ml, .mli, .mlt, .eliom and .eliomi files).
+All files are formatted, unless explicitly excluded (see below).
+
+{1 Code style}
+
+There are a number of preset code style profiles, selected using the [--profile] option by passing [--profile=<name>] on the command line or adding [profile = <name>] to an [.ocamlformat] configuration file.
+The available profiles are:
+- [conventional] (also known as [default]);
+- [ocamlformat];
+- [janestreet].
+
+It is considered a good practice to set a profile in the [.ocamlformat] configuration file of a project, even if you plan on using the [default] profile, explicitly setting [profile = default] is recommended.
+
+Each profile is a collection of settings for all options, overriding lower priority configuration of individual options. So a profile can be selected and then individual options can be overridden if desired.
+
+The [conventional] (or [default]) profile aims to be as familiar and "conventional" appearing as the available options allow.
+
+The [ocamlformat] profile aims to take advantage of the strengths of a parsetree-based auto-formatter, and to limit the consequences of the weaknesses imposed by the current implementation. This is a style which optimizes for what the formatter can do best, rather than to match the style of any existing code. Instead of familiarity, the focus is on legibility, keeping the common cases reasonably compact while attempting to avoid confusing formatting in corner cases. General guidelines that have directed the design include:
+
+- Legibility, in the sense of making it as hard as possible for quick visual parsing to give the wrong interpretation, is of highest priority;
+- Whenever possible the high-level structure of the code should be obvious by looking only at the left margin, in particular, it should not be necessary to visually jump from left to right hunting for critical keywords, tokens, etc;
+- All else equal compact code is preferred as reading without scrolling is easier, so indentation or white space is avoided unless it helps legibility;
+- Attention has been given to making some syntactic gotchas visually obvious.
+
+If no profile is selected, the [default] one is used.
+
+{1 Options}
+
+The full options' documentation is available through [ocamlformat --help].
+Options can be modified by the means of:
+- an [.ocamlformat] configuration file with an [option = VAL] line
+- using the [OCAMLFORMAT] environment variable: [OCAMLFORMAT=option=VAL,...,option=VAL]
+- an optional parameter on the command line
+- a global [[@@@ocamlformat "option=VAL"]] attribute in the processed file
+- an [[@@ocamlformat "option=VAL"]] attribute on an expression in the processed file
+
+[.ocamlformat] files in the containing and all ancestor directories for each input file are used, as well as the global [.ocamlformat] file defined in [$XDG_CONFIG_HOME/ocamlformat]. The global [.ocamlformat] file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
+
+When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file.
+When this option is not set, [.ocamlformat] files outside of the project are ignored. If no configuration file is found, formatting is disabled.
+
+An [.ocamlformat-ignore] file specifies files that OCamlFormat should ignore. Each line in an [.ocamlformat-ignore] file specifies a filename relative to the directory containing the [.ocamlformat-ignore] file. Lines starting with [#] are ignored and can be used as comments.
+
+{1 Version}
+
+On existing projects, it is likely an [.ocamlformat] file is already present, specifying a field [version = A.B.C] (e.g. [0.20.0]).
+
+It is the user's responsability to install the appropriate OCamlFormat binary, requesting an older version if one's project requires it:
+
+{[
+opam install ocamlformat.0.20.0
+]}
+
+Setting an OCamlFormat version in the configuration file is a good practice to ensure every contributor of a project gets the same formatting.
+
+{1 Requirements}
+
+OCamlFormat requires source code that meets the following conditions:
+
+- Does not trigger warning 50 (“Unexpected documentation comment.”). For code that triggers warning 50, it is unlikely that OCamlFormat will happen to preserve the documentation string attachment.
+- Parses without any preprocessing, using the version of the standard OCaml (not camlp4) parser used to build OCamlFormat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
+- Is either a module implementation ([.ml]), an interface ([.mli]) or a sequence of toplevel phrases ([.mlt]). dune files in OCaml syntax also work.
+
+{1 Warranty}
+
+Under those conditions, OCamlFormat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, OCamlFormat enforces the following checks:
+- The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see {{:https://github.com/ocaml-ppx/ocamlformat/blob/main/lib/Normalize.ml}Normalize}[.equal]).
+- The documentation strings, and their attachment, has been preserved (implicit in the parse tree check).
+- The set of comments in the original and formatted files is the same up to their location.

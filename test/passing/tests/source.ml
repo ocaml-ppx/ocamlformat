@@ -4325,11 +4325,13 @@ module M' = M
 module B' = B
 
 class b : B.a = object
+ method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
  method a : 'a. 'a M.s -> 'a = fun (type a) ((module X) : (module M.S with type
 a = a)) -> X.v
 end
 
 class b' : B.a = object
+ method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
  method a : 'a. 'a M'.s -> 'a = fun (type a) ((module X) : (module M'.S with
 type a = a)) -> X.v
 end
@@ -7397,3 +7399,18 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+let _ = fun (x : int as 'a) -> (x : int as 'a)
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *) ~enabled:false Info Eradicate (* TODO *)
+    ~user_documentation:""
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:(* Should be enabled for special integrations *)
+      "Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info

@@ -82,7 +82,7 @@ let set_margin n =
 
 let max_indent = ref None
 
-let set_max_indent n = with_pp (fun _ -> max_indent := Some n)
+let set_max_indent x = with_pp (fun _ -> max_indent := x)
 
 (** Debug of formatting -------------------------------------------------*)
 
@@ -210,15 +210,12 @@ let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
-let wrap_if_fits_and cnd pre suf k =
-  fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
-
 let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap_k (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""
 
-let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
-  match (c.Conf.indicate_multiline_delimiters, space) with
+let wrap_fits_breaks_if ?(space = true) (c : Conf.t) cnd pre suf k =
+  match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
   | `No, false -> wrap_if_k cnd (str pre) (str suf) k
   | `Space, _ | `No, true ->
       fits_breaks_if cnd pre (pre ^ " ")
@@ -356,3 +353,5 @@ let fill_text ?(epi = "") text =
                | Some _ when not (String.is_empty curr) -> fmt "@ "
                | _ -> noop )
          $ str epi ) )
+
+type code_formatter = string -> t or_error

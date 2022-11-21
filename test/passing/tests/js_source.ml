@@ -4325,11 +4325,13 @@ module M' = M
 module B' = B
 
 class b : B.a = object
+ method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
  method a : 'a. 'a M.s -> 'a = fun (type a) ((module X) : (module M.S with type
 a = a)) -> X.v
 end
 
 class b' : B.a = object
+ method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
  method a : 'a. 'a M'.s -> 'a = fun (type a) ((module X) : (module M'.S with
 type a = a)) -> X.v
 end
@@ -7571,3 +7573,54 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+let _ =
+  match x with
+  | _
+    when f ~f:((function
+      | _ -> .) [@ocaml.warning (* ....................................... *) "-4"]) -> y
+;;
+
+let[@a (* .............................................. ........................... .......................... ...................... *) foo (* ....................... *) (* ................................. *) (* ...................... *)] _ =
+  match[@ocaml.warning (* ....................................... *) "-4"] x[@attr (* .......................... .................. *) some_attr] with
+  | _
+    when f
+        ~f:((function
+            | _ -> .) [@ocaml.warning (* ....................................... *) "-4"])
+        ~f:((function
+            | _ -> .) [@ocaml.warning (* ....................................... *)  (* ....................................... *) "foooooooooooooooooooooooooooo fooooooooooooooooooooooooooooooooooooo"])
+        ~f:((function
+            | _ -> .) [@ocaml.warning (* ....................................... *) let x = a and y = b in x + y])
+    -> y[@attr (* ... *) (* ... *) attr (* ... *)]
+;;
+
+let x =
+  foo (`A b) ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo
+    (`A `b)
+    ~f:(fun thing ->
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo [ A; B ] ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo
+    [ [ A ]; B ]
+    ~f:(fun thing ->
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  f
+    ("A string _____________________"
+    ^ "Another string _____________"
+    ^ "Yet another string _________")
+;;

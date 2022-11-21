@@ -49,7 +49,7 @@ val relocate_wrongfully_attached_cmts :
 val fmt_before :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Fmt.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -62,9 +62,10 @@ val fmt_before :
 val fmt_after :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Fmt.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
+  -> ?filter:(Cmt.t -> bool)
   -> Location.t
   -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
@@ -73,7 +74,7 @@ val fmt_after :
 val fmt_within :
      t
   -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> fmt_code:(Conf.t -> Fmt.code_formatter)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> Location.t
@@ -85,7 +86,7 @@ module Toplevel : sig
   val fmt_before :
        t
     -> Conf.t
-    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> fmt_code:(Conf.t -> Fmt.code_formatter)
     -> Location.t
     -> Fmt.t
   (** [fmt_before loc] formats the comments associated with [loc] that appear
@@ -94,7 +95,7 @@ module Toplevel : sig
   val fmt_after :
        t
     -> Conf.t
-    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> fmt_code:(Conf.t -> Fmt.code_formatter)
     -> Location.t
     -> Fmt.t
   (** [fmt_after loc] formats the comments associated with [loc] that appear
@@ -121,10 +122,6 @@ val remaining_locs : t -> Location.t list
 
 val remaining_before : t -> Location.t -> Cmt.t list
 (** [remaining_before c loc] returns the comments before [loc] *)
-
-val diff :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
-(** Difference between two lists of comments. *)
 
 type layout_cache_key =
   | Arg of Asttypes.arg_label * Parsetree.expression

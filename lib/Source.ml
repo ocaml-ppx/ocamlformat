@@ -95,13 +95,6 @@ let find_token_after t ~filter pos =
       in
       loop i
 
-let has_cmt_same_line_after t (loc : Location.t) =
-  match find_token_after t ~filter:(fun _ -> true) loc.loc_end with
-  | None -> false
-  | Some ((COMMENT _ | DOCSTRING _), nloc) ->
-      nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
-  | Some _ -> false
-
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
     List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
@@ -110,18 +103,6 @@ let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   if phys_equal loc_end loc then loc
   else
     {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
-
-let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
-  let filter = Poly.( = ) tok in
-  let from = from.loc_start and upto = upto.loc_start in
-  Source_code_position.ascending from upto < 0
-  && not (List.is_empty (tokens_between t ~filter from upto))
-
-let is_long_pexp_open source {pexp_desc; _} =
-  match pexp_desc with
-  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
-      contains_token_between source ~from ~upto Parser.IN
-  | _ -> false
 
 let is_long_functor_syntax (t : t) ~(from : Location.t) = function
   | Unit -> false
@@ -146,53 +127,13 @@ let is_long_pmty_functor t {pmty_desc; pmty_loc= from; _} =
   | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
-let string_literal t mode (l : Location.t) =
-  (* the location of a [string] might include surrounding comments and
-     attributes because of [reloc_{exp,pat}] and a [string] can be found in
-     attributes payloads. {[ f ((* comments *) "c" [@attributes]) ]} *)
-  let toks =
-    tokens_at t
-      ~filter:(function
-        | Parser.STRING (_, _, None) -> true
-        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
-            true
-        | _ -> false )
-      l
-  in
-  match toks with
-  | [(Parser.STRING (_, _, None), loc)]
-   |(Parser.STRING (_, _, None), loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-       :: _ ->
-      Option.value_exn ~message:"Parse error while reading string literal"
-        (Literal_lexer.string mode (string_at t loc))
-  | _ -> impossible "Pconst_string is only produced by string literals"
+let string_literal t mode loc =
+  Option.value_exn ~message:"Parse error while reading string literal"
+    (Literal_lexer.string mode (string_at t loc))
 
-let char_literal t (l : Location.t) =
-  (* the location of a [char] might include surrounding comments and
-     attributes because of [reloc_{exp,pat}] and a [char] can be found in
-     attributes payloads. {[ f ((* comments *) 'c' [@attributes]) ]} *)
-  let toks =
-    tokens_at t
-      ~filter:(function
-        | Parser.CHAR _ -> true
-        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
-            true
-        | _ -> false )
-      l
-  in
-  match toks with
-  | [(Parser.CHAR _, loc)]
-   |(Parser.CHAR _, loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-       :: _ ->
-      (Option.value_exn ~message:"Parse error while reading char literal")
-        (Literal_lexer.char (string_at t loc))
-  | _ -> impossible "Pconst_char is only produced by char literals"
+let char_literal t loc =
+  Option.value_exn ~message:"Parse error while reading char literal"
+    (Literal_lexer.char (string_at t loc))
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   if not ignore_spaces then Position.column l.loc_start = 0
@@ -226,44 +167,6 @@ let extension_using_sugar ~(name : string Location.loc)
 
 let type_constraint_is_first typ loc =
   Location.compare_start typ.ptyp_loc loc < 0
-
-let locs_of_interval source loc =
-  let toks =
-    tokens_at source loc ~filter:(function
-      | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
-      | _ -> false )
-  in
-  match toks with
-  | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
-    ; (DOTDOT, _)
-    ; ((CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
-      (loc1, loc2)
-  | _ ->
-      impossible
-        "Ppat_interval is only produced by the sequence of 3 tokens: \
-         CONSTANT-DOTDOT-CONSTANT "
-
-let loc_of_constant t loc (cst : constant) =
-  let filter : Parser.token -> bool =
-    match cst with
-    | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
-    | Pconst_char _ -> ( function CHAR _ -> true | _ -> false )
-    | Pconst_integer _ -> ( function INT _ -> true | _ -> false )
-    | Pconst_float _ -> ( function FLOAT _ -> true | _ -> false )
-  in
-  match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
-
-let loc_of_pat_constant t (p : pattern) =
-  match p.ppat_desc with
-  | Ppat_constant cst ->
-      loc_of_constant t (Location.smallest p.ppat_loc p.ppat_loc_stack) cst
-  | _ -> impossible "loc_of_pat_constant is only called on constants"
-
-let loc_of_expr_constant t (e : expression) =
-  match e.pexp_desc with
-  | Pexp_constant cst ->
-      loc_of_constant t (Location.smallest e.pexp_loc e.pexp_loc_stack) cst
-  | _ -> impossible "loc_of_expr_constant is only called on constants"
 
 let is_quoted_string t loc =
   let toks =

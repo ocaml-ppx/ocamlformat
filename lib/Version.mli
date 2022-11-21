@@ -9,7 +9,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val version : string
+type t
+
+val make : major:int -> minor:int -> patch:int option -> t
+
+val to_string : t -> string
+
+val pp : Format.formatter -> t -> unit
+
+val current : string
 (** A version number, or "unknown". This is provided by [dune-build-info],
     which means that it will be resolved in the following way:
 

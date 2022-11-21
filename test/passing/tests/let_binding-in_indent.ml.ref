@@ -221,3 +221,13 @@ let x = ()
 (** doc y *)
 and y = () [@@foo]
 (* after y *)
+
+let _ =
+  let* () =
+    (* xxx *)
+    xxx
+  and* () =
+    (* yyy *)
+    yyy
+  in
+      zzz

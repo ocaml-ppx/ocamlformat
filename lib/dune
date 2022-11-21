@@ -11,29 +11,33 @@
 
 (ocamllex Literal_lexer)
 
+(ocamllex Toplevel_lexer)
+
 (library
- (name ocamlformat_lib)
+ (name ocamlformat)
+ (public_name ocamlformat)
  (flags
   (:standard
    -open
    Ocaml_common
    -open
-   Ocaml_413_extended
+   Parser_extended
    -open
-   Ocamlformat_stdlib))
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_result.Global_scope))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   format_
   ocaml_common
-  ocaml_413
-  ocaml_413_extended
+  parser_standard
+  parser_extended
+  parser_recovery
+  ocamlformat_result
   ocamlformat_stdlib
   ocaml-version
   ocp-indent.lib
-  odoc-parser
-  parse_wyc
-  re
-  uuseg
+  odoc_parser
   uuseg.string
   dune-build-info))

@@ -44,9 +44,10 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'vc)
 
 (defcustom ocamlformat-command "ocamlformat"
-  "The 'ocamlformat' command."
+  "The `ocamlformat' command."
   :type 'string
   :group 'ocamlformat)
 
@@ -83,11 +84,11 @@ echo output if used from inside a `before-save-hook'."
 (defcustom ocamlformat-file-kind nil
   "Add a parse argument to ocamlformat if using an unrecognized extension.
 
-It can either be set to 'implementation, 'interface or
+It can either be set to \\='implementation, \\='interface or
 nil (default)."
   :type '(choice
-          (const :tag "implementation" 'implementation)
-          (const :tag "interface" 'interface)
+          (const :tag "implementation" implementation)
+          (const :tag "interface" interface)
           (const :tag "none" nil))
   :group 'ocamlformat)
 
@@ -95,7 +96,7 @@ nil (default)."
 (defun ocamlformat-before-save ()
   "Add this to .emacs to run ocamlformat on the current buffer when saving:
 
-\(add-hook 'before-save-hook 'ocamlformat-before-save)."
+\(add-hook \\='before-save-hook \\='ocamlformat-before-save)."
   (interactive)
   (when (eq major-mode 'tuareg-mode) (ocamlformat)))
 
@@ -289,10 +290,10 @@ is nil."
                     (erase-buffer))
                   (ocamlformat--process-errors
                    (buffer-file-name) bufferfile errorfile errbuf)))
-            (message "Could not apply ocamlformat on %s" buffer-file-name))))
-    (delete-file errorfile)
-    (delete-file bufferfile)
-    (delete-file outputfile)))
+            (message "Could not apply ocamlformat on %s" buffer-file-name)))
+      (delete-file errorfile)
+      (delete-file bufferfile)
+      (delete-file outputfile))))
 
 (defun ocamlformat-args (name start-line end-line)
   (let*
@@ -322,7 +323,8 @@ is nil."
             (list
              "-"
              "--name" name
-             "--numeric" (format "%d-%d" start-line end-line)))))
+             "--numeric"
+             "--range" (format "%d-%d" start-line end-line)))))
 
 (defun ocamlformat-region (start end)
   (interactive "r")
@@ -355,13 +357,14 @@ is nil."
                      (buffer-file-name) bufferfile errorfile errbuf)))
                 (message "Could not apply ocamlformat")))))
        (indents (mapcar 'string-to-number (split-string indents-str))))
-    (save-excursion
-      (goto-char start)
-      (mapcar
-       #'(lambda (indent) (indent-line-to indent) (forward-line))
-       indents))
-    (delete-file errorfile)
-    (delete-file bufferfile)))
+    (unwind-protect
+      (save-excursion
+        (goto-char start)
+        (mapcar
+         #'(lambda (indent) (indent-line-to indent) (forward-line))
+         indents))
+      (delete-file errorfile)
+      (delete-file bufferfile))))
 
 (defun ocamlformat-line ()
   (interactive nil)
@@ -411,10 +414,23 @@ With ARG, perform this action that many times."
     t
     split-string-default-separators)))
 
-(add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-(add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
-(add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup t)
-(add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent)
+(defun ocamlformat--add-hooks ()
+  "Link ocamlformat with tuareg-mode and caml-mode."
+  (progn
+    (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
+    (add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
+    (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup t)
+    (add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent)))
+
+(pcase ocamlformat-enable
+  ;; never hook
+  ('disable '())
+  ;; always hook
+  ('enable-outside-detected-project (ocamlformat--add-hooks))
+  ;; only hook if there is an .ocamlformat file at the root of the project
+  ('enable
+   (if (vc-find-root default-directory ".ocamlformat")
+    (ocamlformat--add-hooks))))
 
 (provide 'ocamlformat)
 

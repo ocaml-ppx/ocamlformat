@@ -14,7 +14,7 @@ open Extended_ast
 module Left = struct
   let rec core_type typ =
     match typ.ptyp_desc with
-    | Ptyp_arrow (_, t, _) -> core_type t
+    | Ptyp_arrow (t :: _, _) -> core_type t.pap_type
     | Ptyp_tuple l -> core_type (List.hd_exn l)
     | Ptyp_object _ -> true
     | Ptyp_alias (typ, _) -> core_type typ
@@ -28,7 +28,7 @@ module Right = struct
     | {ptyp_attributes= _ :: _; _} -> false
     | {ptyp_desc; _} -> (
       match ptyp_desc with
-      | Ptyp_arrow (_, _, t) -> core_type t
+      | Ptyp_arrow (_, t) -> core_type t
       | Ptyp_tuple l -> core_type (List.last_exn l)
       | Ptyp_object _ -> true
       | _ -> false )

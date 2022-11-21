@@ -9,6 +9,17 @@
 (*                                                                        *)
 (**************************************************************************)
 
-let version =
+type t = {major: int; minor: int; patch: int option}
+
+let make ~major ~minor ~patch = {major; minor; patch}
+
+let to_string = function
+  | {major; minor; patch= None} -> Format.sprintf "%i.%i" major minor
+  | {major; minor; patch= Some patch} ->
+      Format.sprintf "%i.%i.%i" major minor patch
+
+let pp fs v = Format.fprintf fs "%s" (to_string v)
+
+let current =
   let open Build_info.V1 in
   version () |> Option.value_map ~f:Version.to_string ~default:"unknown"

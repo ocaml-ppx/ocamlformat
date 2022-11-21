@@ -18,8 +18,25 @@ val init : Conf.t -> unit
 (** Initialize internal state *)
 
 module Attr : sig
+  module Key : sig
+    type t =
+      | Regular  (** [@attr] *)
+      | Item  (** [@@attr] *)
+      | Floating  (** [@@@attr] *)
+
+    val to_string : t -> string
+  end
+
   val is_doc : attribute -> bool
   (** Holds for docstrings, that are attributes of the form [(** ... *)]. *)
+end
+
+module Ext : sig
+  module Key : sig
+    type t = Regular  (** [%ext] *) | Item  (** [%%ext] *)
+
+    val to_string : t -> string
+  end
 end
 
 module Token : sig
@@ -63,9 +80,15 @@ module Longident : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
+
+  val field_alias_str : field:t -> string -> bool
+
+  val field_alias : field:t -> t -> bool
 end
 
 module Exp : sig
+  val location : expression -> Location.t
+
   val is_prefix : expression -> bool
   (** Holds for prefix symbol expressions. *)
 
@@ -82,43 +105,19 @@ module Exp : sig
       prefix operators. *)
 end
 
-module Indexing_op : sig
-  type brackets = Round | Square | Curly
-
-  type custom_operator =
-    { path: string list  (** eg. [a.X.Y.*{b}] *)
-    ; opchars: string
-    ; brackets: brackets }
-
-  type indexing_op =
-    | Defined of expression * custom_operator
-        (** [.*( a )]: take a single argument *)
-    | Extended of expression list * custom_operator
-        (** [.*( a; b; c )]: take several arguments, separated by [;] *)
-    | Special of expression list * brackets
-        (** [.()], [.\[\]] and bigarray operators: take several arguments,
-            separated by [,] *)
-
-  type t =
-    { lhs: expression
-    ; op: indexing_op
-    ; rhs: expression option  (** eg. [a.*{b} <- exp] *)
-    ; loc: Location.t }
-
-  val get_sugar :
-    expression -> (Asttypes.arg_label * expression) list -> t option
-  (** [get_sugar e args] is [Some all] if [e] is an identifier that is an
-      indexing operator and if the sugar syntax is already used in the
-      source, [None] otherwise. [args] should be the arguments of the
-      corresponding [Pexp_apply]. *)
-end
-
 val doc_atrs :
      ?acc:(string Location.loc * bool) list
   -> attributes
   -> (string Location.loc * bool) list option * attributes
 
+type cmt_checker =
+  { cmts_before: Location.t -> bool
+  ; cmts_within: Location.t -> bool
+  ; cmts_after: Location.t -> bool }
+
 module Pat : sig
+  val location : pattern -> Location.t
+
   val is_simple : pattern -> bool
 end
 
@@ -149,6 +148,7 @@ type toplevel_item =
 type t =
   | Pld of payload
   | Typ of core_type
+  | Td of type_declaration
   | Cty of class_type
   | Pat of pattern
   | Exp of expression
@@ -162,17 +162,12 @@ type t =
   | Ctf of class_type_field
   | Tli of toplevel_item
   | Top
+  | Rep  (** Repl phrase *)
 
 val is_top : t -> bool
 
 val break_between :
-     Source.t
-  -> cmts:'a
-  -> has_cmts_before:('a -> Location.t -> bool)
-  -> has_cmts_after:('a -> Location.t -> bool)
-  -> t * Conf.t
-  -> t * Conf.t
-  -> bool
+  Source.t -> cmt_checker -> t * Conf.t -> t * Conf.t -> bool
 
 val attributes : t -> attributes
 
@@ -258,7 +253,3 @@ val parenze_mty : module_type xt -> bool
 val parenze_mod : module_expr xt -> bool
 (** [parenze_mod xmod] holds when module_expr-in-context [xmod] should be
     parenthesized. *)
-
-val is_displaced_infix_op : expression xt -> bool
-(** [is_displaced_infix_op xexp] holds if an expression-in-context [xexp] is
-    an infix op that is not fully applied. *)

@@ -33,8 +33,6 @@ val tokens_between :
 
 val string_at : t -> Location.t -> string
 
-val has_cmt_same_line_after : t -> Location.t -> bool
-
 val find_token_after :
      t
   -> filter:(Parser.token -> bool)
@@ -50,10 +48,6 @@ val find_token_before :
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
-
-val is_long_pexp_open : t -> expression -> bool
-(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
-    that is expressed in long ('let open') form in source. *)
 
 val is_long_pmod_functor : t -> module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
@@ -75,14 +69,6 @@ val extension_using_sugar :
 val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
 
 val type_constraint_is_first : core_type -> Location.t -> bool
-
-val locs_of_interval : t -> Location.t -> Location.t * Location.t
-(** Given the location of an interval pattern ['a'..'b'], return the
-    locations of the constants that represent the bounds (['a'] and ['b']). *)
-
-val loc_of_pat_constant : t -> pattern -> Location.t
-
-val loc_of_expr_constant : t -> expression -> Location.t
 
 val is_quoted_string : t -> Location.t -> bool
 

@@ -12,7 +12,7 @@ let ( .@() ) = Hashtbl.find
 
 let ( .@()<- ) = Hashtbl.add
 
-let h = Hashtbl.create 17;;
+let h = Hashtbl.create 17 ;;
 
 h.@("One") <- 1 ;
 assert (h.@{"One"} = 1) ;
@@ -28,11 +28,11 @@ let x = [|0|]
 
 let _ = 1 #? x.(0)
 
-let _ = 1 #? x.%(0);;
+let _ = 1 #? x.%(0) ;;
 
-a.[b].[c];;
+a.[b].[c] ;;
 
-a.[b.[c]].[c];;
+a.[b.[c]].[c] ;;
 
 a.b.c
 
@@ -78,7 +78,7 @@ let () =
   let open Mat in
   m.${[[2]; [5]]} |> ignore
 
-let _ = (x.*{(y, z)} <- w) @ []
+let _ = (x.*{y, z} <- w) @ []
 
 let _ = (x.{y, z} <- w) @ []
 
@@ -88,7 +88,9 @@ let _ = (x.*(y) <- z) := []
 
 let _ = ((x.*(y) <- z), [])
 
-let _ = x.*(y) <- z ; []
+let _ =
+  x.*(y) <- z ;
+  []
 
 let _ = (x.(y) <- z) @ []
 
@@ -96,7 +98,9 @@ let _ = (x.(y) <- z) := []
 
 let _ = ((x.(y) <- z), [])
 
-let _ = x.(y) <- z ; []
+let _ =
+  x.(y) <- z ;
+  []
 
 let _ = (x.y <- z) @ []
 
@@ -118,7 +122,9 @@ class free =
   end
 
 (* With path *)
-let _ = a.A.B.*(b) ; a.A.B.*(b) <- c
+let _ =
+  a.A.B.*(b) ;
+  a.A.B.*(b) <- c
 
 let _ = a.*((a ; b))
 
@@ -136,7 +142,7 @@ let _ = if a then a.*(if a then b) else c
 (* Parentheses needed *)
 let _ = a.*{(a ; b)}
 
-let _ = a.{(a ; b)}
+let _ = a.{a ; b}
 
 let _ = a.{a, b}
 

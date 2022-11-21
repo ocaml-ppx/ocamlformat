@@ -1,0 +1,99 @@
+{0 Editor setup}
+
+{1 Disable outside project}
+
+As mentioned in {!getting_started.options}, when the option [--disable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file. If no configuration file is found, then the formatting is disabled.
+
+This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
+
+{1 Emacs setup}
+
+- add [$(opam config var share)/emacs/site-lisp] to [load-path] (as done by [opam user-setup install])
+
+- add [(require 'ocamlformat)] to [.emacs]
+
+- optionally add the following to [.emacs] to bind [C-M-<tab>] to the [ocamlformat] command and install a hook to run OCamlFormat when saving:
+{[
+(add-hook 'tuareg-mode-hook (lambda ()
+  (define-key tuareg-mode-map (kbd "C-M-<tab>") #'ocamlformat)
+  (add-hook 'before-save-hook #'ocamlformat-before-save)))
+]}
+
+To pass the option [--disable-outside-detected-project] (or [--disable]) to OCamlFormat:
+- run [emacs]
+- run [M-x customize-group⏎] then enter [ocamlformat⏎]
+- select the Ocamlformat Enable item
+- select the OCamlformat mode in the Value Menu: [Enable] (by default), [Disable] or [Disable outside detected project]
+- save the buffer ([C-x C-s]) then enter [yes⏎] and exit
+
+Other OCamlFormat options can be set in .ocamlformat configuration files.
+
+{2 With use-package}
+
+A basic configuration with {{:https://github.com/jwiegley/use-package}use-package}:
+
+{[
+(use-package ocamlformat
+  :custom (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (before-save . ocamlformat-before-save)
+  )
+]}
+
+Sometimes you need to have a switch for OCamlFormat (because of version conflicts or because you don't want to install it in every switch, for example). Considering your OCamlFormat switch is named [ocamlformat]:
+
+{[
+(use-package ocamlformat
+  :load-path
+  (lambda ()
+    (concat
+         ;; Never use "/" or "\" since this is not portable (opam-user-setup does this though)
+         ;; Always use file-name-as-directory since this will append the correct separator if needed
+         ;; (or use a package that does it well like https://github.com/rejeep/f.el)
+         ;; This is the verbose and not package depending version:
+         (file-name-as-directory
+          ;; Couldn't find an option to remove the newline so a substring is needed
+          (substring (shell-command-to-string "opam config var share --switch=ocamlformat --safe") 0 -1))
+         (file-name-as-directory "emacs")
+         (file-name-as-directory "site-lisp")))
+  :custom
+  (ocamlformat-enable 'enable-outside-detected-project)
+  (ocamlformat-command
+   (concat
+    (file-name-as-directory
+     (substring (shell-command-to-string "opam config var bin --switch=ocamlformat --safe") 0 -1))
+    "ocamlformat"))
+  :hook (before-save . ocamlformat-before-save)
+  )
+]}
+(Notice the [:custom] to customize the OCamlFormat binary)
+
+This could be made simpler (by defining an elisp variable corresponding to the switch prefix when loading tuareg, for example) but it allows to have a full configuration in one place only which is often less error prone.
+
+{1 Vim setup}
+
+- be sure the [ocamlformat] binary can be found in [PATH]
+
+- install the {{:https://github.com/sbdchd/neoformat#install}Neoformat} plugin
+
+Optional: You can change the options passed to OCamlFormat (to use the option [--disable-outside-detected-project] for example), you can {{:https://github.com/sbdchd/neoformat#config-optional}customize NeoFormat} with:
+
+{[
+let g:opambin = substitute(system('opam config var bin'),'\n$','','''')
+let g:neoformat_ocaml_ocamlformat = {
+            \ 'exe': g:opambin . '/ocamlformat',
+            \ 'no_append': 1,
+            \ 'stdin': 1,
+            \ 'args': ['--disable-outside-detected-project', '--name', '"%:p"', '-']
+            \ }
+
+let g:neoformat_enabled_ocaml = ['ocamlformat']
+]}
+
+{1 Format on save using entr}
+
+Alternatively, you may want to see your files reformatted on save. If you are running on Linux or macOS, you may enable this workflow easily regardless of your editor by using [entr]:
+
+{[
+# `apt install entr` or `brew install entr`
+find ./bin ./test -name "*.ml*" | entr -p ocamlformat --inplace /_
+]}

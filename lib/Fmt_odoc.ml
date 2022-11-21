@@ -13,7 +13,7 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type conf = {fmt_code: string -> (Fmt.t, unit) Result.t}
+type conf = {fmt_code: Fmt.code_formatter}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -67,31 +67,61 @@ let fmt_verbatim_block s =
   in
   hvbox 0 (wrap "{v" "v}" content)
 
-let fmt_metadata s = str "@" $ str s
+let fmt_metadata (lang, meta) =
+  let fmt_meta meta = str " " $ str meta in
+  str "@" $ ign_loc ~f:str lang $ opt meta (ign_loc ~f:fmt_meta)
 
 let fmt_code_block conf s1 s2 =
   let wrap_code x =
-    str "{"
-    $ opt s1 (ign_loc ~f:fmt_metadata)
-    $ fmt "[@;<1 2>" $ x $ fmt "@ ]}"
+    str "{" $ opt s1 fmt_metadata $ fmt "[@;<1000 2>" $ x $ fmt "@ ]}"
   in
-  let s2 = Odoc_parser.Loc.value s2 in
-  match conf.fmt_code s2 with
-  | Ok formatted -> hvbox 0 (wrap_code formatted)
-  | Error () ->
-      let fmt_line ~first ~last:_ l =
-        let l = String.rstrip l in
-        if first then str l
-        else if String.length l = 0 then str "\n"
-        else fmt "@," $ str l
-      in
-      let lines = String.split_lines s2 in
-      let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-      box (wrap_code (vbox 0 (list_fl lines fmt_line)))
+  let fmt_line ~first ~last:_ l =
+    let l = String.rstrip l in
+    if first then str l
+    else if String.length l = 0 then str "\n"
+    else fmt "@," $ str l
+  in
+  let fmt_no_code s =
+    let lines = String.split_lines s in
+    let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
+    box (wrap_code (vbox 0 (list_fl lines fmt_line)))
+  in
+  let Odoc_parser.Loc.{location; value} = s2 in
+  match s1 with
+  | Some ({value= "ocaml"; _}, _) | None -> (
+    match conf.fmt_code value with
+    | Ok formatted -> hvbox 0 (wrap_code formatted)
+    | Error (`Msg message) ->
+        ( match message with
+        | "" -> ()
+        | _ when Option.is_none s1 -> ()
+        | _ ->
+            Docstring.warn Caml.Format.err_formatter
+              { location
+              ; message= Format.sprintf "invalid code block: %s" message } ) ;
+        fmt_no_code value )
+  | Some _ -> fmt_no_code value
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 
-let fmt_reference = ign_loc ~f:str_normalized
+let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
+
+let fmt_math_block s =
+  let lines =
+    List.drop_while ~f:String.is_empty
+    @@ List.rev
+    @@ List.drop_while ~f:String.is_empty
+    @@ List.rev_map ~f:String.strip
+    @@ String.split_lines s
+  in
+  let fmt ~first ~last:_ line =
+    if first then str line
+    else if String.is_empty line then str "\n"
+    else fmt "@;<1000 0>" $ str line
+  in
+  hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list_fl lines fmt))
+
+let fmt_reference = ign_loc ~f:str
 
 (* Decide between using light and heavy syntax for lists *)
 let list_should_use_heavy_syntax items =
@@ -149,6 +179,7 @@ let rec fmt_inline_elements elements =
     | `Space _ :: t -> fmt "@ " $ aux t
     | `Word w :: t -> str_normalized w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
+    | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
@@ -174,13 +205,14 @@ let rec fmt_inline_elements elements =
         wrap_elements "{" "}" ~always_wrap:false rf txt $ aux t
     | `Link (url, txt) :: t ->
         let url = wrap "{:" "}" (str_normalized url) in
-        wrap_elements "{" "}" ~always_wrap:false url txt $ aux t
+        hovbox 2 @@ wrap_elements "{" "}" ~always_wrap:false url txt $ aux t
   in
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
 
 and fmt_nestable_block_element c = function
   | `Paragraph elems -> fmt_inline_elements elems
   | `Code_block (s1, s2) -> fmt_code_block c s1 s2
+  | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->
       hovbox 0
@@ -260,13 +292,3 @@ let fmt_block_element c = function
 
 let fmt ~fmt_code (docs : t) =
   vbox 0 (list_block_elem docs (fmt_block_element {fmt_code}))
-
-let diff c x y =
-  let norm z =
-    let f Cmt.{txt; _} = Normalize.docstring c txt in
-    Set.of_list (module String) (List.map ~f z)
-  in
-  Set.symmetric_diff (norm x) (norm y)
-
-let is_tag_only =
-  List.for_all ~f:(function {Loc.value= `Tag _; _} -> true | _ -> false)

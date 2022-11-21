@@ -71,3 +71,48 @@ let helper ?x =
   match x with Some (module X : X_typ) -> X.f | None -> X_add_one.f
 
 let helper ?x:((module X) = (module X_add_one : X_typ)) = X.f
+
+module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
+  (val Mooooooooooooooooooo)
+
+module GZZZZZZZZZZZZZZ : functor (X : sig end) () (Z : sig end) -> sig end =
+  _
+
+module M = struct end
+
+module M = F ()
+module M = F (* xxx *) ( (* xxx *) ) (* xxx *)
+
+module M = F (struct end)
+
+module M = F (G) ()
+module M = F (G) ( (* xxx *) )
+
+module M = F (G) (struct end)
+
+module M =
+  F
+    (struct
+      val x : t
+
+      val y : t
+    end)
+    ( (* struct type z = K.y end *) )
+
+let _ =
+  let module M =
+    (val (* aa *) m (* bb *) : (* cc *) M (* dd *) :> (* ee *) N (* ff *))
+  in
+  let module M =
+    ( val m
+        : M with type t = k and type p = k
+        :> N with type t = t and type k = t )
+  in
+  let module M =
+    ( val (* aa *) m (* bb *)
+        : (* cc *)
+        M with type t = t (* dd *)
+        :> (* ee *)
+        N with type t = t (* ff *) )
+  in
+  ()

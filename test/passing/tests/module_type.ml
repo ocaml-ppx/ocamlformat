@@ -46,6 +46,21 @@ module U :
      and type uuuuuuu = int
     with type vvvvvvvvv = int = struct end
 
+module U :
+  S
+    with type Command.t =
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ]
+     and type Command.t =
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ] = struct end
+
 module U = (val S : S with type t = int and type u = int)
 
 module U = (val S : S with type t = int and type u = int)
@@ -78,3 +93,17 @@ module M : sig
       Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
         (Fooooooooooooo)
 end = struct end
+
+let foo (type foooo fooo_ooooo)
+    (module Fooo : Fooooo_foooooooooo.Foooo_intf.Bar
+      with type foooo = foooo
+       and type Fooo_fooooooooo_fooooo.t =
+         ( xxxxx
+         , wwwwwwwwww
+         , xxxxxxxxxxxxxxxxxxxx
+         , xxxxxxxxxxxxxxxxx
+         , xxxxxxxxxxxxxxxxxxxxxx
+         , yyyyyyyyyyyyyyyyyyyyyy )
+         Fooooo_ooooooo_oooooo.Foooo_fooooooooo_fooooo.t )
+    (Fooo.Fooo.T (foo, bar)) xxxx =
+  ()

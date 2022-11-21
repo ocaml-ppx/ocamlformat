@@ -1,0 +1,3 @@
+(library
+ (name ocamlformat_result)
+ (public_name ocamlformat.result))

@@ -1,0 +1,12 @@
+[
+  structure_item ([1,0+0]..[1,0+22])
+    Pstr_value Nonrec
+    [
+      <def> ([1,0+0]..[1,0+22])
+        pattern ([1,0+4]..[1,0+20])
+          Ppat_var "fooooooooooooooo" ([1,0+4]..[1,0+20])
+        expression (_none_[0,0+-1]..[0,0+-1]) ghost
+          Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+          []
+    ]
+]

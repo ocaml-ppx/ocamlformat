@@ -1,0 +1,18 @@
+[
+  structure_item ([1,0+0]..[1,0+21])
+    Pstr_class
+    [
+      class_declaration ([1,0+0]..[1,0+21])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "c" ([1,0+6]..[1,0+7])
+        pci_expr =
+          class_expr ([1,0+11]..[1,0+21])
+            Pcl_structure
+            class_structure
+              pattern ([1,0+17]..[1,0+17]) ghost
+                Ppat_any
+              []
+    ]
+]

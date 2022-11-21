@@ -8,26 +8,30 @@ authors: ["Josh Berdine <jjb@fb.com>"]
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
-  "dune" {>= "2.8"}
-  "ocaml" {>= "4.08" & < "4.14"}
+  "ocaml" {>= "4.08"}
   "alcotest" {with-test}
-  "base" {>= "v0.12.0" & < "v0.15"}
-  "base-unix"
-  "cmdliner"
+  "base" {>= "v0.12.0"}
+  "cmdliner" {>= "1.1.0"}
+  "dune" {>= "2.8"}
+  "dune" {with-test & < "3.0"}
   "dune-build-info"
+  "either"
   "fix"
   "fpath"
   "menhir" {>= "20201216"}
   "menhirLib" {>= "20201216"}
   "menhirSdk" {>= "20201216"}
-  "ocaml-version" {>= "3.2.0"}
+  "ocaml-version" {>= "3.3.0"}
+  "ocamlformat-rpc-lib" {with-test & = version}
   "ocp-indent"
-  "bisect_ppx" {with-test & >= "2.5.0"}
-  "odoc-parser" {>= "0.9.0"}
-  "re" {>= "1.7.2"}
-  "stdio" {< "v0.15"}
+  "re" {>= "1.10.3"}
+  "stdio"
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}
+  "csexp" {>= "1.4.0"}
+  "astring"
+  "result"
+  "camlp-streams"
   "odoc" {with-doc}
 ]
 build: [

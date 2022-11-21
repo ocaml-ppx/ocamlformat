@@ -1,0 +1,11 @@
+[
+  structure_item ([1,0+0]..[1,0+3])
+    Pstr_eval
+    expression ([1,0+0]..[1,0+3])
+      Pexp_infix "+" ([1,0+2]..[1,0+3])
+      expression ([1,0+0]..[1,0+1])
+        Pexp_ident "x" ([1,0+0]..[1,0+1])
+      expression (_none_[0,0+-1]..[0,0+-1]) ghost
+        Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+        []
+]

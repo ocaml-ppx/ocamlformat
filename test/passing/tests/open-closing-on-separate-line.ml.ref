@@ -32,18 +32,18 @@ let _ =
 
 let () =
   ( (let open Term in
-    term_result
-      (const Phases.phase1 $ arch $ hub_id $ build_dir $ logs_dir
-     $ setup_logs
-      )
+     term_result
+       (const Phases.phase1 $ arch $ hub_id $ build_dir $ logs_dir
+      $ setup_logs
+       )
     )
   , Term.info "phase1" ~doc ~sdocs:Manpage.s_common_options ~exits ~man
   )
 
 let () =
   (let open Arg in
-  let doc = "Output all." in
-  value & flag & info ["all"] ~doc
+   let doc = "Output all." in
+   value & flag & info ["all"] ~doc
   )
   $
   let open Arg in
@@ -293,7 +293,7 @@ open [%ext] [@@attr]
 let g =
   M.f
     ((let open M in
-     x
+      x
      ) [@attr]
     )
 
@@ -338,3 +338,22 @@ let _ = M.((f, f) (* B *))
 let _ = M.((* A *) (f, f) (* B *))
 
 let _ = M.((* A *) ((f, f) (* B *) [@warning "foo"] (* C *)))
+
+let _ =
+  let _ =
+    Fooooooo.
+      [ (swap_1_c, {minimum_transfert_amount= 0.})
+      ; (swap_2_c, {minimum_transfert_amount= 0.})
+      ; (swap_3_c, {minimum_transfert_amount= 0.})
+      ]
+  in
+  ()
+
+let _ =
+  match Uri.scheme uri with
+  | Some _ -> (
+      (* we have an absoluteURI *)
+      Uri.(
+        match path uri with "" -> with_path uri "/" | _ -> uri
+      )
+    )

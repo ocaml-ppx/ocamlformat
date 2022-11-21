@@ -96,25 +96,6 @@ type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
 type trace_mod_funs =
   {trace_mod: bool option; trace_funs: bool Map.M(String).t}
 
-module Fooooo = struct
-  (** This is a long docstring so that it cannot be on the same line as the
-      record type. *)
-  type t = {fooooo: fooo; fooooo: fooooooo}
-
-  val select :
-       (* The fsevents context *)
-       env
-    -> (* Additional file descriptor to select for reading *)
-       ?read_fdl:fd_select list
-    -> (* Additional file descriptor to select for writing *)
-       ?write_fdl:fd_select list
-    -> (* Timeout...like Unix.select *)
-       timeout:float
-    -> (* The callback for file system events *)
-       (event list -> unit)
-    -> unit
-end
-
 [@@@ocamlformat "type-decl=sparse"]
 
 module X = struct
@@ -167,7 +148,8 @@ let length =
 let length =
   [ 0
   ; 14
-  ; (* foo *) 14
+  ; (* foo *)
+    14
   ; 17 (* foo *)
   ; 17
   ; 2777777777777777777777777777777777
@@ -181,220 +163,6 @@ Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
      ; ("foooo", fooooooo)
      ; ("foooooo", foooooooo)
      ; ("fooooooooo", foooooooo) ] )
-
-(* this is an array *)
-let length =
-  [| 0
-   ; 1
-   ; 2
-   ; 3
-   ; 4
-   ; 5
-   ; 6
-   ; 7
-   ; 8
-   ; 8
-   ; 9
-   ; 9
-   ; 10
-   ; 10
-   ; 11
-   ; 11
-   ; 12
-   ; 12
-   ; 12
-   ; 12
-   ; 13
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 25
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 269999999999999999999999999999999999999999999999999
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 26
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; (* foo *) 27 (* foo *)
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 27
-   ; 28 |]
-  [@foo]
-
-(* this is a list *)
-let length =
-  [ 0
-  ; 1
-  ; 2
-  ; 3
-  ; 4
-  ; 5
-  ; 6
-  ; 7
-  ; 8
-  ; 8
-  ; 9
-  ; 9
-  ; 10
-  ; 10
-  ; 11
-  ; 11
-  ; 12
-  ; 12
-  ; 12
-  ; 12
-  ; 13
-  ; 13
-  ; 13
-  ; 13
-  ; 14
-  ; 14
-  ; 14
-  ; (* foo *) 14
-  ; 15
-  ; 15
-  ; 15
-  ; 15
-  ; 16
-  ; 16
-  ; 16
-  ; 16
-  ; 16
-  ; 16
-  ; 16
-  ; 16
-  ; 17
-  ; 17
-  ; 17
-  ; 17 (* foo *)
-  ; 17
-  ; 17
-  ; 17
-  ; 17
-  ; 18
-  ; 18
-  ; 18
-  ; 18
-  ; 18
-  ; 18
-  ; 18
-  ; 18
-  ; 19
-  ; 19
-  ; 19
-  ; 19
-  ; 19
-  ; 19
-  ; 19
-  ; 19
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 20
-  ; 26
-  ; 26
-  ; 26
-  ; 26
-  ; 26
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 2777777777777777777777777777777777
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 27
-  ; 28 ]
-  [@foo]
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -602,3 +370,13 @@ let g () =
      ; gggggggggg
      ; hhhhhhhhhh |] ->
       fooooooooo
+
+let () = match x with _, (* line 1 line 2 *) Some _ -> x
+
+let () =
+  match x with
+  | ( _
+    , (* verrrrrrrrrrrrrrrrrrrrrrrry looooooooooooooooong line 1
+         veeeeeeeeeeeeeeeeeeeeeryyyy loooooooooooooooooong line 2 *)
+      Some _ ) ->
+      x

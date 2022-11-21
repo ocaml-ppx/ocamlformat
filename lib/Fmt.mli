@@ -42,7 +42,7 @@ val lazy_ : (unit -> t) -> t
 val set_margin : int -> t
 (** Set the margin. *)
 
-val set_max_indent : int -> t
+val set_max_indent : int option -> t
 (** Set the maximum indentation. *)
 
 val eval : Format.formatter -> t -> unit
@@ -160,10 +160,6 @@ val wrap_if : bool -> s -> s -> t -> t
 val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
-val wrap_if_fits_and : bool -> string -> string -> t -> t
-(** As [wrap_if_fits], but prologue and epilogue are formatted subject to the
-    additional condition. *)
-
 val wrap_if_fits_or : bool -> string -> string -> t -> t
 (** As [wrap_if_fits], but prologue and epilogue can be forced by the
     additional condition. *)
@@ -229,3 +225,5 @@ val hovbox_if : ?name:string -> bool -> int -> t -> t
 
 val fill_text : ?epi:string -> string -> t
 (** Format a non-empty string as filled text wrapped at the margin. *)
+
+type code_formatter = string -> t or_error

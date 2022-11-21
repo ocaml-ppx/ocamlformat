@@ -1,0 +1,15 @@
+[
+  structure_item ([1,0+0]..[1,0+7])
+    Pstr_class
+    [
+      class_declaration ([1,0+0]..[1,0+7])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "c" ([1,0+6]..[1,0+7])
+        pci_expr =
+          class_expr (_none_[0,0+-1]..[0,0+-1]) ghost
+            Pcl_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+            []
+    ]
+]

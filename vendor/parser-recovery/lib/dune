@@ -1,0 +1,28 @@
+(library
+ (name parser_recovery)
+ (public_name ocamlformat.parser_recovery)
+ (modules_without_implementation let_binding)
+ (libraries menhirLib ocaml_common parser_extended)
+ (flags
+  (:standard -w -9 -open Ocaml_common -open Parser_extended)))
+
+(ocamllex lexer)
+
+(menhir
+ (flags --strict --inspection --unused-tokens --table --cmly)
+ (modules parser))
+
+(rule
+ (targets parser_recover.ml)
+ (deps parser.cmly)
+ (action
+  (with-stdout-to
+   %{targets}
+   (with-stderr-to
+    recovery_parser.stderr
+    (run ../menhir-recover/main.exe parser.cmly)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff recovery_parser.log recovery_parser.stderr)))

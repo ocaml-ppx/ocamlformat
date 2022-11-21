@@ -87,7 +87,7 @@ let () =
     ()) [@foo]];
   [%foo
     (let open M in
-    ()) [@foo]];
+     ()) [@foo]];
   [%foo fun [@foo] x -> ()];
   [%foo
     function[@foo]
@@ -95,7 +95,7 @@ let () =
   [%foo
     try[@foo] () with
     | _ -> ()];
-  [%foo if [@foo] () then () else ()];
+  if%foo [@foo] () then () else ();
   [%foo
     while () do
       ()
@@ -107,7 +107,10 @@ let () =
   [%foo assert true [@foo]];
   [%foo lazy x [@foo]];
   [%foo object end [@foo]];
-  [%foo (3 [@foo])];
+  [%foo
+    begin
+      3
+    end [@foo]];
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
@@ -172,7 +175,6 @@ let%foo[@foo] x = 4
 and[@foo] y = x
 
 type%foo t = int [@@foo]
-
 and t = int [@@foo]
 
 type%foo t += T [@@foo]
@@ -195,7 +197,6 @@ module type S = sig
   external%foo x : t = "" [@@foo]
 
   type%foo t = int [@@foo]
-
   and t' = int [@@foo]
 
   type%foo t += T [@@foo]
@@ -229,7 +230,6 @@ open M;;
 
 (* By using two types we can have a recursive constraint *)
 type 'a class_name = .. constraint 'a = < cast : 'a. 'a name -> 'a ; .. >
-
 and 'a name = Class : 'a class_name -> (< cast : 'a. 'a name -> 'a ; .. > as 'a) name
 
 exception Bad_cast
@@ -441,7 +441,6 @@ end
 
 type foo += private B2 = M.B1
 type foo += B3 = M.B1 (* Error: rebind private extension *)
-
 type foo += C = Unknown (* Error: unbound extension *)
 
 (* Extensions can be rebound even if type is closed *)
@@ -533,9 +532,7 @@ let extension_id e = Obj.extension_id (Obj.extension_constructor e)
 let n1 = extension_name Foo
 let n2 = extension_name (Bar 1)
 let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
-
 let f = extension_id (Bar 2) = extension_id Foo (* false *)
-
 let is_foo x = extension_id Foo = extension_id x
 
 type foo += Foo
@@ -1158,26 +1155,26 @@ let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option 
   | Thd, Thd -> Some Eq
   | Ttl s1, Ttl s2 ->
     (match eq_sel s1 s2 with
-    | None -> None
-    | Some Eq -> Some Eq)
+     | None -> None
+     | Some Eq -> Some Eq)
   | _ -> None
 ;;
 
 (* Auxiliary function to get the type of a case from its selector *)
 let rec get_case
-    : type a b e.
-      (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
+  : type a b e.
+    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
   =
  fun sel cases ->
   match cases with
   | (name, TCnoarg sel') :: rem ->
     (match eq_sel sel sel' with
-    | None -> get_case sel rem
-    | Some Eq -> name, None)
+     | None -> get_case sel rem
+     | Some Eq -> name, None)
   | (name, TCarg (sel', ty)) :: rem ->
     (match eq_sel sel sel' with
-    | None -> get_case sel rem
-    | Some Eq -> name, Some ty)
+     | None -> get_case sel rem
+     | Some Eq -> name, Some ty)
   | [] -> raise Not_found
 ;;
 
@@ -1207,10 +1204,10 @@ let rec variantize : type a e. e ty_env -> (a, e) ty -> a -> variant =
   | Rec t -> variantize (Econs (ty, e)) t v
   | Pop t ->
     (match e with
-    | Econs (_, e') -> variantize e' t v)
+     | Econs (_, e') -> variantize e' t v)
   | Var ->
     (match e with
-    | Econs (t, e') -> variantize e' t v)
+     | Econs (t, e') -> variantize e' t v)
   | Conv (s, proj, inj, t) -> VConv (s, variantize e t (proj v))
   | Sum ops ->
     let tag, arg = ops.sum_proj v in
@@ -1218,7 +1215,7 @@ let rec variantize : type a e. e ty_env -> (a, e) ty -> a -> variant =
       ( tag
       , may_map
           (function
-            | Tdyn (ty, arg) -> variantize e ty arg)
+           | Tdyn (ty, arg) -> variantize e ty arg)
           arg )
 ;;
 
@@ -1232,10 +1229,10 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
   | Rec t, _ -> devariantize (Econs (ty, e)) t v
   | Pop t, _ ->
     (match e with
-    | Econs (_, e') -> devariantize e' t v)
+     | Econs (_, e') -> devariantize e' t v)
   | Var, _ ->
     (match e with
-    | Econs (t, e') -> devariantize e' t v)
+     | Econs (t, e') -> devariantize e' t v)
   | Conv (s, proj, inj, t), VConv (s', v) when s = s' -> inj (devariantize e t v)
   | Sum ops, VSum (tag, a) ->
     (try
@@ -1244,7 +1241,7 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
        | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
        | _ -> raise VariantMismatch
      with
-    | Not_found -> raise VariantMismatch)
+     | Not_found -> raise VariantMismatch)
   | _ -> raise VariantMismatch
 ;;
 
@@ -1275,9 +1272,8 @@ let ty_abc =
     | `C -> "C", None
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj
-      : type c.
-        (int -> string -> noarg -> unit, c) ty_sel * c
-        -> [ `A of int | `B of string | `C ]
+    : type c.
+      (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
     = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
@@ -1311,8 +1307,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj =
            (function
-           | `Nil -> "Nil", None
-           | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
+            | `Nil -> "Nil", None
+            | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) : ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
@@ -1347,9 +1343,9 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-      | `A n -> "A", Some (Tdyn (Int, n))
-      | `B s -> "B", Some (Tdyn (String, s))
-      | `C -> "C", None)
+       | `A n -> "A", Some (Tdyn (Int, n))
+       | `B s -> "B", Some (Tdyn (String, s))
+       | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -1364,8 +1360,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> "Nil", None
-         | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+          | `Nil -> "Nil", None
+          | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
@@ -1415,8 +1411,8 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ]
 
        method inj
-           : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                     -> [ `A of int | `B of string | `C ] =
+         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+                   -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -1605,8 +1601,8 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
   | NZ, NZ -> Some Eq
   | NS a', NS b' ->
     (match sameNat a' b' with
-    | Some Eq -> Some Eq
-    | None -> None)
+     | Some Eq -> Some Eq
+     | None -> None)
   | _ -> None
 ;;
 
@@ -1622,12 +1618,12 @@ let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equ
 ;;
 
 let rec plus_assoc
-    : type a b c ab bc m n.
-      (a, b, ab) plus
-      -> (ab, c, m) plus
-      -> (b, c, bc) plus
-      -> (a, bc, n) plus
-      -> (m, n) equal
+  : type a b c ab bc m n.
+    (a, b, ab) plus
+    -> (ab, c, m) plus
+    -> (b, c, bc) plus
+    -> (a, bc, n) plus
+    -> (m, n) equal
   =
  fun p1 p2 p3 p4 ->
   match p1, p4 with
@@ -1667,7 +1663,7 @@ let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
   | LeZ _, _, m -> Diff (m, PlusZ m)
   | LeS q, NS x, NS y ->
     (match diff q x y with
-    | Diff (m, p) -> Diff (m, PlusS p))
+     | Diff (m, p) -> Diff (m, PlusS p))
 ;;
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -1677,7 +1673,7 @@ let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
   | NZ, m, LeZ _ -> Diff (m, PlusZ m)
   | NS x, NS y, LeS q ->
     (match diff q x y with
-    | Diff (m, p) -> Diff (m, PlusS p))
+     | Diff (m, p) -> Diff (m, PlusS p))
   | _ -> .
 ;;
 
@@ -1687,7 +1683,7 @@ let rec diff : type a b. (a, b) le -> b nat -> (a, b) diff =
   | m, LeZ _ -> Diff (m, PlusZ m)
   | NS y, LeS q ->
     (match diff q y with
-    | Diff (m, p) -> Diff (m, PlusS p))
+     | Diff (m, p) -> Diff (m, PlusS p))
 ;;
 
 type (_, _) filter = Filter : ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
@@ -1703,8 +1699,8 @@ let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
   | Snil -> Filter (LeZ NZ, Snil)
   | Scons (a, l) ->
     (match filter f l with
-    | Filter (le, l') ->
-      if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
+     | Filter (le, l') ->
+       if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
 ;;
 
 (* 4.1 AVL trees *)
@@ -1730,8 +1726,7 @@ let rec elem : type h. int -> h avl -> bool =
 ;;
 
 let rec rotr
-    : type n.
-      n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
+  : type n. n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
   =
  fun tL y tR ->
   match tL with
@@ -1746,8 +1741,7 @@ let rec rotr
 ;;
 
 let rec rotl
-    : type n.
-      n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
+  : type n. n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
   =
  fun tL u tR ->
   match tR with
@@ -1774,17 +1768,17 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
       | Inl a -> Inl (Node (bal, a, y, b))
       | Inr a ->
         (match bal with
-        | Less -> Inl (Node (Same, a, y, b))
-        | Same -> Inr (Node (More, a, y, b))
-        | More -> rotr a y b))
+         | Less -> Inl (Node (Same, a, y, b))
+         | Same -> Inr (Node (More, a, y, b))
+         | More -> rotr a y b))
     else (
       match ins x b with
       | Inl b -> Inl (Node (bal, a, y, b) : n avl)
       | Inr b ->
         (match bal with
-        | More -> Inl (Node (Same, a, y, b) : n avl)
-        | Same -> Inr (Node (Less, a, y, b) : n succ avl)
-        | Less -> rotl a y b))
+         | More -> Inl (Node (Same, a, y, b) : n avl)
+         | Same -> Inr (Node (Less, a, y, b) : n succ avl)
+         | Less -> rotl a y b))
 ;;
 
 let insert x (Avl t) =
@@ -1798,13 +1792,13 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum = function
   | Node (Same, Leaf, x, r) -> x, Inl r
   | Node (bal, (Node _ as l), x, r) ->
     (match del_min l with
-    | y, Inr l -> y, Inr (Node (bal, l, x, r))
-    | y, Inl l ->
-      ( y
-      , (match bal with
-        | Same -> Inr (Node (Less, l, x, r))
-        | More -> Inl (Node (Same, l, x, r))
-        | Less -> rotl l x r) ))
+     | y, Inr l -> y, Inr (Node (bal, l, x, r))
+     | y, Inl l ->
+       ( y
+       , (match bal with
+          | Same -> Inr (Node (Less, l, x, r))
+          | More -> Inl (Node (Same, l, x, r))
+          | Less -> rotl l x r) ))
 ;;
 
 type _ avl_del =
@@ -1821,40 +1815,40 @@ let rec del : type n. int -> n avl -> n avl_del =
       match r with
       | Leaf ->
         (match bal with
-        | Same -> Ddecr (Eq, l)
-        | More -> Ddecr (Eq, l))
+         | Same -> Ddecr (Eq, l)
+         | More -> Ddecr (Eq, l))
       | Node _ ->
         (match bal, del_min r with
-        | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
-        | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
-        | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
-        | More, (z, Inl r) ->
-          (match rotr l z r with
-          | Inl t -> Ddecr (Eq, t)
-          | Inr t -> Dsame t)))
+         | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
+         | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
+         | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
+         | More, (z, Inl r) ->
+           (match rotr l z r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t)))
     else if y < x
     then (
       match del y l with
       | Dsame l -> Dsame (Node (bal, l, x, r))
       | Ddecr (Eq, l) ->
         (match bal with
-        | Same -> Dsame (Node (Less, l, x, r))
-        | More -> Ddecr (Eq, Node (Same, l, x, r))
-        | Less ->
-          (match rotl l x r with
-          | Inl t -> Ddecr (Eq, t)
-          | Inr t -> Dsame t)))
+         | Same -> Dsame (Node (Less, l, x, r))
+         | More -> Ddecr (Eq, Node (Same, l, x, r))
+         | Less ->
+           (match rotl l x r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t)))
     else (
       match del y r with
       | Dsame r -> Dsame (Node (bal, l, x, r))
       | Ddecr (Eq, r) ->
         (match bal with
-        | Same -> Dsame (Node (More, l, x, r))
-        | Less -> Ddecr (Eq, Node (Same, l, x, r))
-        | More ->
-          (match rotr l x r with
-          | Inl t -> Ddecr (Eq, t)
-          | Inr t -> Dsame t)))
+         | Same -> Dsame (Node (More, l, x, r))
+         | Less -> Ddecr (Eq, Node (Same, l, x, r))
+         | More ->
+           (match rotr l x r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t)))
 ;;
 
 let delete x (Avl t) =
@@ -1932,8 +1926,8 @@ let rec repair : type c n. (red, n) sub_tree -> (c, n) ctxt -> rb_tree =
   | CBlk (e, RightD, sib, c) -> fill c (Bnode (t, e, sib))
   | CRed (e, dir, sib, CBlk (e', dir', uncle, ct)) ->
     (match color uncle with
-    | Red -> repair (recolor dir e sib dir' e' (blacken uncle) t) ct
-    | Black -> fill ct (rotate dir e sib dir' e' uncle t))
+     | Red -> repair (recolor dir e sib dir' e' (blacken uncle) t) ct
+     | Black -> fill ct (rotate dir e sib dir' e' uncle t))
 ;;
 
 let rec ins : type c n. int -> (c, n) sub_tree -> (c, n) ctxt -> rb_tree =
@@ -1987,18 +1981,18 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
   | Rbool, Rbool -> Some Eq
   | Rpair (a1, a2), Rpair (b1, b2) ->
     (match rep_equal a1 b1 with
-    | None -> None
-    | Some Eq ->
-      (match rep_equal a2 b2 with
-      | None -> None
-      | Some Eq -> Some Eq))
+     | None -> None
+     | Some Eq ->
+       (match rep_equal a2 b2 with
+        | None -> None
+        | Some Eq -> Some Eq))
   | Rfun (a1, a2), Rfun (b1, b2) ->
     (match rep_equal a1 b1 with
-    | None -> None
-    | Some Eq ->
-      (match rep_equal a2 b2 with
-      | None -> None
-      | Some Eq -> Some Eq))
+     | None -> None
+     | Some Eq ->
+       (match rep_equal a2 b2 with
+        | None -> None
+        | Some Eq -> Some Eq))
   | _ -> None
 ;;
 
@@ -2105,11 +2099,11 @@ let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
   | I, I -> Inr Eq
   | Ar (x, y), Ar (s, t) ->
     (match compare x s with
-    | Inl _ as e -> e
-    | Inr Eq ->
-      (match compare y t with
-      | Inl _ as e -> e
-      | Inr Eq as e -> e))
+     | Inl _ as e -> e
+     | Inr Eq ->
+       (match compare y t with
+        | Inl _ as e -> e
+        | Inr Eq as e -> e))
   | I, Ar _ -> Inl "I <> Ar _"
   | Ar _, I -> Inl "Ar _ <> I"
 ;;
@@ -2147,21 +2141,21 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
   | V s -> lookup s ctx
   | Ap (f, x) ->
     (match tc n ctx f with
-    | Cerror _ as e -> e
-    | Cok (f', ft) ->
-      (match tc n ctx x with
-      | Cerror _ as e -> e
-      | Cok (x', xt) ->
-        (match ft with
-        | Ar (a, b) ->
-          (match compare a xt with
-          | Inl s -> Cerror s
-          | Inr Eq -> Cok (App (f', x'), b))
-        | _ -> Cerror "Non fun in Ap")))
+     | Cerror _ as e -> e
+     | Cok (f', ft) ->
+       (match tc n ctx x with
+        | Cerror _ as e -> e
+        | Cok (x', xt) ->
+          (match ft with
+           | Ar (a, b) ->
+             (match compare a xt with
+              | Inl s -> Cerror s
+              | Inr Eq -> Cok (App (f', x'), b))
+           | _ -> Cerror "Non fun in Ap")))
   | Ab (s, t, body) ->
     (match tc (NS n) (Ccons (n, s, t, ctx)) body with
-    | Cerror _ as e -> e
-    | Cok (body', et) -> Cok (Abs (n, body'), Ar (t, et)))
+     | Cerror _ as e -> e
+     | Cok (body', et) -> Cok (Abs (n, body'), Ar (t, et)))
   | C m -> Cok (Const m, I)
 ;;
 
@@ -2233,29 +2227,29 @@ let rec subst : type m1 r t s. (m1, r, t) lam -> (r, s) sub -> (s, t) lam' =
   | Shift e, Bind (_, _, r) -> subst e r
   | Shift e, Push sub ->
     (match subst e sub with
-    | Ex a -> Ex (Shift a))
+     | Ex a -> Ex (Shift a))
   | App (f, x), sub ->
     (match subst f sub, subst x sub with
-    | Ex g, Ex y -> Ex (App (g, y)))
+     | Ex g, Ex y -> Ex (App (g, y)))
   | Lam (v, x), sub ->
     (match subst x (Push sub) with
-    | Ex body -> Ex (Lam (v, body)))
+     | Ex body -> Ex (Lam (v, body)))
 ;;
 
 type closed = rnil
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
 let rec rule
-    : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
+  : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
   =
  fun v1 v2 ->
   match v1, v2 with
   | Lam (x, body), v ->
     (match subst body (Bind (x, v, Id)) with
-    | Ex term ->
-      (match mode term with
-      | Pexp -> Inl term
-      | Pval -> Inr term))
+     | Ex term ->
+       (match mode term with
+        | Pexp -> Inl term
+        | Pval -> Inr term))
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 ;;
 
@@ -2264,15 +2258,15 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Const (r, v) -> Inr (Const (r, v))
   | App (e1, e2) ->
     (match mode e1, mode e2 with
-    | Pexp, _ ->
-      (match onestep e1 with
-      | Inl e -> Inl (App (e, e2))
-      | Inr v -> Inl (App (v, e2)))
-    | Pval, Pexp ->
-      (match onestep e2 with
-      | Inl e -> Inl (App (e1, e))
-      | Inr v -> Inl (App (e1, v)))
-    | Pval, Pval -> rule e1 e2)
+     | Pexp, _ ->
+       (match onestep e1 with
+        | Inl e -> Inl (App (e, e2))
+        | Inr v -> Inl (App (v, e2)))
+     | Pval, Pexp ->
+       (match onestep e2 with
+        | Inl e -> Inl (App (e1, e))
+        | Inr v -> Inl (App (e1, v)))
+     | Pval, Pval -> rule e1 e2)
 ;;
 
 type ('env, 'a) var =
@@ -2290,10 +2284,8 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> .
+  | _ -> . (* error *)
 ;;
-
-(* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind =
@@ -2415,7 +2407,7 @@ type (_, _, _) binop =
   | Add : (int, int, int) binop
 
 let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
-    : c constant
+  : c constant
   =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
@@ -2456,10 +2448,8 @@ let example6 : type a. a wrapPoly -> a -> int =
  fun w ->
   match w with
   | WrapPoly ATag -> intA
-  | WrapPoly _ -> intA
+  | WrapPoly _ -> intA (* This should not be allowed *)
 ;;
-
-(* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
@@ -2609,10 +2599,8 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> .
+  | _ -> . (* error *)
 ;;
-
-(* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 
@@ -2662,7 +2650,7 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 ;;
 
 let vexpr (type result visit_action)
-    : (unit, result, visit_action) context -> unit -> visit_action
+  : (unit, result, visit_action) context -> unit -> visit_action
   = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
@@ -2697,7 +2685,6 @@ type 'a t = [< `Foo | `Bar ] as 'a
 type 'a s = [< `Foo | `Bar | `Baz > `Bar ] as 'a
 
 type 'a first = First : 'a second -> ('b t as 'a) first
-
 and 'a second = Second : ('b s as 'a) second
 
 type aux = Aux : 'a t second * ('a -> int) -> aux
@@ -2766,7 +2753,6 @@ type _ t = I : int t
 let f (type a) (x : a t) =
   let module M = struct
     let (I : a t) = x (* fail because of toplevel let *)
-
     let x = (I : a t)
   end
   in
@@ -2783,7 +2769,6 @@ let bad (type a) =
       val e : (int, a) eq
     end = struct
       let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
-
       let e : (int, a) eq = Refl
     end
   end
@@ -3119,7 +3104,6 @@ module A = struct
 
   (* Mutually recursive declarations work as well *)
   type p = q [@@immediate]
-
   and q = int
 end
 
@@ -3305,7 +3289,6 @@ Error: Signature mismatch:
 (* Can't use a non-immediate type even if mutually recursive *)
 module E = struct
   type t = s [@@immediate]
-
   and s = string
 end
 
@@ -3479,9 +3462,7 @@ end
 module rec Typ : sig
   module type PAIR = sig
     type t
-
     and t1
-
     and t2
 
     val eq : (t, t1 * t2) TypEq.t
@@ -3608,7 +3589,7 @@ type var = [ `Var of string ]
 let subst_var ~subst : var -> _ = function
   | `Var s as x ->
     (try Subst.find s subst with
-    | Not_found -> x)
+     | Not_found -> x)
 ;;
 
 let free_var : var -> _ = function
@@ -3653,7 +3634,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-          if Names.mem s used then data :: acc else acc)
+        if Names.mem s used then data :: acc else acc)
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
     then (
@@ -3892,7 +3873,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4135,7 +4116,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4403,9 +4384,7 @@ type 'a t = [ `A of 'a t ] constraint 'a = 'a t
 type 'a t = [ `A of 'a ] as 'a
 
 type 'a v = [ `A of u v ] constraint 'a = t
-
 and t = u
-
 and u = t
 
 (* fails *)
@@ -4421,7 +4400,6 @@ let f (x : 'a t) (y : 'a) = x = y
 (* PR#6505 *)
 module type PR6505 = sig
   type 'o is_an_object = < .. > as 'o
-
   and 'o abs constraint 'o = 'o is_an_object
 
   val abs : 'o is_an_object -> 'o abs
@@ -4467,14 +4445,14 @@ let f (x : [ `A ]) =
 let f x =
   ignore
     (match x with
-    | #ab -> 1);
+     | #ab -> 1);
   ignore (x : [ `A ])
 ;;
 
 let f x =
   ignore
     (match x with
-    | `A | `B -> 1);
+     | `A | `B -> 1);
   ignore (x : [ `A ])
 ;;
 
@@ -4984,8 +4962,8 @@ module type S = sig
 end
 
 module Foo
-    (Bar : S with type a = private [> `A ])
-    (Baz : S with type b = private < b : Bar.b ; .. >) =
+  (Bar : S with type a = private [> `A ])
+  (Baz : S with type b = private < b : Bar.b ; .. >) =
 struct end
 
 module A = struct
@@ -5004,7 +4982,6 @@ let _ = f (module A) (* ok *)
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
 let _ = f (module A_annotated_alias) (* ok *)
-
 let _ = f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok *)
 
 module A_alias = A
@@ -5014,11 +4991,8 @@ module A_alias_expanded = struct
 end
 
 let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
-
 let _ = f (module A_alias_expanded) (* ok *)
-
 let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
-
 let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
@@ -5076,11 +5050,17 @@ module B' = B
 class b : B.a =
   object
     method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
+
+    method a : 'a. 'a M.s -> 'a =
+      fun (type a) ((module X) : (module M.S with type a = a)) -> X.v
   end
 
 class b' : B.a =
   object
     method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
+
+    method a : 'a. 'a M'.s -> 'a =
+      fun (type a) ((module X) : (module M'.S with type a = a)) -> X.v
   end
 
 module type FOO = sig
@@ -5240,7 +5220,6 @@ end
 
 module type S = sig
   type t
-
   and s = t
 end
 
@@ -5370,7 +5349,7 @@ let g x =
 ;;
 
 module F (X : sig end) = Char
-module C4 = F ();;
+module C4 = F (struct end);;
 
 C4.chr 66
 
@@ -5379,7 +5358,7 @@ module G (X : sig end) = struct
 end
 
 (* does not alias X *)
-module M = G ()
+module M = G (struct end)
 
 module M' = struct
   module N = struct
@@ -5457,7 +5436,7 @@ module G : functor (X : sig end) -> sig
 end =
   F
 
-module M5 = G ();;
+module M5 = G (struct end);;
 
 M5.N'.x
 
@@ -6009,7 +5988,7 @@ module H () = F ()
 
 (* Alias *)
 module U = struct end
-module M = F ()
+module M = F (struct end)
 
 (* ok *)
 module M = F (U)
@@ -6561,7 +6540,7 @@ module Make (Unit : sig end) : Priv = struct
   type t = int
 end
 
-module A = Make ()
+module A = Make (struct end)
 
 module type Priv' = sig
   type t = private [> `A ]
@@ -6571,7 +6550,7 @@ module Make' (Unit : sig end) : Priv' = struct
   type t = [ `A ]
 end
 
-module A' = Make' ()
+module A' = Make' (struct end)
 (* PR5057 *)
 
 module TT = struct
@@ -6707,9 +6686,7 @@ type untyped
 type -'a typed = private untyped
 
 type -'typing wrapped = private sexp
-
 and +'a t = 'a typed wrapped
-
 and sexp = private untyped wrapped
 
 class type ['a] s3 =
@@ -7136,7 +7113,6 @@ end
 module PR_4450_2 = struct
   module type MyT = sig
     type 'a wrap = My of 'a t
-
     and 'a t = private < map : 'b. ('a -> 'b) -> 'b wrap ; .. >
 
     val create : 'a list -> 'a t
@@ -7153,7 +7129,6 @@ module PR_4450_2 = struct
 
   module rec MyList : sig
     type 'a wrap = My of 'a t
-
     and 'a t = < map : 'b. ('a -> 'b) -> 'b wrap >
 
     val create : 'a list -> 'a t
@@ -8060,7 +8035,6 @@ module M : sig
   type 'a t
 
   type u = u t
-
   and v = v t
 
   val f : int -> u
@@ -8069,7 +8043,6 @@ end = struct
   type 'a t = 'a
 
   type u = int
-
   and v = bool
 
   let f x = x
@@ -8192,13 +8165,11 @@ type t1 = A
 
 module M1 = struct
   type u = v
-
   and v = t1
 end
 
 module N1 = struct
   type u = v
-
   and v = M1.v
 end
 
@@ -8206,7 +8177,6 @@ type t1 = B
 
 module N2 = struct
   type u = v
-
   and v = M1.v
 end
 
@@ -8238,9 +8208,7 @@ end
 
 module type VALUE = sig
   type value (* a Lua value *)
-
   type state (* the state of a Lua interpreter *)
-
   type usert (* a user-defined value *)
 end
 
@@ -8661,8 +8629,8 @@ type v =
   | G
 
 let f
-    : type a b c d e f g.
-      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
+  : type a b c d e f g.
+    a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
   = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
@@ -8959,16 +8927,13 @@ module OK = struct
 
   let f2 r =
     ignore (r : t);
-    r.x
+    r.x (* non principal *)
   ;;
-
-  (* non principal *)
 
   let f3 (r : t) =
     match r with
-    | { x; y } -> y + y
+    | { x; y } -> y + y (* ok *)
   ;;
-  (* ok *)
 end
 
 module F1 = struct
@@ -9366,7 +9331,7 @@ type foo += private A of int
 let f : 'a 'b 'c. < .. > = assert false
 
 let () =
-  let module M = (functor (T : sig end) -> struct end) () in
+  let module M = (functor (T : sig end) -> struct end) (struct end) in
   ()
 ;;
 
@@ -9498,7 +9463,7 @@ let tail2 = 0 :: ([ 1; 2 ] [@hello])
 let tail3 = 0 :: ([] [@hello])
 let f ~l:(l [@foo]) = l
 let test x y = (( + ) [@foo]) x y
-let test x = (( ~- ) [@foo])x
+let test x = (( ~- ) [@foo]) x
 let test contents = { contents = contents [@foo] }
 
 class type t = object (_[@foo]) end
@@ -9595,14 +9560,14 @@ else aaaaaaaaaaaa qqqqqqqqqqq
 include Base.Fn (** @open *)
 
 let ssmap
-    : (module MapT with type key = string and type data = string and type map = SSMap.map)
+  : (module MapT with type key = string and type data = string and type map = SSMap.map)
   =
   ()
 ;;
 
 let ssmap
-    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
-    -> unit
+  :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+  -> unit
   =
   ()
 ;;
@@ -9622,12 +9587,12 @@ let _ =
       match y with
       | e ->
         (match e with
-        | x -> x)]
+         | x -> x)]
 ;;
 
 let _ =
   List.map rows ~f:(fun row ->
-      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+    Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
 
 module type T = sig
@@ -9696,7 +9661,8 @@ let _ =
   match () with
   | _ ->
     (match () with
-    | _ -> long_function_name long_argument_name__________________________________________)
+     | _ ->
+       long_function_name long_argument_name__________________________________________)
 ;;
 
 let _ =
@@ -9715,8 +9681,7 @@ let g =
 
 let f =
   very_long_function_name
-    ~x:
-      very_long_variable_name
+    ~x:very_long_variable_name
       (* this is a multiple-line-spanning
        comment *)
     ~y
@@ -9756,7 +9721,7 @@ type t =
 
 type t =
   { field : ty
-        (* Here is some verbatim formatted text:
+      (* Here is some verbatim formatted text:
      {v
        starting at column 7
      v}*)
@@ -9790,8 +9755,7 @@ let _ =
 
 let nullsafe_optimistic_third_party_params_in_non_strict =
   CLOpt.mk_bool
-    ~long:
-      "nullsafe-optimistic-third-party-params-in-non-strict"
+    ~long:"nullsafe-optimistic-third-party-params-in-non-strict"
       (* Turned on for compatibility reasons. Historically this is because
          there was no actionable way to change third party annotations. Now
          that we have such a support, this behavior should be reconsidered,
@@ -9814,4 +9778,74 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *) () = yyyyyyyy in
   { zzzzzzzzzzzzz }
+;;
+
+let _ =
+  match x with
+  | _
+    when f
+           ~f:(function [@ocaml.warning
+                          (* ....................................... *) "-4"] _ -> .) -> y
+;;
+
+let[@a
+     (* .............................................. ........................... .......................... ...................... *)
+     foo
+     (* ....................... *)
+     (* ................................. *)
+     (* ...................... *)] _
+  =
+  match[@ocaml.warning (* ....................................... *) "-4"]
+    x [@attr (* .......................... .................. *) some_attr]
+  with
+  | _
+    when f
+           ~f:
+             (function[@ocaml.warning (* ....................................... *) "-4"]
+              | _ -> .)
+           ~f:
+             (function[@ocaml.warning
+                        (* ....................................... *)
+                        (* ....................................... *)
+                        "foooooooooooooooooooooooooooo \
+                         fooooooooooooooooooooooooooooooooooooo"]
+              | _ -> .)
+           ~f:
+             (function[@ocaml.warning
+                        (* ....................................... *)
+                        let x = a
+                        and y = b in
+                        x + y]
+              | _ -> .) ->
+    y [@attr
+        (* ... *)
+        (* ... *)
+        attr (* ... *)]
+;;
+
+let x =
+  foo (`A b) ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo (`A `b) ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo [ A; B ] ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  foo [ [ A ]; B ] ~f:(fun thing ->
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+;;
+
+let x =
+  f
+    ("A string _____________________"
+     ^ "Another string _____________"
+     ^ "Yet another string _________")
 ;;

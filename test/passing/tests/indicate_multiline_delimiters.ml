@@ -1,7 +1,7 @@
 let compare = function
   | Eq -> ( = )
   | Neq -> ( <> )
-  | Lt -> ( < )
+  | Lt -> ( < ) [@attr]
   | Le -> ( <= )
   | Gt -> ( > )
   | Ge -> ( >= )

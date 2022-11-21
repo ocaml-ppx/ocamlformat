@@ -452,6 +452,18 @@ let fooooooooooooooooo =
     *)
     let code inside (* comment   *) = f inside
   ]}
+
+  Code block with metadata:
+  {@ocaml[ code ]}
+
+  {@ocaml kind=toplevel[ code ]}
+
+  {@ocaml kind=toplevel env=e1[
+    (** This is a comment with code inside
+        [ let code inside = f inside ]
+    *)
+    let code inside (* comment   *) = f inside
+  ]}
 *)
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
@@ -570,3 +582,49 @@ type x =
   | B of b
   (** {[(* a
            b *)]} *)
+
+(** Set a different language name in the block metadata to not format as OCaml:
+
+    {@sh[ echo "this""is""only""a""single"(echo word)(echo also) ]} *)
+
+(**a*)(**b*)
+
+(** Inline math: {m \infty}
+
+    Inline math elements can wrap as well {m \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty \infty} or {m \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi}.
+
+    Block math:
+
+    {math \infty}
+
+    {math
+    \infty
+    }
+
+    {math
+
+    \pi
+
+    }
+
+    {math
+
+    \infty
+
+   \pi
+
+       \pi
+
+    \pi
+
+    }
+
+    {math {m \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi}}
+
+    {math
+    % \f is defined as #1f(#2) using the macro
+    \f\relax{x} = \int_{-\infty}^\infty
+    \f\hat\xi\,e^{2 \pi i \xi x}
+    \,d\xi
+    }
+*)

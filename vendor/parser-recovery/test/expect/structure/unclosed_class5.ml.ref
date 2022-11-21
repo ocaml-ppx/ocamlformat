@@ -1,0 +1,30 @@
+[
+  structure_item ([1,0+0]..[1,0+30])
+    Pstr_class
+    [
+      class_declaration ([1,0+0]..[1,0+30])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "c" ([1,0+6]..[1,0+7])
+        pci_expr =
+          class_expr ([1,0+10]..[1,0+30])
+            Pcl_structure
+            class_structure
+              pattern ([1,0+16]..[1,0+16]) ghost
+                Ppat_any
+              [
+                class_field ([1,0+18]..[1,0+30])
+                  Pcf_method (private=None, virtual=None)
+                    "x" ([1,0+25]..[1,0+26])
+                    Concrete Fresh
+                    expression ([1,0+29]..[1,0+30]) ghost
+                      Pexp_poly
+                      expression ([1,0+29]..[1,0+30])
+                        Pexp_constant
+                        constant ([1,0+29]..[1,0+30])
+                          PConst_int (1,None)
+                      None
+              ]
+    ]
+]

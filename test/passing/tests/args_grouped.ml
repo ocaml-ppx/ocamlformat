@@ -1,7 +1,6 @@
 let nullsafe_optimistic_third_party_params_in_non_strict =
   CLOpt.mk_bool
-    ~long:
-      "nullsafe-optimistic-third-party-params-in-non-strict"
+    ~long:"nullsafe-optimistic-third-party-params-in-non-strict"
       (* Turned on for compatibility reasons. Historically this is because
          there was no actionable way to change third party annotations. Now
          that we have such a support, this behavior should be reconsidered,
@@ -71,3 +70,24 @@ let gen_with_record_deps ~expand t resolved_forms ~dep_kind =
       resolved_forms ~dir:t.dir ~dep_kind ~expand_var:t.expand_var
   in
   {t with expand_var}
+
+let f =
+  very_long_function_name
+    ~very_long_variable_name:(very_long expression)
+      (* this is a
+         multiple-line-spanning
+         comment *)
+    ~y
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info Eradicate (* TODO *)
+    ~user_documentation:""
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE" (* Should be enabled for special integrations *)
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info

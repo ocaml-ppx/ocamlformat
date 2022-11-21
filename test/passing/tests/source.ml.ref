@@ -10,8 +10,7 @@ module M = struct
   type t = {l: (t[@foo]) [@foo]} [@@foo] [@@foo]
 
   [@@@foo]
-end
-[@foo]
+end [@foo]
 [@@foo]
 
 module type S = sig
@@ -102,11 +101,11 @@ let () =
     [@foo]] ;
   [%foo
     (let open M in
-    ()) [@foo]] ;
+     () ) [@foo]] ;
   [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;
-  [%foo if [@foo] () then () else ()] ;
+  if%foo [@foo] () then () else () ;
   [%foo
     while () do
       ()
@@ -120,7 +119,11 @@ let () =
   [%foo assert true [@foo]] ;
   [%foo lazy x [@foo]] ;
   [%foo object end [@foo]] ;
-  [%foo (3 [@foo])] ;
+  [%foo
+    begin
+      3
+    end
+    [@foo]] ;
   [%foo new x [@foo]] ;
   [%foo
     match[@foo] () with
@@ -267,9 +270,9 @@ end
 
 type t = ..
 
-type t += A;;
+type t += A ;;
 
-[%extension_constructor A];;
+[%extension_constructor A] ;;
 
 ([%extension_constructor A] : extension_constructor)
 
@@ -277,7 +280,7 @@ module M = struct
   type extension_constructor = int
 end
 
-open M;;
+open M ;;
 
 ([%extension_constructor A] : extension_constructor)
 
@@ -354,9 +357,9 @@ let pop_castable () =
 
 (* We can add foos and bars to this list, and retrive them *)
 
-push_castable (new foo);;
+push_castable (new foo) ;;
 
-push_castable (new bar);;
+push_castable (new bar) ;;
 
 push_castable (new foo)
 
@@ -479,8 +482,8 @@ module M_S : S = M
 
 let is_s x = match x with M_S.A _ -> true | _ -> false
 
-let a2 = M_S.A 20
-(* ERROR: Cannot create a value using a private constructor *)
+let a2 =
+  M_S.A 20 (* ERROR: Cannot create a value using a private constructor *)
 
 (* Extensions can be rebound *)
 
@@ -1007,7 +1010,6 @@ let g (type t) (x : t) (tag : t ty) =
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with Bool -> idb2 x | Int -> x > 0
-
 (* Encoding generics using GADTs *)
 (* (c) Alain Frisch / Lexifi *)
 (* cf. http://www.lexifi.com/blog/dynamic-types *)
@@ -2263,8 +2265,7 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> .
-(* error *)
+  | _ -> . (* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind = [`Link | `Nonlink]
@@ -2395,8 +2396,10 @@ type _ wrapPoly =
   | WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
 
 let example6 : type a. a wrapPoly -> a -> int =
- fun w -> match w with WrapPoly ATag -> intA | WrapPoly _ -> intA
-(* This should not be allowed *)
+ fun w ->
+  match w with
+  | WrapPoly ATag -> intA
+  | WrapPoly _ -> intA (* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
@@ -2519,8 +2522,7 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> .
-(* error *)
+  | _ -> . (* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 
@@ -3197,7 +3199,7 @@ let f (module M : S with type t = int) = M.x
 let f (module M : S with type t = 'a) = M.x
 
 (* Error *)
-let f (type a) (module M : S with type t = a) = M.x;;
+let f (type a) (module M : S with type t = a) = M.x ;;
 
 f
   ( module struct
@@ -3206,7 +3208,7 @@ f
     let x = 1
   end )
 
-type 'a s = {s: (module S with type t = 'a)};;
+type 'a s = {s: (module S with type t = 'a)} ;;
 
 { s=
     ( module struct
@@ -3244,7 +3246,7 @@ let m =
   end : S )
 ;;
 
-f m 1 m;;
+f m 1 m ;;
 
 f m 1
   ( module struct
@@ -3382,10 +3384,8 @@ type ('k, 'd, 'm) map =
   (module MapT with type key = 'k and type data = 'd and type map = 'm)
 
 let add (type k d m) (m : (k, d, m) map) x y s =
-  let module M = ( val m : MapT
-                     with type key = k
-                      and type data = d
-                      and type map = m )
+  let module M =
+    (val m : MapT with type key = k and type data = d and type map = m)
   in
   M.of_t (M.add x y (M.to_t s))
 
@@ -3428,7 +3428,7 @@ let ssmap =
 let ssmap =
   (module SSMap : MapT with type key = _ and type data = _ and type map = _)
 
-let ssmap : (_, _, _) map = (module SSMap);;
+let ssmap : (_, _, _) map = (module SSMap) ;;
 
 add ssmap
 
@@ -4189,16 +4189,16 @@ end
 
 (* fails *)
 (* PR#5835 *)
-let f ~x = x + 1;;
+let f ~x = x + 1 ;;
 
 f ?x:0
 
 (* PR#6352 *)
 let foo (f : unit -> unit) = ()
 
-let g ?x () = ();;
+let g ?x () = () ;;
 
-foo (() ; g);;
+foo (() ; g) ;;
 
 (* PR#5748 *)
 foo (fun ?opt () -> ())
@@ -4273,19 +4273,19 @@ let f (x : 'id_arg) = x
 let f (x : 'Id_arg) = x
 
 (* undefined labels *)
-type t = {x: int; y: int};;
+type t = {x: int; y: int} ;;
 
-{x= 3; z= 2};;
+{x= 3; z= 2} ;;
 
-fun {x= 3; z= 2} -> ();;
+fun {x= 3; z= 2} -> () ;;
 
 (* mixed labels *)
 {x= 3; contents= 2}
 
 (* private types *)
-type u = private {mutable u: int};;
+type u = private {mutable u: int} ;;
 
-{u= 3};;
+{u= 3} ;;
 
 fun x -> x.u <- 3
 
@@ -4314,7 +4314,7 @@ let f (r : bar) : foo = {r with z= 3}
 
 type foo = {x: int}
 
-let r : foo = {ZZZ.x= 2};;
+let r : foo = {ZZZ.x= 2} ;;
 
 (ZZZ.X : int option)
 
@@ -4806,12 +4806,18 @@ class b : B.a =
   object
     method a : 'a. 'a M.s -> 'a =
       fun (type a) (module X : M.S with type a = a) -> X.v
+
+    method a : 'a. 'a M.s -> 'a =
+      fun (type a) ((module X) : (module M.S with type a = a)) -> X.v
   end
 
 class b' : B.a =
   object
     method a : 'a. 'a M'.s -> 'a =
       fun (type a) (module X : M'.S with type a = a) -> X.v
+
+    method a : 'a. 'a M'.s -> 'a =
+      fun (type a) ((module X) : (module M'.S with type a = a)) -> X.v
   end
 
 module type FOO = sig
@@ -4934,7 +4940,7 @@ module Simple = struct
   end
 end
 
-module EM = Simple.Register (Simple.M);;
+module EM = Simple.Register (Simple.M) ;;
 
 Simple.M.key
 
@@ -5066,11 +5072,11 @@ end
 F.x
 
 (* fail *)
-module C = Char;;
+module C = Char ;;
 
 C.chr 66
 
-module C' : module type of Char = C;;
+module C' : module type of Char = C ;;
 
 C'.chr 66
 
@@ -5093,7 +5099,7 @@ let g x =
 
 module F (X : sig end) = Char
 
-module C4 = F ();;
+module C4 = F (struct end) ;;
 
 C4.chr 66
 
@@ -5102,7 +5108,7 @@ module G (X : sig end) = struct
 end
 
 (* does not alias X *)
-module M = G ()
+module M = G (struct end)
 
 module M' = struct
   module N = struct
@@ -5180,7 +5186,7 @@ module G : functor (X : sig end) -> sig
 end =
   F
 
-module M5 = G ();;
+module M5 = G (struct end) ;;
 
 M5.N'.x
 
@@ -5225,7 +5231,7 @@ end = (
 
 M2.N'.x
 
-open M;;
+open M ;;
 
 N'.x
 
@@ -5262,13 +5268,13 @@ end = (
     end )
 ;;
 
-M2.C'.chr 66;;
+M2.C'.chr 66 ;;
 
 StdLabels.List.map
 
 module Q = Queue
 
-exception QE = Q.Empty;;
+exception QE = Q.Empty ;;
 
 try Q.pop (Q.create ()) with QE -> "Ok"
 
@@ -5280,7 +5286,7 @@ end = struct
   module C = Complex
 end
 
-module C = Complex;;
+module C = Complex ;;
 
 C.one.Complex.re
 
@@ -5331,7 +5337,7 @@ module A = struct
   let empty = S.empty
 end
 
-module A1 = A;;
+module A1 = A ;;
 
 A1.empty = A.empty
 
@@ -5741,7 +5747,7 @@ module H () = F ()
 (* Alias *)
 module U = struct end
 
-module M = F ()
+module M = F (struct end)
 
 (* ok *)
 module M = F (U)
@@ -6323,7 +6329,7 @@ module Make (Unit : sig end) : Priv = struct
   type t = int
 end
 
-module A = Make ()
+module A = Make (struct end)
 
 module type Priv' = sig
   type t = private [> `A]
@@ -6333,7 +6339,7 @@ module Make' (Unit : sig end) : Priv' = struct
   type t = [`A]
 end
 
-module A' = Make' ()
+module A' = Make' (struct end)
 (* PR5057 *)
 
 module TT = struct
@@ -6512,7 +6518,7 @@ end =
   M1
 ;;
 
-fun x -> (x : M3.t :> M1.t);;
+fun x -> (x : M3.t :> M1.t) ;;
 
 fun x -> (x : M3.t :> M.t)
 
@@ -7854,16 +7860,16 @@ module N = struct
 end
 
 open M
-open N;;
+open N ;;
 
-A;;
+A ;;
 
-B;;
+B ;;
 
 C
 
 include M
-open M;;
+open M ;;
 
 C
 
@@ -7871,7 +7877,7 @@ module L = struct
   type v = V
 end
 
-open L;;
+open L ;;
 
 V
 
@@ -7879,7 +7885,7 @@ module L = struct
   type v = V
 end
 
-open L;;
+open L ;;
 
 V
 
@@ -8340,13 +8346,13 @@ external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
 
-let _ = raise Exit 3;;
+let _ = raise Exit 3 ;;
 
 (* comment 9644 of PR#6000 *)
 
-fun b -> if b then format_of_string "x" else "y";;
+fun b -> if b then format_of_string "x" else "y" ;;
 
-fun b -> if b then "x" else format_of_string "y";;
+fun b -> if b then "x" else format_of_string "y" ;;
 
 fun b : (_, _, _) format -> if b then "x" else "y"
 
@@ -8518,15 +8524,15 @@ let f : label choice -> bool = function Left -> true
 (* warn *)
 exception A
 
-type a = A;;
+type a = A ;;
 
-A;;
+A ;;
 
-raise A;;
+raise A ;;
 
-fun (A : a) -> ();;
+fun (A : a) -> () ;;
 
-function Not_found -> 1 | A -> 2 | _ -> 3;;
+function Not_found -> 1 | A -> 2 | _ -> 3 ;;
 
 try raise A with A -> 2
 
@@ -8597,8 +8603,7 @@ module OK = struct
 
   let f2 r =
     ignore (r : t) ;
-    r.x
-  (* non principal *)
+    r.x (* non principal *)
 
   let f3 (r : t) = match r with {x; y} -> y + y (* ok *)
 end
@@ -8941,7 +8946,7 @@ type foo += private A of int
 let f : 'a 'b 'c. < .. > = assert false
 
 let () =
-  let module M = (functor (T : sig end) -> struct end) () in
+  let module M = (functor (T : sig end) -> struct end) (struct end) in
   ()
 
 class c =
@@ -8969,9 +8974,7 @@ let h ?l:(p = 1) ?y:u ?(x = 3) = 2
 let _ = function
   | a, s, ba1, ba2, ba3, bg ->
       ignore
-        ( Array.get x 1
-        + Array.get [||] 0
-        + Array.get [|1|] 1
+        ( Array.get x 1 + Array.get [||] 0 + Array.get [|1|] 1
         + Array.get [|1; 2|] 2 ) ;
       ignore [String.get s 1; String.get "" 2; String.get "123" 3] ;
       ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
@@ -9070,7 +9073,7 @@ let f ~l:(l [@foo]) = l
 
 let test x y = (( + ) [@foo]) x y
 
-let test x = (( ~- ) [@foo])x
+let test x = (( ~- ) [@foo]) x
 
 let test contents = {contents= contents [@foo]}
 
@@ -9082,13 +9085,13 @@ let test f x = f ~x:(x [@foo])
 
 let f = function (`A | `B) [@bar] | `C -> ()
 
-let f = function _ :: ((_ :: _) [@foo]) -> () | _ -> ();;
+let f = function _ :: ((_ :: _) [@foo]) -> () | _ -> () ;;
 
-function {contents= (contents [@foo])} -> ();;
+function {contents= (contents [@foo])} -> () ;;
 
-fun contents -> {contents= contents [@foo]};;
+fun contents -> {contents= contents [@foo]} ;;
 
-fun contents -> {contents= contents [@foo]; foo};;
+fun contents -> {contents= contents [@foo]; foo} ;;
 
 () ;
 (() ; ()) [@foo]
@@ -9138,12 +9141,14 @@ module Indexop = struct
   ;;
 
   let h = Hashtbl.create 17 in
-  h.Def.%["one"] <- 1 ; h.Def.%("two") <- 2 ; h.Def.%{"three"} <- 3
+  h.Def.%["one"] <- 1 ;
+  h.Def.%("two") <- 2 ;
+  h.Def.%{"three"} <- 3
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})
 end
 
-type t = |;;
+type t = | ;;
 
 M.(Some x) [@foo]
 
@@ -9159,7 +9164,7 @@ let formula_base x =
   #&& (x #<= (Expr.int 4))
   #&& ((Expr.int 0) #< x)
 
-let _ = call ~f:(fun pair : (a * b) -> pair);;
+let _ = call ~f:(fun pair : (a * b) -> pair) ;;
 
 f
   (fun _ -> function
@@ -9182,3 +9187,20 @@ f
 let xxxxxx =
   let%map (* _____________________________ __________ *) () = yyyyyyyy in
   {zzzzzzzzzzzzz}
+
+let _ = fun (x : int as 'a) : (int as 'a) -> x
+
+let eradicate_meta_class_is_nullsafe =
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info Eradicate (* TODO *)
+    ~user_documentation:""
+
+let eradicate_meta_class_is_nullsafe =
+  register
+    ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+      (* Should be enabled for special integrations *)
+    ~hum:"Class is marked @Nullsafe and has 0 issues"
+      (* Should be enabled for special integrations *)
+    ~enabled:false Info

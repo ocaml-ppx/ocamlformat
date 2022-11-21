@@ -1,0 +1,29 @@
+[
+  structure_item ([1,0+0]..[1,0+29])
+    Pstr_module
+    module_binding "M" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+29])
+      module_expr ([1,0+11]..[1,0+29])
+        Pmod_structure
+        [
+          structure_item ([1,0+19]..[1,0+29])
+            Pstr_type Rec
+            [
+              type_declaration "t" ([1,0+24]..[1,0+25]) ([1,0+19]..[1,0+29])
+                ptype_params =
+                  []
+                ptype_cstrs =
+                  []
+                ptype_kind =
+                  Ptype_variant
+                    [
+                      ([1,0+28]..[1,0+29])
+                        "T" ([1,0+28]..[1,0+29])
+                        []
+                        None
+                    ]
+                ptype_private = Public
+                ptype_manifest =
+                  None
+            ]
+        ]
+]

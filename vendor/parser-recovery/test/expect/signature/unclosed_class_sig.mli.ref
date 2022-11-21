@@ -1,0 +1,18 @@
+[
+  signature_item ([1,0+0]..[1,0+16])
+    Psig_class
+    [
+      class_description ([1,0+0]..[1,0+16])
+        pci_virt = Concrete
+        pci_params =
+          []
+        pci_name = "c" ([1,0+6]..[1,0+7])
+        pci_expr =
+          class_type ([1,0+10]..[1,0+16])
+            Pcty_signature
+            class_signature
+              core_type ([1,0+16]..[1,0+16])
+                Ptyp_any
+              []
+    ]
+]

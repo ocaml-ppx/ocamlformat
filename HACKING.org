@@ -23,7 +23,7 @@ Git is used to manage the script's state:
 - If a supported OCaml version does not have CI support, run test suite locally.
 
 - In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
-  and date. In =README.md=, update the recommended version to use in
+  and date. In =README.md=, =doc/faq.mld= and =doc/getting_started.mld= update the recommended version to use in
   =.ocamlformat= files. Commit the changes.
 
 - Tag
@@ -42,7 +42,7 @@ Git is used to manage the script's state:
   =git push --tags=
 
 - Release in automatic mode
-  =dune-release=
+  =dune-release -p ocamlformat,ocamlformat-rpc-lib=
   Until dune-release.1.5.0 is released the =main= branch of dune-release
   should be used.
 
@@ -52,20 +52,15 @@ Git is used to manage the script's state:
 
 - Create a Windows asset:
 
-  + install a compatible version of dune-release
+  + Go to https://github.com/ocaml-ppx/ocamlformat/actions/workflows/build-mingw64.yml
 
-  + checkout release tag: =git checkout a.b.c=
+  + =Run workflow= on the =main= branch
 
-  + =dune clean=
+  + Go to the workflow result page when the build is successful
 
-  + =dune-release distrib --skip-tests= (ignore the error about a directory
-  that can not be deleted)
+  + Download the =ocamlformat-main.exe= artifact
 
-  + check release version number:
-  =_build/ocamlformat-a.b.c/_build/install/default/bin/ocamlformat.exe --version=
-  should output just =a.b.b=
-
-  + =cp _build/ocamlformat-a.b.c/_build/install/default/bin/ocamlformat.exe ./ocamlformat-a.b.c.exe=
+  + Rename it =ocamlformat-a.b.c.exe=
 
   + Go to https://github.com/ocaml-ppx/ocamlformat/releases/edit/a.b.c
 
@@ -225,20 +220,24 @@ End state:
 
 * Building on Windows
 
-`ocamlformat` can be built as a native Windows binary using the `mingw64`
+=ocamlformat= can be built as a native Windows binary using the =mingw64=
 toolchain under Cygwin. The following Cygwin packages are required:
 
-- `git`, `curl`, `unzip`
-- `m4`, `patchutils`, `make`
-- `mingw64-x86_64-binutils`, `mingw64-x86_64-gcc-core`, `mingw64-x86_64-headers`, `mingw64-x86_64-runtime`
+- =git=, =curl=, =unzip=
+- =m4=, =patchutils=, =make=
+- =mingw64-x86_64-binutils=, =mingw64-x86_64-gcc-core=, =mingw64-x86_64-headers=, =mingw64-x86_64-runtime=
 
-The binary is built by executing `bash tools/build-mingw64.sh` from the root of
-the repository. The first time the script is launched, it will install `opam` in
-the subdirectory `_build-mingw64` and use it to install all the dependencies of
-`ocamlformat` and then build the binary. Subsequent launches of the script will
-only rebuild `ocamlformat`. If you need to start from scratch again, simply
-remove the `_build-mingw64` directory.
+The binary is built by executing =bash tools/build-mingw64.sh= from the root of
+the repository. The first time the script is launched, it will install =opam= in
+the subdirectory =_build-mingw64= and use it to install all the dependencies of
+=ocamlformat= and then build the binary. Subsequent launches of the script will
+only rebuild =ocamlformat=. If you need to start from scratch again, simply
+remove the =_build-mingw64= directory.
 
-This script can also be triggered as a GitHub Action named `build-mingw64` which
+This script can also be triggered as a GitHub Action named =build-mingw64= which
 will build the binary in a GitHub worker and upload it back to GitHub. To
 retrieve it, select the Action run in question and scroll down to "Artifacts".
+
+* Building the documentation
+
+=dune build @doc && xdg-open _build/default/_doc/_html/ocamlformat/index.html=

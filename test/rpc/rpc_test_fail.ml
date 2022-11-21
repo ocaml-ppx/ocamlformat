@@ -8,14 +8,40 @@ module Result = struct
   let map_error ~f = function Ok x -> Ok x | Error x -> Error (f x)
 end
 
+module IO = struct
+  type 'a t = 'a
+
+  type ic = in_channel
+
+  type oc = out_channel
+
+  let ( >>= ) x f = f x
+
+  let return x = x
+
+  let read ic =
+    match Csexp.input ic with
+    | Ok x -> return (Some x)
+    | Error _ -> return None
+
+  let write oc lx =
+    List.iter (Csexp.to_channel oc) lx ;
+    Stdlib.flush oc ;
+    return ()
+end
+
 open Result.Infix
-module Ocf = Ocamlformat_rpc_lib
+open Ocamlformat_rpc_lib
+module Ocf = Make (IO)
 
 let log = Format.printf
 
-let supported_versions = ["v1"]
+(* latest first *)
+let supported_versions = List.map Version.to_string [V2; V1]
 
-type state = Uninitialized | Running of Ocf.client | Errored
+type close = unit -> unit
+
+type state = Uninitialized | Running of Ocf.client * close | Errored
 
 let state : state ref = ref Uninitialized
 
@@ -27,8 +53,16 @@ let start () =
       let pid = Unix.process_pid (input, output) in
       Ocf.pick_client ~pid input output supported_versions
       >>| fun client ->
-      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
-      state := Running client ;
+      let close =
+        match client with
+        | `V1 _ ->
+            log "[ocf] client V1 selected\n%!" ;
+            fun () -> close_out output ; close_in input
+        | `V2 _ ->
+            log "[ocf] client V2 selected\n%!" ;
+            fun () -> close_out output ; close_in input
+      in
+      state := Running (client, close) ;
       client
     with
   | exception _ ->
@@ -50,10 +84,18 @@ let start () =
 let get_client () =
   match !state with
   | Uninitialized -> start ()
-  | Running cl ->
+  | Running (cl, _) ->
       let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
       if i = 0 then Ok cl else start ()
   | Errored -> Error `No_process
+
+let close_client () =
+  match !state with
+  | Uninitialized -> ()
+  | Running (cl, close) ->
+      let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
+      if i = 0 then close () else ()
+  | Errored -> ()
 
 let config c =
   get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.config c cl
@@ -68,7 +110,10 @@ let halt () =
   get_client ()
   >>= fun cl ->
   log "[ocf] Halt\n%!" ;
-  Ocf.halt cl >>| fun () -> state := Uninitialized
+  Ocf.halt cl
+  >>| fun () ->
+  close_client () ;
+  state := Uninitialized
 
 let protect_unit x =
   match x with

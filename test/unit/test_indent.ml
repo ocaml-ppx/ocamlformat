@@ -1,8 +1,10 @@
-open Ocamlformat_lib
+open Ocamlformat
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
 let partial_let = read_file "../passing/tests/partial.ml"
+
+let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
 
 module Partial_ast = struct
   let tests_indent_range =
@@ -11,10 +13,12 @@ module Partial_ast = struct
       ( test_name
       , `Quick
       , fun () ->
+          let range = Range.make ~range source in
           let indent = Indent.Partial_ast.indent_range ~source ~range in
           let output =
             Test_translation_unit.reindent ~source ~range indent
           in
+          let expected = normalize_eol expected in
           Alcotest.(check string) test_name expected output )
     in
     [ test "empty" ~input:"" ~range:(1, 1) ~expected:""

@@ -1,0 +1,32 @@
+(rule
+ (deps
+  (source_tree parser-upstream/)
+  (source_tree ocamlformat_support/)
+  (:diff-ocaml ../tools/diff-ocaml/diff_ocaml.exe))
+ (mode promote)
+ (action
+  (with-stdout-to
+   diff-stdlib-format.patch
+   (run %{diff-ocaml} ocaml diff stdlib parser-upstream ocamlformat_support))))
+
+(rule
+ (deps
+  (source_tree parser-upstream/)
+  (source_tree parser-standard/)
+  (:diff-ocaml ../tools/diff-ocaml/diff_ocaml.exe))
+ (mode promote)
+ (action
+  (with-stdout-to
+   diff-parsers-upstream-std.patch
+   (run %{diff-ocaml} ocaml diff parser parser-upstream parser-standard))))
+
+(rule
+ (deps
+  (source_tree parser-extended/)
+  (source_tree parser-recovery/lib/)
+  (:diff-ocaml ../tools/diff-ocaml/diff_ocaml.exe))
+ (mode promote)
+ (action
+  (with-stdout-to
+   diff-parsers-ext-parsewyc.patch
+   (run %{diff-ocaml} ocaml diff parser parser-extended parser-recovery/lib))))
