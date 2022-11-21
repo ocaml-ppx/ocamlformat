@@ -48,14 +48,14 @@ module Parse = struct
     let record_field m (f, t, v) =
       match v with
       | Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
-        when Ast.Longident.field_alias ~field:f.txt v_txt ->
+        when Std_longident.field_alias ~field:f.txt v_txt ->
           (f, t, None)
       | v -> (f, t, Option.map ~f:(m.expr m) v)
     in
     let pat_record_field m (f, t, v) =
       match v with
       | Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
-        when Ast.Longident.field_alias ~field:f.txt (Lident v_txt) ->
+        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
           (f, t, None)
       | v -> (f, t, Option.map ~f:(m.pat m) v)
     in
@@ -114,8 +114,8 @@ module Parse = struct
                 ; _ }
               , [(Nolabel, l); (Nolabel, r)] )
         ; _ } as e
-        when Ast.Longident.is_infix longident
-            && not (Ast.Longident.is_monadic_binding longident) ->
+        when Std_longident.is_infix longident
+            && not (Std_longident.is_monadic_binding longident) ->
           let label_loc = {txt= op; loc= loc_op} in
           {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
       | e -> Ast_mapper.default_mapper.expr m e

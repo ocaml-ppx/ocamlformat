@@ -1,0 +1,5 @@
+let a = { x }
+let b = { x : a }
+let c = { x : a :> b }
+let d = { x = x [@foo] }
+let e = { x = y }
