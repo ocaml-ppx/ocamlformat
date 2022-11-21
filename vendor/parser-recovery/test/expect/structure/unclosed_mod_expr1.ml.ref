@@ -1,0 +1,13 @@
+[
+  structure_item ([1,0+0]..[1,0+32])
+    Pstr_module
+    module_binding "M" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+32])
+      module_expr ([1,0+11]..[1,0+32])
+        Pmod_constraint
+        module_expr ([1,0+12]..[1,0+22])
+          Pmod_structure
+          []
+        module_type ([1,0+25]..[1,0+32])
+          Pmty_signature
+          []
+]

@@ -52,10 +52,11 @@ module Valid_ast = struct
     | Unequal_lengths ->
         impossible "Cannot match pre-post formatting locations."
 
-  let indent_range fragment ~unformatted:(ast, src, txt_src)
-      ~formatted:(fmted_ast, fmted_src) ~lines ~range:(low, high) =
-    let loctree, locs = Loc_tree.of_ast fragment ast src in
-    let _, locs' = Loc_tree.of_ast fragment fmted_ast fmted_src in
+  let indent_range fragment ~unformatted:(ast, txt_src)
+      ~formatted:(fmted_ast, fmted_src) ~lines ~range =
+    let low, high = Range.get range in
+    let loctree, locs = Loc_tree.of_ast fragment ast in
+    let _, locs' = Loc_tree.of_ast fragment fmted_ast in
     let indent_line i =
       match loc_of_line loctree locs i with
       | Some loc -> (
@@ -107,7 +108,8 @@ module Valid_ast = struct
 end
 
 module Partial_ast = struct
-  let indent_range ~source ~range:(low, high) =
+  let indent_range ~source ~range =
+    let low, high = Range.get range in
     List.rev
     @@ Ocp_indent.run ~source ~init:[]
          ~in_lines:(fun i -> low <= i && i <= high)

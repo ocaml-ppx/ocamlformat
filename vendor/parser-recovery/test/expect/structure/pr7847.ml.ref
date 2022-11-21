@@ -1,0 +1,27 @@
+[
+  structure_item ([1,0+0]..[1,0+40])
+    Pstr_primitive
+    value_description "x" ([1,0+9]..[1,0+10]) ([1,0+0]..[1,0+40])
+      core_type ([1,0+13]..[1,0+34])
+        Ptyp_arrow
+        [
+          arrow_param ([1,0+13]..[1,0+34])
+          Nolabel
+          core_type ([1,0+13]..[1,0+17])
+            Ptyp_constr "unit" ([1,0+13]..[1,0+17])
+            []
+        ]
+        core_type ([1,0+21]..[1,0+34])
+          Ptyp_constr "A.t" ([1,0+31]..[1,0+34])
+          [
+            core_type ([1,0+22]..[1,0+25])
+              Ptyp_constr "int" ([1,0+22]..[1,0+25])
+              []
+            core_type ([1,0+26]..[1,0+29])
+              Ptyp_constr "int" ([1,0+26]..[1,0+29])
+              []
+          ]
+      [
+        "x"
+      ]
+]

@@ -10,4 +10,4 @@
 #                                                                        #
 ##########################################################################
 
-git log --no-merges --pretty=format:"  + %s (%an)" $1..$2
+git log --no-merges --pretty=format:"- %s (%an)" $1..$2

@@ -1,9 +1,12 @@
 (test
  (name rpc_test)
  (libraries ocamlformat-rpc-lib unix)
- (deps %{bin:ocamlformat-rpc})
+ (deps
+  %{bin:ocamlformat-rpc}
+  small_margin/.ocamlformat
+  big_margin/.ocamlformat)
  (modules rpc_test)
- (package ocamlformat-rpc)
+ (package ocamlformat)
  (enabled_if
   (<> %{os_type} Win32))
  (action
@@ -13,6 +16,6 @@
  (name rpc_test_fail)
  (libraries ocamlformat-rpc-lib unix)
  (modules rpc_test_fail)
- (package ocamlformat-rpc)
+ (package ocamlformat)
  (action
   (run %{test} not-installed-ocamlformat-rpc)))

@@ -52,23 +52,36 @@ let fresh_lexbuf source =
   in
   (lexbuf, hash_bang)
 
-let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
+let split_hash_bang source =
+  let lexbuf = Lexing.from_string source in
+  Location.init lexbuf !Location.input_name ;
+  Lexer.skip_hash_bang lexbuf ;
+  let len = lexbuf.lex_last_pos in
+  let hash_bang = String.sub source ~pos:0 ~len in
+  let rest = String.sub source ~pos:len ~len:(String.length source - len) in
+  (rest, hash_bang)
+
+let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
+    ~source =
   let warnings =
-    if conf.quiet then List.map ~f:W.disable W.in_lexer else []
+    if conf.opr_opts.quiet.v then List.map ~f:W.disable W.in_lexer else []
   in
   let warnings = if disable_w50 then warnings else W.enable 50 :: warnings in
   ignore @@ Warnings.parse_options false (W.to_string warnings) ;
   let w50 = ref [] in
   let t =
-    let lexbuf, hash_bang = fresh_lexbuf source in
+    let source, hash_bang = split_hash_bang source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
-        if Warning.is_unexpected_docstring warn && conf.comment_check then (
+        if
+          Warning.is_unexpected_docstring warn
+          && conf.opr_opts.comment_check.v
+        then (
           w50 := (loc, warn) :: !w50 ;
           false )
-        else not conf.quiet )
+        else not conf.opr_opts.quiet.v )
       ~f:(fun () ->
-        let ast = parse fragment lexbuf in
+        let ast = parse fragment ~input_name source in
         Warnings.check_fatal () ;
         let comments =
           List.map
@@ -83,3 +96,24 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
         {ast; comments; prefix= hash_bang; source} )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
+
+(** [is_repl_block x] returns whether [x] is a list of REPL phrases and
+    outputs of the form:
+
+    {v
+    # let this is = some phrase;;
+    this is some output
+    v} *)
+let is_repl_block x =
+  String.length x >= 2 && Char.equal x.[0] '#' && Char.is_whitespace x.[1]
+
+let parse_toplevel ?disable_w50 (conf : Conf.t) ~input_name ~source =
+  let open Extended_ast in
+  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
+  let parse_ast fg ~input_name s =
+    Parse.ast fg ~preserve_beginend ~input_name s
+  in
+  if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
+    Either.Second
+      (parse ?disable_w50 parse_ast Repl_file conf ~input_name ~source)
+  else First (parse ?disable_w50 parse_ast Use_file conf ~input_name ~source)

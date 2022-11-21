@@ -13,22 +13,6 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-val arrow_typ :
-     Cmts.t
-  -> core_type Ast.xt
-  -> (Location.t * arg_label * core_type Ast.xt) list
-(** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
-    type [ty]. *)
-
-val class_arrow_typ :
-     Cmts.t
-  -> class_type Ast.xt
-  -> ( arg_label
-     * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt] )
-     list
-(** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
-    the class type [ty]. *)
-
 val or_pat :
   ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
 (** [or_pat allow_attribute cmts pat] returns the list of patterns of a
@@ -58,33 +42,16 @@ val cl_fun :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val infix :
-     Cmts.t
-  -> Prec.t option
-  -> expression Ast.xt
-  -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
-(** [infix cmts prec exp] returns the infix operator and the list of operands
-    applied to this operator from expression [exp]. [prec] is the precedence
-    of the infix operator. *)
-
-val infix_cons :
-     Cmts.t
-  -> expression Ast.xt
-  -> (Longident.t loc option * expression Ast.xt) list
-(** [infix_cons exp] returns a list of expressions if [exp] is an expression
-    corresponding to a list ((::) application). *)
-
-val ite :
-     Cmts.t
-  -> expression Ast.xt
-  -> (expression Ast.xt option * expression Ast.xt * attributes) list
-(** [ite cmts exp] returns a list of conditional expressions from cascading
-    if-then-else expressions, e.g.:
-
-    {[ if c1 then e1 else if c2 then e2 else e3 ]}
-
-    will return the following list:
-    [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
+module Exp : sig
+  val infix :
+       Cmts.t
+    -> Prec.t option
+    -> expression Ast.xt
+    -> (string loc option * expression Ast.xt) list
+  (** [infix cmts prec exp] returns the infix operator and the list of
+      operands applied to this operator from expression [exp]. [prec] is the
+      precedence of the infix operator. *)
+end
 
 val sequence :
   Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
@@ -139,11 +106,9 @@ module Let_binding : sig
     ; lb_loc: Location.t }
 
   val of_value_binding :
-    Cmts.t -> Source.t -> ctx:Ast.t -> first:bool -> value_binding -> t
+    Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t
 
-  val of_value_bindings :
-    Cmts.t -> Source.t -> ctx:Ast.t -> value_binding list -> t list
+  val of_value_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
-  val of_binding_ops :
-    Cmts.t -> Source.t -> ctx:Ast.t -> binding_op list -> t list
+  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end

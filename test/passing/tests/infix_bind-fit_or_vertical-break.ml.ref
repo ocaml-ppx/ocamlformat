@@ -15,7 +15,7 @@ f x
     g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
@@ -32,13 +32,13 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
 ;;
 
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x;;
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
 |> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
@@ -53,7 +53,7 @@ eeeeeeeeeeeee eeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> function xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
@@ -71,7 +71,7 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> function xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
@@ -234,3 +234,19 @@ let default =
   #= (fun ctx ->
   foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
   foo
+
+let _ = ( let* ) x (fun y -> z)
+
+let _ = ( let* ) x (function y -> z)
+
+let _ = f (( let* ) x (fun y -> z))
+
+let _ = f (( let* ) x (function y -> z))
+
+let _ = (x >>= fun () -> ()) [@a]
+
+let _ = ( >>= ) [@attr]
+
+let _ = f (( >>= ) [@attr]) ;;
+
+( >>= ) [@attr]

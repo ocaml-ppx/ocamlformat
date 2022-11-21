@@ -1,0 +1,28 @@
+[
+  structure_item ([1,0+0]..[1,0+43])
+    Pstr_module
+    module_binding "M" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+43])
+      module_expr ([1,0+11]..[1,0+43])
+        Pmod_structure
+        [
+          structure_item ([1,0+19]..[1,0+32])
+            Pstr_value Nonrec
+            [
+              <def> ([1,0+19]..[1,0+32])
+                pattern ([1,0+23]..[1,0+26])
+                  Ppat_var "foo" ([1,0+23]..[1,0+26])
+                expression ([1,0+29]..[1,0+32])
+                  Pexp_ident "foo" ([1,0+29]..[1,0+32])
+            ]
+          structure_item ([1,0+34]..[1,0+43])
+            Pstr_value Nonrec
+            [
+              <def> ([1,0+34]..[1,0+43])
+                pattern ([1,0+38]..[1,0+41])
+                  Ppat_var "foo" ([1,0+38]..[1,0+41])
+                expression (_none_[0,0+-1]..[0,0+-1]) ghost
+                  Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+                  []
+            ]
+        ]
+]

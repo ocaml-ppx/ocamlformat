@@ -1,0 +1,8 @@
+[
+  signature_item ([1,0+0]..[1,0+19])
+    Psig_module
+    module_declaration "M" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+19])
+      module_type ([1,0+12]..[1,0+19])
+        Pmty_signature
+        []
+]

@@ -1,3 +1,5 @@
+  $ touch .ocamlformat
+
   $ echo 'module X : S' > a.mli
 
   $ ocamlformat --impl a.mli

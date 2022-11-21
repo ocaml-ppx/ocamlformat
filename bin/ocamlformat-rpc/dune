@@ -12,12 +12,12 @@
 (executable
  (name main)
  (public_name ocamlformat-rpc)
- (package ocamlformat-rpc)
+ (package ocamlformat)
  (flags
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat_lib ocamlformat-rpc-lib))
+ (libraries ocamlformat.rpc))
 
 (rule
  (with-stdout-to
@@ -27,4 +27,4 @@
 (install
  (section man)
  (files ocamlformat-rpc.1)
- (package ocamlformat-rpc))
+ (package ocamlformat))

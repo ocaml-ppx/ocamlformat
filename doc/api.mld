@@ -1,0 +1,20 @@
+{0 API}
+
+OCamlformat's library API: {!Ocamlformat}. The entrypoint is the {!Ocamlformat.Translation_unit} module.
+
+A basic usage would be:
+
+{[
+let () =
+  let conf = Conf.default in
+  match
+    Translation_unit.parse_and_format Syntax.Use_file conf
+      ~output_file:"output.ml" ~input_name:"input.ml"
+      ~source:"let x = y"
+  with
+  | Ok formatted ->
+      print_endline formatted
+  | Error e ->
+      Translation_unit.Error.print Format.err_formatter
+        ~debug:conf.opr_opts.debug ~quiet:conf.opr_opts.quiet e
+]}

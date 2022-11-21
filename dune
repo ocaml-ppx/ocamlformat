@@ -22,7 +22,7 @@
  (package ocamlformat))
 
 (rule
- (alias runtest)
+ (alias help)
  (package ocamlformat)
  (action
   (diff ocamlformat-help.txt ocamlformat-help.actual)))
@@ -32,11 +32,11 @@
   (with-stdout-to
    ocamlformat-rpc-help.actual
    (run %{bin:ocamlformat-rpc} --help=plain)))
- (package ocamlformat-rpc))
+ (package ocamlformat))
 
 (rule
- (alias runtest)
- (package ocamlformat-rpc)
+ (alias help)
+ (package ocamlformat)
  (action
   (diff ocamlformat-rpc-help.txt ocamlformat-rpc-help.actual)))
 

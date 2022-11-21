@@ -2,7 +2,7 @@ NAME
        ocamlformat - A tool to format OCaml code.
 
 SYNOPSIS
-       ocamlformat [OPTION]... [SRC]...
+       ocamlformat [OPTION]… [SRC]…
 
 DESCRIPTION
        ocamlformat automatically formats OCaml code.
@@ -22,12 +22,12 @@ OPTIONS (CODE FORMATTING STYLE)
        file.
 
        (*) .ocamlformat files in current and all ancestor directories for
-       each input file are used, as well as the global ocamlformat file
-       defined in $XDG_CONFIG_HOME or in $HOME/.config if $XDG_CONFIG_HOME is
-       undefined. The global ocamlformat file has the lowest priority, then
-       the closer the directory is to the processed file, the higher the
-       priority. The global ocamlformat file is only used when the option
-       enable-outside-detected-project is set.
+       each input file are used, applied from top to bottom, overriding the
+       settings each time a file is applied, stopping at the project root. If
+       no project root and no ocamlformat file has been found, and if the
+       option enable-outside-detected-project is set, the global ocamlformat
+       file defined in $XDG_CONFIG_HOME (or in $HOME/.config if
+       $XDG_CONFIG_HOME is undefined) is used.
 
        If the disable option is not set, an .ocamlformat-ignore file
        specifies files that OCamlFormat should ignore. Each line in an
@@ -42,16 +42,6 @@ OPTIONS (CODE FORMATTING STYLE)
        relative to the directory containing the .ocamlformat-enable file.
        Shell-style regular expressions are supported. Lines starting with #
        are ignored and can be used as comments.
-
-       --align-cases
-           Align match/try cases vertically. The flag is unset by default.
-
-       --align-constructors-decl
-           Align type declarations vertically. The flag is unset by default.
-
-       --align-variants-decl
-           Align type variants declarations vertically. The flag is unset by
-           default.
 
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
@@ -69,7 +59,7 @@ OPTIONS (CODE FORMATTING STYLE)
            auto will only break the line if the in keyword does not fit on
            the previous line. The default value is fit-or-vertical.
 
-       --break-cases={fit|nested|toplevel|fit-or-vertical|all}
+       --break-cases={fit|nested|toplevel|fit-or-vertical|vertical|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
            or-patterns to highlight the case body. Note that with nested, the
@@ -77,8 +67,9 @@ OPTIONS (CODE FORMATTING STYLE)
            toplevel forces top-level cases (i.e. not nested or-patterns) to
            break across lines, otherwise break naturally at the margin.
            fit-or-vertical tries to fit all or-patterns on the same line,
-           otherwise breaks. all forces all pattern matches to break across
-           lines. The default value is fit.
+           otherwise breaks. vertical vertically breaks branches. all forces
+           all pattern matches to break across lines. The default value is
+           fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
@@ -86,6 +77,11 @@ OPTIONS (CODE FORMATTING STYLE)
            not fit on a single line. wrap will group simple expressions and
            try to format them in a single line. The default value is
            fit-or-vertical.
+
+       --break-colon={after|before}
+           Break before or after colon in value binding declarations and type
+           constraints. after breaks after the colon. before breaks before
+           the colon. The default value is after.
 
        --break-fun-decl={wrap|fit-or-vertical|smart}
            Style for function declarations and types. wrap breaks only if
@@ -100,11 +96,13 @@ OPTIONS (CODE FORMATTING STYLE)
            a single line. smart is like fit-or-vertical but try to fit
            arguments on their line if they fit. The default value is wrap.
 
-       --break-infix={wrap|fit-or-vertical}
+       --break-infix={wrap|fit-or-vertical|wrap-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
            fit-or-vertical vertically breaks expressions if they do not fit
-           on a single line. The default value is wrap.
+           on a single line. wrap-or-vertical behaves like wrap for high
+           precedence operators and behaves like fit-or-vertical for low
+           precedence operators. The default value is wrap.
 
        --break-infix-before-func
            Break infix operators whose right arguments are anonymous
@@ -144,12 +142,6 @@ OPTIONS (CODE FORMATTING STYLE)
            compact forces an indentation of 2, unless nested-match is set to
            align and we're on the last case. The default value is normal.
 
-       --disable
-           Disable ocamlformat. This is used in attributes to locally disable
-           automatic code formatting. One can also use [@@@ocamlformat
-           "enable"] instead of [@@@ocamlformat "disable=false"]. The flag is
-           unset by default.
-
        --disambiguate-non-breaking-match
            Add parentheses around matching constructs that fit on a single
            line. The flag is unset by default.
@@ -182,17 +174,18 @@ OPTIONS (CODE FORMATTING STYLE)
        --exp-grouping={parens|preserve}
            Style of expression grouping. parens groups expressions using
            parentheses. preserve preserves the original grouping syntax
-           (parentheses or begin/end). The default value is parens.
+           (parentheses or begin/end). The default value is parens. Cannot be
+           set in attributes.
 
        --extension-indent=COLS
            Indentation of items inside extension nodes (COLS columns). The
            default value is 2.
 
        --field-space={loose|tight|tight-decl}
-           Whether or not to use a space between a field name and the rhs.
-           This option affects records and objects. loose does. tight does
-           not use a space between a field name and the punctuation symbol
-           (`:` or `=`). tight-decl is tight for declarations and loose for
+           Whether or not to use a space between a field name and the
+           punctuation symbol (`:` or `=`) preceding the rhs. This option
+           affects records and objects. loose uses a space. tight does not
+           use a space. tight-decl is tight for declarations and loose for
            instantiations. The default value is loose.
 
        --function-indent=COLS
@@ -205,14 +198,14 @@ OPTIONS (CODE FORMATTING STYLE)
            block starts a line. always always apply function-indent. auto
            applies function-indent when seen fit. The default value is never.
 
-       --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
+       --if-then-else={compact|fit-or-vertical|vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
-           branches if they do not fit on a single line. keyword-first
-           formats if-then-else expressions such that the if-then-else
-           keywords are the first on the line. k-r formats if-then-else
-           expressions with parentheses that match the K&R style. The default
-           value is compact.
+           branches if they do not fit on a single line. vertical always
+           vertically breaks branches. keyword-first formats if-then-else
+           expressions such that the if-then-else keywords are the first on
+           the line. k-r formats if-then-else expressions with parentheses
+           that match the K&R style. The default value is compact.
 
        --indent-after-in=COLS
            Indentation (COLS columns) after `let ... in`, unless followed by
@@ -296,12 +289,12 @@ OPTIONS (CODE FORMATTING STYLE)
            the offset of the previous line. The default value is 68. Cannot
            be set in attributes.
 
-       --module-item-spacing={sparse|preserve|compact}
-           Spacing between items of structures and signatures. sparse will
-           always break a line between two items. preserve will not leave
-           open lines between one-liners of similar sorts unless there is an
-           open line in the input. compact will not leave open lines between
-           one-liners of similar sorts. The default value is sparse.
+       --module-item-spacing={compact|sparse|preserve}
+           Spacing between items of structures and signatures. compact will
+           not leave open lines between one-liners of similar sorts. sparse
+           will always break a line between two items. preserve will not
+           leave open lines between one-liners of similar sorts unless there
+           is an open line in the input. The default value is compact.
 
        --nested-match={wrap|align}
            Style of a pattern-matching nested in the last case of another
@@ -310,23 +303,11 @@ OPTIONS (CODE FORMATTING STYLE)
            nested pattern-matching under the encompassing pattern-matching.
            The default value is wrap.
 
-       --no-align-cases
-           Unset align-cases.
-
-       --no-align-constructors-decl
-           Unset align-constructors-decl.
-
-       --no-align-variants-decl
-           Unset align-variants-decl.
-
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
        --no-break-sequences
            Unset break-sequences.
-
-       --no-disable
-           Unset disable.
 
        --no-disambiguate-non-breaking-match
            Unset disambiguate-non-breaking-match.
@@ -346,6 +327,9 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-docstrings
            Unset parse-docstrings.
 
+       --no-parse-toplevel-phrases
+           Unset parse-toplevel-phrases.
+
        --no-space-around-arrays
            Unset space-around-arrays.
 
@@ -364,13 +348,32 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-wrap-fun-args
            Unset wrap-fun-args.
 
-       --ocaml-version=V
-           Version of OCaml syntax of the output. The default value is the
-           version of OCaml used to build OCamlFormat.
-
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. The flag is unset by default.
+
+       -p {conventional|default|ocamlformat|janestreet},
+       --profile={conventional|default|ocamlformat|janestreet}
+           Select a preset profile which sets all options, overriding lower
+           priority configuration. The conventional profile aims to be as
+           familiar and "conventional" appearing as the available options
+           allow. default is an alias for the conventional profile. The
+           ocamlformat profile aims to take advantage of the strengths of a
+           parsetree-based auto-formatter, and to limit the consequences of
+           the weaknesses imposed by the current implementation. This is a
+           style which optimizes for what the formatter can do best, rather
+           than to match the style of any existing code. General guidelines
+           that have directed the design include: Legibility, in the sense of
+           making it as hard as possible for quick visual parsing to give the
+           wrong interpretation, is of highest priority; Whenever possible
+           the high-level structure of the code should be obvious by looking
+           only at the left margin, in particular, it should not be necessary
+           to visually jump from left to right hunting for critical keywords,
+           tokens, etc; All else equal compact code is preferred as reading
+           without scrolling is easier, so indentation or white space is
+           avoided unless it helps legibility; Attention has been given to
+           making some syntactic gotchas visually obvious. The janestreet
+           profile is used at Jane Street. The default value is default.
 
        --parens-ite
            Uses parentheses around if-then-else branches that spread across
@@ -389,6 +392,10 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --parse-docstrings
            Parse and format docstrings. The flag is unset by default.
+
+       --parse-toplevel-phrases
+           Parse and format toplevel phrases and their output. The flag is
+           unset by default.
 
        --sequence-blank-line={preserve-one|compact}
            Blank line between expressions of a sequence. preserve will keep a
@@ -450,9 +457,23 @@ OPTIONS (CODE FORMATTING STYLE)
        --wrap-fun-args
            Style for function call. The flag is set by default.
 
-OPTIONS (REMOVED OPTIONS)
+OPTIONS (REMOVED)
+       --align-cases=VAL
+           This option has been removed in version 0.22.
+
+       --align-constructors-decl=VAL
+           This option has been removed in version 0.22.
+
+       --align-variants-decl=VAL
+           This option has been removed in version 0.22.
+
+       --disable-outside-detected-project=VAL
+           This option has been removed in version 0.22. OCamlFormat is
+           disabled outside of a detected project by default, to enable the
+           opposite behavior use `enable-outside-detected-project`.
+
        --doc-comments-val=VAL
-           This option has been removed in version 0.16.0. If you are using
+           This option has been removed in version 0.16. If you are using
            `doc-comments-val=before` in combination with
            `doc-comments=before` then only `doc-comments=before` is now
            required to achive the same behavior. If you are using
@@ -467,22 +488,25 @@ OPTIONS (REMOVED OPTIONS)
            setting `doc-comments` only.
 
        --escape-chars=VAL
-           This option has been removed in version 0.16.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.16. Concrete syntax will
+           now always be preserved.
 
        --escape-strings=VAL
-           This option has been removed in version 0.16.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.16. Concrete syntax will
+           now always be preserved.
 
        --extension-sugar=VAL
-           This option has been removed in version 0.17.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.17. Concrete syntax will
+           now always be preserved.
 
        --let-open=VAL
-           This option has been removed in version 0.17.0. Concrete syntax
-           will now always be preserved.
+           This option has been removed in version 0.17. Concrete syntax will
+           now always be preserved.
 
 OPTIONS
+       Unless mentioned otherwise non-formatting options cannot be set in
+       attributes or .ocamlformat files.
+
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
@@ -496,30 +520,34 @@ OPTIONS
            Unsafe to turn off. May be set in .ocamlformat. The flag is set by
            default.
 
+       --disable
+           Disable ocamlformat. This is used in attributes to locally disable
+           automatic code formatting. One can also use [@@@ocamlformat
+           "enable"] instead of [@@@ocamlformat "disable=false"]. The flag is
+           unset by default.
+
        --disable-conf-attrs
-           Disable configuration in attributes.
+           Disable configuration in attributes. The flag is unset by default.
 
        --disable-conf-files
            Disable .ocamlformat configuration files.
 
-       --disable-outside-detected-project
-           Warning: this option is deprecated and will be removed in
-           OCamlFormat v1.0.
+       --doc
+           Parse input as an odoc documentation.
 
        --enable-outside-detected-project
-           Read .ocamlformat config files outside the current project. The
-           project root of an input file is taken to be the nearest ancestor
-           directory that contains a .git or .hg or dune-project file.
-           Formatting is enabled even if no .ocamlformat configuration file
-           is found.
+           Read .ocamlformat config files outside the current project when no
+           project root has been detected for the input file. The project
+           root of an input file is taken to be the nearest ancestor
+           directory that contains a .git or .hg or dune-project file. If
+           .ocamlformat config files are located in the same directory or
+           parents they are applied, if no .ocamlformat file is found then
+           the global configuration defined in $XDG_CONFIG_HOME/.ocamlformat
+           (or in $HOME/.config/.ocamlformat if $XDG_CONFIG_HOME is
+           undefined) is applied.
 
        -g, --debug
-           Generate debugging output.
-
-       --help[=FMT] (default=auto)
-           Show this help in format FMT. The value FMT must be one of `auto',
-           `pager', `groff' or `plain'. With `auto', the format is `pager` or
-           `plain' whenever the TERM env var is `dumb' or undefined.
+           Generate debugging output. The flag is unset by default.
 
        -i, --inplace
            Format in-place, overwriting input file(s).
@@ -528,13 +556,14 @@ OPTIONS
            Ignore invalid options (e.g. in .ocamlformat).
 
        --impl
-           Parse file with unrecognized extension as an implementation.
+           Parse input as an implementation.
 
        --intf
-           Parse file with unrecognized extension as an interface.
+           Parse input as an interface.
 
        --margin-check
-           Emit a warning if the formatted output exceeds the margin.
+           Emit a warning if the formatted output exceeds the margin. The
+           flag is unset by default.
 
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
@@ -550,21 +579,36 @@ OPTIONS
        --no-comment-check
            Unset comment-check.
 
+       --no-debug
+           Unset debug.
+
+       --no-disable
+           Unset disable.
+
+       --no-disable-conf-attrs
+           Unset disable-conf-attrs.
+
+       --no-margin-check
+           Unset margin-check.
+
        --no-quiet
            Unset quiet.
 
        --no-version-check
-           Do not check that the version matches the one specified in
-           .ocamlformat.
+           Unset version-check.
 
-       --numeric=X-Y
+       --numeric
            Instead of re-formatting the file, output one integer per line
            corresponding to the indentation value, printing as many values as
-           lines in the range between lines X and Y (included).
+           lines in the document.
 
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
+
+       --ocaml-version=V
+           Version of OCaml syntax of the output. The default value is
+           4.04.0.
 
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for
@@ -574,32 +618,6 @@ OPTIONS
            ppx_stritem_ext is an alias for stritem-extension-indent.
            max_indent is an alias for max-indent. strict_with sets
            function-indent-nested and match-indent-nested.
-
-       -p {conventional|default|compact|sparse|ocamlformat|janestreet},
-       --profile={conventional|default|compact|sparse|ocamlformat|janestreet}
-           Select a preset profile which sets all options, overriding lower
-           priority configuration. The conventional profile aims to be as
-           familiar and "conventional" appearing as the available options
-           allow. default is an alias for the conventional profile. The
-           compact profile is similar to ocamlformat but opts for a generally
-           more compact code style. The sparse profile is similar to
-           ocamlformat but opts for a generally more sparse code style. The
-           ocamlformat profile aims to take advantage of the strengths of a
-           parsetree-based auto-formatter, and to limit the consequences of
-           the weaknesses imposed by the current implementation. This is a
-           style which optimizes for what the formatter can do best, rather
-           than to match the style of any existing code. General guidelines
-           that have directed the design include: Legibility, in the sense of
-           making it as hard as possible for quick visual parsing to give the
-           wrong interpretation, is of highest priority; Whenever possible
-           the high-level structure of the code should be obvious by looking
-           only at the left margin, in particular, it should not be necessary
-           to visually jump from left to right hunting for critical keywords,
-           tokens, etc; All else equal compact code is preferred as reading
-           without scrolling is easier, so indentation or white space is
-           avoided unless it helps legibility; Attention has been given to
-           making some syntactic gotchas visually obvious. The janestreet
-           profile is used at Jane Street. The default value is default.
 
        --print-config
            Print the configuration determined by the environment variable,
@@ -612,6 +630,15 @@ OPTIONS
        -q, --quiet
            Quiet. May be set in .ocamlformat. The flag is unset by default.
 
+       --range=X-Y
+           Apply the formatting to a range of lines. Must be included between
+           1 and the number of lines of the input. If a range is invalid the
+           whole input is considered. Warning: only supported in conbination
+           with `--numeric` for now. The default value is <whole input>.
+
+       --repl-file
+           Parse input as toplevel phrases with their output.
+
        --root=DIR
            Root of the project. If specified, only take into account
            .ocamlformat configuration files inside DIR and its
@@ -620,11 +647,32 @@ OPTIONS
        --use-file
            Deprecated. Same as impl.
 
-       --version
-           Show version information.
+       --version-check
+           Check that the version matches the one specified in .ocamlformat.
+           The flag is set by default.
 
        SRC Input files. At least one is required, and exactly one without
            --inplace. If - is passed, will read from stdin.
+
+COMMON OPTIONS
+       --help[=FMT] (default=auto)
+           Show this help in format FMT. The value FMT must be one of auto,
+           pager, groff or plain. With auto, the format is pager or plain
+           whenever the TERM env var is dumb or undefined.
+
+       --version
+           Show version information.
+
+EXIT STATUS
+       ocamlformat exits with the following status:
+
+       0   on success.
+
+       123 on indiscriminate errors reported on standard error.
+
+       124 on command line parsing errors.
+
+       125 on unexpected internal errors (bugs).
 
 ENVIRONMENT
        These environment variables affect the execution of ocamlformat:

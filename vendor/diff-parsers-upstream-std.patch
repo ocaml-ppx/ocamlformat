@@ -1,0 +1,536 @@
+--- parser-upstream/ast_helper.ml
++++ parser-standard/ast_helper.ml
+@@@@
+   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
+   let letop ?loc ?attrs let_ ands body =
+     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
+   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
++  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+ 
+   let case lhs ?guard rhs =
+     {
+      pc_lhs = lhs;
+      pc_guard = guard;
+@@@@
+     mk ?loc ?attrs (Pmod_functor (arg, body))
+   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
+   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
+   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
++  let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+ end
+ 
+ module Sig = struct
+   let mk ?(loc = !default_loc) d = {psig_desc = d; psig_loc = loc}
+ 
+--- parser-upstream/ast_helper.mli
++++ parser-standard/ast_helper.mli
+@@@@
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
+     val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
+ 
+     val case: pattern -> ?guard:expression -> expression -> case
+     val binding_op: str -> pattern -> expression -> loc -> binding_op
++    val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
+   end
+ 
+ (** Value declarations *)
+ module Val:
+   sig
+@@@@
+       module_expr
+     val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
+       module_expr
+     val unpack: ?loc:loc -> ?attrs:attrs -> expression -> module_expr
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> module_expr
++    val hole: ?loc:loc -> ?attrs:attrs -> unit -> module_expr
+   end
+ 
+ (** Signature items *)
+ module Sig:
+   sig
+--- parser-upstream/ast_mapper.ml
++++ parser-standard/ast_mapper.ml
+@@@@
+   type_exception: mapper -> type_exception -> type_exception;
+   type_kind: mapper -> type_kind -> type_kind;
+   value_binding: mapper -> value_binding -> value_binding;
+   value_description: mapper -> value_description -> value_description;
+   with_constraint: mapper -> with_constraint -> with_constraint;
++  directive_argument: mapper -> directive_argument -> directive_argument;
++  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
++  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+ }
+ 
+ let map_fst f (x, y) = (f x, y)
+ let map_snd f (x, y) = (x, f y)
+ let map_tuple f1 f2 (x, y) = (f1 x, f2 y)
+@@@@
+     | Pmod_constraint (m, mty) ->
+         constraint_ ~loc ~attrs (sub.module_expr sub m)
+                     (sub.module_type sub mty)
+     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
+     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
++    | Pmod_hole -> hole ~loc ~attrs ()
+ 
+   let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
+     let open Str in
+     let loc = sub.location sub loc in
+     match desc with
+@@@@
+     | Pexp_letop {let_; ands; body} ->
+         letop ~loc ~attrs (sub.binding_op sub let_)
+           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
+     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
+     | Pexp_unreachable -> unreachable ~loc ~attrs ()
++    | Pexp_hole -> hole ~loc ~attrs ()
+ 
+   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
+     let open Exp in
+     let op = map_loc sub pbop_op in
+     let pat = sub.pat sub pbop_pat in
+@@@@
+          | PStr x -> PStr (this.structure this x)
+          | PSig x -> PSig (this.signature this x)
+          | PTyp x -> PTyp (this.typ this x)
+          | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
+       );
++
++    directive_argument =
++      (fun this a ->
++         { pdira_desc= a.pdira_desc
++         ; pdira_loc= this.location this a.pdira_loc} );
++
++    toplevel_directive =
++      (fun this d ->
++         { pdir_name= map_loc this d.pdir_name
++         ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
++         ; pdir_loc= this.location this d.pdir_loc } );
++
++    toplevel_phrase =
++      (fun this -> function
++         | Ptop_def s -> Ptop_def (this.structure this s)
++         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
+   }
+ 
+ let extension_of_error {kind; main; sub} =
+   if kind <> Location.Report_error then
+     raise (Invalid_argument "extension_of_error: expected kind Report_error");
+@@@@
+       | "tool_name" ->
+           tool_name_ref := get_string payload
+       | "include_dirs" ->
+           Clflags.include_dirs := get_list get_string payload
+       | "load_path" ->
+-          (* Duplicates Compmisc.auto_include, since we can't reference Compmisc
+-             from this module. *)
+-          let auto_include find_in_dir fn =
+-            if !Clflags.no_std_include then
+-              raise Not_found
+-            else
+-              let alert = Location.auto_include_alert in
+-              Load_path.auto_include_otherlibs alert find_in_dir fn
+-          in
+-          Load_path.init ~auto_include (get_list get_string payload)
++          ()
+       | "open_modules" ->
+           Clflags.open_modules := get_list get_string payload
+       | "for_package" ->
+           Clflags.for_package := get_option get_string payload
+       | "debug" ->
+--- parser-upstream/ast_mapper.mli
++++ parser-standard/ast_mapper.mli
+@@@@
+   type_exception: mapper -> type_exception -> type_exception;
+   type_kind: mapper -> type_kind -> type_kind;
+   value_binding: mapper -> value_binding -> value_binding;
+   value_description: mapper -> value_description -> value_description;
+   with_constraint: mapper -> with_constraint -> with_constraint;
++  directive_argument: mapper -> directive_argument -> directive_argument;
++  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
++  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+ }
+ (** A mapper record implements one "method" per syntactic category,
+     using an open recursion style: each method takes as its first
+     argument the mapper to be applied to children in the syntax
+     tree. *)
+--- parser-upstream/lexer.mll
++++ parser-standard/lexer.mll
+@@@@
+ let is_keyword name = Hashtbl.mem keyword_table name
+ 
+ let check_label_name lexbuf name =
+   if is_keyword name then error lexbuf (Keyword_as_label name)
+ 
++(* To "unlex" a few characters *)
++let set_lexeme_length buf n = (
++  let open Lexing in
++  if n < 0 then
++    invalid_arg "set_lexeme_length: offset should be positive";
++  if n > buf.lex_curr_pos - buf.lex_start_pos then
++    invalid_arg "set_lexeme_length: offset larger than lexeme";
++  buf.lex_curr_pos <- buf.lex_start_pos + n;
++  buf.lex_curr_p <- {buf.lex_start_p
++                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
++)
++
++let disambiguate lexbuf txt =
++  let pos = ref 0 in
++  let len = String.length txt in
++  let is_digit c = c >= '0' && c <= '9' in
++  while !pos < len && is_digit txt.[!pos] do incr pos done;
++  let txt =
++    if !pos < len then (
++      set_lexeme_length lexbuf !pos;
++      String.sub txt 0 !pos
++    ) else
++      txt
++  in
++  TYPE_DISAMBIGUATOR txt
++
++let try_disambiguate lexbuf = function
++  | INT (txt, None) -> Some (disambiguate lexbuf txt)
++  | FLOAT (txt, _)  -> Some (disambiguate lexbuf txt)
++  | _ -> None
++
+ (* Update the current location with file name and line number. *)
+ 
+ let update_loc lexbuf file line absolute chars =
+   let pos = lexbuf.lex_curr_p in
+   let new_file = match file with
+@@@@
+   | ['+' '-'] symbolchar * as op
+             { INFIXOP2 op }
+   | "**" symbolchar * as op
+             { INFIXOP4 op }
+   | '%'     { PERCENT }
++  | '/'     { SLASH }
+   | ['*' '/' '%'] symbolchar * as op
+             { INFIXOP3 op }
+   | '#' symbolchar_or_hash + as op
+             { HASHOP op }
+   | "let" kwdopchar dotsymbolchar * as op
+@@@@
+   | eof { EOF }
+   | (_ as illegal_char)
+       { error lexbuf (Illegal_character illegal_char) }
+ 
+ and directive = parse
+-  | ([' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
+-        ("\"" ([^ '\010' '\013' '\"' ] * as name) "\"") as directive)
++  | ([' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
++        ("\"" ([^ '\010' '\013' '\"' ] * as _name) "\"") as directive)
+         [^ '\010' '\013'] *
+       {
+-        match int_of_string num with
+-        | exception _ ->
+-            (* PR#7165 *)
+-            let explanation = "line number out of range" in
+-            error lexbuf (Invalid_directive ("#" ^ directive, Some explanation))
+-        | line_num ->
+-           (* Documentation says that the line number should be
+-              positive, but we have never guarded against this and it
+-              might have useful hackish uses. *)
+-            update_loc lexbuf (Some name) (line_num - 1) true 0;
+-            token lexbuf
++        (* Line directives are not preserved by the lexer so we error out. *)
++        let explanation = "line directives are not supported" in
++        error lexbuf (Invalid_directive ("#" ^ directive, Some explanation))
+       }
+ and comment = parse
+     "(*"
+       { comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
+         store_lexeme lexbuf;
+--- parser-upstream/parse.ml
++++ parser-standard/parse.ml
+@@@@
+ let maybe_skip_phrase lexbuf =
+   match !last_token with
+   | Parser.SEMISEMI | Parser.EOF -> ()
+   | _ -> skip_phrase lexbuf
+ 
+-type 'a parser =
+-  (Lexing.lexbuf -> Parser.token) -> Lexing.lexbuf -> 'a
++type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
+ 
+ let wrap (parser : 'a parser) lexbuf : 'a =
+   try
+     Docstrings.init ();
+     Lexer.init ();
+-    let ast = parser token lexbuf in
++    let open Parser.MenhirInterpreter in
++    let rec fix_resume = function
++      | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
++      | Shifting (_, _, _) | AboutToReduce (_, _) as cp ->
++        fix_resume (resume ~strategy:`Simplified cp)
++    in
++    let rec offer_input lexbuf cp tok =
++      let ptok = Lexing.(tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
++      match fix_resume (offer cp ptok) with
++      | InputNeeded _ as cp ->
++          offer_input lexbuf cp (token lexbuf)
++      | Accepted x -> Some x
++      | Rejected -> None
++      | Shifting (_, _, _) | AboutToReduce (_, _) ->
++          assert false
++      | HandlingError _ as cp' ->
++        match Lexer.try_disambiguate lexbuf tok with
++        | Some tok' -> offer_input lexbuf cp tok'
++        | None -> main_loop lexbuf cp'
++    and main_loop lexbuf = function
++      | InputNeeded _ as cp ->
++          offer_input lexbuf cp (token lexbuf)
++      | Accepted x -> Some x
++      | Rejected -> None
++      | Shifting (_, _, _) | AboutToReduce (_, _) | HandlingError _ as cp ->
++        main_loop lexbuf (resume ~strategy:`Simplified cp)
++    in
++    let ast =
++      match main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) with
++      | Some ast -> ast
++      | None -> raise Parsing.Parse_error
++    in
+     Parsing.clear_parser();
+     Docstrings.warn_bad_docstrings ();
+     last_token := Parser.EOF;
+     ast
+   with
+@@@@
+      a production whose semantic action raises an exception.
+ 
+    In either case, the parser will not attempt to read one token past
+    the syntax error. *)
+ 
+-let implementation = wrap Parser.implementation
+-and interface = wrap Parser.interface
+-and toplevel_phrase = wrap Parser.toplevel_phrase
+-and use_file = wrap Parser.use_file
+-and core_type = wrap Parser.parse_core_type
+-and expression = wrap Parser.parse_expression
+-and pattern = wrap Parser.parse_pattern
+-let module_type = wrap Parser.parse_module_type
+-let module_expr = wrap Parser.parse_module_expr
+-
+-let longident = wrap Parser.parse_any_longident
+-let val_ident = wrap Parser.parse_val_longident
+-let constr_ident= wrap Parser.parse_constr_longident
+-let extended_module_path = wrap Parser.parse_mod_ext_longident
+-let simple_module_path = wrap Parser.parse_mod_longident
+-let type_ident = wrap Parser.parse_mty_longident
++let implementation = wrap Parser.Incremental.implementation
++and interface = wrap Parser.Incremental.interface
++and toplevel_phrase = wrap Parser.Incremental.toplevel_phrase
++and use_file = wrap Parser.Incremental.use_file
++and core_type = wrap Parser.Incremental.parse_core_type
++and expression = wrap Parser.Incremental.parse_expression
++and pattern = wrap Parser.Incremental.parse_pattern
++let module_type = wrap Parser.Incremental.parse_module_type
++let module_expr = wrap Parser.Incremental.parse_module_expr
++
++let longident = wrap Parser.Incremental.parse_any_longident
++let val_ident = wrap Parser.Incremental.parse_val_longident
++let constr_ident= wrap Parser.Incremental.parse_constr_longident
++let extended_module_path = wrap Parser.Incremental.parse_mod_ext_longident
++let simple_module_path = wrap Parser.Incremental.parse_mod_longident
++let type_ident = wrap Parser.Incremental.parse_mty_longident
+ 
+ (* Error reporting for Syntaxerr *)
+ (* The code has been moved here so that one can reuse Pprintast.tyvar *)
+ 
+ let prepare_error err =
+--- parser-upstream/parser.mly
++++ parser-standard/parser.mly
+@@@@
+ %token SEMI                   ";"
+ %token SEMISEMI               ";;"
+ %token HASH                   "#"
+ %token <string> HASHOP        "##" (* just an example *)
+ %token SIG                    "sig"
++%token SLASH                  "/"
+ %token STAR                   "*"
+ %token <string * Location.t * string option>
+        STRING                 "\"hello\"" (* just an example *)
+ %token <string * Location.t * string * Location.t * string option>
+        QUOTED_STRING_EXPR     "{%hello|world|}"  (* just an example *)
+@@@@
+ %token <string * Location.t> COMMENT    "(* comment *)"
+ %token <Docstrings.docstring> DOCSTRING "(** documentation *)"
+ 
+ %token EOL                    "\\n"      (* not great, but EOL is unused *)
+ 
++%token <string> TYPE_DISAMBIGUATOR "2" (* just an example *)
++
+ /* Precedences and associativities.
+ 
+ Tokens and rules have precedences.  A reduce/reduce conflict is resolved
+ in favor of the first rule (in source file order).  A shift/reduce conflict
+ is resolved by comparing the precedence and associativity of the token to
+@@@@
+ %right    INFIXOP1                      /* expr (e OP e OP e) */
+ %nonassoc below_LBRACKETAT
+ %nonassoc LBRACKETAT
+ %right    COLONCOLON                    /* expr (e :: e :: e) */
+ %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
+-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
++%left     PERCENT SLASH INFIXOP3 STAR                 /* expr (e OP e OP e) */
+ %right    INFIXOP4                      /* expr (e OP e OP e) */
+ %nonassoc prec_unary_minus prec_unary_plus /* unary - */
+ %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
+ %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
+ %nonassoc below_HASH
+@@@@
+ %nonassoc below_DOT
+ %nonassoc DOT DOTOP
+ /* Finally, the first tokens of simple_expr are above everything else. */
+ %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT OBJECT
+           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
+-          NEW PREFIXOP STRING TRUE UIDENT
++          NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
+           LBRACKETPERCENT QUOTED_STRING_EXPR
+ 
+ 
+ /* Entry points */
+ 
+@@@@
+         { (* TODO review mkmod location *)
+           Pmod_apply(me1, mkmod ~loc:$sloc (Pmod_structure [])) }
+     | (* An extension. *)
+       ex = extension
+         { Pmod_extension ex }
++    | (* A hole. *)
++      UNDERSCORE
++        { Pmod_hole }
+     )
+     { $1 }
+ ;
+ 
+ (* A parenthesized module expression is a module expression that begins
+@@@@
+   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
+     { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
+   | expr attribute
+       { Exp.attr $1 $2 }
+ /* BEGIN AVOID */
++  (*
+   | UNDERSCORE
+      { not_expecting $loc($1) "wildcard \"_\"" }
++  *)
+ /* END AVOID */
+ ;
+ %inline expr_attrs:
+   | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
+       { Pexp_letmodule($4, $5, $7), $3 }
+@@@@
+       { Pexp_send($1, $3) }
+   | simple_expr op(HASHOP) simple_expr
+       { mkinfix $1 $2 $3 }
+   | extension
+       { Pexp_extension $1 }
++  | UNDERSCORE
++      { Pexp_hole }
+   | od=open_dot_declaration DOT mkrhs(LPAREN RPAREN {Lident "()"})
+       { Pexp_open(od, mkexp ~loc:($loc($3)) (Pexp_construct($3, None))) }
+   | mod_longident DOT LPAREN seq_expr error
+       { unclosed "(" $loc($3) ")" $loc($5) }
+   | LBRACE record_expr_content RBRACE
+@@@@
+   | PLUS           {"+"}
+   | PLUSDOT       {"+."}
+   | PLUSEQ        {"+="}
+   | MINUS          {"-"}
+   | MINUSDOT      {"-."}
++  | SLASH          {"/"}
+   | STAR           {"*"}
+   | PERCENT        {"%"}
+   | EQUAL          {"="}
+   | LESS           {"<"}
+   | GREATER        {">"}
+@@@@
+ label_longident:
+     mk_longident(mod_longident, LIDENT) { $1 }
+ ;
+ type_longident:
+     mk_longident(mod_ext_longident, LIDENT)  { $1 }
++  | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
+ ;
+ mod_longident:
+     mk_longident(mod_longident, UIDENT)  { $1 }
+ ;
++mod_ext_longident_:
++    UIDENT                          { Lident $1 }
++  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
++  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
++;
+ mod_ext_longident:
+-    mk_longident(mod_ext_longident, UIDENT) { $1 }
++    mod_ext_longident_ { $1 }
+   | mod_ext_longident LPAREN mod_ext_longident RPAREN
+       { lapply ~loc:$sloc $1 $3 }
+   | mod_ext_longident LPAREN error
+       { expecting $loc($3) "module path" }
+ ;
+--- parser-upstream/parsetree.mli
++++ parser-standard/parsetree.mli
+@@@@
+   | Pexp_letop of letop
+       (** - [let* P = E0 in E1]
+             - [let* P0 = E00 and* P1 = E01 in E1] *)
+   | Pexp_extension of extension  (** [[%id]] *)
+   | Pexp_unreachable  (** [.] *)
++  | Pexp_hole  (** [_] *)
+ 
+ and case =
+     {
+      pc_lhs: pattern;
+      pc_guard: expression option;
+@@@@
+       (** [functor(X : MT1) -> ME] *)
+   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
+   | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
+   | Pmod_unpack of expression  (** [(val E)] *)
+   | Pmod_extension of extension  (** [[%id]] *)
++  | Pmod_hole  (** [_] *)
+ 
+ and structure = structure_item list
+ 
+ and structure_item =
+     {
+--- parser-upstream/printast.ml
++++ parser-standard/printast.ml
+@@@@
+   | Pexp_extension (s, arg) ->
+       line i ppf "Pexp_extension \"%s\"\n" s.txt;
+       payload i ppf arg
+   | Pexp_unreachable ->
+       line i ppf "Pexp_unreachable"
++  | Pexp_hole ->
++      line i ppf "Pexp_hole"
+ 
+ and value_description i ppf x =
+   line i ppf "value_description %a %a\n" fmt_string_loc
+        x.pval_name fmt_location x.pval_loc;
+   attributes i ppf x.pval_attributes;
+@@@@
+       line i ppf "Pmod_unpack\n";
+       expression i ppf e;
+   | Pmod_extension (s, arg) ->
+       line i ppf "Pmod_extension \"%s\"\n" s.txt;
+       payload i ppf arg
++  | Pmod_hole ->
++      line i ppf "Pmod_hole"
+ 
+ and structure i ppf x = list i structure_item ppf x
+ 
+ and structure_item i ppf x =
+   line i ppf "structure_item %a\n" fmt_location x.pstr_loc;
+--- parser-upstream/printast.mli
++++ parser-standard/printast.mli
+@@@@
+ val top_phrase : formatter -> toplevel_phrase -> unit
+ 
+ val expression: int -> formatter -> expression -> unit
+ val structure: int -> formatter -> structure -> unit
+ val payload: int -> formatter -> payload -> unit
++val core_type: int -> formatter -> core_type -> unit
++val module_type: int -> formatter -> module_type -> unit

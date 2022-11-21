@@ -38,6 +38,10 @@ let _ =
 
     initializer f x ; 9
 
+    initializer
+      let x = y in
+      z
+
     method x =
       let f = {<a; b = e>} in
       x <- expr
@@ -106,9 +110,13 @@ module type A = sig
 
       [@@@attr something]
 
-      val virtual mutable a : int
+      val (*x*) virtual (*y*) mutable (*z*) a : int
 
-      method virtual private b : int -> int -> int
+      val (*x*) mutable (*y*) virtual (*z*) a : int
+
+      method (*x*) virtual (*y*) private (*z*) b : int -> int -> int
+
+      method (*x*) private (*y*) virtual (*z*) b : int -> int -> int
     end
 end
 
@@ -248,7 +256,7 @@ class type ['a] tsv =
    free_vars = IntSet.add x free_vars >}
 ;;
 
-{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>};;
+{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>} ;;
 
 {< (* Debug.print ("free var: "^string_of_int x); *)
    very_loooooooooooong_identifier >}

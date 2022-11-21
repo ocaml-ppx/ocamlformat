@@ -295,3 +295,9 @@ let _ =
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
   #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+
+let _ = !(*a*) (*b*)x
+
+let _ = (*x*)!(*a*) (*b*) x (*c*) y
+
+let _ = f ( (*x*)!(*a*) (*b*) x (*c*) y ) y

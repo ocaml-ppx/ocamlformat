@@ -46,7 +46,6 @@ module Clflags = struct
   let for_package = ref (None: string option) (* -for-pack *)
   let transparent_modules = ref false     (* -trans-mod *)
   let locations = ref true                (* -d(no-)locations *)
-  let unsafe_string = ref false           (* -safe-string / -unsafe-string *)
   let color = ref None                    (* -color *)
   let error_style = ref None              (* -error-style *)
   let unboxed_types = ref false

@@ -1,0 +1,30 @@
+[
+  structure_item ([1,0+0]..[1,0+22])
+    Pstr_module
+    module_binding "K" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+22])
+      module_expr ([1,0+9]..[1,0+22])
+        Pmod_constraint
+        module_expr (_none_[0,0+-1]..[0,0+-1]) ghost
+          Pmod_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+          []
+        module_type ([1,0+11]..[1,0+22])
+          Pmty_signature
+          [
+            signature_item ([1,0+16]..[1,0+22])
+              Psig_typext
+              type_extension (_none_[0,0+-1]..[0,0+-1]) ghost
+                ptyext_path = "t" ([1,0+21]..[1,0+22])
+                ptyext_params =
+                  []
+                ptyext_constructors =
+                  [
+                    extension_constructor ([1,0+22]..[1,0+22])
+                      pext_name = "<invalid-uident>" ([1,0+22]..[1,0+22])
+                      pext_kind =
+                        Pext_decl
+                          []
+                          None
+                  ]
+                ptyext_private = Public
+          ]
+]

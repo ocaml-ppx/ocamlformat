@@ -128,6 +128,14 @@ let foo =
 
 let _ =
   if fooo then ( + )
-  else if bar then ( * )
+  else if bar then ( * ) [@attr]
   else if foobar then ( / )
   else ( - )
+
+let _ =
+  if x then
+    (fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+       xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz)
+  else
+    (fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+       xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz)

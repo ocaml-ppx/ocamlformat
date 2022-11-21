@@ -12,13 +12,13 @@
 module Valid_ast : sig
   val indent_range :
        'a Extended_ast.t
-    -> unformatted:'a * Source.t * string
+    -> unformatted:'a * string
     -> formatted:'a * Source.t
     -> lines:string list
-    -> range:int * int
+    -> range:Range.t
     -> int list
 end
 
 module Partial_ast : sig
-  val indent_range : source:string -> range:int * int -> int list
+  val indent_range : source:string -> range:Range.t -> int list
 end

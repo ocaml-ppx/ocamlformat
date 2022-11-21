@@ -1,0 +1,17 @@
+{0 OCamlFormat Manual}
+
+If you are here, you are probably interested in using a formatting tool for your
+code base, so that you do not have to worry about formatting it by hand, and to
+speed up code review by focusing on the important parts.
+
+OCamlFormat is probably what you are after!
+OCamlFormat is a tool to format OCaml code.
+
+{1 Table of Content}
+- {{!page-getting_started}Getting started}
+- {{!page-editor_setup}Editor setup}
+- {{!page-howtos}How-To's}
+- {{!page-faq}Frequently asked questions}
+- {{!page-api}API}
+- {{!page-doc_comments}Doc-comments language reference}
+- {{!page-rpc}RPC}

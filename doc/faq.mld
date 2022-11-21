@@ -1,0 +1,103 @@
+{0 Frequently asked questions}
+
+{1 Should I use OCamlFormat?}
+
+OCamlFormat is already being used by several projects, but it comes with some
+important caveats. This FAQ should help you decide if it can work for you.
+
+OCamlFormat is beta software, and we expect the program to change considerably before we reach version 1.0.0.
+In particular, upgrading the [ocamlformat] package will cause your program to get reformatted.
+Sometimes the changes are relatively small, but sometimes upgrading can cause many changes all over the code base.
+This can be a hard price to pay, since this means losing the corresponding git history.
+
+If you use a custom configuration, options you rely on might also get removed in
+a later release.
+
+Moreover if you adopt OCamlFormat in one project it will not break your workflow in your other projects. Indeed OCamlFormat modifies a file only if it can find an [.ocamlformat] file, so adding a save hook in your editor will only simplify your workflow in projects using OCamlFormat.
+
+{1 What configuration should I use?}
+
+The recommended way is to use a versioned default profile, such as:
+
+{[
+profile = default
+version = 0.24.1
+]}
+
+(or replace with the output of [ocamlformat --version])
+
+This ensures two things:
+- you are using the recommended formatting configuration.
+- the version that you use to format is recorded somewhere.
+  If somebody else working on the project tries to use a different version,
+  they will see an error message instead of reformatting the whole project in a
+  different way.
+
+{1 Can OCamlFormat support my style?}
+
+No.
+It is better to see OCamlFormat as a tool to apply a style, rather than a tweakable tool to enforce your existing style.
+There are some knobs that you can turn, such as overriding [margin] to determine the maximum line width.
+But it is better not to set individual options to override what the default profile is doing.
+
+To paraphrase {{:https://prettier.io/docs/en/option-philosophy.html}prettier's page on option philosophy}:
+
+{%html:
+<q>
+OCamlFormat has a few options because of history. <i>But we don’t want more of them.</i>
+
+By far the biggest reason for adopting OCamlFormat is to stop all the on-going debates over styles.
+
+The more options OCamlFormat has, the further from the above goal it gets. The debates over styles just turn into debates over which OCamlFormat options to use.
+</q>
+%}
+
+{1 Can OCamlFormat format Reason files?}
+
+No.
+Although OCamlFormat is influenced by and follows the same basic design as [refmt] for {{:https://github.com/facebook/reason}Reason}, OCamlFormat outputs OCaml instead of Reason.
+
+OCamlFormat is not able to deal directly with Reason code ([*.re]/[*.rei] files),
+but it is possible to first convert these files to OCaml syntax using [refmt -p
+ml] and then running [ocamlformat] on this output.
+
+{1 How to ignore directories?}
+
+It is possible to disable OCamlFormat for the files of a directory by having an [.ocamlformat] file containing disable in this directory, or listing the files to ignore in an [.ocamlformat-ignore] file.
+
+For now it is not possible to recursively ignore all subdirectories and files from a parent directory, you need to list all the descendants of the directory to ignore them, e.g.:
+{[
+dir/*
+dir/*/*
+dir/*/*/*
+]}
+
+It is also possible to add an [.ocamlformat-ignore] file containing [*] in every directory that needs to be ignored.
+
+{1 How to locally disable OCamlFormat?}
+
+To disable the formatting of a specific toplevel item you must attach an [[@@ocamlformat "disable"]] attribute to this item in the processed file, such as:
+
+{[
+let do_not_touch
+    (x : t)
+      (y : t)
+        (z : t) = [
+  x; y; z
+] [@@ocamlformat "disable"]
+]}
+
+To disable the formatting of a specific expression you must attach an [[@ocamlformat "disable"]] attribute to this expression in the processed file, such as:
+
+{[
+let do_not_touch (x : t) (y : t) (z : t) = [
+  x; y; z
+] [@ocamlformat "disable"]
+]}
+
+To disable a whole file, the preferred way is to add the name of the file to a local [.ocamlformat-ignore] file. An [.ocamlformat-ignore] file specifies files that OCamlFormat should ignore. Each line in an [.ocamlformat-ignore] file specifies a filename relative to the directory containing the [.ocamlformat-ignore] file.
+Shell-style regular expressions are supported. Lines starting with [#] are ignored and can be used as comments.
+
+{1 Why is there an inconsistent spacing on the | character in match blocks?}
+
+The change in the indentation of [| ] vs [|] would indicate that there is a short body of a nested or-pattern that could be easily missed if formatted as: [| ]. This can be disabled using [indicate-nested-or-patterns = unsafe-no] if you are happy with the risk. Alternatively, [break-cases = nested] can be used to break after the [->] to avoid the risk at the cost of significantly less compact code.

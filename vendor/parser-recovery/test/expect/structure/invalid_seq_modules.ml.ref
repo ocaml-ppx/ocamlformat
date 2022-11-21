@@ -1,0 +1,40 @@
+[
+  structure_item ([1,0+0]..[1,0+105])
+    Pstr_module
+    module_binding "M" ([1,0+7]..[1,0+8]) ([1,0+0]..[1,0+105])
+      module_expr ([1,0+11]..[1,0+105])
+        Pmod_structure
+        [
+          structure_item ([1,0+19]..[1,0+38])
+            Pstr_value Nonrec
+            [
+              <def> ([1,0+19]..[1,0+38])
+                pattern ([1,0+23]..[1,0+30])
+                  Ppat_var "foooooo" ([1,0+23]..[1,0+30])
+                expression ([1,0+33]..[1,0+38])
+                  Pexp_ident "foooo" ([1,0+33]..[1,0+38])
+            ]
+          structure_item ([1,0+40]..[1,0+105])
+            Pstr_value Nonrec
+            [
+              <def> ([1,0+40]..[1,0+105])
+                pattern ([1,0+44]..[1,0+59])
+                  Ppat_var "foooooooooooooo" ([1,0+44]..[1,0+59])
+                expression ([1,0+76]..[1,0+105])
+                  Pexp_let Nonrec
+                  [
+                    <def> ([1,0+76]..[1,0+105])
+                      pattern ([1,0+80]..[1,0+93])
+                        Ppat_var "foooooooooooo" ([1,0+80]..[1,0+93])
+                      expression ([1,0+96]..[1,0+105])
+                        Pexp_setinstvar "foooooend" ([1,0+96]..[1,0+105])
+                        expression (_none_[0,0+-1]..[0,0+-1]) ghost
+                          Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+                          []
+                  ]
+                  expression (_none_[0,0+-1]..[0,0+-1]) ghost
+                    Pexp_extension "merlin.hole" (_none_[0,0+-1]..[0,0+-1]) ghost
+                    []
+            ]
+        ]
+]

@@ -33,17 +33,19 @@
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.14)))
+   (>= 4.08))
   (alcotest :with-test)
   (base
+   (>= v0.12.0))
+  (cmdliner
+   (>= 1.1.0))
+  dune
+  (dune
    (and
-    (>= v0.12.0)
-    (< v0.15)))
-  base-unix
-  cmdliner
+    :with-test
+    (< 3.0)))
   dune-build-info
+  either
   fix
   fpath
   (menhir
@@ -53,67 +55,43 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.2.0))
-  ocp-indent
-  (bisect_ppx
+   (>= 3.3.0))
+  (ocamlformat-rpc-lib
    (and
     :with-test
-    (>= 2.5.0)))
-  (odoc-parser
-   (>= 0.9.0))
+    (= :version)))
+  ocp-indent
   (re
-   (>= 1.7.2))
-  (stdio
-   (< v0.15))
+   (>= 1.10.3))
+  stdio
   (uuseg
    (>= 10.0.0))
   (uutf
-   (>= 1.0.1))))
+   (>= 1.0.1))
+  (csexp
+   (>= 1.4.0))
+  ; for vendored odoc-parser
+  astring
+  result
+  camlp-streams))
 
 (package
- (name ocamlformat-rpc)
- (synopsis "Auto-formatter for OCaml code (RPC mode)")
+ (name ocamlformat-bench)
+ (synopsis "Auto-formatter for OCaml code")
  (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style. This package defines a RPC interface to OCamlFormat")
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.14)))
-  ocamlformat-rpc-lib
+   (>= 4.08))
   (alcotest :with-test)
-  (base
-   (and
-    (>= v0.12.0)
-    (< v0.15)))
-  base-unix
-  cmdliner
-  dune-build-info
-  fix
-  fpath
-  (menhir
-   (>= 20201216))
-  (menhirLib
-   (>= 20201216))
-  (menhirSdk
-   (>= 20201216))
-  (ocaml-version
-   (>= 3.2.0))
-  ocp-indent
-  (bisect_ppx
-   (and
-    :with-test
-    (>= 2.5.0)))
-  (odoc-parser
-   (>= 0.9.0))
-  (re
-   (>= 1.7.2))
-  (stdio
-   (< v0.15))
-  (uuseg
-   (>= 10.0.0))
-  (uutf
-   (>= 1.0.1))))
+  (bechamel
+   (>= 0.2.0))
+  (bechamel-js
+   (>= 0.2.0))
+  (ocamlformat
+   (= :version))
+  stdio
+  yojson))
 
 (package
  (name ocamlformat-rpc-lib)
@@ -123,8 +101,6 @@
  (license MIT)
  (depends
   (ocaml
-   (and
-    (>= 4.08)
-    (< 4.14)))
-  csexp
-  sexplib0))
+   (>= 4.08))
+  (csexp
+   (>= 1.4.0))))

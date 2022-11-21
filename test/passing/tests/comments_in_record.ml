@@ -74,3 +74,9 @@ let {
   (* f *) f (* f' *);
   (* g *) g (* g' *) = (* j *) ( (* h *) h (* h' *) : (* i *) i (* i' *) ) (* j' *)
 } = x
+
+type program =
+  { prog_globals : global list;       (* global variables *)
+    prog_struct_types : lltype list;  (* data structures *)
+    prog_lib_funcs : func list;       (* library functions *)
+  }

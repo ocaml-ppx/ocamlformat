@@ -14,37 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
-  let ctx = Typ typ in
-  let {ptyp_desc; ptyp_loc; _} = typ in
-  match ptyp_desc with
-  | Ptyp_arrow (l, t1, t2) ->
-      let before = if i > 0 then ptyp_loc else t1.ptyp_loc in
-      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc ;
-      let rest =
-        match t2.ptyp_attributes with
-        | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
-        | _ -> [(ptyp_loc, Nolabel, sub_typ ~ctx t2)]
-      in
-      (ptyp_loc, l, sub_typ ~ctx t1) :: rest
-  | _ -> [(ptyp_loc, Nolabel, xtyp)]
-
-let arrow_typ cmts t = arrow_typ cmts 0 t
-
-let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
-  let ctx = Cty typ in
-  let {pcty_desc; pcty_loc; _} = typ in
-  match pcty_desc with
-  | Pcty_arrow (l, t1, t2) ->
-      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
-      let rest =
-        match t2.pcty_attributes with
-        | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
-        | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
-      in
-      (l, `core_type (sub_typ ~ctx t1)) :: rest
-  | _ -> [(Nolabel, `class_type xtyp)]
-
 let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
   let ctx = Pat pat in
   match pat with
@@ -118,95 +87,44 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let infix cmts prec xexp =
-  let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
-  let rec infix_ ?(relocate = true) xop ((lbl, {ast= exp; _}) as xexp) =
-    assert (Poly.(lbl = Nolabel)) ;
-    let ctx = Exp exp in
-    match (assoc, exp) with
-    | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
-        let op_args1 = infix_ None (l1, sub_exp ~ctx e1) in
-        let src = pexp_loc in
-        let after = e2.pexp_loc in
-        ( match op_args1 with
-        | (Some {ast= {pexp_loc= before; _}; _}, _) :: _
-         |(None, (_, {ast= {pexp_loc= before; _}; _}) :: _) :: _ ->
-            if relocate then Cmts.relocate cmts ~src ~before ~after
-        | _ ->
-            if relocate then
-              Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
-        op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
-    | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
-        let op_args2 =
-          infix_ (Some (sub_exp ~ctx e0)) (l2, sub_exp ~ctx e2)
-        in
-        let src = pexp_loc in
-        let after = e1.pexp_loc in
-        let before =
-          match xop with
-          | Some {ast; _} -> ast.pexp_loc
-          | None -> e1.pexp_loc
-        in
-        let may_relocate ~after =
-          if relocate then Cmts.relocate cmts ~src ~before ~after
-        in
-        ( match List.last op_args2 with
-        | Some (_, args2) -> (
-          match List.last args2 with
-          | Some (_, {ast= {pexp_loc= after; _}; _}) -> may_relocate ~after
-          | None -> may_relocate ~after )
-        | _ -> may_relocate ~after ) ;
-        (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
-    | _ -> [(xop, [xexp])]
-  in
-  infix_ None ~relocate:false (Nolabel, xexp)
-
-let infix_cons cmts xexp =
-  let rec infix_cons_ ?cons_opt ({ast= exp; _} as xexp) acc =
-    let ctx = Exp exp in
-    let {pexp_desc; pexp_loc= l1; _} = exp in
-    match pexp_desc with
-    | Pexp_construct
-        ( ({txt= Lident "::"; _} as cons)
-        , Some
-            { pexp_desc= Pexp_tuple [hd; tl]
-            ; pexp_loc= l3
-            ; pexp_attributes= []
-            ; _ } ) -> (
-        ( match acc with
-        | [] -> ()
-        | _ ->
-            Cmts.relocate cmts ~src:l1 ~before:hd.pexp_loc ~after:tl.pexp_loc
-        ) ;
-        Cmts.relocate cmts ~src:l3 ~before:hd.pexp_loc ~after:tl.pexp_loc ;
-        match tl.pexp_attributes with
-        | [] ->
-            infix_cons_ ~cons_opt:cons (sub_exp ~ctx tl)
-              ((cons_opt, sub_exp ~ctx hd) :: acc)
-        | _ ->
-            (Some cons, sub_exp ~ctx tl)
-            :: (cons_opt, sub_exp ~ctx hd)
-            :: acc )
-    | _ -> (cons_opt, xexp) :: acc
-  in
-  List.rev @@ infix_cons_ xexp []
-
-let rec ite cmts ({ast= exp; _} as xexp) =
-  let ctx = Exp exp in
-  let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
-  match pexp_desc with
-  | Pexp_ifthenelse (cnd, thn, Some els) ->
-      Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:els.pexp_loc ;
-      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)
-      :: ite cmts (sub_exp ~ctx els)
-  | Pexp_ifthenelse (cnd, thn, None) ->
-      Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:thn.pexp_loc ;
-      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
-  | _ -> [(None, xexp, pexp_attributes)]
+module Exp = struct
+  let infix cmts prec xexp =
+    let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
+    let rec infix_ ?(relocate = true) xop xexp =
+      let ctx = Exp xexp.ast in
+      match (assoc, xexp.ast) with
+      | ( Left
+        , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
+        )
+        when Option.equal Prec.equal prec (prec_ast ctx) ->
+          let op_args1 = infix_ None (sub_exp ~ctx e1) in
+          let before =
+            match op_args1 with
+            | (Some {loc; _}, _) :: _ -> loc
+            | (None, {ast= {pexp_loc; _}; _}) :: _ -> pexp_loc
+            | _ -> loc
+          in
+          if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
+          op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
+      | ( Right
+        , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
+        )
+        when Option.equal Prec.equal prec (prec_ast ctx) ->
+          let op_args2 = infix_ (Some {txt= op; loc}) (sub_exp ~ctx e2) in
+          let before =
+            match xop with Some op -> op.loc | None -> e1.pexp_loc
+          in
+          let after =
+            match List.last op_args2 with
+            | Some (_, {ast= {pexp_loc; _}; _}) -> pexp_loc
+            | None -> e1.pexp_loc
+          in
+          if relocate then Cmts.relocate cmts ~src ~before ~after ;
+          (xop, sub_exp ~ctx e1) :: op_args2
+      | _ -> [(xop, xexp)]
+    in
+    infix_ None ~relocate:false xexp
+end
 
 let sequence cmts xexp =
   let rec sequence_ ?(allow_attribute = true) ({ast= exp; _} as xexp) =
@@ -222,35 +140,39 @@ let sequence cmts xexp =
                         ; pexp_attributes
                         ; _ } as exp )
                     , _ )
-              ; pstr_loc= _ } ] )
+              ; pstr_loc } ] )
       when List.is_empty pexp_attributes
            && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
         let ctx = Exp exp in
-        Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
-          ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
-        else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [(None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2)]
-        else
-          let l1 = sequence_ ~allow_attribute:false (sub_exp ~ctx e1) in
-          let l2 =
-            match sequence_ ~allow_attribute:false (sub_exp ~ctx e2) with
-            | [] -> []
-            | (_, e2) :: l2 -> (Some ext, e2) :: l2
-          in
-          List.append l1 l2
+        else (
+          Cmts.relocate cmts ~src:pstr_loc ~before:e1.pexp_loc
+            ~after:e2.pexp_loc ;
+          Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
+            ~after:e2.pexp_loc ;
+          if Ast.exposed_right_exp Ast.Let_match e1 then
+            [(None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2)]
+          else
+            let l1 = sequence_ ~allow_attribute:false (sub_exp ~ctx e1) in
+            let l2 =
+              match sequence_ ~allow_attribute:false (sub_exp ~ctx e2) with
+              | [] -> []
+              | (_, e2) :: l2 -> (Some ext, e2) :: l2
+            in
+            List.append l1 l2 )
     | Pexp_sequence (e1, e2) ->
-        Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
-          ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
-        else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [(None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2)]
-        else
-          List.append
-            (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
-            (sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
+        else (
+          Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
+            ~after:e2.pexp_loc ;
+          if Ast.exposed_right_exp Ast.Let_match e1 then
+            [(None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2)]
+          else
+            List.append
+              (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
+              (sequence_ ~allow_attribute:false (sub_exp ~ctx e2)) )
     | _ -> [(None, xexp)]
   in
   sequence_ xexp
@@ -336,7 +258,9 @@ let rec polynewtype_ cmts pvars body relocs =
 
     Can be rewritten as:
 
-    {[ let f : type r s. r s t = e ]} *)
+    {[
+      let f : type r s. r s t = e
+    ]} *)
 let polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
@@ -444,24 +368,20 @@ module Let_binding = struct
               (xpat, `Coerce (typ1, sub_typ ~ctx typ2), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )
 
-  let of_value_binding cmts src ~ctx ~first vb =
+  let of_value_binding cmts ~ctx ~first vb =
     let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
     ; lb_pat= pat
     ; lb_typ= typ
     ; lb_exp= exp
-    ; lb_pun=
-        List.is_empty
-          (Source.tokens_between src
-             ~filter:(function EQUAL -> true | _ -> false)
-             vb.pvb_loc.loc_start vb.pvb_loc.loc_end )
+    ; lb_pun= false
     ; lb_attrs= vb.pvb_attributes
     ; lb_loc= vb.pvb_loc }
 
-  let of_value_bindings cmts src ~ctx =
-    List.mapi ~f:(fun i -> of_value_binding cmts src ~ctx ~first:(i = 0))
+  let of_value_bindings cmts ~ctx =
+    List.mapi ~f:(fun i -> of_value_binding cmts ~ctx ~first:(i = 0))
 
-  let of_binding_ops cmts src ~ctx bos =
+  let of_binding_ops cmts ~ctx bos =
     List.map bos ~f:(fun bo ->
         let pat, typ, exp = type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp in
         { lb_op= bo.pbop_op
@@ -469,10 +389,10 @@ module Let_binding = struct
         ; lb_typ= typ
         ; lb_exp= exp
         ; lb_pun=
-            List.is_empty
-              (Source.tokens_between src
-                 ~filter:(function EQUAL -> true | _ -> false)
-                 bo.pbop_loc.loc_start bo.pbop_loc.loc_end )
+            ( match (pat.ast.ppat_desc, exp.ast.pexp_desc) with
+            | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
+                String.equal v e
+            | _ -> false )
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
 end

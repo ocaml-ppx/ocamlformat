@@ -18,11 +18,11 @@ let () =
   List.iter
     begin
       fun v ->
-      (* do a lot of things *)
-      let a = "a" in
-      let b = "b" in
-      let c = "c" in
-      ()
+        (* do a lot of things *)
+        let a = "a" in
+        let b = "b" in
+        let c = "c" in
+        ()
     end
     values
 
@@ -77,21 +77,22 @@ let () =
 let () =
   foooooooo
     ( if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-      else
-        foooooooooooooooooooooooooooo
-          ( if foooooooooooooooooooooooooooo then
-            if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-            else foooooooooooooooooooooooooo
-          else if foooooooooooooooooooooooooooooooo then
-            fooooooooooooooooooooooooooooooooooo
-          else if foooooooooooooooooo then
-            foooooooooooooooooooooooooooooooooo
-          else fooooooooooooooooooooo )
-    else if foooooooooooooooooooooooooooooooo then
-      fooooooooooooooooooooooooooooooooooo
-    else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
-    else fooooooooooooooooooooo )
+        if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+        else
+          foooooooooooooooooooooooooooo
+            ( if foooooooooooooooooooooooooooo then
+                if foooooooooooooooooooooooooooo then
+                  foooooooooooooooooooooooo
+                else foooooooooooooooooooooooooo
+              else if foooooooooooooooooooooooooooooooo then
+                fooooooooooooooooooooooooooooooooooo
+              else if foooooooooooooooooo then
+                foooooooooooooooooooooooooooooooooo
+              else fooooooooooooooooooooo )
+      else if foooooooooooooooooooooooooooooooo then
+        fooooooooooooooooooooooooooooooooooo
+      else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+      else fooooooooooooooooooooo )
 
 let _ =
   a
@@ -298,3 +299,37 @@ let () =
     let test_name = "Test 2" in
     test_name >:: fun _ -> assert_equal "b" "b"
   end
+
+let _ = ()
+
+let _ = ( (* foo *) )
+
+let _ = [%ext ()]
+
+let _ = [%ext (* foo *) ()]
+
+let _ =
+  begin
+    x y
+  end
+
+let _ =
+  begin
+    (* foo *) x y
+  end
+
+let _ =
+  begin%ext
+    x y
+  end
+
+let _ =
+  begin%ext
+    (* foo *) x y
+  end
+
+let _ =
+  begin
+    market_data_items := ()
+  end
+  [@landmark "parse_constant_dividends"]

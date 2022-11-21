@@ -24,9 +24,9 @@ module Layout_cache = struct
     type t = layout_cache_key
 
     let expression_to_string e =
-      Caml.Format.asprintf "%a" Pprintast.expression e
+      Caml.Format.asprintf "%a" Printast.expression e
 
-    let pattern_to_string e = Caml.Format.asprintf "%a" Pprintast.pattern e
+    let pattern_to_string e = Caml.Format.asprintf "%a" Printast.pattern e
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
@@ -106,15 +106,15 @@ let find_at_position t loc pos =
   in
   Map.find map loc
 
+let no_filter (_ : Parser.token) = true
+
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is a
     [|] character and the first location begins a line and the start column
     of the first location is lower than that of the second location. *)
-let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
-  match
-    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-        | _ -> true )
-  with
+let is_adjacent ?(filter = no_filter) src (l1 : Location.t) (l2 : Location.t)
+    =
+  match Source.tokens_between src l1.loc_end l2.loc_start ~filter with
   | [] -> true
   | [(BAR, _)] ->
       Source.begins_line src l1
@@ -129,6 +129,8 @@ let infix_symbol_before src (loc : Location.t) =
   match
     Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
   with
+  | Some (Parser.SEMI, loc') ->
+      Source.begins_line ~ignore_spaces:true src loc'
   | Some (x, _) -> Ast.Token.is_infix x
   | None -> false
 
@@ -183,14 +185,21 @@ end = struct
     (a, b ++ c, d ++ e)
 
   let partition src ~prev ~next cmts =
+    let ignore_docstrings = function
+      | Parser.DOCSTRING _ -> false
+      | _ -> true
+    in
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
+    | Cmt.{loc; _} :: _ as cmtl
+      when is_adjacent ~filter:ignore_docstrings src prev loc -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
       | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
           let open Location in
+          let first_loc = (List.hd_exn cmtl).loc in
+          let last_loc = (List.last_exn cmtl).loc in
           let same_line_as_prev l =
             prev.loc_end.pos_lnum = l.loc_start.pos_lnum
           in
@@ -202,7 +211,20 @@ end = struct
             | 0, 0 -> `Before_next
             | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
-            | 1, x when x > 1 && Source.empty_line_after src loc ->
+            | 1, 1 ->
+                if
+                  Location.compare_start_col (List.last_exn cmtl).loc next
+                  <= 0
+                then `Before_next
+                else `After_prev
+            | 1, y when y > 1 && Source.empty_line_after src loc ->
+                `After_prev
+            | _, y
+              when y > 1
+                   && first_loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
+                      >= 1
+                   && Source.empty_line_after src last_loc
+                   && not (Source.empty_line_before src first_loc) ->
                 `After_prev
             | _ -> `Before_next
           in
@@ -223,15 +245,26 @@ end = struct
     | _ -> (empty, cmts)
 end
 
-let add_cmts t position loc cmts =
+let add_cmts t position loc ?deep_loc cmts =
   if not (CmtSet.is_empty cmts) then
     let cmtl = CmtSet.to_list cmts in
-    update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl)
+    let key =
+      match deep_loc with
+      | Some deep_loc ->
+          let cmt = List.last_exn cmtl in
+          if
+            is_adjacent t.source deep_loc cmt.loc
+            && not (Source.begins_line ~ignore_spaces:true t.source cmt.loc)
+          then deep_loc
+          else loc
+      | None -> loc
+    in
+    update_cmts t position ~f:(Map.add_exn ~key ~data:cmtl)
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
     children. *)
-let rec place t loc_tree ?prev_loc locs cmts =
+let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
   match locs with
   | curr_loc :: next_locs ->
       let before, within, after = CmtSet.split cmts curr_loc in
@@ -246,21 +279,26 @@ let rec place t loc_tree ?prev_loc locs cmts =
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
             in
-            add_cmts t `After prev_loc after_prev ;
+            add_cmts t `After prev_loc after_prev ?deep_loc ;
             before_curr
       in
       add_cmts t `Before curr_loc before_curr ;
-      ( match Loc_tree.children loc_tree curr_loc with
-      | [] -> add_cmts t `Within curr_loc within
-      | children -> place t loc_tree children within ) ;
-      place t loc_tree ~prev_loc:curr_loc next_locs after
-  | [] -> (
-    match prev_loc with
-    | Some prev_loc -> add_cmts t `After prev_loc cmts
-    | None ->
-        if t.debug then
-          List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-              Format.eprintf "lost: %s@\n%!" txt ) )
+      let deep_loc =
+        match Loc_tree.children loc_tree curr_loc with
+        | [] ->
+            add_cmts t `Within curr_loc within ;
+            Option.some_if (List.is_empty next_locs) curr_loc
+        | children -> place t loc_tree children within
+      in
+      place t loc_tree ~prev_loc:curr_loc next_locs after ?deep_loc
+  | [] ->
+      ( match prev_loc with
+      | Some prev_loc -> add_cmts t `After prev_loc cmts ?deep_loc
+      | None ->
+          if t.debug then
+            List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
+                Format.eprintf "lost: %s@\n%!" txt ) ) ;
+      deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
@@ -288,8 +326,7 @@ let relocate_cmts_before (t : t) ~src ~sep ~dst =
     Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
         Location.compare_end loc sep < 0 )
   in
-  update_cmts t `Before ~f ;
-  update_cmts t `Within ~f
+  update_cmts t `Before ~f ; update_cmts t `Within ~f
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
@@ -297,20 +334,31 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   in
   relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
-let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
-    ~whole_loc =
+let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   let open Extended_ast in
   match pld with
   | PStr
       [ { pstr_desc=
             Pstr_eval
-              ( { pexp_desc= Pexp_constant (Pconst_string _)
+              ( { pexp_desc= Pexp_constant {pconst_desc= Pconst_string _; _}
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
                 ; pexp_attributes= _ }
               , [] )
         ; pstr_loc } ]
     when Source.is_quoted_string src pstr_loc ->
+      ()
+  | PStr
+      [ { pstr_desc=
+            Pstr_eval
+              ( { pexp_desc= Pexp_sequence (e1, _)
+                ; pexp_loc= _
+                ; pexp_loc_stack= _
+                ; pexp_attributes }
+              , [] )
+        ; pstr_loc= _ } ]
+    when List.is_empty pexp_attributes
+         && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
       let kwd_loc =
@@ -347,9 +395,11 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; remaining= Set.empty (module Location)
     ; layout_cache= Layout_cache.create () }
   in
-  let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
+  let comments =
+    Normalize_extended_ast.dedup_cmts fragment asts comments_n_docstrings
+  in
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast fragment asts source in
+    let loc_tree, locs = Loc_tree.of_ast fragment asts in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
@@ -358,20 +408,21 @@ let init fragment ~debug source asts comments_n_docstrings =
     let cmts = CmtSet.of_list comments in
     ( match locs with
     | [] -> add_cmts t `After Location.none cmts
-    | _ -> place t loc_tree locs cmts ) ;
+    | _ -> ignore @@ place t loc_tree locs cmts ) ;
     if debug then (
-      let dump fs lt =
-        let get_cmts pos loc =
-          let cmts = find_at_position t loc pos in
-          Option.map cmts ~f:(fun cmts -> List.map cmts ~f:Cmt.txt)
-        in
-        let cmts_before = get_cmts `Before in
-        let cmts_within = get_cmts `Within in
-        let cmts_after = get_cmts `After in
-        Fmt.eval fs (Loc_tree.dump ~cmts_before ~cmts_within ~cmts_after lt)
+      let get_cmts pos loc =
+        let cmts = find_at_position t loc pos in
+        Option.map cmts ~f:(List.map ~f:Cmt.txt)
       in
-      Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
+      let cmts : Printast.cmts =
+        { before= get_cmts `Before
+        ; within= get_cmts `Within
+        ; after= get_cmts `After }
+      in
+      Printast.cmts := Some cmts ;
+      Caml.Format.eprintf "AST:\n%a\n%!"
+        (Extended_ast.Printast.ast fragment)
+        asts ) ) ;
   t
 
 let preserve_nomemo f t =
@@ -391,11 +442,12 @@ let preserve ~cache_key f t =
 let pop_if_debug t loc =
   if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
 
-let find_cmts t pos loc =
+let find_cmts ?(filter = Fn.const true) t pos loc =
   pop_if_debug t loc ;
-  let r = find_at_position t loc pos in
-  update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
-  r
+  Option.map (find_at_position t loc pos) ~f:(fun cmts ->
+      let picked, not_picked = List.partition_tf cmts ~f:filter in
+      update_cmts t pos ~f:(Map.set ~key:loc ~data:not_picked) ;
+      picked )
 
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
   let vertical_align =
@@ -411,18 +463,161 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
+module Asterisk_prefixed = struct
+  let split Cmt.{txt; loc= {Location.loc_start; _}} =
+    let len = Position.column loc_start + 3 in
+    let pat =
+      String.Search_pattern.create
+        (String.init len ~f:(function
+          | 0 -> '\n'
+          | n when n < len - 1 -> ' '
+          | _ -> '*' ) )
+    in
+    let rec split_ pos =
+      match String.Search_pattern.index pat ~pos ~in_:txt with
+      | Some 0 -> "" :: split_ len
+      | Some idx -> String.sub txt ~pos ~len:(idx - pos) :: split_ (idx + len)
+      | _ ->
+          let drop = function ' ' | '\t' -> true | _ -> false in
+          let line = String.rstrip ~drop (String.drop_prefix txt pos) in
+          if String.is_empty line then [" "]
+          else if Char.equal line.[String.length line - 1] '\n' then
+            [String.drop_suffix line 1; ""]
+          else if Char.is_whitespace txt.[String.length txt - 1] then
+            [line ^ " "]
+          else [line]
+    in
+    split_ 0
+
+  let fmt lines =
+    let open Fmt in
+    vbox 1
+      ( fmt "(*"
+      $ list_fl lines (fun ~first:_ ~last line ->
+            match line with
+            | "" when last -> fmt ")"
+            | _ -> str line $ fmt_or last "*)" "@,*" ) )
+end
+
+module Unwrapped = struct
+  let unindent_lines ~opn_pos first_line tl_lines =
+    let indent_of_line s =
+      (* index of first non-whitespace is indentation, None means white
+         line *)
+      String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
+    in
+    (* The indentation of the first line must account for the location of the
+       comment opening *)
+    let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
+    let fl_offset = opn_pos.Lexing.pos_cnum - opn_pos.pos_bol + 2 in
+    let fl_indent = fl_spaces + fl_offset in
+    let min_indent =
+      List.fold_left ~init:fl_indent
+        ~f:(fun acc s ->
+          Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
+        tl_lines
+    in
+    (* Completely trim the first line *)
+    String.drop_prefix first_line fl_spaces
+    :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
+
+  let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
+    let open Fmt in
+    let is_white_line s = String.for_all s ~f:Char.is_whitespace in
+    let unindented = unindent_lines ~opn_pos first_line tl_lines in
+    let fmt_line ~first ~last:_ s =
+      let sep, sp =
+        if is_white_line s then (str "\n", noop)
+        else (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
+      in
+      fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
+    in
+    vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
+
+  let fmt Cmt.{txt= s; loc} =
+    let open Fmt in
+    let is_sp = function ' ' | '\t' -> true | _ -> false in
+    match String.split_lines (String.rstrip s) with
+    | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
+        let epi =
+          (* Preserve position of closing but strip empty lines at the end *)
+          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
+          | Some i when Char.( = ) s.[i] '\n' ->
+              break 1000 (-2) (* Break before closing *)
+          | Some i when i < String.length s - 1 ->
+              str " " (* Preserve a space at the end *)
+          | _ -> noop
+        in
+        (* Preserve the first level of indentation *)
+        let starts_with_sp = is_sp first_line.[0] in
+        wrap "(*" "*)"
+        @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
+             first_line tl
+    | _ -> wrap "(*" "*)" @@ str s
+end
+
+module Verbatim = struct
+  let fmt s (pos : Cmt.pos) =
+    let open Fmt in
+    fmt_if_k
+      (Poly.(pos = After) && String.contains s '\n')
+      (break_unless_newline 1000 0)
+    $ wrap "(*" "*)" @@ str s
+end
+
+let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
+    pos =
+  let mode =
+    match cmt.txt with
+    | "" -> impossible "not produced by parser"
+    (* "(**)" is not parsed as a docstring but as a regular comment
+       containing '*' and would be rewritten as "(***)" *)
+    | "*" when Location.width cmt.loc = 4 -> `Verbatim ""
+    | "*" -> `Verbatim "*"
+    | "$" -> `Verbatim "$"
+    (* Qtest pragmas *)
+    | str when Char.(str.[0] = '$' && not (is_whitespace str.[1])) ->
+        `Verbatim str
+    | str when Char.equal str.[0] '$' -> (
+        let dollar_suf = Char.equal str.[String.length str - 1] '$' in
+        let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
+        let len = String.length str - if dollar_suf then 2 else 1 in
+        let source = String.sub ~pos:1 ~len str in
+        match fmt_code source with
+        | Ok formatted -> `Code (formatted, cls)
+        | Error (`Msg _) -> `Unwrapped cmt )
+    | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
+    | _ -> (
+      match Asterisk_prefixed.split cmt with
+      | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
+      | [""; ""] -> `Verbatim " "
+      | [text] when wrap_comments -> `Wrapped (text, "*)")
+      | [text; ""] when wrap_comments -> `Wrapped (text, " *)")
+      | [_] | [_; ""] -> `Unwrapped cmt
+      | lines -> `Asterisk_prefixed lines )
+  in
+  let open Fmt in
+  match mode with
+  | `Verbatim x -> Verbatim.fmt x pos
+  | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
+  | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
+  | `Unwrapped x when ocp_indent_compat -> Verbatim.fmt x.txt pos
+  | `Unwrapped x -> Unwrapped.fmt x
+  | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
+
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
   let groups =
-    List.group cmts ~break:(break_comment_group t.source conf.margin)
+    List.group cmts
+      ~break:(break_comment_group t.source conf.fmt_opts.margin.v)
   in
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
          | [cmt] ->
-             Cmt.fmt cmt ~wrap:conf.wrap_comments
-               ~ocp_indent_compat:conf.ocp_indent_compat
+             fmt_cmt cmt ~wrap:conf.fmt_opts.wrap_comments.v
+               ~ocp_indent_compat:conf.fmt_opts.ocp_indent_compat.v
                ~fmt_code:(fmt_code conf) pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
@@ -450,29 +645,25 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
       fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
-  fmt_cmts t conf
-    (find_cmts t `Before loc)
-    ~fmt_code ?pro ~epi ?eol ?adj loc Cmt.Before
+  fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
+    Before
 
-let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
+let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi ?filter loc =
   let open Fmt in
   let within =
-    fmt_cmts t conf
-      (find_cmts t `Within loc)
-      ~fmt_code ~pro ?epi loc Cmt.Within
+    let cmts = find_cmts ?filter t `Within loc in
+    fmt_cmts t conf cmts ~fmt_code ~pro ?epi loc Within
   in
   let after =
-    fmt_cmts t conf
-      (find_cmts t `After loc)
-      ~fmt_code ~pro ?epi ~eol:noop loc Cmt.After
+    let cmts = find_cmts ?filter t `After loc in
+    fmt_cmts t conf cmts ~fmt_code ~pro ?epi ~eol:noop loc After
   in
   within $ after
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
     loc =
-  fmt_cmts t conf
-    (find_cmts t `Within loc)
-    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc Cmt.Within
+  fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ~epi ~eol:Fmt.noop
+    loc Within
 
 module Toplevel = struct
   let fmt_cmts t conf ~fmt_code found (pos : Cmt.pos) =
@@ -504,16 +695,14 @@ module Toplevel = struct
         pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
   let fmt_before t conf ~fmt_code loc =
-    fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code Cmt.Before
+    fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code Before
 
   let fmt_after t conf ~fmt_code loc =
     let open Fmt in
     let within =
-      fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code Cmt.Within
+      fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code Within
     in
-    let after =
-      fmt_cmts t conf (find_cmts t `After loc) ~fmt_code Cmt.After
-    in
+    let after = fmt_cmts t conf (find_cmts t `After loc) ~fmt_code After in
     within $ after
 end
 
@@ -524,9 +713,7 @@ let drop_inside t loc =
         (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
              not (Location.contains loc cmt_loc) ) )
   in
-  clear `Before ;
-  clear `Within ;
-  clear `After
+  clear `Before ; clear `Within ; clear `After
 
 let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
@@ -548,30 +735,3 @@ let remaining_comments t =
 let remaining_before t loc = Map.find_multi t.cmts_before loc
 
 let remaining_locs t = Set.to_list t.remaining
-
-let diff (conf : Conf.t) x y =
-  let norm z =
-    let norm_non_code {Cmt.txt; _} = Normalize.comment txt in
-    let f z =
-      match Cmt.txt z with
-      | "" | "$" -> norm_non_code z
-      | str ->
-          if Char.equal str.[0] '$' then
-            let chars_removed =
-              if Char.equal str.[String.length str - 1] '$' then 2 else 1
-            in
-            let len = String.length str - chars_removed in
-            let source = String.sub ~pos:1 ~len str in
-            match
-              Parse_with_comments.parse Std_ast.Parse.ast Structure conf
-                ~source
-            with
-            | exception _ -> norm_non_code z
-            | {ast; _} ->
-                Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
-                  (Normalize.normalize Structure conf ast)
-          else norm_non_code z
-    in
-    Set.of_list (module String) (List.map ~f z)
-  in
-  Set.symmetric_diff (norm x) (norm y)

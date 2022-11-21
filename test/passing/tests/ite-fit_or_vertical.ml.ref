@@ -28,40 +28,41 @@ let _ =
 f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
       ()
-  else
-    () )
+    else
+      () )
 ;;
 
 f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
       ()
-  else
-    () )
+    else
+      () )
 ;;
 
 f
   ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then
+    then
       ()
-  else
-    () )
+    else
+      () )
 ;;
 
 f
   ( if
-    and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then
+      and_ even
+        loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+    then
       ()
-  else
-    () )
+    else
+      () )
 
 let () =
   f
     ( if a___________________________________________________________________
-    then
+      then
         b_________________________________________________________________
-    else
-      c_________________________________________________________________ )
+      else
+        c_________________________________________________________________ )
 
 let () = if [@test] true then () else if [@other] true then ()
 
@@ -151,11 +152,19 @@ let foo =
     foo
 
 let _ =
-  if fooo then ( 
-    + )
-  else if bar then ( 
-    * )
-  else if foobar then ( 
-    / )
-  else ( 
-    - )
+  if fooo then
+    ( + )
+  else if bar then
+    ( * ) [@attr]
+  else if foobar then
+    ( / )
+  else
+    ( - )
+
+let _ =
+  if x then
+    fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+  xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+  else
+    fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
+  xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz

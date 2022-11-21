@@ -1,0 +1,40 @@
+name: Test branch
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.13.x
+        profile:
+          - conventional
+          - ocamlformat
+          - janestreet
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Setup
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Opam dependencies
+        run: opam install --deps-only -t ./ocamlformat.opam
+
+      - name: Test ${{ matrix.profile }} profile
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=${{ matrix.profile }}'
+        shell: bash

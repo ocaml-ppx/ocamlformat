@@ -3,7 +3,7 @@ NAME
        code.
 
 SYNOPSIS
-       ocamlformat-rpc [OPTION]... 
+       ocamlformat-rpc [OPTION]…
 
 DESCRIPTION
        ocamlformat-rpc listens to RPC requests, provided on the standard
@@ -25,9 +25,14 @@ COMMANDS
        Once the client and the server agree on a common version, the requests
        you can send may differ from one version to another.
 
-       On version v1, the supported RPC commands are:
+       All versions support the following commands:
 
-       - Halt to close the connection to the RPC
+       - Halt to end the communication with the RPC server. The caller must
+       close the input and output channels.
+
+       Some RPC versions offer specific commands, that are detailed below.
+
+       Specific commands supported on version v1 are:
 
        - Config CSEXP: submits a list of (key, value) pairs (as a canonical
        s-expression) to update OCamlFormat's configuration (please refer to
@@ -40,14 +45,34 @@ COMMANDS
        by OCamlFormat, the formatted output is sent as a reply of the same
        form Format CSEXP
 
+       Specific commands supported on version v2 are:
+
+       - Format CSEXP: submits a list as canonical s-expression CSEXP, where
+       the first element of the list is a string to be formatted by
+       OCamlFormat. The other arguments are (key, value) pairs, where key can
+       be either "Path" and/or "Config". They modify the server's
+       configuration temporarily, for the current request. The formatted
+       output is sent as a reply of the same form.
+
        Unknown commands are ignored.
 
-OPTIONS
+COMMON OPTIONS
        --help[=FMT] (default=auto)
-           Show this help in format FMT. The value FMT must be one of `auto',
-           `pager', `groff' or `plain'. With `auto', the format is `pager` or
-           `plain' whenever the TERM env var is `dumb' or undefined.
+           Show this help in format FMT. The value FMT must be one of auto,
+           pager, groff or plain. With auto, the format is pager or plain
+           whenever the TERM env var is dumb or undefined.
 
        --version
            Show version information.
+
+EXIT STATUS
+       ocamlformat-rpc exits with the following status:
+
+       0   on success.
+
+       123 on indiscriminate errors reported on standard error.
+
+       124 on command line parsing errors.
+
+       125 on unexpected internal errors (bugs).
 

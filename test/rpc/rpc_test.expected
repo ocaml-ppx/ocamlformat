@@ -1,7 +1,7 @@
 Starting then doing nothing
-[ocf] client V1 selected
+[ocf] client V2 selected
 [ocf] Halt
-Sending requests
+Testing v1
 [ocf] client V1 selected
 [ocf] Format 'char -> string'
 Output: char -> string
@@ -15,7 +15,7 @@ Output: int -> int
 Output: int (* foo *) -> int (* bar *)
 
 [ocf] Config
-Error: Unknown configuration value (foo, bar)
+Error: Unknown configuration option foo
 [ocf] Config
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
 Output: aaa ->
@@ -34,6 +34,9 @@ Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
  
 int'
 Output: val x : int
+
+[ocf] Format 'val write : 'a    t/1 -> 'a ->unit M/2.t'
+Output: val write : 'a t/1 -> 'a -> unit M/2.t
 
 [ocf] Format 'x + y * z'
 Output: x + (y * z)
@@ -93,10 +96,43 @@ let ssmap
 '
 Output:
 let ssmap
-    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
-    -> unit
+  :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+  -> unit
   =
   ()
 ;;
+
+[ocf] Halt
+Testing v2
+[ocf] client V2 selected
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output:    aaa
+-> bbb
+-> ccc
+-> ddd
+-> eee
+-> fff
+-> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa ->
+bbb ->
+ccc ->
+ddd ->
+eee ->
+fff ->
+ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
 
 [ocf] Halt

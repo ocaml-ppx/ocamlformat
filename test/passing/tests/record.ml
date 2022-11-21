@@ -125,3 +125,5 @@ let to_string {x; _ (* we should print y *)} = string_of_int x
 let { x (*b*) : z } = e
 
 let { (* a *) x (*b*) : (* c *) z (* d *) } = e
+
+let _ = { (*a*)x(*b*) : (*c*)t(*d*) :> (*e*)t(*f*) = (*g*)e(*h*) }

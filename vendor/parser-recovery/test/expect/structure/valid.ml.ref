@@ -1,0 +1,39 @@
+[
+  structure_item ([1,0+0]..[1,0+158])
+    Pstr_value Nonrec
+    [
+      <def> ([1,0+0]..[1,0+158])
+        pattern ([1,0+4]..[1,0+20])
+          Ppat_var "fooooooooooooooo" ([1,0+4]..[1,0+20])
+        expression ([1,0+24]..[1,0+158])
+          Pexp_let Nonrec
+          [
+            <def> ([1,0+24]..[1,0+116])
+              pattern ([1,0+28]..[1,0+42])
+                Ppat_var "fooooooooooooo" ([1,0+28]..[1,0+42])
+              expression ([1,0+48]..[1,0+116])
+                Pexp_let Nonrec
+                [
+                  <def> ([1,0+48]..[1,0+90])
+                    pattern ([1,0+52]..[1,0+67])
+                      Ppat_var "foooooooooooooo" ([1,0+52]..[1,0+67])
+                    expression ([1,0+75]..[1,0+90])
+                      Pexp_ident "foooooooooooooo" ([1,0+75]..[1,0+90])
+                ]
+                expression ([1,0+100]..[1,0+116])
+                  Pexp_tuple
+                  [
+                    expression ([1,0+100]..[1,0+106])
+                      Pexp_ident "fooooo" ([1,0+100]..[1,0+106])
+                    expression ([1,0+108]..[1,0+116])
+                      Pexp_ident "fooooooo" ([1,0+108]..[1,0+116])
+                  ]
+          ]
+          expression ([1,0+122]..[1,0+158])
+            Pexp_sequence
+            expression ([1,0+122]..[1,0+140])
+              Pexp_ident "fooooooooooooooooo" ([1,0+122]..[1,0+140])
+            expression ([1,0+143]..[1,0+158])
+              Pexp_ident "foooooooooooooo" ([1,0+143]..[1,0+158])
+    ]
+]

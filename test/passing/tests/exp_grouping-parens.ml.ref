@@ -49,38 +49,40 @@ let () =
 let () =
   foooooooo
     ( if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooo
-      else foooooooooooooooooooooooooo
-    else if foooooooooooooooooooooooooooooooo then
-      foooooooooooooooooo
-        ( if foooooooooooooooooooooooooooo then
-          if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-          else foooooooooooooooooooooooooo
-        else if foooooooooooooooooooooooooooooooo then
-          fooooooooooooooooooooooooooooooooooo
-        else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
-        else fooooooooooooooooooooo )
-    else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
-    else fooooooooooooooooooooo )
+        if foooooooooooooooooooooooooooo then foooooooooooooooooo
+        else foooooooooooooooooooooooooo
+      else if foooooooooooooooooooooooooooooooo then
+        foooooooooooooooooo
+          ( if foooooooooooooooooooooooooooo then
+              if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+              else foooooooooooooooooooooooooo
+            else if foooooooooooooooooooooooooooooooo then
+              fooooooooooooooooooooooooooooooooooo
+            else if foooooooooooooooooo then
+              foooooooooooooooooooooooooooooooooo
+            else fooooooooooooooooooooo )
+      else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+      else fooooooooooooooooooooo )
 
 let () =
   foooooooo
     ( if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-      else
-        foooooooooooooooooooooooooooo
-          ( if foooooooooooooooooooooooooooo then
-            if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-            else foooooooooooooooooooooooooo
-          else if foooooooooooooooooooooooooooooooo then
-            fooooooooooooooooooooooooooooooooooo
-          else if foooooooooooooooooo then
-            foooooooooooooooooooooooooooooooooo
-          else fooooooooooooooooooooo )
-    else if foooooooooooooooooooooooooooooooo then
-      fooooooooooooooooooooooooooooooooooo
-    else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
-    else fooooooooooooooooooooo )
+        if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+        else
+          foooooooooooooooooooooooooooo
+            ( if foooooooooooooooooooooooooooo then
+                if foooooooooooooooooooooooooooo then
+                  foooooooooooooooooooooooo
+                else foooooooooooooooooooooooooo
+              else if foooooooooooooooooooooooooooooooo then
+                fooooooooooooooooooooooooooooooooooo
+              else if foooooooooooooooooo then
+                foooooooooooooooooooooooooooooooooo
+              else fooooooooooooooooooooo )
+      else if foooooooooooooooooooooooooooooooo then
+        fooooooooooooooooooooooooooooooooooo
+      else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+      else fooooooooooooooooooooo )
 
 let _ =
   a
@@ -271,3 +273,25 @@ let () =
   @@
   let test_name = "Test 2" in
   test_name >:: fun _ -> assert_equal "b" "b"
+
+let _ = ()
+
+let _ = ( (* foo *) )
+
+let _ = [%ext ()]
+
+let _ = [%ext (* foo *) ()]
+
+let _ = x y
+
+let _ = (* foo *) x y
+
+let _ = [%ext x y]
+
+let _ = [%ext (* foo *) x y]
+
+let _ =
+  begin
+    market_data_items := ()
+  end
+  [@landmark "parse_constant_dividends"]
