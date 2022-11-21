@@ -2496,6 +2496,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to into_infix.ml.stdout
+   (with-stderr-to into_infix.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/into_infix.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/into_infix.ml.ref into_infix.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/into_infix.ml.err into_infix.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to invalid.ml.stdout
    (with-stderr-to invalid.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/invalid.ml})))))

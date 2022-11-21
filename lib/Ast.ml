@@ -45,24 +45,23 @@ let ( init
     the margin. *)
 let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v
 
+(** [longident_fit_margin c x] returns [true] if and only if [x] does not exceed 2/3 of
+    the margin. *)
+let longident_fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v * 2
+
+let longident_is_simple c x =
+  let rec length x =
+    match x with
+    | Longident.Lident x -> String.length x
+    | Ldot (x, y) -> length x + 1 + String.length y
+    | Lapply (x, y) -> length x + length y + 3
+  in
+  longident_fit_margin c (length x)
+
 (** 'Classes' of expressions which are parenthesized differently. *)
 type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
 (** Predicates recognizing special symbol identifiers. *)
-
-module Char_id = struct
-  let is_kwdop = function
-    | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
-     |'!' | '%' | ':' | '?' ->
-        true
-    | _ -> false
-
-  let is_infixop = function
-    | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
-     |'^' | '#' ->
-        true
-    | _ -> false
-end
 
 module Token = struct
   let is_infix = function
@@ -73,108 +72,6 @@ module Token = struct
      |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SLASH | STAR ->
         true
     | _ -> false
-end
-
-module Indexing_op = struct
-  type raw =
-    { opchars: string
-    ; brackets: Asttypes.paren_kind
-    ; extended: bool  (** eg. [.*{;..}] *)
-    ; has_rhs: bool  (** eg. [.*{}<-] *) }
-
-  let parse ident =
-    match String.chop_prefix ~prefix:"." ident with
-    | None -> None
-    | Some ident ->
-        let ident, has_rhs =
-          match String.chop_suffix ident ~suffix:"<-" with
-          | Some ident -> (ident, true)
-          | None -> (ident, false)
-        in
-        let find_suffix (suffix, brackets, extended) =
-          match String.chop_suffix ident ~suffix with
-          | None -> None
-          | Some opchars -> Some {opchars; brackets; extended; has_rhs}
-        in
-        List.find_map ~f:find_suffix
-          [ ("{}", Asttypes.Brace, false)
-          ; ("[]", Bracket, false)
-          ; ("()", Paren, false)
-          ; ("{;..}", Brace, true)
-          ; ("[;..]", Bracket, true)
-          ; ("(;..)", Paren, true) ]
-end
-
-module String_id = struct
-  let is_prefix i =
-    match i with
-    | "!=" -> false
-    | _ -> ( match i.[0] with '!' | '?' | '~' -> true | _ -> false )
-
-  let is_monadic_binding s =
-    String.length s > 3
-    && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
-    && Option.is_none
-         (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char_id.is_kwdop c)))
-
-  let is_infix i =
-    if Char_id.is_infixop i.[0] then true
-    else
-      match i with
-      | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
-       |"lsl" | "lsr" | "or" | "||" ->
-          true
-      | _ -> is_monadic_binding i
-
-  let is_hash_getter i =
-    let is_infix_char c = Char.equal c '.' || Char_id.is_infixop c in
-    match (i.[0], i.[String.length i - 1]) with
-    | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
-    | _ -> false
-
-  let is_index_op ident = Option.is_some (Indexing_op.parse ident)
-
-  let is_symbol i = is_prefix i || is_infix i || is_index_op i
-end
-
-module Longident = struct
-  include Longident
-
-  let test ~f = function Longident.Lident i -> f i | _ -> false
-
-  let is_prefix = test ~f:String_id.is_prefix
-
-  let is_monadic_binding = test ~f:String_id.is_monadic_binding
-
-  let is_infix = test ~f:String_id.is_infix
-
-  let is_hash_getter = test ~f:String_id.is_hash_getter
-
-  let is_index_op i = Longident.last i |> String_id.is_index_op
-
-  let is_symbol i = is_prefix i || is_infix i || is_index_op i
-
-  (** [fit_margin c x] returns [true] if and only if [x] does not exceed 2/3
-      of the margin. *)
-  let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v * 2
-
-  let is_simple c x =
-    let rec length (x : t) =
-      match x with
-      | Lident x -> String.length x
-      | Ldot (x, y) -> length x + 1 + String.length y
-      | Lapply (x, y) -> length x + length y + 3
-    in
-    fit_margin c (length x)
-
-  let field_alias_str ~field y =
-    match field with
-    | Ldot (_, x) | Lident x -> String.equal x y
-    | Lapply _ -> false
-
-  let field_alias ~field = function
-    | Lident x -> field_alias_str ~field x
-    | Ldot _ | Lapply _ -> false
 end
 
 module Attr = struct
@@ -207,13 +104,13 @@ module Exp = struct
     | {pexp_desc= Pexp_ident {txt= i; _}; _} -> f i
     | _ -> false
 
-  let is_prefix = test_id ~f:Longident.is_prefix
+  let is_prefix = test_id ~f:Std_longident.is_prefix
 
-  let is_infix = test_id ~f:Longident.is_infix
+  let is_infix = test_id ~f:Std_longident.is_infix
 
-  let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
+  let is_monadic_binding = test_id ~f:Std_longident.is_monadic_binding
 
-  let is_symbol = test_id ~f:Longident.is_symbol
+  let is_symbol = test_id ~f:Std_longident.is_symbol
 
   let is_sequence exp =
     match exp.pexp_desc with
@@ -449,12 +346,12 @@ module Structure_item = struct
             | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, me) | Pmod_gen_apply (me, _) ->
                 is_simple_mod me
-            | Pmod_ident i -> Longident.is_simple c i.txt
+            | Pmod_ident i -> longident_is_simple c i.txt
             | _ -> false
           in
           is_simple_mod me
       | Pstr_open {popen_expr= {pmod_desc= Pmod_ident i; _}; _} ->
-          Longident.is_simple c i.txt
+          longident_is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -540,7 +437,7 @@ module Signature_item = struct
       | Psig_open {popen_expr= i; _}
        |Psig_module {pmd_type= {pmty_desc= Pmty_alias i; _}; _}
        |Psig_modsubst {pms_manifest= i; _} ->
-          Longident.is_simple c i.txt
+          longident_is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -1428,6 +1325,7 @@ end = struct
         | Pexp_prefix (_, e) -> assert (f e)
         | Pexp_infix (_, e1, e2) -> assert (f e1 || f e2)
         | Pexp_apply (e0, e1N) ->
+            (* FAIL *)
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N | Pexp_cons e1N ->
             assert (List.exists e1N ~f)
@@ -2182,7 +2080,7 @@ end = struct
         false
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
-      when Longident.is_infix id ->
+      when Std_longident.is_infix id ->
         true
     | Exp _, e when Exp.is_symbol e || Exp.is_monadic_binding e -> true
     | Exp {pexp_desc= Pexp_cons _; _}, {pexp_attributes= _ :: _; _} -> true
