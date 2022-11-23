@@ -80,8 +80,8 @@ module Parse = struct
           {p with ppat_desc= Ppat_list pats}
       (* [{ x = x }] -> [{ x }] *)
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
-        let fields = List.map ~f:(pat_record_field m) fields in
-        {e with ppat_desc= Ppat_record (fields, flag)}
+          let fields = List.map ~f:(pat_record_field m) fields in
+          {e with ppat_desc= Ppat_record (fields, flag)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
@@ -101,10 +101,10 @@ module Parse = struct
           m.expr m e'
       (* [{ x = x }] -> [{ x }] *)
       | {pexp_desc= Pexp_record (fields, with_); _} as e ->
-        let fields = List.map ~f:(record_field m) fields in
-        { e with
-          pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_)
-        }
+          let fields = List.map ~f:(record_field m) fields in
+          { e with
+            pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_)
+          }
       (* [( + ) 1 2] -> [1 + 2] *)
       | { pexp_desc=
             Pexp_apply
