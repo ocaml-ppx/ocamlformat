@@ -233,7 +233,8 @@ let rec fmt_longident (li : Longident.t) =
   | Ldot (li, id) ->
       hvbox 0
         ( fmt_longident li $ fmt "@,."
-        $ wrap_if (Std_longident.String_id.is_symbol id) "( " " )" (str id) )
+        $ wrap_if (Std_longident.String_id.is_symbol id) "( " " )" (str id)
+        )
   | Lapply (li1, li2) ->
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
@@ -979,7 +980,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   match ppat_desc with
   | Ppat_any -> str "_"
   | Ppat_var {txt; loc} ->
-      Cmts.fmt c loc @@ wrap_if (Std_longident.String_id.is_symbol txt) "( " " )" (str txt)
+      Cmts.fmt c loc
+      @@ wrap_if (Std_longident.String_id.is_symbol txt) "( " " )" (str txt)
   | Ppat_alias (pat, {txt; loc}) ->
       let paren_pat =
         match pat.ppat_desc with
@@ -991,7 +993,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ "
            $ Cmts.fmt c loc
-               (wrap_if (Std_longident.String_id.is_symbol txt) "( " " )" (str txt)) ) )
+               (wrap_if
+                  (Std_longident.String_id.is_symbol txt)
+                  "( " " )" (str txt) ) ) )
   | Ppat_constant const -> fmt_constant c const
   | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
   | Ppat_tuple pats ->
@@ -3045,7 +3049,9 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_extension_suffix c ext
         $ str " "
         $ Cmts.fmt c loc
-            (wrap_if (Std_longident.String_id.is_symbol txt) "( " " )" (str txt))
+            (wrap_if
+               (Std_longident.String_id.is_symbol txt)
+               "( " " )" (str txt) )
         $ fmt_core_type c ~pro:":"
             ~box:
               (not
@@ -3234,7 +3240,9 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
           ( hvbox 2
               ( hovbox ~name:"constructor_decl_name" 0
                   (Cmts.fmt c loc
-                     (wrap_if (Std_longident.String_id.is_symbol txt) "( " " )" (str txt)) )
+                     (wrap_if
+                        (Std_longident.String_id.is_symbol txt)
+                        "( " " )" (str txt) ) )
               $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
                   pcd_res )
           $ fmt_attributes_and_docstrings c pcd_attributes )

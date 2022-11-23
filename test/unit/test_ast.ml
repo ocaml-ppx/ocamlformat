@@ -15,7 +15,8 @@ let test_string_id ~f name ~pass ~fail =
   test_true pass @ test_false fail
 
 let test_is_prefix =
-  test_string_id "is_prefix" ~f:Std_longident.String_id.is_prefix ~pass:["!"; "?"; "~"]
+  test_string_id "is_prefix" ~f:Std_longident.String_id.is_prefix
+    ~pass:["!"; "?"; "~"]
     ~fail:
       [ "*."
       ; "+"
@@ -125,8 +126,8 @@ let test_is_hash_getter =
       ; ".*{;..}<-" ]
 
 let test_is_monadic_binding =
-  test_string_id "is_monadic_binding" ~f:Std_longident.String_id.is_monadic_binding
-    ~pass:["let+"; "and+"]
+  test_string_id "is_monadic_binding"
+    ~f:Std_longident.String_id.is_monadic_binding ~pass:["let+"; "and+"]
     ~fail:
       [ "*."
       ; "+"

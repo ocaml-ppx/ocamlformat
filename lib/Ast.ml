@@ -45,8 +45,8 @@ let ( init
     the margin. *)
 let fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v
 
-(** [longident_fit_margin c x] returns [true] if and only if [x] does not exceed 2/3 of
-    the margin. *)
+(** [longident_fit_margin c x] returns [true] if and only if [x] does not
+    exceed 2/3 of the margin. *)
 let longident_fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v * 2
 
 let longident_is_simple c x =
