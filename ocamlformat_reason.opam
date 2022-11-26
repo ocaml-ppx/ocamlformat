@@ -13,15 +13,9 @@ version: "0.11.0"
 opam-version: "2.0"
 maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
 authors: "Josh Berdine <jjb@fb.com>"
+license: "MIT"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
-dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
-url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/0.11.0.tar.gz" }
-license: "MIT"
-build: [
-  ["ocaml" "tools/gen_version.mlt" "src/Version.ml" version] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
-]
 depends: [
   "ocaml" {>= "4.06"}
   "base" {>= "v0.11.0"}
@@ -30,12 +24,18 @@ depends: [
   "cmdliner"
   "dune" {>= "1.1.1"}
   "fpath"
-  "ocaml-migrate-parsetree" {>= "1.3.1"}
+  "ocaml-migrate-parsetree" {>= "1.0.10"}
   "odoc" {>= "1.4.1"}
   "re"
   "stdio"
-  "uuseg" {>= "10.0.0"}
-  "uutf" {>= "1.0.1"}
+  "uutf"
+  "reason" {>= "3.2.0"}
 ]
-synopsis: "Auto-formatter for OCaml code"
-description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
+build: [
+  ["ocaml" "tools/gen_version.mlt" "src/Version.ml" version] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+synopsis: "Auto-formatter for ReasonML code"
+description: "ocamlformat_reason is a tool to automatically format ReasonML code in a uniform style."
+
