@@ -4422,5 +4422,4 @@ let fmt_ast fragment ~debug source cmts conf l =
      want to call it when formatting comments *)
   Ast.init conf ;
   let fmt_code = fmt_code ~debug in
-  (* let l = Extended_ast.map fragment Transform_cst.mapper l in *)
   fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l
