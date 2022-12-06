@@ -115,7 +115,7 @@ module Parse = struct
               , [(Nolabel, l); (Nolabel, r)] )
         ; _ } as e
         when Std_longident.is_infix longident
-            && not (Std_longident.is_monadic_binding longident) ->
+             && not (Std_longident.is_monadic_binding longident) ->
           let label_loc = {txt= op; loc= loc_op} in
           {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
       | e -> Ast_mapper.default_mapper.expr m e
