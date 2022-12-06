@@ -43,6 +43,22 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
 
 module Parse = struct
   let normalize_mapper ~preserve_beginend =
+    let open Asttypes in
+    let open Ast_mapper in
+    let record_field m (f, t, v) =
+      match v with
+      | Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
+        when Std_longident.field_alias ~field:f.txt v_txt ->
+          (f, t, None)
+      | v -> (f, t, Option.map ~f:(m.expr m) v)
+    in
+    let pat_record_field m (f, t, v) =
+      match v with
+      | Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
+        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+          (f, t, None)
+      | v -> (f, t, Option.map ~f:(m.pat m) v)
+    in
     let binding_op (m : Ast_mapper.mapper) b =
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
@@ -62,6 +78,10 @@ module Parse = struct
              | _ -> false ->
           let pats = List.(rev (tl_exn (rev l))) in
           {p with ppat_desc= Ppat_list pats}
+      (* [{ x = x }] -> [{ x }] *)
+      | {ppat_desc= Ppat_record (fields, flag); _} as e ->
+          let fields = List.map ~f:(pat_record_field m) fields in
+          {e with ppat_desc= Ppat_record (fields, flag)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
@@ -79,6 +99,25 @@ module Parse = struct
       | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _}
         when not preserve_beginend ->
           m.expr m e'
+      (* [{ x = x }] -> [{ x }] *)
+      | {pexp_desc= Pexp_record (fields, with_); _} as e ->
+          let fields = List.map ~f:(record_field m) fields in
+          { e with
+            pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_)
+          }
+      (* [( + ) 1 2] -> [1 + 2] *)
+      | { pexp_desc=
+            Pexp_apply
+              ( { pexp_desc=
+                    Pexp_ident {txt= Lident op as longident; loc= loc_op}
+                ; pexp_attributes= []
+                ; _ }
+              , [(Nolabel, l); (Nolabel, r)] )
+        ; _ } as e
+        when Std_longident.is_infix longident
+             && not (Std_longident.is_monadic_binding longident) ->
+          let label_loc = {txt= op; loc= loc_op} in
+          {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
