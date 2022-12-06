@@ -42,7 +42,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let fix_letop_locs =
+  let normalize_mapper ~preserve_beginend =
     let binding_op (m : Ast_mapper.mapper) b =
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
@@ -51,71 +51,40 @@ module Parse = struct
       in
       Ast_mapper.default_mapper.binding_op m b'
     in
-    Ast_mapper.{default_mapper with binding_op}
-
-  let list_pat pat =
-    match pat.ppat_desc with
-    (* Do not normalize (x :: []) *)
-    | Ppat_cons (_ :: _ :: _ :: _ as l) -> (
-      match List.last_exn l with
-      (* Empty lists are always represented as Lident [] *)
-      | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
-        ; ppat_attributes= []
-        ; _ } ->
-          Some List.(rev (tl_exn (rev l)))
-      | _ -> None )
-    | _ -> None
-
-  let list_exp exp =
-    match exp.pexp_desc with
-    (* Do not normalize (x :: []) *)
-    | Pexp_cons (_ :: _ :: _ :: _ as l) -> (
-      match List.last_exn l with
-      (* Empty lists are always represented as Lident [] *)
-      | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
-        ; pexp_attributes= []
-        ; _ } ->
-          Some List.(rev (tl_exn (rev l)))
-      | _ -> None )
-    | _ -> None
-
-  let normalize_lists =
-    let expr (m : Ast_mapper.mapper) e =
-      let e' =
-        match list_exp e with
-        | Some exprs -> {e with pexp_desc= Pexp_list exprs}
-        | None -> e
-      in
-      Ast_mapper.default_mapper.expr m e'
+    let pat m = function
+      | {ppat_desc= Ppat_cons (_ :: _ :: _ :: _ as l); _} as p
+        when match List.last_exn l with
+             (* Empty lists are always represented as Lident [] *)
+             | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
+               ; ppat_attributes= []
+               ; _ } ->
+                 true
+             | _ -> false ->
+          let pats = List.(rev (tl_exn (rev l))) in
+          {p with ppat_desc= Ppat_list pats}
+      | p -> Ast_mapper.default_mapper.pat m p
     in
-    let pat (m : Ast_mapper.mapper) p =
-      let p' =
-        match list_pat p with
-        | Some pats -> {p with ppat_desc= Ppat_list pats}
-        | None -> p
-      in
-      Ast_mapper.default_mapper.pat m p'
+    let expr (m : Ast_mapper.mapper) = function
+      | {pexp_desc= Pexp_cons (_ :: _ :: _ :: _ as l); _} as e
+        when match List.last_exn l with
+             (* Empty lists are always represented as Lident [] *)
+             | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
+               ; pexp_attributes= []
+               ; _ } ->
+                 true
+             | _ -> false ->
+          let exprs = List.(rev (tl_exn (rev l))) in
+          {e with pexp_desc= Pexp_list exprs}
+      (* Removing beginend *)
+      | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _}
+        when not preserve_beginend ->
+          m.expr m e'
+      | e -> Ast_mapper.default_mapper.expr m e
     in
-    Ast_mapper.{default_mapper with expr; pat}
-
-  let remove_beginend_nodes =
-    let expr (m : Ast_mapper.mapper) e =
-      let e' =
-        match e with
-        | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _} -> e'
-        | _ -> e
-      in
-      Ast_mapper.default_mapper.expr m e'
-    in
-    Ast_mapper.{default_mapper with expr}
-
-  let normalize fg ~preserve_beginend x =
-    map fg fix_letop_locs @@ map fg normalize_lists
-    @@ (if preserve_beginend then Fn.id else map fg remove_beginend_nodes)
-    @@ x
+    Ast_mapper.{default_mapper with expr; pat; binding_op}
 
   let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
-    normalize fg ~preserve_beginend
+    map fg (normalize_mapper ~preserve_beginend)
     @@
     let lexbuf = Lexing.from_string str in
     Location.init lexbuf input_name ;

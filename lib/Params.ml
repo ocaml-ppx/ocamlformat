@@ -339,9 +339,8 @@ type if_then_else =
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 
-let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
-    ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_extension_suffix
-    ~fmt_attributes ~fmt_cond =
+let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
+    ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
   let beginend =
     match xbch.Ast.ast with
@@ -368,13 +367,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
   let cond () =
     match xcond with
     | Some xcnd ->
-        hvbox
-          ( match (parens, imd) with
-          | false, _ -> 0
-          | true, `No -> -1
-          | true, (`Space | `Closing_on_separate_line) -> -2 )
-          ( hvbox
-              (if parens then 0 else 2)
+        hvbox 0
+          ( hvbox 2
               ( fmt_if (not first) "else "
               $ str "if"
               $ fmt_if_k first (fmt_opt fmt_extension_suffix)
@@ -385,10 +379,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
   let branch_pro = fmt_or (beginend || parens_bch) " " "@;<1 2>" in
   match c.fmt_opts.if_then_else.v with
   | `Compact ->
-      let box_branch =
-        if first && parens && not beginend then hovbox 0 else hovbox 2
-      in
-      { box_branch
+      { box_branch= hovbox 2
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or (beginend || parens_bch) " " "@ "

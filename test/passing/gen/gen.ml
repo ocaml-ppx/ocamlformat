@@ -93,8 +93,8 @@ let emit_test test_name setup =
     "--margin-check"
     ::
     ( if setup.has_opts then
-      read_lines (Printf.sprintf "tests/%s.opts" test_name)
-    else [] )
+        read_lines (Printf.sprintf "tests/%s.opts" test_name)
+      else [] )
   in
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name

@@ -17,6 +17,7 @@
 - Fix parentheses around symbol identifiers (#2185, @gpetiot)
 - Fix alignment inconsistency between let-binding and let-open (#2187, @gpetiot)
 - Fix reporting of operational settings origin in presence of profiles (#2188, @EmileTrotignon)
+- Fix alignment inconsistency of if-then-else in apply (#2203, @gpetiot)
 - Fix automated Windows build (#2205, @nojb)
 
 ### Changes
@@ -32,6 +33,7 @@
 - Improve formatting of odoc links (#2152, @gpetiot)
 - Preserve sugared extension node attached to an `if` carrying attributes (#2167, @trefis, @gpetiot)
 - Remove unnecessary parentheses around partially applied infix operators with attributes (#2198, @gpetiot)
+- JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 
 ### New features
 
