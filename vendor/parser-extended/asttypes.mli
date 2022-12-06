@@ -20,15 +20,6 @@
 
 *)
 
-type constant =
-    Const_int of int
-  | Const_char of char
-  | Const_string of string * Location.t * string option
-  | Const_float of string
-  | Const_int32 of int32
-  | Const_int64 of int64
-  | Const_nativeint of nativeint
-
 type rec_flag = Nonrecursive | Recursive
 
 type direction_flag = Upto | Downto
@@ -54,10 +45,15 @@ type obj_closed_flag =
 
 type label = string
 
+type label_info = {
+  name: string loc;
+  extra_info: [ `Single_token | `Previous_token of Location.t ];
+}
+
 type arg_label =
     Nolabel
-  | Labelled of string (** [label:T -> ...] *)
-  | Optional of string (** [?label:T -> ...] *)
+  | Labelled of label_info (*  label:T -> ... *)
+  | Optional of label_info (* ?label:T -> ... *)
 
 type 'a loc = 'a Location.loc = {
   txt : 'a;
@@ -70,3 +66,5 @@ type variance_and_injectivity = string loc list
 
 (* For Pexp_indexop_access *)
 type paren_kind = Paren | Brace | Bracket
+
+type and_or_with = And | With
