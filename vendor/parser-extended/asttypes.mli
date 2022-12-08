@@ -54,15 +54,15 @@ type obj_closed_flag =
 
 type label = string
 
-type arg_label =
-    Nolabel
-  | Labelled of string (** [label:T -> ...] *)
-  | Optional of string (** [?label:T -> ...] *)
-
 type 'a loc = 'a Location.loc = {
   txt : 'a;
   loc : Location.t;
 }
+
+type arg_label =
+    Nolabel
+  | Labelled of string loc (** [label:T -> ...] *)
+  | Optional of string loc (** [?label:T -> ...] *)
 
 type variant_var = string loc loc  (** [`A] *)
 

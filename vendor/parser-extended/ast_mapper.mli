@@ -56,6 +56,7 @@ open Parsetree
 (** {1 A generic Parsetree mapper} *)
 
 type mapper = {
+  arg_label: mapper -> Asttypes.arg_label -> Asttypes.arg_label;
   attribute: mapper -> attribute -> attribute;
   attributes: mapper -> attribute list -> attribute list;
   binding_op: mapper -> binding_op -> binding_op;

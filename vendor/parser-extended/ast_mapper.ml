@@ -27,6 +27,7 @@ open Location
 module String = Misc.Stdlib.String
 
 type mapper = {
+  arg_label: mapper -> Asttypes.arg_label -> Asttypes.arg_label;
   attribute: mapper -> attribute -> attribute;
   attributes: mapper -> attribute list -> attribute list;
   binding_op: mapper -> binding_op -> binding_op;
@@ -84,7 +85,7 @@ type mapper = {
 }
 
 let map_fst f (x, y) = (f x, y)
-let map_snd f (x, y) = (x, f y)
+(*let map_snd f (x, y) = (x, f y)*)
 let map_tuple f1 f2 (x, y) = (f1 x, f2 y)
 let map_tuple3 f1 f2 f3 (x, y, z) = (f1 x, f2 y, f3 z)
 let map_opt f = function None -> None | Some x -> Some (f x)
@@ -96,6 +97,11 @@ let variant_var sub x =
 
 let map_package_type sub (lid, l) =
   (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+
+let map_arg_label sub = function
+  | Asttypes.Nolabel -> Asttypes.Nolabel
+  | Labelled x -> Labelled (map_loc sub x)
+  | Optional x -> Optional (map_loc sub x)
 
 module Flag = struct
   open Asttypes
@@ -174,6 +180,7 @@ module T = struct
     Of.mk ~loc ~attrs desc
 
   let map_arrow_param sub {pap_label; pap_loc; pap_type} =
+    let pap_label = sub.arg_label sub pap_label in
     let pap_loc = sub.location sub pap_loc in
     let pap_type = sub.typ sub pap_type in
     {pap_label; pap_loc; pap_type}
@@ -465,11 +472,16 @@ module E = struct
         let_ ~loc ~attrs (sub.let_bindings sub lbs)
           (sub.expr sub e)
     | Pexp_fun (lab, def, p, e) ->
-        fun_ ~loc ~attrs lab (map_opt (sub.expr sub) def) (sub.pat sub p)
+        fun_ ~loc ~attrs
+          (sub.arg_label sub lab)
+          (map_opt (sub.expr sub) def)
+          (sub.pat sub p)
           (sub.expr sub e)
     | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
     | Pexp_apply (e, l) ->
-        apply ~loc ~attrs (sub.expr sub e) (List.map (map_snd (sub.expr sub)) l)
+        apply ~loc ~attrs
+          (sub.expr sub e)
+          (List.map (map_tuple (sub.arg_label sub) (sub.expr sub)) l)
     | Pexp_match (e, pel) ->
         match_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
     | Pexp_try (e, pel) -> try_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
@@ -642,13 +654,14 @@ module CE = struct
     | Pcl_structure s ->
         structure ~loc ~attrs (sub.class_structure sub s)
     | Pcl_fun (lab, e, p, ce) ->
-        fun_ ~loc ~attrs lab
+        fun_ ~loc ~attrs
+          (sub.arg_label sub lab)
           (map_opt (sub.expr sub) e)
           (sub.pat sub p)
           (sub.class_expr sub ce)
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)
-          (List.map (map_snd (sub.expr sub)) l)
+          (List.map (map_tuple (sub.arg_label sub) (sub.expr sub)) l)
     | Pcl_let (lbs, ce) ->
         let_ ~loc ~attrs (sub.let_bindings sub lbs)
           (sub.class_expr sub ce)
@@ -705,6 +718,7 @@ end
 
 let default_mapper =
   {
+    arg_label = map_arg_label;
     constant = C.map;
     structure = (fun this l -> List.map (this.structure_item this) l);
     structure_item = M.map_structure_item;
