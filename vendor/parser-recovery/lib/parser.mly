@@ -1846,10 +1846,8 @@ class_signature:
       { Csig.mk $1 $2 }
 ;
 class_self_type:
-    LPAREN core_type RPAREN
-      { $2 }
-  | mktyp((* empty *) { Ptyp_any })
-      { $1 }
+   ioption( LPAREN core_type RPAREN { $2 })
+      { { pcss_desc=$1; pcss_loc= make_loc $sloc } }
 ;
 %inline class_sig_fields:
   flatten(text_csig(class_sig_field)*)

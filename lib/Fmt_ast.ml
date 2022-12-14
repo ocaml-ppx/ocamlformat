@@ -2665,12 +2665,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | Pctf_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let cmts_after_self = Cmts.fmt_after c self_.ptyp_loc in
-  let self_ =
-    match self_ with
-    | {ptyp_desc= Ptyp_any; ptyp_attributes= []; _} -> None
-    | s -> Some s
-  in
+  let cmts_after_self = Cmts.fmt_after c self_.pcss_loc in
   let no_attr typ = List.is_empty typ.ptyp_attributes in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
   let ast x = Ctf x in
@@ -2680,7 +2675,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
            ( hvbox 0
                ( str "object"
                $ fmt_extension_suffix c ext
-               $ opt self_ (fun self_ ->
+               $ opt self_.pcss_desc (fun self_ ->
                      fmt "@;"
                      $ Params.parens_if (no_attr self_) c.conf
                          (fmt_core_type c (sub_typ ~ctx self_)) ) )

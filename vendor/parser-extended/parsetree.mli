@@ -684,15 +684,21 @@ and class_type_desc =
   | Pcty_extension of extension  (** [%id] *)
   | Pcty_open of open_description * class_type  (** [let open M in CT] *)
 
+and class_sig_self =
+  {
+   pcss_desc:core_type option;
+   pcss_loc : Location.t;
+  }
+
 and class_signature =
     {
-     pcsig_self: core_type;
+     pcsig_self: class_sig_self;
      pcsig_fields: class_type_field list;
     }
 (** Values of type [class_signature] represents:
     - [object('selfpat) ... end]
     - [object ... end] when {{!class_signature.pcsig_self}[pcsig_self]}
-                         is {{!core_type_desc.Ptyp_any}[Ptyp_any]}
+                         is [None] 
 *)
 
 and class_type_field =
