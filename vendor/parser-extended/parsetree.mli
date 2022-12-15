@@ -1068,6 +1068,22 @@ and value_binding =
     pvb_loc: Location.t;
   }
 
+and let_binding =
+  {
+    lb_pattern: pattern;
+    lb_expression: expression;
+    lb_is_pun: bool;
+    lb_attributes: attributes;
+    lb_loc: Location.t;
+  }
+
+and let_bindings =
+  {
+    lbs_bindings: let_binding list;
+    lbs_rec: rec_flag;
+    lbs_extension: string loc option
+  }
+
 and module_binding =
     {
      pmb_name: string option loc;
