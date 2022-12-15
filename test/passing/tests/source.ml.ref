@@ -203,6 +203,7 @@ module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
   module rec A : (S with type t = t)
+
   and B : (S with type t = t)
 end
 
@@ -228,6 +229,7 @@ exception%foo X [@foo]
 module%foo M = M [@@foo]
 
 module%foo rec M : S = M [@@foo]
+
 and M : S = M [@@foo]
 
 module type%foo S = S [@@foo]
@@ -253,6 +255,7 @@ module type S = sig
   module%foo M : S [@@foo]
 
   module%foo rec M : S [@@foo]
+
   and M : S [@@foo]
 
   module%foo M = M [@@foo]
@@ -4827,6 +4830,7 @@ end
 module type BAR = sig
   (* Works: module rec A : (sig include FOO with type t = < b:B.t > end) *)
   module rec A : (FOO with type t = < b: B.t >)
+
   and B : FOO
 end
 
@@ -4989,6 +4993,7 @@ module type S' = S with type t := int
 
 module type S = sig
   module rec M : sig end
+
   and N : sig end
 end
 
@@ -6857,6 +6862,7 @@ module PR_4261 = struct
   end
 
   module rec U : (T with module D = U') = U
+
   and U' : (S with type t = U'.t) = U
 end
 

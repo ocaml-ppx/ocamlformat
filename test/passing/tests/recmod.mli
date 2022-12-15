@@ -9,3 +9,11 @@ end
 include sig
   (* a *)
 end
+
+module type S = sig end
+
+(** A *)
+module rec A : S
+
+(** B *)
+and B : S

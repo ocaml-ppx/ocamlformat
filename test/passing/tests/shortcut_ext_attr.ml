@@ -107,6 +107,7 @@ exception%foo X [@@foo]
 module%foo M = M [@@foo]
 
 module%foo rec M : S = M [@@foo]
+
 and M : S = M [@@foo]
 
 module type%foo S = S [@@foo]
@@ -133,6 +134,7 @@ module type S = sig
 
   [%%foo:
   module rec M : S [@@foo]
+
   and M : S [@@foo]]
 
   [%%foo: module M = M [@@foo]]

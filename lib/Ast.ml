@@ -494,6 +494,34 @@ module Vb = struct
     || not (is_simple (i2, c2))
 end
 
+module Mb = struct
+  let has_doc itm = List.exists ~f:Attr.is_doc itm.pmb_attributes
+
+  let is_simple (i, (c : Conf.t)) =
+    Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
+    && Location.is_single_line i.pmb_loc c.fmt_opts.margin.v
+
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pmb_loc i2.pmb_loc
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
+module Md = struct
+  let has_doc itm = List.exists ~f:Attr.is_doc itm.pmd_attributes
+
+  let is_simple (i, (c : Conf.t)) =
+    Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
+    && Location.is_single_line i.pmd_loc c.fmt_opts.margin.v
+
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.pmd_loc i2.pmd_loc
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
 module Td = struct
   let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
 
@@ -584,6 +612,8 @@ module T = struct
     | Pat of pattern
     | Exp of expression
     | Vb of value_binding
+    | Mb of module_binding
+    | Md of module_declaration
     | Cl of class_expr
     | Mty of module_type
     | Mod of module_expr
@@ -602,6 +632,8 @@ module T = struct
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Vb b -> Format.fprintf fs "Vb:@\n%a" Printast.value_binding b
+    | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
+    | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
     | Mty mt -> Format.fprintf fs "Mty:@\n%a" Printast.module_type mt
     | Cty cty -> Format.fprintf fs "Cty:@\n%a" Printast.class_type cty
@@ -630,6 +662,8 @@ let attributes = function
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Vb x -> x.pvb_attributes
+  | Mb x -> x.pmb_attributes
+  | Md x -> x.pmd_attributes
   | Cl x -> x.pcl_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
@@ -649,6 +683,8 @@ let location = function
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
   | Vb x -> x.pvb_loc
+  | Mb x -> x.pmb_loc
+  | Md x -> x.pmd_loc
   | Cl x -> x.pcl_loc
   | Mty x -> x.pmty_loc
   | Mod x -> x.pmod_loc
@@ -676,6 +712,8 @@ let break_between s cc (i1, c1) (i2, c2) =
   | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
   | Vb i1, Vb i2 -> Vb.break_between s cc (i1, c1) (i2, c2)
+  | Mb i1, Mb i2 -> Mb.break_between s cc (i1, c1) (i2, c2)
+  | Md i1, Md i2 -> Md.break_between s cc (i1, c1) (i2, c2)
   | Mty _, Mty _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Mod _, Mod _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Tli (`Item i1), Tli (`Item i2) ->
@@ -935,6 +973,8 @@ end = struct
                 Option.exists t1 ~f || Option.exists t2 ~f ) )
       | _ -> assert false )
     | Vb _ -> assert false
+    | Mb _ -> assert false
+    | Md _ -> assert false
     | Cl {pcl_desc; _} ->
         assert (
           match pcl_desc with
@@ -1014,6 +1054,8 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Vb _ -> assert false
+    | Mb _ -> assert false
+    | Md _ -> assert false
     | Pld _ -> assert false
     | Str ctx -> (
       match ctx.pstr_desc with
@@ -1090,6 +1132,8 @@ end = struct
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
     | Vb _ -> assert false
+    | Mb _ -> assert false
+    | Md _ -> assert false
     | Pld _ -> assert false
     | Str ctx -> (
       match ctx.pstr_desc with
@@ -1217,6 +1261,8 @@ end = struct
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
     | Vb ctx -> assert (ctx.pvb_pat == pat)
+    | Mb _ -> assert false
+    | Md _ -> assert false
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
@@ -1361,6 +1407,8 @@ end = struct
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
     | Vb vb -> assert (vb.pvb_expr == exp)
+    | Mb _ -> assert false
+    | Md _ -> assert false
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
@@ -1591,7 +1639,7 @@ end = struct
     | { ctx= Exp _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
-          | Str _ | Clf _ | Ctf _ | Rep ) }
+          | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Vb _; ast= _}
      |{ctx= _; ast= Vb _}
      |{ctx= Td _; ast= _}
@@ -1599,13 +1647,13 @@ end = struct
      |{ ctx= Cl _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
-          | Clf _ | Ctf _ | Rep ) }
+          | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ ctx=
           ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep )
+          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep ) } ->
+          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1682,7 +1730,7 @@ end = struct
       | Pcl_structure _ -> Some Apply
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
-     |Rep ->
+     |Rep | Mb _ | Md _ ->
         None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context

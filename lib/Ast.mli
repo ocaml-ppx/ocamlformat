@@ -111,6 +111,8 @@ type t =
   | Pat of pattern
   | Exp of expression
   | Vb of value_binding
+  | Mb of module_binding
+  | Md of module_declaration
   | Cl of class_expr
   | Mty of module_type
   | Mod of module_expr

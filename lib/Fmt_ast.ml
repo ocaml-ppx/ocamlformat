@@ -3535,8 +3535,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution ?ext c ctx ms)
   | Psig_open od -> fmt_open_description ?ext c ~kw_attributes:[] od
   | Psig_recmodule mds ->
-      fmt_recmodule c ctx mds (fmt_module_declaration ?ext) (fun x ->
-          Mty x.pmd_type )
+      fmt_recmodule c ctx mds (fmt_module_declaration ?ext) (fun x -> Md x)
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
@@ -4085,8 +4084,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
   | Pstr_recmodule bindings ->
-      fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x ->
-          Mod x.pmb_expr )
+      fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x -> Mb x)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->

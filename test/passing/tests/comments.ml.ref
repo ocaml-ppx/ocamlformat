@@ -101,11 +101,13 @@ let _ = if a then b :: c (* d *) else e
 let (b :: c (* d *)) = x
 
 module rec A = struct end
+
 (*test*)
 and B = struct end
 
 module type T = sig
   module rec A : sig end
+
   (*test*)
   and B : sig end
 end

@@ -20,6 +20,7 @@ let sumi (type a) ((module A) : a monoid_a) (n : a) = A.mappend n A.mempty
 
 module type BAR = sig
   module rec A : (FOO with type t = < b: B.t >)
+
   and B : FOO
 end
 
