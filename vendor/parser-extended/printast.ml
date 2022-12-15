@@ -1154,6 +1154,10 @@ let type_declaration ppf x = type_declaration 0 ppf x
 
 let value_binding ppf x = value_binding 0 ppf x
 
+let module_binding ppf x = module_binding 0 ppf x
+
+let module_declaration ppf x = module_declaration 0 ppf x
+
 let class_expr ppf x = class_expr 0 ppf x
 
 let class_type ppf x = class_type 0 ppf x
