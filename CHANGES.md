@@ -20,6 +20,7 @@
 - Fix alignment inconsistency of if-then-else in apply (#2203, @gpetiot)
 - Fix automated Windows build (#2205, @nojb)
 - Fix spacing between recursive module bindings and recursive module declarations (#2217, @gpetiot)
+- Fix ocamlformat-rpc on Windows (#2218, @rgrinberg)
 
 ### Changes
 
