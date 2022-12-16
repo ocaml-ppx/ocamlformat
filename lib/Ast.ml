@@ -1274,7 +1274,8 @@ end = struct
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
           assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
-      | Pexp_let (_, bindings, _) -> assert (check_value_bindings bindings)
+      | Pexp_let ({lbs_bindings; _}, _) ->
+          assert (check_let_bindings lbs_bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
           assert (f let_ || List.exists ~f ands)
@@ -1369,9 +1370,10 @@ end = struct
             assert false
         | Pexp_object {pcstr_fields; _} ->
             assert (check_pcstr_fields pcstr_fields)
-        | Pexp_let (_, bindings, e) ->
+        | Pexp_let ({lbs_bindings; _}, e) ->
             assert (
-              List.exists bindings ~f:(fun {pvb_expr; _} -> pvb_expr == exp)
+              List.exists lbs_bindings ~f:(fun {lb_expression; _} ->
+                  lb_expression == exp )
               || e == exp )
         | Pexp_letop {let_; ands; body} ->
             let f {pbop_exp; _} = pbop_exp == exp in
@@ -1935,10 +1937,11 @@ end = struct
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true
-    | Exp {pexp_desc= Pexp_let (_, bindings, _); _}, _ ->
-        List.exists bindings ~f:(function
-          | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _; _}; _} ->
-              pvb_pat == pat
+    | Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}, _ ->
+        List.exists lbs_bindings ~f:(function
+          | {lb_pattern; lb_expression= {pexp_desc= Pexp_constraint _; _}; _}
+            ->
+              lb_pattern == pat
           | _ -> false )
     | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _}, _ ->
         List.exists lbs_bindings ~f:(function
@@ -1990,7 +1993,7 @@ end = struct
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
-        | Pexp_let (_, _, e)
+        | Pexp_let (_, e)
          |Pexp_letop {body= e; _}
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
@@ -2058,7 +2061,7 @@ end = struct
        |Pexp_variant (_, Some e) ->
           continue e
       | Pexp_cons l -> continue (List.last_exn l)
-      | Pexp_let (_, _, e)
+      | Pexp_let (_, e)
        |Pexp_letop {body= e; _}
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, e) ->

@@ -405,4 +405,7 @@ module Let_binding = struct
     ; lb_pun= false
     ; lb_attrs= lb.lb_attributes
     ; lb_loc= lb.lb_loc }
+
+  let of_let_bindings cmts ~ctx =
+    List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
 end

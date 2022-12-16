@@ -304,7 +304,7 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of rec_flag * value_binding list * expression
+  | Pexp_let of let_bindings * expression
       (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},

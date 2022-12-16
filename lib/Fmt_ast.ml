@@ -2172,11 +2172,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               $ p.break_end_branch ) ) )
                     $ fmt_if_k (not last) p.space_between_branches ) ) )
         $ fmt_atrs )
-  | Pexp_let (rec_flag, bd, body) ->
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+  | Pexp_let (lbs, body) ->
+      let bindings =
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
+      let ext = lbs.lbs_extension in
       fmt_let_bindings c ~ctx ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-        rec_flag bindings body
+        lbs.lbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in

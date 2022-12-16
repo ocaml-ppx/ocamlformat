@@ -339,9 +339,9 @@ and expression i ppf x =
   | Pexp_constant (c) ->
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
-  | Pexp_let (rf, l, e) ->
-      line i ppf "Pexp_let %a\n" fmt_rec_flag rf;
-      list i value_binding ppf l;
+  | Pexp_let (l, e) ->
+      line i ppf "Pexp_let %a\n" fmt_rec_flag l.lbs_rec;
+      let_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->
       line i ppf "Pexp_function\n";
