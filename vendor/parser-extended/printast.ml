@@ -939,9 +939,9 @@ and structure_item i ppf x =
       line i ppf "Pstr_eval\n";
       attributes i ppf attrs;
       expression i ppf e;
-  | Pstr_value (rf, l) ->
-      line i ppf "Pstr_value %a\n" fmt_rec_flag rf;
-      list i value_binding ppf l;
+  | Pstr_value l ->
+      line i ppf "Pstr_value %a\n" fmt_rec_flag l.lbs_rec;
+      let_bindings i ppf l
   | Pstr_primitive vd ->
       line i ppf "Pstr_primitive\n";
       value_description i ppf vd;
@@ -1070,6 +1070,15 @@ and value_binding i ppf x =
   pattern (i+1) ppf x.pvb_pat;
   expression (i+1) ppf x.pvb_expr
 
+and let_binding i ppf x =
+  line i ppf "<def> %a\n" fmt_location x.lb_loc;
+  attributes (i+1) ppf x.lb_attributes;
+  pattern (i+1) ppf x.lb_pattern;
+  expression (i+1) ppf x.lb_expression
+
+and let_bindings i ppf x =
+  list i let_binding ppf x.lbs_bindings
+
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"
     fmt_string_loc x.pbop_op fmt_location x.pbop_loc;
@@ -1153,6 +1162,8 @@ let pattern ppf x = pattern 0 ppf x
 let type_declaration ppf x = type_declaration 0 ppf x
 
 let value_binding ppf x = value_binding 0 ppf x
+
+let let_binding ppf x = let_binding 0 ppf x
 
 let module_binding ppf x = module_binding 0 ppf x
 

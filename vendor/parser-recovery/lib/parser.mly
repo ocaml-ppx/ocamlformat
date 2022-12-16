@@ -364,19 +364,6 @@ let mklbs ext rf lb =
   } in
   addlb lbs lb
 
-let val_of_let_bindings ~loc lbs =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-  let str = mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings)) in
-  match lbs.lbs_extension with
-  | None -> str
-  | Some id -> ghstr ~loc (Pstr_extension((id, PStr [str]), []))
-
 let expr_of_let_bindings ~loc lbs body =
   let bindings =
     List.map
@@ -1231,14 +1218,15 @@ structure:
 
 (* A structure item. *)
 structure_item:
-    let_bindings(ext)
-      { val_of_let_bindings ~loc:$sloc $1 }
   | mkstr(
       item_extension post_item_attributes
         { let docs = symbol_docs $sloc in
           Pstr_extension ($1, add_docs_attrs docs $2) }
     | floating_attribute
         { Pstr_attribute $1 }
+    | lbs= let_bindings(ext)
+        { let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+          Pstr_value lbs }
     )
   | wrap_mkstr_ext(
       primitive_declaration

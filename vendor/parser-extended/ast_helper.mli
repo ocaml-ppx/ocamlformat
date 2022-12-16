@@ -316,7 +316,7 @@ module Str:
     val mk: ?loc:loc -> structure_item_desc -> structure_item
 
     val eval: ?loc:loc -> ?attrs:attributes -> expression -> structure_item
-    val value: ?loc:loc -> rec_flag -> value_binding list -> structure_item
+    val value: ?loc:loc -> let_bindings -> structure_item
     val primitive: ?loc:loc -> value_description -> structure_item
     val type_: ?loc:loc -> rec_flag -> type_declaration list -> structure_item
     val type_extension: ?loc:loc -> type_extension -> structure_item

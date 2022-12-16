@@ -1031,7 +1031,7 @@ and structure_item =
 
 and structure_item_desc =
   | Pstr_eval of expression * attributes  (** [E] *)
-  | Pstr_value of rec_flag * value_binding list
+  | Pstr_value of let_bindings
       (** [Pstr_value(rec, [(P1, E1 ; ... ; (Pn, En))])] represents:
             - [let P1 = E1 and ... and Pn = EN]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},

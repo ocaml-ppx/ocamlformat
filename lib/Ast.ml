@@ -307,7 +307,7 @@ module Structure_item = struct
     match itm.pstr_desc with
     | Pstr_attribute atr -> Attr.is_doc atr
     | Pstr_eval (_, atrs)
-     |Pstr_value (_, {pvb_attributes= atrs; _} :: _)
+     |Pstr_value {lbs_bindings= {lb_attributes= atrs; _} :: _; _}
      |Pstr_primitive {pval_attributes= atrs; _}
      |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
@@ -327,7 +327,7 @@ module Structure_item = struct
      |Pstr_module
         {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2; _}; _} ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Pstr_value (_, [])
+    | Pstr_value {lbs_bindings= []; _}
      |Pstr_type (_, [])
      |Pstr_recmodule []
      |Pstr_class_type []
@@ -494,6 +494,20 @@ module Vb = struct
     || not (is_simple (i2, c2))
 end
 
+module Lb = struct
+  let has_doc itm = List.exists ~f:Attr.is_doc itm.lb_attributes
+
+  let is_simple (i, (c : Conf.t)) =
+    Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
+    && Location.is_single_line i.lb_loc c.fmt_opts.margin.v
+
+  let break_between s cc (i1, c1) (i2, c2) =
+    cmts_between s cc i1.lb_loc i2.lb_loc
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
 module Mb = struct
   let has_doc itm = List.exists ~f:Attr.is_doc itm.pmb_attributes
 
@@ -612,6 +626,7 @@ module T = struct
     | Pat of pattern
     | Exp of expression
     | Vb of value_binding
+    | Lb of let_binding
     | Mb of module_binding
     | Md of module_declaration
     | Cl of class_expr
@@ -632,6 +647,7 @@ module T = struct
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Vb b -> Format.fprintf fs "Vb:@\n%a" Printast.value_binding b
+    | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.let_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
@@ -662,6 +678,7 @@ let attributes = function
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Vb x -> x.pvb_attributes
+  | Lb x -> x.lb_attributes
   | Mb x -> x.pmb_attributes
   | Md x -> x.pmd_attributes
   | Cl x -> x.pcl_attributes
@@ -683,6 +700,7 @@ let location = function
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
   | Vb x -> x.pvb_loc
+  | Lb x -> x.lb_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
   | Cl x -> x.pcl_loc
@@ -712,6 +730,7 @@ let break_between s cc (i1, c1) (i2, c2) =
   | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
   | Vb i1, Vb i2 -> Vb.break_between s cc (i1, c1) (i2, c2)
+  | Lb i1, Lb i2 -> Lb.break_between s cc (i1, c1) (i2, c2)
   | Mb i1, Mb i2 -> Mb.break_between s cc (i1, c1) (i2, c2)
   | Md i1, Md i2 -> Md.break_between s cc (i1, c1) (i2, c2)
   | Mty _, Mty _ -> break_between_modules s cc (i1, c1) (i2, c2)
@@ -973,6 +992,7 @@ end = struct
                 Option.exists t1 ~f || Option.exists t2 ~f ) )
       | _ -> assert false )
     | Vb _ -> assert false
+    | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Cl {pcl_desc; _} ->
@@ -1054,6 +1074,7 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Vb _ -> assert false
+    | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Pld _ -> assert false
@@ -1132,6 +1153,7 @@ end = struct
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
     | Vb _ -> assert false
+    | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Pld _ -> assert false
@@ -1200,8 +1222,11 @@ end = struct
       | Ppat_constraint (p, _) -> p == pat
       | _ -> false
     in
-    let check_bindings l =
+    let check_value_bindings l =
       List.exists l ~f:(fun {pvb_pat; _} -> check_subpat pvb_pat)
+    in
+    let check_let_bindings l =
+      List.exists l ~f:(fun {lb_pattern; _} -> check_subpat lb_pattern)
     in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
@@ -1249,7 +1274,7 @@ end = struct
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
           assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
-      | Pexp_let (_, bindings, _) -> assert (check_bindings bindings)
+      | Pexp_let (_, bindings, _) -> assert (check_value_bindings bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
           assert (f let_ || List.exists ~f ands)
@@ -1261,6 +1286,7 @@ end = struct
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
     | Vb ctx -> assert (ctx.pvb_pat == pat)
+    | Lb x -> assert (x.lb_pattern == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
     | Cl ctx ->
@@ -1271,7 +1297,7 @@ end = struct
           | Pcl_structure {pcstr_self; pcstr_fields} ->
               pcstr_self == pat || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
-          | Pcl_let (_, l, _) -> check_bindings l
+          | Pcl_let (_, l, _) -> check_value_bindings l
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1279,7 +1305,8 @@ end = struct
     | Mty _ | Mod _ | Sig _ -> assert false
     | Str str -> (
       match str.pstr_desc with
-      | Pstr_value (_, bindings) -> assert (check_bindings bindings)
+      | Pstr_value {lbs_bindings; _} ->
+          assert (check_let_bindings lbs_bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
     | Clf x -> assert (check_pcstr_fields [x])
@@ -1407,14 +1434,16 @@ end = struct
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
     | Vb vb -> assert (vb.pvb_expr == exp)
+    | Lb x -> assert (x.lb_expression == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
-      | Pstr_value (_, bindings) ->
+      | Pstr_value {lbs_bindings; _} ->
           assert (
-            List.exists bindings ~f:(fun {pvb_expr; _} -> pvb_expr == exp) )
+            List.exists lbs_bindings ~f:(fun {lb_expression; _} ->
+                lb_expression == exp ) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
@@ -1642,6 +1671,8 @@ end = struct
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Vb _; ast= _}
      |{ctx= _; ast= Vb _}
+     |{ctx= Lb _; ast= _}
+     |{ctx= _; ast= Lb _}
      |{ctx= Td _; ast= _}
      |{ctx= _; ast= Td _}
      |{ ctx= Cl _
@@ -1724,6 +1755,7 @@ end = struct
       | Pexp_send _ -> Some Dot
       | _ -> None )
     | Vb _ -> None
+    | Lb _ -> None
     | Cl c -> (
       match c.pcl_desc with
       | Pcl_apply _ -> Some Apply
@@ -1903,12 +1935,16 @@ end = struct
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true
-    | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _); _}
-        | Str {pstr_desc= Pstr_value (_, bindings); _} )
-      , _ ) ->
+    | Exp {pexp_desc= Pexp_let (_, bindings, _); _}, _ ->
         List.exists bindings ~f:(function
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _; _}; _} ->
               pvb_pat == pat
+          | _ -> false )
+    | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _}, _ ->
+        List.exists lbs_bindings ~f:(function
+          | {lb_pattern; lb_expression= {pexp_desc= Pexp_constraint _; _}; _}
+            ->
+              lb_pattern == pat
           | _ -> false )
     | _ -> false
 
@@ -2117,7 +2153,9 @@ end = struct
     | ( Str
           { pstr_desc=
               Pstr_value
-                (Nonrecursive, [{pvb_pat= {ppat_desc= Ppat_any; _}; _}])
+                { lbs_rec= Nonrecursive
+                ; lbs_bindings= [{lb_pattern= {ppat_desc= Ppat_any; _}; _}]
+                ; _ }
           ; _ }
       , _ ) ->
         false

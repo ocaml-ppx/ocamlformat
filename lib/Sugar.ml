@@ -395,4 +395,14 @@ module Let_binding = struct
             | _ -> false )
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
+
+  let of_let_binding cmts ~ctx ~first lb =
+    let pat, typ, exp = type_cstr cmts ~ctx lb.lb_pattern lb.lb_expression in
+    { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
+    ; lb_pat= pat
+    ; lb_typ= typ
+    ; lb_exp= exp
+    ; lb_pun= false
+    ; lb_attrs= lb.lb_attributes
+    ; lb_loc= lb.lb_loc }
 end

@@ -52,6 +52,8 @@ type mapper = {
   include_declaration: mapper -> include_declaration -> include_declaration;
   include_description: mapper -> include_description -> include_description;
   label_declaration: mapper -> label_declaration -> label_declaration;
+  let_binding: mapper -> let_binding -> let_binding;
+  let_bindings: mapper -> let_bindings -> let_bindings;
   location: mapper -> Location.t -> Location.t;
   module_binding: mapper -> module_binding -> module_binding;
   module_declaration: mapper -> module_declaration -> module_declaration;
@@ -425,7 +427,7 @@ module M = struct
     | Pstr_eval (x, attrs) ->
         let attrs = sub.attributes sub attrs in
         eval ~loc ~attrs (sub.expr sub x)
-    | Pstr_value (r, vbs) -> value ~loc r (List.map (sub.value_binding sub) vbs)
+    | Pstr_value lbs -> value ~loc (sub.let_bindings sub lbs)
     | Pstr_primitive vd -> primitive ~loc (sub.value_description sub vd)
     | Pstr_type (rf, l) -> type_ ~loc rf (List.map (sub.type_declaration sub) l)
     | Pstr_typext te -> type_extension ~loc (sub.type_extension sub te)
@@ -565,6 +567,20 @@ module E = struct
     let loc = sub.location sub pbop_loc in
     binding_op op pat exp loc
 
+end
+
+module LB = struct
+  let map_let_binding sub { lb_pattern; lb_expression; lb_is_pun; lb_attributes; lb_loc } =
+    let lb_pattern = sub.pat sub lb_pattern in
+    let lb_expression = sub.expr sub lb_expression in
+    let lb_attributes = sub.attributes sub lb_attributes in
+    let lb_loc = sub.location sub lb_loc in
+    { lb_pattern; lb_expression; lb_is_pun; lb_attributes; lb_loc }
+
+  let map_let_bindings sub { lbs_bindings; lbs_rec; lbs_extension } =
+    let lbs_bindings = List.map (sub.let_binding sub) lbs_bindings in
+    let lbs_extension = map_opt (map_loc sub) lbs_extension in
+    { lbs_bindings; lbs_rec; lbs_extension }
 end
 
 module P = struct
@@ -730,6 +746,9 @@ let default_mapper =
     pat = P.map;
     expr = E.map;
     binding_op = E.map_binding_op;
+
+    let_binding = LB.map_let_binding;
+    let_bindings = LB.map_let_bindings;
 
     module_declaration =
       (fun this {pmd_name; pmd_type; pmd_attributes; pmd_loc} ->

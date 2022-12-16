@@ -111,4 +111,6 @@ module Let_binding : sig
   val of_value_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
   val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
+
+  val of_let_binding : Cmts.t -> ctx:Ast.t -> first:bool -> let_binding -> t
 end

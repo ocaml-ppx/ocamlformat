@@ -4087,13 +4087,13 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x -> Mb x)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value (rec_flag, bindings) ->
-      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
-      let ast x = Vb x in
+  | Pstr_value {lbs_rec= rec_flag; lbs_bindings= bindings; lbs_extension} ->
+      let update_config c i = update_config ~quiet:true c i.lb_attributes in
+      let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in
         let last = Option.is_none next in
-        let b = Sugar.Let_binding.of_value_binding c.cmts ~ctx ~first b in
+        let b = Sugar.Let_binding.of_let_binding c.cmts ~ctx ~first b in
         let epi =
           match c.conf.fmt_opts.let_binding_spacing.v with
           | `Compact -> None
@@ -4104,7 +4104,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
                 (fits_breaks "" ~hint:(1000, -2) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
-        let ext = if first then ext else None in
+        let ext = if first then lbs_extension else None in
         fmt_value_binding c ~rec_flag ?ext ctx ?epi b
       in
       fmt_item_list c ctx update_config ast fmt_item bindings
