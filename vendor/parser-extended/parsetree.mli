@@ -772,7 +772,7 @@ and class_expr_desc =
 
             Invariant: [n > 0]
         *)
-  | Pcl_let of rec_flag * value_binding list * class_expr
+  | Pcl_let of let_bindings * class_expr
       (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE)] represents:
             - [let P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},

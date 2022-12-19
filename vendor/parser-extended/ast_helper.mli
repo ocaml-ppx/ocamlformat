@@ -429,8 +429,7 @@ module Cl:
       pattern -> class_expr -> class_expr
     val apply: ?loc:loc -> ?attrs:attrs -> class_expr ->
       (arg_label * expression) list -> class_expr
-    val let_: ?loc:loc -> ?attrs:attrs -> rec_flag -> value_binding list ->
-      class_expr -> class_expr
+    val let_: ?loc:loc -> ?attrs:attrs -> let_bindings -> class_expr -> class_expr
     val constraint_: ?loc:loc -> ?attrs:attrs -> class_expr -> class_type ->
       class_expr
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr

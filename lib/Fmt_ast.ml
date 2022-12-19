@@ -2774,17 +2774,19 @@ and fmt_class_expr c ?eol ({ast= exp; _} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (rec_flag, bd, body) ->
+  | Pcl_let (lbs, body) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
         | _ -> c.conf.fmt_opts.indent_after_in.v
       in
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+      let bindings =
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+      in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs
-        ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ctx ~ext:None ~rec_flag:lbs.lbs_rec ~bindings ~parens
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"

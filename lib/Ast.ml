@@ -1125,7 +1125,7 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply _ -> false
-          | Pcl_let (_, _, _) -> false
+          | Pcl_let (_, _) -> false
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
@@ -1186,7 +1186,7 @@ end = struct
               check_pcstr_fields pcstr_fields
           | Pcl_fun (_, _, _, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
-          | Pcl_let (_, _, x) -> x == cl
+          | Pcl_let (_, x) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
           | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
@@ -1221,9 +1221,6 @@ end = struct
       match ppat.ppat_desc with
       | Ppat_constraint (p, _) -> p == pat
       | _ -> false
-    in
-    let check_value_bindings l =
-      List.exists l ~f:(fun {pvb_pat; _} -> check_subpat pvb_pat)
     in
     let check_let_bindings l =
       List.exists l ~f:(fun {lb_pattern; _} -> check_subpat lb_pattern)
@@ -1298,7 +1295,7 @@ end = struct
           | Pcl_structure {pcstr_self; pcstr_fields} ->
               pcstr_self == pat || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
-          | Pcl_let (_, l, _) -> check_value_bindings l
+          | Pcl_let ({lbs_bindings; _}, _) -> check_let_bindings lbs_bindings
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1470,8 +1467,9 @@ end = struct
           | Pcl_structure {pcstr_fields; _} ->
               check_pcstr_fields pcstr_fields
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
-          | Pcl_let (_, l, _) ->
-              List.exists l ~f:(fun {pvb_expr; _} -> pvb_expr == exp)
+          | Pcl_let ({lbs_bindings; _}, _) ->
+              List.exists lbs_bindings ~f:(fun {lb_expression; _} ->
+                  lb_expression == exp )
           | Pcl_constraint _ -> false
           | Pcl_extension _ -> false
           | Pcl_open _ -> false

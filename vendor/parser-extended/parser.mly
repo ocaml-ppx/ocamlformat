@@ -377,18 +377,6 @@ let mklbs ext rf lb =
   } in
   addlb lbs lb
 
-let class_of_let_bindings ~loc lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-    (* Our use of let_bindings(no_ext) guarantees the following: *)
-    assert (lbs.lbs_extension = None);
-    mkclass ~loc (Pcl_let (lbs.lbs_rec, List.rev bindings, body))
-
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
    the assertions below should be turned into explicit checks. *)
@@ -1691,8 +1679,9 @@ class_expr:
       { $1 }
   | FUN attributes class_fun_def
       { wrap_class_attrs ~loc:$sloc $3 $2 }
-  | let_bindings(no_ext) IN class_expr
-      { class_of_let_bindings ~loc:$sloc $1 $3 }
+  | lbs= let_bindings(no_ext) IN class_expr
+      { let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+        mkclass ~loc:$sloc (Pcl_let (lbs, $3)) }
   | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_expr
       { let loc = ($startpos($2), $endpos($5)) in
         let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
