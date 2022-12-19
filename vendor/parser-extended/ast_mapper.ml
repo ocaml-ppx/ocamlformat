@@ -75,7 +75,6 @@ type mapper = {
   type_extension: mapper -> type_extension -> type_extension;
   type_exception: mapper -> type_exception -> type_exception;
   type_kind: mapper -> type_kind -> type_kind;
-  value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
   directive_argument: mapper -> directive_argument -> directive_argument;
@@ -814,17 +813,6 @@ let default_mapper =
            ~loc:(this.location this pincl_loc)
            ~attrs:(this.attributes this pincl_attributes)
       );
-
-
-    value_binding =
-      (fun this {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} ->
-         Vb.mk
-           (this.pat this pvb_pat)
-           (this.expr this pvb_expr)
-           ~loc:(this.location this pvb_loc)
-           ~attrs:(this.attributes this pvb_attributes)
-      );
-
 
     constructor_declaration =
       (fun this {pcd_name; pcd_vars; pcd_args;

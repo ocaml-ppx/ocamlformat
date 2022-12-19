@@ -1064,12 +1064,6 @@ and include_declaration i ppf x =
   let i = i+1 in
   module_expr i ppf x.pincl_mod
 
-and value_binding i ppf x =
-  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  attributes (i+1) ppf x.pvb_attributes;
-  pattern (i+1) ppf x.pvb_pat;
-  expression (i+1) ppf x.pvb_expr
-
 and let_binding i ppf x =
   line i ppf "<def> %a\n" fmt_location x.lb_loc;
   attributes (i+1) ppf x.lb_attributes;
@@ -1160,8 +1154,6 @@ let module_type ppf x = module_type 0 ppf x
 let pattern ppf x = pattern 0 ppf x
 
 let type_declaration ppf x = type_declaration 0 ppf x
-
-let value_binding ppf x = value_binding 0 ppf x
 
 let let_binding ppf x = let_binding 0 ppf x
 

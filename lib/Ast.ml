@@ -480,20 +480,6 @@ module Signature_item = struct
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
-module Vb = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.pvb_attributes
-
-  let is_simple (i, (c : Conf.t)) =
-    Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
-    && Location.is_single_line i.pvb_loc c.fmt_opts.margin.v
-
-  let break_between s cc (i1, c1) (i2, c2) =
-    cmts_between s cc i1.pvb_loc i2.pvb_loc
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-end
-
 module Lb = struct
   let has_doc itm = List.exists ~f:Attr.is_doc itm.lb_attributes
 
@@ -625,7 +611,6 @@ module T = struct
     | Cty of class_type
     | Pat of pattern
     | Exp of expression
-    | Vb of value_binding
     | Lb of let_binding
     | Mb of module_binding
     | Md of module_declaration
@@ -646,7 +631,6 @@ module T = struct
     | Td t -> Format.fprintf fs "Td:@\n%a" Printast.type_declaration t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
-    | Vb b -> Format.fprintf fs "Vb:@\n%a" Printast.value_binding b
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.let_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
@@ -677,7 +661,6 @@ let attributes = function
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
-  | Vb x -> x.pvb_attributes
   | Lb x -> x.lb_attributes
   | Mb x -> x.pmb_attributes
   | Md x -> x.pmd_attributes
@@ -699,7 +682,6 @@ let location = function
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
-  | Vb x -> x.pvb_loc
   | Lb x -> x.lb_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
@@ -729,7 +711,6 @@ let break_between s cc (i1, c1) (i2, c2) =
   match (i1, i2) with
   | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
-  | Vb i1, Vb i2 -> Vb.break_between s cc (i1, c1) (i2, c2)
   | Lb i1, Lb i2 -> Lb.break_between s cc (i1, c1) (i2, c2)
   | Mb i1, Mb i2 -> Mb.break_between s cc (i1, c1) (i2, c2)
   | Md i1, Md i2 -> Md.break_between s cc (i1, c1) (i2, c2)
@@ -991,7 +972,6 @@ end = struct
             List.exists en1 ~f:(fun (_, (t1, t2), _) ->
                 Option.exists t1 ~f || Option.exists t2 ~f ) )
       | _ -> assert false )
-    | Vb _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1073,7 +1053,6 @@ end = struct
     in
     match (ctx : t) with
     | Exp _ -> assert false
-    | Vb _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1152,7 +1131,6 @@ end = struct
       | Pexp_object {pcstr_fields; _} ->
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
-    | Vb _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1283,7 +1261,6 @@ end = struct
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
-    | Vb ctx -> assert (ctx.pvb_pat == pat)
     | Lb x -> assert (x.lb_pattern == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1432,7 +1409,6 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
-    | Vb vb -> assert (vb.pvb_expr == exp)
     | Lb x -> assert (x.lb_expression == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1669,8 +1645,6 @@ end = struct
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
-     |{ctx= Vb _; ast= _}
-     |{ctx= _; ast= Vb _}
      |{ctx= Lb _; ast= _}
      |{ctx= _; ast= Lb _}
      |{ctx= Td _; ast= _}
@@ -1754,7 +1728,6 @@ end = struct
       | Pexp_field _ -> Some Dot
       | Pexp_send _ -> Some Dot
       | _ -> None )
-    | Vb _ -> None
     | Lb _ -> None
     | Cl c -> (
       match c.pcl_desc with

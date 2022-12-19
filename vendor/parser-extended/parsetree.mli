@@ -1060,14 +1060,6 @@ and structure_item_desc =
   | Pstr_attribute of attribute  (** [[\@\@\@id]] *)
   | Pstr_extension of extension * attributes  (** [[%%id]] *)
 
-and value_binding =
-  {
-    pvb_pat: pattern;
-    pvb_expr: expression;
-    pvb_attributes: attributes;
-    pvb_loc: Location.t;
-  }
-
 and let_binding =
   {
     lb_pattern: pattern;

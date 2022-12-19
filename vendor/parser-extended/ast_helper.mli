@@ -373,13 +373,6 @@ module Incl:
     val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> 'a -> 'a include_infos
   end
 
-(** Value bindings *)
-module Vb:
-  sig
-    val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-      pattern -> expression -> value_binding
-  end
-
 
 (** {1 Class language} *)
 
