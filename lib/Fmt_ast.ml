@@ -758,9 +758,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( if List.is_empty atrs then Fn.id
-       else fun k ->
-         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
-     )
+     else fun k ->
+       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -835,10 +834,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | _ ->
             list rfs
               ( if
-                  in_type_declaration
-                  && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then "@;<1000 0>| "
-                else "@ | " )
+                in_type_declaration
+                && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
+              then "@;<1000 0>| "
+              else "@ | " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -2665,21 +2664,21 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | Pctf_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let cmts_after_self = Cmts.fmt_after c self_.pcss_loc in
-  let no_attr typ = List.is_empty typ.ptyp_attributes in
+  let self_ =
+    opt self_ (fun self_ ->
+        let no_attr typ = List.is_empty typ.ptyp_attributes in
+        let cmts_after_self = Cmts.fmt_after c self_.ptyp_loc in
+        fmt "@;"
+        $ Params.parens_if (no_attr self_) c.conf
+            (fmt_core_type c (sub_typ ~ctx self_))
+        $ cmts_after_self )
+  in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
   let ast x = Ctf x in
   hvbox 0
     (Params.parens_if parens c.conf
        ( hvbox 2
-           ( hvbox 0
-               ( str "object"
-               $ fmt_extension_suffix c ext
-               $ opt self_.pcss_desc (fun self_ ->
-                     fmt "@;"
-                     $ Params.parens_if (no_attr self_) c.conf
-                         (fmt_core_type c (sub_typ ~ctx self_)) ) )
-           $ cmts_after_self
+           ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
            $ ( match fields with
              | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
                  str "\n"
@@ -4151,7 +4150,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
-           else break 1000 indent_after_in )
+         else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 

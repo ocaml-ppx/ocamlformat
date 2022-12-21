@@ -935,7 +935,7 @@ end = struct
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
           | Pcty_signature {pcsig_self; pcsig_fields; _} ->
-              ( match pcsig_self.pcss_desc with
+              ( match pcsig_self with
               | Some pcsig_self -> pcsig_self == typ
               | None -> false )
               || List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->

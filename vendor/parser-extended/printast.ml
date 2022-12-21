@@ -633,7 +633,7 @@ and class_type i ppf x =
 
 and class_signature i ppf cs =
   line i ppf "class_signature\n";
-  option (i+1) core_type ppf cs.pcsig_self.pcss_desc;
+  option (i+1) core_type ppf cs.pcsig_self;
   list (i+1) class_type_field ppf cs.pcsig_fields;
 
 and class_type_field i ppf x =

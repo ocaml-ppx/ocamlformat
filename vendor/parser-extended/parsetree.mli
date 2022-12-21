@@ -684,15 +684,9 @@ and class_type_desc =
   | Pcty_extension of extension  (** [%id] *)
   | Pcty_open of open_description * class_type  (** [let open M in CT] *)
 
-and class_sig_self =
-  {
-   pcss_desc:core_type option;
-   pcss_loc : Location.t;
-  }
-
 and class_signature =
     {
-     pcsig_self: class_sig_self;
+     pcsig_self: core_type option;
      pcsig_fields: class_type_field list;
     }
 (** Values of type [class_signature] represents:

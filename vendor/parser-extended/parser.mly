@@ -1878,7 +1878,7 @@ class_signature:
 ;
 class_self_type:
    ioption( LPAREN core_type RPAREN { $2 })
-      { { pcss_desc=$1; pcss_loc= make_loc $sloc } }
+      { $1 }
 ;
 %inline class_sig_fields:
   flatten(text_csig(class_sig_field)*)
