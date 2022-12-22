@@ -1200,7 +1200,7 @@ end = struct
       | Ppat_constraint (p, _) -> p == pat
       | _ -> false
     in
-    let check_let_bindings l =
+    let check_bindings l =
       List.exists l ~f:(fun {lb_pattern; _} -> check_subpat lb_pattern)
     in
     match ctx with
@@ -1250,7 +1250,7 @@ end = struct
       | Pexp_object {pcstr_self; pcstr_fields} ->
           assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
       | Pexp_let ({lbs_bindings; _}, _) ->
-          assert (check_let_bindings lbs_bindings)
+          assert (check_bindings lbs_bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
           assert (f let_ || List.exists ~f ands)
@@ -1272,7 +1272,7 @@ end = struct
           | Pcl_structure {pcstr_self; pcstr_fields} ->
               pcstr_self == pat || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
-          | Pcl_let ({lbs_bindings; _}, _) -> check_let_bindings lbs_bindings
+          | Pcl_let ({lbs_bindings; _}, _) -> check_bindings lbs_bindings
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1280,8 +1280,7 @@ end = struct
     | Mty _ | Mod _ | Sig _ -> assert false
     | Str str -> (
       match str.pstr_desc with
-      | Pstr_value {lbs_bindings; _} ->
-          assert (check_let_bindings lbs_bindings)
+      | Pstr_value {lbs_bindings; _} -> assert (check_bindings lbs_bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
     | Clf x -> assert (check_pcstr_fields [x])
