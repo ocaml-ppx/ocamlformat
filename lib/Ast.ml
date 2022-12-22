@@ -1907,13 +1907,9 @@ end = struct
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true
-    | Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}, _ ->
-        List.exists lbs_bindings ~f:(function
-          | {lb_pattern; lb_expression= {pexp_desc= Pexp_constraint _; _}; _}
-            ->
-              lb_pattern == pat
-          | _ -> false )
-    | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _}, _ ->
+    | ( ( Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}
+        | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _} )
+      , _ ) ->
         List.exists lbs_bindings ~f:(function
           | {lb_pattern; lb_expression= {pexp_desc= Pexp_constraint _; _}; _}
             ->
