@@ -377,6 +377,18 @@ let mklbs ext rf lb =
   } in
   addlb lbs lb
 
+let val_of_let_bindings ~loc lbs =
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkstr ~loc (Pstr_value lbs)
+
+let expr_of_let_bindings ~loc lbs body =
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkexp ~loc (Pexp_let (lbs, body))
+
+let class_of_let_bindings ~loc lbs body =
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkclass ~loc (Pcl_let (lbs, body))
+
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
    the assertions below should be turned into explicit checks. *)
@@ -1212,15 +1224,14 @@ structure:
 
 (* A structure item. *)
 structure_item:
+    let_bindings(ext)
+      { val_of_let_bindings ~loc:$sloc $1 }
   | mkstr(
       item_extension post_item_attributes
         { let docs = symbol_docs $sloc in
           Pstr_extension ($1, add_docs_attrs docs $2) }
     | floating_attribute
         { Pstr_attribute $1 }
-    | lbs= let_bindings(ext)
-        { let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-          Pstr_value lbs }
     )
   | wrap_mkstr_ext(
       primitive_declaration
@@ -1679,9 +1690,8 @@ class_expr:
       { $1 }
   | FUN attributes class_fun_def
       { wrap_class_attrs ~loc:$sloc $3 $2 }
-  | lbs= let_bindings(no_ext) IN class_expr
-      { let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-        mkclass ~loc:$sloc (Pcl_let (lbs, $3)) }
+  | let_bindings(no_ext) IN class_expr
+      { class_of_let_bindings ~loc:$sloc $1 $3 }
   | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_expr
       { let loc = ($startpos($2), $endpos($5)) in
         let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
@@ -2085,9 +2095,8 @@ expr:
         mkexp_attrs ~loc:$sloc desc attrs }
   | mkexp(expr_)
       { $1 }
-  | lbs= let_bindings(ext) IN seq_expr
-      { let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-        mkexp ~loc:$sloc (Pexp_let (lbs, $3)) }
+  | let_bindings(ext) IN seq_expr
+      { expr_of_let_bindings ~loc:$sloc $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
       { let (pbop_pat, pbop_exp, rev_ands) = bindings in
         let ands = List.rev rev_ands in
