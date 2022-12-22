@@ -616,7 +616,7 @@ module P = struct
         record ~loc ~attrs fields (Flag.map_obj_closed sub cf)
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
-    | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
+    | Ppat_or pl -> or_ ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_constraint (p, t) ->
         constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
     | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)

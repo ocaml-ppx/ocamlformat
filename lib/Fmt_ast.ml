@@ -972,7 +972,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   (match ctx0 with Pat {ppat_desc= Ppat_tuple _; _} -> hvbox 0 | _ -> Fn.id)
   @@ ( match ppat_desc with
-     | Ppat_or _ -> Fn.id
+     | Ppat_or _ -> fun k -> Cmts.fmt c ppat_loc @@ k
      | _ -> fun k -> Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k) )
   @@ hovbox_if box 0
   @@ fmt_pattern_attributes c xpat
@@ -1075,7 +1075,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
-  | Ppat_or _ ->
+  | Ppat_or pats ->
+      Cmts.relocate c.cmts ~src:ppat_loc ~before:(List.hd_exn pats).ppat_loc
+        ~after:(List.last_exn pats).ppat_loc ;
       let nested =
         match ctx0 with
         | Pat {ppat_desc= Ppat_or _; _}
@@ -1083,7 +1085,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             List.is_empty xpat.ast.ppat_attributes
         | _ -> false
       in
-      let xpats = Sugar.or_pat c.cmts xpat in
+      let xpats = List.map ~f:(sub_pat ~ctx) pats in
       let space p =
         match p.ppat_desc with
         | Ppat_constant

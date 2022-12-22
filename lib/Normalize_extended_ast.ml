@@ -139,23 +139,6 @@ let make_mapper conf ~ignore_doc_comments =
              exp3 )
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
-  let pat (m : Ast_mapper.mapper) pat =
-    let pat = {pat with ppat_loc_stack= []} in
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
-    (* normalize nested or patterns *)
-    match ppat_desc with
-    | Ppat_or
-        ( pat1
-        , { ppat_desc= Ppat_or (pat2, pat3)
-          ; ppat_loc= loc2
-          ; ppat_attributes= attrs2
-          ; _ } ) ->
-        m.pat m
-          (Pat.or_ ~loc:loc1 ~attrs:attrs1
-             (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
-             pat3 )
-    | _ -> Ast_mapper.default_mapper.pat m pat
-  in
   let typ (m : Ast_mapper.mapper) typ =
     let typ = {typ with ptyp_loc_stack= []} in
     Ast_mapper.default_mapper.typ m typ
@@ -166,7 +149,6 @@ let make_mapper conf ~ignore_doc_comments =
   ; attributes
   ; repl_phrase
   ; expr
-  ; pat
   ; typ }
 
 let ast fragment ~ignore_doc_comments c =
