@@ -368,6 +368,19 @@ module Let_binding = struct
               (xpat, `Coerce (typ1, sub_typ ~ctx typ2), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )
 
+  let of_let_binding cmts ~ctx ~first lb =
+    let pat, typ, exp = type_cstr cmts ~ctx lb.lb_pattern lb.lb_expression in
+    { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
+    ; lb_pat= pat
+    ; lb_typ= typ
+    ; lb_exp= exp
+    ; lb_pun= false
+    ; lb_attrs= lb.lb_attributes
+    ; lb_loc= lb.lb_loc }
+
+  let of_let_bindings cmts ~ctx =
+    List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
+
   let of_binding_ops cmts ~ctx bos =
     List.map bos ~f:(fun bo ->
         let pat, typ, exp = type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp in
@@ -382,17 +395,4 @@ module Let_binding = struct
             | _ -> false )
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
-
-  let of_let_binding cmts ~ctx ~first lb =
-    let pat, typ, exp = type_cstr cmts ~ctx lb.lb_pattern lb.lb_expression in
-    { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
-    ; lb_pat= pat
-    ; lb_typ= typ
-    ; lb_exp= exp
-    ; lb_pun= false
-    ; lb_attrs= lb.lb_attributes
-    ; lb_loc= lb.lb_loc }
-
-  let of_let_bindings cmts ~ctx =
-    List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
 end

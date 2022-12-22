@@ -105,9 +105,9 @@ module Let_binding : sig
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
-  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
-
   val of_let_binding : Cmts.t -> ctx:Ast.t -> first:bool -> let_binding -> t
 
   val of_let_bindings : Cmts.t -> ctx:Ast.t -> let_binding list -> t list
+
+  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end
