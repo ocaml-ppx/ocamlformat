@@ -339,9 +339,9 @@ and expression i ppf x =
   | Pexp_constant (c) ->
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
-  | Pexp_let (rf, l, e) ->
-      line i ppf "Pexp_let %a\n" fmt_rec_flag rf;
-      list i value_binding ppf l;
+  | Pexp_let (l, e) ->
+      line i ppf "Pexp_let %a\n" fmt_rec_flag l.lbs_rec;
+      let_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->
       line i ppf "Pexp_function\n";
@@ -705,9 +705,9 @@ and class_expr i ppf x =
       line i ppf "Pcl_apply\n";
       class_expr i ppf ce;
       list i label_x_expression ppf l;
-  | Pcl_let (rf, l, ce) ->
-      line i ppf "Pcl_let %a\n" fmt_rec_flag rf;
-      list i value_binding ppf l;
+  | Pcl_let (lbs, ce) ->
+      line i ppf "Pcl_let %a\n" fmt_rec_flag lbs.lbs_rec;
+      let_bindings i ppf lbs;
       class_expr i ppf ce;
   | Pcl_constraint (ce, ct) ->
       line i ppf "Pcl_constraint\n";
@@ -939,9 +939,9 @@ and structure_item i ppf x =
       line i ppf "Pstr_eval\n";
       attributes i ppf attrs;
       expression i ppf e;
-  | Pstr_value (rf, l) ->
-      line i ppf "Pstr_value %a\n" fmt_rec_flag rf;
-      list i value_binding ppf l;
+  | Pstr_value l ->
+      line i ppf "Pstr_value %a\n" fmt_rec_flag l.lbs_rec;
+      let_bindings i ppf l
   | Pstr_primitive vd ->
       line i ppf "Pstr_primitive\n";
       value_description i ppf vd;
@@ -1064,11 +1064,14 @@ and include_declaration i ppf x =
   let i = i+1 in
   module_expr i ppf x.pincl_mod
 
-and value_binding i ppf x =
-  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  attributes (i+1) ppf x.pvb_attributes;
-  pattern (i+1) ppf x.pvb_pat;
-  expression (i+1) ppf x.pvb_expr
+and let_binding i ppf x =
+  line i ppf "<def> %a\n" fmt_location x.lb_loc;
+  attributes (i+1) ppf x.lb_attributes;
+  pattern (i+1) ppf x.lb_pattern;
+  expression (i+1) ppf x.lb_expression
+
+and let_bindings i ppf x =
+  list i let_binding ppf x.lbs_bindings
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"
@@ -1152,7 +1155,7 @@ let pattern ppf x = pattern 0 ppf x
 
 let type_declaration ppf x = type_declaration 0 ppf x
 
-let value_binding ppf x = value_binding 0 ppf x
+let let_binding ppf x = let_binding 0 ppf x
 
 let module_binding ppf x = module_binding 0 ppf x
 

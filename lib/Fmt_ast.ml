@@ -2172,11 +2172,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               $ p.break_end_branch ) ) )
                     $ fmt_if_k (not last) p.space_between_branches ) ) )
         $ fmt_atrs )
-  | Pexp_let (rec_flag, bd, body) ->
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+  | Pexp_let (lbs, body) ->
+      let bindings =
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
+      let ext = lbs.lbs_extension in
       fmt_let_bindings c ~ctx ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-        rec_flag bindings body
+        lbs.lbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
@@ -2771,17 +2774,19 @@ and fmt_class_expr c ?eol ({ast= exp; _} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (rec_flag, bd, body) ->
+  | Pcl_let (lbs, body) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
         | _ -> c.conf.fmt_opts.indent_after_in.v
       in
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+      let bindings =
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+      in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs
-        ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ctx ~ext:None ~rec_flag:lbs.lbs_rec ~bindings ~parens
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4087,13 +4092,13 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x -> Mb x)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value (rec_flag, bindings) ->
-      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
-      let ast x = Vb x in
+  | Pstr_value {lbs_rec= rec_flag; lbs_bindings= bindings; lbs_extension} ->
+      let update_config c i = update_config ~quiet:true c i.lb_attributes in
+      let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in
         let last = Option.is_none next in
-        let b = Sugar.Let_binding.of_value_binding c.cmts ~ctx ~first b in
+        let b = Sugar.Let_binding.of_let_binding c.cmts ~ctx ~first b in
         let epi =
           match c.conf.fmt_opts.let_binding_spacing.v with
           | `Compact -> None
@@ -4104,7 +4109,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
                 (fits_breaks "" ~hint:(1000, -2) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
-        let ext = if first then ext else None in
+        let ext = if first then lbs_extension else None in
         fmt_value_binding c ~rec_flag ?ext ctx ?epi b
       in
       fmt_item_list c ctx update_config ast fmt_item bindings

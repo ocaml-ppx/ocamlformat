@@ -119,7 +119,7 @@ module Exp = struct
 
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
-  let let_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_let (a, b, c))
+  let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_let (a, b))
   let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_fun (a, b, c, d))
   let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
@@ -242,7 +242,7 @@ module Str = struct
   let mk ?(loc = !default_loc) d = {pstr_desc = d; pstr_loc = loc}
 
   let eval ?loc ?(attrs = []) a = mk ?loc (Pstr_eval (a, attrs))
-  let value ?loc a b = mk ?loc (Pstr_value (a, b))
+  let value ?loc a = mk ?loc (Pstr_value a)
   let primitive ?loc a = mk ?loc (Pstr_primitive a)
   let type_ ?loc rec_flag a = mk ?loc (Pstr_type (rec_flag, a))
   let type_extension ?loc a = mk ?loc (Pstr_typext a)
@@ -276,7 +276,7 @@ module Cl = struct
   let structure ?loc ?attrs a = mk ?loc ?attrs (Pcl_structure a)
   let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pcl_fun (a, b, c, d))
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pcl_apply (a, b))
-  let let_ ?loc ?attrs a b c = mk ?loc ?attrs (Pcl_let (a, b, c))
+  let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_let (a, b))
   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_constraint (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pcl_extension a)
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_open (a, b))
@@ -431,18 +431,6 @@ module Incl = struct
      pincl_attributes = add_docs_attrs docs attrs;
     }
 
-end
-
-module Vb = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
-        ?(text = []) pat expr =
-    {
-     pvb_pat = pat;
-     pvb_expr = expr;
-     pvb_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
-     pvb_loc = loc;
-    }
 end
 
 module Ci = struct

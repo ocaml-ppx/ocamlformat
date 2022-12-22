@@ -354,29 +354,14 @@ let extra_rhs_core_type ct ~pos =
   let docs = rhs_info pos in
   { ct with ptyp_attributes = add_info_attrs docs ct.ptyp_attributes }
 
-type let_binding =
-  { lb_pattern: pattern;
-    lb_expression: expression;
-    lb_is_pun: bool;
-    lb_attributes: attributes;
-    lb_docs: docs Lazy.t;
-    lb_text: text Lazy.t;
-    lb_loc: Location.t; }
-
-type let_bindings =
-  { lbs_bindings: let_binding list;
-    lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option }
-
 let mklb first ~loc (p, e, is_pun) attrs =
+  let docs = symbol_docs loc in
+  let text = if first then empty_text else symbol_text (fst loc) in
   {
     lb_pattern = p;
     lb_expression = e;
     lb_is_pun = is_pun;
-    lb_attributes = attrs;
-    lb_docs = symbol_docs_lazy loc;
-    lb_text = (if first then empty_text_lazy
-               else symbol_text_lazy (fst loc));
+    lb_attributes = add_text_attrs text (add_docs_attrs docs attrs);
     lb_loc = make_loc loc;
   }
 
@@ -393,42 +378,16 @@ let mklbs ext rf lb =
   addlb lbs lb
 
 let val_of_let_bindings ~loc lbs =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           ~docs:(Lazy.force lb.lb_docs)
-           ~text:(Lazy.force lb.lb_text)
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-  let str = mkstr ~loc (Pstr_value(lbs.lbs_rec, List.rev bindings)) in
-  match lbs.lbs_extension with
-  | None -> str
-  | Some id -> ghstr ~loc (Pstr_extension((id, PStr [str]), []))
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkstr ~loc (Pstr_value lbs)
 
 let expr_of_let_bindings ~loc lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-    mkexp_attrs ~loc (Pexp_let(lbs.lbs_rec, List.rev bindings, body))
-      (lbs.lbs_extension, [])
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkexp ~loc (Pexp_let (lbs, body))
 
 let class_of_let_bindings ~loc lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-    (* Our use of let_bindings(no_ext) guarantees the following: *)
-    assert (lbs.lbs_extension = None);
-    mkclass ~loc (Pcl_let (lbs.lbs_rec, List.rev bindings, body))
+  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
+  mkclass ~loc (Pcl_let (lbs, body))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,

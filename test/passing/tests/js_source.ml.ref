@@ -70,7 +70,6 @@ let hex_without_modifier = 0x32f
 let hex_with_modifier = 0x32g
 let float_without_modifer = 1.2e3
 let float_with_modifer = 1.2g
-
 let%foo x = 42
 
 let%foo _ = ()
