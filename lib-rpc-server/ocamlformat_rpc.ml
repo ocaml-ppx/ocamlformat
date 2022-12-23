@@ -180,6 +180,6 @@ let rec rpc_main = function
           rpc_main (Version_defined (v, conf)) ) )
 
 let run () =
-  Stdio.In_channel.set_binary_mode stdin true;
-  Stdio.Out_channel.set_binary_mode stdout true;
+  Stdio.In_channel.set_binary_mode stdin true ;
+  Stdio.Out_channel.set_binary_mode stdout true ;
   rpc_main Waiting_for_version
