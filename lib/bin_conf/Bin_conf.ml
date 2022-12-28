@@ -400,9 +400,9 @@ let is_in_listing_file ~listings ~filename =
                           let f =
                             if Sys.win32 then
                               (* Use only forward slashes in the pattern as
-                                 these match match both forward and backward
+                                 these match both forward and backward
                                  slashes in ocaml-re when using the
-                                 "~match_backslashes" flag. *)
+                                 [match_backslashes] flag. *)
                               String.concat ~sep:"/"
                                 (String.split_on_chars f ~on:['\\'])
                             else f
