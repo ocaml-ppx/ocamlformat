@@ -935,9 +935,7 @@ end = struct
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
           | Pcty_signature {pcsig_self; pcsig_fields; _} ->
-              ( match pcsig_self with
-              | Some pcsig_self -> pcsig_self == typ
-              | None -> false )
+              Option.exists pcsig_self ~f
               || List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->
                      match pctf_desc with
                      | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
