@@ -317,7 +317,7 @@ module CT = struct
 
   let map_signature sub {pcsig_self; pcsig_fields} =
     Csig.mk
-      ( map_opt (sub.typ sub) pcsig_self)
+      (map_opt (sub.typ sub) pcsig_self)
       (List.map (sub.class_type_field sub) pcsig_fields)
 end
 

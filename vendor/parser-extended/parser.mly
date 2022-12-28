@@ -1877,7 +1877,7 @@ class_signature:
       { Csig.mk $1 $2 }
 ;
 class_self_type:
-   ioption( LPAREN core_type RPAREN { $2 })
+   ioption (LPAREN core_type RPAREN { $2 })
       { $1 }
 ;
 %inline class_sig_fields:

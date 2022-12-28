@@ -691,8 +691,7 @@ and class_signature =
     }
 (** Values of type [class_signature] represents:
     - [object('selfpat) ... end]
-    - [object ... end] when {{!class_signature.pcsig_self}[pcsig_self]}
-                         is [None] 
+    - [object ... end] when {{!class_signature.pcsig_self}[pcsig_self]} is [None]
 *)
 
 and class_type_field =
