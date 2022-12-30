@@ -177,8 +177,6 @@ let sequence cmts xexp =
   in
   sequence_ xexp
 
-type functor_arg = Unit | Named of label option loc * module_type Ast.xt
-
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_type cmts ~for_functor_kw ~source_is_long
@@ -188,18 +186,13 @@ let rec functor_type cmts ~for_functor_kw ~source_is_long
   | {pmty_desc= Pmty_functor (fp, body); pmty_loc; pmty_attributes}
     when for_functor_kw
          || (List.is_empty pmty_attributes && not (source_is_long mty)) ->
-      let functor_arg =
-        match fp with
-        | Named (arg, arg_mty) -> Named (arg, sub_mty ~ctx arg_mty)
-        | Unit -> Unit
-      in
       let body = sub_mty ~ctx body in
       let xargs, xbody =
         match pmty_attributes with
         | [] -> functor_type cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (Location.mkloc functor_arg pmty_loc :: xargs, xbody)
+      (Location.mkloc fp pmty_loc :: xargs, xbody)
   | _ -> ([], xmty)
 
 (* The sugar is different when used with the [functor] keyword. The syntax
@@ -210,19 +203,13 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
   | {pmod_desc= Pmod_functor (fp, body); pmod_loc; pmod_attributes}
     when for_functor_kw
          || (List.is_empty pmod_attributes && not (source_is_long me)) ->
-      let functor_arg =
-        match fp with
-        | Named (arg, arg_mt) -> Named (arg, sub_mty ~ctx arg_mt)
-        | Unit -> Unit
-      in
-      let ctx = Mod body in
       let body = sub_mod ~ctx body in
       let xargs, xbody_me =
         match pmod_attributes with
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (Location.mkloc functor_arg pmod_loc :: xargs, xbody_me)
+      (Location.mkloc fp pmod_loc :: xargs, xbody_me)
   | _ -> ([], xme)
 
 let mod_with pmty =
