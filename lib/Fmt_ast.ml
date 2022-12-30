@@ -2226,8 +2226,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (parens || not (List.is_empty pexp_attributes))
             c.conf
             ( hvbox 2
-                (fmt_module c keyword ~eqty:":" name xargs (Some xbody) xmty
-                   [] ~epi:(str "in") ~can_sparse ?ext ~rec_flag:false )
+                (fmt_module c ctx keyword ~eqty:":" name xargs (Some xbody)
+                   xmty [] ~epi:(str "in") ~can_sparse ?ext ~rec_flag:false )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
@@ -3357,15 +3357,16 @@ and fmt_extension_constructor c ctx ec =
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
        $ fmt_attributes_and_docstrings c pext_attributes )
 
-and fmt_functor_arg c {loc; txt= arg} =
+and fmt_functor_param c ctx {loc; txt= arg} =
   match arg with
-  | Sugar.Unit -> Cmts.fmt c loc (str "()")
-  | Sugar.Named (name, mt) ->
+  | Unit -> Cmts.fmt c loc (str "()")
+  | Named (name, mt) ->
+      let xmt = sub_mty ~ctx mt in
       Cmts.fmt c loc
         (wrap "(" ")"
            (hovbox 0
               ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ compose_module (fmt_module_type c mt) ~f:Fn.id ) ) )
+              $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) )
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3403,7 +3404,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
             ( str "functor"
             $ fmt_attributes c ~pre:Blank pmty_attributes
             $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" (fmt_functor_arg c)
+            $ list xargs "@;<1 2>" (fmt_functor_param c ctx)
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
       ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
@@ -3618,14 +3619,16 @@ and fmt_class_exprs ?ext c ctx cls =
          $ hovbox 0
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
 
-and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
-    xargs xbody xmty attributes ~rec_flag =
+and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
+    name xargs xbody xmty attributes ~rec_flag =
   let arg_blks =
     List.map xargs ~f:(fun {loc; txt} ->
         let txt =
           match txt with
-          | Sugar.Unit -> `Unit
-          | Sugar.Named (name, x) -> `Named (name, fmt_module_type c x)
+          | Unit -> `Unit
+          | Named (name, mt) ->
+              let xmt = sub_mty ~ctx mt in
+              `Named (name, fmt_module_type c xmt)
         in
         {loc; txt} )
   in
@@ -3733,7 +3736,7 @@ and fmt_module_declaration ?ext c ctx ~rec_flag ~first pmd =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module ?ext c keyword pmd_name xargs None ?eqty (Some xmty)
+    (fmt_module ?ext c ctx keyword pmd_name xargs None ?eqty (Some xmty)
        ~rec_flag:(rec_flag && first) pmd_attributes )
 
 and fmt_module_substitution ?ext c ctx pms =
@@ -3749,7 +3752,7 @@ and fmt_module_substitution ?ext c ctx pms =
   in
   let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
-    (fmt_module ?ext c "module" ~eqty:":=" pms_name [] None (Some xmty)
+    (fmt_module ?ext c ctx "module" ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes ~rec_flag:false )
 
 and fmt_module_type_declaration ?ext ?eqty c ctx pmtd =
@@ -3757,7 +3760,7 @@ and fmt_module_type_declaration ?ext ?eqty c ctx pmtd =
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
   let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
-  fmt_module ?ext ?eqty c "module type" pmtd_name [] None ~rec_flag:false
+  fmt_module ?ext ?eqty c ctx "module type" pmtd_name [] None ~rec_flag:false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -3817,13 +3820,13 @@ and fmt_with_constraint c ctx ~pre = function
       let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
-      $ fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
+      $ fmt_module c ctx "module type" m1 [] None ~rec_flag:false m2 []
   | Pwith_modtypesubst (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
-      $ fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2
-          []
+      $ fmt_module c ctx ~eqty:":=" "module type" m1 [] None ~rec_flag:false
+          m2 []
 
 and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
   match me_f.pmod_desc with
@@ -3945,7 +3948,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                    ( str "functor"
                    $ fmt_attributes c ~pre:Blank atrs
                    $ fmt "@;<1 2>"
-                   $ list xargs "@;<1 2>" (fmt_functor_arg c)
+                   $ list xargs "@;<1 2>" (fmt_functor_param c ctx)
                    $ fmt "@;<1 2>->@;<1 2>"
                    $ compose_module (fmt_module_expr c me) ~f:(hvbox 0) ) )
             ) }
@@ -4272,7 +4275,7 @@ and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
     | _ -> (xbody, None)
   in
   Cmts.fmt c pmb.pmb_loc
-    (fmt_module ?ext c keyword ~rec_flag:(rec_flag && first) ~eqty:":"
+    (fmt_module ?ext c ctx keyword ~rec_flag:(rec_flag && first) ~eqty:":"
        pmb.pmb_name xargs (Some xbody) xmty pmb.pmb_attributes )
 
 let fmt_toplevel_directive c ~semisemi dir =
