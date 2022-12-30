@@ -1,60 +1,47 @@
 [![Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-ppx%2Focamlformat%2Fmain&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml-ppx/ocamlformat)
 
-# OCamlFormat
+# 🎨 ocamlformat
 
-Hello, new user! Welcome! :wave:
+ocamlformat is a tool for formatting OCaml code. It automatically adjusts the layout of your code to follow the recommended style guidelines, making it easier to read and understand.
 
-If you are here, you are probably interested in using a formatting tool for your code base, so that you do not have to worry about formatting it by hand, and to speed up code review by focusing on the important parts.
+## 🚀 Installation
 
-OCamlFormat is probably what you are after!
+To use ocamlformat, you will need to have [OCaml](https://ocaml.org/) and [opam](https://opam.ocaml.org/) (the OCaml package manager) installed on your system.
 
-OCamlFormat works by parsing then outputting again the same OCaml source file in a consistent style.
-
-Read the [documentation](https://ocaml.org/p/ocamlformat) to learn more about OCamlFormat!
-
-## Getting started
-
-### Installation
-
-OCamlFormat can be installed with `opam`:
+Once you have these dependencies, installation is a breeze! Just run the following command:
 
 ```
 opam install ocamlformat
 ```
 
-Alternatively, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instructions.
+## 💻 Usage
 
-### Formatting code!
+Formatting your code with ocamlformat is super simple! Just run the following command:
 
-Setting up your project to use the default profile and the OCamlFormat version you installed (hopefully the last one) in this `.ocamlformat` file is considered good practice:
+```
+ocamlformat file.ml
+```
+
+You can also specify a configuration file to customize the formatting behavior of ocamlformat.
+To set up your project to use the default profile and the ocamlformat version you installed let's create a configuration file named `.ocamlformat` containing:
+
 ```
 profile = default
 version = 0.24.1
 ```
 
-To manually invoke OCamlformat the general command is:
+For more information on configuration options, check out the [documentation](https://ocaml.org/p/ocamlformat) or run `ocamlformat --help`.
+
+The most convenient way to format your code is through the `dune` build system. Just run the following command:
 
 ```
-ocamlformat [OPTION]... [SRC]...
-```
-See `ocamlformat --help` or `man ocamlformat` for the detail about options.
-
-You can also view it [online](https://github.com/ocaml-ppx/ocamlformat/blob/main/ocamlformat-help.txt).
-
-The most common usecase involves using the `dune` build system, once your project is correctly setup (see [Dune's manual](https://dune.readthedocs.io/en/stable/formatting.html#formatting-a-project)) you can reformat your project using:
-
-```
-dune build @fmt
+dune fmt
 ```
 
-## Community
+## 🤝 Contributing
 
-* forum: <https://discuss.ocaml.org/tags/ocamlformat>
-* github: <https://github.com/ocaml-ppx/ocamlformat>
-* issues: <https://github.com/ocaml-ppx/ocamlformat/issues>
+We welcome contributions to ocamlformat! If you find a bug or want to suggest a feature, please open an issue on the [GitHub repository](https://github.com/ocaml-ppx/ocamlformat). If you want to contribute code, please follow the [contributing guidelines](./CONTRIBUTING.md) and open a pull request.
 
-See [CONTRIBUTING](./CONTRIBUTING.md) for how to help out.
+## 📜 License
 
-## License
-
-OCamlFormat is [MIT-licensed](./LICENSE.md).
+ocamlformat is released under the [MIT License](./LICENSE.md).
