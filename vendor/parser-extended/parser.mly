@@ -1119,6 +1119,8 @@ module_expr:
       { mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
   | STRUCT attributes structure error
       { unclosed "struct" $loc($1) "end" $loc($4) }
+  | SIG error
+      { expecting $loc($1) "struct" }
   | FUNCTOR attrs = attributes args = functor_args MINUSGREATER me = module_expr
       { wrap_mod_attrs ~loc:$sloc attrs (
           List.fold_left (fun acc (startpos, arg) ->
@@ -1280,6 +1282,8 @@ structure_item:
 module_binding_body:
     EQUAL me = module_expr
       { me }
+  | COLON error
+      { expecting $loc($1) "=" }
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
@@ -1412,6 +1416,8 @@ module_type:
       { mkmty ~loc:$sloc ~attrs (Pmty_signature s) }
   | SIG attributes signature error
       { unclosed "sig" $loc($1) "end" $loc($4) }
+  | STRUCT error
+      { expecting $loc($1) "sig" }
   | FUNCTOR attrs = attributes args = functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
@@ -1431,6 +1437,8 @@ module_type:
   | mkmty(
       mkrhs(mty_longident)
         { Pmty_ident $1 }
+    | LPAREN RPAREN MINUSGREATER module_type
+        { Pmty_functor(Unit, $4) }
     | module_type MINUSGREATER module_type
         %prec below_WITH
         { Pmty_functor(Named (mknoloc None, $1), $3) }
@@ -1524,6 +1532,8 @@ signature_item:
 module_declaration_body:
     COLON mty = module_type
       { mty }
+  | EQUAL error
+      { expecting $loc($1) ":" }
   | mkmty(
       arg_and_pos = functor_arg body = module_declaration_body
         { let (_, arg) = arg_and_pos in
@@ -2159,15 +2169,21 @@ expr:
       { let ext, attrs = $2 in
         let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
         Pexp_ifthenelse ([br], None), (ext, []) }
-  | WHILE ext_attributes seq_expr DO seq_expr DONE
-      { Pexp_while($3, $5), $2 }
-  | FOR ext_attributes pattern EQUAL seq_expr direction_flag seq_expr DO
-    seq_expr DONE
-      { Pexp_for($3, $5, $7, $6, $9), $2 }
+  | WHILE ext_attributes seq_expr do_done_expr
+      { Pexp_while($3, $4), $2 }
+  | FOR ext_attributes pattern EQUAL seq_expr direction_flag seq_expr
+    do_done_expr
+      { Pexp_for($3, $5, $7, $6, $8), $2 }
   | ASSERT ext_attributes simple_expr %prec below_HASH
       { Pexp_assert $3, $2 }
   | LAZY ext_attributes simple_expr %prec below_HASH
       { Pexp_lazy $3, $2 }
+;
+%inline do_done_expr:
+  | DO e = seq_expr DONE
+      { e }
+  | DO seq_expr error
+      { unclosed "do" $loc($1) "done" $loc($2) }
 ;
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
