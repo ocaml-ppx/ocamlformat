@@ -311,13 +311,6 @@
 -and pattern = wrap Parser.parse_pattern
 -let module_type = wrap Parser.parse_module_type
 -let module_expr = wrap Parser.parse_module_expr
--
--let longident = wrap Parser.parse_any_longident
--let val_ident = wrap Parser.parse_val_longident
--let constr_ident= wrap Parser.parse_constr_longident
--let extended_module_path = wrap Parser.parse_mod_ext_longident
--let simple_module_path = wrap Parser.parse_mod_longident
--let type_ident = wrap Parser.parse_mty_longident
 +let implementation = wrap Parser.Incremental.implementation
 +and interface = wrap Parser.Incremental.interface
 +and toplevel_phrase = wrap Parser.Incremental.toplevel_phrase
@@ -327,7 +320,13 @@
 +and pattern = wrap Parser.Incremental.parse_pattern
 +let module_type = wrap Parser.Incremental.parse_module_type
 +let module_expr = wrap Parser.Incremental.parse_module_expr
-+
+ 
+-let longident = wrap Parser.parse_any_longident
+-let val_ident = wrap Parser.parse_val_longident
+-let constr_ident= wrap Parser.parse_constr_longident
+-let extended_module_path = wrap Parser.parse_mod_ext_longident
+-let simple_module_path = wrap Parser.parse_mod_longident
+-let type_ident = wrap Parser.parse_mty_longident
 +let longident = wrap Parser.Incremental.parse_any_longident
 +let val_ident = wrap Parser.Incremental.parse_val_longident
 +let constr_ident= wrap Parser.Incremental.parse_constr_longident
@@ -341,6 +340,35 @@
  let prepare_error err =
 --- parser-upstream/parser.mly
 +++ parser-standard/parser.mly
+@@@@
+                                            make_loc closing_loc, closing_name)))
+ 
+ let expecting loc nonterm =
+     raise Syntaxerr.(Error(Expecting(make_loc loc, nonterm)))
+ 
+-let removed_string_set loc =
+-  raise(Syntaxerr.Error(Syntaxerr.Removed_string_set(make_loc loc)))
+-
+ (* Using the function [not_expecting] in a semantic action means that this
+    syntactic form is recognized by the parser but is in fact incorrect. This
+    idiom is used in a few places to produce ad hoc syntax error messages. *)
+ 
+ (* This idiom should be used as little as possible, because it confuses the
+@@@@
+ let builtin_arraylike_name loc _ ~assign paren_kind n =
+   let opname = if assign then "set" else "get" in
+   let opname = if !Clflags.unsafe then "unsafe_" ^ opname else opname in
+   let prefix = match paren_kind with
+     | Paren -> Lident "Array"
+-    | Bracket ->
+-        if assign then removed_string_set loc
+-        else Lident "String"
++    | Bracket -> Lident "String"
+     | Brace ->
+        let submodule_name = match n with
+          | One -> "Array1"
+          | Two -> "Array2"
+          | Three -> "Array3"
 @@@@
  %token SEMI                   ";"
  %token SEMISEMI               ";;"
