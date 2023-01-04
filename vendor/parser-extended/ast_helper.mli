@@ -467,7 +467,7 @@ module Ci:
 (** Class signatures *)
 module Csig:
   sig
-    val mk: core_type -> class_type_field list -> class_signature
+    val mk: core_type option -> class_type_field list -> class_signature
   end
 
 (** Class structures *)

@@ -11,8 +11,7 @@
           class_type ([1,0+10]..[1,0+16])
             Pcty_signature
             class_signature
-              core_type ([1,0+16]..[1,0+16])
-                Ptyp_any
+              None
               []
     ]
 ]

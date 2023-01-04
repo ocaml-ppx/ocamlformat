@@ -686,13 +686,12 @@ and class_type_desc =
 
 and class_signature =
     {
-     pcsig_self: core_type;
+     pcsig_self: core_type option;
      pcsig_fields: class_type_field list;
     }
 (** Values of type [class_signature] represents:
     - [object('selfpat) ... end]
-    - [object ... end] when {{!class_signature.pcsig_self}[pcsig_self]}
-                         is {{!core_type_desc.Ptyp_any}[Ptyp_any]}
+    - [object ... end] when {{!class_signature.pcsig_self}[pcsig_self]} is [None]
 *)
 
 and class_type_field =

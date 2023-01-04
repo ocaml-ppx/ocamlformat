@@ -2665,31 +2665,26 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | Pctf_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let cmts_after_self = Cmts.fmt_after c self_.ptyp_loc in
   let self_ =
-    match self_ with
-    | {ptyp_desc= Ptyp_any; ptyp_attributes= []; _} -> None
-    | s -> Some s
+    opt self_ (fun self_ ->
+        let no_attr typ = List.is_empty typ.ptyp_attributes in
+        fmt "@;"
+        $ Params.parens_if (no_attr self_) c.conf
+            (fmt_core_type c (sub_typ ~ctx self_)) )
   in
-  let no_attr typ = List.is_empty typ.ptyp_attributes in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
   let ast x = Ctf x in
   hvbox 0
     (Params.parens_if parens c.conf
        ( hvbox 2
-           ( hvbox 0
-               ( str "object"
-               $ fmt_extension_suffix c ext
-               $ opt self_ (fun self_ ->
-                     fmt "@;"
-                     $ Params.parens_if (no_attr self_) c.conf
-                         (fmt_core_type c (sub_typ ~ctx self_)) ) )
-           $ cmts_after_self
+           ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
            $ ( match fields with
              | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
                  str "\n"
              | _ -> noop )
-           $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
+           $ fmt_or_k (List.is_empty fields)
+               (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
+               (fmt "@;<1000 0>")
            $ fmt_item_list c ctx update_config ast fmt_item fields )
        $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
        $ str "end" ) )
