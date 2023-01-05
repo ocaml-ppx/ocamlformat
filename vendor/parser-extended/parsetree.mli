@@ -423,7 +423,7 @@ and expression_desc =
            values). *)
   | Pexp_object of class_structure  (** [object ... end] *)
   | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
-  | Pexp_pack of module_expr
+  | Pexp_pack of module_expr * package_type option
       (** [(module ME)].
 
            [(module ME : S)] is represented as

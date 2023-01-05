@@ -1990,29 +1990,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (parens || not (List.is_empty pexp_attributes))
         c.conf
         (fmt_constant c ?epi const $ fmt_atrs)
-  | Pexp_constraint
-      ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
-      , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _} ) ->
-      let opn_paren =
-        match c.conf.fmt_opts.indicate_multiline_delimiters.v with
-        | `No | `Closing_on_separate_line -> str "("
-        | `Space -> fits_breaks "(" "( "
-      in
-      let cls_paren = closing_paren c ~offset:(-2) in
-      hovbox 0
-        (compose_module
-           (fmt_module_expr c (sub_mod ~ctx me))
-           ~f:(fun m ->
-             Params.parens_if parens c.conf
-               (hvbox 2
-                  (Cmts.fmt c pexp_loc
-                     ( hovbox 0
-                         ( opn_paren $ str "module"
-                         $ fmt_extension_suffix c ext
-                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
-                         )
-                     $ fmt_package_type c ctx cnstrs
-                     $ cls_paren $ fmt_atrs ) ) ) ) )
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2330,7 +2307,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
   | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
-  | Pexp_pack me ->
+  | Pexp_pack (me, None) ->
       let fmt_mod m =
         Params.parens_if parens c.conf
           ( Params.Exp.wrap c.conf ~parens:true
@@ -2339,6 +2316,27 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
+  | Pexp_pack (me, Some (id, cnstrs)) ->
+      let opn_paren =
+        match c.conf.fmt_opts.indicate_multiline_delimiters.v with
+        | `No | `Closing_on_separate_line -> str "("
+        | `Space -> fits_breaks "(" "( "
+      in
+      let cls_paren = closing_paren c ~offset:(-2) in
+      hovbox 0
+        (compose_module
+           (fmt_module_expr c (sub_mod ~ctx me))
+           ~f:(fun m ->
+             Params.parens_if parens c.conf
+               (hvbox 2
+                  (Cmts.fmt c pexp_loc
+                     ( hovbox 0
+                         ( opn_paren $ str "module"
+                         $ fmt_extension_suffix c ext
+                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
+                         )
+                     $ fmt_package_type c ctx cnstrs
+                     $ cls_paren $ fmt_atrs ) ) ) ) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid, (typ1, typ2), exp) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in

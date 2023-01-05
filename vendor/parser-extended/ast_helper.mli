@@ -181,7 +181,8 @@ module Exp:
               -> expression
     val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
     val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
-    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
+    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> package_type option 
+              -> expression
     val open_: ?loc:loc -> ?attrs:attrs -> lid -> expression -> expression
     val letopen: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
                -> expression
