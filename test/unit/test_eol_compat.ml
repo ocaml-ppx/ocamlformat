@@ -1,4 +1,4 @@
-open Ocamlformat
+open Ocamlformat_lib
 
 let normalize_eol_tests =
   let test name ~exclude_locs input ~lf ~crlf =

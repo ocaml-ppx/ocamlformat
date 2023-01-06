@@ -1,5 +1,5 @@
 open Base
-open Ocamlformat
+open Ocamlformat_lib
 
 let eval_fmt term =
   let buffer = Buffer.create 0 in

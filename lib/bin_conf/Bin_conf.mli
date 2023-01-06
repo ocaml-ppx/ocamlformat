@@ -14,15 +14,15 @@ val build_config :
   -> root:Fpath.t option
   -> file:string
   -> is_stdin:bool
-  -> (Ocamlformat.Conf.t, string) Result.t
+  -> (Ocamlformat_lib.Conf.t, string) Result.t
 
 type file = Stdin | File of string
 
 type input =
-  { kind: Ocamlformat.Syntax.t
+  { kind: Ocamlformat_lib.Syntax.t
   ; name: string
   ; file: file
-  ; conf: Ocamlformat.Conf.t }
+  ; conf: Ocamlformat_lib.Conf.t }
 
 (** Formatting action: input type and source, and output destination. *)
 type action =
@@ -32,7 +32,7 @@ type action =
   | Inplace of input list  (** Format in-place, overwriting input file(s). *)
   | Check of input list
       (** Check whether the input files already are formatted. *)
-  | Print_config of Ocamlformat.Conf.t
+  | Print_config of Ocamlformat_lib.Conf.t
       (** Print the configuration and exit. *)
   | Numeric of input
 

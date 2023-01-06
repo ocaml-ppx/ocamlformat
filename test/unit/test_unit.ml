@@ -1,5 +1,5 @@
 open Base
-open Ocamlformat
+open Ocamlformat_lib
 
 module Test_location = struct
   let test_compare_width_decreasing =

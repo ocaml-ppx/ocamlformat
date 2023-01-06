@@ -1,4 +1,4 @@
-open Ocamlformat
+open Ocamlformat_lib
 
 let find name =
   List.find (fun Conf_decl.UI.{names; _} ->

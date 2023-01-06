@@ -9,28 +9,10 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "ocaml" {>= "4.08"}
-  "alcotest" {with-test & >= "1.3.0"}
-  "base" {>= "v0.12.0"}
   "cmdliner" {>= "1.1.0"}
   "dune" {>= "2.8"}
-  "dune-build-info"
-  "either"
-  "fix"
-  "fpath"
-  "menhir" {>= "20201216"}
-  "menhirLib" {>= "20201216"}
-  "menhirSdk" {>= "20201216"}
-  "ocaml-version" {>= "3.5.0"}
-  "ocamlformat-rpc-lib" {with-test & = version}
-  "ocp-indent" {>= "1.8.0"}
+  "ocamlformat-lib" {= version}
   "re" {>= "1.10.3"}
-  "stdio"
-  "uuseg" {>= "10.0.0"}
-  "uutf" {>= "1.0.1"}
-  "csexp" {>= "1.4.0"}
-  "astring"
-  "result"
-  "camlp-streams"
   "odoc" {with-doc}
 ]
 build: [

@@ -1,0 +1,1 @@
+license: ["MIT" "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"] # OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license
