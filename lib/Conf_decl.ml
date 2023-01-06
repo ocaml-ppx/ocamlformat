@@ -109,6 +109,8 @@ module Store = struct
   let add store ele = Pack ele :: store
 
   let merge s1 s2 = s1 @ s2
+
+  let to_ui = List.map ~f:(fun (Pack opt) -> to_ui opt)
 end
 
 let deprecated ~since:dversion dmsg = {dmsg; dversion}

@@ -87,6 +87,8 @@ module Store : sig
   val empty : t
 
   val merge : t -> t -> t
+
+  val to_ui : t -> Conf_t.t UI.t list
 end
 
 val choice :
