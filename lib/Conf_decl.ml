@@ -89,6 +89,7 @@ let to_ui option =
 
 type 'a declarator =
      names:string list
+  -> default:Conf_t.t
   -> doc:string
   -> kind:kind
   -> ?allow_inline:bool
@@ -200,7 +201,7 @@ let map_status : [`Valid | `Deprecated of deprecated] -> status = function
   | `Valid -> `Valid
   | `Deprecated x -> `Deprecated x
 
-let flag ~default ~names ~doc ~kind
+let flag ~names ~default ~doc ~kind
     ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
     get_value =
   let open Cmdliner in
@@ -208,6 +209,7 @@ let flag ~default ~names ~doc ~kind
     List.filter_map names ~f:(fun n ->
         if String.length n = 1 then None else Some ("no-" ^ n) )
   in
+  let default = default |> get_value |> Conf_t.Elt.v in
   let doc = generated_flag_doc ~allow_inline ~doc ~kind ~default ~status in
   let invert_doc = "Unset $(b," ^ List.last_exn names ^ ")." in
   let docs = section_name kind status in
@@ -235,10 +237,11 @@ let flag ~default ~names ~doc ~kind
   in
   opt
 
-let any converter ~values ~default ~docv ~names ~doc ~kind
+let any converter ~values ~docv ~names ~default ~doc ~kind
     ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
     get_value =
   let open Cmdliner in
+  let default = default |> get_value |> Conf_t.Elt.v in
   let doc =
     generated_doc converter ~allow_inline ~doc ~kind ~default ~status
   in
@@ -267,7 +270,7 @@ let int = any ~values:Int Arg.int
 
 let range = any ~values:Range Range.conv
 
-let ocaml_version = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
+let ocaml_version : _ declarator = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 
 let warn_deprecated (config : Conf_t.t) loc fmt =
   Format.kasprintf
@@ -327,9 +330,11 @@ module Value_removed = struct
     Arg.conv (parse, Arg.conv_printer conv)
 end
 
-let choice ~all ?(removed_values = []) ~names ~doc ~kind
-    ?(allow_inline = Poly.(kind = Formatting)) ?status update =
-  let _, default, _, _ = List.hd_exn all in
+let choice ~all ?(removed_values = []) ~names ~default ~doc ~kind
+    ?(allow_inline = Poly.(kind = Formatting)) ?status update get_value =
+  let default_v = default |> get_value |> Conf_t.Elt.v in
+  let _, default', _, _ = List.hd_exn all in
+  assert Stdlib.(default_v = default') ;
   let name = Option.value_exn (longest names) in
   let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
   let conv =
@@ -361,7 +366,7 @@ let choice ~all ?(removed_values = []) ~names ~doc ~kind
     update conf elt
   in
   any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
-    ~values:(Choice values)
+    ~values:(Choice values) get_value
 
 let removed_option ~names ~since ~msg =
   let removed = {rversion= since; rmsg= msg} in
@@ -465,7 +470,9 @@ let term_of_store store =
     in
     compose_terms update_term acc
   in
-  let term = List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store in
+  let term =
+    List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store
+  in
   term
 
 let print_config store c =

@@ -40,6 +40,7 @@ type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 (** The type of option declarators, that is functions returning a declaration *)
 type 'a declarator =
      names:string list
+  -> default:Conf_t.t
   -> doc:string
   -> kind:kind
   -> ?allow_inline:bool
@@ -96,21 +97,17 @@ val choice :
   -> ?removed_values:Value_removed.t list
   -> 'a declarator
 
-val flag : default:bool -> bool declarator
+val flag : bool declarator
 
-val int : default:int -> docv:string -> int declarator
+val int : docv:string -> int declarator
 
-val range :
-     default:(string -> Range.t)
-  -> docv:string
-  -> (string -> Range.t) declarator
+val range : docv:string -> (string -> Range.t) declarator
 
-val ocaml_version : default:Ocaml_version.t -> Ocaml_version.t declarator
+val ocaml_version : Ocaml_version.t declarator
 
 val any :
      'a Cmdliner.Arg.conv
   -> values:typ
-  -> default:'a
   -> docv:string
   -> 'a declarator
 
