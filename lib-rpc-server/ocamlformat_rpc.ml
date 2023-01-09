@@ -104,7 +104,7 @@ let handle_format_error e output = output stdout (`Error e)
 
 let handle_path_error e output = output stdout (`Error e)
 
-let handle_config_error (e : Config_option.Error.t) output =
+let handle_config_error (e : Conf.Error.t) output =
   let msg =
     match e with
     | Bad_value (x, y) ->
