@@ -101,9 +101,13 @@ type 'a declarator =
 type pack = Pack : 'a t -> pack
 
 module Store = struct
-  type t = pack list
+  type elt = pack
+
+  type t = elt list
 
   type store = t
+
+  let elt opt = Pack opt
 
   let empty = []
 
@@ -112,6 +116,40 @@ module Store = struct
   let merge s1 s2 = s1 @ s2
 
   let to_ui = List.map ~f:(fun (Pack opt) -> to_ui opt)
+
+  let to_term store =
+    let compose_terms (t1 : ('a -> 'b) Term.t) (t2 : ('b -> 'c) Term.t) :
+        ('a -> 'c) Term.t =
+      let open Term in
+      const (fun f1 f2 a -> f2 (f1 a)) $ t1 $ t2
+    in
+    let compose (acc : (Conf_t.t -> Conf_t.t) Term.t)
+        (Pack {term; update; get_value; to_string; _}) =
+      let open Term in
+      let update_term =
+        const (fun x ->
+            match x with
+            | None -> fun config -> config
+            | Some x ->
+                let a config =
+                  let redundant =
+                    String.equal (to_string x)
+                      (config |> get_value |> Conf_t.Elt.v |> to_string)
+                  in
+                  let elt = get_value config in
+                  let new_elt = update_elt ~redundant elt x `Commandline in
+                  let config = update config new_elt in
+                  config
+                in
+                a )
+        $ term
+      in
+      compose_terms update_term acc
+    in
+    let term =
+      List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store
+    in
+    term
 end
 
 let deprecated ~since:dversion dmsg = {dmsg; dversion}
@@ -270,7 +308,8 @@ let int = any ~values:Int Arg.int
 
 let range = any ~values:Range Range.conv
 
-let ocaml_version : _ declarator = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
+let ocaml_version : _ declarator =
+  any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 
 let warn_deprecated (config : Conf_t.t) loc fmt =
   Format.kasprintf
@@ -334,7 +373,7 @@ let choice ~all ?(removed_values = []) ~names ~default ~doc ~kind
     ?(allow_inline = Poly.(kind = Formatting)) ?status update get_value =
   let default_v = default |> get_value |> Conf_t.Elt.v in
   let _, default', _, _ = List.hd_exn all in
-  assert Stdlib.(default_v = default') ;
+  assert (Stdlib.(default_v = default')) ;
   let name = Option.value_exn (longest names) in
   let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
   let conv =
@@ -439,41 +478,6 @@ let update store ~config ~from:new_from ~name ~value ~inline =
   |> Option.value ~default:(Error (Error.Unknown (name, None)))
 
 let default {default; _} = default
-
-let term_of_store store =
-  let store = List.rev store in
-  let compose_terms (t1 : ('a -> 'b) Term.t) (t2 : ('b -> 'c) Term.t) :
-      ('a -> 'c) Term.t =
-    let open Term in
-    const (fun f1 f2 a -> f2 (f1 a)) $ t1 $ t2
-  in
-  let compose (acc : (Conf_t.t -> Conf_t.t) Term.t)
-      (Pack {term; update; get_value; to_string; _}) =
-    let open Term in
-    let update_term =
-      const (fun x ->
-          match x with
-          | None -> fun config -> config
-          | Some x ->
-              let a config =
-                let redundant =
-                  String.equal (to_string x)
-                    (config |> get_value |> Conf_t.Elt.v |> to_string)
-                in
-                let elt = get_value config in
-                let new_elt = update_elt ~redundant elt x `Commandline in
-                let config = update config new_elt in
-                config
-              in
-              a )
-      $ term
-    in
-    compose_terms update_term acc
-  in
-  let term =
-    List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store
-  in
-  term
 
 let print_config store c =
   let on_pack (Pack {names; to_string; get_value; status; _}) =

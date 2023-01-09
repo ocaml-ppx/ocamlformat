@@ -79,9 +79,13 @@ module Value_removed : sig
 end
 
 module Store : sig
-  type store
+  type elt
+
+  type store = elt list
 
   val add : store -> 'a t -> store
+
+  val elt : 'a t -> elt
 
   type t = store
 
@@ -90,6 +94,8 @@ module Store : sig
   val merge : t -> t -> t
 
   val to_ui : t -> Conf_t.t UI.t list
+
+  val to_term : t -> (Conf_t.t -> Conf_t.t) Cmdliner.Term.t
 end
 
 val choice :
@@ -105,11 +111,7 @@ val range : docv:string -> (string -> Range.t) declarator
 
 val ocaml_version : Ocaml_version.t declarator
 
-val any :
-     'a Cmdliner.Arg.conv
-  -> values:typ
-  -> docv:string
-  -> 'a declarator
+val any : 'a Cmdliner.Arg.conv -> values:typ -> docv:string -> 'a declarator
 
 val removed_option :
   names:string list -> since:Version.t -> msg:string -> unit t
@@ -130,5 +132,3 @@ val update :
 val to_ui : 'a t -> Conf_t.t UI.t
 
 val print_config : Store.t -> Conf_t.t -> unit
-
-val term_of_store : Store.t -> (Conf_t.t -> Conf_t.t) Cmdliner.Term.t

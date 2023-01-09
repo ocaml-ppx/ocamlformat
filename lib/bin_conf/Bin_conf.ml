@@ -336,7 +336,7 @@ let terms =
   [ Term.(
       const (fun lib_conf_modif conf ->
           {conf with lib_conf= lib_conf_modif conf.lib_conf} )
-      $ Decl.term_of_store Conf.options )
+      $ Conf.term )
   ; enable_outside_detected_project
   ; inplace
   ; check
