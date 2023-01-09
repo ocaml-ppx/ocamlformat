@@ -422,7 +422,8 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
                     in
                     (ocp_indent_conf, conf, errors)
                   with
-                  | Invalid_argument e when !global_conf.ignore_invalid_options ->
+                  | Invalid_argument e
+                    when !global_conf.ignore_invalid_options ->
                       warn ~loc "%s" e ;
                       (ocp_indent_conf, conf, errors)
                   | Invalid_argument e ->
