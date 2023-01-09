@@ -774,4 +774,5 @@ let validate () =
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
-let action () = parse info validate set_global_term
+let action () =
+  Cmd.eval_value (Cmd.v info Term.(ret (const validate $ set_global_term)))
