@@ -347,22 +347,18 @@ module Formatting = struct
 
   let update ~f c = {c with fmt_opts= f c.fmt_opts}
 
-  (* removed option *)
   let align_cases =
     let names = ["align-cases"] in
     Decl.removed_option ~names ~since:V.v0_22 ~msg:""
 
-  (* removed option *)
   let align_constructors_decl =
     let names = ["align-constructors-decl"] in
     Decl.removed_option ~names ~since:V.v0_22 ~msg:""
 
-  (* removed option *)
   let align_variants_decl =
     let names = ["align-variants-decl"] in
     Decl.removed_option ~names ~since:V.v0_22 ~msg:""
 
-  (* option declaration *)
   let assignment_operator =
     let doc = "Position of the assignment operator." in
     let names = ["assignment-operator"] in
@@ -381,7 +377,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with assignment_operator= elt}) )
       (fun conf -> conf.fmt_opts.assignment_operator)
 
-  (* option declaration *)
   let break_before_in =
     let doc =
       "Whether the line should break before the $(i,in) keyword of a \
@@ -402,7 +397,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with break_before_in= elt}) )
       (fun conf -> conf.fmt_opts.break_before_in)
 
-  (* option declaration *)
   let break_cases =
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
@@ -431,7 +425,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with break_cases= elt}))
       (fun conf -> conf.fmt_opts.break_cases)
 
-  (* option declaration *)
   let break_collection_expressions =
     let doc =
       "Break collection expressions (lists and arrays) elements by elements."
@@ -451,7 +444,6 @@ module Formatting = struct
         )
       (fun conf -> conf.fmt_opts.break_collection_expressions)
 
-  (* option declaration *)
   let break_colon =
     let doc =
       "Break before or after colon in value binding declarations and type \
@@ -468,7 +460,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with break_colon= elt}))
       (fun conf -> conf.fmt_opts.break_colon)
 
-  (* option declaration *)
   let break_fun_decl =
     let doc = "Style for function declarations and types." in
     let names = ["break-fun-decl"] in
@@ -486,7 +477,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with break_fun_decl= elt}))
       (fun conf -> conf.fmt_opts.break_fun_decl)
 
-  (* option declaration *)
   let break_fun_sig =
     let doc = "Style for function signatures." in
     let names = ["break-fun-sig"] in
@@ -504,7 +494,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with break_fun_sig= elt}))
       (fun conf -> conf.fmt_opts.break_fun_sig)
 
-  (* option declaration *)
   let break_infix =
     let doc = "Break sequence of infix operators." in
     let names = ["break-infix"] in
@@ -524,7 +513,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with break_infix= elt}))
       (fun conf -> conf.fmt_opts.break_infix)
 
-  (* option declaration *)
   let break_infix_before_func =
     let doc =
       "Break infix operators whose right arguments are anonymous functions \
@@ -537,7 +525,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with break_infix_before_func= elt}) )
       (fun conf -> conf.fmt_opts.break_infix_before_func)
 
-  (* option declaration *)
   let break_separators =
     let doc =
       "Break before or after separators such as `;` in list or record \
@@ -561,7 +548,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with break_separators= elt}) )
       (fun conf -> conf.fmt_opts.break_separators)
 
-  (* option declaration *)
   let break_sequences =
     let doc =
       "Force sequence expressions to break irrespective of margin."
@@ -572,7 +558,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with break_sequences= elt}) )
       (fun conf -> conf.fmt_opts.break_sequences)
 
-  (* option declaration *)
   let break_string_literals =
     let doc = "Break string literals." in
     let names = ["break-string-literals"] in
@@ -597,7 +582,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with break_string_literals= elt}) )
       (fun conf -> conf.fmt_opts.break_string_literals)
 
-  (* option declaration *)
   let break_struct =
     let doc = "Break struct-end module items." in
     let names = ["break-struct"] in
@@ -618,7 +602,6 @@ module Formatting = struct
         if elt.v then Elt.make `Force elt.from
         else Elt.make `Natural elt.from )
 
-  (* option declaration *)
   let cases_exp_indent =
     let docv = "COLS" in
     let doc =
@@ -631,7 +614,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with cases_exp_indent= elt}) )
       (fun conf -> conf.fmt_opts.cases_exp_indent)
 
-  (* option declaration *)
   let cases_matching_exp_indent =
     let doc =
       "Indentation of cases right-hand sides which are `match` or `try` \
@@ -651,7 +633,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with cases_matching_exp_indent= elt}) )
       (fun conf -> conf.fmt_opts.cases_matching_exp_indent)
 
-  (* option declaration *)
   let disambiguate_non_breaking_match =
     let doc =
       "Add parentheses around matching constructs that fit on a single line."
@@ -664,7 +645,6 @@ module Formatting = struct
             {f with disambiguate_non_breaking_match= elt} ) )
       (fun conf -> conf.fmt_opts.disambiguate_non_breaking_match)
 
-  (* option declaration *)
   let doc_comments =
     let doc = "Doc comments position." in
     let names = ["doc-comments"] in
@@ -691,7 +671,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with doc_comments= elt}))
       (fun conf -> conf.fmt_opts.doc_comments)
 
-  (* option declaration *)
   let doc_comments_padding =
     let docv = "PADDING" in
     let doc =
@@ -703,7 +682,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with doc_comments_padding= elt}) )
       (fun conf -> conf.fmt_opts.doc_comments_padding)
 
-  (* option declaration *)
   let doc_comments_tag_only =
     let doc = "Position of doc comments with only tags." in
     let names = ["doc-comments-tag-only"] in
@@ -718,7 +696,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with doc_comments_tag_only= elt}) )
       (fun conf -> conf.fmt_opts.doc_comments_tag_only)
 
-  (* removed option *)
   let doc_comments_val =
     let names = ["doc-comments-val"] in
     let msg =
@@ -737,7 +714,6 @@ module Formatting = struct
     in
     Decl.removed_option ~names ~since:V.v0_16 ~msg
 
-  (* option declaration *)
   let dock_collection_brackets =
     let doc =
       "Dock the brackets of lists, arrays and records, so that when the \
@@ -753,19 +729,16 @@ module Formatting = struct
   let concrete_syntax_preserved_msg =
     "Concrete syntax will now always be preserved."
 
-  (* removed option *)
   let escape_chars =
     let names = ["escape-chars"] in
     let msg = concrete_syntax_preserved_msg in
     Decl.removed_option ~names ~since:V.v0_16 ~msg
 
-  (* removed option *)
   let escape_strings =
     let names = ["escape-strings"] in
     let msg = concrete_syntax_preserved_msg in
     Decl.removed_option ~names ~since:V.v0_16 ~msg
 
-  (* option declaration *)
   let exp_grouping =
     let doc = "Style of expression grouping." in
     let names = ["exp-grouping"] in
@@ -780,7 +753,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with exp_grouping= elt}))
       (fun conf -> conf.fmt_opts.exp_grouping)
 
-  (* option declaration *)
   let extension_indent =
     let docv = "COLS" in
     let doc =
@@ -792,13 +764,11 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with extension_indent= elt}) )
       (fun conf -> conf.fmt_opts.extension_indent)
 
-  (* removed option *)
   let extension_sugar =
     let names = ["extension-sugar"] in
     let msg = concrete_syntax_preserved_msg in
     Decl.removed_option ~names ~since:V.v0_17 ~msg
 
-  (* option declaration *)
   let field_space =
     let doc =
       "Whether or not to use a space between a field name and the \
@@ -818,7 +788,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with field_space= elt}))
       (fun conf -> conf.fmt_opts.field_space)
 
-  (* option declaration *)
   let function_indent =
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
@@ -828,7 +797,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with function_indent= elt}) )
       (fun conf -> conf.fmt_opts.function_indent)
 
-  (* option declaration *)
   let function_indent_nested =
     let doc =
       "Whether the $(b,function-indent) parameter should be applied even \
@@ -849,7 +817,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with function_indent_nested= elt}) )
       (fun conf -> conf.fmt_opts.function_indent_nested)
 
-  (* option declaration *)
   let if_then_else =
     let doc = "If-then-else formatting." in
     let names = ["if-then-else"] in
@@ -873,7 +840,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with if_then_else= elt}))
       (fun conf -> conf.fmt_opts.if_then_else)
 
-  (* option declaration *)
   let indent_after_in =
     let docv = "COLS" in
     let doc =
@@ -886,7 +852,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with indent_after_in= elt}) )
       (fun conf -> conf.fmt_opts.indent_after_in)
 
-  (* option declaration *)
   let indicate_multiline_delimiters =
     let doc =
       "How to indicate that two matching delimiters live on different lines."
@@ -910,7 +875,6 @@ module Formatting = struct
             {f with indicate_multiline_delimiters= elt} ) )
       (fun conf -> conf.fmt_opts.indicate_multiline_delimiters)
 
-  (* option declaration *)
   let indicate_nested_or_patterns =
     let doc =
       "Control whether or not to indicate nested or-pattern using \
@@ -933,7 +897,6 @@ module Formatting = struct
         )
       (fun conf -> conf.fmt_opts.indicate_nested_or_patterns)
 
-  (* option declaration *)
   let infix_precedence =
     let doc =
       "Use indentation or also discretionary parentheses to explicitly \
@@ -953,7 +916,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with infix_precedence= elt}) )
       (fun conf -> conf.fmt_opts.infix_precedence)
 
-  (* option declaration *)
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
     let names = ["leading-nested-match-parens"] in
@@ -963,7 +925,6 @@ module Formatting = struct
         )
       (fun conf -> conf.fmt_opts.leading_nested_match_parens)
 
-  (* option declaration *)
   let let_and =
     let doc = "Style of let_and." in
     let names = ["let-and"] in
@@ -978,7 +939,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with let_and= elt}))
       (fun conf -> conf.fmt_opts.let_and)
 
-  (* option declaration *)
   let let_binding_indent =
     let docv = "COLS" in
     let doc =
@@ -991,7 +951,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with let_binding_indent= elt}) )
       (fun conf -> conf.fmt_opts.let_binding_indent)
 
-  (* option declaration *)
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
@@ -1011,7 +970,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with let_binding_spacing= elt}) )
       (fun conf -> conf.fmt_opts.let_binding_spacing)
 
-  (* option declaration *)
   let let_module =
     let doc = "Module binding formatting." in
     let all =
@@ -1028,13 +986,11 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with let_module= elt}))
       (fun conf -> conf.fmt_opts.let_module)
 
-  (* removed option *)
   let let_open =
     let names = ["let-open"] in
     let msg = concrete_syntax_preserved_msg in
     Decl.removed_option ~names ~since:V.v0_17 ~msg
 
-  (* option declaration *)
   let line_endings =
     let doc = "Line endings used." in
     let all =
@@ -1047,7 +1003,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with line_endings= elt}))
       (fun conf -> conf.fmt_opts.line_endings)
 
-  (* option declaration *)
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
@@ -1059,7 +1014,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with margin= elt}) )
       (fun conf -> conf.fmt_opts.margin)
 
-  (* option declaration *)
   let match_indent =
     let docv = "COLS" in
     let doc = "Indentation of match/try cases ($(docv) columns)." in
@@ -1068,7 +1022,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with match_indent= elt}))
       (fun conf -> conf.fmt_opts.match_indent)
 
-  (* option declaration *)
   let match_indent_nested =
     let doc =
       "Whether the $(b,match-indent) parameter should be applied even when \
@@ -1095,7 +1048,6 @@ module Formatting = struct
     let fs = Format.formatter_of_buffer (Buffer.create 0) in
     Int.to_string (Format.pp_get_max_indent fs ())
 
-  (* option declaration *)
   let max_indent =
     let docv = "COLS" in
     let doc =
@@ -1109,7 +1061,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with max_indent= elt}))
       (fun conf -> conf.fmt_opts.max_indent)
 
-  (* option declaration *)
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
     let names = ["module-item-spacing"] in
@@ -1128,7 +1079,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with module_item_spacing= elt}) )
       (fun conf -> conf.fmt_opts.module_item_spacing)
 
-  (* option declaration *)
   let nested_match =
     let doc =
       "Style of a pattern-matching nested in the last case of another \
@@ -1147,7 +1097,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with nested_match= elt}))
       (fun conf -> conf.fmt_opts.nested_match)
 
-  (* option declaration *)
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -1159,7 +1108,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with ocp_indent_compat= elt}) )
       (fun conf -> conf.fmt_opts.ocp_indent_compat)
 
-  (* option declaration *)
   let parens_ite =
     let doc =
       "Uses parentheses around if-then-else branches that spread across \
@@ -1170,7 +1118,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with parens_ite= elt}))
       (fun conf -> conf.fmt_opts.parens_ite)
 
-  (* option declaration *)
   let parens_tuple =
     let doc = "Parens tuple expressions." in
     let names = ["parens-tuple"] in
@@ -1185,7 +1132,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with parens_tuple= elt}))
       (fun conf -> conf.fmt_opts.parens_tuple)
 
-  (* option declaration *)
   let parens_tuple_patterns =
     let doc = "Parens tuple patterns." in
     let names = ["parens-tuple-patterns"] in
@@ -1201,7 +1147,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with parens_tuple_patterns= elt}) )
       (fun conf -> conf.fmt_opts.parens_tuple_patterns)
 
-  (* option declaration *)
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
     let names = ["parse-docstrings"] in
@@ -1210,7 +1155,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with parse_docstrings= elt}) )
       (fun conf -> conf.fmt_opts.parse_docstrings)
 
-  (* option declaration *)
   let parse_toplevel_phrases =
     let doc = "Parse and format toplevel phrases and their output." in
     let names = ["parse-toplevel-phrases"] in
@@ -1219,7 +1163,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with parse_toplevel_phrases= elt}) )
       (fun conf -> conf.fmt_opts.parse_toplevel_phrases)
 
-  (* option declaration *)
   let sequence_blank_line =
     let doc = "Blank line between expressions of a sequence." in
     let names = ["sequence-blank-line"] in
@@ -1236,7 +1179,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with sequence_blank_line= elt}) )
       (fun conf -> conf.fmt_opts.sequence_blank_line)
 
-  (* option declaration *)
   let sequence_style =
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
@@ -1252,7 +1194,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with sequence_style= elt}))
       (fun conf -> conf.fmt_opts.sequence_style)
 
-  (* option declaration *)
   let single_case =
     let doc =
       "Style of pattern matching expressions with only a single case."
@@ -1268,7 +1209,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with single_case= elt}))
       (fun conf -> conf.fmt_opts.single_case)
 
-  (* option declaration *)
   let space_around_arrays =
     let doc = "Add a space inside the delimiters of arrays." in
     let names = ["space-around-arrays"] in
@@ -1277,7 +1217,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with space_around_arrays= elt}) )
       (fun conf -> conf.fmt_opts.space_around_arrays)
 
-  (* option declaration *)
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
     let names = ["space-around-lists"] in
@@ -1286,7 +1225,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with space_around_lists= elt}) )
       (fun conf -> conf.fmt_opts.space_around_lists)
 
-  (* option declaration *)
   let space_around_records =
     let doc = "Add a space inside the delimiters of records." in
     let names = ["space-around-records"] in
@@ -1295,7 +1233,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with space_around_records= elt}) )
       (fun conf -> conf.fmt_opts.space_around_records)
 
-  (* option declaration *)
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
     let names = ["space-around-variants"] in
@@ -1304,7 +1241,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with space_around_variants= elt}) )
       (fun conf -> conf.fmt_opts.space_around_variants)
 
-  (* option declaration *)
   let stritem_extension_indent =
     let docv = "COLS" in
     let doc =
@@ -1317,7 +1253,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with stritem_extension_indent= elt}) )
       (fun conf -> conf.fmt_opts.stritem_extension_indent)
 
-  (* option declaration *)
   let type_decl =
     let doc = "Style of type declaration." in
     let names = ["type-decl"] in
@@ -1333,7 +1268,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with type_decl= elt}))
       (fun conf -> conf.fmt_opts.type_decl)
 
-  (* option declaration *)
   let type_decl_indent =
     let docv = "COLS" in
     let doc =
@@ -1346,7 +1280,6 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with type_decl_indent= elt}) )
       (fun conf -> conf.fmt_opts.type_decl_indent)
 
-  (* option declaration *)
   let wrap_comments =
     let doc =
       "Wrap comments and docstrings. Comments and docstrings are divided \
@@ -1360,7 +1293,6 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with wrap_comments= elt}))
       (fun conf -> conf.fmt_opts.wrap_comments)
 
-  (* option declaration *)
   let wrap_fun_args =
     let doc = "Style for function call." in
     let names = ["wrap-fun-args"] in
@@ -1449,7 +1381,6 @@ let kind = Decl.Operational
 module Operational = struct
   let update ~f c = {c with opr_opts= f c.opr_opts}
 
-  (* option declaration *)
   let comment_check =
     let doc =
       "Control whether to check comments and documentation comments. Unsafe \
@@ -1459,14 +1390,12 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with comment_check= elt}))
       (fun conf -> conf.opr_opts.comment_check)
 
-  (* option declaration *)
   let debug =
     let doc = "Generate debugging output." in
     Decl.flag ~default ~names:["g"; "debug"] ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with debug= elt}))
       (fun conf -> conf.opr_opts.debug)
 
-  (* option declaration *)
   let disable =
     let doc =
       "Disable ocamlformat. This is used in attributes to locally disable \
@@ -1477,14 +1406,12 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with disable= elt}))
       (fun conf -> conf.opr_opts.disable)
 
-  (* option declaration *)
   let margin_check =
     let doc = "Emit a warning if the formatted output exceeds the margin." in
     Decl.flag ~default ~names:["margin-check"] ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with margin_check= elt}))
       (fun conf -> conf.opr_opts.margin_check)
 
-  (* option declaration *)
   let max_iters =
     let docv = "N" in
     let doc =
@@ -1495,21 +1422,18 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with max_iters= elt}))
       (fun conf -> conf.opr_opts.max_iters)
 
-  (* option declaration *)
   let ocaml_version =
     let doc = "Version of OCaml syntax of the output." in
     Decl.ocaml_version ~names:["ocaml-version"] ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with ocaml_version= elt}))
       (fun conf -> conf.opr_opts.ocaml_version)
 
-  (* option declaration *)
   let quiet =
     let doc = "Quiet. May be set in $(b,.ocamlformat)." in
     Decl.flag ~default ~names:["q"; "quiet"] ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with quiet= elt}))
       (fun conf -> conf.opr_opts.quiet)
 
-  (* option declaration *)
   let range =
     let doc =
       "Apply the formatting to a range of lines. Must be included between 1 \
@@ -1522,7 +1446,6 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with range= elt}))
       (fun conf -> conf.opr_opts.range)
 
-  (* option declaration *)
   let disable_conf_attrs =
     let doc = "Disable configuration in attributes." in
     Decl.flag ~default ~names:["disable-conf-attrs"] ~doc ~kind
@@ -1530,7 +1453,6 @@ module Operational = struct
         update conf ~f:(fun f -> {f with disable_conf_attrs= elt}) )
       (fun conf -> conf.opr_opts.disable_conf_attrs)
 
-  (* option declaration *)
   let version_check =
     let doc =
       "Check that the version matches the one specified in .ocamlformat."
