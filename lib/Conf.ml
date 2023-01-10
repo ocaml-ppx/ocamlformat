@@ -1008,10 +1008,7 @@ module Formatting = struct
     let doc = "Format code to fit within $(docv) columns." in
     Decl.int ~names:["m"; "margin"] ~default ~doc ~docv ~kind
       ~allow_inline:false
-      (fun conf elt ->
-        (* printf "updating margin : %i\n" elt.v ; Out_channel.flush stdout
-           ; *)
-        update conf ~f:(fun f -> {f with margin= elt}) )
+      (fun conf elt -> update conf ~f:(fun f -> {f with margin= elt}))
       (fun conf -> conf.fmt_opts.margin)
 
   let match_indent =
