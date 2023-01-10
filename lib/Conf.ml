@@ -284,11 +284,11 @@ let profile =
   in
   let names = profile_option_names in
   let all =
-    [ Decl.Value.make ~name:"conventional" `default
+    [ Decl.Value.make ~name:"default" `default
+        "$(b,default) is an alias for the $(b,conventional) profile."
+    ; Decl.Value.make ~name:"conventional" `conventional
         "The $(b,conventional) profile aims to be as familiar and \
          \"conventional\" appearing as the available options allow."
-    ; Decl.Value.make ~name:"default" `default
-        "$(b,default) is an alias for the $(b,conventional) profile."
     ; Decl.Value.make ~name:"ocamlformat" `ocamlformat
         "The $(b,ocamlformat) profile aims to take advantage of the \
          strengths of a parsetree-based auto-formatter, and to limit the \
@@ -318,6 +318,7 @@ let profile =
       let name =
         match p with
         | `default -> "default"
+        | `conventional -> "conventional"
         | `ocamlformat -> "ocamlformat"
         | `janestreet -> "janestreet"
       in
@@ -332,6 +333,7 @@ let profile =
       let p =
         ( match p with
         | `default -> default_profile
+        | `conventional -> conventional_profile
         | `ocamlformat -> ocamlformat_profile
         | `janestreet -> janestreet_profile )
           from_p

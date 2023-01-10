@@ -133,4 +133,4 @@ type opr_opts =
 type t =
   { fmt_opts: fmt_opts
   ; opr_opts: opr_opts
-  ; profile: [`default | `ocamlformat | `janestreet] elt }
+  ; profile: [`default | `conventional | `ocamlformat | `janestreet] elt }
