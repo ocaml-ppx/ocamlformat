@@ -14,20 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
-  let ctx = Pat pat in
-  match pat with
-  | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; ppat_attributes= []; _} ->
-      Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
-      or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat1)
-      @ or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat2)
-  | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; _} when allow_attribute ->
-      Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
-      [sub_pat ~ctx pat1; sub_pat ~ctx pat2]
-  | _ -> [xpat]
-
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list

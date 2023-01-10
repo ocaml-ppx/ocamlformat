@@ -108,7 +108,7 @@ module Pat:
       -> obj_closed_flag -> pattern
     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
-    val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
+    val or_: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
     val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
     val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern

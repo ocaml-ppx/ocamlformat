@@ -1218,7 +1218,7 @@ end = struct
             assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) ->
             assert (List.exists p1N ~f:(fun (_, _, x) -> Option.exists x ~f))
-        | Ppat_or (p1, p2) -> assert (p1 == pat || p2 == pat)
+        | Ppat_or l -> assert (List.exists ~f:(fun p -> p == pat) l)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
          |Ppat_construct (_, Some (_, p1))

@@ -2488,7 +2488,12 @@ pattern_no_exn:
     | pattern_comma_list(self) %prec below_COMMA
         { Ppat_tuple(List.rev $1) }
     | self BAR pattern
-        { Ppat_or($1, $3) }
+        { let rec or_ p =
+            match p with
+            | {ppat_desc= Ppat_or (x :: t); ppat_attributes= []; _} -> or_ x @ t
+            | _ -> [p]
+          in
+          Ppat_or (or_ $1 @ or_ $3) }
   ) { $1 }
 ;
 

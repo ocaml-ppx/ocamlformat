@@ -300,10 +300,9 @@ and pattern i ppf x =
   | Ppat_list (l) ->
       line i ppf "Ppat_list\n";
       list i pattern ppf l;
-  | Ppat_or (p1, p2) ->
+  | Ppat_or l ->
       line i ppf "Ppat_or\n";
-      pattern i ppf p1;
-      pattern i ppf p2;
+      list i pattern ppf l
   | Ppat_lazy p ->
       line i ppf "Ppat_lazy\n";
       pattern i ppf p;
