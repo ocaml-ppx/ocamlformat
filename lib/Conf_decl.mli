@@ -40,6 +40,7 @@ type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 (** The type of option declarators, that is functions returning a declaration *)
 type 'a declarator =
      names:string list
+  -> default:Conf_t.t
   -> doc:string
   -> kind:kind
   -> ?allow_inline:bool
@@ -77,40 +78,51 @@ module Value_removed : sig
       when multiple values are removed at the same time. *)
 end
 
+module Store : sig
+  type elt
+
+  type store = elt list
+
+  val add : store -> 'a t -> store
+
+  val elt : 'a t -> elt
+
+  type t = store
+
+  val empty : t
+
+  val merge : t -> t -> t
+
+  val to_ui : t -> Conf_t.t UI.t list
+
+  val to_term : t -> (Conf_t.t -> Conf_t.t) Cmdliner.Term.t
+end
+
 val choice :
      all:'a Value.t list
   -> ?removed_values:Value_removed.t list
   -> 'a declarator
 
-val flag : default:bool -> bool declarator
+val flag : bool declarator
 
-val int : default:int -> docv:string -> int declarator
+val int : docv:string -> int declarator
 
-val range :
-     default:(string -> Range.t)
-  -> docv:string
-  -> (string -> Range.t) declarator
+val range : docv:string -> (string -> Range.t) declarator
 
-val ocaml_version : default:Ocaml_version.t -> Ocaml_version.t declarator
+val ocaml_version : Ocaml_version.t declarator
 
-val any :
-     'a Cmdliner.Arg.conv
-  -> values:typ
-  -> default:'a
-  -> docv:string
-  -> 'a declarator
+val any : 'a Cmdliner.Arg.conv -> values:typ -> docv:string -> 'a declarator
 
 val removed_option :
-  names:string list -> since:Version.t -> msg:string -> unit
+  names:string list -> since:Version.t -> msg:string -> unit t
 (** Declare an option as removed. Using such an option will result in an
     helpful error including [msg] and [since]. *)
 
 val default : 'a t -> 'a
 
-val update_using_cmdline : Conf_t.t -> Conf_t.t
-
 val update :
-     config:Conf_t.t
+     Store.t
+  -> config:Conf_t.t
   -> from:Conf_t.updated_from
   -> name:string
   -> value:string
@@ -119,4 +131,4 @@ val update :
 
 val to_ui : 'a t -> Conf_t.t UI.t
 
-val print_config : Conf_t.t -> unit
+val print_config : Store.t -> Conf_t.t -> unit

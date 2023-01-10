@@ -49,3 +49,7 @@ end
 module Operational : sig
   val update : f:(opr_opts -> opr_opts) -> t -> t
 end
+
+val term : (t -> t) Cmdliner.Term.t
+
+val options : Conf_decl.Store.t

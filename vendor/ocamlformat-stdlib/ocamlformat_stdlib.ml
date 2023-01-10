@@ -1,7 +1,6 @@
 include Base
 include Stdio
 
-module Cmdliner = Cmdliner_ext
 module Fpath = Fpath_ext
 module List = List_ext
 module String = String_ext
