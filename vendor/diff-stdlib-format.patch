@@ -95,7 +95,7 @@
 -      end
 -    end
 +    format_pp_break state size fits breaks
- 
++
 +
 +  | Pp_or_newline (n, off, fits, breaks) ->
 +    if state.pp_is_new_line
@@ -123,12 +123,11 @@
 +         end
 +     in
 +     ignore (Stack.fold check_level level state.pp_format_stack)
-+
+ 
     | Pp_open_tag tag_name ->
       let marker = state.pp_mark_open_tag tag_name in
       pp_output_string state marker;
       Stack.push tag_name state.pp_mark_stack
- 
 @@@@
      (* test if scan stack contains any data that is not obsolete. *)
      if left_total < state.pp_left_total then
@@ -266,7 +265,7 @@
  
 -(* Initialise domain local state *)
 -module DLS = Domain.DLS
- 
+-
 -let stdbuf_key = DLS.new_key pp_make_buffer
 -let _ = DLS.set stdbuf_key stdbuf
 -
@@ -316,25 +315,23 @@
 -let get_err_formatter () = DLS.get err_formatter_key
 -let get_str_formatter () = DLS.get str_formatter_key
 -let get_stdbuf () = DLS.get stdbuf_key
--
+ 
  (* [flush_buffer_formatter buf ppf] flushes formatter [ppf],
     then returns the contents of buffer [buf] that is reset.
     Formatter [ppf] is supposed to print to buffer [buf], otherwise this
     function is not really useful. *)
- let flush_buffer_formatter buf ppf =
+@@@@
    pp_flush_queue ppf false;
    let s = Buffer.contents buf in
    Buffer.reset buf;
    s
  
-+
- (* Flush [str_formatter] and get the contents of [stdbuf]. *)
+-(* Flush [str_formatter] and get the contents of [stdbuf]. *)
 -let flush_str_formatter () =
 -  let stdbuf = DLS.get stdbuf_key in
 -  let str_formatter = DLS.get str_formatter_key in
 -  flush_buffer_formatter stdbuf str_formatter
-+let flush_str_formatter () = flush_buffer_formatter stdbuf str_formatter
- 
+-
 -let make_synchronized_formatter output flush =
 -  DLS.new_key (fun () ->
 -    let buf = Buffer.create pp_buffer_size in
@@ -345,15 +342,16 @@
 -      flush ()
 -    in
 -    make_formatter output' flush')
--
+ 
 -let synchronized_formatter_of_out_channel oc =
 -  make_synchronized_formatter (output_substring oc) (fun () -> flush oc)
--
++(* Flush [str_formatter] and get the contents of [stdbuf]. *)
++let flush_str_formatter () = flush_buffer_formatter stdbuf str_formatter
+ 
  (*
    Symbolic pretty-printing
  *)
  
- (*
 @@@@
    Basic functions on the 'standard' formatter
    (the formatter that prints to [Stdlib.stdout]).
@@ -382,6 +380,61 @@
 -and print_flush v = pp_print_flush (DLS.get std_formatter_key) v
 -and print_newline v = pp_print_newline (DLS.get std_formatter_key) v
 -and print_if_newline v = pp_print_if_newline (DLS.get std_formatter_key) v
+-
+-and open_tbox v = pp_open_tbox (DLS.get std_formatter_key) v
+-and close_tbox v = pp_close_tbox (DLS.get std_formatter_key) v
+-and print_tbreak v w = pp_print_tbreak (DLS.get std_formatter_key) v w
+-
+-and set_tab v = pp_set_tab (DLS.get std_formatter_key) v
+-and print_tab v = pp_print_tab (DLS.get std_formatter_key) v
+-
+-and set_margin v = pp_set_margin (DLS.get std_formatter_key) v
+-and get_margin v = pp_get_margin (DLS.get std_formatter_key) v
+-
+-and set_max_indent v = pp_set_max_indent (DLS.get std_formatter_key) v
+-and get_max_indent v = pp_get_max_indent (DLS.get std_formatter_key) v
+-
+-and set_geometry ~max_indent ~margin =
+-  pp_set_geometry (DLS.get std_formatter_key) ~max_indent ~margin
+-and safe_set_geometry ~max_indent ~margin =
+-  pp_safe_set_geometry (DLS.get std_formatter_key) ~max_indent ~margin
+-and get_geometry v = pp_get_geometry (DLS.get std_formatter_key) v
+-and update_geometry v = pp_update_geometry (DLS.get std_formatter_key) v
+-
+-and set_max_boxes v = pp_set_max_boxes (DLS.get std_formatter_key) v
+-and get_max_boxes v = pp_get_max_boxes (DLS.get std_formatter_key) v
+-and over_max_boxes v = pp_over_max_boxes (DLS.get std_formatter_key) v
+-
+-and set_ellipsis_text v = pp_set_ellipsis_text (DLS.get std_formatter_key) v
+-and get_ellipsis_text v = pp_get_ellipsis_text (DLS.get std_formatter_key) v
+-
+-and set_formatter_out_channel v =
+-  pp_set_formatter_out_channel (DLS.get std_formatter_key) v
+-
+-and set_formatter_out_functions v =
+-  pp_set_formatter_out_functions (DLS.get std_formatter_key) v
+-and get_formatter_out_functions v =
+-  pp_get_formatter_out_functions (DLS.get std_formatter_key) v
+-
+-and set_formatter_output_functions v w =
+-  pp_set_formatter_output_functions (DLS.get std_formatter_key) v w
+-and get_formatter_output_functions v =
+-  pp_get_formatter_output_functions (DLS.get std_formatter_key) v
+-
+-and set_formatter_stag_functions v =
+-  pp_set_formatter_stag_functions (DLS.get std_formatter_key) v
+-and get_formatter_stag_functions v =
+-  pp_get_formatter_stag_functions (DLS.get std_formatter_key) v
+-and set_print_tags v =
+-  pp_set_print_tags (DLS.get std_formatter_key) v
+-and get_print_tags v =
+-  pp_get_print_tags (DLS.get std_formatter_key) v
+-and set_mark_tags v =
+-  pp_set_mark_tags (DLS.get std_formatter_key) v
+-and get_mark_tags v =
+-  pp_get_mark_tags (DLS.get std_formatter_key) v
+-and set_tags v =
+-  pp_set_tags (DLS.get std_formatter_key) v
 +let open_hbox = pp_open_hbox std_formatter
 +and open_vbox = pp_open_vbox std_formatter
 +and open_hvbox = pp_open_hvbox std_formatter
@@ -406,89 +459,53 @@
 +and print_flush = pp_print_flush std_formatter
 +and print_newline = pp_print_newline std_formatter
 +and print_if_newline = pp_print_if_newline std_formatter
- 
--and open_tbox v = pp_open_tbox (DLS.get std_formatter_key) v
--and close_tbox v = pp_close_tbox (DLS.get std_formatter_key) v
--and print_tbreak v w = pp_print_tbreak (DLS.get std_formatter_key) v w
++
 +and open_tbox = pp_open_tbox std_formatter
 +and close_tbox = pp_close_tbox std_formatter
 +and print_tbreak = pp_print_tbreak std_formatter
- 
--and set_tab v = pp_set_tab (DLS.get std_formatter_key) v
--and print_tab v = pp_print_tab (DLS.get std_formatter_key) v
++
 +and set_tab = pp_set_tab std_formatter
 +and print_tab = pp_print_tab std_formatter
- 
--and set_margin v = pp_set_margin (DLS.get std_formatter_key) v
--and get_margin v = pp_get_margin (DLS.get std_formatter_key) v
++
 +and set_margin = pp_set_margin std_formatter
 +and get_margin = pp_get_margin std_formatter
- 
--and set_max_indent v = pp_set_max_indent (DLS.get std_formatter_key) v
--and get_max_indent v = pp_get_max_indent (DLS.get std_formatter_key) v
++
 +and set_max_indent = pp_set_max_indent std_formatter
 +and get_max_indent = pp_get_max_indent std_formatter
- 
--and set_geometry ~max_indent ~margin =
--  pp_set_geometry (DLS.get std_formatter_key) ~max_indent ~margin
--and safe_set_geometry ~max_indent ~margin =
--  pp_safe_set_geometry (DLS.get std_formatter_key) ~max_indent ~margin
--and get_geometry v = pp_get_geometry (DLS.get std_formatter_key) v
--and update_geometry v = pp_update_geometry (DLS.get std_formatter_key) v
++
 +and set_geometry = pp_set_geometry std_formatter
 +and safe_set_geometry = pp_safe_set_geometry std_formatter
 +and get_geometry = pp_get_geometry std_formatter
 +and update_geometry = pp_update_geometry std_formatter
- 
--and set_max_boxes v = pp_set_max_boxes (DLS.get std_formatter_key) v
--and get_max_boxes v = pp_get_max_boxes (DLS.get std_formatter_key) v
--and over_max_boxes v = pp_over_max_boxes (DLS.get std_formatter_key) v
++
 +and set_max_boxes = pp_set_max_boxes std_formatter
 +and get_max_boxes = pp_get_max_boxes std_formatter
 +and over_max_boxes = pp_over_max_boxes std_formatter
  
--and set_ellipsis_text v = pp_set_ellipsis_text (DLS.get std_formatter_key) v
--and get_ellipsis_text v = pp_get_ellipsis_text (DLS.get std_formatter_key) v
 +and set_ellipsis_text = pp_set_ellipsis_text std_formatter
 +and get_ellipsis_text = pp_get_ellipsis_text std_formatter
  
--and set_formatter_out_channel v =
--  pp_set_formatter_out_channel (DLS.get std_formatter_key) v
+-(* Convenience functions *)
 +and set_formatter_out_channel =
 +  pp_set_formatter_out_channel std_formatter
  
--and set_formatter_out_functions v =
--  pp_set_formatter_out_functions (DLS.get std_formatter_key) v
--and get_formatter_out_functions v =
--  pp_get_formatter_out_functions (DLS.get std_formatter_key) v
+-let pp_print_iter ?(pp_sep = pp_print_cut) iter pp_v ppf v =
+-  let is_first = ref true in
+-  let pp_v v =
+-    if !is_first then is_first := false else pp_sep ppf ();
+-    pp_v ppf v
+-  in
+-  iter pp_v v
 +and set_formatter_out_functions =
 +  pp_set_formatter_out_functions std_formatter
 +and get_formatter_out_functions =
 +  pp_get_formatter_out_functions std_formatter
- 
--and set_formatter_output_functions v w =
--  pp_set_formatter_output_functions (DLS.get std_formatter_key) v w
--and get_formatter_output_functions v =
--  pp_get_formatter_output_functions (DLS.get std_formatter_key) v
++
 +and set_formatter_output_functions =
 +  pp_set_formatter_output_functions std_formatter
 +and get_formatter_output_functions =
 +  pp_get_formatter_output_functions std_formatter
- 
--and set_formatter_stag_functions v =
--  pp_set_formatter_stag_functions (DLS.get std_formatter_key) v
--and get_formatter_stag_functions v =
--  pp_get_formatter_stag_functions (DLS.get std_formatter_key) v
--and set_print_tags v =
--  pp_set_print_tags (DLS.get std_formatter_key) v
--and get_print_tags v =
--  pp_get_print_tags (DLS.get std_formatter_key) v
--and set_mark_tags v =
--  pp_set_mark_tags (DLS.get std_formatter_key) v
--and get_mark_tags v =
--  pp_get_mark_tags (DLS.get std_formatter_key) v
--and set_tags v =
--  pp_set_tags (DLS.get std_formatter_key) v
++
 +and set_formatter_stag_functions =
 +  pp_set_formatter_stag_functions std_formatter
 +and get_formatter_stag_functions =
@@ -504,20 +521,16 @@
 +and set_tags =
 +  pp_set_tags std_formatter
  
- 
- (* Convenience functions *)
- 
--let pp_print_iter ?(pp_sep = pp_print_cut) iter pp_v ppf v =
--  let is_first = ref true in
--  let pp_v v =
--    if !is_first then is_first := false else pp_sep ppf ();
--    pp_v ppf v
--  in
--  iter pp_v v
--
- (* To format a list *)
+-(* To format a list *)
 -let pp_print_list ?(pp_sep = pp_print_cut) pp_v ppf v =
 -  pp_print_iter ~pp_sep List.iter pp_v ppf v
+ 
+-(* To format an array *)
+-let pp_print_array ?(pp_sep = pp_print_cut) pp_v ppf v =
+-  pp_print_iter ~pp_sep Array.iter pp_v ppf v
++(* Convenience functions *)
++
++(* To format a list *)
 +let rec pp_print_list ?(pp_sep = pp_print_cut) pp_v ppf = function
 +  | [] -> ()
 +  | [v] -> pp_v ppf v
@@ -526,10 +539,6 @@
 +    pp_sep ppf ();
 +    pp_print_list ~pp_sep pp_v ppf vs
  
--(* To format an array *)
--let pp_print_array ?(pp_sep = pp_print_cut) pp_v ppf v =
--  pp_print_iter ~pp_sep Array.iter pp_v ppf v
--
  (* To format a sequence *)
 +let rec pp_print_seq_in ~pp_sep pp_v ppf seq =
 +  match seq () with
@@ -570,9 +579,7 @@
    make_iprintf ignore () fmt
  
  let fprintf ppf = kfprintf ignore ppf
-+let printf fmt = fprintf std_formatter fmt
-+let eprintf fmt = fprintf err_formatter fmt
- 
+-
 -let printf (Format (fmt, _)) =
 -  make_printf
 -    (fun acc -> output_acc (DLS.get std_formatter_key) acc)
@@ -582,12 +589,13 @@
 -  make_printf
 -    (fun acc -> output_acc (DLS.get err_formatter_key) acc)
 -    End_of_acc fmt
--
++let printf fmt = fprintf std_formatter fmt
++let eprintf fmt = fprintf err_formatter fmt
+ 
  let kdprintf k (Format (fmt, _)) =
    make_printf
      (fun acc -> k (fun ppf -> output_acc ppf acc))
      End_of_acc fmt
- 
 @@@@
  let asprintf fmt = kasprintf id fmt
  
@@ -608,12 +616,7 @@
 -    {fs with out_string = buffered_out_string std_buf_key;
 -             out_flush = buffered_out_flush Stdlib.stdout std_buf_key};
 +(*
- 
--  let fs = pp_get_formatter_out_functions err_formatter () in
--  pp_set_formatter_out_functions err_formatter
--    {fs with out_string = buffered_out_string err_buf_key;
--             out_flush = buffered_out_flush Stdlib.stderr err_buf_key};
--)
++
 +  Deprecated stuff.
 +
 +*)
@@ -668,7 +671,12 @@
 +  print_close_tag : tag -> unit;
 +}
 +
-+
+ 
+-  let fs = pp_get_formatter_out_functions err_formatter () in
+-  pp_set_formatter_out_functions err_formatter
+-    {fs with out_string = buffered_out_string err_buf_key;
+-             out_flush = buffered_out_flush Stdlib.stderr err_buf_key};
+-)
 +let pp_set_formatter_tag_functions state {
 +     mark_open_tag = mot;
 +     mark_close_tag = mct;
@@ -1060,13 +1068,13 @@
  
  val stdbuf : Buffer.t
 -(** The initial domain's string buffer in which [str_formatter] writes. *)
-+(** The string buffer in which [str_formatter] writes. *)
- 
+-
 -val get_stdbuf : unit -> Buffer.t
 -(** [get_stdbuf ()] returns the current domain's string buffer in which the
 -    current domain's string formatter writes.
 -    @since 5.0 *)
--
++(** The string buffer in which [str_formatter] writes. *)
+ 
  val str_formatter : formatter
 -(** The initial domain's formatter to output to the {!stdbuf} string buffer.
 +(** A formatter to output to the {!stdbuf} string buffer.
@@ -1227,9 +1235,8 @@
    Does nothing on empty lists.
  
 -  @since 4.02
-+  @since 4.02.0
- *)
- 
+-*)
+-
 -val pp_print_array:
 -  ?pp_sep:(formatter -> unit -> unit) ->
 -  (formatter -> 'a -> unit) -> (formatter -> 'a array -> unit)
@@ -1243,13 +1250,12 @@
 -  This can be avoided by flushing [ppf].
 -
 -  @since 5.1
--*)
--
++  @since 4.02.0
+ *)
+ 
  val pp_print_seq:
    ?pp_sep:(formatter -> unit -> unit) ->
    (formatter -> 'a -> unit) -> (formatter -> 'a Seq.t -> unit)
- (** [pp_print_seq ?pp_sep pp_v ppf s] prints items of sequence [s],
-   using [pp_v] to print each item, and calling [pp_sep]
 @@@@
  
  val pp_print_text : formatter -> string -> unit
@@ -1283,31 +1289,30 @@
  
  val printf : ('a, formatter, unit) format -> 'a
 -(** Same as [fprintf] above, but output on [get_std_formatter ()].
-+(** Same as [fprintf] above, but output on [std_formatter]. *)
- 
+-
 -    It is defined similarly to [fun fmt -> fprintf (get_std_formatter ()) fmt]
 -    but delays calling [get_std_formatter] until after the final argument
 -    required by the [format] is received. When used with multiple domains, the
 -    output from the domains will be interleaved with each other at points where
 -    the formatter is flushed, such as with {!print_flush}.
 -*)
--
++(** Same as [fprintf] above, but output on [std_formatter]. *)
+ 
  val eprintf : ('a, formatter, unit) format -> 'a
 -(** Same as [fprintf] above, but output on [get_err_formatter ()].
-+(** Same as [fprintf] above, but output on [err_formatter]. *)
- 
+-
 -    It is defined similarly to [fun fmt -> fprintf (get_err_formatter ()) fmt]
 -    but delays calling [get_err_formatter] until after the final argument
 -    required by the [format] is received. When used with multiple domains, the
 -    output from the domains will be interleaved with each other at points where
 -    the formatter is flushed, such as with {!print_flush}.
 -*)
--
++(** Same as [fprintf] above, but output on [err_formatter]. *)
+ 
  val sprintf : ('a, unit, string) format -> 'a
  (** Same as [printf] above, but instead of printing on a formatter,
    returns a string containing the result of formatting the arguments.
    Note that the pretty-printer queue is flushed at the end of {e each
-   call} to [sprintf].
 @@@@
  (** Same as [printf] above, but instead of printing on a formatter,
    returns a string containing the result of formatting the arguments.
@@ -1373,21 +1378,11 @@
  *)
  
 -(** {1:examples Examples}
-+(** {1 Deprecated} *)
- 
+-
 -  A few warmup examples to get an idea of how Format is used.
-+val bprintf : Buffer.t -> ('a, formatter, unit) format -> 'a
-+  [@@ocaml.deprecated]
-+(** @deprecated This function is error prone. Do not use it.
-+  This function is neither compositional nor incremental, since it flushes
-+  the pretty-printer queue at each call.
- 
+-
 -  We have a list [l] of pairs [(int * bool)], which the toplevel prints for us:
-+  If you need to print to some buffer [b], you must first define a
-+  formatter writing to [b], using [let to_b = formatter_of_buffer b]; then
-+  use regular calls to [Format.fprintf] with formatter [to_b].
-+*)
- 
+-
 -  {[# let l = List.init 20 (fun n -> n, n mod 2 = 0)
 -  val l : (int * bool) list =
 -  [(0, true); (1, false); (2, true); (3, false); (4, true); (5, false);
@@ -1395,20 +1390,9 @@
 -   (12, true); (13, false); (14, true); (15, false); (16, true); (17, false);
 -   (18, true); (19, false)]
 - ]}
-+val kprintf : (string -> 'a) -> ('b, unit, string, 'a) format4 -> 'b
-+  [@@ocaml.deprecated "Use Format.ksprintf instead."]
-+(** @deprecated An alias for [ksprintf]. *)
- 
+-
 -  If we want to print it ourself without the toplevel magic, we can try this:
-+val set_all_formatter_output_functions :
-+  out:(string -> int -> int -> unit) ->
-+  flush:(unit -> unit) ->
-+  newline:(unit -> unit) ->
-+  spaces:(int -> unit) ->
-+  unit
-+[@@ocaml.deprecated "Use Format.set_formatter_out_functions instead."]
-+(** @deprecated Subsumed by [set_formatter_out_functions]. *)
- 
+-
 -  {[
 -  # let pp_pair out (x,y) = Format.fprintf out "(%d, %b)" x y
 -  val pp_pair : Format.formatter -> int * bool -> unit = <fun>
@@ -1418,107 +1402,50 @@
 -        (6, true); (7, false); (8, true); (9, false); (10, true); (11, false);
 -        (12, true); (13, false); (14, true); (15, false); (16, true);
 -        (17, false); (18, true); (19, false)]
-+val get_all_formatter_output_functions :
-+  unit ->
-+  (string -> int -> int -> unit) *
-+  (unit -> unit) *
-+  (unit -> unit) *
-+  (int -> unit)
-+[@@ocaml.deprecated "Use Format.get_formatter_out_functions instead."]
-+(** @deprecated Subsumed by [get_formatter_out_functions]. *)
- 
+-
 -  ]}
-+val pp_set_all_formatter_output_functions :
-+  formatter -> out:(string -> int -> int -> unit) -> flush:(unit -> unit) ->
-+  newline:(unit -> unit) -> spaces:(int -> unit) -> unit
-+[@@ocaml.deprecated "Use Format.pp_set_formatter_out_functions instead."]
-+(** @deprecated Subsumed by [pp_set_formatter_out_functions]. *)
- 
-+val pp_get_all_formatter_output_functions :
-+  formatter -> unit ->
-+  (string -> int -> int -> unit) * (unit -> unit) * (unit -> unit) *
-+  (int -> unit)
-+[@@ocaml.deprecated "Use Format.pp_get_formatter_out_functions instead."]
-+(** @deprecated Subsumed by [pp_get_formatter_out_functions]. *)
- 
+-
+-
 -  What this does, briefly, is:
-+(** {2 String tags} *)
- 
+-
 -    - [pp_pair] prints a pair [bool*int] surrounded in "(" ")". It takes
 -      a formatter (into which formatting happens), and the pair itself.
 -      When printing is done it returns [()].
-+val pp_open_tag : formatter -> tag -> unit
-+[@@ocaml.deprecated "Use Format.pp_open_stag."]
-+(** @deprecated Subsumed by {!pp_open_stag}. *)
- 
+-
 -    - [Format.printf "l = [@[<hov>%a@]]@." ... l] is like [printf], but
 -      with additional formatting instructions (denoted with "@"). The pair
 -      "@[<hov>" and "@]" is a "horizontal-or-vertical box".
-+val open_tag : tag -> unit
-+[@@ocaml.deprecated "Use Format.open_stag."]
-+(** @deprecated Subsumed by {!open_stag}. *)
- 
+-
 -    - "@." ends formatting with a newline. It is similar to "\n" but is also
 -      aware of the [Format.formatter]'s state. Do not use "\n" with [Format].
-+val pp_close_tag : formatter -> unit -> unit
-+[@@ocaml.deprecated "Use Format.pp_close_stag."]
-+(** @deprecated Subsumed by {!pp_close_stag}. *)
- 
+-
 -    - "%a" is a formatting instruction, like "%d" or "%s" for [printf].
 -      However, where "%d" prints an integer and "%s" prints a string,
 -      "%a" takes a printer (of type [Format.formatter -> 'a -> unit])
 -      and a value (of type ['a]) and applies the printer to the value.
 -      This is key to compositionality of printers.
-+val close_tag : unit -> unit
-+[@@ocaml.deprecated "Use Format.close_stag."]
-+(** @deprecated Subsumed by {!close_stag}. *)
- 
+-
 -    - We build a list printer using
 -      [Format.pp_print_list ~pp_sep:(...) pp_pair].
 -      [pp_print_list] takes an element printer and returns a list printer.
 -      The [?pp_sep] optional argument, if provided, is called in between
 -      each element to print a separator.
-+type formatter_tag_functions = {
-+  mark_open_tag : tag -> string;
-+  mark_close_tag : tag -> string;
-+  print_open_tag : tag -> unit;
-+  print_close_tag : tag -> unit;
-+}
-+[@@ocaml.deprecated "Use formatter_stag_functions."]
-+(** @deprecated Subsumed by {!formatter_stag_functions}. *)
- 
+-
 -    - Here, for a separator, we use [(fun out () -> Format.fprintf out ";@ ")].
 -      It prints ";", and then "@ " which is a breaking space
 -      (either it prints " ", or it prints a newline if the box is about to
 -      overflow).
 -      This "@ " is responsible for the list printing splitting into several
 -      lines.
-+val pp_set_formatter_tag_functions :
-+  formatter -> formatter_tag_functions -> unit
-+[@@ocaml.deprecated
-+  "This function will erase non-string tag formatting functions. \
-+   Use Format.pp_set_formatter_stag_functions."]
-+[@@warning "-3"]
-+(** This function will erase non-string tag formatting functions.
-+    @deprecated Subsumed by {!pp_set_formatter_stag_functions}. *)
- 
+-
 -  If we omit "@ ", we get an ugly single-line print:
-+val set_formatter_tag_functions : formatter_tag_functions -> unit
-+[@@ocaml.deprecated "Use Format.set_formatter_stag_functions."]
-+[@@warning "-3"]
-+(** @deprecated Subsumed by {!set_formatter_stag_functions}. *)
- 
+-
 -  {[# Format.printf "l: [@[<hov>%a@]]@."
 -      Format.(pp_print_list ~pp_sep:(fun out () -> fprintf out "; ") pp_pair) l
 -  l: [(0, true); (1, false); (2, true); (* ... *); (18, true); (19, false)]
 -- : unit = ()
 -    ]}
-+val pp_get_formatter_tag_functions :
-+  formatter -> unit -> formatter_tag_functions
-+[@@ocaml.deprecated "Use Format.pp_get_formatter_stag_functions."]
-+[@@warning "-3"]
-+(** @deprecated Subsumed by {!pp_get_formatter_stag_functions}. *)
- 
+-
 -  Generally, it is good practice to define custom printers for important types
 -  in your program. If, for example, you were to define basic geometry
 -  types like so:
@@ -1560,7 +1487,8 @@
 -  ]}
 -
 -  These printers can now be used with "%a" inside other printers.
--
++(** {1 Deprecated} *)
+ 
 -  {[ # Format.printf "some rectangle: %a@."
 -        (Format.pp_print_option pp_rectangle)
 -        (Some {ll={x=1.; y=2.}; ur={x=42.; y=500.12345}})
@@ -1571,10 +1499,81 @@
 -        None
 -  no rectangle:
 -  ]}
--
++val bprintf : Buffer.t -> ('a, formatter, unit) format -> 'a
++  [@@ocaml.deprecated]
++(** @deprecated This function is error prone. Do not use it.
++  This function is neither compositional nor incremental, since it flushes
++  the pretty-printer queue at each call.
++
++  If you need to print to some buffer [b], you must first define a
++  formatter writing to [b], using [let to_b = formatter_of_buffer b]; then
++  use regular calls to [Format.fprintf] with formatter [to_b].
++*)
++
++val kprintf : (string -> 'a) -> ('b, unit, string, 'a) format4 -> 'b
++  [@@ocaml.deprecated "Use Format.ksprintf instead."]
++(** @deprecated An alias for [ksprintf]. *)
++
++val set_all_formatter_output_functions :
++  out:(string -> int -> int -> unit) ->
++  flush:(unit -> unit) ->
++  newline:(unit -> unit) ->
++  spaces:(int -> unit) ->
++  unit
++[@@ocaml.deprecated "Use Format.set_formatter_out_functions instead."]
++(** @deprecated Subsumed by [set_formatter_out_functions]. *)
+ 
 -  See how we combine [pp_print_option] (option printer) and our newly defined
 -  rectangle printer, like we did with [pp_print_list] earlier.
--
++val get_all_formatter_output_functions :
++  unit ->
++  (string -> int -> int -> unit) *
++  (unit -> unit) *
++  (unit -> unit) *
++  (int -> unit)
++[@@ocaml.deprecated "Use Format.get_formatter_out_functions instead."]
++(** @deprecated Subsumed by [get_formatter_out_functions]. *)
++
++val pp_set_all_formatter_output_functions :
++  formatter -> out:(string -> int -> int -> unit) -> flush:(unit -> unit) ->
++  newline:(unit -> unit) -> spaces:(int -> unit) -> unit
++[@@ocaml.deprecated "Use Format.pp_set_formatter_out_functions instead."]
++(** @deprecated Subsumed by [pp_set_formatter_out_functions]. *)
++
++val pp_get_all_formatter_output_functions :
++  formatter -> unit ->
++  (string -> int -> int -> unit) * (unit -> unit) * (unit -> unit) *
++  (int -> unit)
++[@@ocaml.deprecated "Use Format.pp_get_formatter_out_functions instead."]
++(** @deprecated Subsumed by [pp_get_formatter_out_functions]. *)
++
++(** {2 String tags} *)
++
++val pp_open_tag : formatter -> tag -> unit
++[@@ocaml.deprecated "Use Format.pp_open_stag."]
++(** @deprecated Subsumed by {!pp_open_stag}. *)
++
++val open_tag : tag -> unit
++[@@ocaml.deprecated "Use Format.open_stag."]
++(** @deprecated Subsumed by {!open_stag}. *)
++
++val pp_close_tag : formatter -> unit -> unit
++[@@ocaml.deprecated "Use Format.pp_close_stag."]
++(** @deprecated Subsumed by {!pp_close_stag}. *)
++
++val close_tag : unit -> unit
++[@@ocaml.deprecated "Use Format.close_stag."]
++(** @deprecated Subsumed by {!close_stag}. *)
++
++type formatter_tag_functions = {
++  mark_open_tag : tag -> string;
++  mark_close_tag : tag -> string;
++  print_open_tag : tag -> unit;
++  print_close_tag : tag -> unit;
++}
++[@@ocaml.deprecated "Use formatter_stag_functions."]
++(** @deprecated Subsumed by {!formatter_stag_functions}. *)
+ 
 -  For a more extensive tutorial, see
 -  {{: https://caml.inria.fr/resources/doc/guides/format.en.html}
 -    "Using the Format module"}.
@@ -1588,6 +1587,26 @@
 -  using {{: ppx_deriving.show} https://github.com/ocaml-ppx/ppx_deriving}
 -  or similar ppx derivers.
 -*)
++val pp_set_formatter_tag_functions :
++  formatter -> formatter_tag_functions -> unit
++[@@ocaml.deprecated
++  "This function will erase non-string tag formatting functions. \
++   Use Format.pp_set_formatter_stag_functions."]
++[@@warning "-3"]
++(** This function will erase non-string tag formatting functions.
++    @deprecated Subsumed by {!pp_set_formatter_stag_functions}. *)
++
++val set_formatter_tag_functions : formatter_tag_functions -> unit
++[@@ocaml.deprecated "Use Format.set_formatter_stag_functions."]
++[@@warning "-3"]
++(** @deprecated Subsumed by {!set_formatter_stag_functions}. *)
++
++val pp_get_formatter_tag_functions :
++  formatter -> unit -> formatter_tag_functions
++[@@ocaml.deprecated "Use Format.pp_get_formatter_stag_functions."]
++[@@warning "-3"]
++(** @deprecated Subsumed by {!pp_get_formatter_stag_functions}. *)
++
 +val get_formatter_tag_functions : unit -> formatter_tag_functions
 +[@@ocaml.deprecated "Use Format.get_formatter_stag_functions."]
 +[@@warning "-3"]

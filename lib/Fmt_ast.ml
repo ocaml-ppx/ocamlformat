@@ -776,11 +776,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
     | _ -> Fn.id
   in
   match ptyp_desc with
-  | Ptyp_alias (typ, txt) ->
+  | Ptyp_alias (typ, str) ->
       hvbox 0
         (parenze_constraint_ctx
            ( fmt_core_type c (sub_typ ~ctx typ)
-           $ fmt "@ as@ " $ fmt_type_var txt ) )
+           $ fmt "@ as@ " $ fmt_type_var str.txt ) )
   | Ptyp_any -> str "_"
   | Ptyp_arrow (ctl, ct2) ->
       Cmts.relocate c.cmts ~src:ptyp_loc

@@ -3035,7 +3035,7 @@ alias_type:
     function_type
       { $1 }
   | mktyp(
-      ty = alias_type AS QUOTE tyvar = ident
+      ty = alias_type AS QUOTE tyvar = mkrhs(ident)
         { Ptyp_alias(ty, tyvar) }
     )
     { $1 }
