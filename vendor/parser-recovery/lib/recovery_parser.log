@@ -244,7 +244,7 @@ meth_list ::= LIDENT COLON possibly_poly(core_type_no_attr) list(attribute) SEMI
 
 
 # State 1104 is preventing recovery from 2 states:
-primitive_declaration ::= EXTERNAL (ext = ext) list(attribute) val_ident COLON . (ty = possibly_poly(core_type)) EQUAL (prim = nonempty_list(raw_string)) list(post_item_attribute)
+primitive_declaration ::= EXTERNAL (ext = ext) list(attribute) val_ident COLON . (ty = possibly_poly(core_type)) EQUAL (prim = nonempty_list(mkrhs(raw_string))) list(post_item_attribute)
 
 
 # State 1454 is preventing recovery from 2 states:

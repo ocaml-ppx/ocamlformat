@@ -2625,7 +2625,7 @@ primitive_declaration:
   COLON
   ty = possibly_poly(core_type)
   EQUAL
-  prim = raw_string+
+  prim = mkrhs(raw_string)+
   attrs2 = post_item_attributes
     { let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in

@@ -736,12 +736,16 @@ let default_mapper =
     value_description =
       (fun this {pval_name; pval_type; pval_prim; pval_loc;
                  pval_attributes} ->
+        let prim = List.map 
+          (fun {txt; loc} -> {txt; loc=this.location this loc}) 
+          pval_prim 
+        in 
         Val.mk
           (map_loc this pval_name)
           (this.typ this pval_type)
           ~attrs:(this.attributes this pval_attributes)
           ~loc:(this.location this pval_loc)
-          ~prim:pval_prim
+          ~prim:prim
       );
 
     pat = P.map;

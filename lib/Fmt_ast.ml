@@ -3035,7 +3035,7 @@ and fmt_value_description ?ext c ctx vd =
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~is_val:true c pval_attributes
   in
-  let fmt_val_prim s =
+  let fmt_val_prim {txt=s;_} =
     if String.exists s ~f:(function ' ' | '\n' -> true | _ -> false) then
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
