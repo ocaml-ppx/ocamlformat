@@ -784,7 +784,7 @@ and class_expr_desc =
 
 and class_structure =
     {
-     pcstr_self: pattern;
+     pcstr_self: pattern option;
      pcstr_fields: class_field list;
     }
 (** Values of type {!class_structure} represents:

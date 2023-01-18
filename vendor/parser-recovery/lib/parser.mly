@@ -1708,12 +1708,12 @@ class_fun_def:
 ;
 class_self_pattern:
     LPAREN pattern RPAREN
-      { reloc_pat ~loc:$sloc $2 }
+      { Some (reloc_pat ~loc:$sloc $2) }
   | mkpat(LPAREN pattern COLON core_type RPAREN
       { Ppat_constraint($2, $4) })
-      { $1 }
+      { Some ($1) }
   | /* empty */
-      { ghpat ~loc:$sloc Ppat_any }
+      { None }
 ;
 %inline class_fields:
   flatten(text_cstr(class_field)*)

@@ -8,8 +8,7 @@
         expression ([1,0+8]..[1,0+14])
           Pexp_object
           class_structure
-            pattern ([1,0+14]..[1,0+14]) ghost
-              Ppat_any
+            None
             []
     ]
 ]

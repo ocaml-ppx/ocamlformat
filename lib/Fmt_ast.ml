@@ -758,9 +758,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( if List.is_empty atrs then Fn.id
-       else fun k ->
-         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
-     )
+     else fun k ->
+       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -835,10 +834,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | _ ->
             list rfs
               ( if
-                  in_type_declaration
-                  && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then "@;<1000 0>| "
-                else "@ | " )
+                in_type_declaration
+                && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
+              then "@;<1000 0>| "
+              else "@ | " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -2636,27 +2635,22 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
     | Pcf_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let cmts_after_self = Cmts.fmt_after c self_.ppat_loc in
   let self_ =
-    match self_ with
-    | {ppat_desc= Ppat_any; ppat_attributes= []; _} -> None
-    | s -> Some s
+    opt self_ (fun self_ ->
+        fmt "@;"
+        $ Params.parens c.conf
+            (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) )
   in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_field c ctx i in
   let ast x = Clf x in
   hvbox 2
-    ( hvbox 0
-        ( str "object"
-        $ fmt_extension_suffix c ext
-        $ opt self_ (fun self_ ->
-              fmt "@;"
-              $ Params.parens c.conf
-                  (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
-    $ cmts_after_self
+    ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
     $ ( match fields with
       | {pcf_desc= Pcf_attribute a; _} :: _ when Attr.is_doc a -> str "\n"
       | _ -> noop )
-    $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
+    $ fmt_or_k (List.is_empty fields)
+        (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
+        (fmt "@;<1000 0>")
     $ fmt_item_list c ctx update_config ast fmt_item fields )
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
@@ -4156,7 +4150,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
-           else break 1000 indent_after_in )
+         else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
