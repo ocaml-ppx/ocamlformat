@@ -830,7 +830,7 @@ end = struct
     let snd_f (_, tI) = typ == tI in
     let check_cstr = function
       | Pcstr_tuple t1N -> List.exists t1N ~f
-      | Pcstr_record ld1N ->
+      | Pcstr_record (_, ld1N) ->
           List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
     in
     let check_ext {pext_kind; _} =

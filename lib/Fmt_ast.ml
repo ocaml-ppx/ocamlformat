@@ -758,9 +758,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( if List.is_empty atrs then Fn.id
-       else fun k ->
-         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
-     )
+     else fun k ->
+       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -836,10 +835,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | _ ->
             list rfs
               ( if
-                  in_type_declaration
-                  && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then "@;<1000 0>| "
-                else "@ | " )
+                in_type_declaration
+                && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
+              then "@;<1000 0>| "
+              else "@ | " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -3251,7 +3250,7 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
   | Pcstr_tuple typs ->
       pre $ fmt "@ " $ fmt_opt vars
       $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
-  | Pcstr_record lds ->
+  | Pcstr_record (_loc, lds) ->
       let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
@@ -3342,8 +3341,10 @@ and fmt_extension_constructor c ctx ec =
            ( fmt_str_loc c pext_name
            $
            match pext_kind with
-           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), None) -> noop
-           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), Some res) ->
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record (_, [])), None) ->
+               noop
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record (_, [])), Some res)
+             ->
                sep $ fmt_core_type c (sub_typ ~ctx res)
            | Pext_decl (vars, args, res) ->
                fmt_constructor_arguments_result c ctx vars args res
@@ -4152,7 +4153,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
-           else break 1000 indent_after_in )
+         else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 

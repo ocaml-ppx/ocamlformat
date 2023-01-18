@@ -588,7 +588,7 @@ and constructor_declaration =
 
 and constructor_arguments =
   | Pcstr_tuple of core_type list
-  | Pcstr_record of label_declaration list
+  | Pcstr_record of Location.t * label_declaration list
       (** Values of type {!constructor_declaration}
     represents the constructor arguments of:
   - [C of T1 * ... * Tn]     when [res = None],
