@@ -196,7 +196,9 @@ module T = struct
           (Flag.map_obj_closed sub o)
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
-    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+    | Ptyp_alias (t, s) -> 
+      let s = map_loc sub s in
+      alias ~loc ~attrs (sub.typ sub t) s
     | Ptyp_variant (rl, b, ll) ->
         variant ~loc ~attrs (List.map (row_field sub) rl) b
           (map_opt (List.map (variant_var sub)) ll)

@@ -400,3 +400,5 @@ let _ =
        x
        (*c*) y )
     y
+
+type a = b (* a *) as (* b *) 'c (* c *)

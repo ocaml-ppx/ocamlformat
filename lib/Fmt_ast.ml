@@ -780,7 +780,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       hvbox 0
         (parenze_constraint_ctx
            ( fmt_core_type c (sub_typ ~ctx typ)
-           $ fmt "@ as@ " $ fmt_type_var str.txt ) )
+           $ fmt "@ as@ " $ Cmts.fmt_before c str.loc $ fmt_type_var str.txt
+           $ Cmts.fmt_after c str.loc ) )
   | Ptyp_any -> str "_"
   | Ptyp_arrow (ctl, ct2) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
