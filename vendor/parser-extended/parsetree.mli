@@ -789,8 +789,7 @@ and class_structure =
     }
 (** Values of type {!class_structure} represents:
     - [object(selfpat) ... end]
-    - [object ... end] when {{!class_structure.pcstr_self}[pcstr_self]}
-                         is {{!pattern_desc.Ppat_any}[Ppat_any]}
+    - [object ... end] when {{!class_structure.pcstr_self}[pcstr_self]} is [None]
 *)
 
 and class_field =
