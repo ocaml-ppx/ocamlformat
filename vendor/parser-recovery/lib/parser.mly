@@ -1711,7 +1711,7 @@ class_self_pattern:
       { Some (reloc_pat ~loc:$sloc $2) }
   | mkpat(LPAREN pattern COLON core_type RPAREN
       { Ppat_constraint($2, $4) })
-      { Some ($1) }
+      { Some $1 }
   | /* empty */
       { None }
 ;

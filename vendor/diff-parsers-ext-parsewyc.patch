@@ -498,19 +498,6 @@
  ;
  
 @@@@
- class_self_pattern:
-     LPAREN pattern RPAREN
-       { Some (reloc_pat ~loc:$sloc $2) }
-   | mkpat(LPAREN pattern COLON core_type RPAREN
-       { Ppat_constraint($2, $4) })
--      { Some $1 }
-+      { Some ($1) }
-   | /* empty */
-       { None }
- ;
- %inline class_fields:
-   flatten(text_cstr(class_field)*)
-@@@@
          Cfk_concrete ($1, poly_exp)), $2 }
  ;
  
