@@ -1348,7 +1348,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
     when String.equal l i
          && List.is_empty arg.pexp_attributes
          && Ocaml_version.(
-              compare c.conf.opr_opts.ocaml_version.v Releases.v4_14 >= 0 )
+              compare c.conf.opr_opts.ocaml_version.v Releases.v4_14_0 >= 0 )
     ->
       let lbl =
         match lbl with
