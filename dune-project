@@ -34,7 +34,10 @@
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.3.0)))
   (base
    (>= v0.12.0))
   (cmdliner
@@ -56,7 +59,8 @@
    (and
     :with-test
     (= :version)))
-  ocp-indent
+  (ocp-indent
+   (>= 1.8.0))
   (re
    (>= 1.10.3))
   stdio
@@ -79,7 +83,10 @@
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.3.0)))
   (bechamel
    (>= 0.2.0))
   (bechamel-js
@@ -87,7 +94,8 @@
   (ocamlformat
    (= :version))
   stdio
-  yojson))
+  (yojson
+   (>= 1.6.0))))
 
 (package
  (name ocamlformat-rpc-lib)
