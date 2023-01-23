@@ -301,3 +301,5 @@ let _ = !(*a*) (*b*)x
 let _ = (*x*)!(*a*) (*b*) x (*c*) y
 
 let _ = f ( (*x*)!(*a*) (*b*) x (*c*) y ) y
+
+type a = b (* a *) as (* b *) 'c (* c *)
