@@ -122,4 +122,4 @@ let tests =
   ; ("Range", Test_range.tests)
   ; ("Translation_unit", Test_translation_unit.tests) ]
 
-let () = Alcotest.run "ocamlformat" tests
+let () = Alcotest.run ~argv:[|""; "--compact"|] "ocamlformat" tests

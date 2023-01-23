@@ -34,7 +34,10 @@
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.0.0)))
   (base
    (>= v0.12.0))
   (cmdliner
@@ -79,7 +82,10 @@
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.0.0)))
   (bechamel
    (>= 0.2.0))
   (bechamel-js
