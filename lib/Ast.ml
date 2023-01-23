@@ -1248,7 +1248,9 @@ end = struct
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
-          assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
+          assert (
+            Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
+            || check_pcstr_fields pcstr_fields )
       | Pexp_let ({lbs_bindings; _}, _) ->
           assert (check_bindings lbs_bindings)
       | Pexp_letop {let_; ands; _} ->
@@ -1270,7 +1272,8 @@ end = struct
           | Pcl_fun (_, _, p, _) -> p == pat
           | Pcl_constr _ -> false
           | Pcl_structure {pcstr_self; pcstr_fields} ->
-              pcstr_self == pat || check_pcstr_fields pcstr_fields
+              Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
+              || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
           | Pcl_let ({lbs_bindings; _}, _) -> check_bindings lbs_bindings
           | Pcl_constraint _ -> false

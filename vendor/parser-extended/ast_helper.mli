@@ -473,7 +473,7 @@ module Csig:
 (** Class structures *)
 module Cstr:
   sig
-    val mk: pattern -> class_field list -> class_structure
+    val mk: pattern option -> class_field list -> class_structure
   end
 
 (** Row fields *)

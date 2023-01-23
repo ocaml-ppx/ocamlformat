@@ -722,7 +722,7 @@ and class_expr i ppf x =
 
 and class_structure i ppf { pcstr_self = p; pcstr_fields = l } =
   line i ppf "class_structure\n";
-  pattern (i+1) ppf p;
+  option (i+1) pattern ppf p;
   list (i+1) class_field ppf l;
 
 and class_field i ppf x =

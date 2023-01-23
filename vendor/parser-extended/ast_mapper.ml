@@ -684,7 +684,7 @@ module CE = struct
 
   let map_structure sub {pcstr_self; pcstr_fields} =
     {
-      pcstr_self = sub.pat sub pcstr_self;
+      pcstr_self = map_opt (sub.pat sub) pcstr_self;
       pcstr_fields = List.map (sub.class_field sub) pcstr_fields;
     }
 
