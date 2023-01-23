@@ -37,7 +37,7 @@
   (alcotest
    (and
     :with-test
-    (>= 1.0.0)))
+    (>= 1.3.0)))
   (base
    (>= v0.12.0))
   (cmdliner
@@ -85,7 +85,7 @@
   (alcotest
    (and
     :with-test
-    (>= 1.0.0)))
+    (>= 1.3.0)))
   (bechamel
    (>= 0.2.0))
   (bechamel-js
