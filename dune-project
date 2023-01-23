@@ -87,7 +87,8 @@
   (ocamlformat
    (= :version))
   stdio
-  yojson))
+  (yojson
+   (>= 1.6.0))))
 
 (package
  (name ocamlformat-rpc-lib)

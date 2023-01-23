@@ -15,7 +15,7 @@ depends: [
   "bechamel-js" {>= "0.2.0"}
   "ocamlformat" {= version}
   "stdio"
-  "yojson"
+  "yojson" {>= "1.6.0"}
   "odoc" {with-doc}
 ]
 build: [
