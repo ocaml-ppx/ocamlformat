@@ -59,7 +59,8 @@
    (and
     :with-test
     (= :version)))
-  ocp-indent
+  (ocp-indent
+   (>= 1.8.0))
   (re
    (>= 1.10.3))
   stdio
