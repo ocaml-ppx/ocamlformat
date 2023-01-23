@@ -51,7 +51,7 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.3.0))
+   (>= 3.6.0))
   (ocamlformat-rpc-lib
    (and
     :with-test
