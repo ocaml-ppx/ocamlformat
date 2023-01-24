@@ -455,8 +455,8 @@ and expression i ppf x =
       expression i ppf e
   | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
-      module_expr i ppf me ;
-      option i package_type ppf pt 
+      module_expr i ppf me;
+      option i package_type ppf pt
   | Pexp_open (lid, e) ->
       line i ppf "Pexp_open\n";
       longident_loc i ppf lid;

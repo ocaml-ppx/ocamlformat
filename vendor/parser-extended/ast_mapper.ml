@@ -543,9 +543,10 @@ module E = struct
     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
     | Pexp_newtype (s, e) ->
         newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
-    | Pexp_pack (me, pt) -> 
-      pack ~loc ~attrs (sub.module_expr sub me) 
-        ((map_opt (fun pt -> map_package_type sub pt) pt))
+    | Pexp_pack (me, pt) ->
+        pack ~loc ~attrs
+          (sub.module_expr sub me)
+          (map_opt (fun pt -> map_package_type sub pt) pt)
     | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
     | Pexp_letopen (o, e) ->
         letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
