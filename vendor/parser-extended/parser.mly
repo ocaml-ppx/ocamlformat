@@ -443,7 +443,8 @@ type let_binding =
 type let_bindings' =
   { lbs_bindings: let_binding list;
     lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option }
+    lbs_extension: string Asttypes.loc option;
+    lbs_loc_in: loc option }
 
 let mklb first ~loc (p, args, typ, e, is_pun) attrs =
   {
@@ -459,19 +460,21 @@ let mklb first ~loc (p, args, typ, e, is_pun) attrs =
     lb_loc = make_loc loc;
   }
 
-let addlb lbs lb =
+let addlb lbs lb ~loc_in =
+  let lbs = lbs ~loc_in in
   if lb.lb_is_pun && lbs.lbs_extension = None then syntax_error ();
   { lbs with lbs_bindings = lb :: lbs.lbs_bindings }
 
 let mklbs ext rf lb =
-  let lbs = {
+  let lbs = fun ~loc_in -> {
     lbs_bindings = [];
     lbs_rec = rf;
     lbs_extension = ext;
+    lbs_loc_in = loc_in;
   } in
   addlb lbs lb
 
-let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension; lbs_loc_in } =
   let pvbs_bindings =
     List.rev_map
       (fun lb ->
@@ -482,7 +485,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
            lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
-  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
+  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension; pvbs_loc_in = lbs_loc_in }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
@@ -1342,7 +1345,7 @@ structure:
 (* A structure item. *)
 structure_item:
     let_bindings(ext)
-      { val_of_let_bindings ~loc:$sloc $1 }
+      { val_of_let_bindings ~loc:$sloc ($1 ~loc_in:None) }
   | mkstr(
       item_extension post_item_attributes
         { let docs = symbol_docs $sloc in
@@ -1828,8 +1831,8 @@ class_expr:
       { $1 }
   | FUN attributes class_fun_def
       { wrap_class_attrs ~loc:$sloc $3 $2 }
-  | let_bindings(no_ext) IN class_expr
-      { class_of_let_bindings ~loc:$sloc $1 $3 }
+  | let_bindings(no_ext) mkrhs(IN) class_expr
+      { class_of_let_bindings ~loc:$sloc ($1 ~loc_in:(Some $2.loc)) $3 }
   | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_expr
       { let loc = ($startpos($2), $endpos($5)) in
         let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
@@ -2230,8 +2233,8 @@ expr:
         mkexp_attrs ~loc:$sloc desc attrs }
   | mkexp(expr_)
       { $1 }
-  | let_bindings(ext) IN seq_expr
-      { expr_of_let_bindings ~loc:$sloc $1 $3 }
+  | let_bindings(ext) mkrhs(IN) seq_expr
+      { expr_of_let_bindings ~loc:$sloc ($1 ~loc_in:(Some $2.loc)) $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
       { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in

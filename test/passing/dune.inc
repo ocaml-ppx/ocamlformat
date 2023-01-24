@@ -1368,6 +1368,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to disable_local_let.ml.stdout
+   (with-stderr-to disable_local_let.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/disable_local_let.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_local_let.ml disable_local_let.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_local_let.ml.err disable_local_let.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to disabled.ml.stdout
    (with-stderr-to disabled.ml.stderr
      (run %{bin:ocamlformat} --margin-check --disable %{dep:tests/disabled.ml})))))

@@ -2326,13 +2326,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let ext = lbs.pvbs_extension in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in:lbs.pvbs_loc_in
           lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in:None
           Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
@@ -2796,7 +2796,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
+and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_flag
     bindings body =
   let indent_after_in =
     match body.pexp_desc with
@@ -2814,7 +2814,7 @@ and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
         0
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
-  fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
+  fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
     ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
@@ -2986,7 +2986,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~has_attr
+      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in:None ~has_attr
         ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
@@ -4344,7 +4344,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension}
+  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension; pvbs_loc_in= _}
     ->
       let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
@@ -4383,7 +4383,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs ?ext c cls
 
-and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
+and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in ~body_loc
     ~has_attr ~indent_after_in =
   let parens = parens || has_attr in
   let fmt_in indent =
@@ -4394,8 +4394,11 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (fmt_in indent) in
+    let loc_in =
+      match loc_in with Some loc_in when last -> Some loc_in | _ -> None
+    in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ?ext ~in_ binding
+    fmt_value_binding c ~rec_flag ?ext ~in_ ?loc_in binding
     $ fmt_if (not last)
         ( match c.conf.fmt_opts.let_and.v with
         | `Sparse -> "@;<1000 0>"
@@ -4448,9 +4451,17 @@ and fmt_value_constraint c vc_opt =
             $ fmt_core_type c (sub_typ ~ctx coercion) ) )
   | None -> (noop, noop)
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?loc_in ?epi
     {lb_op; lb_pat; lb_args; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
-  update_config_maybe_disabled c lb_loc lb_attrs
+  let loc_with_in =
+    match loc_in with
+    | None -> lb_loc
+    | Some loc_in ->
+        { loc_start= lb_loc.loc_start
+        ; loc_end= loc_in.loc_end
+        ; loc_ghost= lb_loc.loc_ghost || loc_in.loc_ghost }
+  in
+  update_config_maybe_disabled c loc_with_in lb_attrs
   @@ fun c ->
   let lb_pun =
     Ocaml_version.(
