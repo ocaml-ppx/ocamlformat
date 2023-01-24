@@ -23,6 +23,8 @@
 - ocamlformat-rpc: use binary mode for stdin/stdout (#2218, @rgrinberg)
 - Fix interpretation of glob pattern in `.ocamlformat-ignore` under Windows (#2206, @nojb)
 - Remove conf mutability, and correctly display the conventional profile when using print-config (#2233, @EmileTrotignon)
+- Preserve position of comments around type alias (#2239, @EmileTrotignon)
+- Preserve position of comments around constructor record (#2237, @EmileTrotignon)
 
 ### Changes
 
