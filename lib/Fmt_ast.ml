@@ -3059,7 +3059,8 @@ and fmt_value_description ?ext c ctx vd =
                  && is_arrow_or_poly pval_type ) )
             ~pro_space:true (sub_typ ~ctx pval_type)
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
-        $ hvbox 0 @@ list pval_prim "@ " fmt_val_prim )
+        $ hvbox_if (List.length pval_prim > 1) 0
+          @@ list pval_prim "@;" fmt_val_prim )
     $ fmt_item_attributes c ~pre:(Break (1, 2)) atrs
     $ doc_after )
 
