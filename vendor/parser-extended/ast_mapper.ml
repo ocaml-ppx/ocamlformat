@@ -234,8 +234,10 @@ module T = struct
 
   let map_constructor_arguments sub = function
     | Pcstr_tuple l -> Pcstr_tuple (List.map (sub.typ sub) l)
-    | Pcstr_record l ->
-        Pcstr_record (List.map (sub.label_declaration sub) l)
+    | Pcstr_record (loc, l) ->
+        let loc = sub.location sub loc in
+        let l = List.map (sub.label_declaration sub) l in
+        Pcstr_record (loc, l)
 
   let map_type_extension sub
       {ptyext_path; ptyext_params;

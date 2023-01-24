@@ -2990,7 +2990,7 @@ constructor_arguments:
     %prec below_HASH
       { Pcstr_tuple tys }
   | LBRACE label_declarations RBRACE
-      { Pcstr_record $2 }
+      { Pcstr_record (make_loc $sloc, $2) }
 ;
 label_declarations:
     label_declaration                           { [$1] }

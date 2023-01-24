@@ -1015,7 +1015,7 @@ and constructor_decl i ppf
 
 and constructor_arguments i ppf = function
   | Pcstr_tuple l -> list i core_type ppf l
-  | Pcstr_record l -> list i label_decl ppf l
+  | Pcstr_record (_, l) -> list i label_decl ppf l
 
 and label_decl i ppf {pld_name; pld_mutable; pld_type; pld_loc; pld_attributes}=
   line i ppf "%a\n" fmt_location pld_loc;

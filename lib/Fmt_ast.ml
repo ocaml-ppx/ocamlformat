@@ -3251,7 +3251,7 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
   | Pcstr_tuple typs ->
       pre $ fmt "@ " $ fmt_opt vars
       $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
-  | Pcstr_record lds ->
+  | Pcstr_record (loc, lds) ->
       let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
@@ -3261,9 +3261,11 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
             " "
         $ fmt_if_k (not last) p.sep_after
       in
-      pre $ p.docked_before $ p.break_before
-      $ p.box_record (list_fl lds fmt_ld)
-      $ p.break_after $ p.docked_after
+      pre
+      $ Cmts.fmt c loc ~pro:(break 1 0) ~epi:noop
+        @@ wrap_k p.docked_before p.docked_after
+        @@ wrap_k p.break_before p.break_after
+        @@ p.box_record @@ list_fl lds fmt_ld
 
 and fmt_constructor_arguments_result c ctx vars args res =
   let pre = fmt_or (Option.is_none res) " of" " :" in
@@ -3342,8 +3344,10 @@ and fmt_extension_constructor c ctx ec =
            ( fmt_str_loc c pext_name
            $
            match pext_kind with
-           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), None) -> noop
-           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), Some res) ->
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record (_, [])), None) ->
+               noop
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record (_, [])), Some res)
+             ->
                sep $ fmt_core_type c (sub_typ ~ctx res)
            | Pext_decl (vars, args, res) ->
                fmt_constructor_arguments_result c ctx vars args res
