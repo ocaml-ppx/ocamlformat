@@ -25,6 +25,7 @@
 - Remove conf mutability, and correctly display the conventional profile when using print-config (#2233, @EmileTrotignon)
 - Preserve position of comments around type alias (#2239, @EmileTrotignon)
 - Preserve position of comments around constructor record (#2237, @EmileTrotignon)
+- Preserve position of comments around external declaration strings (#2238, @EmileTrotignon, @gpetiot)
 
 ### Changes
 

@@ -204,7 +204,7 @@ module Exp:
 module Val:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
-      ?prim:string list -> str -> core_type -> value_description
+      ?prim:str list -> str -> core_type -> value_description
   end
 
 (** Type declarations *)

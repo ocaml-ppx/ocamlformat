@@ -741,7 +741,7 @@ let default_mapper =
           (this.typ this pval_type)
           ~attrs:(this.attributes this pval_attributes)
           ~loc:(this.location this pval_loc)
-          ~prim:pval_prim
+          ~prim:(List.map (map_loc this) pval_prim)
       );
 
     pat = P.map;
