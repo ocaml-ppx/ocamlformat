@@ -2438,14 +2438,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_function _ | Pexp_letexception _
                             | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
                             | Pexp_pack _ | Pexp_fun _ | Pexp_beginend _
-                            | Pexp_letopen _
-                            | Pexp_constraint
-                                ( { pexp_desc= Pexp_pack _
-                                  ; pexp_attributes= []
-                                  ; _ }
-                                , { ptyp_desc= Ptyp_package _
-                                  ; ptyp_attributes= []
-                                  ; _ } ) )
+                            | Pexp_letopen _ )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
