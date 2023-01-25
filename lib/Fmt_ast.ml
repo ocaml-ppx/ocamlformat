@@ -705,15 +705,6 @@ and type_constr_and_body c xbody =
     , sub_exp ~ctx exp )
   in
   match xbody.ast.pexp_desc with
-  | Pexp_constraint
-      ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-      , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ) ) ->
-      Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-        ~after:exp.pexp_loc ;
-      fmt_cstr_and_xbody typ exp
-  | Pexp_constraint
-      ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _}) ->
-      (None, xbody)
   | Pexp_constraint (exp, typ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
