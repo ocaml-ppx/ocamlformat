@@ -255,6 +255,10 @@ let kk = ((module A : T) (* foo *))
 
 let kk = ((* foo *) (module A : T) (* foo *))
 
+let kk = (* before exp *) ((* before exp_pack *) (module (* before A *) A (* after A *)) (* after exp_pack *)) (* after exp *)
+
+let kk = (* before exp *) ((* before exp_pack *) (module (* before A *) A (* after A *) : (* before S *) S (* after S *)) (* after exp_pack *)) (* after exp *)
+
 let _ = assert (foo (bar + baz <= quux))
 (* this comment should stay attached to the preceding item *)
 

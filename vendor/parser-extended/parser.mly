@@ -2201,8 +2201,11 @@ expr:
 ;
 
 simple_expr:
-  | LPAREN seq_expr RPAREN
-      { reloc_exp ~loc:$sloc $2 }
+  | LPAREN e = seq_expr RPAREN
+      { match e.pexp_desc with
+        | Pexp_pack _ ->
+            mkexp ~loc:$sloc (Pexp_parens e)
+        | _ -> reloc_exp ~loc:$sloc e }
   | LPAREN seq_expr error
       { unclosed "(" $loc($1) ")" $loc($3) }
   | LPAREN seq_expr type_constraint RPAREN
