@@ -2320,14 +2320,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ~f:(fun m ->
              Params.parens_if parens c.conf
                (hvbox 2
-                  (Cmts.fmt c pexp_loc
-                     ( hovbox 0
-                         ( opn_paren $ str "module"
-                         $ fmt_extension_suffix c ext
-                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
-                         )
-                     $ fmt_package_type c ctx cnstrs
-                     $ cls_paren $ fmt_atrs ) ) ) ) )
+                  ( hovbox 0
+                      ( opn_paren $ str "module"
+                      $ fmt_extension_suffix c ext
+                      $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id )
+                  $ fmt_package_type c ctx cnstrs
+                  $ cls_paren $ fmt_atrs ) ) ) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid, (typ1, typ2), exp) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
