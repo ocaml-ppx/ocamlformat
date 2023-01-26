@@ -11,7 +11,7 @@
 
 open Bechamel
 open Toolkit
-open Ocamlformat
+open Ocamlformat_lib
 
 type range = int * int
 

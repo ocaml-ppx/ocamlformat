@@ -1,5 +1,5 @@
 open! Base
-open Ocamlformat
+open Ocamlformat_lib
 
 let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
 

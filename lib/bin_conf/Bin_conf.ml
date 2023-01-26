@@ -9,10 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocamlformat
+open Ocamlformat_lib
 open Conf
 open Cmdliner
-module Decl = Ocamlformat.Conf_decl
+module Decl = Conf_decl
 
 type file = Stdin | File of string
 

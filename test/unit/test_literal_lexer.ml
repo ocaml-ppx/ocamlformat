@@ -1,5 +1,5 @@
 open Base
-open Ocamlformat
+open Ocamlformat_lib
 
 let single_quote = '\''
 
