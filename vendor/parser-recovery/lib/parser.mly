@@ -2147,8 +2147,11 @@ expr [@recover.expr Annot.Exp.mk ()]:
 ;
 
 simple_expr:
-  | LPAREN seq_expr RPAREN
-      { reloc_exp ~loc:$sloc $2 }
+  | LPAREN e = seq_expr RPAREN
+      { match e.pexp_desc with
+        | Pexp_pack _ ->
+            mkexp ~loc:$sloc (Pexp_parens e)
+        | _ -> reloc_exp ~loc:$sloc e }
   | LPAREN seq_expr type_constraint RPAREN
       { mkexp_constraint ~loc:$sloc $2 $3 }
   | indexop_expr(DOT, seq_expr, { None })
