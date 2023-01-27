@@ -2609,6 +2609,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       wrap_beginend
       @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
            (sub_exp ~ctx e)
+  | Pexp_parens e ->
+      hvbox 0 @@ Params.parens c.conf
+      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+           (sub_exp ~ctx e)
+      $ fmt_atrs
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr
     rec_flag bindings body =

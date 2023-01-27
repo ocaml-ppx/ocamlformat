@@ -161,6 +161,7 @@ module Exp = struct
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
+  let parens ?loc ?attrs a = mk ?loc ?attrs (Pexp_parens a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
   let prefix ?loc ?attrs a b = mk ?loc ?attrs (Pexp_prefix (a, b))
   let infix ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_infix (a, b, c))
