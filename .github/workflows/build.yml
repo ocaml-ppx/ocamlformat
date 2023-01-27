@@ -20,7 +20,9 @@ jobs:
 
     steps:
       # Clone the project
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Setup
       - name: Setup OCaml ${{ matrix.ocaml-version }}
@@ -36,3 +38,18 @@ jobs:
 
       - name: Check help files
         run: opam exec -- dune build @help --auto-promote
+
+      - name: Test conventional profile
+        if: ${{ matrix.os }} == ubuntu-latest
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
+        shell: bash
+
+      - name: Test janestreet profile
+        if: ${{ matrix.os }} == ubuntu-latest
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
+        shell: bash
+
+      - name: Test ocamlformat profile
+        if: ${{ matrix.os }} == ubuntu-latest
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
+        shell: bash
