@@ -194,6 +194,7 @@ module Exp:
     val binding_op: str -> pattern -> expression -> loc -> binding_op
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
     val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val parens: ?loc:loc -> ?attrs:attrs -> expression -> expression
     val cons: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val prefix: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
     val infix:

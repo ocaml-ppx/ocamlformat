@@ -439,6 +439,7 @@ and expression_desc =
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
   | Pexp_beginend of expression  (** [begin E end] *)
+  | Pexp_parens of expression  (** [(E)] *)
   | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
   | Pexp_indexop_access of indexop_access
   | Pexp_prefix of string loc * expression  (** [op E] *)

@@ -479,6 +479,9 @@ and expression i ppf x =
   | Pexp_beginend e ->
       line i ppf "Pexp_beginend\n";
       expression i ppf e
+  | Pexp_parens e ->
+      line i ppf "Pexp_parens\n";
+      expression i ppf e
   | Pexp_cons l ->
       line i ppf "Pexp_cons\n";
       list i expression ppf l

@@ -1243,7 +1243,7 @@ end = struct
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _
+       |Pexp_beginend _ | Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
@@ -1388,6 +1388,7 @@ end = struct
               || List.exists e1N ~f:(fun (_, _, e) -> Option.exists e ~f) )
         | Pexp_assert e
          |Pexp_beginend e
+         |Pexp_parens e
          |Pexp_constraint (e, _)
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
@@ -1981,8 +1982,8 @@ end = struct
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
          |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
-         |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_indexop_access _
-          ->
+         |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
+         |Pexp_indexop_access _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2060,7 +2061,7 @@ end = struct
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
-       |Pexp_hole | Pexp_while _ | Pexp_beginend _ ->
+       |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
