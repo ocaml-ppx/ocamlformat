@@ -82,8 +82,37 @@
   (cmdliner
    (>= 1.1.0))
   dune
-  (ocamlformat-lib
-   (= :version))
+  (base
+   (>= v0.12.0))
+  dune-build-info
+  either
+  fix
+  fpath
+  (menhir
+   (>= 20201216))
+  (menhirLib
+   (>= 20201216))
+  (menhirSdk
+   (>= 20201216))
+  (ocaml-version
+   (>= 3.5.0))
+  (ocamlformat-rpc-lib
+   (and
+    :with-test
+    (= :version)))
+  (ocp-indent
+   (>= 1.8.0))
+  stdio
+  (uuseg
+   (>= 10.0.0))
+  (uutf
+   (>= 1.0.1))
+  (csexp
+   (>= 1.4.0))
+  ; for vendored odoc-parser
+  astring
+  result
+  camlp-streams
   (re
    (>= 1.10.3))))
 
