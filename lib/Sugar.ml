@@ -308,20 +308,7 @@ module Let_binding = struct
           in
           let ctx = Exp body in
           match (body.pexp_desc, pat.ppat_desc) with
-          | ( Pexp_constraint
-                ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-                , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ)
-                )
-            , _ )
-            when Source.type_constraint_is_first typ exp.pexp_loc ->
-              Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
-              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
-          | ( Pexp_constraint
-                ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _})
-            , _ )
-           |Pexp_constraint _, Ppat_constraint _ ->
-              (xpat, `None xargs, xbody)
+          | Pexp_constraint _, Ppat_constraint _ -> (xpat, `None xargs, xbody)
           | Pexp_constraint (exp, typ), _
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc

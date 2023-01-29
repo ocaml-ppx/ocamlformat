@@ -705,15 +705,6 @@ and type_constr_and_body c xbody =
     , sub_exp ~ctx exp )
   in
   match xbody.ast.pexp_desc with
-  | Pexp_constraint
-      ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-      , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ) ) ->
-      Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-        ~after:exp.pexp_loc ;
-      fmt_cstr_and_xbody typ exp
-  | Pexp_constraint
-      ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _}) ->
-      (None, xbody)
   | Pexp_constraint (exp, typ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
@@ -1990,29 +1981,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (parens || not (List.is_empty pexp_attributes))
         c.conf
         (fmt_constant c ?epi const $ fmt_atrs)
-  | Pexp_constraint
-      ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
-      , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _} ) ->
-      let opn_paren =
-        match c.conf.fmt_opts.indicate_multiline_delimiters.v with
-        | `No | `Closing_on_separate_line -> str "("
-        | `Space -> fits_breaks "(" "( "
-      in
-      let cls_paren = closing_paren c ~offset:(-2) in
-      hovbox 0
-        (compose_module
-           (fmt_module_expr c (sub_mod ~ctx me))
-           ~f:(fun m ->
-             Params.parens_if parens c.conf
-               (hvbox 2
-                  (Cmts.fmt c pexp_loc
-                     ( hovbox 0
-                         ( opn_paren $ str "module"
-                         $ fmt_extension_suffix c ext
-                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
-                         )
-                     $ fmt_package_type c ctx cnstrs
-                     $ cls_paren $ fmt_atrs ) ) ) ) )
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2330,12 +2298,28 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
   | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
-  | Pexp_pack me ->
+  | Pexp_pack (me, pt) ->
       let fmt_mod m =
         Params.parens_if parens c.conf
-          ( Params.Exp.wrap c.conf ~parens:true
-              (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
-          $ fmt_atrs )
+          ( match pt with
+          | Some (id, cnstrs) ->
+              let opn_paren =
+                match c.conf.fmt_opts.indicate_multiline_delimiters.v with
+                | `No | `Closing_on_separate_line -> str "("
+                | `Space -> fits_breaks "(" "( "
+              in
+              let cls_paren = closing_paren c ~offset:(-2) in
+              hvbox 2
+                ( hovbox 0
+                    ( opn_paren $ str "module"
+                    $ fmt_extension_suffix c ext
+                    $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id )
+                $ fmt_package_type c ctx cnstrs
+                $ cls_paren $ fmt_atrs )
+          | None ->
+              Params.Exp.wrap c.conf ~parens:true
+                (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
+              $ fmt_atrs )
       in
       hvbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
@@ -2440,14 +2424,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_function _ | Pexp_letexception _
                             | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
                             | Pexp_pack _ | Pexp_fun _ | Pexp_beginend _
-                            | Pexp_letopen _
-                            | Pexp_constraint
-                                ( { pexp_desc= Pexp_pack _
-                                  ; pexp_attributes= []
-                                  ; _ }
-                                , { ptyp_desc= Ptyp_package _
-                                  ; ptyp_attributes= []
-                                  ; _ } ) )
+                            | Pexp_letopen _ )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )

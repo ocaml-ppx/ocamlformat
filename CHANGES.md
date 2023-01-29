@@ -26,6 +26,7 @@
 - Preserve position of comments around type alias (#2239, @EmileTrotignon)
 - Preserve position of comments around constructor record (#2237, @EmileTrotignon)
 - Preserve position of comments around external declaration strings (#2238, @EmileTrotignon, @gpetiot)
+- Preserve position of comments around module pack expressions (#2234, @EmileTrotignon, @gpetiot)
 
 ### Changes
 

@@ -955,9 +955,7 @@ end = struct
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N); _} as ty))
-        ->
-          assert (typ == ty || List.exists it1N ~f:snd_f)
+      | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
        |Pexp_poly (_, Some t1)

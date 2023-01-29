@@ -453,9 +453,10 @@ and expression i ppf x =
   | Pexp_newtype (s, e) ->
       line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
       expression i ppf e
-  | Pexp_pack me ->
+  | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
-      module_expr i ppf me
+      module_expr i ppf me;
+      option i package_type ppf pt
   | Pexp_open (lid, e) ->
       line i ppf "Pexp_open\n";
       longident_loc i ppf lid;
