@@ -44,7 +44,7 @@
 - Remove unnecessary parentheses around partially applied infix operators with attributes (#2198, @gpetiot)
 - JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
-- The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, #<PR_NUMBER>, @gpetiot)
+- The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, #2246, @gpetiot)
 
 ### New features
 
