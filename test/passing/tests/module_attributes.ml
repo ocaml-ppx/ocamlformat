@@ -38,3 +38,10 @@ end = struct
 end
       (* some arbitrary comment *)
       [@ocaml.warning "-60"]
+
+module type A = sig
+  module [@attr] A := A.B
+
+  module A := A.B [@@attr] 
+end
+      

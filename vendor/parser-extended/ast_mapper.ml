@@ -30,6 +30,7 @@ type mapper = {
   arg_label: mapper -> Asttypes.arg_label -> Asttypes.arg_label;
   attribute: mapper -> attribute -> attribute;
   attributes: mapper -> attribute list -> attribute list;
+  ext_attrs: mapper -> ext_attrs -> ext_attrs;
   binding_op: mapper -> binding_op -> binding_op;
   case: mapper -> case -> case;
   cases: mapper -> case list -> case list;
@@ -771,42 +772,43 @@ let default_mapper =
     binding_op = E.map_binding_op;
 
     module_declaration =
-      (fun this {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} ->
+      (fun this {pmd_name; pmd_args; pmd_type; pmd_ext_attrs; pmd_loc} ->
          Md.mk
            (map_loc this pmd_name)
            (List.map (map_functor_param this) pmd_args)
            (this.module_type this pmd_type)
-           ~attrs:(this.attributes this pmd_attributes)
+           ~attrs:(this.ext_attrs this pmd_ext_attrs)
            ~loc:(this.location this pmd_loc)
       );
 
     module_substitution =
-      (fun this {pms_name; pms_manifest; pms_attributes; pms_loc} ->
+      (fun this 
+        { pms_name; pms_manifest; pms_ext_attrs; 
+           pms_loc } ->
          Ms.mk
            (map_loc this pms_name)
            (map_loc this pms_manifest)
-           ~attrs:(this.attributes this pms_attributes)
+           ~attrs:(this.ext_attrs this pms_ext_attrs)
            ~loc:(this.location this pms_loc)
       );
 
     module_type_declaration =
-      (fun this {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} ->
+      (fun this {pmtd_name; pmtd_type; pmtd_ext_attrs; pmtd_loc} ->
          Mtd.mk
            (map_loc this pmtd_name)
            ?typ:(map_opt (this.module_type this) pmtd_type)
-           ~attrs:(this.attributes this pmtd_attributes)
+           ~attrs:(this.ext_attrs this pmtd_ext_attrs) 
            ~loc:(this.location this pmtd_loc)
       );
 
     module_binding =
-      (fun this {pmb_name; pmb_args; pmb_expr; pmb_attributes; pmb_loc} ->
+      (fun this {pmb_name; pmb_args; pmb_expr; pmb_ext_attrs; pmb_loc} ->
          Mb.mk (map_loc this pmb_name)
            (List.map (map_functor_param this) pmb_args)
            (this.module_expr this pmb_expr)
-           ~attrs:(this.attributes this pmb_attributes)
+           ~attrs:(this.ext_attrs this pmb_ext_attrs) 
            ~loc:(this.location this pmb_loc)
       );
-
 
     open_declaration =
       (fun this {popen_expr; popen_override; popen_attributes; popen_loc} ->
@@ -907,6 +909,12 @@ let default_mapper =
       }
     );
     attributes = (fun this l -> List.map (this.attribute this) l);
+    ext_attrs = (fun this e ->
+        {
+          attrs_extension = map_opt (map_loc this) e.attrs_extension;
+          attrs_before = this.attributes this e.attrs_before;
+          attrs_after = this.attributes this e.attrs_after;
+        });
     payload =
       (fun this -> function
          | PStr x -> PStr (this.structure this x)
