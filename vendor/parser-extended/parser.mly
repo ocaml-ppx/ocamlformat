@@ -1379,6 +1379,29 @@ structure_item:
     { $1 }
 ;
 
+%inline ext_attrs(kw, body):
+  kw
+  ext = ext 
+  before = attributes
+  body = body
+  after = post_item_attributes
+  { let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    let attrs = Attr.ext_attrs ?ext ~before ~after () in 
+    body ~loc ~attrs ~docs ~text:None }
+
+
+%inline ext_attrs_no_ext(kw, body):
+  kw
+  before = attributes
+  body = body
+  after = post_item_attributes
+  { let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+     let text = Some (symbol_text $symbolstartpos) in
+    let attrs = Attr.ext_attrs ~before ~after () in 
+    body ~loc ~attrs ~docs ~text }
+
 (* A single module binding. *)
 %inline module_binding:
   MODULE
