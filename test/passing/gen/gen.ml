@@ -1,9 +1,12 @@
 module StringMap = Map.Make (String)
 
+let spf = Printf.sprintf
+
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
+  ; mutable has_ocp_diff: bool
   ; mutable ocp_opts: string list
   ; mutable base_file: string option
   ; mutable extra_deps: string list
@@ -39,6 +42,7 @@ let add_test ?base_file map src_test_name =
     { has_ref= false
     ; has_opts= false
     ; has_ocp= false
+    ; has_ocp_diff= false
     ; ocp_opts= []
     ; base_file
     ; extra_deps= []
@@ -51,8 +55,8 @@ let add_test ?base_file map src_test_name =
 let register_file tests fname =
   match String.split_on_char '.' fname with
   | test_name
-    :: (("ml" | "mli" | "mlt" | "mld" | "eliom" | "eliomi") as ext)
-    :: rest -> (
+    :: (("ml" | "mli" | "mlt" | "mld" | "eliom" | "eliomi") as ext) :: rest
+    -> (
       let fname = "tests/" ^ fname in
       let src_test_name = test_name ^ "." ^ ext in
       let setup =
@@ -72,6 +76,7 @@ let register_file tests fname =
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["ocp"] -> setup.has_ocp <- true
+      | ["ocp-diff"] -> setup.has_ocp_diff <- true
       | ["ocp-opts"] -> setup.ocp_opts <- read_lines fname
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
@@ -85,19 +90,16 @@ let register_file tests fname =
 let cmd should_fail args =
   let cmd_string = String.concat " " args in
   if should_fail then
-    Printf.sprintf
-      {|(with-accepted-exit-codes 1
-       (run %s))|}
-      cmd_string
-  else Printf.sprintf {|(run %s)|} cmd_string
+    spf {|(with-accepted-exit-codes 1
+       (run %s))|} cmd_string
+  else spf {|(run %s)|} cmd_string
 
 let emit_test test_name setup =
   let opts =
     "--margin-check"
     ::
-    ( if setup.has_opts then
-        read_lines (Printf.sprintf "tests/%s.opts" test_name)
-      else [] )
+    ( if setup.has_opts then read_lines (spf "tests/%s.opts" test_name)
+    else [] )
   in
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
@@ -110,7 +112,7 @@ let emit_test test_name setup =
   let enabled_if_line =
     match setup.enabled_if with
     | None -> ""
-    | Some clause -> Printf.sprintf "\n (enabled_if %s)" clause
+    | Some clause -> spf "\n (enabled_if %s)" clause
   in
   Printf.printf
     {|
@@ -134,13 +136,11 @@ let emit_test test_name setup =
 |}
     extra_deps enabled_if_line test_name test_name
     (cmd setup.should_fail
-       ( ["%{bin:ocamlformat}"] @ opts
-       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
+       (["%{bin:ocamlformat}"] @ opts @ [spf "%%{dep:%s}" base_test_name]) )
     enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
     let ocp_cmd =
-      "%{bin:ocp-indent}"
-      :: (setup.ocp_opts @ [Printf.sprintf "%%{dep:%s}" ref_name])
+      "%{bin:ocp-indent}" :: (setup.ocp_opts @ [spf "%%{dep:%s}" ref_name])
     in
     Printf.printf
       {|
@@ -151,13 +151,22 @@ let emit_test test_name setup =
    (with-outputs-to %s.ocp.output
      %s)))
 
+(rule%s
+ (with-outputs-to %s.ocp.diff
+  %s))
+
 (rule
  (alias runtest)%s
  (package ocamlformat)
- (action (diff tests/%s.ocp %s.ocp.output)))
+ (action (diff tests/%s.ocp %s.ocp.diff)))
 |}
       extra_deps enabled_if_line test_name
       (cmd setup.should_fail ocp_cmd)
+      enabled_if_line test_name
+      (cmd true
+         [ "diff"
+         ; spf "%%{dep:%s}" ref_name
+         ; spf "%%{dep:%s.ocp.output}" test_name ] )
       enabled_if_line test_name test_name
 
 let () =
