@@ -27,6 +27,7 @@
 - Preserve position of comments around constructor record (#2237, @EmileTrotignon)
 - Preserve position of comments around external declaration strings (#2238, @EmileTrotignon, @gpetiot)
 - Preserve position of comments around module pack expressions (#2234, @EmileTrotignon, @gpetiot)
+- Correctly parenthesize array literals with attributes in argument positions (#2250, @ccasin)
 
 ### Changes
 
