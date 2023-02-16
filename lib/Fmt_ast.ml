@@ -1935,16 +1935,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               $ fmt_if_k parens (closing_paren c ~force ~offset:(-3)) ) )
   | Pexp_array [] ->
       hvbox 0
-        ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
-        $ fmt_atrs )
+        (Params.parens_if parens c.conf
+           ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
+           $ fmt_atrs ) )
   | Pexp_array e1N ->
       let p = Params.get_array_expr c.conf in
       hvbox_if has_attr 0
-        ( p.box
-            (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
-               (sub_exp ~ctx >> fmt_expression c)
-               p pexp_loc )
-        $ fmt_atrs )
+        (Params.parens_if parens c.conf
+           ( p.box
+               (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
+                  (sub_exp ~ctx >> fmt_expression c)
+                  p pexp_loc )
+           $ fmt_atrs ) )
   | Pexp_list e1N ->
       let p = Params.get_list_expr c.conf in
       let offset =
