@@ -3166,7 +3166,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to js_source.ml.ocp.output
-     (run %{bin:ocp-indent} %{dep:tests/js_source.ml.ref}))))
+     (run %{bin:ocp-indent} --config JaneStreet %{dep:tests/js_source.ml.ref}))))
 
 (rule
  (alias runtest)

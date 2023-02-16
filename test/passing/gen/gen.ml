@@ -4,6 +4,7 @@ type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
+  ; mutable ocp_opts: string list
   ; mutable base_file: string option
   ; mutable extra_deps: string list
   ; mutable should_fail: bool
@@ -38,6 +39,7 @@ let add_test ?base_file map src_test_name =
     { has_ref= false
     ; has_opts= false
     ; has_ocp= false
+    ; ocp_opts= []
     ; base_file
     ; extra_deps= []
     ; should_fail= false
@@ -70,6 +72,7 @@ let register_file tests fname =
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["ocp"] -> setup.has_ocp <- true
+      | ["ocp-opts"] -> setup.ocp_opts <- read_lines fname
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
@@ -135,6 +138,10 @@ let emit_test test_name setup =
        @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
     enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
+    let ocp_cmd =
+      "%{bin:ocp-indent}"
+      :: (setup.ocp_opts @ [Printf.sprintf "%%{dep:%s}" ref_name])
+    in
     Printf.printf
       {|
 (rule
@@ -150,8 +157,7 @@ let emit_test test_name setup =
  (action (diff tests/%s.ocp %s.ocp.output)))
 |}
       extra_deps enabled_if_line test_name
-      (cmd setup.should_fail
-         ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name] )
+      (cmd setup.should_fail ocp_cmd)
       enabled_if_line test_name test_name
 
 let () =

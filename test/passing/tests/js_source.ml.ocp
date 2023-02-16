@@ -114,7 +114,7 @@ let () =
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)
-        ((lazy x) [@foo])] -> ()
+             ((lazy x) [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
@@ -1342,14 +1342,14 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-          | `A n -> "A", Some (Tdyn (Int, n))
-          | `B s -> "B", Some (Tdyn (String, s))
-          | `C -> "C", None)
+        | `A n -> "A", Some (Tdyn (Int, n))
+        | `B s -> "B", Some (Tdyn (String, s))
+        | `C -> "C", None)
     , function
-        | "A", Some (Tdyn (Int, n)) -> `A n
-        | "B", Some (Tdyn (String, s)) -> `B s
-        | "C", None -> `C
-        | _ -> invalid_arg "ty_abc" )
+      | "A", Some (Tdyn (Int, n)) -> `A n
+      | "B", Some (Tdyn (String, s)) -> `B s
+      | "C", None -> `C
+      | _ -> invalid_arg "ty_abc" )
 ;;
 
 (* Breaks: no way to pattern-match on a full recursive type *)
@@ -1359,11 +1359,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-             | `Nil -> "Nil", None
-             | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
-           | "Nil", None -> `Nil
-           | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
+         | "Nil", None -> `Nil
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
 ;;
 
 (* Define Sum using object instead of record for first-class polymorphism *)
@@ -1445,20 +1445,20 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 ;;
 
 (*
-type (_,_) ty_assoc =
-  | Anil : (unit,'e) ty_assoc
-  | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+   type (_,_) ty_assoc =
+   | Anil : (unit,'e) ty_assoc
+   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
-and (_,_) ty_pvar =
-  | Pnil : ('a,'e) ty_pvar
-  | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
-  | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
+   and (_,_) ty_pvar =
+   | Pnil : ('a,'e) ty_pvar
+   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
+   | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
 *)
 (*
    An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School:
-     Generic Programming in Omega, by Tim Sheard and Nathan Linger
-          http://web.cecs.pdx.edu/~sheard/
+   Generic Programming in Omega, by Tim Sheard and Nathan Linger
+   http://web.cecs.pdx.edu/~sheard/
 *)
 
 (* Basic types *)
@@ -1646,14 +1646,14 @@ let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
 (*
-let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
-  fun le a b ->
-  match a, b, le with
-  | NZ, m, _ -> Diff (m, PlusZ m)
-  | NS x, NZ, _ -> assert false
-  | NS x, NS y, q ->
-      match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-;;
+   let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
+   fun le a b ->
+   match a, b, le with
+   | NZ, m, _ -> Diff (m, PlusZ m)
+   | NS x, NZ, _ -> assert false
+   | NS x, NS y, q ->
+   match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
+   ;;
 *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -2838,7 +2838,7 @@ type _ fin =
   | FS : 'a fin -> 'a succ fin
 
 (* We cannot define
-     val empty : zero fin -> 'a
+   val empty : zero fin -> 'a
    because we cannot write an empty pattern matching.
    This might be useful to have *)
 
@@ -3307,7 +3307,7 @@ Error: Types marked with the immediate attribute must be
 
    New: implicit pack is also supported, and you only need to be able
    to infer the the module type path from the context.
- *)
+*)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -3633,7 +3633,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-          if Names.mem s used then data :: acc else acc)
+        if Names.mem s used then data :: acc else acc)
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
     then (
@@ -3872,7 +3872,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4115,7 +4115,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4807,16 +4807,16 @@ end
    module type PR6513_orig = sig
    module type S =
    sig
-        type t
-        type u
+   type t
+   type u
    end
 
    module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
+   with type 'a Xml.wrap = 'a and
+   type 'a wrap = 'a and
+   type 'a list_wrap = 'a list)
+   -> S with type t = Html5_types.div Html5.elt and
+   type u = < foo: Html5.uri >
    end
 *)
 module type S = sig
@@ -5233,21 +5233,21 @@ module type S' = S with module M := String
 
 (* with module type *)
 (*
-module type S = sig module type T module F(X:T) : T end;;
-module type T0 = sig type t end;;
-module type S1 = S with module type T = T0;;
-module type S2 = S with module type T := T0;;
-module type S3 = S with module type T := sig type t = int end;;
-module H = struct
-  include (Hashtbl : module type of Hashtbl with
-           type statistics := Hashtbl.statistics
-           and module type S := Hashtbl.S
-           and module Make := Hashtbl.Make
-           and module MakeSeeded := Hashtbl.MakeSeeded
-           and module type SeededS := Hashtbl.SeededS
-           and module type HashedType := Hashtbl.HashedType
-           and module type SeededHashedType := Hashtbl.SeededHashedType)
-end;;
+   module type S = sig module type T module F(X:T) : T end;;
+   module type T0 = sig type t end;;
+   module type S1 = S with module type T = T0;;
+   module type S2 = S with module type T := T0;;
+   module type S3 = S with module type T := sig type t = int end;;
+   module H = struct
+   include (Hashtbl : module type of Hashtbl with
+   type statistics := Hashtbl.statistics
+   and module type S := Hashtbl.S
+   and module Make := Hashtbl.Make
+   and module MakeSeeded := Hashtbl.MakeSeeded
+   and module type SeededS := Hashtbl.SeededS
+   and module type HashedType := Hashtbl.HashedType
+   and module type SeededHashedType := Hashtbl.SeededHashedType)
+   end;;
 *)
 
 (* A subtle problem appearing with -principal *)
@@ -5870,8 +5870,8 @@ end
 include D'
 
 (*
-let () =
-  print_endline (string_of_int D'.M.y)
+   let () =
+   print_endline (string_of_int D'.M.y)
 *)
 open A
 
@@ -6072,14 +6072,14 @@ class ['entity] entity_container =
 let f (x : entity entity_container) = ()
 
 (*
-class world =
-  object
-    val entity_container : entity entity_container = new entity_container
+   class world =
+   object
+   val entity_container : entity entity_container = new entity_container
 
-    method add_entity (s : entity) =
-      entity_container#add_entity (s :> entity)
+   method add_entity (s : entity) =
+   entity_container#add_entity (s :> entity)
 
-  end
+   end
 *)
 (* Two v's in the same class *)
 class c v =
@@ -6504,9 +6504,9 @@ end = struct
   type refer = { poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) }
 end
 (*
-  ocamlc -c pr3918a.mli pr3918b.mli
-  rm -f pr3918a.cmi
-  ocamlc -c pr3918c.ml
+   ocamlc -c pr3918a.mli pr3918b.mli
+   rm -f pr3918a.cmi
+   ocamlc -c pr3918c.ml
 *)
 
 open Pr3918b
@@ -7159,7 +7159,7 @@ type 'a tree =
   | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2 (MakeDiet : functor (X : ORD) ->
-      SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
+    SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7390,10 +7390,10 @@ let _ =
 (* Early strict evaluation *)
 
 (*
-module rec Cyclic
-  : sig val x : int end
-  = struct let x = Cyclic.x + 1 end
-;;
+   module rec Cyclic
+   : sig val x : int end
+   = struct let x = Cyclic.x + 1 end
+   ;;
 *)
 
 (* Reordering of evaluation based on dependencies *)
@@ -7487,16 +7487,16 @@ end
 (* Wrong LHS signatures (PR#4336) *)
 
 (*
-module type ASig = sig type a val a:a val print:a -> unit end
-module type BSig = sig type b val b:b val print:b -> unit end
+   module type ASig = sig type a val a:a val print:a -> unit end
+   module type BSig = sig type b val b:b val print:b -> unit end
 
-module A = struct type a = int let a = 0 let print = print_int end
-module B = struct type b = float let b = 0.0 let print = print_float end
+   module A = struct type a = int let a = 0 let print = print_int end
+   module B = struct type b = float let b = 0.0 let print = print_float end
 
-module MakeA (Empty:sig end) : ASig = A
-module MakeB (Empty:sig end) : BSig = B
+   module MakeA (Empty:sig end) : ASig = A
+   module MakeB (Empty:sig end) : BSig = B
 
-module
+   module
    rec NewA : ASig = MakeA (struct end)
    and NewB : BSig with type b = NewA.a = MakeB (struct end);;
 
@@ -7592,7 +7592,7 @@ module type HEAP = sig
 end
 
 module Bootstrap (MakeH : functor (Element : ORDERED) ->
-      HEAP with module Elem = Element)
+    HEAP with module Elem = Element)
     (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
@@ -9591,7 +9591,7 @@ let _ =
 
 let _ =
   List.map rows ~f:(fun row ->
-      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+    Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
 
 module type T = sig
@@ -9674,7 +9674,7 @@ let g =
   f
     ~x
     (* this is a multiple-line-spanning
-              comment *)
+       comment *)
     ~y
 ;;
 
@@ -9783,8 +9783,8 @@ let _ =
   match x with
   | _
     when f
-        ~f:(function [@ocaml.warning
-             (* ....................................... *) "-4"] _ -> .) -> y
+           ~f:(function [@ocaml.warning
+              (* ....................................... *) "-4"] _ -> .) -> y
 ;;
 
 let[@a
@@ -9799,23 +9799,23 @@ let[@a
   with
   | _
     when f
-        ~f:
-          (function[@ocaml.warning (* ....................................... *) "-4"]
-            | _ -> .)
-        ~f:
-          (function[@ocaml.warning
-             (* ....................................... *)
-            (* ....................................... *)
-            "foooooooooooooooooooooooooooo \
-             fooooooooooooooooooooooooooooooooooooo"]
-            | _ -> .)
-        ~f:
-          (function[@ocaml.warning
-             (* ....................................... *)
-            let x = a
-            and y = b in
-            x + y]
-            | _ -> .) ->
+           ~f:
+             (function[@ocaml.warning (* ....................................... *) "-4"]
+               | _ -> .)
+           ~f:
+             (function[@ocaml.warning
+                (* ....................................... *)
+               (* ....................................... *)
+               "foooooooooooooooooooooooooooo \
+                fooooooooooooooooooooooooooooooooooooo"]
+               | _ -> .)
+           ~f:
+             (function[@ocaml.warning
+                (* ....................................... *)
+               let x = a
+               and y = b in
+               x + y]
+               | _ -> .) ->
     y [@attr
        (* ... *)
       (* ... *)
@@ -9824,22 +9824,22 @@ let[@a
 
 let x =
   foo (`A b) ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo (`A `b) ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ A; B ] ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ [ A ]; B ] ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
