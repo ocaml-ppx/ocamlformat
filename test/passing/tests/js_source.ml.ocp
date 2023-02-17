@@ -1,1316 +1,854 @@
-36,37c36,37
-< let x = 1 in
-< x]
----
->   let x = 1 in
->   x]
-57,59c57,59
-<       [%foo:
-<         val x : t
-<         val y : t])
----
->        [%foo:
->          val x : t
->          val y : t])
-86c86
-<     ()) [@foo]];
----
->      ()) [@foo]];
-117c117
-<         ((lazy x) [@foo])] -> ()
----
->              ((lazy x) [@foo])] -> ()
-124,134c124,134
-<     let[@foo] x = 3 in
-<     object
-<       inherit x [@@foo]
-<       val x = 3 [@@foo]
-<       val virtual x : t [@@foo]
-<       val! mutable x = 3 [@@foo]
-<       method x = 3 [@@foo]
-<       method virtual x : t [@@foo]
-<       method! private x = 3 [@@foo]
-<       initializer x [@@foo]
-<     end [@foo]
----
->   let[@foo] x = 3 in
->   object
->     inherit x [@@foo]
->     val x = 3 [@@foo]
->     val virtual x : t [@@foo]
->     val! mutable x = 3 [@@foo]
->     method x = 3 [@@foo]
->     method virtual x : t [@@foo]
->     method! private x = 3 [@@foo]
->     initializer x [@@foo]
->   end [@foo]
-158c158
-< [@foo]
----
->                                                                                      [@foo]
-386c386
-<  fun f i1 ->
----
->   fun f i1 ->
-545c545
-<        method m = 3
----
->       method m = 3
-655c655
-<   type t = string
----
->     type t = string
-657,660c657,660
-<   let label = "string"
-<   let read s = s
-<   let write s = s
-< end)
----
->     let label = "string"
->     let read s = s
->     let write s = s
->   end)
-894c894
-< This has used the equation t = bool, not visible in the return type **)
----
->     This has used the equation t = bool, not visible in the return type **)
-911c911
-< t = int *)
----
->    t = int *)
-917,918c917,918
-<     let _ = id true in
-<     id)
----
->      let _ = id true in
->      id)
-958c958
-<  fun ty x ->
----
->   fun ty x ->
-972c972
-<  fun ty v ->
----
->   fun ty v ->
-1013c1013
-<  fun ty x ->
----
->   fun ty x ->
-1021c1021
-<     (* t = ('a, 'b) for some 'a and 'b *)
----
->   (* t = ('a, 'b) for some 'a and 'b *)
-1055c1055
-<  fun ty v ->
----
->   fun ty v ->
-1066,1067c1066,1067
-<         if label <> lab then raise VariantMismatch;
-<         set builder (devariantize field_type v))
----
->          if label <> lab then raise VariantMismatch;
->          set builder (devariantize field_type v))
-1152c1152
-<  fun s1 s2 ->
----
->   fun s1 s2 ->
-1167c1167
-<  fun sel cases ->
----
->   fun sel cases ->
-1196c1196
-<  fun e ty v ->
----
->   fun e ty v ->
-1217c1217
-<            | Tdyn (ty, arg) -> variantize e ty arg)
----
->             | Tdyn (ty, arg) -> variantize e ty arg)
-1222c1222
-<  fun e ty v ->
----
->   fun e ty v ->
-1277,1279c1277,1279
-<     | Thd, v -> `A v
-<     | Ttl Thd, v -> `B v
-<     | Ttl (Ttl Thd), Noarg -> `C
----
->       | Thd, v -> `A v
->       | Ttl Thd, v -> `B v
->       | Ttl (Ttl Thd), Noarg -> `C
-1303c1303
-<  fun t ->
----
->   fun t ->
-1309,1310c1309,1310
-<             | `Nil -> "Nil", None
-<             | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
----
->              | `Nil -> "Nil", None
->              | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
-1315,1316c1315,1316
-<              | Thd, Noarg -> `Nil
-<              | Ttl Thd, v -> `Cons v)
----
->               | Thd, Noarg -> `Nil
->               | Ttl Thd, v -> `Cons v)
-1345,1347c1345,1347
-<        | `A n -> "A", Some (Tdyn (Int, n))
-<        | `B s -> "B", Some (Tdyn (String, s))
-<        | `C -> "C", None)
----
->         | `A n -> "A", Some (Tdyn (Int, n))
->         | `B s -> "B", Some (Tdyn (String, s))
->         | `C -> "C", None)
-1357c1357
-<  fun t ->
----
->   fun t ->
-1362,1363c1362,1363
-<           | `Nil -> "Nil", None
-<           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
----
->            | `Nil -> "Nil", None
->            | `Cons p -> "Cons", Some (Tdyn (targ, p)))
-1400,1418c1400,1418
-<        method proj =
-<          function
-<          | `A n -> "A", Some (Tdyn (Int, n))
-<          | `B s -> "B", Some (Tdyn (String, s))
-<          | `C -> "C", None
-< 
-<        method cases =
-<          [ "A", TCarg (Thd, Int)
-<          ; "B", TCarg (Ttl Thd, String)
-<          ; "C", TCnoarg (Ttl (Ttl Thd))
-<          ]
-< 
-<        method inj
-<          : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-<                    -> [ `A of int | `B of string | `C ] =
-<          function
-<          | Thd, v -> `A v
-<          | Ttl Thd, v -> `B v
-<          | Ttl (Ttl Thd), Noarg -> `C
----
->       method proj =
->         function
->         | `A n -> "A", Some (Tdyn (Int, n))
->         | `B s -> "B", Some (Tdyn (String, s))
->         | `C -> "C", None
-> 
->       method cases =
->         [ "A", TCarg (Thd, Int)
->         ; "B", TCarg (Ttl Thd, String)
->         ; "C", TCnoarg (Ttl (Ttl Thd))
->         ]
-> 
->       method inj
->         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
->           -> [ `A of int | `B of string | `C ] =
->         function
->         | Thd, v -> `A v
->         | Ttl Thd, v -> `B v
->         | Ttl (Ttl Thd), Noarg -> `C
-1428c1428
-<  fun t ->
----
->   fun t ->
-1433,1443c1433,1443
-<           method proj =
-<             function
-<             | `Nil -> "Nil", None
-<             | `Cons p -> "Cons", Some (Tdyn (tcons, p))
-< 
-<           method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
-< 
-<           method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
-<             function
-<             | Thd, Noarg -> `Nil
-<             | Ttl Thd, v -> `Cons v
----
->          method proj =
->            function
->            | `Nil -> "Nil", None
->            | `Cons p -> "Cons", Some (Tdyn (tcons, p))
-> 
->          method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
-> 
->          method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
->            function
->            | Thd, Noarg -> `Nil
->            | Ttl Thd, v -> `Cons v
-1448,1455c1448,1455
-< type (_,_) ty_assoc =
-<   | Anil : (unit,'e) ty_assoc
-<   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
-< 
-< and (_,_) ty_pvar =
-<   | Pnil : ('a,'e) ty_pvar
-<   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
-<   | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
----
->    type (_,_) ty_assoc =
->    | Anil : (unit,'e) ty_assoc
->    | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
-> 
->    and (_,_) ty_pvar =
->    | Pnil : ('a,'e) ty_pvar
->    | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
->    | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
-1460,1461c1460,1461
-<      Generic Programming in Omega, by Tim Sheard and Nathan Linger
-<           http://web.cecs.pdx.edu/~sheard/
----
->    Generic Programming in Omega, by Tim Sheard and Nathan Linger
->    http://web.cecs.pdx.edu/~sheard/
-1503c1503
-<  fun xs ys ->
----
->   fun xs ys ->
-1547c1547
-<  fun eq n t ->
----
->   fun eq n t ->
-1556c1556
-<  fun p t ->
----
->   fun p t ->
-1585c1585
-<  fun p ->
----
->   fun p ->
-1598c1598
-<  fun a b ->
----
->   fun a b ->
-1611c1611
-<  fun p1 p2 ->
----
->   fun p1 p2 ->
-1627c1627
-<  fun p1 p2 p3 p4 ->
----
->   fun p1 p2 p3 p4 ->
-1649,1656c1649,1656
-< let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
-<   fun le a b ->
-<   match a, b, le with
-<   | NZ, m, _ -> Diff (m, PlusZ m)
-<   | NS x, NZ, _ -> assert false
-<   | NS x, NS y, q ->
-<       match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-< ;;
----
->    let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
->    fun le a b ->
->    match a, b, le with
->    | NZ, m, _ -> Diff (m, PlusZ m)
->    | NS x, NZ, _ -> assert false
->    | NS x, NS y, q ->
->    match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
->    ;;
-1660c1660
-<  fun le a b ->
----
->   fun le a b ->
-1669c1669
-<  fun le a b ->
----
->   fun le a b ->
-1680c1680
-<  fun le b ->
----
->   fun le b ->
-1696c1696
-<  fun f s ->
----
->   fun f s ->
-1721c1721
-<  fun x t ->
----
->   fun x t ->
-1730c1730
-<  fun tL y tR ->
----
->   fun tL y tR ->
-1745c1745
-<  fun tL u tR ->
----
->   fun tL u tR ->
-1758c1758
-<  fun x t ->
----
->   fun x t ->
-1808c1808
-<  fun y t ->
----
->   fun y t ->
-1895c1895
-<  fun ct t ->
----
->   fun ct t ->
-1921c1921
-<  fun t ct ->
----
->   fun t ct ->
-1933c1933
-<  fun e t ct ->
----
->   fun e t ct ->
-1977c1977
-<  fun ra rb ->
----
->   fun ra rb ->
-2001,2009c2001,2009
-<  fun x r -> function
-<   | [] -> raise Not_found
-<   | Assoc (x', r', v) :: env ->
-<     if x = x'
-<     then (
-<       match rep_equal r r' with
-<       | None -> failwith ("Wrong type for " ^ x)
-<       | Some Eq -> v)
-<     else assoc x r env
----
->   fun x r -> function
->     | [] -> raise Not_found
->     | Assoc (x', r', v) :: env ->
->       if x = x'
->       then (
->         match rep_equal r r' with
->         | None -> failwith ("Wrong type for " ^ x)
->         | Some Eq -> v)
->       else assoc x r env
-2022,2029c2022,2029
-<  fun env -> function
-<   | Var (x, r) -> assoc x r env
-<   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
-<   | Const x -> x
-<   | Add -> fun (x, y) -> x + y
-<   | LT -> fun (x, y) -> x < y
-<   | Ap (f, x) -> eval_term env f (eval_term env x)
-<   | Pair (x, y) -> eval_term env x, eval_term env y
----
->   fun env -> function
->     | Var (x, r) -> assoc x r env
->     | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
->     | Const x -> x
->     | Add -> fun (x, y) -> x + y
->     | LT -> fun (x, y) -> x < y
->     | Ap (f, x) -> eval_term env f (eval_term env x)
->     | Pair (x, y) -> eval_term env x, eval_term env y
-2063c2063
-<  fun env m ->
----
->   fun env m ->
-2096c2096
-<  fun a b ->
----
->   fun a b ->
-2125c2125
-<  fun name ctx ->
----
->   fun name ctx ->
-2138c2138
-<  fun n ctx t ->
----
->   fun n ctx t ->
-2220c2220
-<  fun t s ->
----
->   fun t s ->
-2244c2244
-<  fun v1 v2 ->
----
->   fun v1 v2 ->
-2281c2281
-<  fun ta tb ->
----
->   fun ta tb ->
-2339,2347c2339,2347
-<    fun allow_link ast ->
-<     match allow_link, ast with
-<     | Maylink, Ast_Text txt -> Text txt
-<     | Nonlink, Ast_Text txt -> Text txt
-<     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-<     | Maylink, Ast_Link lnk -> Link lnk
-<     | Nonlink, Ast_Link _ -> assert false
-<     | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
-<     | Nonlink, Ast_Mref _ -> assert false
----
->     fun allow_link ast ->
->       match allow_link, ast with
->       | Maylink, Ast_Text txt -> Text txt
->       | Nonlink, Ast_Text txt -> Text txt
->       | x, Ast_Bold xs -> Bold (List.map (process x) xs)
->       | Maylink, Ast_Link lnk -> Link lnk
->       | Nonlink, Ast_Link _ -> assert false
->       | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
->       | Nonlink, Ast_Mref _ -> assert false
-2357,2364c2357,2364
-<    fun allow_link ast ->
-<     match allow_link, ast with
-<     | Kind _, Ast_Text txt -> Text txt
-<     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-<     | Kind Maylink, Ast_Link lnk -> Link lnk
-<     | Kind Nonlink, Ast_Link _ -> assert false
-<     | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
-<     | Kind Nonlink, Ast_Mref _ -> assert false
----
->     fun allow_link ast ->
->       match allow_link, ast with
->       | Kind _, Ast_Text txt -> Text txt
->       | x, Ast_Bold xs -> Bold (List.map (process x) xs)
->       | Kind Maylink, Ast_Link lnk -> Link lnk
->       | Kind Nonlink, Ast_Link _ -> assert false
->       | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
->       | Kind Nonlink, Ast_Mref _ -> assert false
-2370,2371c2370,2371
-<   type two
-< end) =
----
->     type two
->   end) =
-2394c2394
-<  fun x ->
----
->   fun x ->
-2429c2429
-< (* constraint 'a = [< `TagA of int | `TagB] *)
----
->   (* constraint 'a = [< `TagA of int | `TagB] *)
-2447c2447
-<  fun w ->
----
->   fun w ->
-2456,2457c2456,2457
-<   type 'a t
-< end) =
----
->     type 'a t
->   end) =
-2464c2464
-<    fun (l : int S.t ab) (r : float S.t ab) ->
----
->     fun (l : int S.t ab) (r : float S.t ab) ->
-2467c2467
-<  ;;
----
->   ;;
-2471,2472c2471,2472
-<   type 'a t
-< end) =
----
->     type 'a t
->   end) =
-2482c2482
-<    fun l r ->
----
->     fun l r ->
-2485c2485
-<  ;;
----
->   ;;
-2574,2576c2574,2576
-<   type 'a t = T of 'a
-<   type 'a s = T of 'a
-< end) =
----
->     type 'a t = T of 'a
->     type 'a s = T of 'a
->   end) =
-2613,2616c2613,2616
-<   module type T
-< end) (B : sig
-<   module type T
-< end) =
----
->     module type T
->   end) (B : sig
->           module type T
->         end) =
-2641,2642c2641,2642
-<   | Local -> fun _ -> raise Exit
-<   | Global -> fun _ -> raise Exit
----
->     | Local -> fun _ -> raise Exit
->     | Global -> fun _ -> raise Exit
-2647,2648c2647,2648
-<   | Local -> fun _ -> raise Exit
-<   | Global -> fun _ -> raise Exit
----
->     | Local -> fun _ -> raise Exit
->     | Global -> fun _ -> raise Exit
-2654,2655c2654,2655
-<   | Local -> fun _ -> raise Exit
-<   | Global -> fun _ -> raise Exit
----
->     | Local -> fun _ -> raise Exit
->     | Global -> fun _ -> raise Exit
-2677c2677
-<  fun n s ->
----
->   fun n s ->
-2790c2790
-<  fun sh i j ->
----
->   fun sh i j ->
-2814,2815c2814,2815
-<   type _ t
-< end) =
----
->     type _ t
->   end) =
-2841c2841
-<      val empty : zero fin -> 'a
----
->    val empty : zero fin -> 'a
-2876c2876
-<  fun x y ->
----
->   fun x y ->
-2892c2892
-<  fun x y ->
----
->   fun x y ->
-2905c2905
-<  fun x t ->
----
->   fun x t ->
-2936c2936
-<  fun r s ->
----
->   fun r s ->
-2982c2982
-<  fun s t acc ->
----
->   fun s t acc ->
-3024,3034c3024,3027
-<    let module M =
-<      (functor
-<        (T : sig
-<           type 'a t
-<         end)
-<        ->
-<        struct
-<          let f (Refl : (a T.t, b T.t) eq) = (x :> b)
-<        end)
-<        (struct
-<          type 'a t = unit
----
->   let module M =
->     (functor
->       (T : sig
->          type 'a t
-3036,3037c3029,3037
-<    in
-<    M.f Refl
----
->       ->
->       struct
->         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
->       end)
->       (struct
->         type 'a t = unit
->       end)
->   in
->   M.f Refl
-3046,3056c3046,3056
-<    let bad_proof (type a) = (Refl : (< m : a >, < m : a >) eq :> (< m : a >, < >) eq) in
-<    let downcast : type a. (a, < >) eq -> < > -> a =
-<      fun (type a) (Refl : (a, < >) eq) (s : < >) -> (s :> a)
-<    in
-<    (downcast
-<       bad_proof
-<       (object
-<          method m = x
-<        end
-<         :> < >))
-<      #m
----
->   let bad_proof (type a) = (Refl : (< m : a >, < m : a >) eq :> (< m : a >, < >) eq) in
->   let downcast : type a. (a, < >) eq -> < > -> a =
->     fun (type a) (Refl : (a, < >) eq) (s : < >) -> (s :> a)
->   in
->   (downcast
->      bad_proof
->      (object
->        method m = x
->      end
->        :> < >))
->   #m
-3087c3087
-< {|
----
->   {|
-3110c3110
-< {|
----
->   {|
-3135c3135
-< {|
----
->   {|
-3147,3148c3147,3148
-<   type t = int
-< end)
----
->     type t = int
->   end)
-3215,3216c3215,3216
-< let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
-< let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
----
->    let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
->    let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
-3226c3226
-< {|
----
->   {|
-3239c3239
-< {|
----
->   {|
-3253c3253
-< {|
----
->   {|
-3273,3274c3273,3274
-<   type t = string
-< end)
----
->     type t = string
->   end)
-3277c3277
-< {|
----
->   {|
-3295c3295
-< {|
----
->   {|
-3310c3310
-<  *)
----
-> *)
-3321c3321
-<     type t = s
----
->        type t = s
-3323,3324c3323,3324
-<     let compare = cmp
-<   end))
----
->        let compare = cmp
->      end))
-3331c3331
-<       type t = s
----
->          type t = s
-3333,3334c3333,3334
-<       let compare = cmp
-<     end))
----
->          let compare = cmp
->        end))
-3500,3505c3500,3505
-<    match (t : s typ) with
-<    | Int eq -> string_of_int (TypEq.apply eq x)
-<    | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
-<    | Pair (module P) ->
-<      let x1, x2 = TypEq.apply P.eq x in
-<      Printf.sprintf "(%s,%s)" (to_string P.t1 x1) (to_string P.t2 x2)
----
->   match (t : s typ) with
->   | Int eq -> string_of_int (TypEq.apply eq x)
->   | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
->   | Pair (module P) ->
->     let x1, x2 = TypEq.apply P.eq x in
->     Printf.sprintf "(%s,%s)" (to_string P.t1 x1) (to_string P.t2 x2)
-3559c3559
-<     : (module MapT with type key = string and type data = string and type map = SSMap.map))
----
->    : (module MapT with type key = string and type data = string and type map = SSMap.map))
-3573c3573
-<   type t = string
----
->     type t = string
-3575,3576c3575,3576
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-3579c3579
-<   type t = string
----
->     type t = string
-3581,3582c3581,3582
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-3783c3783
-<   type t = string
----
->     type t = string
-3785,3786c3785,3786
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-3789c3789
-<   type t = string
----
->     type t = string
-3791,3792c3791,3792
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-4030c4030
-<   type t = string
----
->     type t = string
-4032,4033c4032,4033
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-4036c4036
-<   type t = string
----
->     type t = string
-4038,4039c4038,4039
-<   let compare = compare
-< end)
----
->     let compare = compare
->   end)
-4334,4335c4334,4335
-<    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
-<  ;;
----
->     fun _of_a _of_perms v -> (sexp_of_array _of_a) v
->   ;;
-4354,4355c4354,4355
-<      fun _of_perms v -> sexp_of_t_ v
-<    ;;
----
->       fun _of_perms v -> sexp_of_t_ v
->     ;;
-4404,4405c4404,4405
-<   val abs : 'o is_an_object -> 'o abs
-<   val unabs : 'o abs -> 'o
----
-> val abs : 'o is_an_object -> 'o abs
-> val unabs : 'o abs -> 'o
-4627,4628c4627,4628
-< module type S = sig
-< open Core_kernel.Std
----
->    module type S = sig
->    open Core_kernel.Std
-4630,4633c4630,4633
-< module Hashtbl1 : module type of Hashtbl
-< module Hashtbl2 : sig
-<   include (module type of Hashtbl)
-< end
----
->    module Hashtbl1 : module type of Hashtbl
->    module Hashtbl2 : sig
->    include (module type of Hashtbl)
->    end
-4635c4635
-< module Coverage : Core_kernel.Std.Hashable
----
->    module Coverage : Core_kernel.Std.Hashable
-4637,4640c4637,4640
-< type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
-< type doesnt_type = unit
-<   constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-< end
----
->    type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
->    type doesnt_type = unit
->    constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
->    end
-4696,4697c4696,4697
-<   type 'a t
-<   type 'a u = string
----
->     type 'a t
->     type 'a u = string
-4699,4700c4699,4700
-<   val f : unit -> _ u t
-< end) =
----
->     val f : unit -> _ u t
->   end) =
-4751,4754c4751,4754
-<   module type T
-< end)
-< (A : S.T)
-< (B : S.T) =
----
->     module type T
->   end)
->     (A : S.T)
->     (B : S.T) =
-4779,4780c4779,4780
-<   module type T = S
-< end)
----
->     module type T = S
->   end)
-4807,4812c4807,4812
-< module type PR6513_orig = sig
-< module type S =
-< sig
-<         type t
-<         type u
-< end
----
->    module type PR6513_orig = sig
->    module type S =
->    sig
->    type t
->    type u
->    end
-4814,4820c4814,4820
-< module Make: functor (Html5: Html5_sigs.T
-<                              with type 'a Xml.wrap = 'a and
-<                              type 'a wrap = 'a and
-<                              type 'a list_wrap = 'a list)
-<                      -> S with type t = Html5_types.div Html5.elt and
-<                                type u = < foo: Html5.uri >
-< end
----
->    module Make: functor (Html5: Html5_sigs.T
->    with type 'a Xml.wrap = 'a and
->    type 'a wrap = 'a and
->    type 'a list_wrap = 'a list)
->    -> S with type t = Html5_types.div Html5.elt and
->    type u = < foo: Html5.uri >
->    end
-4964,4965c4964,4965
-<   (Bar : S with type a = private [> `A ])
-<   (Baz : S with type b = private < b : Bar.b ; .. >) =
----
->     (Bar : S with type a = private [> `A ])
->     (Baz : S with type b = private < b : Bar.b ; .. >) =
-4998,5001c4998,5001
-<   type a = private [> `A ]
-< end) (Baz : module type of struct
-<   include Bar
-< end) =
----
->     type a = private [> `A ]
->   end) (Baz : module type of struct
->           include Bar
->         end) =
-5016,5017c5016,5017
-<   type 'a f
-< end) =
----
->     type 'a f
->   end) =
-5025,5027c5025,5027
-< module FixId = Fix (struct type 'a f = 'a end)
-<  let bad : (int, string) eq = FixId.uniq Eq Eq
-<  let _ = Printf.printf "Oh dear: %s" (cast bad 42)
----
->    module FixId = Fix (struct type 'a f = 'a end)
->    let bad : (int, string) eq = FixId.uniq Eq Eq
->    let _ = Printf.printf "Oh dear: %s" (cast bad 42)
-5236,5250c5236,5250
-< module type S = sig module type T module F(X:T) : T end;;
-< module type T0 = sig type t end;;
-< module type S1 = S with module type T = T0;;
-< module type S2 = S with module type T := T0;;
-< module type S3 = S with module type T := sig type t = int end;;
-< module H = struct
-<   include (Hashtbl : module type of Hashtbl with
-<            type statistics := Hashtbl.statistics
-<            and module type S := Hashtbl.S
-<            and module Make := Hashtbl.Make
-<            and module MakeSeeded := Hashtbl.MakeSeeded
-<            and module type SeededS := Hashtbl.SeededS
-<            and module type HashedType := Hashtbl.HashedType
-<            and module type SeededHashedType := Hashtbl.SeededHashedType)
-< end;;
----
->    module type S = sig module type T module F(X:T) : T end;;
->    module type T0 = sig type t end;;
->    module type S1 = S with module type T = T0;;
->    module type S2 = S with module type T := T0;;
->    module type S3 = S with module type T := sig type t = int end;;
->    module H = struct
->    include (Hashtbl : module type of Hashtbl with
->    type statistics := Hashtbl.statistics
->    and module type S := Hashtbl.S
->    and module Make := Hashtbl.Make
->    and module MakeSeeded := Hashtbl.MakeSeeded
->    and module type SeededS := Hashtbl.SeededS
->    and module type HashedType := Hashtbl.HashedType
->    and module type SeededHashedType := Hashtbl.SeededHashedType)
->    end;;
-5472,5475c5472,5475
-<     sig
-<       module N : sig
-<         val x : int
-<       end
----
->   sig
->     module N : sig
->       val x : int
->     end
-5477,5478c5477,5478
-<       module N' = N
-<     end)
----
->     module N' = N
->   end)
-5511,5514c5511,5514
-<     sig
-<       module C : sig
-<         val chr : int -> char
-<       end
----
->   sig
->     module C : sig
->       val chr : int -> char
->     end
-5516,5517c5516,5517
-<       module C' = C
-<     end)
----
->     module C' = C
->   end)
-5545,5546c5545,5546
-<   module C = Char
-< end) =
----
->     module C = Char
->   end) =
-5606,5609c5606,5609
-<   type t
-< end) (M : sig
-<   type t = Y.t
-< end) =
----
->     type t
->   end) (M : sig
->           type t = Y.t
->         end) =
-5615c5615
-< module N = F (M.Y) (M);;*)
----
->   module N = F (M.Y) (M);;*)
-5674c5674
-< module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
----
->    module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
-5676c5676
-< let M2.W eq = W Eq;;
----
->    let M2.W eq = W Eq;;
-5678,5683c5678,5683
-< let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
-< module SInt2 = Set.Make(Int2);;
-< let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-< let s' : SInt2.t = conv eq s;;
-< SInt2.elements s';;
-< SInt2.mem 2 s';; (* invariants are broken *)
----
->    let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
->    module SInt2 = Set.Make(Int2);;
->    let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
->    let s' : SInt2.t = conv eq s;;
->    SInt2.elements s';;
->    SInt2.mem 2 s';; (* invariants are broken *)
-5867c5867
-< module C : sig module L : module type of List end = A
----
->    module C : sig module L : module type of List end = A
-5873,5874c5873,5874
-< let () =
-<   print_endline (string_of_int D'.M.y)
----
->    let () =
->    print_endline (string_of_int D'.M.y)
-5888c5888
-< module C : sig module L : module type of List end = A
----
->    module C : sig module L : module type of List end = A
-6013c6013
-< functor (X : sig end) () (Z : sig end) -> struct end
----
->   functor (X : sig end) () (Z : sig end) -> struct end
-6075,6077c6075,6077
-< class world =
-<   object
-<     val entity_container : entity entity_container = new entity_container
----
->    class world =
->    object
->    val entity_container : entity entity_container = new entity_container
-6079,6080c6079,6080
-<     method add_entity (s : entity) =
-<       entity_container#add_entity (s :> entity)
----
->    method add_entity (s : entity) =
->    entity_container#add_entity (s :> entity)
-6082c6082
-<   end
----
->    end
-6101,6103c6101,6103
-<         object
-<           method v : string = v
-<         end)
----
->          object
->            method v : string = v
->          end)
-6126,6127c6126,6127
-<          method m : int
-<        end
----
->       method m : int
->     end
-6139,6140c6139,6140
-<          val x : 'b
-<        end
----
->       val x : 'b
->     end
-6207,6216c6207,6216
-<         let cur = self#first in
-<         let rec loop count a =
-<           if count >= self#len
-<           then a
-<           else (
-<             let a' = f cur#get count a in
-<             cur#incr ();
-<             loop (count + 1) a')
-<         in
-<         loop 0 a0
----
->       let cur = self#first in
->       let rec loop count a =
->         if count >= self#len
->         then a
->         else (
->           let a' = f cur#get count a in
->           cur#incr ();
->           loop (count + 1) a')
->       in
->       loop 0 a0
-6507,6509c6507,6509
-<   ocamlc -c pr3918a.mli pr3918b.mli
-<   rm -f pr3918a.cmi
-<   ocamlc -c pr3918c.ml
----
->    ocamlc -c pr3918a.mli pr3918b.mli
->    rm -f pr3918a.cmi
->    ocamlc -c pr3918c.ml
-6557c6557
-<     type t = int
----
->       type t = int
-6559,6560c6559,6560
-<     let compare = compare
-<   end)
----
->       let compare = compare
->     end)
-6702,6703c6702,6703
-<   type t
-< end) =
----
->     type t
->   end) =
-7048,7049c7048,7049
-<          method map : ('a -> 'b) -> 'b M.c
-<        end
----
->       method map : ('a -> 'b) -> 'b M.c
->     end
-7162c7162
-<   SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
----
->     SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
-7393,7396c7393,7396
-< module rec Cyclic
-<   : sig val x : int end
-<   = struct let x = Cyclic.x + 1 end
-< ;;
----
->    module rec Cyclic
->    : sig val x : int end
->    = struct let x = Cyclic.x + 1 end
->    ;;
-7490,7491c7490,7491
-< module type ASig = sig type a val a:a val print:a -> unit end
-< module type BSig = sig type b val b:b val print:b -> unit end
----
->    module type ASig = sig type a val a:a val print:a -> unit end
->    module type BSig = sig type b val b:b val print:b -> unit end
-7493,7494c7493,7494
-< module A = struct type a = int let a = 0 let print = print_int end
-< module B = struct type b = float let b = 0.0 let print = print_float end
----
->    module A = struct type a = int let a = 0 let print = print_int end
->    module B = struct type b = float let b = 0.0 let print = print_float end
-7496,7497c7496,7497
-< module MakeA (Empty:sig end) : ASig = A
-< module MakeB (Empty:sig end) : BSig = B
----
->    module MakeA (Empty:sig end) : ASig = A
->    module MakeB (Empty:sig end) : BSig = B
-7499c7499
-< module
----
->    module
-7595,7596c7595,7596
-<   HEAP with module Elem = Element)
-< (Element : ORDERED) : HEAP with module Elem = Element = struct
----
->     HEAP with module Elem = Element)
->     (Element : ORDERED) : HEAP with module Elem = Element = struct
-7831,7832c7831,7832
-<   val f : int -> int
-< end) =
----
->     val f : int -> int
->   end) =
-7879,7880c7879,7880
-<   val x : int Lazy.t
-< end) =
----
->     val x : int Lazy.t
->   end) =
-7973,7974c7973,7974
-<   val x : (module S)
-< end) =
----
->     val x : (module S)
->   end) =
-8634,8635c8634,8635
-<   | A, A, A, A, A, A, A, _, U, U -> 1
-<   | _, _, _, _, _, _, _, G, _, _ -> 1
----
->     | A, A, A, A, A, A, A, _, U, U -> 1
->     | _, _, _, _, _, _, _, G, _, _ -> 1
-8708c8708
-<  fun x y ->
----
->   fun x y ->
-8763c8763
-<  fun p1 p2 ->
----
->   fun p1 p2 ->
-9449,9450c9449,9450
-<     <- (print_string "coucou";
-<         x.contents)
----
->   <- (print_string "coucou";
->       x.contents)
-9569c9569
-<   -> unit
----
->     -> unit
-9669,9670c9669,9670
-<     (* __________________________________________________________________________________ *)
-<     := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
----
->   (* __________________________________________________________________________________ *)
->   := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-9676,9677c9676,9677
-<       (* this is a multiple-line-spanning
-<                 comment *)
----
->     (* this is a multiple-line-spanning
->        comment *)
-9684c9684
-<       (* this is a multiple-line-spanning
----
->     (* this is a multiple-line-spanning
-9709c9709
-<     (* __________________________________________________________________________________ *)
----
->   (* __________________________________________________________________________________ *)
-9723c9723
-<       (* Here is some verbatim formatted text:
----
->   (* Here is some verbatim formatted text:
-9758,9762c9758,9762
-<       (* Turned on for compatibility reasons. Historically this is because
-<          there was no actionable way to change third party annotations. Now
-<          that we have such a support, this behavior should be reconsidered,
-<          provided our tooling and error reporting is friendly enough to be
-<          smoothly used by developers. *)
----
->     (* Turned on for compatibility reasons. Historically this is because
->        there was no actionable way to change third party annotations. Now
->        that we have such a support, this behavior should be reconsidered,
->        provided our tooling and error reporting is friendly enough to be
->        smoothly used by developers. *)
-9787c9787
-<                           (* ....................................... *) "-4"] _ -> .) -> y
----
->               (* ....................................... *) "-4"] _ -> .) -> y
-9791,9795c9791,9795
-<      (* .............................................. ........................... .......................... ...................... *)
-<      foo
-<      (* ....................... *)
-<      (* ................................. *)
-<      (* ...................... *)] _
----
->    (* .............................................. ........................... .......................... ...................... *)
->   foo
->   (* ....................... *)
->   (* ................................. *)
->   (* ...................... *)] _
-9804c9804
-<               | _ -> .)
----
->                | _ -> .)
-9807,9811c9807,9811
-<                         (* ....................................... *)
-<                         (* ....................................... *)
-<                         "foooooooooooooooooooooooooooo \
-<                          fooooooooooooooooooooooooooooooooooooo"]
-<               | _ -> .)
----
->                 (* ....................................... *)
->                (* ....................................... *)
->                "foooooooooooooooooooooooooooo \
->                 fooooooooooooooooooooooooooooooooooooo"]
->                | _ -> .)
-9814,9818c9814,9818
-<                         (* ....................................... *)
-<                         let x = a
-<                         and y = b in
-<                         x + y]
-<               | _ -> .) ->
----
->                 (* ....................................... *)
->                let x = a
->                and y = b in
->                x + y]
->                | _ -> .) ->
-9820,9822c9820,9822
-<         (* ... *)
-<         (* ... *)
-<         attr (* ... *)]
----
->        (* ... *)
->       (* ... *)
->       attr (* ... *)]
+d36 2
+a37 2
+  let x = 1 in
+  x]
+d57 3
+a59 3
+       [%foo:
+         val x : t
+         val y : t])
+d86 1
+a86 1
+     ()) [@foo]];
+d117 1
+a117 1
+             ((lazy x) [@foo])] -> ()
+d124 11
+a134 11
+  let[@foo] x = 3 in
+  object
+    inherit x [@@foo]
+    val x = 3 [@@foo]
+    val virtual x : t [@@foo]
+    val! mutable x = 3 [@@foo]
+    method x = 3 [@@foo]
+    method virtual x : t [@@foo]
+    method! private x = 3 [@@foo]
+    initializer x [@@foo]
+  end [@foo]
+d158 1
+a158 1
+                                                                                     [@foo]
+d386 1
+a386 1
+  fun f i1 ->
+d545 1
+a545 1
+      method m = 3
+d655 1
+a655 1
+    type t = string
+d657 4
+a660 4
+    let label = "string"
+    let read s = s
+    let write s = s
+  end)
+d894 1
+a894 1
+    This has used the equation t = bool, not visible in the return type **)
+d911 1
+a911 1
+   t = int *)
+d917 2
+a918 2
+     let _ = id true in
+     id)
+d958 1
+a958 1
+  fun ty x ->
+d972 1
+a972 1
+  fun ty v ->
+d1013 1
+a1013 1
+  fun ty x ->
+d1021 1
+a1021 1
+  (* t = ('a, 'b) for some 'a and 'b *)
+d1055 1
+a1055 1
+  fun ty v ->
+d1066 2
+a1067 2
+         if label <> lab then raise VariantMismatch;
+         set builder (devariantize field_type v))
+d1152 1
+a1152 1
+  fun s1 s2 ->
+d1167 1
+a1167 1
+  fun sel cases ->
+d1196 1
+a1196 1
+  fun e ty v ->
+d1217 1
+a1217 1
+            | Tdyn (ty, arg) -> variantize e ty arg)
+d1222 1
+a1222 1
+  fun e ty v ->
+d1277 3
+a1279 3
+      | Thd, v -> `A v
+      | Ttl Thd, v -> `B v
+      | Ttl (Ttl Thd), Noarg -> `C
+d1303 1
+a1303 1
+  fun t ->
+d1309 2
+a1310 2
+             | `Nil -> "Nil", None
+             | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
+d1315 2
+a1316 2
+              | Thd, Noarg -> `Nil
+              | Ttl Thd, v -> `Cons v)
+d1345 3
+a1347 3
+        | `A n -> "A", Some (Tdyn (Int, n))
+        | `B s -> "B", Some (Tdyn (String, s))
+        | `C -> "C", None)
+d1357 1
+a1357 1
+  fun t ->
+d1362 2
+a1363 2
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+d1400 19
+a1418 19
+      method proj =
+        function
+        | `A n -> "A", Some (Tdyn (Int, n))
+        | `B s -> "B", Some (Tdyn (String, s))
+        | `C -> "C", None
+
+      method cases =
+        [ "A", TCarg (Thd, Int)
+        ; "B", TCarg (Ttl Thd, String)
+        ; "C", TCnoarg (Ttl (Ttl Thd))
+        ]
+
+      method inj
+        : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+          -> [ `A of int | `B of string | `C ] =
+        function
+        | Thd, v -> `A v
+        | Ttl Thd, v -> `B v
+        | Ttl (Ttl Thd), Noarg -> `C
+d1428 1
+a1428 1
+  fun t ->
+d1433 11
+a1443 11
+         method proj =
+           function
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (tcons, p))
+
+         method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
+
+         method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
+           function
+           | Thd, Noarg -> `Nil
+           | Ttl Thd, v -> `Cons v
+d1448 8
+a1455 8
+   type (_,_) ty_assoc =
+   | Anil : (unit,'e) ty_assoc
+   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+
+   and (_,_) ty_pvar =
+   | Pnil : ('a,'e) ty_pvar
+   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
+   | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
+d1460 2
+a1461 2
+   Generic Programming in Omega, by Tim Sheard and Nathan Linger
+   http://web.cecs.pdx.edu/~sheard/
+d1503 1
+a1503 1
+  fun xs ys ->
+d1547 1
+a1547 1
+  fun eq n t ->
+d1556 1
+a1556 1
+  fun p t ->
+d1585 1
+a1585 1
+  fun p ->
+d1598 1
+a1598 1
+  fun a b ->
+d1611 1
+a1611 1
+  fun p1 p2 ->
+d1627 1
+a1627 1
+  fun p1 p2 p3 p4 ->
+d1649 8
+a1656 8
+   let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
+   fun le a b ->
+   match a, b, le with
+   | NZ, m, _ -> Diff (m, PlusZ m)
+   | NS x, NZ, _ -> assert false
+   | NS x, NS y, q ->
+   match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
+   ;;
+d1660 1
+a1660 1
+  fun le a b ->
+d1669 1
+a1669 1
+  fun le a b ->
+d1680 1
+a1680 1
+  fun le b ->
+d1696 1
+a1696 1
+  fun f s ->
+d1721 1
+a1721 1
+  fun x t ->
+d1730 1
+a1730 1
+  fun tL y tR ->
+d1745 1
+a1745 1
+  fun tL u tR ->
+d1758 1
+a1758 1
+  fun x t ->
+d1808 1
+a1808 1
+  fun y t ->
+d1895 1
+a1895 1
+  fun ct t ->
+d1921 1
+a1921 1
+  fun t ct ->
+d1933 1
+a1933 1
+  fun e t ct ->
+d1977 1
+a1977 1
+  fun ra rb ->
+d2001 9
+a2009 9
+  fun x r -> function
+    | [] -> raise Not_found
+    | Assoc (x', r', v) :: env ->
+      if x = x'
+      then (
+        match rep_equal r r' with
+        | None -> failwith ("Wrong type for " ^ x)
+        | Some Eq -> v)
+      else assoc x r env
+d2022 8
+a2029 8
+  fun env -> function
+    | Var (x, r) -> assoc x r env
+    | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
+    | Const x -> x
+    | Add -> fun (x, y) -> x + y
+    | LT -> fun (x, y) -> x < y
+    | Ap (f, x) -> eval_term env f (eval_term env x)
+    | Pair (x, y) -> eval_term env x, eval_term env y
+d2063 1
+a2063 1
+  fun env m ->
+d2096 1
+a2096 1
+  fun a b ->
+d2125 1
+a2125 1
+  fun name ctx ->
+d2138 1
+a2138 1
+  fun n ctx t ->
+d2220 1
+a2220 1
+  fun t s ->
+d2244 1
+a2244 1
+  fun v1 v2 ->
+d2281 1
+a2281 1
+  fun ta tb ->
+d2339 9
+a2347 9
+    fun allow_link ast ->
+      match allow_link, ast with
+      | Maylink, Ast_Text txt -> Text txt
+      | Nonlink, Ast_Text txt -> Text txt
+      | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+      | Maylink, Ast_Link lnk -> Link lnk
+      | Nonlink, Ast_Link _ -> assert false
+      | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
+      | Nonlink, Ast_Mref _ -> assert false
+d2357 8
+a2364 8
+    fun allow_link ast ->
+      match allow_link, ast with
+      | Kind _, Ast_Text txt -> Text txt
+      | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+      | Kind Maylink, Ast_Link lnk -> Link lnk
+      | Kind Nonlink, Ast_Link _ -> assert false
+      | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
+      | Kind Nonlink, Ast_Mref _ -> assert false
+d2370 2
+a2371 2
+    type two
+  end) =
+d2394 1
+a2394 1
+  fun x ->
+d2429 1
+a2429 1
+  (* constraint 'a = [< `TagA of int | `TagB] *)
+d2447 1
+a2447 1
+  fun w ->
+d2456 2
+a2457 2
+    type 'a t
+  end) =
+d2464 1
+a2464 1
+    fun (l : int S.t ab) (r : float S.t ab) ->
+d2467 1
+a2467 1
+  ;;
+d2471 2
+a2472 2
+    type 'a t
+  end) =
+d2482 1
+a2482 1
+    fun l r ->
+d2485 1
+a2485 1
+  ;;
+d2574 3
+a2576 3
+    type 'a t = T of 'a
+    type 'a s = T of 'a
+  end) =
+d2613 4
+a2616 4
+    module type T
+  end) (B : sig
+          module type T
+        end) =
+d2641 2
+a2642 2
+    | Local -> fun _ -> raise Exit
+    | Global -> fun _ -> raise Exit
+d2647 2
+a2648 2
+    | Local -> fun _ -> raise Exit
+    | Global -> fun _ -> raise Exit
+d2654 2
+a2655 2
+    | Local -> fun _ -> raise Exit
+    | Global -> fun _ -> raise Exit
+d2677 1
+a2677 1
+  fun n s ->
+d2790 1
+a2790 1
+  fun sh i j ->
+d2814 2
+a2815 2
+    type _ t
+  end) =
+d2841 1
+a2841 1
+   val empty : zero fin -> 'a
+d2876 1
+a2876 1
+  fun x y ->
+d2892 1
+a2892 1
+  fun x y ->
+d2905 1
+a2905 1
+  fun x t ->
+d2936 1
+a2936 1
+  fun r s ->
+d2982 1
+a2982 1
+  fun s t acc ->
+d3024 11
+a3034 4
+  let module M =
+    (functor
+      (T : sig
+         type 'a t
+d3036 2
+a3037 9
+      ->
+      struct
+        let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+      end)
+      (struct
+        type 'a t = unit
+      end)
+  in
+  M.f Refl
+d3046 11
+a3056 11
+  let bad_proof (type a) = (Refl : (< m : a >, < m : a >) eq :> (< m : a >, < >) eq) in
+  let downcast : type a. (a, < >) eq -> < > -> a =
+    fun (type a) (Refl : (a, < >) eq) (s : < >) -> (s :> a)
+  in
+  (downcast
+     bad_proof
+     (object
+       method m = x
+     end
+       :> < >))
+  #m
+d3087 1
+a3087 1
+  {|
+d3110 1
+a3110 1
+  {|
+d3135 1
+a3135 1
+  {|
+d3147 2
+a3148 2
+    type t = int
+  end)
+d3215 2
+a3216 2
+   let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
+   let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
+d3226 1
+a3226 1
+  {|
+d3239 1
+a3239 1
+  {|
+d3253 1
+a3253 1
+  {|
+d3273 2
+a3274 2
+    type t = string
+  end)
+d3277 1
+a3277 1
+  {|
+d3295 1
+a3295 1
+  {|
+d3310 1
+a3310 1
+*)
+d3321 1
+a3321 1
+       type t = s
+d3323 2
+a3324 2
+       let compare = cmp
+     end))
+d3331 1
+a3331 1
+         type t = s
+d3333 2
+a3334 2
+         let compare = cmp
+       end))
+d3500 6
+a3505 6
+  match (t : s typ) with
+  | Int eq -> string_of_int (TypEq.apply eq x)
+  | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
+  | Pair (module P) ->
+    let x1, x2 = TypEq.apply P.eq x in
+    Printf.sprintf "(%s,%s)" (to_string P.t1 x1) (to_string P.t2 x2)
+d3559 1
+a3559 1
+   : (module MapT with type key = string and type data = string and type map = SSMap.map))
+d3573 1
+a3573 1
+    type t = string
+d3575 2
+a3576 2
+    let compare = compare
+  end)
+d3579 1
+a3579 1
+    type t = string
+d3581 2
+a3582 2
+    let compare = compare
+  end)
+d3783 1
+a3783 1
+    type t = string
+d3785 2
+a3786 2
+    let compare = compare
+  end)
+d3789 1
+a3789 1
+    type t = string
+d3791 2
+a3792 2
+    let compare = compare
+  end)
+d4030 1
+a4030 1
+    type t = string
+d4032 2
+a4033 2
+    let compare = compare
+  end)
+d4036 1
+a4036 1
+    type t = string
+d4038 2
+a4039 2
+    let compare = compare
+  end)
+d4334 2
+a4335 2
+    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
+  ;;
+d4354 2
+a4355 2
+      fun _of_perms v -> sexp_of_t_ v
+    ;;
+d4404 2
+a4405 2
+val abs : 'o is_an_object -> 'o abs
+val unabs : 'o abs -> 'o
+d4627 2
+a4628 2
+   module type S = sig
+   open Core_kernel.Std
+d4630 4
+a4633 4
+   module Hashtbl1 : module type of Hashtbl
+   module Hashtbl2 : sig
+   include (module type of Hashtbl)
+   end
+d4635 1
+a4635 1
+   module Coverage : Core_kernel.Std.Hashable
+d4637 4
+a4640 4
+   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
+   type doesnt_type = unit
+   constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
+   end
+d4696 2
+a4697 2
+    type 'a t
+    type 'a u = string
+d4699 2
+a4700 2
+    val f : unit -> _ u t
+  end) =
+d4751 4
+a4754 4
+    module type T
+  end)
+    (A : S.T)
+    (B : S.T) =
+d4779 2
+a4780 2
+    module type T = S
+  end)
+d4807 6
+a4812 6
+   module type PR6513_orig = sig
+   module type S =
+   sig
+   type t
+   type u
+   end
+d4814 7
+a4820 7
+   module Make: functor (Html5: Html5_sigs.T
+   with type 'a Xml.wrap = 'a and
+   type 'a wrap = 'a and
+   type 'a list_wrap = 'a list)
+   -> S with type t = Html5_types.div Html5.elt and
+   type u = < foo: Html5.uri >
+   end
+d4964 2
+a4965 2
+    (Bar : S with type a = private [> `A ])
+    (Baz : S with type b = private < b : Bar.b ; .. >) =
+d4998 4
+a5001 4
+    type a = private [> `A ]
+  end) (Baz : module type of struct
+          include Bar
+        end) =
+d5016 2
+a5017 2
+    type 'a f
+  end) =
+d5025 3
+a5027 3
+   module FixId = Fix (struct type 'a f = 'a end)
+   let bad : (int, string) eq = FixId.uniq Eq Eq
+   let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+d5236 15
+a5250 15
+   module type S = sig module type T module F(X:T) : T end;;
+   module type T0 = sig type t end;;
+   module type S1 = S with module type T = T0;;
+   module type S2 = S with module type T := T0;;
+   module type S3 = S with module type T := sig type t = int end;;
+   module H = struct
+   include (Hashtbl : module type of Hashtbl with
+   type statistics := Hashtbl.statistics
+   and module type S := Hashtbl.S
+   and module Make := Hashtbl.Make
+   and module MakeSeeded := Hashtbl.MakeSeeded
+   and module type SeededS := Hashtbl.SeededS
+   and module type HashedType := Hashtbl.HashedType
+   and module type SeededHashedType := Hashtbl.SeededHashedType)
+   end;;
+d5472 4
+a5475 4
+  sig
+    module N : sig
+      val x : int
+    end
+d5477 2
+a5478 2
+    module N' = N
+  end)
+d5511 4
+a5514 4
+  sig
+    module C : sig
+      val chr : int -> char
+    end
+d5516 2
+a5517 2
+    module C' = C
+  end)
+d5545 2
+a5546 2
+    module C = Char
+  end) =
+d5606 4
+a5609 4
+    type t
+  end) (M : sig
+          type t = Y.t
+        end) =
+d5615 1
+a5615 1
+  module N = F (M.Y) (M);;*)
+d5674 1
+a5674 1
+   module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
+d5676 1
+a5676 1
+   let M2.W eq = W Eq;;
+d5678 6
+a5683 6
+   let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
+   module SInt2 = Set.Make(Int2);;
+   let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
+   let s' : SInt2.t = conv eq s;;
+   SInt2.elements s';;
+   SInt2.mem 2 s';; (* invariants are broken *)
+d5867 1
+a5867 1
+   module C : sig module L : module type of List end = A
+d5873 2
+a5874 2
+   let () =
+   print_endline (string_of_int D'.M.y)
+d5888 1
+a5888 1
+   module C : sig module L : module type of List end = A
+d6013 1
+a6013 1
+  functor (X : sig end) () (Z : sig end) -> struct end
+d6075 3
+a6077 3
+   class world =
+   object
+   val entity_container : entity entity_container = new entity_container
+d6079 2
+a6080 2
+   method add_entity (s : entity) =
+   entity_container#add_entity (s :> entity)
+d6082 1
+a6082 1
+   end
+d6101 3
+a6103 3
+         object
+           method v : string = v
+         end)
+d6126 2
+a6127 2
+      method m : int
+    end
+d6139 2
+a6140 2
+      val x : 'b
+    end
+d6207 10
+a6216 10
+      let cur = self#first in
+      let rec loop count a =
+        if count >= self#len
+        then a
+        else (
+          let a' = f cur#get count a in
+          cur#incr ();
+          loop (count + 1) a')
+      in
+      loop 0 a0
+d6507 3
+a6509 3
+   ocamlc -c pr3918a.mli pr3918b.mli
+   rm -f pr3918a.cmi
+   ocamlc -c pr3918c.ml
+d6557 1
+a6557 1
+      type t = int
+d6559 2
+a6560 2
+      let compare = compare
+    end)
+d6702 2
+a6703 2
+    type t
+  end) =
+d7048 2
+a7049 2
+      method map : ('a -> 'b) -> 'b M.c
+    end
+d7162 1
+a7162 1
+    SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
+d7393 4
+a7396 4
+   module rec Cyclic
+   : sig val x : int end
+   = struct let x = Cyclic.x + 1 end
+   ;;
+d7490 2
+a7491 2
+   module type ASig = sig type a val a:a val print:a -> unit end
+   module type BSig = sig type b val b:b val print:b -> unit end
+d7493 2
+a7494 2
+   module A = struct type a = int let a = 0 let print = print_int end
+   module B = struct type b = float let b = 0.0 let print = print_float end
+d7496 2
+a7497 2
+   module MakeA (Empty:sig end) : ASig = A
+   module MakeB (Empty:sig end) : BSig = B
+d7499 1
+a7499 1
+   module
+d7595 2
+a7596 2
+    HEAP with module Elem = Element)
+    (Element : ORDERED) : HEAP with module Elem = Element = struct
+d7831 2
+a7832 2
+    val f : int -> int
+  end) =
+d7879 2
+a7880 2
+    val x : int Lazy.t
+  end) =
+d7973 2
+a7974 2
+    val x : (module S)
+  end) =
+d8634 2
+a8635 2
+    | A, A, A, A, A, A, A, _, U, U -> 1
+    | _, _, _, _, _, _, _, G, _, _ -> 1
+d8708 1
+a8708 1
+  fun x y ->
+d8763 1
+a8763 1
+  fun p1 p2 ->
+d9449 2
+a9450 2
+  <- (print_string "coucou";
+      x.contents)
+d9569 1
+a9569 1
+    -> unit
+d9669 2
+a9670 2
+  (* __________________________________________________________________________________ *)
+  := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+d9676 2
+a9677 2
+    (* this is a multiple-line-spanning
+       comment *)
+d9684 1
+a9684 1
+    (* this is a multiple-line-spanning
+d9709 1
+a9709 1
+  (* __________________________________________________________________________________ *)
+d9723 1
+a9723 1
+  (* Here is some verbatim formatted text:
+d9758 5
+a9762 5
+    (* Turned on for compatibility reasons. Historically this is because
+       there was no actionable way to change third party annotations. Now
+       that we have such a support, this behavior should be reconsidered,
+       provided our tooling and error reporting is friendly enough to be
+       smoothly used by developers. *)
+d9787 1
+a9787 1
+              (* ....................................... *) "-4"] _ -> .) -> y
+d9791 5
+a9795 5
+   (* .............................................. ........................... .......................... ...................... *)
+  foo
+  (* ....................... *)
+  (* ................................. *)
+  (* ...................... *)] _
+d9804 1
+a9804 1
+               | _ -> .)
+d9807 5
+a9811 5
+                (* ....................................... *)
+               (* ....................................... *)
+               "foooooooooooooooooooooooooooo \
+                fooooooooooooooooooooooooooooooooooooo"]
+               | _ -> .)
+d9814 5
+a9818 5
+                (* ....................................... *)
+               let x = a
+               and y = b in
+               x + y]
+               | _ -> .) ->
+d9820 3
+a9822 3
+       (* ... *)
+      (* ... *)
+      attr (* ... *)]

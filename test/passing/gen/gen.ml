@@ -165,6 +165,7 @@ let emit_test test_name setup =
       enabled_if_line test_name
       (cmd true
          [ "diff"
+         ; "-n"
          ; spf "%%{dep:%s}" ref_name
          ; spf "%%{dep:%s.ocp.output}" test_name ] )
       enabled_if_line test_name test_name
