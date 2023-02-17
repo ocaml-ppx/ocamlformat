@@ -55,8 +55,8 @@ let add_test ?base_file map src_test_name =
 let register_file tests fname =
   match String.split_on_char '.' fname with
   | test_name
-    :: (("ml" | "mli" | "mlt" | "mld" | "eliom" | "eliomi") as ext) :: rest
-    -> (
+    :: (("ml" | "mli" | "mlt" | "mld" | "eliom" | "eliomi") as ext)
+    :: rest -> (
       let fname = "tests/" ^ fname in
       let src_test_name = test_name ^ "." ^ ext in
       let setup =
@@ -99,7 +99,7 @@ let emit_test test_name setup =
     "--margin-check"
     ::
     ( if setup.has_opts then read_lines (spf "tests/%s.opts" test_name)
-    else [] )
+      else [] )
   in
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
