@@ -12,6 +12,7 @@
 open Bechamel
 open Toolkit
 open Ocamlformat_lib
+open Common
 
 type range = int * int
 
@@ -20,7 +21,7 @@ type input =
   ; input_name: string
   ; kind: Syntax.t
   ; source: string
-  ; conf: Conf.t
+  ; conf: Versionned_conf.t
   ; action: [`Format | `Numeric of range] }
 
 let inputs =
@@ -30,13 +31,13 @@ let inputs =
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf= Conf.default
+    ; conf= Versionned_conf.default
     ; action= `Format }
   ; { name= "numeric:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf= Conf.default
+    ; conf= Versionned_conf.default
     ; action= `Numeric (10_000, 10_000) } ]
 
 let tests =
@@ -49,12 +50,12 @@ let tests =
         match action with
         | `Format ->
             ignore
-              (Translation_unit.parse_and_format kind ~input_name ~source
+              (parse_and_format kind ~input_name ~source
                  conf )
         | `Numeric range ->
             let range = Range.make source ~range in
             ignore
-              (Translation_unit.numeric kind ~input_name ~source ~range conf)
+              (numeric kind ~input_name ~source ~range conf)
         ) )
     inputs
 

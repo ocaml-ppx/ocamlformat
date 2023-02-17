@@ -46,18 +46,18 @@ end
 
 type state =
   | Waiting_for_version
-  | Version_defined of (Rpc.Version.t * Conf.t)
+  | Version_defined of (Rpc.Version.t * Versionned_conf.t)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
-  Translation_unit.parse_and_format fg ~input_name ~source conf
+  parse_and_format fg ~input_name ~source conf
 
 let run_config conf c =
   let rec update conf = function
     | [] -> Ok conf
     | (name, value) :: t -> (
-      match Conf.update_value conf ~name ~value with
-      | Ok c -> update c t
+      match Conf.update_value conf.Versionned_conf.conf ~name ~value with
+      | Ok c -> update {conf with conf = c} t
       | Error e -> Error (`Config_error e) )
   in
   update conf c
@@ -77,7 +77,7 @@ let run_format conf x =
       match try_formatting conf x with
       | Ok formatted -> Stop (Ok (`Format formatted))
       | Error e ->
-          Translation_unit.Error.print Format.str_formatter e ;
+          print_error conf Format.str_formatter e ;
           Continue () )
     (* The formatting functions are ordered in such a way that the ones
        expecting a keyword first (like signatures) are placed before the more
@@ -133,7 +133,7 @@ let rec rpc_main = function
       match V.handshake vstr with
       | `Handled v ->
           Protocol.Init.output stdout (`Version vstr) ;
-          rpc_main (Version_defined (v, Conf.default))
+          rpc_main (Version_defined (v, Versionned_conf.default))
       | `Propose_another v ->
           let vstr = Rpc.Version.to_string v in
           Protocol.Init.output stdout (`Version vstr) ;

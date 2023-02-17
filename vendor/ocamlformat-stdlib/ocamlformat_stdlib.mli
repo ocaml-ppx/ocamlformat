@@ -6,6 +6,8 @@ module String = String_ext
 module Warning = Warning
 module Format = Caml.Format
 module Filename = Caml.Filename
+module Option = Option_ext
+module Result = Result_ext
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to

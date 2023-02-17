@@ -1,5 +1,6 @@
 open! Base
-open Ocamlformat_lib
+open Common
+open Ocamlformat_lib_latest
 
 let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
 
@@ -14,7 +15,7 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
         Translation_unit.parse_and_format fg ~input_name:"<test>"
           ~source:input Conf.default
         |> Result.map_error ~f:(fun e ->
-               Translation_unit.Error.print Stdlib.Format.str_formatter e ;
+               Translation_unit.print_error Stdlib.Format.str_formatter e ;
                Stdlib.Format.flush_str_formatter () )
       in
       let expected = Result.map_error expected ~f:normalize_eol in
@@ -315,7 +316,7 @@ x + y|} ]
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
 let test_numeric_file =
-  let _fmt_ast_source = read_file "../../lib/Fmt_ast.ml" in
+  let _fmt_ast_source = read_file "../../lib/latest/Fmt_ast.ml" in
   let partial_source = read_file "../passing/tests/partial.ml" in
   let inv_with_loc_source =
     read_file "../passing/tests/format_invalid_files_with_locations.ml"

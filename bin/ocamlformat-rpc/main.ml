@@ -70,8 +70,7 @@ let info =
          as a reply of the same form."
     ; `P "Unknown commands are ignored." ]
   in
-  Cmd.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
-    ~man
+  Cmd.info "ocamlformat-rpc" ~version:Common.Version.dune_build_info ~doc ~man
 
 let rpc_main_t = Term.(const Ocamlformat_rpc.run $ const ())
 

@@ -13,15 +13,15 @@
 
 open Ocamlformat_lib ;;
 
+module VConf = Versionned_conf ;;
+
 Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
-let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
-  if conf.opr_opts.disable.v then Ok source
-  else
-    Translation_unit.parse_and_format kind ?output_file ~input_name ~source
-      conf
+let format ?output_file ~kind ~input_name ~source (conf : VConf.t) =
+  if conf.conf.opr_opts.disable.v then Ok source
+  else parse_and_format kind ?output_file ~input_name ~source conf
 
 let write_all output_file ~data =
   Out_channel.with_file ~binary:true output_file ~f:(fun oc ->
@@ -41,9 +41,9 @@ let source_from_file = function
   | Bin_conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
-let print_error (conf : Conf.t) e =
-  Translation_unit.Error.print Format.err_formatter
-    ~debug:conf.opr_opts.debug.v ~quiet:conf.opr_opts.quiet.v e
+let print_error (conf : VConf.t) e =
+  print_error conf Format.err_formatter ~debug:conf.conf.opr_opts.debug.v
+    ~quiet:conf.conf.opr_opts.quiet.v e
 
 let run_action action =
   match action with
@@ -83,17 +83,17 @@ let run_action action =
         | Error e -> Error (fun () -> print_error conf e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
-  | Print_config conf -> Conf.print_config conf ; Ok ()
+  | Print_config conf -> Conf.print_config conf.conf ; Ok ()
   | Numeric {kind; file; name= input_name; conf} ->
       let conf =
-        { conf with
+        {conf with conf = { conf.conf with
           opr_opts=
-            { conf.opr_opts with
-              quiet= {v= true; from= conf.opr_opts.quiet.from} } }
+            { conf.conf.opr_opts with
+              quiet= {v= true; from= conf.conf.opr_opts.quiet.from} } }}
       in
       let source = source_from_file file in
-      let range = conf.opr_opts.range.v source in
-      Translation_unit.numeric kind ~input_name ~source ~range conf
+      let range = conf.conf.opr_opts.range.v source in
+      numeric kind ~input_name ~source ~range conf
       |> List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i)) ;
       Ok ()
 ;;

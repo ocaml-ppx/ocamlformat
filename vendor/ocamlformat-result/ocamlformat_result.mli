@@ -2,6 +2,7 @@ open Result
 
 module Let_syntax : sig
   val ( let+ ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
+  val (let*): ('a, 'b) result -> ('a -> 'c) -> ('c, 'b) result
 end
 
 module Global_scope : sig

@@ -13,11 +13,23 @@ type t
 
 val make : major:int -> minor:int -> patch:int option -> t
 
+val of_string : string -> t option
+
+val equals_string : t -> string -> bool
+
+val ( = ) : t -> t -> bool
+
 val to_string : t -> string
 
 val pp : Format.formatter -> t -> unit
 
-val current : string
+val current : t
+
+val all : t list
+
+val available : t -> bool
+
+val dune_build_info : string
 (** A version number, or "unknown". This is provided by [dune-build-info],
     which means that it will be resolved in the following way:
 

@@ -1,5 +1,5 @@
 open! Base
-open Ocamlformat_lib
+open Ocamlformat_lib_latest
 
 let test_string_id ~f name ~pass ~fail =
   let test symbol ~expected =

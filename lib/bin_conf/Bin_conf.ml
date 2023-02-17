@@ -12,12 +12,13 @@
 open Ocamlformat_lib
 open Conf
 open Cmdliner
-module Decl = Conf_decl
+module Decl = Conf.Decl
+module VConf = Versionned_conf
 
 type file = Stdin | File of string
 
 type t =
-  { lib_conf: Conf.t
+  { lib_conf: Versionned_conf.t
   ; enable_outside_detected_project: bool
   ; inplace: bool
   ; check: bool
@@ -34,7 +35,7 @@ type t =
   ; config: (string * string) list }
 
 let default =
-  { lib_conf= Conf.default
+  { lib_conf= Versionned_conf.default
   ; enable_outside_detected_project= false
   ; inplace= false
   ; check= false
@@ -104,7 +105,7 @@ let info =
         "Unless mentioned otherwise non-formatting options cannot be set in \
          attributes or $(b,.ocamlformat) files." ]
   in
-  Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
+  Cmd.info "ocamlformat" ~version:Version.dune_build_info ~doc ~man
 
 let kind = Decl.Operational
 
@@ -336,7 +337,7 @@ let terms =
   [ Term.(
       const (fun lib_conf_modif conf ->
           {conf with lib_conf= lib_conf_modif conf.lib_conf} )
-      $ Conf.term )
+      $ Versionned_conf.term )
   ; enable_outside_detected_project
   ; inplace
   ; check
@@ -400,7 +401,8 @@ let update_from_ocp_indent c loc (oic : IndentConfig.t) =
       ; match_indent_nested= elt @@ convert_threechoices oic.i_strict_with }
   }
 
-let read_config_file ?version_check ?disable_conf_attrs conf = function
+let read_config_file ?version_check ?disable_conf_attrs
+    (conf : Versionned_conf.t) = function
   | File_system.Ocp_indent file -> (
       let filename = Fpath.to_string file in
       try
@@ -412,15 +414,15 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
             in
             let _ocp_indent_conf, conf, errors =
               List.fold_left lines ~init:(ocp_indent_conf, conf, [])
-                ~f:(fun (ocp_indent_conf, conf, errors) {txt= line; loc} ->
+                ~f:(fun (ocp_indent_conf, vconf, errors) {txt= line; loc} ->
                   try
                     let ocp_indent_conf =
                       IndentConfig.update_from_string ocp_indent_conf line
                     in
                     let conf =
-                      update_from_ocp_indent conf loc ocp_indent_conf
+                      update_from_ocp_indent conf.conf loc ocp_indent_conf
                     in
-                    (ocp_indent_conf, conf, errors)
+                    (ocp_indent_conf, {vconf with conf}, errors)
                   with
                   | Invalid_argument e
                     when !global_conf.ignore_invalid_options ->
@@ -445,11 +447,12 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
             in
             let c, errors =
               List.fold_left lines ~init:(conf, [])
-                ~f:(fun (conf, errors) {txt= line; loc} ->
+                ~f:(fun ((conf : Versionned_conf.t), errors) {txt= line; loc}
+                   ->
                   let from = `File loc in
                   match
-                    parse_line ?version_check ?disable_conf_attrs conf ~from
-                      line
+                    Versionned_conf.parse_line ?version_check
+                      ?disable_conf_attrs conf ~from line
                   with
                   | Ok conf -> (conf, errors)
                   | Error _ when !global_conf.ignore_invalid_options ->
@@ -568,20 +571,23 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     let read_config_file =
       read_config_file ~version_check:false ~disable_conf_attrs:false
     in
-    List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+    List.fold fs.configuration_files ~init:VConf.default ~f:read_config_file
+    |> VConf.map_conf ~f:update_using_env
+    |> update_using_cmdline info
   in
   let conf =
     let opr_opts =
       { Conf.default.opr_opts with
-        version_check= forward_conf.opr_opts.version_check
-      ; disable_conf_attrs= forward_conf.opr_opts.disable_conf_attrs }
+        version_check= forward_conf.conf.opr_opts.version_check
+      ; disable_conf_attrs= forward_conf.conf.opr_opts.disable_conf_attrs }
     in
     {Conf.default with opr_opts}
   in
-  let conf =
-    List.fold fs.configuration_files ~init:conf ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+  let vconf = {VConf.default with conf} in
+  let vconf =
+    List.fold fs.configuration_files ~init:vconf ~f:read_config_file
+    |> VConf.map_conf ~f:update_using_env
+    |> update_using_cmdline info
   in
   if
     (not is_stdin)
@@ -600,40 +606,45 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
        why ) ;
-    Operational.update conf ~f:(fun f ->
-        {f with disable= {f.disable with v= true}} ) )
+    VConf.map_conf vconf
+      ~f:
+        (Operational.update ~f:(fun f ->
+             {f with disable= {f.disable with v= true}} ) ) )
   else
     let listings =
-      if conf.opr_opts.disable.v then fs.enable_files else fs.ignore_files
+      if vconf.conf.opr_opts.disable.v then fs.enable_files
+      else fs.ignore_files
     in
     match is_in_listing_file ~listings ~filename:file_abs with
     | Some loc ->
         let status =
-          if conf.opr_opts.disable.v then "enabled" else "ignored"
+          if vconf.conf.opr_opts.disable.v then "enabled" else "ignored"
         in
-        if conf.opr_opts.debug.v then
+        if vconf.conf.opr_opts.debug.v then
           warn ~loc "%a is %s." Fpath.pp file_abs status ;
-        Operational.update conf ~f:(fun f ->
-            {f with disable= {f.disable with v= not f.disable.v}} )
-    | None -> conf
+        VConf.map_conf vconf
+          ~f:
+            (Operational.update ~f:(fun f ->
+                 {f with disable= {f.disable with v= not f.disable.v}} ) )
+    | None -> vconf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   try
-    let conf, warn_now =
+    let vconf, warn_now =
       collect_warnings (fun () ->
           build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
     in
-    if not conf.opr_opts.quiet.v then warn_now () ;
-    Ok conf
+    if not vconf.conf.opr_opts.quiet.v then warn_now () ;
+    Ok vconf
   with Conf_error msg -> Error msg
 
-type input = {kind: Syntax.t; name: string; file: file; conf: Conf.t}
+type input = {kind: Syntax.t; name: string; file: file; conf: VConf.t}
 
 type action =
   | In_out of input * string option
   | Inplace of input list
   | Check of input list
-  | Print_config of Conf.t
+  | Print_config of VConf.t
   | Numeric of input
 
 let make_action ~enable_outside_detected_project ~root action inputs =
