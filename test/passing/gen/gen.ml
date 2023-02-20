@@ -2,6 +2,8 @@ module StringMap = Map.Make (String)
 
 let spf = Printf.sprintf
 
+let dep fname = spf "%%{dep:%s}" fname
+
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
@@ -136,19 +138,18 @@ let emit_test test_name setup =
 |}
     extra_deps enabled_if_line test_name test_name
     (cmd setup.should_fail
-       (["%{bin:ocamlformat}"] @ opts @ [spf "%%{dep:%s}" base_test_name]) )
+       (["%{bin:ocamlformat}"] @ opts @ [dep base_test_name]) )
     enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
-    let ocp_cmd =
-      "%{bin:ocp-indent}" :: (setup.ocp_opts @ [spf "%%{dep:%s}" ref_name])
-    in
+    let ocp_cmd = "%{bin:ocp-indent}" :: (setup.ocp_opts @ [dep ref_name]) in
+    let ocp_out_file = test_name ^ ".ocp.output" in
     Printf.printf
       {|
 (rule
  (deps tests/.ocp-indent %s)%s
  (package ocamlformat)
  (action
-   (with-outputs-to %s.ocp.output
+   (with-outputs-to %s
      %s)))
 
 (rule%s
@@ -160,14 +161,10 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff tests/%s.ocp %s.ocp.diff)))
 |}
-      extra_deps enabled_if_line test_name
+      extra_deps enabled_if_line ocp_out_file
       (cmd setup.should_fail ocp_cmd)
       enabled_if_line test_name
-      (cmd true
-         [ "diff"
-         ; "-n"
-         ; spf "%%{dep:%s}" ref_name
-         ; spf "%%{dep:%s.ocp.output}" test_name ] )
+      (cmd true ["diff"; "-u"; dep ref_name; dep ocp_out_file])
       enabled_if_line test_name test_name
 
 let () =
