@@ -8,7 +8,7 @@ authors: ["Josh Berdine <jjb@fb.com>"]
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
   "alcotest" {with-test & >= "1.3.0"}
   "bechamel" {>= "0.2.0"}

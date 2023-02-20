@@ -10,7 +10,7 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "ocaml" {>= "4.08"}
   "cmdliner" {>= "1.1.0"}
-  "dune" {>= "2.8"}
+  "dune" {>= "3.0"}
   "ocamlformat-lib" {= version}
   "re" {>= "1.10.3"}
   "odoc" {with-doc}
