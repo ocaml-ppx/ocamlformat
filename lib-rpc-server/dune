@@ -1,7 +1,4 @@
 (library
  (name ocamlformat_rpc)
  (public_name ocamlformat.rpc)
- (libraries
-  ocamlformat-lib
-  ocamlformat.bin_conf
-  ocamlformat.rpc_lib_protocol))
+ (libraries vendored_lib ocamlformat.bin_conf ocamlformat.rpc_lib_protocol))

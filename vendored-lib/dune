@@ -1,0 +1,22 @@
+(library
+ (name vendored_lib)
+ (public_name ocamlformat.vendored_lib)
+ (libraries ocaml-version ocp-indent.lib uuseg.string dune-build-info))
+
+(copy_files# ../vendor/odoc-parser)
+
+(copy_files# ../vendor/ocaml-common)
+
+(copy_files# ../vendor/ocamlformat-stdlib)
+
+(copy_files# ../vendor/parser-shims)
+
+(copy_files# ../vendor/parser-upstream)
+
+(copy_files# ../vendor/parser-standard)
+
+(copy_files# ../vendor/parser-extended)
+
+(copy_files# ../vendor/parser-recovery)
+
+(copy_files# ../lib/*.ml*)

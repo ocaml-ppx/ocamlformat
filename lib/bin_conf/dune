@@ -11,4 +11,4 @@
    Ocamlformat_result.Global_scope))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat-lib re))
+ (libraries vendored_lib re))

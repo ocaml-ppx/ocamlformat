@@ -1,12 +1,12 @@
 (executable
  (name gen)
  (public_name ocamlformat.parser_recovery.test_gen)
- (package ocamlformat)
+ (package ocamlformat-lib)
  (modules gen))
 
 (executable
  (name driver)
  (public_name ocamlformat.parser_recovery.test_driver)
- (package ocamlformat)
+ (package ocamlformat-lib)
  (modules driver)
  (libraries parser_recovery))
