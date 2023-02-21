@@ -8,7 +8,6 @@ type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
-  ; mutable has_ocp_diff: bool
   ; mutable ocp_opts: string list
   ; mutable base_file: string option
   ; mutable extra_deps: string list
@@ -44,7 +43,6 @@ let add_test ?base_file map src_test_name =
     { has_ref= false
     ; has_opts= false
     ; has_ocp= false
-    ; has_ocp_diff= false
     ; ocp_opts= []
     ; base_file
     ; extra_deps= []
@@ -78,7 +76,6 @@ let register_file tests fname =
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["ocp"] -> setup.has_ocp <- true
-      | ["ocp-diff"] -> setup.has_ocp_diff <- true
       | ["ocp-opts"] -> setup.ocp_opts <- read_lines fname
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
@@ -152,20 +149,14 @@ let emit_test test_name setup =
    (with-outputs-to %s
      %s)))
 
-(rule%s
- (with-outputs-to %s.ocp.diff
-  %s))
-
 (rule
  (alias runtest)%s
  (package ocamlformat)
- (action (diff tests/%s.ocp %s.ocp.diff)))
+ (action (diff tests/%s.ocp %s)))
 |}
       extra_deps enabled_if_line ocp_out_file
       (cmd setup.should_fail ocp_cmd)
-      enabled_if_line test_name
-      (cmd true ["diff"; "-u"; "--minimal"; "--label"; "ref"; "--label"; "indented"; dep ref_name; dep ocp_out_file])
-      enabled_if_line test_name test_name
+      enabled_if_line test_name ocp_out_file
 
 let () =
   let map = ref StringMap.empty in

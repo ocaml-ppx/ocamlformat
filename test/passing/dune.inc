@@ -3169,14 +3169,9 @@
      (run %{bin:ocp-indent} --config JaneStreet %{dep:tests/js_source.ml.ref}))))
 
 (rule
- (with-outputs-to js_source.ml.ocp.diff
-  (with-accepted-exit-codes 1
-       (run diff -u --minimal --label ref --label indented %{dep:tests/js_source.ml.ref} %{dep:js_source.ml.ocp.output}))))
-
-(rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/js_source.ml.ocp js_source.ml.ocp.diff)))
+ (action (diff tests/js_source.ml.ocp js_source.ml.ocp.output)))
 
 (rule
  (deps tests/.ocamlformat )
