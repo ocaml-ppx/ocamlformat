@@ -21,7 +21,7 @@ type input =
   ; input_name: string
   ; kind: Syntax.t
   ; source: string
-  ; conf: Versionned_conf.t
+  ; conf: VConf.t
   ; action: [`Format | `Numeric of range] }
 
 let inputs =
@@ -31,13 +31,13 @@ let inputs =
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf= Versionned_conf.default
+    ; conf= VConf.default
     ; action= `Format }
   ; { name= "numeric:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
     ; source= source_ml
-    ; conf= Versionned_conf.default
+    ; conf= VConf.default
     ; action= `Numeric (10_000, 10_000) } ]
 
 let tests =

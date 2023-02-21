@@ -13,12 +13,11 @@ open Ocamlformat_lib
 open Conf
 open Cmdliner
 module Decl = Conf.Decl
-module VConf = Versionned_conf
 
 type file = Stdin | File of string
 
 type t =
-  { lib_conf: Versionned_conf.t
+  { lib_conf: VConf.t
   ; enable_outside_detected_project: bool
   ; inplace: bool
   ; check: bool
@@ -35,7 +34,7 @@ type t =
   ; config: (string * string) list }
 
 let default =
-  { lib_conf= Versionned_conf.default
+  { lib_conf= VConf.default
   ; enable_outside_detected_project= false
   ; inplace= false
   ; check= false
@@ -337,7 +336,7 @@ let terms =
   [ Term.(
       const (fun lib_conf_modif conf ->
           {conf with lib_conf= lib_conf_modif conf.lib_conf} )
-      $ Versionned_conf.term )
+      $ VConf.term )
   ; enable_outside_detected_project
   ; inplace
   ; check
@@ -402,7 +401,7 @@ let update_from_ocp_indent c loc (oic : IndentConfig.t) =
   }
 
 let read_config_file ?version_check ?disable_conf_attrs
-    (conf : Versionned_conf.t) = function
+    (conf : VConf.t) = function
   | File_system.Ocp_indent file -> (
       let filename = Fpath.to_string file in
       try
@@ -447,11 +446,11 @@ let read_config_file ?version_check ?disable_conf_attrs
             in
             let c, errors =
               List.fold_left lines ~init:(conf, [])
-                ~f:(fun ((conf : Versionned_conf.t), errors) {txt= line; loc}
+                ~f:(fun ((conf : VConf.t), errors) {txt= line; loc}
                    ->
                   let from = `File loc in
                   match
-                    Versionned_conf.parse_line ?version_check
+                    VConf.parse_line ?version_check
                       ?disable_conf_attrs conf ~from line
                   with
                   | Ok conf -> (conf, errors)

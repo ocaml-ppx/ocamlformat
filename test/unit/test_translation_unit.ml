@@ -1,6 +1,6 @@
 open! Base
 open Common
-open Ocamlformat_lib_latest
+open Ocamlformat_lib_latest.Private
 
 let normalize_eol = Eol_compat.normalize_eol ~line_endings:`Lf
 

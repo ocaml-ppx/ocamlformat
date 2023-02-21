@@ -1,4 +1,4 @@
-open Ocamlformat_lib_latest
+open Ocamlformat_lib_latest.Private
 open Common
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all

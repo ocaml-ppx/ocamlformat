@@ -1,25 +1,68 @@
-type mversion = (module Ocamlformat_version.S)
+(**************************************************************************)
+(*                                                                        *)
+(*                              OCamlFormat                               *)
+(*                                                                        *)
+(*            Copyright (c) Facebook, Inc. and its affiliates.            *)
+(*                                                                        *)
+(*      This source code is licensed under the MIT license found in       *)
+(*      the LICENSE file in the root directory of this source tree.       *)
+(*                                                                        *)
+(**************************************************************************)
 
-type t = {version: Version.t; version_module: mversion; conf: Conf.t}
+module type Ocamlformat_interface = sig
+  val parse_and_format :
+       Syntax.t
+    -> ?output_file:string
+    -> input_name:string
+    -> source:string
+    -> Conf.t
+    -> (string, Translation_unit_error.t) Result.t
+  (** [parse_and_format kind ?output_file ~input_name ~source conf opts]
+      parses and formats [source] as a list of fragments. *)
 
-let latest : mversion = (module Ocamlformat_lib_latest)
+  val numeric :
+       Syntax.t
+    -> input_name:string
+    -> source:string
+    -> range:Range.t
+    -> Conf.t
+    -> int list
+  (** [numeric ~input_name ~source ~range conf opts] returns the indentation
+      of the range of lines [range] (line numbers ranging from 1 to number of
+      lines), where the line numbers are relative to [source] and the
+      indentation is relative to the formatted output. *)
+
+  val print_error :
+       ?debug:bool
+    -> ?quiet:bool
+    -> Format.formatter
+    -> Translation_unit_error.t
+    -> unit
+end
+
+
+type ocamlformat_module = (module Ocamlformat_interface)
+
+type t = {version_number: Version.t; version_module: ocamlformat_module; conf: Conf.t}
+
+let latest : ocamlformat_module = (module Ocamlformat_lib_latest)
 
 let oldest = latest
 
-let m_of_version version =
+let module_of_version version =
   Version.(
     if version = current then Some latest
     else (
       assert (not (available version)) ;
       None ) )
 
-let mversion_of_string v =
+let module_of_string v =
   let open Option.O in
   let* v = Version.of_string v in
-  m_of_version v
+  module_of_version v
 
 let default =
-  {version= Version.current; version_module= latest; conf= Conf.default}
+  {version_number= Version.current; version_module= latest; conf= Conf.default}
 
 let parse_line (config : t)
     ?(version_check = config.conf.Conf.opr_opts.version_check.v)
@@ -28,7 +71,7 @@ let parse_line (config : t)
   let update ~config ~from ~name ~value =
     match (name, from) with
     | "version", `File _ | "use-version", _ -> (
-      match mversion_of_string value with
+      match module_of_string value with
       | Some version_module -> Ok {config with version_module}
       | None ->
           if not version_check then Ok config
@@ -73,8 +116,8 @@ let version_term =
   let docv = "VERSION" in
   let doc = "Version of OCamlformat to be used" in
   let default = (Version.current, latest) in
-  let set (version, version_module) conf =
-    {conf with version; version_module}
+  let set (version_number, version_module) conf =
+    {conf with version_number; version_module}
   in
   let arg =
     Arg.conv ~docv
@@ -88,7 +131,7 @@ let version_term =
                       should be of the shape MAJOR.MINOR[.PATCH]."
                      v ) )
           | Some v -> (
-            match m_of_version v with
+            match module_of_version v with
             | None ->
                 let conf_error =
                   Conf.Error.Version_mismatch
@@ -157,8 +200,8 @@ let update ?(quiet = false) c
         Warning.print_warning loc w ;
       c
 
-let m_of_version v =
-  match m_of_version v with
+let module_of_version v =
+  match module_of_version v with
   | None ->
       let conf_error =
         Conf.Error.Version_mismatch

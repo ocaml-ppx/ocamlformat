@@ -46,7 +46,7 @@ end
 
 type state =
   | Waiting_for_version
-  | Version_defined of (Rpc.Version.t * Versionned_conf.t)
+  | Version_defined of (Rpc.Version.t * VConf.t)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
@@ -56,7 +56,7 @@ let run_config conf c =
   let rec update conf = function
     | [] -> Ok conf
     | (name, value) :: t -> (
-      match Conf.update_value conf.Versionned_conf.conf ~name ~value with
+      match Conf.update_value conf.VConf.conf ~name ~value with
       | Ok c -> update {conf with conf = c} t
       | Error e -> Error (`Config_error e) )
   in
@@ -133,7 +133,7 @@ let rec rpc_main = function
       match V.handshake vstr with
       | `Handled v ->
           Protocol.Init.output stdout (`Version vstr) ;
-          rpc_main (Version_defined (v, Versionned_conf.default))
+          rpc_main (Version_defined (v, VConf.default))
       | `Propose_another v ->
           let vstr = Rpc.Version.to_string v in
           Protocol.Init.output stdout (`Version vstr) ;

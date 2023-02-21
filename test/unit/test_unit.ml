@@ -1,6 +1,6 @@
 open Base
 open Common
-open Ocamlformat_lib_latest
+open Ocamlformat_lib_latest.Private
 
 module Test_location = struct
   let test_compare_width_decreasing =

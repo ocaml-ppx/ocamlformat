@@ -13,7 +13,6 @@
 
 open Ocamlformat_lib ;;
 
-module VConf = Versionned_conf ;;
 
 Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 

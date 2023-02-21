@@ -16,7 +16,7 @@ val build_config :
   -> root:Fpath.t option
   -> file:string
   -> is_stdin:bool
-  -> (Versionned_conf.t, string) Result.t
+  -> (VConf.t, string) Result.t
 
 type file = Stdin | File of string
 
@@ -24,7 +24,7 @@ type input =
   { kind: Syntax.t
   ; name: string
   ; file: file
-  ; conf: Versionned_conf.t }
+  ; conf: VConf.t }
 
 (** Formatting action: input type and source, and output destination. *)
 type action =
@@ -34,7 +34,7 @@ type action =
   | Inplace of input list  (** Format in-place, overwriting input file(s). *)
   | Check of input list
       (** Check whether the input files already are formatted. *)
-  | Print_config of Versionned_conf.t
+  | Print_config of VConf.t
       (** Print the configuration and exit. *)
   | Numeric of input
 
