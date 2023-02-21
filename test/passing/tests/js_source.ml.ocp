@@ -1,5 +1,5 @@
---- tests/js_source.ml.ref	2023-02-21 10:18:28.361311058 +0100
-+++ js_source.ml.ocp.output	2023-02-21 10:31:04.516481523 +0100
+--- ref
++++ indented
 @@ -33,8 +33,8 @@
    ]
  
@@ -318,13 +318,23 @@
 -         | `A n -> "A", Some (Tdyn (Int, n))
 -         | `B s -> "B", Some (Tdyn (String, s))
 -         | `C -> "C", None
--
++      method proj =
++        function
++        | `A n -> "A", Some (Tdyn (Int, n))
++        | `B s -> "B", Some (Tdyn (String, s))
++        | `C -> "C", None
+ 
 -       method cases =
 -         [ "A", TCarg (Thd, Int)
 -         ; "B", TCarg (Ttl Thd, String)
 -         ; "C", TCnoarg (Ttl (Ttl Thd))
 -         ]
--
++      method cases =
++        [ "A", TCarg (Thd, Int)
++        ; "B", TCarg (Ttl Thd, String)
++        ; "C", TCnoarg (Ttl (Ttl Thd))
++        ]
+ 
 -       method inj
 -         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
 -                   -> [ `A of int | `B of string | `C ] =
@@ -332,18 +342,6 @@
 -         | Thd, v -> `A v
 -         | Ttl Thd, v -> `B v
 -         | Ttl (Ttl Thd), Noarg -> `C
-+      method proj =
-+        function
-+        | `A n -> "A", Some (Tdyn (Int, n))
-+        | `B s -> "B", Some (Tdyn (String, s))
-+        | `C -> "C", None
-+
-+      method cases =
-+        [ "A", TCarg (Thd, Int)
-+        ; "B", TCarg (Ttl Thd, String)
-+        ; "C", TCnoarg (Ttl (Ttl Thd))
-+        ]
-+
 +      method inj
 +        : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
 +          -> [ `A of int | `B of string | `C ] =
@@ -368,20 +366,18 @@
 -            function
 -            | `Nil -> "Nil", None
 -            | `Cons p -> "Cons", Some (Tdyn (tcons, p))
--
--          method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
--
--          method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
--            function
--            | Thd, Noarg -> `Nil
--            | Ttl Thd, v -> `Cons v
 +         method proj =
 +           function
 +           | `Nil -> "Nil", None
 +           | `Cons p -> "Cons", Some (Tdyn (tcons, p))
-+
+ 
+-          method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
 +         method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
-+
+ 
+-          method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
+-            function
+-            | Thd, Noarg -> `Nil
+-            | Ttl Thd, v -> `Cons v
 +         method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
 +           function
 +           | Thd, Noarg -> `Nil
@@ -393,15 +389,14 @@
 -type (_,_) ty_assoc =
 -  | Anil : (unit,'e) ty_assoc
 -  | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
--
++   type (_,_) ty_assoc =
++   | Anil : (unit,'e) ty_assoc
++   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+ 
 -and (_,_) ty_pvar =
 -  | Pnil : ('a,'e) ty_pvar
 -  | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
 -  | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
-+   type (_,_) ty_assoc =
-+   | Anil : (unit,'e) ty_assoc
-+   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
-+
 +   and (_,_) ty_pvar =
 +   | Pnil : ('a,'e) ty_pvar
 +   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar

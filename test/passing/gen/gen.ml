@@ -164,7 +164,7 @@ let emit_test test_name setup =
       extra_deps enabled_if_line ocp_out_file
       (cmd setup.should_fail ocp_cmd)
       enabled_if_line test_name
-      (cmd true ["diff"; "-u"; dep ref_name; dep ocp_out_file])
+      (cmd true ["diff"; "-u"; "--minimal"; "--label"; "ref"; "--label"; "indented"; dep ref_name; dep ocp_out_file])
       enabled_if_line test_name test_name
 
 let () =
