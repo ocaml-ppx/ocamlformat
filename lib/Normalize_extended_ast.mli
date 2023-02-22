@@ -17,9 +17,8 @@ val equal :
 (** Compare fragments for equality up to normalization. *)
 
 val diff_docstrings :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+  Conf.t -> Cmt.t list -> Cmt.t list -> (Cmt.t * Cmt.t) list
 (** Difference between two lists of doc comments. *)
 
-val diff_cmts :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+val diff_cmts : Conf.t -> Cmt.t list -> Cmt.t list -> (Cmt.t * Cmt.t) list
 (** Difference between two lists of comments. *)

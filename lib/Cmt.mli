@@ -22,3 +22,11 @@ val txt : t -> string
 include Comparator.S with type t := t
 
 type pos = Before | Within | After
+
+type loc = t
+
+module Comparator_no_loc : sig
+  type t = loc
+
+  include Comparator.S with type t := t
+end

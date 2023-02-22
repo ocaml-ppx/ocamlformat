@@ -19,7 +19,7 @@ exception
     [ `Cannot_parse of exn
     | `Ast_changed
     | `Doc_comment of Docstring.error list
-    | `Comment
+    | `Comment of (Cmt.t * Cmt.t) list
     | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
     * (string * Sexp.t) list
@@ -117,7 +117,7 @@ module Error = struct
               | `Cannot_parse _ -> "generating invalid ocaml syntax"
               | `Ast_changed -> "ast changed"
               | `Doc_comment _ -> "doc comments changed"
-              | `Comment -> "comments changed"
+              | `Comment _ -> "comments changed"
               | `Comment_dropped _ -> "comments dropped"
               | `Warning50 _ -> "misplaced documentation comments"
             in
@@ -173,6 +173,16 @@ module Error = struct
                          disable the formatting using the option \
                          --no-parse-docstrings.\n\
                          %!" )
+            | `Comment cmts ->
+                List.iter cmts ~f:(fun (before, after) ->
+                    Format.fprintf fmt
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: Comments are not preserved.\n\
+                      \  in:  (* %s *)\n\
+                      \  out: (* %s *)\n\
+                       %!"
+                      Location.print_loc (Cmt.loc before) (Cmt.txt before)
+                      (Cmt.txt after) )
             | `Comment_dropped l when not quiet ->
                 List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                     Format.fprintf fmt
@@ -421,26 +431,13 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           List.partition_map t_new.comments ~f:is_docstring
         in
         let diff_cmts =
-          Sequence.append
+          List.append
             (Normalize_extended_ast.diff_cmts conf old_comments t_newcomments)
             (Normalize_extended_ast.diff_docstrings conf old_docstrings
                t_newdocstrings )
         in
-        if not (Sequence.is_empty diff_cmts) then
-          let old_ast = dump_ast std_fg ~suffix:".old" std_t.ast in
-          let new_ast = dump_ast std_fg ~suffix:".new" std_t_new.ast in
-          let args =
-            [ ( "diff"
-              , Some
-                  (Sequence.sexp_of_t
-                     (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
-                     diff_cmts ) )
-            ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
-            ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
-            |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, f)) )
-          in
-          internal_error `Comment args ) ;
+        if not (List.is_empty diff_cmts) then
+          internal_error (`Comment diff_cmts) [] ) ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
         Stdlib.flush_all () ;

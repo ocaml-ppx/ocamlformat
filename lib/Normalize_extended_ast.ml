@@ -159,18 +159,32 @@ let docstring conf =
   let normalize_code = normalize_code conf mapper in
   docstring conf ~normalize_code
 
+let diff ~f x y =
+  let loc = function Either.First x | Either.Second x -> x.Cmt.loc in
+  Set.symmetric_diff (f x) (f y)
+  |> Sequence.to_list
+  |> List.sort ~compare:(fun x y ->
+         Migrate_ast.Location.compare (loc x) (loc y) )
+  |> List.partition_map ~f:Fn.id
+  |> fun (x, y) ->
+  (* This is fine because an error is already raised if
+     [Cmts.remaining_comments] is not empty. *)
+  List.zip_exn x y
+
 let diff_docstrings c x y =
   let norm z =
-    let f Cmt.{txt; _} = docstring c txt in
-    Set.of_list (module String) (List.map ~f z)
+    let f Cmt.{txt; loc} = Cmt.create (docstring c txt) loc in
+    Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  Set.symmetric_diff (norm x) (norm y)
+  diff ~f:norm x y
 
 let diff_cmts (conf : Conf.t) x y =
   let mapper = make_mapper conf ~ignore_doc_comments:false in
   let normalize_code = normalize_code conf mapper in
   let norm z =
-    let norm_non_code {Cmt.txt; _} = Docstring.normalize_text txt in
+    let norm_non_code {Cmt.txt; loc} =
+      Cmt.create (Docstring.normalize_text txt) loc
+    in
     let f z =
       match Cmt.txt z with
       | "" | "$" -> norm_non_code z
@@ -181,12 +195,12 @@ let diff_cmts (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
-            normalize_code source
+            Cmt.create (normalize_code source) z.loc
           else norm_non_code z
     in
-    Set.of_list (module String) (List.map ~f z)
+    Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  Set.symmetric_diff (norm x) (norm y)
+  diff ~f:norm x y
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = ast fragment c ~ignore_doc_comments in
