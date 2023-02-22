@@ -1,6 +1,5 @@
 (library
  (name vendored_lib)
- (public_name ocamlformat.vendored_lib)
  (libraries ocaml-version ocp-indent.lib uuseg.string dune-build-info))
 
 (copy_files# ../vendor/odoc-parser)
