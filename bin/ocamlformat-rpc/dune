@@ -19,6 +19,8 @@
   (backend bisect_ppx))
  (libraries ocamlformat.rpc))
 
+(copy_files ../../lib/Version.ml)
+
 (rule
  (with-stdout-to
   ocamlformat-rpc.1

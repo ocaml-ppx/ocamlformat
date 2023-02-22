@@ -1,5 +1,4 @@
 (library
- (public_name ocamlformat.bin_conf)
  (name bin_conf)
  (flags
   (:standard

@@ -14,7 +14,6 @@
 
 (library
  (name ocamlformat_rpc_lib_protocol)
- (public_name ocamlformat.rpc_lib_protocol)
  (libraries csexp))
 
 (copy_files#
