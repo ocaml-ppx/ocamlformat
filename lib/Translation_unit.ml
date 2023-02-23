@@ -19,6 +19,7 @@ exception
     [ `Cannot_parse of exn
     | `Ast_changed
     | `Doc_comment_moved of Docstring.error list
+    | `Doc_comment_changed of (Cmt.t * Cmt.t) list
     | `Comment_changed of (Cmt.t * Cmt.t) list
     | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
@@ -117,6 +118,7 @@ module Error = struct
               | `Cannot_parse _ -> "generating invalid ocaml syntax"
               | `Ast_changed -> "ast changed"
               | `Doc_comment_moved _ -> "doc comments moved"
+              | `Doc_comment_changed _ -> "doc comments changed"
               | `Comment_changed _ -> "comments changed"
               | `Comment_dropped _ -> "comments dropped"
               | `Warning50 _ -> "misplaced documentation comments"
@@ -173,6 +175,16 @@ module Error = struct
                          disable the formatting using the option \
                          --no-parse-docstrings.\n\
                          %!" )
+            | `Doc_comment_changed cmts ->
+                List.iter cmts ~f:(fun (before, after) ->
+                    Format.fprintf fmt
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: Doc-comments are not preserved.\n\
+                      \  in:  (* %s *)\n\
+                      \  out: (* %s *)\n\
+                       %!"
+                      Location.print_loc (Cmt.loc before) (Cmt.txt before)
+                      (Cmt.txt after) )
             | `Comment_changed cmts ->
                 List.iter cmts ~f:(fun (before, after) ->
                     Format.fprintf fmt
@@ -282,6 +294,23 @@ let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
   let _ = Extended_ast.map fg (strconst_mapper locs) ast in
   let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
   List.sort ~compare !locs
+
+let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
+  if conf.opr_opts.comment_check.v then
+    match Cmts.remaining_comments cmts with
+    | [] -> (
+        let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
+        let old_docs, old_cmts = split_cmts t_old.comments in
+        let new_docs, new_cmts = split_cmts t_new.comments in
+        match Normalize_extended_ast.diff_cmts conf old_cmts new_cmts with
+        | [] -> (
+          match
+            Normalize_extended_ast.diff_docstrings conf old_docs new_docs
+          with
+          | [] -> ()
+          | x -> internal_error (`Doc_comment_changed x) [] )
+        | x -> internal_error (`Comment_changed x) [] )
+    | x -> internal_error (`Comment_dropped x) []
 
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
@@ -406,22 +435,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           else
             let args = args ~suffix:".unequal-ast" in
             internal_error `Ast_changed args ) ;
-      (* Comments not preserved ? *)
-      if conf.opr_opts.comment_check.v then (
-        ( match Cmts.remaining_comments cmts_t with
-        | [] -> ()
-        | l -> internal_error (`Comment_dropped l) [] ) ;
-        let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
-        let old_docs, old_cmts = split_cmts t.comments in
-        let new_docs, new_cmts = split_cmts t_new.comments in
-        let diff_cmts =
-          List.append
-            (Normalize_extended_ast.diff_cmts conf old_cmts new_cmts)
-            (Normalize_extended_ast.diff_docstrings conf old_docs new_docs)
-        in
-        match diff_cmts with
-        | [] -> ()
-        | _ -> internal_error (`Comment_changed diff_cmts) [] ) ;
+      check_comments conf cmts_t ~old:t ~new_:t_new ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
         Stdlib.flush_all () ;
