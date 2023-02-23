@@ -19,7 +19,7 @@ exception
     [ `Cannot_parse of exn
     | `Ast_changed
     | `Doc_comment of Docstring.error list
-    | `Comment of (Cmt.t * Cmt.t) list
+    | `Comment_changed of (Cmt.t * Cmt.t) list
     | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
     * (string * Sexp.t) list
@@ -117,7 +117,7 @@ module Error = struct
               | `Cannot_parse _ -> "generating invalid ocaml syntax"
               | `Ast_changed -> "ast changed"
               | `Doc_comment _ -> "doc comments changed"
-              | `Comment _ -> "comments changed"
+              | `Comment_changed _ -> "comments changed"
               | `Comment_dropped _ -> "comments dropped"
               | `Warning50 _ -> "misplaced documentation comments"
             in
@@ -173,7 +173,7 @@ module Error = struct
                          disable the formatting using the option \
                          --no-parse-docstrings.\n\
                          %!" )
-            | `Comment cmts ->
+            | `Comment_changed cmts ->
                 List.iter cmts ~f:(fun (before, after) ->
                     Format.fprintf fmt
                       "%!@{<loc>%a@}:@,\
@@ -424,7 +424,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                t_newdocstrings )
         in
         if not (List.is_empty diff_cmts) then
-          internal_error (`Comment diff_cmts) [] ) ;
+          internal_error (`Comment_changed diff_cmts) [] ) ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
         Stdlib.flush_all () ;
