@@ -186,9 +186,9 @@ module Error = struct
                          disable the formatting using the option \
                          --no-parse-docstrings.\n\
                          %!" )
-            | `Doc_comment_changed cmts ->
+            | `Doc_comment_changed cmts when not quiet ->
                 print_cmts_changed_error cmts ~kind:"Doc-comments"
-            | `Comment_changed cmts ->
+            | `Comment_changed cmts when not quiet ->
                 print_cmts_changed_error cmts ~kind:"Comments"
             | `Comment_dropped l when not quiet ->
                 List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
