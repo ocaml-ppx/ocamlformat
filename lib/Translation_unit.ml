@@ -411,20 +411,17 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         ( match Cmts.remaining_comments cmts_t with
         | [] -> ()
         | l -> internal_error (`Comment_dropped l) [] ) ;
-        let old_docstrings, old_comments =
-          List.partition_map t.comments ~f:(Cmts.is_docstring conf)
-        in
-        let t_newdocstrings, t_newcomments =
-          List.partition_map t_new.comments ~f:(Cmts.is_docstring conf)
-        in
+        let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
+        let old_docs, old_cmts = split_cmts t.comments in
+        let new_docs, new_cmts = split_cmts t_new.comments in
         let diff_cmts =
           List.append
-            (Normalize_extended_ast.diff_cmts conf old_comments t_newcomments)
-            (Normalize_extended_ast.diff_docstrings conf old_docstrings
-               t_newdocstrings )
+            (Normalize_extended_ast.diff_cmts conf old_cmts new_cmts)
+            (Normalize_extended_ast.diff_docstrings conf old_docs new_docs)
         in
-        if not (List.is_empty diff_cmts) then
-          internal_error (`Comment_changed diff_cmts) [] ) ;
+        match diff_cmts with
+        | [] -> ()
+        | _ -> internal_error (`Comment_changed diff_cmts) [] ) ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
         Stdlib.flush_all () ;
