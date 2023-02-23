@@ -124,6 +124,17 @@ module Error = struct
               | `Warning50 _ -> "misplaced documentation comments"
             in
             Format.fprintf fmt "  BUG: %s.\n%!" s ;
+            let print_cmts_changed_error cmts ~kind =
+              List.iter cmts ~f:(fun (before, after) ->
+                  Format.fprintf fmt
+                    "%!@{<loc>%a@}:@,\
+                     @{<error>Error@}: %s are not preserved.\n\
+                    \  before: (* %s *)\n\
+                    \   after: (* %s *)\n\
+                     %!"
+                    Location.print_loc (Cmt.loc before) kind (Cmt.txt before)
+                    (Cmt.txt after) )
+            in
             ( match m with
             | `Doc_comment_moved l when not quiet ->
                 List.iter l ~f:(function
@@ -176,25 +187,9 @@ module Error = struct
                          --no-parse-docstrings.\n\
                          %!" )
             | `Doc_comment_changed cmts ->
-                List.iter cmts ~f:(fun (before, after) ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: Doc-comments are not preserved.\n\
-                      \  in:  (* %s *)\n\
-                      \  out: (* %s *)\n\
-                       %!"
-                      Location.print_loc (Cmt.loc before) (Cmt.txt before)
-                      (Cmt.txt after) )
+                print_cmts_changed_error cmts ~kind:"Doc-comments"
             | `Comment_changed cmts ->
-                List.iter cmts ~f:(fun (before, after) ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: Comments are not preserved.\n\
-                      \  in:  (* %s *)\n\
-                      \  out: (* %s *)\n\
-                       %!"
-                      Location.print_loc (Cmt.loc before) (Cmt.txt before)
-                      (Cmt.txt after) )
+                print_cmts_changed_error cmts ~kind:"Comments"
             | `Comment_dropped l when not quiet ->
                 List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                     Format.fprintf fmt
