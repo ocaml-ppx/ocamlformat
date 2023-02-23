@@ -129,3 +129,10 @@ type layout_cache_key =
 val preserve : cache_key:layout_cache_key -> (unit -> Fmt.t) -> t -> string
 (** [preserve f t] formats like [f ()] but returns a string and does not
     consume comments from [t]. *)
+
+val is_docstring : Conf.t -> Cmt.t -> (Cmt.t, Cmt.t) Either.t
+(** [is_docstring conf cmt] returns:
+
+    - [First  c] when [cmt] is a docstring, where [c] is its content stripped
+      of the leading [*];
+    - [Second c] when [cmt] is a regular comment, where [c] is its content. *)

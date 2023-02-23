@@ -411,24 +411,11 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         ( match Cmts.remaining_comments cmts_t with
         | [] -> ()
         | l -> internal_error (`Comment_dropped l) [] ) ;
-        let is_docstring (Cmt.{txt; loc} as cmt) =
-          match txt with
-          | "" | "*" -> Either.Second cmt
-          | _ when Char.equal txt.[0] '*' ->
-              (* Doc comments here (comming directly from the lexer) include
-                 their leading star *. It is not part of the docstring and
-                 should be dropped. *)
-              let txt = String.drop_prefix txt 1 in
-              let cmt = Cmt.create txt loc in
-              if conf.fmt_opts.parse_docstrings.v then Either.First cmt
-              else Either.Second cmt
-          | _ -> Either.Second cmt
-        in
         let old_docstrings, old_comments =
-          List.partition_map t.comments ~f:is_docstring
+          List.partition_map t.comments ~f:(Cmts.is_docstring conf)
         in
         let t_newdocstrings, t_newcomments =
-          List.partition_map t_new.comments ~f:is_docstring
+          List.partition_map t_new.comments ~f:(Cmts.is_docstring conf)
         in
         let diff_cmts =
           List.append

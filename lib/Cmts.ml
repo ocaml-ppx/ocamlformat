@@ -739,3 +739,16 @@ let remaining_comments t =
 let remaining_before t loc = Map.find_multi t.cmts_before loc
 
 let remaining_locs t = Set.to_list t.remaining
+
+let is_docstring (conf : Conf.t) (Cmt.{txt; loc} as cmt) =
+  match txt with
+  | "" | "*" -> Either.Second cmt
+  | _ when Char.equal txt.[0] '*' ->
+      (* Doc comments here (comming directly from the lexer) include their
+         leading star [*]. It is not part of the docstring and should be
+         dropped. *)
+      let txt = String.drop_prefix txt 1 in
+      let cmt = Cmt.create txt loc in
+      if conf.fmt_opts.parse_docstrings.v then Either.First cmt
+      else Either.Second cmt
+  | _ -> Either.Second cmt
