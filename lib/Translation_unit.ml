@@ -18,7 +18,7 @@ exception
   Internal_error of
     [ `Cannot_parse of exn
     | `Ast_changed
-    | `Doc_comment_changed of Docstring.error list
+    | `Doc_comment_moved of Docstring.error list
     | `Comment_changed of (Cmt.t * Cmt.t) list
     | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
@@ -116,14 +116,14 @@ module Error = struct
               match m with
               | `Cannot_parse _ -> "generating invalid ocaml syntax"
               | `Ast_changed -> "ast changed"
-              | `Doc_comment_changed _ -> "doc comments changed"
+              | `Doc_comment_moved _ -> "doc comments moved"
               | `Comment_changed _ -> "comments changed"
               | `Comment_dropped _ -> "comments dropped"
               | `Warning50 _ -> "misplaced documentation comments"
             in
             Format.fprintf fmt "  BUG: %s.\n%!" s ;
             ( match m with
-            | `Doc_comment_changed l when not quiet ->
+            | `Doc_comment_moved l when not quiet ->
                 List.iter l ~f:(function
                   | Added (loc, msg) ->
                       Format.fprintf fmt
@@ -402,7 +402,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                 std_t_new.ast
             in
             let args = args ~suffix:".unequal-docs" in
-            internal_error (`Doc_comment_changed docstrings) args
+            internal_error (`Doc_comment_moved docstrings) args
           else
             let args = args ~suffix:".unequal-ast" in
             internal_error `Ast_changed args ) ;
