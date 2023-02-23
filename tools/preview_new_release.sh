@@ -32,14 +32,14 @@ function comment_version()
 {
     version=$1
     file=$2
-    sed -i -e "s/^version\(.*\)/#version = $version/" $file
+    sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" $file
 }
 
 function uncomment_version()
 {
     version=$1
     file=$2
-    sed -i -e "s/^#version\(.*\)/version = $version/" $file
+    sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" $file
 }
 
 while getopts ":u:y:v:p:" opt; do
