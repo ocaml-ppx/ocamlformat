@@ -1,4 +1,4 @@
-open Ocamlformat_lib
+open Common
 
 let pp =
   let open Stdlib.Format in

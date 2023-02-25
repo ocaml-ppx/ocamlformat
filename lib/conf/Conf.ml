@@ -16,24 +16,25 @@ let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
 
-let warn_raw, collect_warnings =
-  let delay_warning = ref false in
-  let delayed_warning_list = ref [] in
-  let warn_ s =
-    if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s%!" s
-  in
-  let collect_warnings f =
-    let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
-    delay_warning := true ;
-    delayed_warning_list := [] ;
-    let res = f () in
-    let collected = List.rev !delayed_warning_list in
-    delay_warning := old_flag ;
-    delayed_warning_list := old_list ;
-    (res, fun () -> List.iter ~f:warn_ collected)
-  in
-  (warn_, collect_warnings)
+
+let delay_warning = ref false 
+let delayed_warning_list = ref [] 
+
+let warn_raw  s =
+  if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
+  else Format.eprintf "%s%!" s
+
+let collect_warnings : type r.  (unit -> r) -> r * _ =
+  fun  f ->
+   let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
+   delay_warning := true ;
+   delayed_warning_list := [] ;
+   let res = f () in
+   let collected = List.rev !delayed_warning_list in
+   delay_warning := old_flag ;
+   delayed_warning_list := old_list ;
+   (res, fun () -> List.iter ~f:warn_raw collected)
+
 
 let warn ~loc fmt =
   Format.kasprintf
@@ -1476,31 +1477,26 @@ end
 
 let options = Operational.options @ Formatting.options @ options
 
-let parse_line config ?(version_check = config.opr_opts.version_check.v)
-    ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs.v) ~from s =
-  let update ~config ~from ~name ~value =
-    let name = String.strip name in
-    let value = String.strip value in
-    match (name, from) with
-    | "version", `File _ ->
-        if String.equal Version.current value || not version_check then
-          Ok config
-        else
-          Error
-            (Error.Version_mismatch {read= value; installed= Version.current})
-    | name, `File x ->
+let update_of_string ~config ~disable_conf_attrs ~from ~name ~value =
+  let s = Printf.sprintf "%s=%s" name value in
+  let name = String.strip name in
+  let value = String.strip value in
+  match (name, from) with
+  | name, `File x ->
+      Decl.update options ~config
+        ~from:(`Parsed (`File x))
+        ~name ~value ~inline:false
+  | name, `Attribute loc ->
+      if disable_conf_attrs then (
+        warn ~loc "Configuration in attribute %S ignored." s ;
+        Ok config )
+      else
         Decl.update options ~config
-          ~from:(`Parsed (`File x))
-          ~name ~value ~inline:false
-    | name, `Attribute loc ->
-        if disable_conf_attrs then (
-          warn ~loc "Configuration in attribute %S ignored." s ;
-          Ok config )
-        else
-          Decl.update options ~config
-            ~from:(`Parsed (`Attribute loc))
-            ~name ~value ~inline:true
-  in
+          ~from:(`Parsed (`Attribute loc))
+          ~name ~value ~inline:true
+
+let parse_line config
+    ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs.v) ~from s =
   let s =
     match String.index s '#' with
     | Some i -> String.sub s ~pos:0 ~len:i
@@ -1512,13 +1508,17 @@ let parse_line config ?(version_check = config.opr_opts.version_check.v)
   | [name; value] ->
       let name = String.strip name in
       let value = String.strip value in
-      update ~config ~from ~name ~value
+      update_of_string ~disable_conf_attrs ~config ~from ~name ~value
   | [s] -> (
     match String.strip s with
     | "" -> impossible "previous match"
     (* special case for disable/enable *)
-    | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
-    | name -> update ~config ~from ~name ~value:"true" )
+    | "enable" ->
+        update_of_string ~disable_conf_attrs ~config ~from ~name:"disable"
+          ~value:"false"
+    | name ->
+        update_of_string ~disable_conf_attrs ~config ~from ~name
+          ~value:"true" )
   | _ -> Error (Error.Malformed s)
 
 open Parsetree

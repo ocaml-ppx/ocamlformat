@@ -4,6 +4,8 @@
  (flags
   (:standard
    -open
+   Common
+   -open
    Ocaml_common
    -open
    Ocamlformat_stdlib
@@ -11,4 +13,4 @@
    Ocamlformat_result.Global_scope))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat-lib re))
+ (libraries common ocamlformat_lib conf re))

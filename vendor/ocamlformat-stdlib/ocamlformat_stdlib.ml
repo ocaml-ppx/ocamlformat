@@ -7,6 +7,8 @@ module String = String_ext
 module Warning = Warning
 module Format = Caml.Format
 module Filename = Caml.Filename
+module Option = Option_ext
+module Result = Result_ext
 
 let ( >> ) f g x = g (f x)
 

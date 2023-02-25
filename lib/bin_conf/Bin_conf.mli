@@ -9,20 +9,22 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Ocamlformat_lib
+
 val build_config :
      enable_outside_detected_project:bool
   -> root:Fpath.t option
   -> file:string
   -> is_stdin:bool
-  -> (Ocamlformat_lib.Conf.t, string) Result.t
+  -> (VConf.t, string) Result.t
 
 type file = Stdin | File of string
 
 type input =
-  { kind: Ocamlformat_lib.Syntax.t
+  { kind: Syntax.t
   ; name: string
   ; file: file
-  ; conf: Ocamlformat_lib.Conf.t }
+  ; conf: VConf.t }
 
 (** Formatting action: input type and source, and output destination. *)
 type action =
@@ -32,7 +34,7 @@ type action =
   | Inplace of input list  (** Format in-place, overwriting input file(s). *)
   | Check of input list
       (** Check whether the input files already are formatted. *)
-  | Print_config of Ocamlformat_lib.Conf.t
+  | Print_config of VConf.t
       (** Print the configuration and exit. *)
   | Numeric of input
 

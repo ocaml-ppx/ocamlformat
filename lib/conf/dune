@@ -1,0 +1,29 @@
+(library
+ (name conf)
+ (public_name ocamlformat.conf)
+ (flags
+  (:standard
+   -open
+   Common
+   -open
+   Ocaml_common
+   -open
+   Parser_extended
+   -open
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_result.Global_scope))
+ (libraries
+  common
+  format_
+  ocaml_common
+  parser_standard
+  parser_extended
+  parser_recovery
+  ocamlformat_result
+  ocamlformat_stdlib
+  ocaml-version
+  ocp-indent.lib
+  odoc_parser
+  uuseg.string
+  dune-build-info))

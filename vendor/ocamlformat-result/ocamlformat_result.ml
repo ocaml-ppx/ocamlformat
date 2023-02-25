@@ -2,6 +2,7 @@ open Result
 
 module Let_syntax = struct
   let ( let+ ) = bind
+  let ( let* ) a b = map b a
 end
 
 module Global_scope = struct

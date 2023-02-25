@@ -14,10 +14,12 @@
 (ocamllex Toplevel_lexer)
 
 (library
- (name ocamlformat_lib)
- (public_name ocamlformat-lib)
+ (name ocamlformat_lib_latest)
+ (public_name ocamlformat-lib.ocamlformat-lib-latest)
  (flags
   (:standard
+   -open
+   Common
    -open
    Ocaml_common
    -open
@@ -29,6 +31,8 @@
  (instrumentation
   (backend bisect_ppx))
  (libraries
+  common
+  conf
   format_
   ocaml_common
   parser_standard

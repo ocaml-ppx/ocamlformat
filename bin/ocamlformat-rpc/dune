@@ -14,10 +14,10 @@
  (public_name ocamlformat-rpc)
  (package ocamlformat)
  (flags
-  (:standard -open Ocamlformat_stdlib))
+  (:standard -open Common -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat.rpc))
+ (libraries common ocamlformat.rpc))
 
 (rule
  (with-stdout-to

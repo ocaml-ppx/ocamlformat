@@ -9,23 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Error : sig
-  type t
-
-  val user_error : string -> t
-
-  val equal : t -> t -> bool
-
-  val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
-end
-
 val parse_and_format :
      Syntax.t
   -> ?output_file:string
   -> input_name:string
   -> source:string
   -> Conf.t
-  -> (string, Error.t) Result.t
+  -> (string, Translation_unit_error.t) Result.t
 (** [parse_and_format kind ?output_file ~input_name ~source conf opts] parses
     and formats [source] as a list of fragments. *)
 
@@ -40,3 +30,10 @@ val numeric :
     the range of lines [range] (line numbers ranging from 1 to number of
     lines), where the line numbers are relative to [source] and the
     indentation is relative to the formatted output. *)
+
+val print_error :
+     ?debug:bool
+  -> ?quiet:bool
+  -> Format.formatter
+  -> Translation_unit_error.t
+  -> unit
