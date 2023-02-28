@@ -1358,7 +1358,11 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
                ~pro:(fmt_label lbl ":@;<0 2>")
                ~box ?epi ?parens xarg )
         $ cmts_after )
-  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
+  | _ ->
+      let label_sep : s =
+        if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
+      in
+      fmt_label lbl label_sep $ fmt_expression c ~box ?epi ?parens xarg
 
 and expression_width c xe =
   String.length
