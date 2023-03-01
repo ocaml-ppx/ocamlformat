@@ -483,6 +483,13 @@ let is_arrow_or_poly = function
   | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
   | _ -> false
 
+let is_labelled_arg args exp =
+  List.exists
+    ~f:(function
+      | Nolabel, _ -> false
+      | Labelled _, x | Optional _, x -> phys_equal x exp )
+    args
+
 let fmt_assign_arrow c =
   match c.conf.fmt_opts.assignment_operator.v with
   | `Begin_line -> fmt "@;<1 2><- "
@@ -2080,6 +2087,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
           ->
             false
+        | Exp {pexp_desc= Pexp_apply (_, args); _} when is_labelled_arg args exp -> false
         | _ -> parens && not c.conf.fmt_opts.align_symbol_open_paren.v
       in
       Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
