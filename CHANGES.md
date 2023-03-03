@@ -21,6 +21,7 @@
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, @gpetiot, @Julow)
 - Improve formatting of class signatures (#2301, @gpetiot, @Julow)
+- JaneStreet profile: treat comments as doc-comments (#2261, @gpetiot)
 
 ### New features
 

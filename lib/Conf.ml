@@ -110,6 +110,7 @@ let conventional_profile from =
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
   ; wrap_comments= elt false
+  ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
 
 let default_profile = conventional_profile
@@ -178,6 +179,7 @@ let ocamlformat_profile from =
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
   ; wrap_comments= elt false
+  ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
 
 let janestreet_profile from =
@@ -231,7 +233,7 @@ let janestreet_profile from =
   ; parens_ite= elt true
   ; parens_tuple= elt `Multi_line_only
   ; parens_tuple_patterns= elt `Multi_line_only
-  ; parse_docstrings= elt false
+  ; parse_docstrings= elt true
   ; parse_toplevel_phrases= elt false
   ; sequence_blank_line= elt `Compact
   ; sequence_style= elt `Terminator
@@ -245,6 +247,7 @@ let janestreet_profile from =
   ; type_decl= elt `Sparse
   ; type_decl_indent= elt 2
   ; wrap_comments= elt false
+  ; wrap_docstrings= elt false
   ; wrap_fun_args= elt false }
 
 let default =
