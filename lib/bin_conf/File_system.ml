@@ -34,9 +34,9 @@ let root_ocamlformat_file ~root =
 
 let xdg_config () =
   let xdg_config_home =
-    match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
+    match Stdlib.Sys.getenv_opt "XDG_CONFIG_HOME" with
     | None | Some "" -> (
-      match Caml.Sys.getenv_opt "HOME" with
+      match Stdlib.Sys.getenv_opt "HOME" with
       | None | Some "" -> None
       | Some home -> Some Fpath.(v home / ".config") )
     | Some xdg_config_home -> Some (Fpath.v xdg_config_home)

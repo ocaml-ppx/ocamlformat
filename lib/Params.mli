@@ -9,7 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
 open Extended_ast
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t

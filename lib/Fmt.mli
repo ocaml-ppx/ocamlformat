@@ -11,10 +11,8 @@
 
 (** Formatting combinators *)
 
-module Format = Format_
-
 (** Format strings that accept no arguments. *)
-type s = (unit, Format.formatter, unit) format
+type s = (unit, Format_.formatter, unit) format
 
 (** Format thunks. *)
 type t
@@ -45,7 +43,7 @@ val set_margin : int -> t
 val set_max_indent : int option -> t
 (** Set the maximum indentation. *)
 
-val eval : Format.formatter -> t -> unit
+val eval : Format_.formatter -> t -> unit
 (** [eval fs t] runs format thunk [t] outputting to [fs] *)
 
 val protect : t -> on_error:(exn -> unit) -> t

@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 {
-open Caml
+open Stdlib
 open Migrate_ast
 
 let newline lexbuf = Lexing.new_line lexbuf

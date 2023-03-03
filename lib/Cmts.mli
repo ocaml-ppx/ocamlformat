@@ -23,8 +23,6 @@
     removed from the data structure. This is significant in cases where there
     are multiple Ast terms with the same location. *)
 
-module Format = Format_
-
 type t
 
 val init :
