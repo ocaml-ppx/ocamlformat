@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
-
 (** Format OCaml Ast *)
 
 open Migrate_ast
@@ -242,7 +240,7 @@ let fmt_longident_loc c ?pre {txt; loc} =
   Cmts.fmt c loc (opt pre str $ fmt_longident txt)
 
 let str_longident x =
-  Format.asprintf "%a" (fun fs x -> eval fs (fmt_longident x)) x
+  Format_.asprintf "%a" (fun fs x -> eval fs (fmt_longident x)) x
 
 let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 
@@ -396,7 +394,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     | Ok parsed -> fmt_parsed parsed
     | Error msgs ->
         if not c.conf.opr_opts.quiet.v then
-          List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter) ;
+          List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
         fmt_raw str_cmt
   in
   Cmts.fmt c loc
@@ -512,15 +510,15 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   | `Compact -> false
 
 let fmt_quoted_string key ext s = function
-  | None -> wrap_k (str (Format.sprintf "{%s%s|" key ext)) (str "|}") (str s)
+  | None -> wrap_k (str (Format_.sprintf "{%s%s|" key ext)) (str "|}") (str s)
   | Some delim ->
       let ext_and_delim =
         if String.is_empty delim then ext
-        else Format.sprintf "%s %s" ext delim
+        else Format_.sprintf "%s %s" ext delim
       in
       wrap_k
-        (str (Format.sprintf "{%s%s|" key ext_and_delim))
-        (str (Format.sprintf "|%s}" delim))
+        (str (Format_.sprintf "{%s%s|" key ext_and_delim))
+        (str (Format_.sprintf "|%s}" delim))
         (str s)
 
 let fmt_type_var s =
@@ -4396,14 +4394,14 @@ let fmt_code ~debug =
     | Second {ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Repl_file ast source comments ~fmt_code
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
-        Error (`Msg (Stdlib.Format.asprintf "expecting: %s" x))
+        Error (`Msg (Format.asprintf "expecting: %s" x))
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
-        Error (`Msg (Stdlib.Format.asprintf "not expecting: %s" x))
+        Error (`Msg (Format.asprintf "not expecting: %s" x))
     | exception Syntaxerr.Error (Other _) when warn ->
         Error
-          (`Msg (Stdlib.Format.asprintf "invalid toplevel or OCaml syntax"))
+          (`Msg (Format.asprintf "invalid toplevel or OCaml syntax"))
     | exception e when warn ->
-        Error (`Msg (Stdlib.Format.asprintf "%a" Exn.pp e))
+        Error (`Msg (Format.asprintf "%a" Exn.pp e))
     | exception _ -> Error (`Msg "")
   in
   fmt_code

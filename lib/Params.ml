@@ -9,7 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
 module Location = Migrate_ast.Location
 open Extended_ast
 open Fmt

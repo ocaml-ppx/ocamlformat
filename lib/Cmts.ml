@@ -11,7 +11,6 @@
 
 (** Placing and formatting comments in a parsetree. *)
 
-module Format = Format_
 open Migrate_ast
 
 type layout_cache_key =
@@ -24,9 +23,9 @@ module Layout_cache = struct
     type t = layout_cache_key
 
     let expression_to_string e =
-      Stdlib.Format.asprintf "%a" Printast.expression e
+      Format.asprintf "%a" Printast.expression e
 
-    let pattern_to_string e = Stdlib.Format.asprintf "%a" Printast.pattern e
+    let pattern_to_string e = Format.asprintf "%a" Printast.pattern e
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
@@ -297,13 +296,13 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
       | None ->
           if t.debug then
             List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-                Format.eprintf "lost: %s@\n%!" txt ) ) ;
+                Format_.eprintf "lost: %s@\n%!" txt ) ) ;
       deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
   if t.debug then
-    Stdlib.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+    Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
       Location.fmt before Location.fmt after ;
   let merge_and_sort x y =
     List.rev_append x y
@@ -420,7 +419,7 @@ let init fragment ~debug source asts comments_n_docstrings =
         ; after= get_cmts `After }
       in
       Printast.cmts := Some cmts ;
-      Stdlib.Format.eprintf "AST:\n%a\n%!"
+      Format.eprintf "AST:\n%a\n%!"
         (Extended_ast.Printast.ast fragment)
         asts ) ) ;
   t
@@ -430,9 +429,9 @@ let preserve_nomemo f t =
   let finally () = restore original ~into:t in
   Exn.protect ~finally ~f:(fun () ->
       let buf = Buffer.create 128 in
-      let fs = Format.formatter_of_buffer buf in
+      let fs = Format_.formatter_of_buffer buf in
       Fmt.eval fs (f ()) ;
-      Format.pp_print_flush fs () ;
+      Format_.pp_print_flush fs () ;
       Buffer.contents buf )
 
 let preserve ~cache_key f t =
