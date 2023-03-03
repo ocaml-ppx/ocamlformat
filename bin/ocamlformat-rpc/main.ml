@@ -12,8 +12,8 @@
 (** OCamlFormat-RPC *)
 
 let () =
-  Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;
-  Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
+  Stdlib.at_exit (Format.pp_print_flush Format.err_formatter) ;
+  Stdlib.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 open Cmdliner
 
@@ -75,4 +75,4 @@ let info =
 
 let rpc_main_t = Term.(const Ocamlformat_rpc.run $ const ())
 
-let () = Caml.exit @@ Cmd.eval_result (Cmd.v info rpc_main_t)
+let () = Stdlib.exit @@ Cmd.eval_result (Cmd.v info rpc_main_t)

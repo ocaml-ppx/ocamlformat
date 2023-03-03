@@ -31,7 +31,7 @@ let chop_any_extension s =
   | r -> r
   | exception Invalid_argument _ -> s
 
-let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0))
+let exe = chop_any_extension (Filename.basename Stdlib.Sys.argv.(0))
 
 module Error = struct
   type t =
@@ -55,10 +55,10 @@ module Error = struct
     Out_channel.write_all p ~data:prev ;
     Out_channel.write_all n ~data:next ;
     ignore
-      (Caml.Sys.command
+      (Stdlib.Sys.command
          (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2" p n) ) ;
-    Caml.Sys.remove p ;
-    Caml.Sys.remove n
+    Stdlib.Sys.remove p ;
+    Stdlib.Sys.remove n
 
   let print ?(debug = false) ?(quiet = false) fmt = function
     | Invalid_source _ when quiet -> ()
@@ -443,7 +443,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           internal_error `Comment args ) ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
-        Caml.flush_all () ;
+        Stdlib.flush_all () ;
         Error
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
           ) )

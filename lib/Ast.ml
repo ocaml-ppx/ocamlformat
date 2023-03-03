@@ -817,7 +817,7 @@ end = struct
         ignore (f x) ;
         true
       with exc ->
-        let bt = Caml.Printexc.get_backtrace () in
+        let bt = Stdlib.Printexc.get_backtrace () in
         dump x Format.err_formatter ;
         Format.eprintf "%s%!" bt ;
         raise exc )

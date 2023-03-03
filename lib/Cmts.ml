@@ -24,9 +24,9 @@ module Layout_cache = struct
     type t = layout_cache_key
 
     let expression_to_string e =
-      Caml.Format.asprintf "%a" Printast.expression e
+      Stdlib.Format.asprintf "%a" Printast.expression e
 
-    let pattern_to_string e = Caml.Format.asprintf "%a" Printast.pattern e
+    let pattern_to_string e = Stdlib.Format.asprintf "%a" Printast.pattern e
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
@@ -303,7 +303,7 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
   if t.debug then
-    Caml.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+    Stdlib.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
       Location.fmt before Location.fmt after ;
   let merge_and_sort x y =
     List.rev_append x y
@@ -420,7 +420,7 @@ let init fragment ~debug source asts comments_n_docstrings =
         ; after= get_cmts `After }
       in
       Printast.cmts := Some cmts ;
-      Caml.Format.eprintf "AST:\n%a\n%!"
+      Stdlib.Format.eprintf "AST:\n%a\n%!"
         (Extended_ast.Printast.ast fragment)
         asts ) ) ;
   t

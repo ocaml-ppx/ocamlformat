@@ -13,9 +13,9 @@
 
 open Ocamlformat_lib ;;
 
-Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
+Stdlib.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 
-Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
+Stdlib.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
   if conf.opr_opts.disable.v then Ok source
@@ -101,9 +101,9 @@ let run_action action =
 match Bin_conf.action () with
 | Ok (`Ok action) -> (
   match run_action action with
-  | Ok () -> Caml.exit 0
+  | Ok () -> Stdlib.exit 0
   | Error errors ->
       List.iter errors ~f:(fun error -> error ()) ;
-      Caml.exit 1 )
-| Ok (`Version | `Help) -> Caml.exit 0
-| Error _ -> Caml.exit 1
+      Stdlib.exit 1 )
+| Ok (`Version | `Help) -> Stdlib.exit 0
+| Error _ -> Stdlib.exit 1

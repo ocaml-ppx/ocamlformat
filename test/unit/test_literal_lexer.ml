@@ -19,7 +19,8 @@ let tests_string =
     , `Quick
     , fun () ->
         let got = Literal_lexer.string mode s in
-        Alcotest.check Alcotest.(option string) Caml.__LOC__ expected got )
+        Alcotest.check Alcotest.(option string) Stdlib.__LOC__ expected got
+    )
   in
   let test_one name s mode ~expected =
     test_opt name s mode ~expected:(Some expected)
@@ -57,7 +58,7 @@ let tests_char =
         let got = Literal_lexer.char s in
         Alcotest.check
           (Alcotest.option Alcotest.string)
-          Caml.__LOC__ expected got )
+          Stdlib.__LOC__ expected got )
   in
   let test name s ~expected = test_opt name s ~expected:(Some expected) in
   [ test_opt "not a character literal" {|c|} ~expected:None

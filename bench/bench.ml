@@ -43,7 +43,7 @@ let tests =
   List.map
     (fun {name; input_name; kind; source; conf; action} ->
       Test.make
-        ~name:(Caml.Format.sprintf "%s (%s)" name input_name)
+        ~name:(Stdlib.Format.sprintf "%s (%s)" name input_name)
         ( Staged.stage
         @@ fun () ->
         match action with

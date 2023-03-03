@@ -4,8 +4,8 @@ module Fpath = Fpath_ext
 module List = List_ext
 module String = String_ext
 module Warning = Warning
-module Format = Caml.Format
-module Filename = Caml.Filename
+module Format = Stdlib.Format
+module Filename = Stdlib.Filename
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to

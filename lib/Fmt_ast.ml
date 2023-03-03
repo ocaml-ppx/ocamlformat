@@ -89,8 +89,8 @@ let protect =
   fun c ast pp ->
     Fmt.protect pp ~on_error:(fun exc ->
         if !first && c.debug then (
-          let bt = Caml.Printexc.get_backtrace () in
-          Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
+          let bt = Stdlib.Printexc.get_backtrace () in
+          Stdlib.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
           first := false ) ;
         raise exc )
 
@@ -4396,13 +4396,14 @@ let fmt_code ~debug =
     | Second {ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Repl_file ast source comments ~fmt_code
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
-        Error (`Msg (Caml.Format.asprintf "expecting: %s" x))
+        Error (`Msg (Stdlib.Format.asprintf "expecting: %s" x))
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
-        Error (`Msg (Caml.Format.asprintf "not expecting: %s" x))
+        Error (`Msg (Stdlib.Format.asprintf "not expecting: %s" x))
     | exception Syntaxerr.Error (Other _) when warn ->
-        Error (`Msg (Caml.Format.asprintf "invalid toplevel or OCaml syntax"))
+        Error
+          (`Msg (Stdlib.Format.asprintf "invalid toplevel or OCaml syntax"))
     | exception e when warn ->
-        Error (`Msg (Caml.Format.asprintf "%a" Exn.pp e))
+        Error (`Msg (Stdlib.Format.asprintf "%a" Exn.pp e))
     | exception _ -> Error (`Msg "")
   in
   fmt_code

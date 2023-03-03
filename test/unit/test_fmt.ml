@@ -22,9 +22,10 @@ let tests_lazy =
         let expected_r = Some "hello" in
         let got = eval_fmt term in
         let got_r = !r in
-        Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;
-        Alcotest.check Alcotest.(option string) Caml.__LOC__ expected_r got_r
-    )
+        Alcotest.check Alcotest.(string) Stdlib.__LOC__ expected got ;
+        Alcotest.check
+          Alcotest.(option string)
+          Stdlib.__LOC__ expected_r got_r )
   ; ( "lazy_: using lazy"
     , `Quick
     , fun () ->
@@ -39,9 +40,10 @@ let tests_lazy =
         let expected_r = None in
         let got = eval_fmt term in
         let got_r = !r in
-        Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;
-        Alcotest.check Alcotest.(option string) Caml.__LOC__ expected_r got_r
-    ) ]
+        Alcotest.check Alcotest.(string) Stdlib.__LOC__ expected got ;
+        Alcotest.check
+          Alcotest.(option string)
+          Stdlib.__LOC__ expected_r got_r ) ]
 
 let tests_list_pn =
   let test name ~expected ~expected_calls f =
@@ -60,11 +62,11 @@ let tests_list_pn =
         in
         let term = f pp_spy in
         let got = eval_fmt term in
-        Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;
+        Alcotest.check Alcotest.(string) Stdlib.__LOC__ expected got ;
         let got_calls = List.rev !calls in
         Alcotest.check
           Alcotest.(list string)
-          Caml.__LOC__ expected_calls got_calls )
+          Stdlib.__LOC__ expected_calls got_calls )
   in
   [ test "evaluation order" ~expected:"abcde"
       ~expected_calls:["-ab"; "abc"; "bcd"; "cde"; "de-"] (fun pp_spy ->
@@ -85,11 +87,11 @@ let tests_list_k =
         let pp_spy x = record_call x ; Fmt.str x in
         let term = f pp_spy in
         let got = eval_fmt term in
-        Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;
+        Alcotest.check Alcotest.(string) Stdlib.__LOC__ expected got ;
         let got_calls = List.rev !calls in
         Alcotest.check
           Alcotest.(list string)
-          Caml.__LOC__ expected_calls got_calls )
+          Stdlib.__LOC__ expected_calls got_calls )
   in
   [ test "evaluation order" ~expected:"a b c d e"
       ~expected_calls:["a"; "b"; "c"; "d"; "e"] (fun pp_spy ->
@@ -106,7 +108,7 @@ let tests_sequence =
     , `Quick
     , fun () ->
         let got = eval_fmt term in
-        Alcotest.check Alcotest.string Caml.__LOC__ expected got )
+        Alcotest.check Alcotest.string Stdlib.__LOC__ expected got )
   in
   [ test "1 element" (Fmt.sequence [Fmt.char 'c']) ~expected:"c"
   ; test "empty list" (Fmt.sequence []) ~expected:""

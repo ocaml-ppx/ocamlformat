@@ -1,8 +1,8 @@
 include Fpath
 
-let cwd () = Caml.Sys.getcwd () |> v
+let cwd () = Stdlib.Sys.getcwd () |> v
 
-let exists p = to_string p |> Caml.Sys.file_exists
+let exists p = to_string p |> Stdlib.Sys.file_exists
 
 let to_absolute file = if is_rel file then append (cwd ()) file else file
 
