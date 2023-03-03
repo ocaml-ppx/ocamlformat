@@ -1,3 +1,9 @@
+## unreleased
+
+### Bug fixes
+
+- Janestreet: Fix indentation of functions passed as labelled argument (#2259, @Julow)
+
 ## 0.25.0 (2023-02-24)
 
 ### Library

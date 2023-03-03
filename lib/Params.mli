@@ -139,3 +139,14 @@ val comma_sep : Conf.t -> Fmt.s
 
 val semi_sep : Conf.t -> Fmt.s
 (** Like [comma_sep] but use a semicolon as separator. *)
+
+module Align : sig
+  (** Implement the [align_symbol_open_paren] option. *)
+
+  val infix_op : Conf.t -> Fmt.t -> Fmt.t
+
+  val match_ : Conf.t -> Fmt.t -> Fmt.t
+
+  val function_ :
+    Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
+end

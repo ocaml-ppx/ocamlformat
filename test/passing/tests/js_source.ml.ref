@@ -9799,23 +9799,20 @@ let[@a
   with
   | _
     when f
-           ~f:
-             (function[@ocaml.warning (* ....................................... *) "-4"]
-              | _ -> .)
-           ~f:
-             (function[@ocaml.warning
-                        (* ....................................... *)
-                        (* ....................................... *)
-                        "foooooooooooooooooooooooooooo \
-                         fooooooooooooooooooooooooooooooooooooo"]
-              | _ -> .)
-           ~f:
-             (function[@ocaml.warning
-                        (* ....................................... *)
-                        let x = a
-                        and y = b in
-                        x + y]
-              | _ -> .) ->
+           ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
+             | _ -> .)
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         (* ....................................... *)
+                         "foooooooooooooooooooooooooooo \
+                          fooooooooooooooooooooooooooooooooooooo"]
+             | _ -> .)
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         let x = a
+                         and y = b in
+                         x + y]
+             | _ -> .) ->
     y [@attr
         (* ... *)
         (* ... *)
@@ -9847,4 +9844,24 @@ let x =
     ("A string _____________________"
      ^ "Another string _____________"
      ^ "Yet another string _________")
+;;
+
+let bind t ~f =
+  unfold_step
+    ~f:(function
+      | Sequence { state = seed; next }, rest ->
+        (match next seed with
+         | Done ->
+           (match rest with
+            | Sequence { state = seed; next } ->
+              (match next seed with
+               | Done -> Done
+               | Skip { state = s } ->
+                 Skip { state = empty, Sequence { state = s; next } }
+               | Yield { value = a; state = s } ->
+                 Skip { state = f a, Sequence { state = s; next } }))
+         | Skip { state = s } -> Skip { state = Sequence { state = s; next }, rest }
+         | Yield { value = a; state = s } ->
+           Yield { value = a; state = Sequence { state = s; next }, rest }))
+    ~init:(empty, t)
 ;;

@@ -12,6 +12,7 @@
 module Format = Format_
 module Location = Migrate_ast.Location
 open Extended_ast
+open Asttypes
 open Fmt
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
@@ -500,3 +501,33 @@ let semi_sep (c : Conf.t) : Fmt.s =
   match c.fmt_opts.break_separators.v with
   | `Before -> "@,; "
   | `After -> ";@;<1 2>"
+
+module Align = struct
+  (** Whether [exp] occurs in [args] as a labelled argument. *)
+  let is_labelled_arg args exp =
+    List.exists
+      ~f:(function
+        | Nolabel, _ -> false
+        | Labelled _, x | Optional _, x -> phys_equal x exp )
+      args
+
+  let general (c : Conf.t) t =
+    hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t
+
+  let infix_op = general
+
+  let match_ = general
+
+  let function_ (c : Conf.t) ~parens ~(ctx0 : Ast.t) ~self t =
+    let align =
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
+        ->
+          false
+      | Exp {pexp_desc= Pexp_apply (_, args); _}
+        when is_labelled_arg args self ->
+          false
+      | _ -> parens && not c.fmt_opts.align_symbol_open_paren.v
+    in
+    hvbox_if align 0 t
+end
