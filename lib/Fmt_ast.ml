@@ -510,7 +510,8 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   | `Compact -> false
 
 let fmt_quoted_string key ext s = function
-  | None -> wrap_k (str (Format_.sprintf "{%s%s|" key ext)) (str "|}") (str s)
+  | None ->
+      wrap_k (str (Format_.sprintf "{%s%s|" key ext)) (str "|}") (str s)
   | Some delim ->
       let ext_and_delim =
         if String.is_empty delim then ext
@@ -4398,10 +4399,8 @@ let fmt_code ~debug =
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
         Error (`Msg (Format.asprintf "not expecting: %s" x))
     | exception Syntaxerr.Error (Other _) when warn ->
-        Error
-          (`Msg (Format.asprintf "invalid toplevel or OCaml syntax"))
-    | exception e when warn ->
-        Error (`Msg (Format.asprintf "%a" Exn.pp e))
+        Error (`Msg (Format.asprintf "invalid toplevel or OCaml syntax"))
+    | exception e when warn -> Error (`Msg (Format.asprintf "%a" Exn.pp e))
     | exception _ -> Error (`Msg "")
   in
   fmt_code

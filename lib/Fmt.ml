@@ -76,7 +76,8 @@ type sp = Blank | Cut | Space | Break of int * int
 let ( >$ ) f g x = f $ g x
 
 let set_margin n =
-  with_pp (fun fs -> Format_.pp_set_geometry fs ~max_indent:n ~margin:(n + 1))
+  with_pp (fun fs ->
+      Format_.pp_set_geometry fs ~max_indent:n ~margin:(n + 1) )
 
 let max_indent = ref None
 
@@ -174,7 +175,8 @@ let fmt_opt o = Option.value o ~default:noop
 
 (** Conditional on immediately following a line break -------------------*)
 
-let if_newline s = with_pp (fun fs -> Format_.pp_print_string_if_newline fs s)
+let if_newline s =
+  with_pp (fun fs -> Format_.pp_print_string_if_newline fs s)
 
 let break_unless_newline n o =
   with_pp (fun fs -> Format_.pp_print_or_newline fs n o "" "")
@@ -296,7 +298,9 @@ and open_hovbox ?name n =
       Format_.pp_open_hovbox fs n )
 
 and close_box =
-  with_pp (fun fs -> debug_box_close fs ; Format_.pp_close_box fs ())
+  with_pp (fun fs ->
+      debug_box_close fs ;
+      Format_.pp_close_box fs () )
 
 (** Wrapping boxes ------------------------------------------------------*)
 

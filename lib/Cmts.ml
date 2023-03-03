@@ -22,8 +22,7 @@ module Layout_cache = struct
   module Key = struct
     type t = layout_cache_key
 
-    let expression_to_string e =
-      Format.asprintf "%a" Printast.expression e
+    let expression_to_string e = Format.asprintf "%a" Printast.expression e
 
     let pattern_to_string e = Format.asprintf "%a" Printast.pattern e
 
@@ -419,9 +418,8 @@ let init fragment ~debug source asts comments_n_docstrings =
         ; after= get_cmts `After }
       in
       Printast.cmts := Some cmts ;
-      Format.eprintf "AST:\n%a\n%!"
-        (Extended_ast.Printast.ast fragment)
-        asts ) ) ;
+      Format.eprintf "AST:\n%a\n%!" (Extended_ast.Printast.ast fragment) asts
+      ) ) ;
   t
 
 let preserve_nomemo f t =
