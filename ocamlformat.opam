@@ -12,6 +12,7 @@ depends: [
   "cmdliner" {>= "1.1.0"}
   "dune" {>= "2.8"}
   "ocamlformat-lib" {= version}
+  "ocamlformat-rpc-lib" {with-test & = version}
   "re" {>= "1.10.3"}
   "odoc" {with-doc}
 ]
