@@ -23,5 +23,6 @@
 
 (rule
  (alias runtest)
+ (package ocamlformat-lib)
  (action
   (diff recovery_parser.log recovery_parser.stderr)))

@@ -84,6 +84,8 @@
   dune
   (ocamlformat-lib
    (= :version))
+  (ocamlformat-rpc-lib
+   (and :with-test (= :version)))
   (re
    (>= 1.10.3))))
 
