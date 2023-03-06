@@ -27,7 +27,7 @@ To set up your project to use the default profile and the ocamlformat version yo
 
 ```
 profile = default
-version = 0.25.0
+version = 0.25.1
 ```
 
 For more information on configuration options, check out the [documentation](https://ocaml.org/p/ocamlformat) or run `ocamlformat --help`.
