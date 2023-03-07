@@ -10,8 +10,8 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
           - windows-latest
+          - ubuntu-latest
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
           - 4.13.x
