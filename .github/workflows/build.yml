@@ -40,6 +40,7 @@ jobs:
         run: opam exec -- dune build @help --auto-promote
 
   test-branch:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Test conventional profile
