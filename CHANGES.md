@@ -6,7 +6,7 @@
 
 ### Bug fixes
 
-- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#<PR_NUMBER>, @gpetiot)
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
 
 ### Changes
 
