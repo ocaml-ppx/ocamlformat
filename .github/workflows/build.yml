@@ -42,15 +42,13 @@ jobs:
   test-branch:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        profile:
+          - conventional
+          - ocamlformat
+          - janestreet
     steps:
-      - name: Test conventional profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
-        shell: bash
-
-      - name: Test janestreet profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
-        shell: bash
-
-      - name: Test ocamlformat profile
-        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
+      - name: Test ${{ matrix.profile }} profile
+        run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=${{ matrix.profile }}'
         shell: bash
