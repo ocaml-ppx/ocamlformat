@@ -39,17 +39,17 @@ jobs:
       - name: Check help files
         run: opam exec -- dune build @help --auto-promote
 
+  test-branch:
+    runs-on: ubuntu-latest
+    steps:
       - name: Test conventional profile
-        runs-on: ubuntu-latest
         run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=conventional'
         shell: bash
 
       - name: Test janestreet profile
-        runs-on: ubuntu-latest
         run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=janestreet'
         shell: bash
 
       - name: Test ocamlformat profile
-        runs-on: ubuntu-latest
         run: opam exec -- ./tools/test_branch.sh -a origin/${{ github.event.pull_request.base.ref }} -b HEAD 'profile=ocamlformat'
         shell: bash
