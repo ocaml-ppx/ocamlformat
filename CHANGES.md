@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#<PR_NUMBER>, @gpetiot)
+
 ### Changes
 
 ### New features
