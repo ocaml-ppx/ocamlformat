@@ -418,7 +418,8 @@ let _ =
 type a = b (* a *) as (* b *) 'c (* c *)
 
 type t =
-  { mutable
+  { (* comment before mutable *)
+    mutable
       (* really long comment that doesn't fit on the same line as other
          stuff *)
       x:
