@@ -1822,9 +1822,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let e1N = List.rev rev_e1N in
-          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is
-             important *)
-          let cmts_before = Cmts.fmt_before c pexp_loc in
+          (* Make sure the comment is placed after the eventual label but not
+             into the inner box if no label is present. Side effects of
+             Cmts.fmt c.cmts before Sugar.fun_ is important. *)
+          let cmts_outer, cmts_inner =
+            let cmt = Cmts.fmt_before c pexp_loc in
+            match lbl with Nolabel -> (cmt, noop) | _ -> (noop, cmt)
+          in
           let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
           let fmt_cstr, xbody = type_constr_and_body c xbody in
           let box =
@@ -1842,11 +1846,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (hovbox 0
                   ( hovbox 2
                       ( wrap
-                          ( fmt_args_grouped e0 e1N $ fmt "@ "
-                          $ fmt_label lbl ":" $ cmts_before
+                          ( fmt_args_grouped e0 e1N $ fmt "@ " $ cmts_outer
                           $ hvbox 0
                               ( hvbox 2
-                                  ( fmt "(fun@ "
+                                  ( hvbox 0
+                                      ( fmt_label lbl ":" $ cmts_inner
+                                      $ fmt "(fun" )
+                                  $ fmt "@ "
                                   $ fmt_attributes c eN1.pexp_attributes
                                       ~suf:" "
                                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
