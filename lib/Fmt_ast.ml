@@ -341,37 +341,37 @@ let fmt_direction_flag = function
   | Upto -> fmt "@ to "
   | Downto -> fmt "@ downto "
 
+let fmt_private c loc = hvbox 0 @@ Cmts.fmt c loc @@ str "private"
+
+let fmt_virtual c loc = hvbox 0 @@ Cmts.fmt c loc @@ str "virtual"
+
+let fmt_mutable c loc = hvbox 0 @@ Cmts.fmt c loc @@ str "mutable"
+
 let fmt_private_flag c = function
-  | Private loc -> fmt " " $ Cmts.fmt c loc @@ str "private"
+  | Private loc -> fmt "@ " $ fmt_private c loc
   | Public -> noop
 
 let fmt_virtual_flag c = function
-  | Virtual loc -> fmt " " $ Cmts.fmt c loc @@ str "virtual"
+  | Virtual loc -> fmt "@ " $ fmt_virtual c loc
   | Concrete -> noop
 
 let fmt_mutable_flag c = function
-  | Mutable loc -> Cmts.fmt c loc @@ str "mutable" $ fmt " "
+  | Mutable loc -> fmt_mutable c loc $ fmt "@ "
   | Immutable -> noop
+
+let opt_flag ~f c x = opt x (fun x -> fmt "@ " $ f c x)
 
 let fmt_mutable_virtual_flag c = function
   | {mv_mut= Some m; mv_virt= Some v} when Location.compare_start v m < 1 ->
-      fmt " "
-      $ Cmts.fmt c v @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c m @@ str "mutable"
+      opt_flag c (Some v) ~f:fmt_virtual $ opt_flag c (Some m) ~f:fmt_mutable
   | {mv_mut; mv_virt} ->
-      opt mv_mut (fun m -> fmt " " $ Cmts.fmt c m @@ str "mutable")
-      $ opt mv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
+      opt_flag c mv_mut ~f:fmt_mutable $ opt_flag c mv_virt ~f:fmt_virtual
 
 let fmt_private_virtual_flag c = function
   | {pv_priv= Some p; pv_virt= Some v} when Location.compare_start v p < 1 ->
-      fmt " "
-      $ Cmts.fmt c v @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c p @@ str "private"
+      opt_flag c ~f:fmt_virtual (Some v) $ opt_flag c ~f:fmt_private (Some p)
   | {pv_priv; pv_virt} ->
-      opt pv_priv (fun p -> fmt " " $ Cmts.fmt c p @@ str "private")
-      $ opt pv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
+      opt_flag c ~f:fmt_private pv_priv $ opt_flag c ~f:fmt_virtual pv_virt
 
 let virtual_or_override = function
   | Cfk_virtual _ -> noop
