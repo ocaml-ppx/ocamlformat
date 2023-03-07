@@ -9,11 +9,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type state = Enable | Disable of Location.t
+type 'a item =
+  | Structure : Extended_ast.structure item
+  | Signature : Extended_ast.signature item
+  | Use_file : Extended_ast.use_file item
 
 type 'a t =
-  | Structure : Extended_ast.structure t
-  | Signature : Extended_ast.signature t
-  | Use_file : Extended_ast.use_file t
+  { attr_loc: Location.t
+  ; chunk_loc: Location.t
+  ; state: [`Enable | `Disable]
+  ; items: 'a list }
 
-val split : 'a list t -> Conf.t -> 'a list -> (state * 'a list) list
+val split : 'a list item -> Conf.t -> 'a list -> 'a t list
