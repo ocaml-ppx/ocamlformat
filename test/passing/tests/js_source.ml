@@ -7642,3 +7642,5 @@ let bind t ~f =
          | Yield { value = a; state = s } ->
            Yield { value = a; state = Sequence { state = s; next }, rest }))
     ~init:(empty, t)
+
+let () = ((one_mississippi, two_mississippi, three_mississippi, four_mississippi) : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
