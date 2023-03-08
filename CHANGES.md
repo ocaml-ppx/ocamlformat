@@ -8,7 +8,7 @@
 
 ### Changes
 
-- JaneStreet profile: add extra parens around tuple with type annotation (#<PR_NUMBER>, @gpetiot)
+- JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
 
 ### New features
 
