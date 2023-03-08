@@ -8,7 +8,7 @@
 
 ### Changes
 
-- JaneStreet profile: module patterns with a module type constraint (`((module M) : (module S))`) are formatted using the short syntax (`(module M : S)`) (#<PR_NUMBER>, @gpetiot)
+- JaneStreet profile: module patterns with a module type constraint (`((module M) : (module S))`) are formatted using the short syntax (`(module M : S)`) (#2280, @gpetiot)
 
 ### New features
 
