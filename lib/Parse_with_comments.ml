@@ -110,8 +110,9 @@ let is_repl_block x =
 let parse_toplevel ?disable_w50 (conf : Conf.t) ~input_name ~source =
   let open Extended_ast in
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
+  let short_syntax = Poly.(conf.fmt_opts.short_syntax.v = `Always) in
   let parse_ast fg ~input_name s =
-    Parse.ast fg ~preserve_beginend ~input_name s
+    Parse.ast fg ~preserve_beginend ~short_syntax ~input_name s
   in
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
     Either.Second

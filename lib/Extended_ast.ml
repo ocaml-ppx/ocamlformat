@@ -42,7 +42,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let normalize_mapper ~preserve_beginend =
+  let normalize_mapper ~preserve_beginend ~short_syntax =
     let open Asttypes in
     let open Ast_mapper in
     let record_field m (f, t, v) =
@@ -82,6 +82,13 @@ module Parse = struct
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
+      | { ppat_desc=
+            Ppat_constraint
+              ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
+        ; _ } as p
+        when short_syntax ->
+          {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
@@ -122,8 +129,9 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
 
-  let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
-    map fg (normalize_mapper ~preserve_beginend)
+  let ast (type a) (fg : a t) ~preserve_beginend ~short_syntax ~input_name
+      str : a =
+    map fg (normalize_mapper ~preserve_beginend ~short_syntax)
     @@
     let lexbuf = Lexing.from_string str in
     Location.init lexbuf input_name ;
