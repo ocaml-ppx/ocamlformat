@@ -6,9 +6,12 @@
 
 ### Bug fixes
 
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, @Julow)
+
 ### Changes
 
-- JaneStreet profile: module patterns with a module type constraint (`((module M) : (module S))`) are formatted using the short syntax (`(module M : S)`) (#2280, @gpetiot)
+- JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
+- Module patterns with a module type constraint (`((module M) : (module S))`) are formatted using the short syntax (`(module M : S)`) (#2280, @gpetiot)
 
 ### New features
 

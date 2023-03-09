@@ -438,8 +438,8 @@ let removed_option ~names ~since ~msg =
 let update store ~config ~from:new_from ~name ~value ~inline =
   List.find_map store
     ~f:(fun
-         (Pack {names; parse; update; allow_inline; get_value; to_string; _})
-       ->
+      (Pack {names; parse; update; allow_inline; get_value; to_string; _})
+    ->
       if List.exists names ~f:(String.equal name) then
         if inline && not allow_inline then
           Some (Error (Error.Misplaced (name, value)))

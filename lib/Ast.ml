@@ -26,20 +26,28 @@ let ( init
     , register_reset
     , leading_nested_match_parens
     , parens_ite
-    , ocaml_version ) =
+    , ocaml_version
+    , ocp_indent_compat ) =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
   let ocaml_version = ref Ocaml_version.sys_version in
+  let ocp_indent_compat = ref false in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
     leading_nested_match_parens :=
       conf.fmt_opts.leading_nested_match_parens.v ;
     parens_ite := conf.fmt_opts.parens_ite.v ;
     ocaml_version := conf.opr_opts.ocaml_version.v ;
+    ocp_indent_compat := conf.fmt_opts.ocp_indent_compat.v ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens, parens_ite, ocaml_version)
+  ( init
+  , register
+  , leading_nested_match_parens
+  , parens_ite
+  , ocaml_version
+  , ocp_indent_compat )
 
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
@@ -2174,6 +2182,9 @@ end = struct
     | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}, _
       when idx == exp ->
         false
+    | Exp {pexp_desc= Pexp_constraint (e, _); _}, {pexp_desc= Pexp_tuple _; _}
+      when e == exp && !ocp_indent_compat ->
+        true
     | ( Exp
           { pexp_desc=
               Pexp_indexop_access
