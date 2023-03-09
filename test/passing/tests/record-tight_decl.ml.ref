@@ -126,3 +126,15 @@ let _ = {(*a*) x (*b*) : (*c*) t (*d*) :> (*e*) t (*f*) = (*g*) e (*h*)}
 type t = C of (*a*) {(*b*) x (*c*): (*d*) t (*e*)} (*f*)
 
 type t = C : (*a*) {(*b*) x (*c*): (*d*) t (*e*)} (*f*) -> t
+
+let _ = {x : t}
+
+let _ = {x : t :> t}
+
+let _ = {x :> t}
+
+let _ = {x : t :> t}
+
+let _ = {x : t :> t}
+
+let {x : t} = x
