@@ -9867,6 +9867,15 @@ let bind t ~f =
 ;;
 
 let () =
+  very_long_function_name
+    ~very_long_argument_label:(fun
+                                very_long_argument_name_one
+                                very_long_argument_name_two
+                                very_long_argument_name_three
+                                -> ())
+;;
+
+let () =
   ((one_mississippi, two_mississippi, three_mississippi, four_mississippi)
    : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
 ;;

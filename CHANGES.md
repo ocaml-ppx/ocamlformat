@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, @Julow)
+
 ### Changes
 
 - JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
