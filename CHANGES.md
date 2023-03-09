@@ -11,6 +11,7 @@
 ### Changes
 
 - JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
+- Module patterns with a module type constraint (`((module M) : (module S))`) are formatted using the short syntax (`(module M : S)`) (#2280, @gpetiot)
 
 ### New features
 

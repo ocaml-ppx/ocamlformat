@@ -82,6 +82,12 @@ module Parse = struct
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
+      | { ppat_desc=
+            Ppat_constraint
+              ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
+        ; _ } as p ->
+          {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
