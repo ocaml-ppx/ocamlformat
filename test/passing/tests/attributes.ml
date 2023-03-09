@@ -435,3 +435,5 @@ let _ = f ((1 : int) [@a])
 let _ = f ((1 : int) [@a]) ((1 : int) [@a])
 
 let _ = f ((((1 : int) [@a]) : (int[@b])) [@a]) ((1 : int) [@a])
+
+include [@foo] M [@boo]

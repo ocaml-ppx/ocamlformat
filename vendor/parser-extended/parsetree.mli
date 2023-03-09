@@ -997,7 +997,7 @@ and 'a include_infos =
     {
      pincl_mod: 'a;
      pincl_loc: Location.t;
-     pincl_attributes: attributes;
+     pincl_attributes: ext_attrs;
     }
 
 and include_description = module_type include_infos

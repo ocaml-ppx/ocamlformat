@@ -199,7 +199,8 @@ and [@foo] M : S = M
 
 module type%foo [@foo] S = S
 
-include%foo M [@@foo]
+include%foo [@foo] M
+
 open%foo M [@@foo]
 
 (* Signature items *)
@@ -222,7 +223,8 @@ module type S = sig
 
   module type%foo [@foo] S = S
 
-  include%foo M [@@foo]
+  include%foo [@foo] M
+
   open%foo M [@@foo]
   class%foo x : t [@@foo]
   class type%foo x = x [@@foo]

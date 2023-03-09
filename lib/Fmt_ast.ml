@@ -826,9 +826,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:space_break doc)
   @@ ( if List.is_empty atrs then Fn.id
-       else fun k ->
-         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
-     )
+     else fun k ->
+       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -920,10 +919,10 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | _ ->
             list rfs
               ( if
-                  in_type_declaration
-                  && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then force_break $ str "| "
-                else space_break $ str "| " )
+                in_type_declaration
+                && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
+              then force_break $ str "| "
+              else space_break $ str "| " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -2476,31 +2475,30 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let override = is_override flag in
       let outer_parens = has_attr && parens in
       let inner_parens = has_attr || parens in
-      pro
-      $ hovbox 0
-          (Params.Exp.wrap c.conf ~parens:outer_parens ~fits_breaks:false
-             ( hvbox 0
-                 (Params.Exp.wrap c.conf ~parens:inner_parens
-                    ~fits_breaks:false
-                    (vbox 0
-                       ( hvbox 0
-                           ( fmt_module_statement c ~attributes
-                               ~keyword:
-                                 ( hvbox 0
-                                     ( str "let" $ break 1 0
-                                     $ Cmts.fmt_before c popen_loc
-                                     $ fmt_or override (str "open!")
-                                         (str "open")
-                                     $ opt ext (fun _ ->
-                                           fmt_if override (str " ") )
-                                     $ fmt_extension_suffix c ext )
-                                 $ break 1 0 )
-                               (sub_mod ~ctx popen_expr)
-                           $ Cmts.fmt_after c popen_loc
-                           $ str " in" )
-                       $ force_break
-                       $ fmt_expression c (sub_exp ~ctx e0) ) ) )
-             $ fmt_atrs ) )
+      hovbox 0
+        (Params.Exp.wrap c.conf ~parens:outer_parens ~fits_breaks:false
+           ( hvbox 0
+               (Params.Exp.wrap c.conf ~parens:inner_parens
+                  ~fits_breaks:false
+                  (vbox 0
+                     ( hvbox 0
+                         ( fmt_module_statement c
+                             ~attributes:
+                               (Ast_helper.Attr.ext_attrs ~after:attributes
+                                  () )
+                             ~keyword:
+                               ( hvbox 0
+                                   ( str "let" $ break 1 0
+                                   $ Cmts.fmt_before c popen_loc
+                                   $ fmt_or override (str "open!") (str "open")
+                                   $ opt ext (fun _ -> fmt_if override " ")
+                                   $ fmt_extension_suffix c ext ))
+                             (sub_mod ~ctx popen_expr)
+                         $ Cmts.fmt_after c popen_loc
+                         $ str " in" )
+                     $ force_break
+                     $ fmt_expression c (sub_exp ~ctx e0) ) ) )
+           $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
     when Poly.(
            c.conf.fmt_opts.single_case.v = `Compact
@@ -3818,11 +3816,13 @@ and fmt_signature_item c ?ext {ast= si; _} =
         $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
         $ doc_after )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
-      update_config_maybe_disabled c pincl_loc pincl_attributes
+      update_config_maybe_disabled_attrs c pincl_loc pincl_attributes
       @@ fun c ->
-      let doc_before, doc_after, atrs =
+      let ext = pincl_attributes.attrs_extension in
+      let doc_before, doc_after, attrs_before, attrs_after =
         let force_before = not (Mty.is_simple pincl_mod) in
-        fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
+        fmt_docstring_around_item_attrs c ~force_before ~fit:true
+          pincl_attributes
       in
       let keyword, ({pro; psp; bdy; esp; epi; _} as blk) =
         let kwd = str "include" $ fmt_extension_suffix c ext in
@@ -3839,11 +3839,14 @@ and fmt_signature_item c ?ext {ast= si; _} =
         ( doc_before
         $ hvbox 0
             ( box
-                ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
+                ( hvbox 2
+                    ( keyword
+                    $ fmt_attributes c  ~pre:(Break (1, 0)) attrs_before
+                    $ opt pro (fun pro -> str " " $ pro) )
                 $ fmt_or (Option.is_some pro) psp (break 1 2)
                 $ bdy )
             $ esp $ fmt_opt epi
-            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
+            $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_modtypesubst mtd -> fmt_module_type_declaration ~eqty:":=" c ctx mtd
@@ -4106,18 +4109,23 @@ and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
 and fmt_module_statement c ~attributes ?keyword mod_expr =
   let blk = fmt_module_expr c mod_expr in
   let force_before = not (Mod.is_simple mod_expr.ast) in
-  let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~force_before ~fit:true c attributes
+  let doc_before, doc_after, attrs_before, attrs_after =
+    fmt_docstring_around_item_attrs ~force_before ~fit:true c attributes
   in
   let has_kwd = Option.is_some keyword in
   let kwd_and_pro = Option.is_some blk.pro && has_kwd in
   doc_before
   $ blk_box blk
       (hvbox_if (Option.is_none blk.pro) 2
-         ( hvbox_if kwd_and_pro 2 (fmt_opt keyword $ fmt_opt blk.pro)
+         ( hvbox_if kwd_and_pro 2
+             ( fmt_opt keyword
+             $ fmt_extension_suffix c attributes.attrs_extension
+             $ fmt_attributes c  ~pre:(Break (1, 0)) attrs_before
+             $ space_break
+             $ fmt_opt blk.pro )
          $ blk.psp $ blk.bdy ) )
   $ blk.esp $ fmt_opt blk.epi
-  $ fmt_item_attributes c ~pre:Blank atrs
+  $ fmt_item_attributes c ~pre:Blank attrs_after
   $ doc_after
 
 and fmt_with_constraint c ctx ~pre = function
@@ -4411,11 +4419,9 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       let pre = str "exception" $ fmt_extension_suffix c ext $ space_break in
       hvbox 2 ~name:"exn" (fmt_type_exception ~pre c ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
-      update_config_maybe_disabled c pincl_loc attributes
+      update_config_maybe_disabled_attrs c pincl_loc attributes
       @@ fun c ->
-      let keyword =
-        str "include" $ fmt_extension_suffix c ext $ space_break
-      in
+      let keyword = str "include" in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx pincl_mod)
   | Pstr_module mb ->
       fmt_module_binding c ~rec_flag:false ~first:true (sub_mb ~ctx mb)
@@ -4430,8 +4436,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
           ( str "open!"
           $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
           (str "open" $ fmt_extension_suffix c ext)
-        $ space_break
       in
+      let attributes = Ast_helper.Attr.ext_attrs ~after:attributes () in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
   | Pstr_recmodule mbs ->
@@ -4503,7 +4509,7 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then str "\n" $ cut_break
-           else break 1000 indent_after_in )
+         else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 

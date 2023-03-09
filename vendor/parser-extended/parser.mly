@@ -78,8 +78,6 @@ let pstr_type ((nr, ext), tys) =
   (Pstr_type (nr, tys), ext)
 let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
-let pstr_include (body, ext) =
-  (Pstr_include body, ext)
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
@@ -92,8 +90,6 @@ let psig_typesubst ((nr, ext), tys) =
   (Psig_typesubst tys, ext)
 let psig_exception (te, ext) =
   (Psig_exception te, ext)
-let psig_include (body, ext) =
-  (Psig_include body, ext)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -1355,6 +1351,8 @@ structure_item:
         { Pstr_recmodule $1 }
     | module_type_declaration
         { Pstr_modtype $1 }
+    | include_statement(module_expr)
+        { Pstr_include $1 }
     )
   | wrap_mkstr_ext(
       primitive_declaration
@@ -1373,8 +1371,6 @@ structure_item:
         { let (ext, l) = $1 in (Pstr_class l, ext) }
     | class_type_declarations
         { let (ext, l) = $1 in (Pstr_class_type l, ext) }
-    | include_statement(module_expr)
-        { pstr_include $1 }
     )
     { $1 }
 ;
@@ -1389,6 +1385,17 @@ structure_item:
     let docs = symbol_docs $sloc in
     let attrs = Attr.ext_attrs ?ext ~before ~after () in 
     body ~loc ~attrs ~docs ~text:None }
+
+%inline ext_attrs_no_text(kw, body):
+  kw
+  ext = ext 
+  before = attributes
+  body = body
+  after = post_item_attributes
+  { let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    let attrs = Attr.ext_attrs ?ext ~before ~after () in 
+    body ~loc ~attrs ~docs }
 
 
 %inline ext_attrs_no_ext(kw, body):
@@ -1482,18 +1489,12 @@ module_binding_body:
 (* An [include] statement can appear in a structure or in a signature,
    which is why this definition is parameterized. *)
 %inline include_statement(thing):
-  INCLUDE
-  ext = ext
-  attrs1 = attributes
-  thing = thing
-  attrs2 = post_item_attributes
-  {
-    let attrs = attrs1 @ attrs2 in
-    let loc = make_loc $sloc in
-    let docs = symbol_docs $sloc in
-    Incl.mk thing ~attrs ~loc ~docs, ext
-  }
-;
+  ext_attrs_no_text (
+    INCLUDE,
+    thing = thing
+    { Incl.mk_exh thing } )
+  { $1 }
+  ;
 
 (* A module type declaration. *)
 module_type_declaration:
@@ -1635,6 +1636,8 @@ signature_item:
         { Psig_modtype $1 }
     | module_type_subst
         { Psig_modtypesubst $1 }
+    | include_statement(module_type)
+        { Psig_include $1 }
     )
     { $1 }
   | wrap_mksig_ext(
@@ -1652,8 +1655,7 @@ signature_item:
         { psig_exception $1 }
     | open_description
         { let (body, ext) = $1 in (Psig_open body, ext) }
-    | include_statement(module_type)
-        { psig_include $1 }
+
     | class_descriptions
         { let (ext, l) = $1 in (Psig_class l, ext) }
     | class_type_declarations
