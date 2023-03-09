@@ -10,6 +10,8 @@
 
 ### Changes
 
+- JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
+
 ### New features
 
 ## 0.25.1 (2023-03-06)

@@ -7650,3 +7650,5 @@ let () =
                                 very_long_argument_name_two
                                 very_long_argument_name_three
                               -> () )
+
+let () = ((one_mississippi, two_mississippi, three_mississippi, four_mississippi) : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
