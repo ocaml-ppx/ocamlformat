@@ -104,7 +104,6 @@ type fmt_opts =
   ; parse_toplevel_phrases: bool elt
   ; sequence_blank_line: [`Compact | `Preserve_one] elt
   ; sequence_style: [`Before | `Separator | `Terminator] elt
-  ; short_syntax: [`Always | `Auto] elt
   ; single_case: [`Compact | `Sparse] elt
   ; space_around_arrays: bool elt
   ; space_around_lists: bool elt

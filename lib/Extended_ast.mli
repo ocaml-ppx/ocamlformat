@@ -29,12 +29,7 @@ type 'a t =
 
 module Parse : sig
   val ast :
-       'a t
-    -> preserve_beginend:bool
-    -> short_syntax:bool
-    -> input_name:string
-    -> string
-    -> 'a
+    'a t -> preserve_beginend:bool -> input_name:string -> string -> 'a
 end
 
 val equal_core_type : core_type -> core_type -> bool

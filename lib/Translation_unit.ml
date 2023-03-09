@@ -340,10 +340,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       let preserve_beginend =
         Poly.(conf.fmt_opts.exp_grouping.v = `Preserve)
       in
-      let short_syntax = Poly.(conf.fmt_opts.short_syntax.v = `Always) in
-      let parse_ast =
-        Extended_ast.Parse.ast ~preserve_beginend ~short_syntax
-      in
+      let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
       let+ t_new =
         match
           parse parse_ast ~disable_w50:true fg conf ~input_name ~source:fmted
@@ -467,9 +464,8 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
-  let short_syntax = Poly.(conf.fmt_opts.short_syntax.v = `Always) in
   let line_endings = conf.fmt_opts.line_endings.v in
-  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend ~short_syntax in
+  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let+ parsed =
     parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
   in
@@ -497,8 +493,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   let lines = String.split_lines source in
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
-  let short_syntax = Poly.(conf.fmt_opts.short_syntax.v = `Always) in
-  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend ~short_syntax in
+  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let parse_or_recover ~src =
     match parse_result parse_ast fg conf ~source:src ~input_name with
     | Ok parsed -> Ok parsed
