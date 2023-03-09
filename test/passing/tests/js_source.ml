@@ -7642,3 +7642,11 @@ let bind t ~f =
          | Yield { value = a; state = s } ->
            Yield { value = a; state = Sequence { state = s; next }, rest }))
     ~init:(empty, t)
+
+let () =
+  very_long_function_name
+    ~very_long_argument_label:(fun
+                                very_long_argument_name_one
+                                very_long_argument_name_two
+                                very_long_argument_name_three
+                              -> () )

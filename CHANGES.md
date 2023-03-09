@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, @Julow)
+
 ### Changes
 
 ### New features
