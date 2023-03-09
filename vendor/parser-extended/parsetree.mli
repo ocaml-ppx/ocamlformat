@@ -972,7 +972,7 @@ and 'a open_infos =
      popen_expr: 'a;
      popen_override: override_flag;
      popen_loc: Location.t;
-     popen_attributes: attributes;
+     popen_attributes: ext_attrs;
     }
 (** Values of type ['a open_infos] represents:
     - [open! X] when {{!open_infos.popen_override}[popen_override]}

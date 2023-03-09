@@ -853,7 +853,7 @@ let default_mapper =
          Opn.mk (this.module_expr this popen_expr)
            ~override:popen_override
            ~loc:(this.location this popen_loc)
-           ~attrs:(this.attributes this popen_attributes)
+           ~attrs:(this.ext_attrs this popen_attributes)
       );
 
     open_description =
@@ -861,7 +861,7 @@ let default_mapper =
          Opn.mk (map_loc this popen_expr)
            ~override:popen_override
            ~loc:(this.location this popen_loc)
-           ~attrs:(this.attributes this popen_attributes)
+           ~attrs:(this.ext_attrs this popen_attributes)
       );
 
     include_description =

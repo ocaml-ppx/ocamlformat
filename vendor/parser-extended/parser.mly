@@ -1353,6 +1353,8 @@ structure_item:
         { Pstr_modtype $1 }
     | include_statement(module_expr)
         { Pstr_include $1 }
+    | open_declaration
+        { Pstr_open $1 }
     )
   | wrap_mkstr_ext(
       primitive_declaration
@@ -1365,8 +1367,6 @@ structure_item:
         { pstr_typext $1 }
     | str_exception_declaration
         { pstr_exception $1 }
-    | open_declaration
-        { let (body, ext) = $1 in (Pstr_open body, ext) }
     | class_declarations
         { let (ext, l) = $1 in (Pstr_class l, ext) }
     | class_type_declarations
@@ -1517,29 +1517,26 @@ module_type_declaration:
 (* Opens. *)
 
 open_declaration:
-  OPEN
-  override = override_flag
-  ext = ext
-  attrs1 = attributes
-  me = module_expr
-  attrs2 = post_item_attributes
-  {
-    let attrs = attrs1 @ attrs2 in
-    let loc = make_loc $sloc in
-    let docs = symbol_docs $sloc in
-    Opn.mk me ~override ~attrs ~loc ~docs, ext
-  }
+    OPEN
+    override = override_flag
+    ext = ext 
+    before = attributes
+    me = module_expr
+    after = post_item_attributes
+    { let attrs = Attr.ext_attrs ?ext ~before ~after () in 
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      Opn.mk me ~override ~loc ~attrs ~docs }
 ;
 
 open_description:
   OPEN
   override = override_flag
   ext = ext
-  attrs1 = attributes
+  before = attributes
   id = mkrhs(mod_ext_longident)
-  attrs2 = post_item_attributes
-  {
-    let attrs = attrs1 @ attrs2 in
+  after = post_item_attributes
+  { let attrs = Attr.ext_attrs ?ext ~before ~after () in 
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     Opn.mk id ~override ~attrs ~loc ~docs, ext

@@ -2475,6 +2475,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let override = is_override flag in
       let outer_parens = has_attr && parens in
       let inner_parens = has_attr || parens in
+      (* [let open] extensions are external for now. *)
+      (* let ext = attributes.attrs_extension in *)
       hovbox 0
         (Params.Exp.wrap c.conf ~parens:outer_parens ~fits_breaks:false
            ( hvbox 0
@@ -2482,10 +2484,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   ~fits_breaks:false
                   (vbox 0
                      ( hvbox 0
-                         ( fmt_module_statement c
-                             ~attributes:
-                               (Ast_helper.Attr.ext_attrs ~after:attributes
-                                  () )
+                         ( fmt_module_statement c ~attributes
                              ~keyword:
                                ( hvbox 0
                                    ( str "let" $ break 1 0
@@ -3841,7 +3840,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
             ( box
                 ( hvbox 2
                     ( keyword
-                    $ fmt_attributes c  ~pre:(Break (1, 0)) attrs_before
+                    $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
                     $ opt pro (fun pro -> str " " $ pro) )
                 $ fmt_or (Option.is_some pro) psp (break 1 2)
                 $ bdy )
@@ -3855,7 +3854,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         (fmt_module_declaration c ~rec_flag:false ~first:true
            (sub_md ~ctx md) )
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
-  | Psig_open od -> fmt_open_description ?ext c ~kw_attributes:[] od
+  | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds fmt_module_declaration (fun x -> Md x) sub_md
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
@@ -4082,12 +4081,13 @@ and fmt_module_type_declaration ?eqty c ctx pmtd =
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     ~attrs
 
-and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
+and fmt_open_description c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
-  update_config_maybe_disabled c popen_loc popen_attributes
+  update_config_maybe_disabled_attrs c popen_loc popen_attributes
   @@ fun c ->
-  let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~fit:true c popen_attributes
+  let ext = popen_attributes.attrs_extension in
+  let doc_before, doc_after, attrs_before, attrs_after =
+    fmt_docstring_around_item_attrs ~fit:true c popen_attributes
   in
   let keyword =
     fmt_or
@@ -4100,9 +4100,10 @@ and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
     ( doc_before $ keyword
     $ Cmts.fmt c popen_loc
         ( fmt_attributes c kw_attributes
+        $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
         $ str " "
         $ fmt_longident_loc c popen_lid
-        $ fmt_item_attributes c ~pre:Blank atrs )
+        $ fmt_item_attributes c ~pre:Blank attrs_after )
     $ doc_after )
 
 (** TODO: merge with `fmt_module_declaration` *)
@@ -4120,7 +4121,7 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
          ( hvbox_if kwd_and_pro 2
              ( fmt_opt keyword
              $ fmt_extension_suffix c attributes.attrs_extension
-             $ fmt_attributes c  ~pre:(Break (1, 0)) attrs_before
+             $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
              $ space_break
              $ fmt_opt blk.pro )
          $ blk.psp $ blk.bdy ) )
@@ -4428,16 +4429,16 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   | Pstr_open
       {popen_expr; popen_override; popen_attributes= attributes; popen_loc}
     ->
-      update_config_maybe_disabled c popen_loc attributes
+      update_config_maybe_disabled_attrs c popen_loc attributes
       @@ fun c ->
       let keyword =
         fmt_or
           (is_override popen_override)
           ( str "open!"
+          $ fmt_if (Option.is_some attributes.attrs_extension)  "@ "
           $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
           (str "open" $ fmt_extension_suffix c ext)
       in
-      let attributes = Ast_helper.Attr.ext_attrs ~after:attributes () in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
   | Pstr_recmodule mbs ->

@@ -331,7 +331,6 @@ module Structure_item = struct
      |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
-     |Pstr_open {popen_attributes= atrs; _}
      |Pstr_extension (_, atrs)
      |Pstr_class_type ({pci_attributes= atrs; _} :: _)
      |Pstr_class ({pci_attributes= atrs; _} :: _) ->
@@ -341,7 +340,9 @@ module Structure_item = struct
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
         ; _ } ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Pstr_modtype {pmtd_ext_attrs; _} -> Ext_attrs.has_doc pmtd_ext_attrs
+        | Pstr_open
+        {popen_attributes= ea; _}
+    | Pstr_modtype {pmtd_ext_attrs=ea; _} -> Ext_attrs.has_doc ea
     | Pstr_module
         {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
      |Pstr_include
@@ -425,7 +426,6 @@ module Signature_item = struct
      |Psig_type (_, {ptype_attributes= atrs; _} :: _)
      |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
      |Psig_typext {ptyext_attributes= atrs; _}
-     |Psig_open {popen_attributes= atrs; _}
      |Psig_extension (_, atrs)
      |Psig_class_type ({pci_attributes= atrs; _} :: _)
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
@@ -438,8 +438,12 @@ module Signature_item = struct
     | Psig_exception
         { ptyexn_attributes= atrs1
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ } ->
+        ; _ }
+     |Psig_open
+        {popen_attributes= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
+      ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
+    (* three attribute list *)
     | Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
      |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
