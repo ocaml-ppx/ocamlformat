@@ -703,6 +703,10 @@ module Toplevel = struct
     within $ after
 end
 
+let clear_remaining_inside t loc =
+  if t.debug then
+    update_remaining t ~f:(Set.filter ~f:(Fn.non (Location.contains loc)))
+
 let drop_inside t loc =
   let clear pos =
     update_cmts t pos
@@ -710,7 +714,10 @@ let drop_inside t loc =
         (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
              not (Location.contains loc cmt_loc) ) )
   in
-  clear `Before ; clear `Within ; clear `After
+  clear `Before ;
+  clear `Within ;
+  clear `After ;
+  clear_remaining_inside t loc
 
 let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
