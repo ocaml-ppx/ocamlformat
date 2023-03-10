@@ -20,4 +20,5 @@ type 'a t =
   ; state: [`Enable | `Disable]
   ; items: 'a list }
 
-val split : 'a list item -> Conf.t -> 'a list -> 'a t list
+val split :
+  state:[`Enable | `Disable] -> 'a list item -> 'a list -> 'a t list

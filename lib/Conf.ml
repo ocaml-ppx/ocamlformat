@@ -1523,29 +1523,37 @@ let parse_line config ?(version_check = config.opr_opts.version_check.v)
 
 open Parsetree
 
-let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
-  let result =
-    match txt with
-    | "ocamlformat" -> (
-      match attr_payload with
-      | PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( { pexp_desc=
-                        Pexp_constant
-                          {pconst_desc= Pconst_string (str, strloc, None); _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , [] )
-            ; _ } ] ->
-          parse_line ~from:(`Attribute strloc) c str
-          |> Result.map_error ~f:Error.to_string
-      | _ -> Error "Invalid format: String expected" )
-    | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
-        Error
+let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
+  match txt with
+  | "ocamlformat" -> (
+    match attr_payload with
+    | PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ( { pexp_desc=
+                      Pexp_constant
+                        {pconst_desc= Pconst_string (str, strloc, None); _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , [] )
+          ; _ } ] ->
+        Ok (str, strloc)
+    | _ -> Error (`Msg "Invalid format: String expected") )
+  | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
+      Error
+        (`Msg
           (Format.sprintf "Invalid format: Unknown suffix %S"
-             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) )
-    | _ -> Ok c
+             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+  | _ -> Error `Ignore
+
+let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =
+  let result =
+    match parse_attr attr with
+    | Ok (str, strloc) ->
+        parse_line ~from:(`Attribute strloc) c str
+        |> Result.map_error ~f:Error.to_string
+    | Error (`Msg msg) -> Error msg
+    | Error `Ignore -> Ok c
   in
   match result with
   | Ok conf -> conf
@@ -1564,6 +1572,12 @@ let update_state c state =
     {c.opr_opts with disable= {c.opr_opts.disable with v= disable}}
   in
   {c with opr_opts}
+
+let parse_state_attr attr =
+  match parse_attr attr with
+  | Ok ("enable", _) -> Some `Enable
+  | Ok ("disable", _) -> Some `Disable
+  | _ -> None
 
 let print_config = Decl.print_config options
 

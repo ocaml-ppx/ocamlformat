@@ -4361,7 +4361,9 @@ module Chunk = struct
     List.iter locs ~f:(Cmts.drop_inside c.cmts) ;
     output
 
-  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c.conf l
+  let split_and_fmt fg c ctx l =
+    let state = if c.conf.opr_opts.disable.v then `Disable else `Enable in
+    fmt fg c ctx @@ split fg l ~state
 end
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
