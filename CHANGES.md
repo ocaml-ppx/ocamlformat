@@ -10,9 +10,9 @@
 
 ### Changes
 
-- JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
 - Restore short form formatting of module patterns with a module type constraint (`((module M) : (module S))` formatted as `(module M : S)`) (#2280, @gpetiot)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, @gpetiot, @Julow)
 
 ### New features
 
