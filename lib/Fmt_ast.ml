@@ -341,37 +341,38 @@ let fmt_direction_flag = function
   | Upto -> fmt "@ to "
   | Downto -> fmt "@ downto "
 
+let fmt_private ?(pro = fmt "@ ") c loc =
+  pro $ hvbox 0 @@ Cmts.fmt c loc @@ str "private"
+
+let fmt_virtual ?(pro = fmt "@ ") c loc =
+  pro $ hvbox 0 @@ Cmts.fmt c loc @@ str "virtual"
+
+let fmt_mutable ?(pro = fmt "@ ") c loc =
+  pro $ hvbox 0 @@ Cmts.fmt c loc @@ str "mutable"
+
 let fmt_private_flag c = function
-  | Private loc -> fmt " " $ Cmts.fmt c loc @@ str "private"
+  | Private loc -> fmt_private c loc
   | Public -> noop
 
 let fmt_virtual_flag c = function
-  | Virtual loc -> fmt " " $ Cmts.fmt c loc @@ str "virtual"
+  | Virtual loc -> fmt_virtual c loc
   | Concrete -> noop
 
 let fmt_mutable_flag c = function
-  | Mutable loc -> Cmts.fmt c loc @@ str "mutable" $ fmt " "
+  | Mutable loc -> fmt_mutable ~pro:noop c loc $ fmt "@ "
   | Immutable -> noop
 
 let fmt_mutable_virtual_flag c = function
   | {mv_mut= Some m; mv_virt= Some v} when Location.compare_start v m < 1 ->
-      fmt " "
-      $ Cmts.fmt c v @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c m @@ str "mutable"
+      fmt_virtual c v $ fmt_mutable c m
   | {mv_mut; mv_virt} ->
-      opt mv_mut (fun m -> fmt " " $ Cmts.fmt c m @@ str "mutable")
-      $ opt mv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
+      opt mv_mut (fmt_mutable c) $ opt mv_virt (fmt_virtual c)
 
 let fmt_private_virtual_flag c = function
   | {pv_priv= Some p; pv_virt= Some v} when Location.compare_start v p < 1 ->
-      fmt " "
-      $ Cmts.fmt c v @@ str "virtual"
-      $ fmt " "
-      $ Cmts.fmt c p @@ str "private"
+      fmt_virtual c v $ fmt_private c p
   | {pv_priv; pv_virt} ->
-      opt pv_priv (fun p -> fmt " " $ Cmts.fmt c p @@ str "private")
-      $ opt pv_virt (fun v -> fmt " " $ Cmts.fmt c v @@ str "virtual")
+      opt pv_priv (fmt_private c) $ opt pv_virt (fmt_virtual c)
 
 let virtual_or_override = function
   | Cfk_virtual _ -> noop

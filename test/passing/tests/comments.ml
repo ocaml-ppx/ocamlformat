@@ -307,3 +307,7 @@ let _ = (*x*)!(*a*) (*b*) x (*c*) y
 let _ = f ( (*x*)!(*a*) (*b*) x (*c*) y ) y
 
 type a = b (* a *) as (* b *) 'c (* c *)
+
+type t = { (* comment before mutable *) mutable
+ (* really long comment that doesn't fit on the same line as other stuff *)
+ x : int }
