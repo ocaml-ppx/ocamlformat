@@ -2182,7 +2182,8 @@ end = struct
     | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}, _
       when idx == exp ->
         false
-    | Exp {pexp_desc= Pexp_constraint (e, _); _}, {pexp_desc= Pexp_tuple _; _}
+    | ( Exp {pexp_desc= Pexp_constraint (e, _); _}
+      , {pexp_desc= Pexp_tuple _ | Pexp_match _ | Pexp_try _; _} )
       when e == exp && !ocp_indent_compat ->
         true
     | ( Exp

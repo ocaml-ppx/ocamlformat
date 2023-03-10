@@ -9877,8 +9877,8 @@ let () =
 ;;
 
 let _ =
-  (match foo with
-   | Bar -> bar
-   | Baz -> baz
+  ((match foo with
+    | Bar -> bar
+    | Baz -> baz)
     : string)
 ;;

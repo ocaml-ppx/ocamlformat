@@ -313,7 +313,18 @@ module Let_binding = struct
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                 ~after:exp.pexp_loc ;
-              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
+              let typ_ctx = Exp xbody.ast in
+              let exp_ctx =
+                (* The type constraint is moved to the pattern, so we need to
+                   replace the context from [Pexp_constraint] to [Pexp_fun].
+                   This won't be necessary once the normalization is moved to
+                   [Extended_ast]. *)
+                let pat = Ast_helper.Pat.any () in
+                Exp (Ast_helper.Exp.fun_ Nolabel None pat exp)
+              in
+              ( xpat
+              , `Other (xargs, sub_typ ~ctx:typ_ctx typ)
+              , sub_exp ~ctx:exp_ctx exp )
           (* The type constraint is always printed before the declaration for
              functions, for other value bindings we preserve its position. *)
           | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
