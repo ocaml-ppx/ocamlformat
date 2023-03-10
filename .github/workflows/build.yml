@@ -36,3 +36,10 @@ jobs:
 
       - name: Check help files
         run: opam exec -- dune build @help --auto-promote
+
+      - name: Upload binary
+        if: ${{ matrix.platform.name == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ocamlformat-${{ matrix.platform.name }}-${{ matrix.platform.target_arch }}
+          path: _build/install/default/bin/ocamlformat
