@@ -23,6 +23,8 @@ val update_value : t -> name:string -> value:string -> (t, Error.t) Result.t
 
 val update_state : t -> [`Enable | `Disable] -> t
 
+val parse_state_attr : Parsetree.attribute -> [`Enable | `Disable] option
+
 val parse_line :
      t
   -> ?version_check:bool

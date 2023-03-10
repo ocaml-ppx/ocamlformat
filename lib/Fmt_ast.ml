@@ -4324,43 +4324,46 @@ let fmt_repl_file c _ itms =
 module Chunk = struct
   open Chunk
 
-  let fmt_item (type a) (fg : a list t) : c -> Ast.t -> a list -> Fmt.t =
+  let fmt_item (type a) (fg : a list item) : c -> Ast.t -> a list -> Fmt.t =
     match fg with
     | Structure -> fmt_structure
     | Signature -> fmt_signature
     | Use_file -> fmt_toplevel ?force_semisemi:None
 
-  let loc_end (type a) (fg : a list t) (l : a list) =
-    match fg with
-    | Structure -> (List.last_exn l).pstr_loc.loc_end
-    | Signature -> (List.last_exn l).psig_loc.loc_end
-    | Use_file ->
-        let item =
-          match List.last_exn l with
-          | Ptop_def x -> `Item (List.last_exn x)
-          | Ptop_dir x -> `Directive x
-        in
-        (Ast.location (Tli item)).loc_end
-
   let update_conf c state = {c with conf= Conf.update_state c.conf state}
 
   let fmt fg c ctx chunks =
-    List.foldi chunks ~init:(c, noop) ~f:(fun i (c, output) -> function
-      | Disable item_loc, lx ->
-          let c = update_conf c `Disable in
-          let loc_end = loc_end fg lx in
-          let loc = Location.{item_loc with loc_end} in
-          ( c
-          , output
-            $ Cmts.fmt_before c item_loc ~eol:(fmt "\n@;<1000 0>")
-            $ fmt_if (i > 0) "\n@;<1000 0>"
-            $ str (String.strip (Source.string_at c.source loc)) )
-      | Enable, lx ->
-          let c = update_conf c `Enable in
-          (c, output $ fmt_if (i > 0) "@;<1000 0>" $ fmt_item fg c ctx lx) )
-    |> snd
+    List.foldi chunks ~init:(c, noop, [])
+      ~f:(fun i (c, output, locs) chunk ->
+        let c = update_conf c chunk.state in
+        let output, locs =
+          match chunk.state with
+          | `Disable ->
+              let output =
+                output
+                $ Cmts.fmt_before c chunk.attr_loc ~eol:(fmt "\n@;<1000 0>")
+                $ fmt_if (i > 0) "\n@;<1000 0>"
+                $ str
+                    (String.strip
+                       (Source.string_at c.source chunk.chunk_loc) )
+              in
+              (output, chunk.chunk_loc :: locs)
+          | `Enable ->
+              let output =
+                output
+                $ fmt_if (i > 0) "@;<1000 0>"
+                $ fmt_item fg c ctx chunk.items
+              in
+              (output, locs)
+        in
+        (c, output, locs) )
+    |> fun ((_ : c), output, locs) ->
+    List.iter locs ~f:(Cmts.drop_inside c.cmts) ;
+    output
 
-  let split_and_fmt fg c ctx l = fmt fg c ctx @@ split fg c.conf l
+  let split_and_fmt fg c ctx l =
+    let state = if c.conf.opr_opts.disable.v then `Disable else `Enable in
+    fmt fg c ctx @@ split fg l ~state
 end
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
