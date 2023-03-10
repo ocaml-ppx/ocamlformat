@@ -11,11 +11,14 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-n] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
 # the base branch is the merge-base between the test branch and main.
 # The default value for the test branch is HEAD.
+#
+# If -n is passed, values of -a and -b are paths to ocamlformat binaries
+# instead of revs.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
@@ -29,45 +32,66 @@ set -e
 
 arg_a=
 arg_b=
-while getopts "a:b:" opt; do
+arg_n=0
+while getopts "a:b:n" opt; do
   case "$opt" in
     a) arg_a=$OPTARG ;;
     b) arg_b=$OPTARG ;;
+    n) arg_n=1 ;;
   esac
 done
 shift $((OPTIND-1))
-
 opts_a=$1
 opts_b=${2-$opts_a}
 
-rev_b=$(git rev-parse "${arg_b:-HEAD}")
-rev_a=$(git rev-parse "${arg_a:-$(git merge-base main "$rev_b")}")
-
-if [[ "$rev_a" = "$rev_b" ]]; then
-  echo "The base branch is the same as the branch to test ($rev_a)"
-  if [[ "$opts_a" = "$opts_b" ]]; then
-      exit 1
-  fi
-fi
-
-# First arg is git rev others are passed to make -C test-extra
-# Env: OCAMLFORMAT
-run_in_worktree ()
+# Build a specific version of ocamlformat and copy the binary.
+# Arg: rev dest
+build_version ()
 {
+  local rev=$1 dest=$2
   local tmp=`mktemp -d`
-  echo "Building $1 in $tmp"
-  git worktree add --detach "$tmp" "$1"
-  shift
+  echo "Building $rev in $tmp"
+  git worktree add --detach "$tmp" "$rev"
   ( cd "$tmp"
-    dune build -p ocamlformat
+    dune build @install
     dune install --prefix=dist ocamlformat &>/dev/null )
-  local exe="$tmp/dist/bin/ocamlformat"
-  echo "Built $exe"
-  make -C test-extra "OCAMLFORMAT_EXE=$exe" "$@"
+  cp "$tmp/dist/bin/ocamlformat" "$dest"
   git worktree remove --force "$tmp"
 }
 
+if [[ $arg_n = 0 ]]; then
+  # Build two versions of ocamlformat in temporary directories
+
+  rev_b=$(git rev-parse "${arg_b:-HEAD}")
+  rev_a=$(git rev-parse "${arg_a:-$(git merge-base main "$rev_b")}")
+
+  if [[ "$rev_a" = "$rev_b" ]]; then
+    echo "The base branch is the same as the branch to test ($rev_a)" >&2
+    if [[ "$opts_a" = "$opts_b" ]]; then
+        exit 1
+    fi
+  fi
+
+  exe_dir=`mktemp -d`
+  trap 'rm -r "$exe_dir"' EXIT
+
+  exe_a="$exe_dir/a"
+  exe_b="$exe_dir/b"
+  build_version "$rev_a" "$exe_a"
+  build_version "$rev_b" "$exe_b"
+
+else
+  # Two versions of ocamlformat are provided
+
+  if [[ -n $arg_a ]] || [[ -n $arg_b ]]; then
+    echo "-a and -b are mandatory when -n is passed." >&2
+    exit 1
+  fi
+  exe_a=$arg_a
+  exe_b=$arg_b
+fi
+
 make -C test-extra test_setup test_unstage test_clean test_pull
 
-OCAMLFORMAT="$opts_a" run_in_worktree "$rev_a" test test_stage
-OCAMLFORMAT="$opts_b" run_in_worktree "$rev_b" test test_diff
+OCAMLFORMAT="$opts_a" make -C test-extra "OCAMLFORMAT_EXE=$exe_a" test test_stage
+OCAMLFORMAT="$opts_b" make -C test-extra "OCAMLFORMAT_EXE=$exe_b" test test_diff
