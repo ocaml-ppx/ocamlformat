@@ -87,7 +87,8 @@ let extend_end_loc ~last_loc chunk =
   let chunk_loc = {chunk.chunk_loc with loc_end} in
   {chunk with chunk_loc}
 
-(* Update the [chunk_loc] of each chunk by using the loc of the following chunk.  *)
+(* Update the [chunk_loc] of each chunk by using the loc of the following
+   chunk. *)
 let extend_end_locs fg l =
   match List.rev l with
   | [] -> []
