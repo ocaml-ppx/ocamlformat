@@ -5049,17 +5049,13 @@ module B' = B
 class b : B.a =
   object
     method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
-
-    method a : 'a. 'a M.s -> 'a =
-      fun (type a) ((module X) : (module M.S with type a = a)) -> X.v
+    method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
   end
 
 class b' : B.a =
   object
     method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
-
-    method a : 'a. 'a M'.s -> 'a =
-      fun (type a) ((module X) : (module M'.S with type a = a)) -> X.v
+    method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
   end
 
 module type FOO = sig
@@ -9864,4 +9860,18 @@ let bind t ~f =
          | Yield { value = a; state = s } ->
            Yield { value = a; state = Sequence { state = s; next }, rest }))
     ~init:(empty, t)
+;;
+
+let () =
+  very_long_function_name
+    ~very_long_argument_label:(fun
+      very_long_argument_name_one
+      very_long_argument_name_two
+      very_long_argument_name_three
+    -> ())
+;;
+
+let () =
+  ((one_mississippi, two_mississippi, three_mississippi, four_mississippi)
+    : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
 ;;

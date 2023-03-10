@@ -4811,7 +4811,7 @@ class b : B.a =
       fun (type a) (module X : M.S with type a = a) -> X.v
 
     method a : 'a. 'a M.s -> 'a =
-      fun (type a) ((module X) : (module M.S with type a = a)) -> X.v
+      fun (type a) (module X : M.S with type a = a) -> X.v
   end
 
 class b' : B.a =
@@ -4820,7 +4820,7 @@ class b' : B.a =
       fun (type a) (module X : M'.S with type a = a) -> X.v
 
     method a : 'a. 'a M'.s -> 'a =
-      fun (type a) ((module X) : (module M'.S with type a = a)) -> X.v
+      fun (type a) (module X : M'.S with type a = a) -> X.v
   end
 
 module type FOO = sig

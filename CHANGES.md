@@ -7,8 +7,13 @@
 ### Bug fixes
 
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, @Julow)
 
 ### Changes
+
+- JaneStreet profile: add extra parens around tuple with type annotation (#2281, @gpetiot)
+- Restore short form formatting of module patterns with a module type constraint (`((module M) : (module S))` formatted as `(module M : S)`) (#2280, @gpetiot)
+- Restore short form formatting of record field aliases (#2282, @gpetiot)
 
 ### New features
 
