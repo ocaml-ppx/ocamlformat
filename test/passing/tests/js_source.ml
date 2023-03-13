@@ -7652,3 +7652,6 @@ let () =
                               -> () )
 
 let () = ((one_mississippi, two_mississippi, three_mississippi, four_mississippi) : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
+
+let _ = ((match foo with | Bar -> bar | Baz -> baz) : string)
+let _ = ((match foo with | Bar -> bar | Baz -> baz) :> string)
