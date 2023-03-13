@@ -9878,8 +9878,8 @@ let () =
 
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun (_ :
-                                         (ccccccccccccc * ddddddddddddddddddddddddddddd)
-                                         eeee) -> FFFFFFFFF gg)
+    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun
+      (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee)
+    -> FFFFFFFFF gg)
     ~h
 ;;

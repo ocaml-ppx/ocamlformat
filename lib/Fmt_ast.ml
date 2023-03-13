@@ -1358,6 +1358,30 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
                ~pro:(fmt_label lbl ":@;<0 2>")
                ~box ?epi ?parens xarg )
         $ cmts_after )
+  | (Labelled _ | Optional _), Pexp_fun _ ->
+      (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
+      let cmt_before = Cmts.fmt_before c arg.pexp_loc in
+      let xargs, xbody = Sugar.fun_ c.cmts xarg in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
+      let body =
+        let box =
+          match xbody.ast.pexp_desc with
+          | Pexp_fun _ | Pexp_function _ -> Some false
+          | _ -> None
+        in
+        fmt "@ " $ fmt_expression c ?box xbody
+      in
+      hovbox_if box 2
+        ( hvbox 0
+            ( hvbox 2
+                ( hvbox 2 (fmt_label lbl ":" $ cmt_before $ fmt "(fun")
+                $ fmt "@ "
+                $ fmt_attributes c arg.pexp_attributes ~suf:" "
+                $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
+            $ fmt "@ ->" )
+        $ body
+        $ closing_paren c ~offset:(-2)
+        $ Cmts.fmt_after c arg.pexp_loc )
   | _ ->
       let label_sep : s =
         if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
