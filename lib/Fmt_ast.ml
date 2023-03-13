@@ -1358,7 +1358,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
                ~pro:(fmt_label lbl ":@;<0 2>")
                ~box ?epi ?parens xarg )
         $ cmts_after )
-  | (Labelled _ | Optional _), Pexp_fun _ ->
+  | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
       (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
       let cmt_before = Cmts.fmt_before c arg.pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts xarg in
@@ -1366,7 +1366,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
       let body =
         let box =
           match xbody.ast.pexp_desc with
-          | Pexp_fun _ | Pexp_function _ -> Some false
+          | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
           | _ -> None
         in
         fmt "@ " $ fmt_expression c ?box xbody
@@ -4212,7 +4212,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | Pexp_function _ ->
         Params.function_indent c.conf ~ctx
           ~default:c.conf.fmt_opts.let_binding_indent.v
-    | Pexp_fun _ -> c.conf.fmt_opts.let_binding_indent.v - 1
+    | Pexp_fun _ | Pexp_newtype _ -> c.conf.fmt_opts.let_binding_indent.v - 1
     | _ -> c.conf.fmt_opts.let_binding_indent.v
   in
   let f {attr_name= {loc; _}; _} =
