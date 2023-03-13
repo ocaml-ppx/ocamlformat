@@ -7655,3 +7655,11 @@ let () = ((one_mississippi, two_mississippi, three_mississippi, four_mississippi
 
 let _ = ((match foo with | Bar -> bar | Baz -> baz) : string)
 let _ = ((match foo with | Bar -> bar | Baz -> baz) :> string)
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun (_ :
+                                         (ccccccccccccc * ddddddddddddddddddddddddddddd)
+                                         eeee) -> FFFFFFFFF gg)
+    ~h
+;;

@@ -6,7 +6,7 @@
 
 ### Bug fixes
 
-- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, @Julow)
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, @Julow)
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 
