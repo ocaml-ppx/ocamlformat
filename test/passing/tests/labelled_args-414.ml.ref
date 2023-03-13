@@ -8,7 +8,7 @@ let () =
       very_long_argument_name_one
       very_long_argument_name_two
       very_long_argument_name_three
-    -> () )
+      -> () )
 
 let () =
   very_long_function_name
@@ -17,4 +17,4 @@ let () =
       very_long_argument_name_one
       very_long_argument_name_two
       very_long_argument_name_three
-    -> () )
+      -> () )

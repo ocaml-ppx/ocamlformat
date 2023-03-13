@@ -1372,7 +1372,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
         fmt "@ " $ fmt_expression c ?box xbody
       in
       hovbox_if box 2
-        ( hvbox 0
+        ( hvbox 2
             ( hvbox 2
                 ( hvbox 2 (fmt_label lbl ":" $ cmt_before $ fmt "(fun")
                 $ fmt "@ "
@@ -1872,7 +1872,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( hovbox 2
                       ( wrap
                           ( fmt_args_grouped e0 e1N $ fmt "@ " $ cmts_outer
-                          $ hvbox 0
+                          $ hvbox 2
                               ( hvbox 2
                                   ( hvbox 0
                                       ( fmt_label lbl ":" $ cmts_inner

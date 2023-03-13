@@ -9868,7 +9868,7 @@ let () =
       very_long_argument_name_one
       very_long_argument_name_two
       very_long_argument_name_three
-    -> ())
+      -> ())
 ;;
 
 let () =
@@ -9894,6 +9894,6 @@ let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun
       (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee)
-    -> FFFFFFFFF gg)
+      -> FFFFFFFFF gg)
     ~h
 ;;
