@@ -20,6 +20,8 @@
 
 ### New features
 
+- Improved errors when comments are not preserved (#<PR_NUMBER>, @gpetiot)
+
 ## 0.25.1 (2023-03-06)
 
 ### Bug fixes
