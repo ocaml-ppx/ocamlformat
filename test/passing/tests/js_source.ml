@@ -7652,3 +7652,11 @@ let () =
                               -> () )
 
 let () = ((one_mississippi, two_mississippi, three_mississippi, four_mississippi) : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun (_ :
+                                         (ccccccccccccc * ddddddddddddddddddddddddddddd)
+                                         eeee) -> FFFFFFFFF gg)
+    ~h
+;;
