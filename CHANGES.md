@@ -10,7 +10,7 @@
 - Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, @Julow)
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
-- Fix indentation of trailing double-semicolons (#<PR_NUMBER>, @gpetiot)
+- Fix indentation of trailing double-semicolons (#2295, @gpetiot)
 
 ### Changes
 
