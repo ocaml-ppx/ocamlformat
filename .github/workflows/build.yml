@@ -38,10 +38,10 @@ jobs:
         run: opam exec -- dune build @help --auto-promote
 
       - name: Upload binary
-        if: ${{ matrix.platform.name == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: ocamlformat-${{ matrix.platform.name }}-${{ matrix.platform.target_arch }}
+          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
           path: _build/install/default/bin/ocamlformat
 
   test-branch:
@@ -65,13 +65,13 @@ jobs:
         with:
           workflow: build.yml
           branch: main
-          name: ocamlformat-${{ matrix.platform.name }}-${{ matrix.platform.target_arch }}
+          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
           path: ocamlformat-a
 
       - name: Fetch new build of ocamlformat
         uses: actions/download-artifact@v3
         with:
-          name: ocamlformat-${{ matrix.platform.name }}-${{ matrix.platform.target_arch }}
+          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
           path: ocamlformat-b
 
       - name: Test ${{ matrix.profile }} profile
