@@ -4117,7 +4117,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
           | `Sparse -> Some (fits_breaks "" "\n")
           | `Double_semicolon ->
               Option.some_if (last && not semisemi)
-                (fits_breaks "" ~hint:(1000, -2) ";;")
+                (fits_breaks "" ~hint:(1000, 0) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
         let ext = if first then lbs_extension else None in
@@ -4212,7 +4212,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | Pexp_function _ ->
         Params.function_indent c.conf ~ctx
           ~default:c.conf.fmt_opts.let_binding_indent.v
-    | Pexp_fun _ | Pexp_newtype _ -> c.conf.fmt_opts.let_binding_indent.v - 1
+    | Pexp_fun _ | Pexp_newtype _ ->
+        max (c.conf.fmt_opts.let_binding_indent.v - 1) 0
     | _ -> c.conf.fmt_opts.let_binding_indent.v
   in
   let f {attr_name= {loc; _}; _} =
@@ -4233,35 +4234,37 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ cmts_before
-  $ hvbox indent
-      ( hvbox_if toplevel 0
-          ( hvbox_if toplevel indent
-              ( hovbox 2
-                  ( hovbox 4
-                      ( box_fun_decl_args c 4
-                          ( hovbox 4
-                              ( fmt_str_loc c lb_op
-                              $ fmt_extension_suffix c ext
-                              $ fmt_attributes c at_attrs
-                              $ fmt_if rec_flag " rec"
-                              $ fmt_or pat_has_cmt "@ " " "
-                              $ fmt_pattern c lb_pat )
-                          $ fmt_if_k
-                              (not (List.is_empty xargs))
-                              ( fmt "@ "
-                              $ wrap_fun_decl_args c (fmt_fun_args c xargs)
-                              ) )
-                      $ fmt_cstr )
-                  $ fmt_if_k (not lb_pun)
-                      (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v
-                         (fits_breaks " =" ~hint:(1000, 0) "=")
-                         (fmt "@;<1 2>=") )
-                  $ fmt_if_k (not lb_pun) pre_body )
-              $ fmt_if (not lb_pun) "@ "
-              $ fmt_if_k (not lb_pun) body )
-          $ cmts_after )
-      $ fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs
-      $ in_ $ fmt_opt epi )
+  $ hvbox 0
+      ( hvbox indent
+          ( hvbox_if toplevel 0
+              ( hvbox_if toplevel indent
+                  ( hovbox 2
+                      ( hovbox 4
+                          ( box_fun_decl_args c 4
+                              ( hovbox 4
+                                  ( fmt_str_loc c lb_op
+                                  $ fmt_extension_suffix c ext
+                                  $ fmt_attributes c at_attrs
+                                  $ fmt_if rec_flag " rec"
+                                  $ fmt_or pat_has_cmt "@ " " "
+                                  $ fmt_pattern c lb_pat )
+                              $ fmt_if_k
+                                  (not (List.is_empty xargs))
+                                  ( fmt "@ "
+                                  $ wrap_fun_decl_args c
+                                      (fmt_fun_args c xargs) ) )
+                          $ fmt_cstr )
+                      $ fmt_if_k (not lb_pun)
+                          (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v
+                             (fits_breaks " =" ~hint:(1000, 0) "=")
+                             (fmt "@;<1 2>=") )
+                      $ fmt_if_k (not lb_pun) pre_body )
+                  $ fmt_if (not lb_pun) "@ "
+                  $ fmt_if_k (not lb_pun) body )
+              $ cmts_after )
+          $ fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs
+          $ in_ )
+      $ fmt_opt epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
