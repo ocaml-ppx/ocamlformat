@@ -1329,7 +1329,37 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
                  fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ) )
 
-and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
+(** Format [Pexp_fun] or [Pexp_newtype]. *)
+and fmt_fun ?(box = true) ?pro ?epi ?(parens=false) c ({ast= arg; _} as xarg) =
+  (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
+  let cmt_before = Cmts.fmt_before c arg.pexp_loc in
+  let xargs, xbody = Sugar.fun_ c.cmts xarg in
+  let fmt_cstr, xbody = type_constr_and_body c xbody in
+  let body =
+    let box =
+      match xbody.ast.pexp_desc with
+      | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
+      | _ -> None
+    in
+    fmt "@ " $ fmt_expression c ?box xbody
+  and closing =
+    if parens then closing_paren c ~offset:(-2)
+    else noop
+  in
+  hovbox_if box 2
+    ( hvbox 2
+        ( hvbox 2
+            ( hvbox 2 (fmt_opt pro $ cmt_before $ fmt_if parens "(" $ fmt "fun")
+            $ fmt "@ "
+            $ fmt_attributes c arg.pexp_attributes ~suf:" "
+            $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
+        $ fmt "@ ->" )
+    $ body
+    $ closing
+    $ Cmts.fmt_after c arg.pexp_loc
+    $ fmt_opt epi )
+
+and fmt_label_arg ?(box = true) ?epi ?eol c
     (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
@@ -1348,7 +1378,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
         | Optional _ -> str "?"
         | Nolabel -> noop
       in
-      lbl $ fmt_expression c ~box ?epi ?parens xarg
+      lbl $ fmt_expression c ~box ?epi xarg
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
@@ -1356,37 +1386,16 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
         ( hvbox_if box 0
             (fmt_expression c
                ~pro:(fmt_label lbl ":@;<0 2>")
-               ~box ?epi ?parens xarg )
+               ~box ?epi xarg )
         $ cmts_after )
   | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
-      (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
-      let cmt_before = Cmts.fmt_before c arg.pexp_loc in
-      let xargs, xbody = Sugar.fun_ c.cmts xarg in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      let body =
-        let box =
-          match xbody.ast.pexp_desc with
-          | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
-          | _ -> None
-        in
-        fmt "@ " $ fmt_expression c ?box xbody
-      in
-      hovbox_if box 2
-        ( hvbox 2
-            ( hvbox 2
-                ( hvbox 2 (fmt_label lbl ":" $ cmt_before $ fmt "(fun")
-                $ fmt "@ "
-                $ fmt_attributes c arg.pexp_attributes ~suf:" "
-                $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
-            $ fmt "@ ->" )
-        $ body
-        $ closing_paren c ~offset:(-2)
-        $ Cmts.fmt_after c arg.pexp_loc )
+      let pro = fmt_label lbl ":" in
+      fmt_fun ~box ~pro ~parens:true c xarg
   | _ ->
       let label_sep : s =
         if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
       in
-      fmt_label lbl label_sep $ fmt_expression c ~box ?epi ?parens xarg
+      fmt_label lbl label_sep $ fmt_expression c ~box ?epi xarg
 
 and expression_width c xe =
   String.length
