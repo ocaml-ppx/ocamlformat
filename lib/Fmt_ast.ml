@@ -2721,8 +2721,8 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
       Cmts.relocate c.cmts ~src:pcty_loc
         ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.pcty_loc ;
       let xct2 = sub_cty ~ctx ct2 in
-      list ctl "@;-> " (fmt_arrow_param c ctx)
-      $ fmt "@;-> "
+      list ctl (arrow_sep c ~parens) (fmt_arrow_param c ctx)
+      $ fmt (arrow_sep c ~parens)
       $ hvbox 0 (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
       $ fmt_attributes c atrs
   | Pcty_extension ext -> fmt_extension c ctx ext $ fmt_attributes c atrs
