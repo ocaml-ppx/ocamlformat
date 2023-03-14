@@ -331,18 +331,19 @@ module Structure_item = struct
      |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
-     |Pstr_extension (_, atrs)
-     |Pstr_class_type ({pci_attributes= atrs; _} :: _)
-     |Pstr_class ({pci_attributes= atrs; _} :: _) ->
+     |Pstr_extension (_, atrs) ->
         List.exists ~f:Attr.is_doc atrs
     | Pstr_exception
         { ptyexn_attributes= atrs1
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
         ; _ } ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-        | Pstr_open
-        {popen_attributes= ea; _}
-    | Pstr_modtype {pmtd_ext_attrs=ea; _} -> Ext_attrs.has_doc ea
+    | Pstr_open {popen_attributes= ea; _}
+     |Pstr_class_type ({pci_attributes= ea; _} :: _)
+     |Pstr_class ({pci_attributes= ea; _} :: _)
+     |Pstr_modtype {pmtd_ext_attrs= ea; _} ->
+      print_endline "hey";
+        Ext_attrs.has_doc ea
     | Pstr_module
         {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
      |Pstr_include
@@ -426,14 +427,15 @@ module Signature_item = struct
      |Psig_type (_, {ptype_attributes= atrs; _} :: _)
      |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
      |Psig_typext {ptyext_attributes= atrs; _}
-     |Psig_extension (_, atrs)
-     |Psig_class_type ({pci_attributes= atrs; _} :: _)
-     |Psig_class ({pci_attributes= atrs; _} :: _) ->
-        List.exists ~f:Attr.is_doc atrs
-    (* two attribute list *)
-    | Psig_modtype {pmtd_ext_attrs= ea; _}
+     |Psig_extension (_, atrs) ->
+        List.exists ~f:Attr.is_doc atrs (* two attribute list *)
+    | Psig_class_type ({pci_attributes= ea; _} :: _)
+     |Psig_class ({pci_attributes= ea; _} :: _)
+     |Psig_modtype {pmtd_ext_attrs= ea; _}
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
      |Psig_modsubst {pms_ext_attrs= ea; _} ->
+      print_endline "hey";
+
         Ext_attrs.has_doc ea
     | Psig_exception
         { ptyexn_attributes= atrs1

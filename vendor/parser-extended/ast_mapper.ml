@@ -751,7 +751,7 @@ module CE = struct
   let class_infos sub f {pci_virt; pci_params = pl; pci_name; pci_expr;
                          pci_loc; pci_attributes; pci_args; pci_constraint} =
     let loc = sub.location sub pci_loc in
-    let attrs = sub.attributes sub pci_attributes in
+    let attrs = sub.ext_attrs sub pci_attributes in
     Ci.mk ~loc ~attrs
      ~virt:(Flag.map_virtual sub pci_virt)
      ~params:(List.map (map_fst (sub.typ sub)) pl)

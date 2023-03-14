@@ -752,7 +752,7 @@ and 'a class_infos =
      pci_constraint: class_type option;
      pci_expr: 'a;
      pci_loc: Location.t;
-     pci_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pci_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
     }
 (** Values of type [class_expr class_infos] represents:
     - [class c = ...]

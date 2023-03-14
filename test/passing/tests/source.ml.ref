@@ -220,9 +220,9 @@ and t = int [@@foo]
 
 type%foo t += T [@@foo]
 
-class%foo x = x [@@foo]
+class%foo [@foo] x = x
 
-class type%foo x = x [@@foo]
+class type%foo [@foo] x = x
 
 external%foo x : _ = "" [@@foo]
 
@@ -267,9 +267,9 @@ module type S = sig
 
   open%foo [@foo] M
 
-  class%foo x : t [@@foo]
+  class%foo [@foo] x : t
 
-  class type%foo x = x [@@foo]
+  class type%foo [@foo] x = x
 end
 
 type t = ..

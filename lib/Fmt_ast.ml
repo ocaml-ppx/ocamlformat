@@ -3860,26 +3860,26 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
-  | Psig_class cl -> fmt_class_types ?ext c ~pre:"class" ~sep:":" cl
+  | Psig_class cl -> fmt_class_types c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
-      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
+      fmt_class_types c ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
-and fmt_class_types ?ext c ~pre ~sep cls =
+and fmt_class_types c ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
-      (* [pci_args] and [pci_constraint] are not used for class types. *)
-      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
+      update_config_maybe_disabled_attrs c cl.pci_loc cl.pci_attributes
       @@ fun c ->
-      let ctx = Ctd cl in
-      let doc_before, doc_after, atrs =
+      let doc_before, doc_after, attrs_before, attrs_after =
         let force_before = not (Cty.is_simple cl.pci_expr) in
-        fmt_docstring_around_item ~force_before c cl.pci_attributes
+        fmt_docstring_around_item_attrs ~force_before c cl.pci_attributes
       in
+      let ext = cl.pci_attributes.attrs_extension in
       let class_types =
         let pro =
           hovbox 2
             ( str (if first then pre else "and")
             $ fmt_if first (fmt_extension_suffix c ext)
+            $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
             $ fmt_virtual_flag c cl.pci_virt
             $ space_break
             $ fmt_class_params c ctx cl.pci_params
@@ -3888,22 +3888,22 @@ and fmt_class_types ?ext c ~pre ~sep cls =
         in
         hovbox 2
           ( fmt_class_type c ~pro (sub_cty ~ctx cl.pci_expr)
-          $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
+          $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
       in
       fmt_if (not first) (str "\n" $ force_break)
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
-and fmt_class_exprs ?ext c cls =
+and fmt_class_exprs c cls =
   hvbox 0
   @@ list_fl cls (fun ~first ~last:_ cl ->
-         update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
+         update_config_maybe_disabled_attrs c cl.pci_loc cl.pci_attributes
          @@ fun c ->
-         let ctx = Cd cl in
          let xargs = cl.pci_args in
-         let doc_before, doc_after, atrs =
+         let ext = cl.pci_attributes.attrs_extension in
+         let doc_before, doc_after, attrs_before, attrs_after =
            let force_before = not (Cl.is_simple cl.pci_expr) in
-           fmt_docstring_around_item ~force_before c cl.pci_attributes
+           fmt_docstring_around_item_attrs ~force_before c cl.pci_attributes
          in
          let class_expr =
            let pro =
@@ -3911,6 +3911,7 @@ and fmt_class_exprs ?ext c cls =
                ( hovbox 2
                    ( str (if first then "class" else "and")
                    $ fmt_if first (fmt_extension_suffix c ext)
+                   $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
                    $ fmt_virtual_flag c cl.pci_virt
                    $ space_break
                    $ fmt_class_params c ctx cl.pci_params
@@ -3930,7 +3931,7 @@ and fmt_class_exprs ?ext c cls =
              ( hovbox 2 (intro $ space_break $ str "=")
              $ space_break
              $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
-           $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
+           $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
          in
          fmt_if (not first) (str "\n" $ force_break)
          $ hovbox 0
@@ -4481,8 +4482,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
         $ fmt_item_attributes c ~pre:Space atrs
         $ doc_after )
   | Pstr_class_type cl ->
-      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
-  | Pstr_class cls -> fmt_class_exprs ?ext c cls
+      fmt_class_types c ~pre:"class type" ~sep:"=" cl
+  | Pstr_class cls -> fmt_class_exprs c cls
 
 and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
     ~body_loc ~has_attr ~indent_after_in =

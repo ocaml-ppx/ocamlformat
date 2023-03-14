@@ -709,7 +709,7 @@ and class_type_field i ppf x =
 and class_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a class_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a\n" label fmt_location x.pci_loc;
-  attributes i ppf x.pci_attributes;
+  ext_attrs i ppf x.pci_attributes;
   let i = i+1 in
   line i ppf "pci_virt = %a\n" fmt_virtual_flag x.pci_virt;
   line i ppf "pci_params =\n";
