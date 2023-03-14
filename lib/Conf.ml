@@ -873,8 +873,8 @@ module Formatting = struct
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt ->
-        update conf ~f:(fun f ->
-            {f with indicate_multiline_delimiters= elt} ) )
+        update conf ~f:(fun f -> {f with indicate_multiline_delimiters= elt})
+        )
       (fun conf -> conf.fmt_opts.indicate_multiline_delimiters)
 
   let indicate_nested_or_patterns =

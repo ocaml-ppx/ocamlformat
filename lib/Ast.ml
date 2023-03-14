@@ -903,8 +903,7 @@ end = struct
           ||
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
-          | Pcty_arrow (t, _) ->
-              List.exists t ~f:(fun x -> x.pap_type == typ)
+          | Pcty_arrow (t, _) -> List.exists t ~f:(fun x -> x.pap_type == typ)
           | _ -> false )
     in
     match ctx with
@@ -938,8 +937,7 @@ end = struct
         assert (
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f
-          | Pcty_arrow (t, _) ->
-              List.exists t ~f:(fun x -> x.pap_type == typ)
+          | Pcty_arrow (t, _) -> List.exists t ~f:(fun x -> x.pap_type == typ)
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
           | Pcty_signature {pcsig_self; pcsig_fields; _} ->

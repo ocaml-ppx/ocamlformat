@@ -7,8 +7,7 @@ let () =
     ~very_long_argument_label:(fun
       very_long_argument_name_one
       very_long_argument_name_two
-      very_long_argument_name_three
-      -> () )
+      very_long_argument_name_three -> () )
 
 let () =
   very_long_function_name
@@ -16,5 +15,4 @@ let () =
     (fun
       very_long_argument_name_one
       very_long_argument_name_two
-      very_long_argument_name_three
-      -> () )
+      very_long_argument_name_three -> () )

@@ -279,7 +279,7 @@ let _ =
       | Some _ -> () (* do nothing *) )
 
 let _ = try_with (fun () -> (* comment before *)
-                            a ; b (* after b *) )
+                            a ; b (* after b *))
 
 let _ =
   match x with

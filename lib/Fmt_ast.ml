@@ -1329,12 +1329,26 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
                  fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ) )
 
-(** Format [Pexp_fun] or [Pexp_newtype]. *)
-and fmt_fun ?(box = true) ?pro ?epi ?(parens=false) c ({ast= arg; _} as xarg) =
+(** Format [Pexp_fun] or [Pexp_newtype]. [wrap_intro] wraps up to after the
+    [->]. *)
+and fmt_fun ?(indent = 2) ?(wrap_intro = hvbox 2) ?(box = true) ?pro ?epi
+    ?(parens = false) c ({ast; _} as xast) =
   (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
-  let cmt_before = Cmts.fmt_before c arg.pexp_loc in
-  let xargs, xbody = Sugar.fun_ c.cmts xarg in
+  let cmt_before = Cmts.fmt_before c ast.pexp_loc in
+  let xargs, xbody = Sugar.fun_ c.cmts xast in
   let fmt_cstr, xbody = type_constr_and_body c xbody in
+  let indent =
+    if not box then indent
+    else
+      match xbody.ast.pexp_desc with
+      | Pexp_function _ -> 2
+      | _ -> (
+        (* Avoid the "double indentation" of the application and the function
+           matching when the [max-indent] option is set. *)
+        match c.conf.fmt_opts.max_indent.v with
+        | Some i when i <= 2 -> 2
+        | _ -> 4 )
+  in
   let body =
     let box =
       match xbody.ast.pexp_desc with
@@ -1343,24 +1357,28 @@ and fmt_fun ?(box = true) ?pro ?epi ?(parens=false) c ({ast= arg; _} as xarg) =
     in
     fmt "@ " $ fmt_expression c ?box xbody
   and closing =
-    if parens then closing_paren c ~offset:(-2)
-    else noop
+    let force =
+      (* if Location.is_single_line ast.pexp_loc c.conf.fmt_opts.margin.v then *)
+      (*   Fit *)
+      (* else Break *)
+      None
+    in
+    if parens then closing_paren c ?force ~offset:(-indent) else noop
   in
-  hovbox_if box 2
-    ( hvbox 2
+  hovbox_if box indent
+    ( wrap_intro
         ( hvbox 2
-            ( hvbox 2 (fmt_opt pro $ cmt_before $ fmt_if parens "(" $ fmt "fun")
+            ( hvbox 0
+                (fmt_opt pro $ cmt_before $ fmt_if parens "(" $ fmt "fun")
             $ fmt "@ "
-            $ fmt_attributes c arg.pexp_attributes ~suf:" "
+            $ fmt_attributes c ast.pexp_attributes ~suf:" "
             $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
         $ fmt "@ ->" )
-    $ body
-    $ closing
-    $ Cmts.fmt_after c arg.pexp_loc
+    $ body $ closing
+    $ Cmts.fmt_after c ast.pexp_loc
     $ fmt_opt epi )
 
-and fmt_label_arg ?(box = true) ?epi ?eol c
-    (lbl, ({ast= arg; _} as xarg)) =
+and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l i && List.is_empty arg.pexp_attributes ->
@@ -1852,60 +1870,32 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         if c.conf.fmt_opts.wrap_fun_args.v then Fn.id else hvbox 2
       in
       match List.rev e1N1 with
-      | (lbl, ({pexp_desc= Pexp_fun _; pexp_loc; _} as eN1)) :: rev_e1N
-        when List.for_all rev_e1N ~f:(fun (_, eI) ->
+      | (lbl, ({pexp_desc= Pexp_fun (_, _, _, eN1_body); _} as eN1))
+        :: rev_args_before
+        when List.for_all rev_args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
-          let e1N = List.rev rev_e1N in
-          (* Make sure the comment is placed after the eventual label but not
-             into the inner box if no label is present. Side effects of
-             Cmts.fmt c.cmts before Sugar.fun_ is important. *)
-          let cmts_outer, cmts_inner =
-            let cmt = Cmts.fmt_before c pexp_loc in
-            match lbl with Nolabel -> (cmt, noop) | _ -> (noop, cmt)
+          (* Last argument is a [fun _ ->]. *)
+          let args_before = List.rev rev_args_before in
+          let xlast_arg = sub_exp ~ctx eN1 in
+          let args =
+            let indent =
+              match eN1_body.pexp_desc with
+              | Pexp_function _ -> 2
+              | _ -> (
+                (* Avoid the "double indentation" of the application and the
+                   function matching when the [max-indent] option is set. *)
+                match c.conf.fmt_opts.max_indent.v with
+                | Some i when i <= 2 -> 2
+                | _ -> 4 )
+            in
+            let wrap_intro x =
+              hovbox 2
+                (wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ x))
+            in
+            let pro = fmt_label lbl ":" in
+            fmt_fun c ~indent ~wrap_intro ~pro ~parens:true xlast_arg
           in
-          let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
-          let fmt_cstr, xbody = type_constr_and_body c xbody in
-          let box =
-            match xbody.ast.pexp_desc with
-            | Pexp_fun _ | Pexp_function _ -> Some false
-            | _ -> None
-          in
-          let force =
-            if Location.is_single_line pexp_loc c.conf.fmt_opts.margin.v then
-              Fit
-            else Break
-          in
-          hvbox 0
-            (Params.parens_if parens c.conf
-               (hovbox 0
-                  ( hovbox 2
-                      ( wrap
-                          ( fmt_args_grouped e0 e1N $ fmt "@ " $ cmts_outer
-                          $ hvbox 2
-                              ( hvbox 2
-                                  ( hvbox 0
-                                      ( fmt_label lbl ":" $ cmts_inner
-                                      $ fmt "(fun" )
-                                  $ fmt "@ "
-                                  $ fmt_attributes c eN1.pexp_attributes
-                                      ~suf:" "
-                                  $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
-                                  )
-                              $ fmt "@ ->" ) )
-                      $ fmt
-                          ( match xbody.ast.pexp_desc with
-                          | Pexp_function _ -> "@ "
-                          | _ -> (
-                            (* Avoid the "double indentation" of the
-                               application and the function matching when the
-                               [max-indent] option is set. *)
-                            match c.conf.fmt_opts.max_indent.v with
-                            | Some i when i <= 2 -> "@ "
-                            | _ -> "@;<1 2>" ) )
-                      $ fmt_expression c ?box xbody
-                      $ closing_paren c ~force ~offset:(-2)
-                      $ Cmts.fmt_after c pexp_loc )
-                  $ fmt_atrs ) ) )
+          hvbox 0 (Params.parens_if parens c.conf (args $ fmt_atrs))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
             ; pexp_loc
@@ -2599,8 +2589,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           when Base.phys_equal xexp.ast z ->
             Fn.id
         | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}
-          when List.exists eN ~f:(fun x ->
-                   Base.phys_equal xexp.ast x.if_body ) ->
+          when List.exists eN ~f:(fun x -> Base.phys_equal xexp.ast x.if_body)
+          ->
             Fn.id
         (* begin-end keywords are handled when printing pattern-matching
            cases *)
@@ -4369,8 +4359,8 @@ module Chunk = struct
   let update_conf c state = {c with conf= Conf.update_state c.conf state}
 
   let fmt fg c ctx chunks =
-    List.foldi chunks ~init:(c, noop, [])
-      ~f:(fun i (c, output, locs) chunk ->
+    List.foldi chunks ~init:(c, noop, []) ~f:(fun i (c, output, locs) chunk
+      ->
         let c = update_conf c chunk.state in
         let output, locs =
           match chunk.state with
