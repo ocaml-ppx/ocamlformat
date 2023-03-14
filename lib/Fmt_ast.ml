@@ -2705,8 +2705,7 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
   Cmts.fmt c pcty_loc
   @@
   let parens = parenze_cty xtyp in
-  ( hvbox 0
-  @@ Params.parens_if parens c.conf
+  ( Params.parens_if parens c.conf
   @@
   let ctx = Cty typ in
   match pcty_desc with

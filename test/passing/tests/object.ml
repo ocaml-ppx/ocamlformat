@@ -87,17 +87,12 @@ class t ~a =
 class type mapper = [%test]
 
 module type A = sig
-  class mapper :
-    int
-    -> x:int
-    -> ?y:int
+  class mapper : int -> x:int -> ?y:int
     -> object
          method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
        end
 
-  class tttttttttttt :
-    aaaaaaaaaaaaaaaaaa:int
-    -> bbbbbbbbbbbbbbbbbbbbb:float
+  class tttttttttttt : aaaaaaaaaaaaaaaaaa:int -> bbbbbbbbbbbbbbbbbbbbb:float
     -> cccccccccccccccccccc
 
   class c :

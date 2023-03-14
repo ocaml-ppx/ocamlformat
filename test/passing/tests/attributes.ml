@@ -152,9 +152,7 @@ let f y = fun [@test] y -> ()
 let (f [@test]) = fun y -> fun [@test] y -> ()
 
 module type T = sig
-  class subst :
-    ((ident -> ident)[@attr])
-    -> (ident -> ident)
+  class subst : ((ident -> ident)[@attr]) -> (ident -> ident)
     -> object
          inherit mapper
        end[@attr]

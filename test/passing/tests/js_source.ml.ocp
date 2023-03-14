@@ -6116,8 +6116,7 @@ let o =
 ;;
 
 module M : sig
-  class x :
-    int
+  class x : int
     -> object
       method m : int
     end
@@ -6129,8 +6128,7 @@ end = struct
 end
 
 module M : sig
-  class c :
-    'a
+  class c : 'a
     -> object
       val x : 'b
     end
@@ -7038,8 +7036,7 @@ end
 
 (* Bad (not regular) *)
 module rec M : sig
-  class ['a] c :
-    'a
+  class ['a] c : 'a
     -> object
       method map : ('a -> 'b) -> 'b M.c
     end
