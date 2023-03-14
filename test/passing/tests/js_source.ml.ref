@@ -2464,7 +2464,7 @@ struct
    fun (l : int S.t ab) (r : float S.t ab) ->
     match l, r with
     | A, B -> "f A B"
- ;;
+  ;;
 end
 
 module F (S : sig
@@ -2482,7 +2482,7 @@ struct
    fun l r ->
     match l, r with
     | A, B -> "f A B"
- ;;
+  ;;
 end
 
 type (_, _) t =
@@ -4332,7 +4332,7 @@ end = struct
 
   let sexp_of_t : 'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
- ;;
+  ;;
 
   let _ = sexp_of_t
 
@@ -4352,7 +4352,7 @@ end = struct
 
     let sexp_of_t : 'perms. ('perms -> sexp) -> 'perms t -> sexp =
      fun _of_perms v -> sexp_of_t_ v
-   ;;
+    ;;
 
     let _ = sexp_of_t
   end
