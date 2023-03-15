@@ -9864,11 +9864,12 @@ let bind t ~f =
 
 let () =
   very_long_function_name
-    ~very_long_argument_label:(fun
-      very_long_argument_name_one
-      very_long_argument_name_two
-      very_long_argument_name_three
-      -> ())
+    ~very_long_argument_label:
+      (fun
+        very_long_argument_name_one
+        very_long_argument_name_two
+        very_long_argument_name_three
+        -> ())
 ;;
 
 let () =
@@ -9892,8 +9893,8 @@ let _ =
 
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:(fun
-      (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee)
-      -> FFFFFFFFF gg)
+    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
+      (fun
+        (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee) -> FFFFFFFFF gg)
     ~h
 ;;
