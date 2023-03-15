@@ -1331,8 +1331,8 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format [Pexp_fun] or [Pexp_newtype]. [wrap_intro] wraps up to after the
     [->]. *)
-and fmt_fun ?(indent = 2) ?(wrap_intro = hvbox 2) ?(box = true) ?pro ?epi
-    ?(parens = false) c ({ast; _} as xast) =
+and fmt_fun ?force_closing_paren ?(indent = 2) ?(wrap_intro = hvbox 2)
+    ?(box = true) ?pro ?epi ?(parens = false) c ({ast; _} as xast) =
   (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
   let cmt_before = Cmts.fmt_before c ast.pexp_loc in
   let xargs, xbody = Sugar.fun_ c.cmts xast in
@@ -1357,13 +1357,9 @@ and fmt_fun ?(indent = 2) ?(wrap_intro = hvbox 2) ?(box = true) ?pro ?epi
     in
     fmt "@ " $ fmt_expression c ?box xbody
   and closing =
-    let force =
-      (* if Location.is_single_line ast.pexp_loc c.conf.fmt_opts.margin.v then *)
-      (*   Fit *)
-      (* else Break *)
-      None
-    in
-    if parens then closing_paren c ?force ~offset:(-indent) else noop
+    if parens then
+      closing_paren c ?force:force_closing_paren ~offset:(-indent)
+    else noop
   in
   hovbox_if box indent
     ( wrap_intro
@@ -1893,7 +1889,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 (wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ x))
             in
             let pro = fmt_label lbl ":" in
-            fmt_fun c ~indent ~wrap_intro ~pro ~parens:true xlast_arg
+            let force_closing_paren =
+              if Location.is_single_line pexp_loc c.conf.fmt_opts.margin.v
+              then Fit
+              else Break
+            in
+            fmt_fun c ~force_closing_paren ~indent ~wrap_intro ~pro
+              ~parens:true xlast_arg
           in
           hvbox 0 (Params.parens_if parens c.conf (args $ fmt_atrs))
       | ( lbl
@@ -2589,8 +2591,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           when Base.phys_equal xexp.ast z ->
             Fn.id
         | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}
-          when List.exists eN ~f:(fun x -> Base.phys_equal xexp.ast x.if_body)
-          ->
+          when List.exists eN ~f:(fun x ->
+                   Base.phys_equal xexp.ast x.if_body ) ->
             Fn.id
         (* begin-end keywords are handled when printing pattern-matching
            cases *)
