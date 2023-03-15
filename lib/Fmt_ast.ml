@@ -1359,13 +1359,14 @@ and fmt_fun ?force_closing_paren ?(wrap_intro = hvbox 2) ?(box = true) ?pro
   in
   hovbox_if box 2
     ( wrap_intro
-        ( hvbox 2
-            ( hvbox 0
-                (fmt_opt pro $ cmt_before $ fmt_if parens "(" $ fmt "fun")
-            $ fmt "@ "
-            $ fmt_attributes c ast.pexp_attributes ~suf:" "
-            $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
-        $ fmt "@ ->" )
+        (hvbox 2
+           ( hvbox 2
+               ( hvbox 0
+                   (fmt_opt pro $ cmt_before $ fmt_if parens "(" $ fmt "fun")
+               $ fmt "@ "
+               $ fmt_attributes c ast.pexp_attributes ~suf:" "
+               $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
+           $ fmt "@ ->" ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc
     $ fmt_opt epi )
@@ -4347,8 +4348,8 @@ module Chunk = struct
   let update_conf c state = {c with conf= Conf.update_state c.conf state}
 
   let fmt fg c ctx chunks =
-    List.foldi chunks ~init:(c, noop, []) ~f:(fun i (c, output, locs) chunk
-      ->
+    List.foldi chunks ~init:(c, noop, [])
+      ~f:(fun i (c, output, locs) chunk ->
         let c = update_conf c chunk.state in
         let output, locs =
           match chunk.state with

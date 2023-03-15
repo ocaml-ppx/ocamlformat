@@ -7,8 +7,8 @@ let%client () =
     (* NB The service underlying the server_function isn't available on the
        client before loading the page. *)
     (fun
-      () ->
-      Lwt.async (fun () -> log "Hello from the client to the server!") )
+      ()
+      -> Lwt.async (fun () -> log "Hello from the client to the server!") )
 
 let%client () =
   Eliom_client.onload
