@@ -511,7 +511,7 @@ module Unwrapped = struct
     let min_indent =
       List.fold_left ~init:fl_indent
         ~f:(fun acc s ->
-          Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
+            Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
         tl_lines
     in
     (* Completely trim the first line *)

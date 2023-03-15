@@ -73,27 +73,27 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
     let source, hash_bang = split_hash_bang source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
-        if
-          Warning.is_unexpected_docstring warn
-          && conf.opr_opts.comment_check.v
-        then (
-          w50 := (loc, warn) :: !w50 ;
-          false )
-        else not conf.opr_opts.quiet.v )
+          if
+            Warning.is_unexpected_docstring warn
+            && conf.opr_opts.comment_check.v
+          then (
+            w50 := (loc, warn) :: !w50 ;
+            false )
+          else not conf.opr_opts.quiet.v )
       ~f:(fun () ->
-        let ast = parse fragment ~input_name source in
-        Warnings.check_fatal () ;
-        let comments =
-          List.map
-            ~f:(fun (txt, loc) -> Cmt.create txt loc)
-            (Lexer.comments ())
-        in
-        let tokens =
-          let lexbuf, _ = fresh_lexbuf source in
-          tokens lexbuf
-        in
-        let source = Source.create ~text:source ~tokens in
-        {ast; comments; prefix= hash_bang; source} )
+          let ast = parse fragment ~input_name source in
+          Warnings.check_fatal () ;
+          let comments =
+            List.map
+              ~f:(fun (txt, loc) -> Cmt.create txt loc)
+              (Lexer.comments ())
+          in
+          let tokens =
+            let lexbuf, _ = fresh_lexbuf source in
+            tokens lexbuf
+          in
+          let source = Source.create ~text:source ~tokens in
+          {ast; comments; prefix= hash_bang; source} )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
 
