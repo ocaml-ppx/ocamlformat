@@ -188,13 +188,18 @@ module Parse = struct
       (* [(module M) : (module T)] -> [(module M : T)] *)
       | { pexp_desc=
             Pexp_constraint
-              ( {pexp_desc= Pexp_pack (name, None); pexp_attributes= []; pexp_loc; _}
-              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _} )
-        ; _ } as p when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
-          (* Match locations to differentiate between the two position for the
-             constraint, we want to shorten the second:
-             - [let _ : (module S) = (module M)]
-             - [let _ = ((module M) : (module S))] *)
+              ( { pexp_desc= Pexp_pack (name, None)
+                ; pexp_attributes= []
+                ; pexp_loc
+                ; _ }
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _}
+              )
+        ; _ } as p
+        when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
+          (* Match locations to differentiate between the two position for
+             the constraint, we want to shorten the second: - [let _ :
+             (module S) = (module M)] - [let _ = ((module M) : (module
+             S))] *)
           {p with pexp_desc= Pexp_pack (name, Some pt)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
