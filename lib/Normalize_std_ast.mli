@@ -16,5 +16,4 @@ val equal :
   'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
-val moved_docstrings :
-  'a Std_ast.t -> Conf.t -> 'a -> 'a -> Docstring.error list
+val moved_docstrings : 'a Std_ast.t -> Conf.t -> 'a -> 'a -> Cmt.error list

@@ -19,11 +19,12 @@ val loc : t -> Location.t
 
 val txt : t -> string
 
-val dummy : t
-
-val is_dummy : t -> bool
-
 include Comparator.S with type t := t
+
+type error = [`Added of t | `Modified of t * t | `Dropped of t]
+
+val pp_error :
+  kind:[`Comment | `Doc_comment] -> Format.formatter -> error -> unit
 
 type pos = Before | Within | After
 

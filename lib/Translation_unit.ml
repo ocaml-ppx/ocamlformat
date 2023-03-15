@@ -18,11 +18,10 @@ exception
   Internal_error of
     [ `Cannot_parse of exn
     | `Ast_changed
-    | `Doc_comment_moved of Docstring.error list
-    | `Doc_comment_changed of (Cmt.t * Cmt.t) list
-    | `Comment_changed of (Cmt.t * Cmt.t) list
-    | `Comment_dropped of Cmt.t list
-    | `Warning50 of (Location.t * Warnings.t) list ]
+    | `Doc_comment_diff of Cmt.error
+    | `Comment_diff of Cmt.error
+    | `Warning50 of Location.t * Warnings.t ]
+    list
     * (string * Sexp.t) list
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
@@ -60,6 +59,29 @@ module Error = struct
          (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2" p n) ) ;
     Stdlib.Sys.remove p ;
     Stdlib.Sys.remove n
+
+  let print_internal_error ~debug ~quiet fmt e =
+    let s =
+      match e with
+      | `Cannot_parse _ -> "generating invalid ocaml syntax"
+      | `Ast_changed -> "ast changed"
+      | `Doc_comment_diff (`Added _) -> "doc comment added"
+      | `Doc_comment_diff (`Modified _) -> "doc comment changed"
+      | `Doc_comment_diff (`Dropped _) -> "doc comment dropped"
+      | `Comment_diff (`Added _) -> "comment added"
+      | `Comment_diff (`Modified _) -> "comment changed"
+      | `Comment_diff (`Dropped _) -> "comment dropped"
+      | `Warning50 _ -> "misplaced documentation comment"
+    in
+    Format.fprintf fmt "  BUG: %s.\n%!" s ;
+    match e with
+    | `Doc_comment_diff x when not quiet ->
+        Cmt.pp_error ~kind:`Doc_comment fmt x
+    | `Comment_diff x when not quiet -> Cmt.pp_error ~kind:`Comment fmt x
+    | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
+        if debug then Location.report_exception fmt exn
+    | `Warning50 (l, w) -> if debug then Warning.print_warning l w
+    | _ -> ()
 
   let print ?(debug = false) ?(quiet = false) fmt = function
     | Invalid_source _ when quiet -> ()
@@ -112,115 +134,8 @@ module Error = struct
            %!"
           exe input_name ;
         match exn with
-        | Internal_error (m, l) ->
-            let s =
-              match m with
-              | `Cannot_parse _ -> "generating invalid ocaml syntax"
-              | `Ast_changed -> "ast changed"
-              | `Doc_comment_moved _ -> "doc comments moved"
-              | `Doc_comment_changed _ -> "doc comments changed"
-              | `Comment_changed _ -> "comments changed"
-              | `Comment_dropped _ -> "comments dropped"
-              | `Warning50 _ -> "misplaced documentation comments"
-            in
-            Format.fprintf fmt "  BUG: %s.\n%!" s ;
-            let print_cmts_changed_error cmts ~kind =
-              List.iter cmts ~f:(function
-                | x, after when Cmt.is_dummy x ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: %s are not preserved.\n\
-                      \  before: ???\n\
-                      \   after: (* %s *)\n\
-                       %!"
-                      Location.print_loc (Cmt.loc after) kind (Cmt.txt after)
-                | before, x when Cmt.is_dummy x ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: %s are not preserved.\n\
-                      \  before: (* %s *)\n\
-                      \   after: ???\n\
-                       %!"
-                      Location.print_loc (Cmt.loc before) kind
-                      (Cmt.txt before)
-                | before, after ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: %s are not preserved.\n\
-                      \  before: (* %s *)\n\
-                      \   after: (* %s *)\n\
-                       %!"
-                      Location.print_loc (Cmt.loc before) kind
-                      (Cmt.txt before) (Cmt.txt after) )
-            in
-            ( match m with
-            | `Doc_comment_moved l when not quiet ->
-                List.iter l ~f:(function
-                  | Added (loc, msg) ->
-                      Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Docstring (** %s *) added.\n\
-                         %!"
-                        Location.print_loc loc msg
-                  | Removed (loc, msg) ->
-                      Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Docstring (** %s *) dropped.\n\
-                         %!"
-                        Location.print_loc loc msg
-                  | Moved (loc_before, loc_after, msg) ->
-                      if Location.compare loc_before Location.none = 0 then
-                        Format.fprintf fmt
-                          "%!@{<loc>%a@}:@,\
-                           @{<error>Error@}: Docstring (** %s *) added.\n\
-                           %!"
-                          Location.print_loc loc_after msg
-                      else if Location.compare loc_after Location.none = 0
-                      then
-                        Format.fprintf fmt
-                          "%!@{<loc>%a@}:@,\
-                           @{<error>Error@}: Docstring (** %s *) dropped.\n\
-                           %!"
-                          Location.print_loc loc_before msg
-                      else
-                        Format.fprintf fmt
-                          "%!@{<loc>%a@}:@,\
-                           @{<error>Error@}: Docstring (** %s *) moved to \
-                           @{<loc>%a@}.\n\
-                           %!"
-                          Location.print_loc loc_before msg
-                          Location.print_loc loc_after
-                  | Unstable (loc, x, y) ->
-                      Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Formatting of doc-comment is \
-                         unstable (e.g. parses as a list or not depending \
-                         on the margin):\n\
-                         %!"
-                        Location.print_loc loc ;
-                      print_diff input_name ~prev:x ~next:y ;
-                      Format.fprintf fmt
-                        "Please tighten up this comment in the source or \
-                         disable the formatting using the option \
-                         --no-parse-docstrings.\n\
-                         %!" )
-            | `Doc_comment_changed cmts when not quiet ->
-                print_cmts_changed_error cmts ~kind:"Doc-comments"
-            | `Comment_changed cmts when not quiet ->
-                print_cmts_changed_error cmts ~kind:"Comments"
-            | `Comment_dropped l when not quiet ->
-                List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
-                    Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: Comment (* %s *) dropped.\n\
-                       %!"
-                      Location.print_loc loc msg )
-            | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
-                if debug then Location.report_exception fmt exn
-            | `Warning50 l ->
-                if debug then
-                  List.iter l ~f:(fun (l, w) -> Warning.print_warning l w)
-            | _ -> () ) ;
+        | Internal_error (errors, l) ->
+            List.iter errors ~f:(print_internal_error ~debug ~quiet fmt) ;
             if debug then
               List.iter l ~f:(fun (msg, sexp) ->
                   Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp) )
@@ -321,9 +236,15 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
             Normalize_extended_ast.diff_docstrings conf old_docs new_docs
           with
           | [] -> ()
-          | x -> internal_error (`Doc_comment_changed x) [] )
-        | x -> internal_error (`Comment_changed x) [] )
-    | x -> internal_error (`Comment_dropped x) []
+          | x ->
+              internal_error
+                (List.map x ~f:(fun x -> `Doc_comment_diff x))
+                [] )
+        | x -> internal_error (List.map x ~f:(fun x -> `Comment_diff x)) [] )
+    | x ->
+        internal_error
+          (List.map x ~f:(fun x -> `Comment_diff (`Dropped x)))
+          []
 
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
@@ -398,7 +319,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           parse parse_ast ~disable_w50:true fg conf ~input_name ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
-        | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
+        | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
         | t_new -> Ok t_new
       in
       let+ std_t_new =
@@ -407,8 +328,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception Warning50 l ->
-            internal_error (`Warning50 l) (exn_args ())
-        | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
+            internal_error
+              (List.map ~f:(fun x -> `Warning50 x) l)
+              (exn_args ())
+        | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
         | std_t_new -> Ok std_t_new
       in
       (* Ast not preserved ? *)
@@ -444,10 +367,12 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                 std_t_new.ast
             in
             let args = args ~suffix:".unequal-docs" in
-            internal_error (`Doc_comment_moved docstrings) args
+            internal_error
+              (List.map ~f:(fun x -> `Doc_comment_diff x) docstrings)
+              args
           else
             let args = args ~suffix:".unequal-ast" in
-            internal_error `Ast_changed args ) ;
+            internal_error [`Ast_changed] args ) ;
       check_comments conf cmts_t ~old:t ~new_:t_new ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (

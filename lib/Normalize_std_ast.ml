@@ -204,12 +204,15 @@ let moved_docstrings fragment c s1 s2 =
   | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 = List.map ~f:(fun (loc, x) -> Docstring.Removed (loc, x)) l1 in
+      let l1 =
+        List.map ~f:(fun (loc, x) -> `Dropped (Cmt.create x loc)) l1
+      in
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:(fun (loc, x) -> Docstring.Added (loc, x)) l2 in
+      let l2 = List.map ~f:(fun (loc, x) -> `Added (Cmt.create x loc)) l2 in
       List.rev_append l1 l2
   | Ok l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
       List.map
-        ~f:(fun ((loc, x), (_, y)) -> Docstring.Unstable (loc, x, y))
+        ~f:(fun ((loc, x), (_, y)) ->
+          `Modified (Cmt.create x loc, Cmt.create y loc) )
         l

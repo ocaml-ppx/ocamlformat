@@ -162,13 +162,13 @@ let docstring conf =
 let zip_align (l1, l2) =
   let rec aux acc l1 l2 =
     match (l1, l2) with
-    | [], _ -> List.rev_map_append ~f:(fun x -> (Cmt.dummy, x)) l2 acc
-    | _, [] -> List.rev_map_append ~f:(fun x -> (x, Cmt.dummy)) l1 acc
+    | [], _ -> List.rev_map_append ~f:(fun x -> `Added x) l2 acc
+    | _, [] -> List.rev_map_append ~f:(fun x -> `Dropped x) l1 acc
     | h1 :: t1, h2 :: t2 -> (
       match Migrate_ast.Location.compare (Cmt.loc h1) (Cmt.loc h2) with
-      | 0 -> aux ((h1, h2) :: acc) t1 t2
-      | x when x < 0 -> aux ((h1, Cmt.dummy) :: acc) t1 l2
-      | _ -> aux ((Cmt.dummy, h2) :: acc) l1 t2 )
+      | 0 -> aux (`Modified (h1, h2) :: acc) t1 t2
+      | x when x < 0 -> aux (`Dropped h1 :: acc) t1 l2
+      | _ -> aux (`Added h2 :: acc) l1 t2 )
   in
   List.rev (aux [] l1 l2)
 

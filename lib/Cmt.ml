@@ -27,14 +27,45 @@ module T = struct
 
   let sexp_of_t {txt; loc} =
     Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
-
-  let dummy = create "$dummy$" Location.none
-
-  let is_dummy = Poly.equal dummy
 end
 
 include T
 include Comparator.Make (T)
+
+type error = [`Added of t | `Modified of t * t | `Dropped of t]
+
+let pp_error ~kind fs =
+  let pp_cmt fs x =
+    match kind with
+    | `Doc_comment -> Format.fprintf fs "(** %s *)" (txt x)
+    | `Comment -> Format.fprintf fs "(* %s *)" (txt x)
+  in
+  let s_kind =
+    match kind with `Doc_comment -> "doc-comment" | `Comment -> "comment"
+  in
+  function
+  | `Added x ->
+      Format.fprintf fs "%!@{<loc>%a@}:@,@{<error>Error@}: %s %a added.\n%!"
+        Location.print_loc (loc x) s_kind pp_cmt x
+  | `Dropped x ->
+      Format.fprintf fs
+        "%!@{<loc>%a@}:@,@{<error>Error@}: %s %a dropped.\n%!"
+        Location.print_loc (loc x) s_kind pp_cmt x
+  | `Modified (x, y) -> (
+      Format.fprintf fs
+        "%!@{<loc>%a@}:@,\
+         @{<error>Error@}: formatting of %s is unstable.\n\
+        \  before: %a\n\
+        \   after: %a\n\
+         %!"
+        Location.print_loc (loc x) s_kind pp_cmt x pp_cmt y ;
+      match kind with
+      | `Comment -> ()
+      | `Doc_comment ->
+          Format.fprintf fs
+            "Please tighten up this comment in the source or disable the \
+             formatting using the option --no-parse-docstrings.\n\
+             %!" )
 
 module T_no_loc = struct
   include T
