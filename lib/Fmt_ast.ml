@@ -1330,9 +1330,10 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
        $ fmt_atrs ) )
 
 (** Format [Pexp_fun] or [Pexp_newtype]. [wrap_intro] wraps up to after the
-    [->]. *)
-and fmt_fun ?force_closing_paren ?(wrap_intro = hvbox 2) ?(box = true) ?pro
-    ?epi ?(parens = false) c ({ast; _} as xast) =
+    [->] and is responsible for breaking. *)
+and fmt_fun ?force_closing_paren
+    ?(wrap_intro = fun x -> hvbox 2 x $ fmt "@ ") ?(box = true) ?pro ?epi
+    ?(parens = false) c ({ast; _} as xast) =
   (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
   let cmt_before = Cmts.fmt_before c ast.pexp_loc in
   let xargs, xbody = Sugar.fun_ c.cmts xast in
@@ -1342,17 +1343,8 @@ and fmt_fun ?force_closing_paren ?(wrap_intro = hvbox 2) ?(box = true) ?pro
       match xbody.ast.pexp_desc with
       | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
       | _ -> None
-    and break =
-      match xbody.ast.pexp_desc with
-      | Pexp_function _ -> fmt "@ "
-      | _ -> (
-        (* Avoid the "double indentation" of the application and the function
-           matching when the [max-indent] option is set. *)
-        match c.conf.fmt_opts.max_indent.v with
-        | Some i when i <= 2 -> fmt "@ "
-        | _ -> fmt "@;<1 2>" )
     in
-    break $ fmt_expression c ?box xbody
+    fmt_expression c ?box xbody
   and closing =
     if parens then closing_paren c ?force:force_closing_paren ~offset:(-2)
     else noop
@@ -1863,7 +1855,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         if c.conf.fmt_opts.wrap_fun_args.v then Fn.id else hvbox 2
       in
       match List.rev e1N1 with
-      | (lbl, ({pexp_desc= Pexp_fun (_, _, _, _eN1_body); _} as eN1))
+      | (lbl, ({pexp_desc= Pexp_fun (_, _, _, eN1_body); _} as eN1))
         :: rev_args_before
         when List.for_all rev_args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
@@ -1871,8 +1863,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let args_before = List.rev rev_args_before in
           let xlast_arg = sub_exp ~ctx eN1 in
           let args =
+            let break_body =
+              match eN1_body.pexp_desc with
+              | Pexp_function _ -> fmt "@ "
+              | _ -> (
+                (* Avoid the "double indentation" of the application and the
+                   function matching when the [max-indent] option is set. *)
+                match c.conf.fmt_opts.max_indent.v with
+                | Some i when i <= 2 -> fmt "@ "
+                | _ -> fmt "@;<1 2>" )
+            in
             let wrap_intro x =
               wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ x)
+              $ break_body
             in
             let pro = fmt_label lbl ":" in
             let force_closing_paren =

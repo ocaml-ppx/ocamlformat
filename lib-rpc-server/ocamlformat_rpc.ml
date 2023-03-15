@@ -74,11 +74,11 @@ let run_format conf x =
   List.fold_until ~init:()
     ~finish:(fun () -> Error (`Format_error (Format.flush_str_formatter ())))
     ~f:(fun () try_formatting ->
-        match try_formatting conf x with
-        | Ok formatted -> Stop (Ok (`Format formatted))
-        | Error e ->
-            Translation_unit.Error.print Format.str_formatter e ;
-            Continue () )
+      match try_formatting conf x with
+      | Ok formatted -> Stop (Ok (`Format formatted))
+      | Error e ->
+          Translation_unit.Error.print Format.str_formatter e ;
+          Continue () )
     (* The formatting functions are ordered in such a way that the ones
        expecting a keyword first (like signatures) are placed before the more
        general ones (like toplevel phrases). Parsing a file as `--impl` with
