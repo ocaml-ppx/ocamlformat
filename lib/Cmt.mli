@@ -19,6 +19,10 @@ val loc : t -> Location.t
 
 val txt : t -> string
 
+val dummy : t
+
+val is_dummy : t -> bool
+
 include Comparator.S with type t := t
 
 type pos = Before | Within | After

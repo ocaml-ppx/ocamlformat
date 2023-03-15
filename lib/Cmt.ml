@@ -27,6 +27,10 @@ module T = struct
 
   let sexp_of_t {txt; loc} =
     Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
+
+  let dummy = create "$dummy$" Location.none
+
+  let is_dummy = Poly.equal dummy
 end
 
 include T

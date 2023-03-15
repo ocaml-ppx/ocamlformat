@@ -159,6 +159,19 @@ let docstring conf =
   let normalize_code = normalize_code conf mapper in
   docstring conf ~normalize_code
 
+let zip_align (l1, l2) =
+  let rec aux acc l1 l2 =
+    match (l1, l2) with
+    | [], _ -> List.rev_map_append ~f:(fun x -> (Cmt.dummy, x)) l2 acc
+    | _, [] -> List.rev_map_append ~f:(fun x -> (x, Cmt.dummy)) l1 acc
+    | h1 :: t1, h2 :: t2 -> (
+      match Migrate_ast.Location.compare (Cmt.loc h1) (Cmt.loc h2) with
+      | 0 -> aux ((h1, h2) :: acc) t1 t2
+      | x when x < 0 -> aux ((h1, Cmt.dummy) :: acc) t1 l2
+      | _ -> aux ((Cmt.dummy, h2) :: acc) l1 t2 )
+  in
+  List.rev (aux [] l1 l2)
+
 let diff ~f x y =
   let loc = function Either.First x | Either.Second x -> x.Cmt.loc in
   Set.symmetric_diff (f x) (f y)
@@ -166,10 +179,7 @@ let diff ~f x y =
   |> List.sort ~compare:(fun x y ->
          Migrate_ast.Location.compare (loc x) (loc y) )
   |> List.partition_map ~f:Fn.id
-  |> fun (x, y) ->
-  (* This is fine because an error is already raised if
-     [Cmts.remaining_comments] is not empty. *)
-  List.zip_exn x y
+  |> zip_align
 
 let diff_docstrings c x y =
   let norm z =
