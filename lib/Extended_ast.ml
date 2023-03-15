@@ -142,6 +142,7 @@ module Parse = struct
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
+      (* [(module M) : (module T)] -> [(module M : T)] *)
       | { ppat_desc=
             Ppat_constraint
               ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
@@ -184,6 +185,17 @@ module Parse = struct
              && not (Std_longident.is_monadic_binding longident) ->
           let label_loc = {txt= op; loc= loc_op} in
           {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
+      (* [(module M) : (module T)] -> [(module M : T)] *)
+      | { pexp_desc=
+            Pexp_constraint
+              ( {pexp_desc= Pexp_pack (name, None); pexp_attributes= []; pexp_loc; _}
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _} )
+        ; _ } as p when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
+          (* Match locations to differentiate between the two position for the
+             constraint, we want to shorten the second:
+             - [let _ : (module S) = (module M)]
+             - [let _ = ((module M) : (module S))] *)
+          {p with pexp_desc= Pexp_pack (name, Some pt)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
