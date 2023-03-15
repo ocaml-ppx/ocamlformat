@@ -14,7 +14,7 @@
 
 ### Changes
 
-- Restore short form formatting of module patterns with a module type constraint (`((module M) : (module S))` formatted as `(module M : S)`) (#2280, @gpetiot)
+- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, #2289, @gpetiot, @Julow)
 
