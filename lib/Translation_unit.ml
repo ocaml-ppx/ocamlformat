@@ -18,8 +18,8 @@ exception
   Internal_error of
     [ `Cannot_parse of exn
     | `Ast_changed
-    | `Doc_comment_diff of Cmt.error
-    | `Comment_diff of Cmt.error
+    | `Doc_comment of Cmt.error
+    | `Comment of Cmt.error
     | `Warning50 of Location.t * Warnings.t ]
     list
     * (string * Sexp.t) list
@@ -65,19 +65,18 @@ module Error = struct
       match e with
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
-      | `Doc_comment_diff (`Added _) -> "doc comment added"
-      | `Doc_comment_diff (`Modified _) -> "doc comment changed"
-      | `Doc_comment_diff (`Dropped _) -> "doc comment dropped"
-      | `Comment_diff (`Added _) -> "comment added"
-      | `Comment_diff (`Modified _) -> "comment changed"
-      | `Comment_diff (`Dropped _) -> "comment dropped"
+      | `Doc_comment (`Added _) -> "doc comment added"
+      | `Doc_comment (`Modified _) -> "doc comment changed"
+      | `Doc_comment (`Dropped _) -> "doc comment dropped"
+      | `Comment (`Added _) -> "comment added"
+      | `Comment (`Modified _) -> "comment changed"
+      | `Comment (`Dropped _) -> "comment dropped"
       | `Warning50 _ -> "misplaced documentation comment"
     in
     Format.fprintf fmt "  BUG: %s.\n%!" s ;
     match e with
-    | `Doc_comment_diff x when not quiet ->
-        Cmt.pp_error ~kind:`Doc_comment fmt x
-    | `Comment_diff x when not quiet -> Cmt.pp_error ~kind:`Comment fmt x
+    | `Doc_comment x when not quiet -> Cmt.pp_error ~kind:`Doc_comment fmt x
+    | `Comment x when not quiet -> Cmt.pp_error ~kind:`Comment fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
     | `Warning50 (l, w) -> if debug then Warning.print_warning l w
@@ -236,15 +235,10 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
             Normalize_extended_ast.diff_docstrings conf old_docs new_docs
           with
           | [] -> ()
-          | x ->
-              internal_error
-                (List.map x ~f:(fun x -> `Doc_comment_diff x))
-                [] )
-        | x -> internal_error (List.map x ~f:(fun x -> `Comment_diff x)) [] )
-    | x ->
-        internal_error
-          (List.map x ~f:(fun x -> `Comment_diff (`Dropped x)))
-          []
+          | x -> internal_error (List.map x ~f:(fun x -> `Doc_comment x)) []
+          )
+        | x -> internal_error (List.map x ~f:(fun x -> `Comment x)) [] )
+    | x -> internal_error (List.map x ~f:(fun x -> `Comment (`Dropped x))) []
 
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
@@ -368,7 +362,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
             in
             let args = args ~suffix:".unequal-docs" in
             internal_error
-              (List.map ~f:(fun x -> `Doc_comment_diff x) docstrings)
+              (List.map ~f:(fun x -> `Doc_comment x) docstrings)
               args
           else
             let args = args ~suffix:".unequal-ast" in
