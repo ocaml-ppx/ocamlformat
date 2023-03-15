@@ -41,7 +41,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: _build/install/default/bin/ocamlformat
 
   test-branch:
@@ -65,13 +65,13 @@ jobs:
         with:
           workflow: build.yml
           branch: main
-          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-a
 
       - name: Fetch new build of ocamlformat
         uses: actions/download-artifact@v3
         with:
-          name: ocamlformat-${{ matrix.os }}-${{ runner.arch }}
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-b
 
       - name: Test ${{ matrix.profile }} profile
