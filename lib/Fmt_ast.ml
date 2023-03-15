@@ -1337,9 +1337,7 @@ and fmt_fun ?force_closing_paren
   (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
   let cmt_before =
     let eol =
-    match label with
-    | Nolabel -> None
-    | _ -> Some (fmt "@;<9999 2>")
+      match label with Nolabel -> None | _ -> Some (fmt "@;<9999 2>")
     in
     Cmts.fmt_before ?eol c ast.pexp_loc
   in
@@ -1361,13 +1359,14 @@ and fmt_fun ?force_closing_paren
         (hvbox 2
            ( hvbox 2
                ( hvbox 0
-                   (fmt_label label ":" $ cmt_before $ fmt_if parens "(" $ fmt "fun")
+                   ( fmt_label label ":" $ cmt_before $ fmt_if parens "("
+                   $ fmt "fun" )
                $ fmt "@ "
                $ fmt_attributes c ast.pexp_attributes ~suf:" "
                $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
            $ fmt "@ ->" ) )
     $ body $ closing
-    $ Cmts.fmt_after c ast.pexp_loc)
+    $ Cmts.fmt_after c ast.pexp_loc )
 
 and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
@@ -1888,8 +1887,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               else Break
             in
             hovbox 0
-              (fmt_fun c ~force_closing_paren ~wrap_intro ~label:lbl ~parens:true
-                 xlast_arg )
+              (fmt_fun c ~force_closing_paren ~wrap_intro ~label:lbl
+                 ~parens:true xlast_arg )
           in
           hvbox 0 (Params.parens_if parens c.conf (args $ fmt_atrs))
       | ( lbl
