@@ -33,12 +33,11 @@ type t = {a: < >; b: int}
 
 type t = {b: int; a: < > }
 
-class type c =
-  object
-    inherit [ < a: 'a ; b: 'b > ] a
+class type c = object
+  inherit [ < a: 'a ; b: 'b > ] a
 
-    inherit [a, b, c] a
-  end
+  inherit [a, b, c] a
+end
 
 class c =
   object
@@ -50,27 +49,25 @@ class c =
 type 'a u = [< `A | `B of < > > `B ] as 'a
 
 (** about a *)
-class type a =
-  object
-    method a : int
-    (** about a *)
+class type a = object
+  method a : int
+  (** about a *)
 
-    (** floatting *)
+  (** floatting *)
 
-    method b : int
-    (** about b *)
-  end
+  method b : int
+  (** about b *)
+end
 
 (** floatting *)
 
 (** about b *)
 and b = object end
 
-class type i =
-  object
-    (* test *)
-    inherit oo
-  end
+class type i = object
+  (* test *)
+  inherit oo
+end
 
 class i =
   object

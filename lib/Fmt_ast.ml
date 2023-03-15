@@ -2680,20 +2680,20 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
   in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
   let ast x = Ctf x in
-  hvbox 0
-    (Params.parens_if parens c.conf
-       ( hvbox 2
-           ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
-           $ ( match fields with
-             | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
-                 str "\n"
-             | _ -> noop )
-           $ fmt_or_k (List.is_empty fields)
-               (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
-               (fmt "@;<1000 0>")
-           $ fmt_item_list c ctx update_config ast fmt_item fields )
-       $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
-       $ str "end" ) )
+  Params.parens_if parens c.conf
+    ( str "object"
+    $ fmt_extension_suffix c ext
+    $ self_ $ fmt "@ "
+    $ hvbox 0
+        ( ( match fields with
+          | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
+              str "\n"
+          | _ -> noop )
+        $ fmt_if_k (List.is_empty fields)
+            (Cmts.fmt_within ~pro:noop c (Ast.location ctx))
+        $ fmt_item_list c ctx update_config ast fmt_item fields )
+    $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
+    $ str "end" )
 
 and fmt_class_type c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
@@ -2722,7 +2722,7 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
       let xct2 = sub_cty ~ctx ct2 in
       list ctl (arrow_sep c ~parens) (fmt_arrow_param c ctx)
       $ fmt (arrow_sep c ~parens)
-      $ hvbox 0 (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
+      $ (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
       $ fmt_attributes c atrs
   | Pcty_extension ext -> fmt_extension c ctx ext $ fmt_attributes c atrs
   | Pcty_open (popen, cl) ->

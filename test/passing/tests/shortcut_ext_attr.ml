@@ -57,20 +57,19 @@ class x =
     [@foo]
 
 (* Class type expressions *)
-class type t =
-  object
-    inherit t [@@foo]
+class type t = object
+  inherit t [@@foo]
 
-    val x : t [@@foo]
+  val x : t [@@foo]
 
-    val mutable x : t [@@foo]
+  val mutable x : t [@@foo]
 
-    method x : t [@@foo]
+  method x : t [@@foo]
 
-    method private x : t [@@foo]
+  method private x : t [@@foo]
 
-    constraint t = t' [@@foo]
-  end[@foo]
+  constraint t = t' [@@foo]
+end[@foo]
 
 (* Type expressions *)
 type t = [%foo: ((module M)[@foo])]

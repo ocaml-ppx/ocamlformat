@@ -6,9 +6,8 @@ class c : (* fooooooooooooo foooooooooo *) xxxxxxxxxxxxxx
 
 class c : (* fooooooooooooo foooooooooo *) xxxxxxxxxxxxxx (* fooooooooooo *)
   -> (* fooooooooo foooooooooo *) yyyyyyyyyyyyyy (* foooooooooooooo *)
-  -> (* fooooooooooooo fooooooooooo *)
-     zzzzzzzzzzzzzzzzzz
-     (* fooooooooooooooooo *) = object end
+  -> (* fooooooooooooo fooooooooooo *) zzzzzzzzzzzzzzzzzz
+  (* fooooooooooooooooo *) = object end
 
 class c : (a -> b) -> x = object end
 

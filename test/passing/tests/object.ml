@@ -87,51 +87,49 @@ class t ~a =
 class type mapper = [%test]
 
 module type A = sig
-  class mapper : int -> x:int -> ?y:int
-    -> object
-         method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
-       end
+  class mapper : int -> x:int -> ?y:int -> object
+    method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
+  end
 
   class tttttttttttt : aaaaaaaaaaaaaaaaaa:int -> bbbbbbbbbbbbbbbbbbbbb:float
     -> cccccccccccccccccccc
 
-  class c :
-    object
-      inherit ['a a] d
+  class c : object
+    inherit ['a a] d
 
-      constraint 'a = int
+    constraint 'a = int
 
-      [%%ext something]
+    [%%ext something]
 
-      [@@@attr something]
+    [@@@attr something]
 
-      val (*x*) virtual (*y*) mutable (*z*) a : int
+    val (*x*) virtual (*y*) mutable (*z*) a : int
 
-      val (*x*) mutable (*y*) virtual (*z*) a : int
+    val (*x*) mutable (*y*) virtual (*z*) a : int
 
-      method (*x*) virtual (*y*) private (*z*) b : int -> int -> int
+    method (*x*) virtual (*y*) private (*z*) b : int -> int -> int
 
-      method (*x*) private (*y*) virtual (*z*) b : int -> int -> int
-    end
+    method (*x*) private (*y*) virtual (*z*) b : int -> int -> int
+  end
 end
 
 class type mapper =
   let open Modl1 in
   object
-    method expression : Javascript.expression -> Javascript.expression
+  method expression : Javascript.expression -> Javascript.expression
 
-    method expression_o :
-      Javascript.expression option -> Javascript.expression option
+  method expression_o :
+    Javascript.expression option -> Javascript.expression option
 
-    method switch_case :
-         Javascript.expression
-      -> Javascript.expression
-      -> a
-      -> b
-      -> ccccccccccc
-      -> d
-      -> e
-  end
+  method switch_case :
+       Javascript.expression
+    -> Javascript.expression
+    -> a
+    -> b
+    -> ccccccccccc
+    -> d
+    -> e
+end
 
 class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =
@@ -183,17 +181,16 @@ class a = object end
 (** about b *)
 and b = object end
 
-class type x =
-  object
+class type x = object
+  
+(** floatting1 *)
 
-    (** floatting1 *)
+   (** floatting2 *)
 
-    (** floatting2 *)
+   method x : int
 
-    method x : int
-
-    (** floatting3 *)
-  end
+   (** floatting3 *)
+end
 
 class x =
   object
@@ -241,10 +238,9 @@ class f ((i, o) as io) =
     inherit [a] c (f 1) (fun x -> x) (match x with x -> x) as p
   end
 
-class type ['a] tsv =
-  object
-    inherit [ < sep: [`tab] ; comment: [`sharp] ; .. > as 'a] tabular
-  end
+class type ['a] tsv = object
+  inherit [ < sep: [`tab] ; comment: [`sharp] ; .. > as 'a] tabular
+end
 ;;
 
 {< (* Debug.print ("free var: "^string_of_int x); *)
@@ -289,3 +285,13 @@ class t (lazy _) = object end
 class virtual c =
   let (mc_exit : _) = () in
   object end
+
+(* Fitting *)
+
+class a = object end
+
+class a x = object end
+
+class a x = object end
+
+class a x = object (self) end
