@@ -125,15 +125,33 @@ module Error = struct
             in
             Format.fprintf fmt "  BUG: %s.\n%!" s ;
             let print_cmts_changed_error cmts ~kind =
-              List.iter cmts ~f:(fun (before, after) ->
-                  Format.fprintf fmt
-                    "%!@{<loc>%a@}:@,\
-                     @{<error>Error@}: %s are not preserved.\n\
-                    \  before: (* %s *)\n\
-                    \   after: (* %s *)\n\
-                     %!"
-                    Location.print_loc (Cmt.loc before) kind (Cmt.txt before)
-                    (Cmt.txt after) )
+              List.iter cmts ~f:(function
+                | x, after when Cmt.is_dummy x ->
+                    Format.fprintf fmt
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: %s are not preserved.\n\
+                      \  before: ???\n\
+                      \   after: (* %s *)\n\
+                       %!"
+                      Location.print_loc (Cmt.loc after) kind (Cmt.txt after)
+                | before, x when Cmt.is_dummy x ->
+                    Format.fprintf fmt
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: %s are not preserved.\n\
+                      \  before: (* %s *)\n\
+                      \   after: ???\n\
+                       %!"
+                      Location.print_loc (Cmt.loc before) kind
+                      (Cmt.txt before)
+                | before, after ->
+                    Format.fprintf fmt
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: %s are not preserved.\n\
+                      \  before: (* %s *)\n\
+                      \   after: (* %s *)\n\
+                       %!"
+                      Location.print_loc (Cmt.loc before) kind
+                      (Cmt.txt before) (Cmt.txt after) )
             in
             ( match m with
             | `Doc_comment_moved l when not quiet ->
