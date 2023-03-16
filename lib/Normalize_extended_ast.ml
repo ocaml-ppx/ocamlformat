@@ -164,34 +164,37 @@ let docstring conf =
     - elements in [x] but not in [y] are [`Dropped]
     - elements in [y] but not in [x] are [`Added]
     - elements in both are [`Modified] *)
-let zip_align (l1, l2) =
+let zip_align (l1, l2) ~cmt_kind =
+  let dropped x = {Cmt.kind= `Dropped x; cmt_kind} in
+  let added x = {Cmt.kind= `Added x; cmt_kind} in
+  let modified (x, y) = {Cmt.kind= `Modified (x, y); cmt_kind} in
   let rec aux acc l1 l2 =
     match (l1, l2) with
-    | [], _ -> List.rev_map_append ~f:(fun x -> `Added x) l2 acc
-    | _, [] -> List.rev_map_append ~f:(fun x -> `Dropped x) l1 acc
+    | [], _ -> List.rev_map_append ~f:added l2 acc
+    | _, [] -> List.rev_map_append ~f:dropped l1 acc
     | h1 :: t1, h2 :: t2 -> (
       match Migrate_ast.Location.compare (Cmt.loc h1) (Cmt.loc h2) with
-      | 0 -> aux (`Modified (h1, h2) :: acc) t1 t2
-      | x when x < 0 -> aux (`Dropped h1 :: acc) t1 l2
-      | _ -> aux (`Added h2 :: acc) l1 t2 )
+      | 0 -> aux (modified (h1, h2) :: acc) t1 t2
+      | x when x < 0 -> aux (dropped h1 :: acc) t1 l2
+      | _ -> aux (added h2 :: acc) l1 t2 )
   in
   List.rev (aux [] l1 l2)
 
-let diff ~f x y =
+let diff ~f ~cmt_kind x y =
   let loc = function Either.First x | Either.Second x -> x.Cmt.loc in
   Set.symmetric_diff (f x) (f y)
   |> Sequence.to_list
   |> List.sort ~compare:(fun x y ->
          Migrate_ast.Location.compare (loc x) (loc y) )
   |> List.partition_map ~f:Fn.id
-  |> zip_align
+  |> zip_align ~cmt_kind
 
 let diff_docstrings c x y =
   let norm z =
     let f Cmt.{txt; loc} = Cmt.create (docstring c txt) loc in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  diff ~f:norm x y
+  diff ~f:norm ~cmt_kind:`Doc_comment x y
 
 let diff_cmts (conf : Conf.t) x y =
   let mapper = make_mapper conf ~ignore_doc_comments:false in
@@ -215,7 +218,7 @@ let diff_cmts (conf : Conf.t) x y =
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  diff ~f:norm x y
+  diff ~f:norm ~cmt_kind:`Comment x y
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = ast fragment c ~ignore_doc_comments in

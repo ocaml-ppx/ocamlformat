@@ -200,19 +200,19 @@ let moved_docstrings fragment c s1 s2 =
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let cmt_kind = `Doc_comment in
+  let cmt (loc, x) = Cmt.create x loc in
+  let dropped x = {Cmt.kind= `Dropped (cmt x); cmt_kind} in
+  let added x = {Cmt.kind= `Added (cmt x); cmt_kind} in
+  let modified (x, y) = {Cmt.kind= `Modified (cmt x, cmt y); cmt_kind} in
   match List.zip d1 d2 with
   | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 =
-        List.map ~f:(fun (loc, x) -> `Dropped (Cmt.create x loc)) l1
-      in
+      let l1 = List.map ~f:dropped l1 in
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:(fun (loc, x) -> `Added (Cmt.create x loc)) l2 in
+      let l2 = List.map ~f:added l2 in
       List.rev_append l1 l2
   | Ok l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
-      List.map
-        ~f:(fun ((loc, x), (_, y)) ->
-          `Modified (Cmt.create x loc, Cmt.create y loc) )
-        l
+      List.map ~f:modified l

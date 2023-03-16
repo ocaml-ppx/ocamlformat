@@ -18,7 +18,6 @@ exception
   Internal_error of
     [ `Cannot_parse of exn
     | `Ast_changed
-    | `Doc_comment of Cmt.error
     | `Comment of Cmt.error
     | `Warning50 of Location.t * Warnings.t ]
     list
@@ -65,18 +64,12 @@ module Error = struct
       match e with
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
-      | `Doc_comment (`Added _) -> "doc comment added"
-      | `Doc_comment (`Modified _) -> "doc comment changed"
-      | `Doc_comment (`Dropped _) -> "doc comment dropped"
-      | `Comment (`Added _) -> "comment added"
-      | `Comment (`Modified _) -> "comment changed"
-      | `Comment (`Dropped _) -> "comment dropped"
+      | `Comment _ -> "comment changed"
       | `Warning50 _ -> "misplaced documentation comment"
     in
     Format.fprintf fmt "  BUG: %s.\n%!" s ;
     match e with
-    | `Doc_comment x when not quiet -> Cmt.pp_error ~kind:`Doc_comment fmt x
-    | `Comment x when not quiet -> Cmt.pp_error ~kind:`Comment fmt x
+    | `Comment x when not quiet -> Cmt.pp_error fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
     | `Warning50 (l, w) -> if debug then Warning.print_warning l w
@@ -223,22 +216,23 @@ let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
   List.sort ~compare !locs
 
 let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
+  let dropped x = {Cmt.kind= `Dropped x; cmt_kind= `Comment} in
   if conf.opr_opts.comment_check.v then
-    match Cmts.remaining_comments cmts with
-    | [] -> (
-        let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
-        let old_docs, old_cmts = split_cmts t_old.comments in
-        let new_docs, new_cmts = split_cmts t_new.comments in
-        match Normalize_extended_ast.diff_cmts conf old_cmts new_cmts with
-        | [] -> (
-          match
-            Normalize_extended_ast.diff_docstrings conf old_docs new_docs
-          with
-          | [] -> ()
-          | x -> internal_error (List.map x ~f:(fun x -> `Doc_comment x)) []
-          )
-        | x -> internal_error (List.map x ~f:(fun x -> `Comment x)) [] )
-    | x -> internal_error (List.map x ~f:(fun x -> `Comment (`Dropped x))) []
+    let errors =
+      match Cmts.remaining_comments cmts with
+      | [] -> (
+          let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
+          let old_docs, old_cmts = split_cmts t_old.comments in
+          let new_docs, new_cmts = split_cmts t_new.comments in
+          match Normalize_extended_ast.diff_cmts conf old_cmts new_cmts with
+          | [] ->
+              Normalize_extended_ast.diff_docstrings conf old_docs new_docs
+          | x -> x )
+      | x -> List.map x ~f:dropped
+    in
+    match List.map errors ~f:(fun x -> `Comment x) with
+    | [] -> ()
+    | errors -> internal_error errors []
 
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
@@ -362,7 +356,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
             in
             let args = args ~suffix:".unequal-docs" in
             internal_error
-              (List.map ~f:(fun x -> `Doc_comment x) docstrings)
+              (List.map ~f:(fun x -> `Comment x) docstrings)
               args
           else
             let args = args ~suffix:".unequal-ast" in

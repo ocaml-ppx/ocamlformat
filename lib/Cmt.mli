@@ -21,10 +21,11 @@ val txt : t -> string
 
 include Comparator.S with type t := t
 
-type error = [`Added of t | `Modified of t * t | `Dropped of t]
+type error =
+  { kind: [`Added of t | `Modified of t * t | `Dropped of t]
+  ; cmt_kind: [`Comment | `Doc_comment] }
 
-val pp_error :
-  kind:[`Comment | `Doc_comment] -> Format.formatter -> error -> unit
+val pp_error : Format.formatter -> error -> unit
 
 type pos = Before | Within | After
 

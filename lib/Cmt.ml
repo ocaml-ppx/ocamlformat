@@ -32,18 +32,22 @@ end
 include T
 include Comparator.Make (T)
 
-type error = [`Added of t | `Modified of t * t | `Dropped of t]
+type error =
+  { kind: [`Added of t | `Modified of t * t | `Dropped of t]
+  ; cmt_kind: [`Comment | `Doc_comment] }
 
-let pp_error ~kind fs =
+let pp_error fs {kind; cmt_kind} =
   let pp_cmt fs x =
-    match kind with
+    match cmt_kind with
     | `Doc_comment -> Format.fprintf fs "(** %s *)" (txt x)
     | `Comment -> Format.fprintf fs "(* %s *)" (txt x)
   in
   let s_kind =
-    match kind with `Doc_comment -> "doc-comment" | `Comment -> "comment"
+    match cmt_kind with
+    | `Doc_comment -> "doc-comment"
+    | `Comment -> "comment"
   in
-  function
+  match kind with
   | `Added x ->
       Format.fprintf fs "%!@{<loc>%a@}:@,@{<error>Error@}: %s %a added.\n%!"
         Location.print_loc (loc x) s_kind pp_cmt x
@@ -59,7 +63,7 @@ let pp_error ~kind fs =
         \   after: %a\n\
          %!"
         Location.print_loc (loc x) s_kind pp_cmt x pp_cmt y ;
-      match kind with
+      match cmt_kind with
       | `Comment -> ()
       | `Doc_comment ->
           Format.fprintf fs
