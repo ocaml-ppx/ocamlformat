@@ -1334,12 +1334,15 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 and fmt_fun ?force_closing_paren
     ?(wrap_intro = fun x -> hvbox 2 x $ fmt "@ ") ?(box = true) ~label
     ?(parens = false) c ({ast; _} as xast) =
-  (* Side effects of Cmts.fmt c.cmts before Sugar.fun_ is important. *)
-  let cmt_before =
-    let eol =
-      match label with Nolabel -> None | _ -> Some (fmt "@;<9999 2>")
-    in
-    Cmts.fmt_before ?eol c ast.pexp_loc
+  let has_label = match label with Nolabel -> false | _ -> true in
+  (* Make sure the comment is placed after the eventual label but not into
+     the inner box if no label is present. Side effects of Cmts.fmt c.cmts
+     before Sugar.fun_ is important. *)
+  let has_cmts_outer, cmts_outer, cmts_inner =
+    let eol = if has_label then Some (fmt "@,") else None in
+    let has_cmts = Cmts.has_before c.cmts ast.pexp_loc in
+    let cmts = Cmts.fmt_before ?eol c ast.pexp_loc in
+    if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
   in
   let xargs, xbody = Sugar.fun_ c.cmts xast in
   let fmt_cstr, xbody = type_constr_and_body c xbody in
@@ -1354,17 +1357,23 @@ and fmt_fun ?force_closing_paren
     if parens then closing_paren c ?force:force_closing_paren ~offset:(-2)
     else noop
   in
+  let (label_sep : s), break_fun =
+    (* Break between the label and the fun to avoid ocp-indent's
+       alignment. *)
+    if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
+    else (":", fmt "@ ")
+  in
   hovbox_if box 2
     ( wrap_intro
-        (hvbox 2
-           ( hvbox 2
-               ( hvbox 0
-                   ( fmt_label label ":" $ cmt_before $ fmt_if parens "("
-                   $ fmt "fun" )
-               $ fmt "@ "
-               $ fmt_attributes c ast.pexp_attributes ~suf:" "
-               $ fmt_fun_args c xargs $ fmt_opt fmt_cstr )
-           $ fmt "@ ->" ) )
+        (hvbox_if has_cmts_outer 0
+           ( cmts_outer
+           $ hvbox 2
+               ( fmt_label label label_sep $ cmts_inner $ fmt_if parens "("
+               $ fmt "fun" $ break_fun
+               $ hvbox 0
+                   ( fmt_attributes c ast.pexp_attributes ~suf:" "
+                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
+               ) ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
@@ -1878,7 +1887,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 | _ -> fmt "@;<1 2>" )
             in
             let wrap_intro x =
-              wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ x)
+              wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ hvbox 0 x)
               $ break_body
             in
             let force_closing_paren =
