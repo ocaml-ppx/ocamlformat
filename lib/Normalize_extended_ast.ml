@@ -159,35 +159,17 @@ let docstring conf =
   let normalize_code = normalize_code conf mapper in
   docstring conf ~normalize_code
 
-(** [zip_align (x, y)] combines 2 lists [x] and [y]:
-
-    - elements in [x] but not in [y] are [`Dropped]
-    - elements in [y] but not in [x] are [`Added]
-    - elements in both are [`Modified] *)
-let zip_align (l1, l2) ~cmt_kind =
+let diff ~f ~cmt_kind x y =
   let dropped x = {Cmt.kind= `Dropped x; cmt_kind} in
   let added x = {Cmt.kind= `Added x; cmt_kind} in
-  let modified (x, y) = {Cmt.kind= `Modified (x, y); cmt_kind} in
-  let rec aux acc l1 l2 =
-    match (l1, l2) with
-    | [], _ -> List.rev_map_append ~f:added l2 acc
-    | _, [] -> List.rev_map_append ~f:dropped l1 acc
-    | h1 :: t1, h2 :: t2 -> (
-      match Migrate_ast.Location.compare (Cmt.loc h1) (Cmt.loc h2) with
-      | 0 -> aux (modified (h1, h2) :: acc) t1 t2
-      | x when x < 0 -> aux (dropped h1 :: acc) t1 l2
-      | _ -> aux (added h2 :: acc) l1 t2 )
-  in
-  List.rev (aux [] l1 l2)
-
-let diff ~f ~cmt_kind x y =
-  let loc = function Either.First x | Either.Second x -> x.Cmt.loc in
+  (*= [symmetric_diff x y] returns a sequence of changes between [x] and [y]:
+      - [First k] means [k] is in [x] but not [y]
+      - [Second k] means [k] is in [y] but not [x] *)
   Set.symmetric_diff (f x) (f y)
   |> Sequence.to_list
-  |> List.sort ~compare:(fun x y ->
-         Migrate_ast.Location.compare (loc x) (loc y) )
-  |> List.partition_map ~f:Fn.id
-  |> zip_align ~cmt_kind
+  (*= - [First _] is reported as a comment dropped
+      - [Second _] is reported as a comment added *)
+  |> List.map ~f:(Either.value_map ~first:dropped ~second:added)
   |> function [] -> Ok () | errors -> Error errors
 
 let diff_docstrings c x y =
