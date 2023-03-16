@@ -9,12 +9,17 @@
 #                                                                    #
 ######################################################################
 
-JS_DIRS=code/base code/base_bigstring code/base_quickcheck code/core code/core_bench code/core_compat code/core_extended code/core_kernel code/core_profiler code/core_unix
+JS_DIRS= \
+	code/base code/base_bigstring code/base_quickcheck code/core code/core_bench \
+	code/core_compat code/core_extended code/core_kernel code/core_profiler \
+	code/core_unix
 
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune code/owl code/irmin code/index code/dune-release code/mirage $(JS_DIRS)
+DIRS= \
+	code/ocamlformat code/infer code/js_of_ocaml code/dune code/owl \
+	code/irmin code/index code/dune-release code/mirage $(JS_DIRS)
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
@@ -24,7 +29,7 @@ PRUNE_DIRS= \
 	code/ocamlformat/test code/ocamlformat/vendor/parser-recovery \
 	code/ocaml/experimental code/ocaml/testsuite/tests/parse-errors \
 	code/dune/test code/dune/vendor code/dune/otherlibs code/dune/example \
-	code/infer/sledge/vendor/llvm-dune
+	code/infer/sledge/vendor/llvm-dune code/mirage/test code/owl
 
 ALL_DIRS=$(DIRS) $(XDIRS)
 
@@ -46,8 +51,6 @@ code/index: URI = https://github.com/mirage/index
 code/mirage: URI = https://github.com/mirage/mirage
 code/dune-release: URI = https://github.com/ocamllabs/dune-release
 code/owl: URI = https://github.com/owlbarn/owl
-
-PRUNE_DIRS += code/mirage/test code/owl
 
 code/base: URI = https://github.com/janestreet/base.git
 code/base_bigstring: URI = https://github.com/janestreet/base_bigstring.git
@@ -92,20 +95,20 @@ test_stage:
 .PHONY: test_unstage
 test_unstage:
 	@for dir in $(ALL_DIRS); do \
-	  git -C $$dir reset HEAD .; \
+	  git -C $$dir reset --quiet HEAD .; \
 	done
 
 .PHONY: test_clean
 test_clean:
 	@for dir in $(ALL_DIRS); do \
-	  git -C $$dir checkout -- .; \
-	  git -C $$dir clean -f; \
-	done
+	  git -C $$dir checkout --quiet -- .; \
+	  git -C $$dir clean --quiet -f; \
+	done 2>/dev/null
 
 .PHONY: test_pull
 test_pull:
 	@for dir in $(ALL_DIRS); do \
-	  git -C $$dir pull; \
+	  git -C $$dir pull --quiet; \
 	done
 
 FIND_ARGS= \
@@ -116,11 +119,11 @@ FIND_ARGS= \
 
 .PHONY: test_inplace
 test_inplace:
-	@find $(DIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project -i
+	@find $(DIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --quiet -i
 
 .PHONY: test_extra
 test_extra:
-	@find $(XDIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --quiet -i
+	@-find $(XDIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --quiet -i
 
 .PHONY: test_margins
 test_margins:
