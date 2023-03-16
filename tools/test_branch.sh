@@ -11,7 +11,7 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [-n] [-o] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-n] [-o] [-l] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
 # the base branch is the merge-base between the test branch and main.
@@ -23,6 +23,9 @@
 # If -o is passed, ocp-indent is applied after ocamlformat in each pass.
 # Options can be passed to it using the 'OCP_INDENT_CONFIG' environment
 # variable.
+#
+# If -l is passed, it will not pull the latest version of the source code used
+# for testing.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
@@ -38,12 +41,14 @@ arg_a=
 arg_b=
 arg_n=0
 arg_o=0
-while getopts "a:b:no" opt; do
+arg_l=0
+while getopts "a:b:nol" opt; do
   case "$opt" in
     a) arg_a=$OPTARG ;;
     b) arg_b=$OPTARG ;;
     n) arg_n=1 ;;
     o) arg_o=1 ;;
+    l) arg_l=1 ;;
   esac
 done
 shift $((OPTIND-1))
@@ -97,7 +102,10 @@ else
   exe_b=`realpath $arg_b`
 fi
 
-make -C test-extra test_setup test_unstage test_clean test_pull
+make -C test-extra test_setup test_unstage test_clean
+if [[ $arg_l -eq 0 ]]; then
+  make -C test-extra test_pull
+fi
 
 apply_ocp=()
 if [[ $arg_o -eq 1 ]]; then apply_ocp=(apply_ocp); fi
