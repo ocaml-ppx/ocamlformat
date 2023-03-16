@@ -66,12 +66,9 @@ test_setup: $(ALL_DIRS)
 
 .PHONY: test
 test: test_setup
+	@echo "Running $(OCAMLFORMAT_EXE) with options '$(OCAMLFORMAT)'"
 	@$(MAKE) test_inplace
 	@-$(MAKE) test_extra
-	@for dir in $(ALL_DIRS); do \
-	  test -z "$$(git -C $$dir diff --quiet)" \
-	    || (echo FAIL test $$dir; exit 1); \
-	done
 
 .PHONY: test_status
 test_status:
@@ -128,3 +125,8 @@ test_extra:
 .PHONY: test_margins
 test_margins:
 	@for i in {100..40}; do echo $$i; OCAMLFORMAT_MARGIN=$$i $(MAKE) test || break; done
+
+.PHONY: apply_ocp
+apply_ocp:
+	@echo "Running ocp-indent with options '$(OCP_INDENT_CONFIG)'"
+	@-find $(ALL_DIRS) $(FIND_ARGS) | parallel ocp-indent --inplace
