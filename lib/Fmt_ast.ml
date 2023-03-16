@@ -2084,7 +2084,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match xbody.ast.pexp_desc with Pexp_function _ -> true | _ -> false
       in
       let pre_body, body = fmt_body c ?ext xbody in
-      let default_indent = if Option.is_none eol then 2 else 1 in
+      let default_indent =
+        if Option.is_none eol then 2
+        else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
+        else 0
+      in
       let indent =
         Params.function_indent c.conf ~ctx ~default:default_indent
       in
@@ -2328,8 +2332,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
+      let outer_parens = parens && has_attr in
+      let inner_parens = true in
       let fmt_mod m =
-        Params.parens_if parens c.conf
+        Params.parens_if outer_parens c.conf
           ( match pt with
           | Some (id, cnstrs) ->
               let opn_paren =
@@ -2340,13 +2346,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               let cls_paren = closing_paren c ~offset:(-2) in
               hvbox 2
                 ( hovbox 0
-                    ( opn_paren $ str "module"
+                    ( fmt_if_k inner_parens opn_paren
+                    $ str "module"
                     $ fmt_extension_suffix c ext
                     $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id )
                 $ fmt_package_type c ctx cnstrs
-                $ cls_paren $ fmt_atrs )
+                $ fmt_if_k inner_parens cls_paren
+                $ fmt_atrs )
           | None ->
-              Params.Exp.wrap c.conf ~parens:true
+              Params.Exp.wrap c.conf ~parens:inner_parens
                 (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
               $ fmt_atrs )
       in
@@ -2616,8 +2624,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
            (sub_exp ~ctx e)
   | Pexp_parens e ->
-      hvbox 0 @@ Params.parens c.conf
-      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+      hvbox 0
+      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:true ~indent_wrap ?ext
            (sub_exp ~ctx e)
       $ fmt_atrs
 
@@ -2683,20 +2691,20 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
   in
   let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
   let ast x = Ctf x in
-  hvbox 0
-    (Params.parens_if parens c.conf
-       ( hvbox 2
-           ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
-           $ ( match fields with
-             | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
-                 str "\n"
-             | _ -> noop )
-           $ fmt_or_k (List.is_empty fields)
-               (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
-               (fmt "@;<1000 0>")
-           $ fmt_item_list c ctx update_config ast fmt_item fields )
-       $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
-       $ str "end" ) )
+  Params.parens_if parens c.conf
+    ( str "object"
+    $ fmt_extension_suffix c ext
+    $ self_ $ fmt "@ "
+    $ hvbox 0
+        ( ( match fields with
+          | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
+              str "\n"
+          | _ -> noop )
+        $ fmt_if_k (List.is_empty fields)
+            (Cmts.fmt_within ~pro:noop c (Ast.location ctx))
+        $ fmt_item_list c ctx update_config ast fmt_item fields )
+    $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
+    $ str "end" )
 
 and fmt_class_type c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
@@ -2708,8 +2716,7 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
   Cmts.fmt c pcty_loc
   @@
   let parens = parenze_cty xtyp in
-  ( hvbox 0
-  @@ Params.parens_if parens c.conf
+  ( Params.parens_if parens c.conf
   @@
   let ctx = Cty typ in
   match pcty_desc with
@@ -2724,9 +2731,9 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
       Cmts.relocate c.cmts ~src:pcty_loc
         ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.pcty_loc ;
       let xct2 = sub_cty ~ctx ct2 in
-      list ctl "@;-> " (fmt_arrow_param c ctx)
-      $ fmt "@;-> "
-      $ hvbox 0 (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
+      list ctl (arrow_sep c ~parens) (fmt_arrow_param c ctx)
+      $ fmt (arrow_sep c ~parens)
+      $ (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
       $ fmt_attributes c atrs
   | Pcty_extension ext -> fmt_extension c ctx ext $ fmt_attributes c atrs
   | Pcty_open (popen, cl) ->
@@ -4215,7 +4222,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | Pexp_function _ ->
         Params.function_indent c.conf ~ctx
           ~default:c.conf.fmt_opts.let_binding_indent.v
-    | Pexp_fun _ | Pexp_newtype _ ->
+    | (Pexp_fun _ | Pexp_newtype _)
+      when c.conf.fmt_opts.let_binding_deindent_fun.v ->
         max (c.conf.fmt_opts.let_binding_indent.v - 1) 0
     | _ -> c.conf.fmt_opts.let_binding_indent.v
   in

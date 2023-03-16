@@ -25,6 +25,8 @@ type 'a t =
   | Repl_file : unit t
   | Documentation : unit t
 
+type any_t = Any : 'a t -> any_t
+
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =

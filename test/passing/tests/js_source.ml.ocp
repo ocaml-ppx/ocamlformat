@@ -134,18 +134,17 @@ class x =
   end [@foo]
 
 (* Class type expressions *)
-class type t =
-  object
-    inherit t [@@foo]
-    val x : t [@@foo]
-    val mutable x : t [@@foo]
-    method x : t [@@foo]
-    method private x : t [@@foo]
-    constraint t = t' [@@foo]
-    [@@@abc]
-    [%%id]
-    [@@@aaa]
-  end[@foo]
+class type t = object
+  inherit t [@@foo]
+  val x : t [@@foo]
+  val mutable x : t [@@foo]
+  method x : t [@@foo]
+  method private x : t [@@foo]
+  constraint t = t' [@@foo]
+  [@@@abc]
+  [%%id]
+  [@@@aaa]
+end[@foo]
 
 (* Type expressions *)
 type t = [%foo: ((module M)[@foo])]
@@ -233,18 +232,16 @@ and 'a name = Class : 'a class_name -> (< cast : 'a. 'a name -> 'a ; .. > as 'a)
 
 exception Bad_cast
 
-class type castable =
-  object
-    method cast : 'a. 'a name -> 'a
-  end
+class type castable = object
+  method cast : 'a. 'a name -> 'a
+end
 
 (* Lets create a castable class with a name*)
 
-class type foo_t =
-  object
-    inherit castable
-    method foo : string
-  end
+class type foo_t = object
+  inherit castable
+  method foo : string
+end
 
 type 'a class_name += Foo : foo_t class_name
 
@@ -260,11 +257,10 @@ class foo : foo_t =
 
 (* Now we can create a subclass of foo *)
 
-class type bar_t =
-  object
-    inherit foo
-    method bar : string
-  end
+class type bar_t = object
+  inherit foo
+  method bar : string
+end
 
 type 'a class_name += Bar : bar_t class_name
 
@@ -3802,12 +3798,11 @@ let ( !! ) = Lazy.force
 
 (* The basic operations *)
 
-class type ['a, 'b] ops =
-  object
-    method free : x:'b -> ?y:'c -> Names.t
-    method subst : sub:'a Subst.t -> 'b -> 'a
-    method eval : 'b -> 'a
-  end
+class type ['a, 'b] ops = object
+  method free : x:'b -> ?y:'c -> Names.t
+  method subst : sub:'a Subst.t -> 'b -> 'a
+  method eval : 'b -> 'a
+end
 
 (* Variables are common to lambda and expr *)
 
@@ -4049,12 +4044,11 @@ let ( !! ) = Lazy.force
 
 (* The basic operations *)
 
-class type ['a, 'b] ops =
-  object
-    method free : 'b -> Names.t
-    method subst : sub:'a Subst.t -> 'b -> 'a
-    method eval : 'b -> 'a
-  end
+class type ['a, 'b] ops = object
+  method free : 'b -> Names.t
+  method subst : sub:'a Subst.t -> 'b -> 'a
+  method eval : 'b -> 'a
+end
 
 (* Variables are common to lambda and expr *)
 
@@ -5037,10 +5031,9 @@ module M = struct
 end
 
 module B = struct
-  class type a =
-    object
-      method a : 'a. 'a M.s -> 'a
-    end
+  class type a = object
+    method a : 'a. 'a M.s -> 'a
+  end
 end
 
 module M' = M
@@ -5249,10 +5242,9 @@ module type S' = S with module M := String
 (* A subtle problem appearing with -principal *)
 type -'a t
 
-class type c =
-  object
-    method m : [ `A ] t
-  end
+class type c = object
+  method m : [ `A ] t
+end
 
 module M : sig
   val v : (#c as 'a) -> 'a
@@ -6019,10 +6011,9 @@ type expr =
   | `App of expr * expr
   ]
 
-class type exp =
-  object
-    method eval : (string, exp) Hashtbl.t -> expr
-  end
+class type exp = object
+  method eval : (string, exp) Hashtbl.t -> expr
+end
 
 class app e1 e2 : exp =
   object
@@ -6116,9 +6107,7 @@ let o =
 ;;
 
 module M : sig
-  class x :
-    int
-    -> object
+  class x : int -> object
       method m : int
     end
 end = struct
@@ -6129,9 +6118,7 @@ end = struct
 end
 
 module M : sig
-  class c :
-    'a
-    -> object
+  class c : 'a -> object
       val x : 'b
     end
 end = struct
@@ -6170,24 +6157,22 @@ class charlie a =
 (* The module begins *)
 exception Out_of_range
 
-class type ['a] cursor =
-  object
-    method get : 'a
-    method incr : unit -> unit
-    method is_last : bool
-  end
+class type ['a] cursor = object
+  method get : 'a
+  method incr : unit -> unit
+  method is_last : bool
+end
 
-class type ['a] storage =
-  object ('self)
-    method first : 'a cursor
-    method len : int
-    method nth : int -> 'a cursor
-    method copy : 'self
-    method sub : int -> int -> 'self
-    method concat : 'a storage -> 'self
-    method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
-    method iter : ('a -> unit) -> unit
-  end
+class type ['a] storage = object ('self)
+  method first : 'a cursor
+  method len : int
+  method nth : int -> 'a cursor
+  method copy : 'self
+  method sub : int -> int -> 'self
+  method concat : 'a storage -> 'self
+  method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
+  method iter : ('a -> unit) -> unit
+end
 
 class virtual ['a, 'cursor] storage_base =
   object (self : 'self)
@@ -6220,18 +6205,16 @@ class virtual ['a, 'cursor] storage_base =
       if self#len > 0 then proc p#get else ()
   end
 
-class type ['a] obj_input_channel =
-  object
-    method get : unit -> 'a
-    method close : unit -> unit
-  end
+class type ['a] obj_input_channel = object
+  method get : unit -> 'a
+  method close : unit -> unit
+end
 
-class type ['a] obj_output_channel =
-  object
-    method put : 'a -> unit
-    method flush : unit -> unit
-    method close : unit -> unit
-  end
+class type ['a] obj_output_channel = object
+  method put : 'a -> unit
+  method flush : unit -> unit
+  method close : unit -> unit
+end
 
 module UChar = struct
   type t = int
@@ -6371,10 +6354,9 @@ module UText = struct
   let iter proc s = s#iter proc
 end
 
-class type foo_t =
-  object
-    method foo : string
-  end
+class type foo_t = object
+  method foo : string
+end
 
 type 'a name =
   | Foo : foo_t name
@@ -6428,10 +6410,9 @@ and argument (func, ty) =
 
 let f (x : #M.foo) = 0
 
-class type ['e] t =
-  object ('s)
-    method update : 'e -> 's
-  end
+class type ['e] t = object ('s)
+  method update : 'e -> 's
+end
 
 module type S = sig
   class base : 'e -> ['e] t
@@ -6684,10 +6665,9 @@ type -'typing wrapped = private sexp
 and +'a t = 'a typed wrapped
 and sexp = private untyped wrapped
 
-class type ['a] s3 =
-  object
-    val underlying : 'a t
-  end
+class type ['a] s3 = object
+  val underlying : 'a t
+end
 
 class ['a] s3object r : ['a] s3 =
   object
@@ -7038,9 +7018,7 @@ end
 
 (* Bad (not regular) *)
 module rec M : sig
-  class ['a] c :
-    'a
-    -> object
+  class ['a] c : 'a -> object
       method map : ('a -> 'b) -> 'b M.c
     end
 end = struct
@@ -7051,15 +7029,13 @@ end = struct
 end
 
 (* OK *)
-class type ['node] extension =
-  object
-    method node : 'node
-  end
+class type ['node] extension = object
+  method node : 'node
+end
 
-and ['ext] node =
-  object
-    constraint 'ext = ('ext node #extension[@id])
-  end
+and ['ext] node = object
+  constraint 'ext = ('ext node #extension[@id])
+end
 
 class x =
   object
@@ -7736,10 +7712,9 @@ let _ =
 (* Classes *)
 
 module rec Class1 : sig
-  class c :
-    object
-      method m : int -> int
-    end
+  class c : object
+    method m : int -> int
+  end
 end = struct
   class c =
     object
@@ -7748,10 +7723,9 @@ end = struct
 end
 
 and Class2 : sig
-  class d :
-    object
-      method m : int -> int
-    end
+  class d : object
+    method m : int -> int
+  end
 end = struct
   class d =
     object (self)
@@ -7766,10 +7740,9 @@ let _ =
   try
     let module A = struct
       module rec BadClass1 : sig
-        class c :
-          object
-            method m : int
-          end
+        class c : object
+          method m : int
+        end
       end = struct
         class c =
           object

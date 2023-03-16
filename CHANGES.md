@@ -11,14 +11,18 @@
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
+- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
 
 ### Changes
 
-- Restore short form formatting of module patterns with a module type constraint (`((module M) : (module S))` formatted as `(module M : S)`) (#2280, @gpetiot)
+- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
-- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, #2289, #2299, @gpetiot, @Julow)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, #2289, #2299, #2302, @gpetiot, @Julow)
+- Improve formatting of class signatures (#2301, @gpetiot, @Julow)
 
 ### New features
+
+- Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
 
 ## 0.25.1 (2023-03-06)
 
