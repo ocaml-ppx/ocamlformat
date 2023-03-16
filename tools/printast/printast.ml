@@ -10,9 +10,13 @@ let get_arg () =
 
 let () =
   let inputf = get_arg () in
-  let syntax = Option.value ~default:Syntax.Use_file (Syntax.of_fname inputf) in
-  let E.Any kind = E.of_syntax syntax in
-  Printf.printf "Reading %S\n" inputf;
+  let syntax =
+    Option.value ~default:Syntax.Use_file (Syntax.of_fname inputf)
+  in
+  let (E.Any kind) = E.of_syntax syntax in
+  Printf.printf "Reading %S\n" inputf ;
   let content = In_channel.read_all inputf in
-  let ast = E.Parse.ast kind ~preserve_beginend:true ~input_name:inputf content in
+  let ast =
+    E.Parse.ast kind ~preserve_beginend:true ~input_name:inputf content
+  in
   E.Printast.ast kind Format.std_formatter ast
