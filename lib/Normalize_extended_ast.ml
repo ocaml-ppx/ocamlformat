@@ -159,18 +159,33 @@ let docstring conf =
   let normalize_code = normalize_code conf mapper in
   docstring conf ~normalize_code
 
+let diff ~f ~cmt_kind x y =
+  let dropped x = {Cmt.kind= `Dropped x; cmt_kind} in
+  let added x = {Cmt.kind= `Added x; cmt_kind} in
+  (*= [symmetric_diff x y] returns a sequence of changes between [x] and [y]:
+      - [First k] means [k] is in [x] but not [y]
+      - [Second k] means [k] is in [y] but not [x] *)
+  Set.symmetric_diff (f x) (f y)
+  |> Sequence.to_list
+  (*= - [First _] is reported as a comment dropped
+      - [Second _] is reported as a comment added *)
+  |> List.map ~f:(Either.value_map ~first:dropped ~second:added)
+  |> function [] -> Ok () | errors -> Error errors
+
 let diff_docstrings c x y =
   let norm z =
-    let f Cmt.{txt; _} = docstring c txt in
-    Set.of_list (module String) (List.map ~f z)
+    let f Cmt.{txt; loc} = Cmt.create (docstring c txt) loc in
+    Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  Set.symmetric_diff (norm x) (norm y)
+  diff ~f:norm ~cmt_kind:`Doc_comment x y
 
 let diff_cmts (conf : Conf.t) x y =
   let mapper = make_mapper conf ~ignore_doc_comments:false in
   let normalize_code = normalize_code conf mapper in
   let norm z =
-    let norm_non_code {Cmt.txt; _} = Docstring.normalize_text txt in
+    let norm_non_code {Cmt.txt; loc} =
+      Cmt.create (Docstring.normalize_text txt) loc
+    in
     let f z =
       match Cmt.txt z with
       | "" | "$" -> norm_non_code z
@@ -181,12 +196,12 @@ let diff_cmts (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
-            normalize_code source
+            Cmt.create (normalize_code source) z.loc
           else norm_non_code z
     in
-    Set.of_list (module String) (List.map ~f z)
+    Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
-  Set.symmetric_diff (norm x) (norm y)
+  diff ~f:norm ~cmt_kind:`Comment x y
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = ast fragment c ~ignore_doc_comments in
