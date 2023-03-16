@@ -7663,3 +7663,5 @@ let _ =
                                          eeee) -> FFFFFFFFF gg)
     ~h
 ;;
+
+let _ = f ((module M : S))

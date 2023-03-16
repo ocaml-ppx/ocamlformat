@@ -9897,3 +9897,5 @@ let _ =
                                     -> FFFFFFFFF gg)
     ~h
 ;;
+
+let _ = f (module M : S)
