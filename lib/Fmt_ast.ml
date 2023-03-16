@@ -2319,8 +2319,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
+      let outer_parens = parens && has_attr in
+      let inner_parens = true in
       let fmt_mod m =
-        Params.parens_if parens c.conf
+        Params.parens_if outer_parens c.conf
           ( match pt with
           | Some (id, cnstrs) ->
               let opn_paren =
@@ -2331,13 +2333,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               let cls_paren = closing_paren c ~offset:(-2) in
               hvbox 2
                 ( hovbox 0
-                    ( opn_paren $ str "module"
+                    ( fmt_if_k inner_parens opn_paren
+                    $ str "module"
                     $ fmt_extension_suffix c ext
                     $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id )
                 $ fmt_package_type c ctx cnstrs
-                $ cls_paren $ fmt_atrs )
+                $ fmt_if_k inner_parens cls_paren
+                $ fmt_atrs )
           | None ->
-              Params.Exp.wrap c.conf ~parens:true
+              Params.Exp.wrap c.conf ~parens:inner_parens
                 (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
               $ fmt_atrs )
       in
@@ -2607,8 +2611,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
            (sub_exp ~ctx e)
   | Pexp_parens e ->
-      hvbox 0 @@ Params.parens c.conf
-      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:false ~indent_wrap ?ext
+      hvbox 0
+      @@ fmt_expression c ~box ?pro ?epi ?eol ~parens:true ~indent_wrap ?ext
            (sub_exp ~ctx e)
       $ fmt_atrs
 
