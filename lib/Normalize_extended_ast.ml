@@ -159,6 +159,11 @@ let docstring conf =
   let normalize_code = normalize_code conf mapper in
   docstring conf ~normalize_code
 
+(** [zip_align (x, y)] combines 2 lists [x] and [y]:
+
+    - elements in [x] but not in [y] are [`Dropped]
+    - elements in [y] but not in [x] are [`Added]
+    - elements in both are [`Modified] *)
 let zip_align (l1, l2) =
   let rec aux acc l1 l2 =
     match (l1, l2) with
