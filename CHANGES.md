@@ -11,6 +11,7 @@
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
+- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
 
 ### Changes
 
