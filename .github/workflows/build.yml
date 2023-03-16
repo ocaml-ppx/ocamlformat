@@ -36,3 +36,48 @@ jobs:
 
       - name: Check help files
         run: opam exec -- dune build @help --auto-promote
+
+      - name: Upload binary
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
+          path: _build/install/default/bin/ocamlformat
+
+  test-branch:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        profile:
+          - conventional
+          - ocamlformat
+          - janestreet
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch main build of ocamlformat
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: ""
+          check_artifacts: true
+          branch: main
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
+          path: ocamlformat-a
+
+      - name: Fetch new build of ocamlformat
+        uses: actions/download-artifact@v3
+        with:
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
+          path: ocamlformat-b
+
+      - name: Test ${{ matrix.profile }} profile
+        run: |
+          chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat
+          ./tools/test_branch.sh -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
+        shell: bash
