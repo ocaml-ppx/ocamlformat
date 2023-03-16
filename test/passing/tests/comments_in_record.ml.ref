@@ -82,8 +82,7 @@ type program =
 
 type t =
   { mutable ci_fixed: IntervalSet.t
-  ; mutable
-      ci_spilled:
+  ; mutable ci_spilled:
       (* spilled stack slots (reg.loc = Stack (Local n)) still in use *)
       IntervalSet.t }
 
@@ -96,7 +95,6 @@ type t =
 
 type t =
   { mutable ci_fixed: IntervalSet.t
-  ; mutable
-      ci_spilled
+  ; mutable ci_spilled
       (* spilled stack slots (reg.loc = Stack (Local n)) still in use *):
       IntervalSet.t }
