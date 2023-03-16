@@ -53,6 +53,10 @@ jobs:
           - conventional
           - ocamlformat
           - janestreet
+        include:
+          - test_branch_args:
+          - test_branch_args: -o
+            profile: janestreet
 
     steps:
       # Clone the project
@@ -79,5 +83,5 @@ jobs:
       - name: Test ${{ matrix.profile }} profile
         run: |
           chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat
-          ./tools/test_branch.sh -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
+          ./tools/test_branch.sh ${{ matrix.test_branch_args }} -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
         shell: bash
