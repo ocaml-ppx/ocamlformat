@@ -87,8 +87,8 @@ else
     echo "-a and -b are mandatory when -n is passed." >&2
     exit 1
   fi
-  exe_a=$arg_a
-  exe_b=$arg_b
+  exe_a=`realpath $arg_a`
+  exe_b=`realpath $arg_b`
 fi
 
 make -C test-extra test_setup test_unstage test_clean test_pull
