@@ -87,6 +87,8 @@ type fmt_opts =
   ; leading_nested_match_parens: bool elt
   ; let_and: [`Compact | `Sparse] elt
   ; let_binding_indent: int elt
+  ; let_binding_deindent_fun: bool elt
+        (** De-indent the [fun] in a let-binding body. *)
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon] elt
   ; let_module: [`Compact | `Sparse] elt
   ; line_endings: [`Lf | `Crlf] elt
