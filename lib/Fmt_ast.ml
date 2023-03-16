@@ -3006,11 +3006,16 @@ and fmt_case c ctx ~first ~last case =
     | (Pexp_match _ | Pexp_try _), `Align -> last
     | _ -> false
   in
-  let symbol_parens = Exp.is_symbol xrhs.ast in
+  let body_has_parens =
+    match xrhs.ast.pexp_desc with
+    | Pexp_tuple _ when Poly.(c.conf.fmt_opts.parens_tuple.v = `Always) ->
+        true
+    | _ -> Exp.is_symbol xrhs.ast
+  in
   let parens_branch, parens_for_exp =
     if align_nested_match then (false, Some false)
     else if c.conf.fmt_opts.leading_nested_match_parens.v then (false, None)
-    else (parenze_exp xrhs && not symbol_parens, Some false)
+    else (parenze_exp xrhs && not body_has_parens, Some false)
   in
   (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
   let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in

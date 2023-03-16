@@ -1790,12 +1790,12 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
   | Node (bal, (Node _ as l), x, r) -> (
     match del_min l with
     | y, Inr l -> (y, Inr (Node (bal, l, x, r)))
-    | y, Inl l -> (
+    | y, Inl l ->
         ( y
         , match bal with
           | Same -> Inr (Node (Less, l, x, r))
           | More -> Inl (Node (Same, l, x, r))
-          | Less -> rotl l x r ) ) )
+          | Less -> rotl l x r ) )
 
 type _ avl_del =
   | Dsame : 'n avl -> 'n avl_del
