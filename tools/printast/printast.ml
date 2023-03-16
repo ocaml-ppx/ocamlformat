@@ -21,6 +21,8 @@ let () =
   let inputf = get_arg () in
   let ppf, parser_name = get_ppf inputf in
   Printf.printf "Reading %S as %s\n" inputf parser_name ;
-  In_channel.with_open_text inputf (fun ic ->
+  let ic = open_in inputf in
+  let finally () = close_in ic in
+  Fun.protect (fun ic ->
       let lexbuf = Lexing.from_channel ic in
       ppf lexbuf )
