@@ -141,6 +141,11 @@ let make_mapper conf ~ignore_doc_comments =
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
              pat3 )
+    | Ppat_constraint (pat1, {ptyp_desc= Ptyp_poly ([], _t); _}) ->
+        (* The parser put the same type constraint in two different nodes:
+           [let _ : typ = exp] is represented as [let _ : typ = (exp :
+           typ)]. *)
+        m.pat m pat1
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =

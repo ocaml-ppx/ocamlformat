@@ -1999,7 +1999,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/first_class_module.ml first_class_module.ml.stdout)))
+ (action (diff tests/first_class_module.ml.ref first_class_module.ml.stdout)))
 
 (rule
  (alias runtest)
