@@ -88,26 +88,25 @@ class ffffffffffffffffffff =
       g
   end
 
-class type ffffffffffffffffffff =
-  object
-    method ffffffffffffffffffff :
-         aaaaaaaaaaaaaaaaaaaaaa
-      -> bbbbbbbbbbbbbbbbbbbbbb
-      -> cccccccccccccccccccccc
-      -> dddddddddddddddddddddd
+class type ffffffffffffffffffff = object
+  method ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc
+    -> dddddddddddddddddddddd
 
-    val ffffffffffffffffffff :
-         aaaaaaaaaaaaaaaaaaaaaa
-      -> bbbbbbbbbbbbbbbbbbbbbb
-      -> cccccccccccccccccccccc
-      -> dddddddddddddddddddddd
+  val ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc
+    -> dddddddddddddddddddddd
 
-    val ffffffffffffffffffff :
-         (   aaaaaaaaaaaaaaaaaaaaaa
-          -> bbbbbbbbbbbbbbbbbbbbbb
-          -> cccccccccccccccccccccc
-          -> dddddddddddddddddddddd )
-      -> bbbbbbbbbbbbbbbbbbbbbb
-      -> cccccccccccccccccccccc
-      -> dddddddddddddddddddddd
-  end
+  val ffffffffffffffffffff :
+       (   aaaaaaaaaaaaaaaaaaaaaa
+        -> bbbbbbbbbbbbbbbbbbbbbb
+        -> cccccccccccccccccccccc
+        -> dddddddddddddddddddddd )
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc
+    -> dddddddddddddddddddddd
+end

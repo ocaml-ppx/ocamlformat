@@ -259,11 +259,10 @@ type t = < a: int (* a *) ; (* b *) .. (* c *) >
 
 type t = < (* a *) .. (* b *) >
 
-class type i =
-  object
-    (* test *)
-    inherit oo
-  end
+class type i = object
+  (* test *)
+  inherit oo
+end
 
 class i =
   object

@@ -915,6 +915,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to class_sig.mli.stdout
+   (with-stderr-to class_sig.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/class_sig.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig.mli class_sig.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig.mli.err class_sig.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to class_type.ml.stdout
    (with-stderr-to class_type.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/class_type.ml})))))
