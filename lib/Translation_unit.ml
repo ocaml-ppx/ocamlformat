@@ -478,15 +478,21 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
   in
   Ok (Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted)
 
-let parse_and_format = function
-  | Syntax.Structure -> parse_and_format Structure Structure
-  | Syntax.Signature -> parse_and_format Signature Signature
-  | Syntax.Use_file -> parse_and_format Use_file Use_file
-  | Syntax.Core_type -> parse_and_format Core_type Core_type
-  | Syntax.Module_type -> parse_and_format Module_type Module_type
-  | Syntax.Expression -> parse_and_format Expression Expression
-  | Syntax.Repl_file -> parse_and_format Repl_file Repl_file
-  | Syntax.Documentation -> parse_and_format Documentation Documentation
+let std_of_extended (type a) : a Extended_ast.t -> Std_ast.any_t =
+  function
+  | Extended_ast.Structure -> Std_ast.Any Std_ast.Structure
+  | Signature -> Any Signature
+  | Use_file -> Any Use_file
+  | Core_type -> Any Core_type
+  | Module_type -> Any Module_type
+  | Expression -> Any Expression
+  | Repl_file -> Any Repl_file
+  | Documentation -> Any Documentation
+
+let parse_and_format syntax =
+  let Extended_ast.Any ext = Extended_ast.of_syntax syntax in
+  let Std_ast.Any std = std_of_extended ext in
+  parse_and_format ext std
 
 let numeric (type a b) (fg : a list Extended_ast.t)
     (std_fg : b list Std_ast.t) ~input_name ~source ~range (conf : Conf.t) =

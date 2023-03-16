@@ -257,13 +257,6 @@ let root =
     ~set:(fun root conf -> {conf with root})
     Arg.(value & opt (some dir) default & info ["root"] ~doc ~docs ~docv)
 
-let kind_of_ext fname =
-  match Filename.extension fname with
-  | ".ml" | ".mlt" | ".eliom" -> Some Syntax.Use_file
-  | ".mli" | ".eliomi" -> Some Syntax.Signature
-  | ".mld" -> Some Syntax.Documentation
-  | _ -> None
-
 let config =
   let doc =
     "Aggregate options. Options are specified as a comma-separated list of \
@@ -715,7 +708,7 @@ let validate_inputs () =
          from stdin"
   | [Stdin], Some kind, name -> Ok (`Stdin (name, kind))
   | [Stdin], None, Some name -> (
-    match kind_of_ext name with
+    match Syntax.of_fname name with
     | Some kind -> Ok (`Stdin (Some name, kind))
     | None ->
         Error
@@ -725,7 +718,7 @@ let validate_inputs () =
   | [File f], None, name ->
       let kind =
         Option.value ~default:f name
-        |> kind_of_ext
+        |> Syntax.of_fname
         |> Option.value ~default:Syntax.Use_file
       in
       Ok (`Single_file (kind, name, f))
@@ -737,7 +730,7 @@ let validate_inputs () =
       List.map inputs ~f:(function
         | Stdin -> Error "Cannot specify stdin together with other inputs"
         | File f ->
-            let kind = Option.value ~default:Use_file (kind_of_ext f) in
+            let kind = Option.value ~default:Use_file (Syntax.of_fname f) in
             Ok (kind, f) )
       |> Result.all
       |> Result.map ~f:(fun files -> `Several_files files)

@@ -1,4 +1,6 @@
-open Parser_extended
+open! Stdio
+open Ocamlformat_lib
+module E = Extended_ast
 
 let get_arg () =
   if Array.length Sys.argv < 2 then (
@@ -6,23 +8,11 @@ let get_arg () =
     exit 2 )
   else Sys.argv.(1)
 
-let parse_and_print parsef printf lexbuf =
-  printf Format.std_formatter (parsef lexbuf)
-
-let get_ppf fname =
-  match Filename.extension fname with
-  | ".mli" ->
-      (parse_and_print Parse.interface Printast.interface, "interface")
-  | _ ->
-      ( parse_and_print Parse.implementation Printast.implementation
-      , "implementation" )
-
 let () =
   let inputf = get_arg () in
-  let ppf, parser_name = get_ppf inputf in
-  Printf.printf "Reading %S as %s\n" inputf parser_name ;
-  let ic = open_in inputf in
-  let finally () = close_in ic in
-  Fun.protect (fun ic ->
-      let lexbuf = Lexing.from_channel ic in
-      ppf lexbuf )
+  let syntax = Option.value ~default:Syntax.Use_file (Syntax.of_fname inputf) in
+  let E.Any kind = E.of_syntax syntax in
+  Printf.printf "Reading %S\n" inputf;
+  let content = In_channel.read_all inputf in
+  let ast = E.Parse.ast kind ~preserve_beginend:true ~input_name:inputf content in
+  E.Printast.ast kind Format.std_formatter ast

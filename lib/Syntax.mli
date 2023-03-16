@@ -18,3 +18,6 @@ type t =
   | Expression
   | Repl_file
   | Documentation
+
+(** The expected syntax of a file given its name. *)
+val of_fname : string -> t option

@@ -28,6 +28,8 @@ type 'a t =
   | Repl_file : unit t
   | Documentation : unit t
 
+type any_t = Any : 'a t -> any_t
+
 module Parse : sig
   val ast : 'a t -> input_name:string -> string -> 'a
 end

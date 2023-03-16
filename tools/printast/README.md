@@ -1,6 +1,6 @@
 # printast
 
-Equivalent of `ocamlc -dparsetree` for the extended AST.
+Equivalent of `ocamlc -dparsetree` for the normalized extended AST.
 
 Usage:
 
