@@ -83,7 +83,7 @@ if [[ $arg_n = 0 ]]; then
 else
   # Two versions of ocamlformat are provided
 
-  if [[ -n $arg_a ]] || [[ -n $arg_b ]]; then
+  if [[ -z $arg_a ]] || [[ -z $arg_b ]]; then
     echo "-a and -b are mandatory when -n is passed." >&2
     exit 1
   fi
