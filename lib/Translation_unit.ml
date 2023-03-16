@@ -215,24 +215,28 @@ let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
   let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
   List.sort ~compare !locs
 
-let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
+let check_remaining_comments cmts =
   let dropped x = {Cmt.kind= `Dropped x; cmt_kind= `Comment} in
+  match Cmts.remaining_comments cmts with
+  | [] -> Ok ()
+  | cmts -> Error (List.map cmts ~f:dropped)
+
+let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
+  let open Result in
   if conf.opr_opts.comment_check.v then
     let errors =
-      match Cmts.remaining_comments cmts with
-      | [] -> (
-          let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
-          let old_docs, old_cmts = split_cmts t_old.comments in
-          let new_docs, new_cmts = split_cmts t_new.comments in
-          match Normalize_extended_ast.diff_cmts conf old_cmts new_cmts with
-          | [] ->
-              Normalize_extended_ast.diff_docstrings conf old_docs new_docs
-          | x -> x )
-      | x -> List.map x ~f:dropped
+      check_remaining_comments cmts
+      >>= fun () ->
+      let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
+      let old_docs, old_cmts = split_cmts t_old.comments in
+      let new_docs, new_cmts = split_cmts t_new.comments in
+      Normalize_extended_ast.diff_cmts conf old_cmts new_cmts
+      >>= fun () ->
+      Normalize_extended_ast.diff_docstrings conf old_docs new_docs
     in
-    match List.map errors ~f:(fun x -> `Comment x) with
-    | [] -> ()
-    | errors -> internal_error errors []
+    match errors with
+    | Ok () -> ()
+    | Error e -> internal_error (List.map e ~f:(fun x -> `Comment x)) []
 
 let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)

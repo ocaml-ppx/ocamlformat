@@ -188,6 +188,7 @@ let diff ~f ~cmt_kind x y =
          Migrate_ast.Location.compare (loc x) (loc y) )
   |> List.partition_map ~f:Fn.id
   |> zip_align ~cmt_kind
+  |> function [] -> Ok () | errors -> Error errors
 
 let diff_docstrings c x y =
   let norm z =
