@@ -88,6 +88,12 @@ module Indent = struct
   let fun_args = _ocp 6 4
 end
 
+module Break = struct
+  let _ocp a b c = fmt (if c.conf.fmt_opts.ocp_indent_compat.v then a else b)
+
+  let type_constr = _ocp "@;<1 2>" "@ "
+end
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -803,7 +809,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
           (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
-      fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
+      fmt_core_type c (sub_typ ~ctx t1)
+      $ Break.type_constr c $ fmt_longident_loc c lid
   | Ptyp_constr (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
         (list t1N (Params.comma_sep c.conf)
