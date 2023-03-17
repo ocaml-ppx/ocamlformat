@@ -1887,12 +1887,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             let break_body =
               match eN1_body.pexp_desc with
               | Pexp_function _ -> fmt "@ "
-              | _ -> (
-                (* Avoid the "double indentation" of the application and the
-                   function matching when the [max-indent] option is set. *)
-                match c.conf.fmt_opts.max_indent.v with
-                | Some i when i <= 2 -> fmt "@ "
-                | _ -> fmt "@;<1 2>" )
+              | _ ->
+                  if c.conf.fmt_opts.ocp_indent_compat.v then fmt "@ "
+                  else fmt "@;<1 2>"
             in
             let wrap_intro x =
               wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ hvbox 0 x)
