@@ -59,9 +59,11 @@ jobs:
             profile: janestreet
 
     steps:
-      - name: Install dependencies
+      - name: Install ocp-indent
         if: ${{ matrix.ocp_indent }}
-        run: sudo apt install -y ocp-indent
+        run: |
+          sudo apt install -y ocp-indent
+          sudo touch /etc/ocamlfind.conf
 
       # Clone the project
       - uses: actions/checkout@v3
