@@ -2991,32 +2991,6 @@ and fmt_cases c ctx cs = list_fl cs (fmt_case c ctx)
 and fmt_case c ctx ~first ~last case =
   let {pc_lhs; pc_guard; pc_rhs} = case in
   let xrhs = sub_exp ~ctx pc_rhs in
-  let indent =
-    match
-      (c.conf.fmt_opts.cases_matching_exp_indent.v, (ctx, pc_rhs.pexp_desc))
-    with
-    | ( `Compact
-      , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-        , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
-        2
-    | _, _ -> c.conf.fmt_opts.cases_exp_indent.v
-  in
-  let align_nested_match =
-    match (pc_rhs.pexp_desc, c.conf.fmt_opts.nested_match.v) with
-    | (Pexp_match _ | Pexp_try _), `Align -> last
-    | _ -> false
-  in
-  let body_has_parens =
-    match xrhs.ast.pexp_desc with
-    | Pexp_tuple _ when Poly.(c.conf.fmt_opts.parens_tuple.v = `Always) ->
-        true
-    | _ -> Exp.is_symbol xrhs.ast
-  in
-  let parens_branch, parens_for_exp =
-    if align_nested_match then (false, Some false)
-    else if c.conf.fmt_opts.leading_nested_match_parens.v then (false, None)
-    else (parenze_exp xrhs && not body_has_parens, Some false)
-  in
   (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
   let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
   let xlhs = sub_pat ~ctx pc_lhs in
@@ -3030,8 +3004,7 @@ and fmt_case c ctx ~first ~last case =
       (Cmts.has_before c.cmts pc_rhs.pexp_loc)
       (fmt "@;<1000 0>")
   in
-  let indent = if align_nested_match then 0 else indent in
-  let p = Params.get_cases c.conf ~first ~indent ~parens_branch ~xbch:xrhs in
+  let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
@@ -3044,7 +3017,7 @@ and fmt_case c ctx ~first ~last case =
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
+          ( fmt_expression ?eol c ?parens:p.expr_parens xrhs
           $ p.close_paren_branch ) )
 
 and fmt_value_description ?ext c ctx vd =
