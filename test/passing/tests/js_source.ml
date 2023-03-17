@@ -7663,3 +7663,17 @@ let _ =
                                          eeee) -> FFFFFFFFF gg)
     ~h
 ;;
+
+type t
+[@@deriving
+  some_deriver_name
+, another_deriver_name
+, another_deriver_name
+, another_deriver_name
+, yet_another_such_name
+, such_that_they_line_wrap]
+
+type t
+[@@deriving
+  some_deriver_name another_deriver_name another_deriver_name
+    another_deriver_name yet_another_such_name such_that_they_line_wrap]
