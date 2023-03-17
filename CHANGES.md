@@ -8,7 +8,7 @@
 
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
 - Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
-- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, @gpetiot)
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
 - Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)

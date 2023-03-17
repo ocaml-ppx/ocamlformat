@@ -80,3 +80,22 @@ type program =
     prog_struct_types : lltype list;  (* data structures *)
     prog_lib_funcs : func list;       (* library functions *)
   }
+
+type t =
+  { mutable ci_fixed: IntervalSet.t
+  ; mutable ci_spilled:
+      (* spilled stack slots (reg.loc = Stack (Local n)) still in use *)
+      IntervalSet.t }
+
+type t =
+  { mutable ci_fixed: IntervalSet.t
+  ; mutable
+      (* spilled stack slots (reg.loc = Stack (Local n)) still in use *)
+      ci_spilled:
+      IntervalSet.t }
+
+type t =
+  { mutable ci_fixed: IntervalSet.t
+  ; mutable ci_spilled
+      (* spilled stack slots (reg.loc = Stack (Local n)) still in use *):
+      IntervalSet.t }

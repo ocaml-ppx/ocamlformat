@@ -347,8 +347,8 @@ let fmt_private ?(pro = fmt "@ ") c loc =
 let fmt_virtual ?(pro = fmt "@ ") c loc =
   pro $ hvbox 0 @@ Cmts.fmt c loc @@ str "virtual"
 
-let fmt_mutable ?(pro = fmt "@ ") c loc =
-  pro $ hvbox 0 @@ Cmts.fmt c loc @@ str "mutable"
+let fmt_mutable ?(pro = fmt "@ ") ?(epi = noop) c loc =
+  pro $ hvbox 0 (Cmts.fmt c loc (str "mutable")) $ epi
 
 let fmt_private_flag c = function
   | Private loc -> fmt_private c loc
@@ -358,8 +358,8 @@ let fmt_virtual_flag c = function
   | Virtual loc -> fmt_virtual c loc
   | Concrete -> noop
 
-let fmt_mutable_flag c = function
-  | Mutable loc -> fmt_mutable ~pro:noop c loc $ fmt "@ "
+let fmt_mutable_flag ?pro ?epi c = function
+  | Mutable loc -> fmt_mutable ?pro ?epi c loc
   | Immutable -> noop
 
 let fmt_mutable_virtual_flag c = function
@@ -3226,9 +3226,12 @@ and fmt_label_declaration c ctx ?(last = false) decl =
         ( hvbox 3
             ( hvbox 4
                 ( hvbox 2
-                    ( fmt_mutable_flag c pld_mutable
-                    $ fmt_str_loc c pld_name $ fmt_if field_loose " "
-                    $ fmt ":@ "
+                    ( hovbox 2
+                        ( fmt_mutable_flag ~pro:noop ~epi:(fmt "@ ") c
+                            pld_mutable
+                        $ fmt_str_loc c pld_name $ fmt_if field_loose " "
+                        $ fmt ":" )
+                    $ fmt "@ "
                     $ fmt_core_type c (sub_typ ~ctx pld_type)
                     $ fmt_semicolon )
                 $ cmt_after_type )
