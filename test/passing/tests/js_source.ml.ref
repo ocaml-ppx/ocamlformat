@@ -1157,8 +1157,8 @@ let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option 
 
 (* Auxiliary function to get the type of a case from its selector *)
 let rec get_case
-  : type a b e.
-    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
+    : type a b e.
+      (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
   =
   fun sel cases ->
   match cases with
@@ -1267,8 +1267,9 @@ let ty_abc =
     | `C -> "C", None
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj
-    : type c.
-      (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
+      : type c.
+        (int -> string -> noarg -> unit, c) ty_sel * c
+        -> [ `A of int | `B of string | `C ]
     = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
@@ -1406,8 +1407,8 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ]
 
        method inj
-         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [ `A of int | `B of string | `C ] =
+           : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+                     -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -1613,12 +1614,12 @@ let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equ
 ;;
 
 let rec plus_assoc
-  : type a b c ab bc m n.
-    (a, b, ab) plus
-    -> (ab, c, m) plus
-    -> (b, c, bc) plus
-    -> (a, bc, n) plus
-    -> (m, n) equal
+    : type a b c ab bc m n.
+      (a, b, ab) plus
+      -> (ab, c, m) plus
+      -> (b, c, bc) plus
+      -> (a, bc, n) plus
+      -> (m, n) equal
   =
   fun p1 p2 p3 p4 ->
   match p1, p4 with
@@ -1721,7 +1722,8 @@ let rec elem : type h. int -> h avl -> bool =
 ;;
 
 let rec rotr
-  : type n. n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
+    : type n.
+      n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
   =
   fun tL y tR ->
   match tL with
@@ -1736,7 +1738,8 @@ let rec rotr
 ;;
 
 let rec rotl
-  : type n. n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
+    : type n.
+      n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
   =
   fun tL u tR ->
   match tR with
@@ -2235,7 +2238,7 @@ type closed = rnil
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
 let rec rule
-  : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
+    : type a b. (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
   =
   fun v1 v2 ->
   match v1, v2 with
@@ -2402,7 +2405,7 @@ type (_, _, _) binop =
   | Add : (int, int, int) binop
 
 let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
-  : c constant
+    : c constant
   =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
@@ -2645,7 +2648,7 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 ;;
 
 let vexpr (type result visit_action)
-  : (unit, result, visit_action) context -> unit -> visit_action
+    : (unit, result, visit_action) context -> unit -> visit_action
   = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
@@ -3629,7 +3632,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-        if Names.mem s used then data :: acc else acc)
+          if Names.mem s used then data :: acc else acc)
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
     then (
@@ -3867,7 +3870,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-            if Names.mem s used then data :: acc else acc)
+              if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4109,7 +4112,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-            if Names.mem s used then data :: acc else acc)
+              if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4955,8 +4958,8 @@ module type S = sig
 end
 
 module Foo
-  (Bar : S with type a = private [> `A ])
-  (Baz : S with type b = private < b : Bar.b ; .. >) =
+    (Bar : S with type a = private [> `A ])
+    (Baz : S with type b = private < b : Bar.b ; .. >) =
 struct end
 
 module A = struct
@@ -8597,8 +8600,8 @@ type v =
   | G
 
 let f
-  : type a b c d e f g.
-    a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
+    : type a b c d e f g.
+      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
   = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
@@ -9528,14 +9531,14 @@ else aaaaaaaaaaaa qqqqqqqqqqq
 include Base.Fn (** @open *)
 
 let ssmap
-  : (module MapT with type key = string and type data = string and type map = SSMap.map)
+    : (module MapT with type key = string and type data = string and type map = SSMap.map)
   =
   ()
 ;;
 
 let ssmap
-  :  (module MapT with type key = string and type data = string and type map = SSMap.map)
-  -> unit
+    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+    -> unit
   =
   ()
 ;;
@@ -9560,7 +9563,7 @@ let _ =
 
 let _ =
   List.map rows ~f:(fun row ->
-    Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
 
 module type T = sig
@@ -9689,7 +9692,7 @@ type t =
 
 type t =
   { field : ty
-      (* Here is some verbatim formatted text:
+        (* Here is some verbatim formatted text:
      {v
        starting at column 7
      v}*)
@@ -9790,22 +9793,22 @@ let[@a
 
 let x =
   foo (`A b) ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo (`A `b) ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ A; B ] ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ [ A ]; B ] ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =

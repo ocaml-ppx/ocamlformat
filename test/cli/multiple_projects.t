@@ -14,12 +14,12 @@ Second project formatted with the 'ocamlformat' profile:
 
   $ cat project1/main.ml
   let _machin
-    ?aaaaaaaaaa:_
-    ?bbbbbbbbbbb:_
-    ?cccccccccccc:_
-    ?ddddddddddddd:_
-    ?eeeeeeeeeeee:_
-    ()
+      ?aaaaaaaaaa:_
+      ?bbbbbbbbbbb:_
+      ?cccccccccccc:_
+      ?ddddddddddddd:_
+      ?eeeeeeeeeeee:_
+      ()
     =
     ()
   ;;
