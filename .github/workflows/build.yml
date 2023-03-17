@@ -91,4 +91,4 @@ jobs:
         shell: bash
         env:
           OCP_INDENT_CONFIG: ${{ matrix.ocp_indent_config }}
-          TEST_BRANCH_ARGS: ${{ matrix.ocp_indent && "-o" || "" }}
+          TEST_BRANCH_ARGS: ${{ matrix.ocp_indent && '-o' || '' }}
