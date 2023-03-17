@@ -59,6 +59,9 @@ jobs:
             profile: janestreet
 
     steps:
+      - name: Install dependencies
+        run: apt install -y ocp-indent
+
       # Clone the project
       - uses: actions/checkout@v3
         with:
