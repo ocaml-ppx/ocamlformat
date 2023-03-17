@@ -103,6 +103,9 @@ let protect =
 let update_config ?quiet c l =
   {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}
 
+let update_config_attrs ?quiet c {attrs_before; attrs_after; _} =
+  update_config ?quiet (update_config ?quiet c attrs_before) attrs_after
+
 (* Preserve the position of comments located after the last element of a
    list/array (after `;`), otherwise comments are picked up by
    `fmt_expression` and printed before `;`. *)
@@ -2486,12 +2489,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                      ( hvbox 0
                          ( fmt_module_statement c ~attributes
                              ~keyword:
-                               ( hvbox 0
-                                   ( str "let" $ break 1 0
-                                   $ Cmts.fmt_before c popen_loc
-                                   $ fmt_or override (str "open!") (str "open")
-                                   $ opt ext (fun _ -> fmt_if override " ")
-                                   $ fmt_extension_suffix c ext ))
+                               (hvbox 0
+                                  ( str "let" $ break 1 0
+                                  $ Cmts.fmt_before c popen_loc
+                                  $ fmt_or override (str "open!") (str "open")
+                                  $ opt ext (fun _ -> fmt_if override " ")
+                                  $ fmt_extension_suffix c ext ) )
                              (sub_mod ~ctx popen_expr)
                          $ Cmts.fmt_after c popen_loc
                          $ str " in" )
@@ -3345,7 +3348,7 @@ and fmt_class_params c ctx params =
        ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
-and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
+and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
     =
   protect c (Td decl)
   @@
@@ -3359,7 +3362,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
       ; ptype_loc } =
     decl
   in
-  update_config_maybe_disabled c ptype_loc ptype_attributes
+  update_config_maybe_disabled_attrs c ptype_loc ptype_attributes
   @@ fun c ->
   let ctx = Td decl in
   let fmt_abstract_manifest = function
@@ -3375,10 +3378,20 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
         $ str " =" $ fmt_private_flag c priv
     | None -> str " " $ str eq $ fmt_private_flag c priv
   in
+  let ext = ptype_attributes.attrs_extension in
+  (* Docstring cannot be placed after variant declarations *)
+  let force_before =
+    match ptype_kind with Ptype_variant _ -> true | _ -> false
+  in
+  let doc_before, doc_after, attrs_before, attrs_after =
+    let fit = Tyd.is_simple decl in
+    fmt_docstring_around_item_attrs ~force_before ~fit c ptype_attributes
+  in
   let box_manifest k =
     hvbox c.conf.fmt_opts.type_decl_indent.v
       ( str pre
       $ fmt_extension_suffix c ext
+      $ fmt_attributes c attrs_before
       $ str " "
       $ hvbox_if
           (not (List.is_empty ptype_params))
@@ -3427,21 +3440,13 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
       (not (List.is_empty cstrs))
       (space_break $ hvbox 0 (list cstrs space_break fmt_cstr))
   in
-  (* Docstring cannot be placed after variant declarations *)
-  let force_before =
-    match ptype_kind with Ptype_variant _ -> true | _ -> false
-  in
-  let doc_before, doc_after, atrs =
-    let fit = Tyd.is_simple decl in
-    fmt_docstring_around_item ~force_before ~fit c ptype_attributes
-  in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
        ( doc_before
        $ hvbox 0
            ( hvbox c.conf.fmt_opts.type_decl_indent.v
                (fmt_manifest_kind $ fmt_cstrs ptype_cstrs)
-           $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
+           $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
        $ doc_after )
 
 and fmt_label_declaration c ctx ?(last = false) decl =
@@ -3857,13 +3862,13 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds fmt_module_declaration (fun x -> Md x) sub_md
-  | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
+  | Psig_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
   | Psig_class cl -> fmt_class_types c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
       fmt_class_types c ~pre:"class type" ~sep:"=" cl
-  | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
+  | Psig_typesubst decls -> fmt_type c ~eq:":=" Recursive decls ctx
 
 and fmt_class_types c ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -4384,16 +4389,15 @@ and fmt_structure c ctx itms =
   let ast x = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
-and fmt_type c ?ext ?eq rec_flag decls ctx =
-  let update_config c td = update_config c td.ptype_attributes in
+and fmt_type c ?eq rec_flag decls ctx =
+  let update_config c td = update_config_attrs c td.ptype_attributes in
   let is_rec = Asttypes.is_recursive rec_flag in
   let fmt_decl c ctx ~prev ~next:_ decl =
     let first = Option.is_none prev in
     let pre =
       if first then if is_rec then "type" else "type nonrec" else "and"
     in
-    let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext (sub_td ~ctx decl)
+    fmt_type_declaration c ~pre ?eq (sub_td ~ctx decl)
   in
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
@@ -4436,7 +4440,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
         fmt_or
           (is_override popen_override)
           ( str "open!"
-          $ fmt_if (Option.is_some attributes.attrs_extension)  "@ "
+          $ fmt_if (Option.is_some attributes.attrs_extension) "@ "
           $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
           (str "open" $ fmt_extension_suffix c ext)
       in
@@ -4444,7 +4448,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
   | Pstr_recmodule mbs ->
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
-  | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
+  | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension}
     ->

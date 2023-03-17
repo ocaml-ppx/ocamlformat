@@ -510,7 +510,7 @@ let package_type_of_module_type pmty =
 
         (* restrictions below are checked by the 'with_constraint' rule *)
         assert (ptyp.ptype_kind = Ptype_abstract);
-        assert (ptyp.ptype_attributes = []);
+        assert (ptyp.ptype_attributes.attrs_before @ ptyp.ptype_attributes.attrs_after = []);
         let ty =
           match ptyp.ptype_manifest with
           | Some ty -> ty
@@ -2940,7 +2940,7 @@ generic_type_declaration(flag, kind):
     {
       let (kind, priv, manifest) = kind_priv_manifest in
       let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       (flag, ext),
       Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
@@ -2957,7 +2957,7 @@ generic_type_declaration(flag, kind):
     {
       let (kind, priv, manifest) = kind_priv_manifest in
       let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
       Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text

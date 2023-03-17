@@ -328,7 +328,6 @@ module Structure_item = struct
     | Pstr_eval (_, atrs)
      |Pstr_value {pvbs_bindings= {pvb_attributes= atrs; _} :: _; _}
      |Pstr_primitive {pval_attributes= atrs; _}
-     |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
      |Pstr_extension (_, atrs) ->
@@ -341,8 +340,8 @@ module Structure_item = struct
     | Pstr_open {popen_attributes= ea; _}
      |Pstr_class_type ({pci_attributes= ea; _} :: _)
      |Pstr_class ({pci_attributes= ea; _} :: _)
-     |Pstr_modtype {pmtd_ext_attrs= ea; _} ->
-      print_endline "hey";
+     |Pstr_modtype {pmtd_ext_attrs= ea; _}
+     |Pstr_type (_, {ptype_attributes= ea; _} :: _) ->
         Ext_attrs.has_doc ea
     | Pstr_module
         {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
@@ -424,8 +423,6 @@ module Signature_item = struct
     | Psig_attribute atr -> Attr.is_doc atr
     (* one attribute list *)
     | Psig_value {pval_attributes= atrs; _}
-     |Psig_type (_, {ptype_attributes= atrs; _} :: _)
-     |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
      |Psig_typext {ptyext_attributes= atrs; _}
      |Psig_extension (_, atrs) ->
         List.exists ~f:Attr.is_doc atrs (* two attribute list *)
@@ -433,17 +430,15 @@ module Signature_item = struct
      |Psig_class ({pci_attributes= ea; _} :: _)
      |Psig_modtype {pmtd_ext_attrs= ea; _}
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
-     |Psig_modsubst {pms_ext_attrs= ea; _} ->
-      print_endline "hey";
-
+     |Psig_modsubst {pms_ext_attrs= ea; _}
+     |Psig_open {popen_attributes= ea; _}
+     |Psig_type (_, {ptype_attributes= ea; _} :: _)
+     |Psig_typesubst ({ptype_attributes= ea; _} :: _) ->
         Ext_attrs.has_doc ea
     | Psig_exception
         { ptyexn_attributes= atrs1
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ }
-     |Psig_open
-        {popen_attributes= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
-      ->
+        ; _ } ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
     (* three attribute list *)
     | Psig_recmodule
@@ -554,7 +549,9 @@ module Md = struct
 end
 
 module Td = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
+  let has_doc itm =
+    List.exists ~f:Attr.is_doc itm.ptype_attributes.attrs_before
+    || List.exists ~f:Attr.is_doc itm.ptype_attributes.attrs_after
 
   let is_simple (i, (c : Conf.t)) =
     match c.fmt_opts.module_item_spacing.v with
@@ -703,7 +700,7 @@ let attrs_of_ext_attrs ea = ea.attrs_before @ ea.attrs_after
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
-  | Td x -> x.ptype_attributes
+  | Td x -> x.ptype_attributes.attrs_before @ x.ptype_attributes.attrs_after
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes

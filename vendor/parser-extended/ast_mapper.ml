@@ -254,7 +254,7 @@ module T = struct
        ptype_attributes;
        ptype_loc} =
     let loc = sub.location sub ptype_loc in
-    let attrs = sub.attributes sub ptype_attributes in
+    let attrs = sub.ext_attrs sub ptype_attributes in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
       ~priv:(Flag.map_private sub ptype_private)

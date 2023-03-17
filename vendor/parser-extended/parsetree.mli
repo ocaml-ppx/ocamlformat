@@ -551,7 +551,7 @@ and type_declaration =
      ptype_kind: type_kind;
      ptype_private: private_flag;  (** for [= private ...] *)
      ptype_manifest: core_type option;  (** represents [= T] *)
-     ptype_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     ptype_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      ptype_loc: Location.t;
     }
 (**

@@ -558,7 +558,7 @@ and type_parameter i ppf (x, _variance) = core_type i ppf x
 and type_declaration i ppf x =
   line i ppf "type_declaration %a %a\n" fmt_string_loc x.ptype_name
        fmt_location x.ptype_loc;
-  attributes i ppf x.ptype_attributes;
+  ext_attrs i ppf x.ptype_attributes;
   let i = i+1 in
   line i ppf "ptype_params =\n";
   list (i+1) type_parameter ppf x.ptype_params;

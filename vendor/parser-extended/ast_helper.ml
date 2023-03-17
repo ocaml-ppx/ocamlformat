@@ -486,7 +486,7 @@ module Ci = struct
 end
 
 module Type = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs = Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = [])
       ?(params = [])
       ?(cstrs = [])
@@ -502,7 +502,7 @@ module Type = struct
      ptype_private = priv;
      ptype_manifest = manifest;
      ptype_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      ptype_loc = loc;
     }
 

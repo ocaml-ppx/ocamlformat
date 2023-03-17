@@ -179,8 +179,8 @@ end
 let%foo[@foo] x = 4
 and[@foo] y = x
 
-type%foo t = int [@@foo]
-and t = int [@@foo]
+type%foo[@foo] t = int
+and[@foo] t = int
 
 type%foo t += T [@@foo]
 
@@ -207,8 +207,8 @@ module type S = sig
   val%foo x : t [@@foo]
   external%foo x : t = "" [@@foo]
 
-  type%foo t = int [@@foo]
-  and t' = int [@@foo]
+  type%foo[@foo] t = int
+  and[@foo] t' = int
 
   type%foo t += T [@@foo]
   exception%foo X [@foo]

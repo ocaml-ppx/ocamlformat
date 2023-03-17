@@ -59,7 +59,9 @@ module Right = struct
     | {pcd_args= args; _} -> constructor_arguments args
 
   let type_declaration = function
-    | {ptype_attributes= _ :: _; _} -> false
+    | { ptype_attributes= {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
+      ; _ } ->
+        false
     | {ptype_cstrs= _ :: _ as cstrs; _} ->
         (* type a = ... constraint left = < ... > *)
         list ~elt:(fun (_left, right, _loc) -> core_type right) cstrs
