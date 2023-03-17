@@ -9689,7 +9689,7 @@ type t =
 
 type t =
   { field : ty
-        (* Here is some verbatim formatted text:
+    (* Here is some verbatim formatted text:
      {v
        starting at column 7
      v}*)
