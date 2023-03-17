@@ -80,6 +80,14 @@ let empty =
 let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
   f (fmt_opt pro $ opn $ psp $ bdy $ cls $ esp $ fmt_opt epi)
 
+module Indent = struct
+  let _ocp a b c = if c.conf.fmt_opts.ocp_indent_compat.v then a else b
+
+  let fun_type_annot = _ocp 2 4
+
+  let fun_args = _ocp 6 4
+end
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -2913,8 +2921,8 @@ and fmt_class_field c ctx cf =
       hvbox 2
         ( hovbox 2
             ( hovbox 4
-                (box_fun_decl_args c 4
-                   ( box_fun_sig_args c 4
+                (box_fun_decl_args c (Indent.fun_args c)
+                   ( box_fun_sig_args c (Indent.fun_type_annot c)
                        ( str "method" $ virtual_or_override kind
                        $ fmt_private_virtual_flag c pv
                        $ str " " $ fmt_str_loc c name $ typ )
@@ -4231,8 +4239,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
           ( hvbox_if toplevel 0
               ( hvbox_if toplevel indent
                   ( hovbox 2
-                      ( hovbox 4
-                          ( box_fun_decl_args c 4
+                      ( hovbox (Indent.fun_type_annot c)
+                          ( box_fun_decl_args c (Indent.fun_args c)
                               ( hovbox 4
                                   ( fmt_str_loc c lb_op
                                   $ fmt_extension_suffix c ext

@@ -68,24 +68,24 @@ module type M = sig
 end
 
 let ssmap
-    : (module MapT
-         with type key = string
-          and type data = string
-          and type map = SSMap.map )
+  : (module MapT
+       with type key = string
+        and type data = string
+        and type map = SSMap.map )
   =
   ()
 
 let ssmap
-    :  (module MapT
-          with type key = string
-           and type data = string
-           and type map = SSMap.map )
-    -> unit
+  :  (module MapT
+        with type key = string
+         and type data = string
+         and type map = SSMap.map )
+  -> unit
   =
   ()
 
 let long_function_name
-    : type a. a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit
+  : type a. a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit
   =
  fun () -> ()
 

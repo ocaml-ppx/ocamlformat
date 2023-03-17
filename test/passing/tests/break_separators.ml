@@ -263,11 +263,11 @@ let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
   {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
 
 let x
-    { aaaaaaaaaaaaaaaaaaaaaa
-    ; aaaaaaaaaaaaaaaaaaa
-    ; aaaaaaaaaaaaaa
-    ; aaaaaaaaaaaaaaaaaa
-    ; aaaaaaaaaa }
+      { aaaaaaaaaaaaaaaaaaaaaa
+      ; aaaaaaaaaaaaaaaaaaa
+      ; aaaaaaaaaaaaaa
+      ; aaaaaaaaaaaaaaaaaa
+      ; aaaaaaaaaa }
   =
   { aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa
   ; bbbbbbbbbbbbb= bbb bb bbbbbb
