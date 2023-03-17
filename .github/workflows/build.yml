@@ -1,6 +1,9 @@
 name: Build
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -53,8 +56,18 @@ jobs:
           - conventional
           - ocamlformat
           - janestreet
+        include:
+          - ocp_indent: true
+            ocp_indent_config: JaneStreet
+            profile: janestreet
 
     steps:
+      - name: Install ocp-indent
+        if: ${{ matrix.ocp_indent }}
+        run: |
+          sudo apt install -y ocp-indent
+          sudo touch /etc/ocamlfind.conf
+
       # Clone the project
       - uses: actions/checkout@v3
         with:
@@ -79,5 +92,8 @@ jobs:
       - name: Test ${{ matrix.profile }} profile
         run: |
           chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat
-          ./tools/test_branch.sh -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
+          ./tools/test_branch.sh $TEST_BRANCH_ARGS -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
         shell: bash
+        env:
+          OCP_INDENT_CONFIG: ${{ matrix.ocp_indent_config }}
+          TEST_BRANCH_ARGS: ${{ matrix.ocp_indent && '-o' || '' }}
