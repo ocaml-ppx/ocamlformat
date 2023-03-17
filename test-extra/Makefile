@@ -132,4 +132,4 @@ test_margins:
 .PHONY: apply_ocp
 apply_ocp:
 	@echo "Running ocp-indent with options '$(OCP_INDENT_CONFIG)'"
-	@-find $(ALL_DIRS) $(FIND_ARGS) | parallel ocp-indent --inplace
+	@-find $(ALL_DIRS) $(FIND_ARGS) | parallel ocp-indent --config "$(OCP_INDENT_CONFIG)" --inplace
