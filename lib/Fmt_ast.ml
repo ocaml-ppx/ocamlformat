@@ -699,16 +699,16 @@ and fmt_type_cstr c ?constraint_ctx xtyp =
 
 and type_constr_and_body c xbody =
   let body = xbody.ast in
-  let ctx = Exp body in
-  let fmt_cstr_and_xbody typ exp =
-    ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx typ))
-    , sub_exp ~ctx exp )
-  in
   match xbody.ast.pexp_desc with
   | Pexp_constraint (exp, typ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
-      fmt_cstr_and_xbody typ exp
+      let typ_ctx = Exp body in
+      let exp_ctx =
+        Exp Ast_helper.(Exp.fun_ Nolabel None (Pat.any ()) exp)
+      in
+      ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
+      , sub_exp ~ctx:exp_ctx exp )
   | _ -> (None, xbody)
 
 and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
