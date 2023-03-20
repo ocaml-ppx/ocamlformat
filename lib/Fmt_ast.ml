@@ -1558,17 +1558,24 @@ and fmt_infix_op_args c ~parens xexp op_args =
         true
     | _ -> false
   in
-  let fmt_arg very_last xarg =
+  let fmt_arg ~epi ~very_last xarg =
     let parens =
       ((not very_last) && exposed_right_exp Ast.Non_apply xarg.ast)
       || parenze_exp xarg
     in
-    let box =
-      match xarg.ast.pexp_desc with
-      | Pexp_fun _ | Pexp_function _ -> Some false
-      | _ -> None
-    in
-    fmt_expression c ?box ~parens xarg
+    (* Warning: [fmt_expression] doesn't use the [epi] in every case. *)
+    if Params.Exp.Infix_op_arg.dock c.conf ~very_last xarg then
+      fmt_expression c ~parens ~epi xarg
+    else
+      let expr_box =
+        match xarg.ast.pexp_desc with
+        | Pexp_fun _ | Pexp_function _ -> Some false
+        | _ -> None
+      in
+      hvbox 0
+        ( epi
+        $ hovbox_if (not very_last) 2
+            (fmt_expression c ?box:expr_box ~parens xarg) )
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
@@ -1577,14 +1584,15 @@ and fmt_infix_op_args c ~parens xexp op_args =
          (fun ~first ~last (_, cmts_before, cmts_after, (op, xarg)) ->
            let very_first = first_grp && first in
            let very_last = last_grp && last in
+           let epi =
+             let break =
+               if very_last && is_not_indented xarg then fmt "@ "
+               else fmt_if (not very_first) " "
+             in
+             op $ break $ cmts_after
+           in
            cmts_before
-           $ hvbox 0
-               ( op
-               $ ( match xarg with
-                 | e when very_last && is_not_indented e -> fmt "@ "
-                 | _ -> fmt_if (not very_first) " " )
-               $ cmts_after
-               $ hovbox_if (not very_last) 2 (fmt_arg very_last xarg) )
+           $ fmt_arg ~epi ~very_last xarg
            $ fmt_if_k (not last) (break 1 0) ) )
     $ fmt_if_k (not last_grp) (break 1 0)
   in
@@ -1893,7 +1901,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 | _ -> fmt "@;<1 2>" )
             in
             let wrap_intro x =
-              wrap (fmt_args_grouped e0 args_before $ fmt "@ " $ hvbox 0 x)
+              wrap
+                ( fmt_opt epi
+                $ fmt_args_grouped e0 args_before
+                $ fmt "@ " $ hvbox 0 x )
               $ break_body
             in
             let force_closing_paren =
@@ -1905,7 +1916,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               (fmt_fun c ~force_closing_paren ~wrap_intro ~label:lbl
                  ~parens:true xlast_arg )
           in
-          hvbox 0 (Params.parens_if parens c.conf (args $ fmt_atrs))
+          hvbox_if has_attr 0
+            (Params.parens_if parens c.conf (args $ fmt_atrs))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
             ; pexp_loc
