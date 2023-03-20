@@ -1564,7 +1564,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       || parenze_exp xarg
     in
     (* Warning: [fmt_expression] doesn't use the [epi] in every case. *)
-    if Params.Exp.Infix_op_arg.dock c.conf ~very_last xarg then
+    if Params.Exp.Infix_op_arg.dock c.conf xarg then
       fmt_expression c ~parens ~epi xarg
     else
       let expr_box =

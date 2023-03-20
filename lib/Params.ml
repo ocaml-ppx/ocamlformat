@@ -46,8 +46,8 @@ module Exp = struct
           k
       else k
 
-    let dock (c : Conf.t) ~very_last xarg =
-      if (not c.fmt_opts.ocp_indent_compat.v) || not very_last then false
+    let dock (c : Conf.t) xarg =
+      if not c.fmt_opts.ocp_indent_compat.v then false
       else
         match xarg.ast.pexp_desc with
         | Pexp_apply (_, args) -> (

@@ -7681,3 +7681,22 @@ let _ =
     do_something ();
     do_something ();
     do_something_else ())
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+  |> bar
+
+let _ =
+  List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+  |> bar
