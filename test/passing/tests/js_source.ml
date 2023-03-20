@@ -7693,10 +7693,13 @@ let _ =
   |> bar
 
 let _ =
-  List.map ~f:(fun x ->
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something_else ())
-  |> bar
+  foo
+  |> List.map
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
