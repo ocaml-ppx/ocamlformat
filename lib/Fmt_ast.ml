@@ -60,7 +60,7 @@ let cmt_checker {cmts; _} =
 let break_between c = Ast.break_between c.source (cmt_checker c)
 
 type block =
-  { opn: Fmt.t
+  { opn: Fmt.t option
   ; pro: Fmt.t option
   ; psp: Fmt.t
   ; bdy: Fmt.t
@@ -69,7 +69,7 @@ type block =
   ; epi: Fmt.t option }
 
 let empty =
-  { opn= noop
+  { opn= None
   ; pro= None
   ; psp= noop
   ; bdy= noop
@@ -77,8 +77,14 @@ let empty =
   ; esp= noop
   ; epi= None }
 
-let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
-  f (fmt_opt pro $ opn $ psp $ bdy $ cls $ esp $ fmt_opt epi)
+let compose_module ?pro ?epi ({opn; psp; bdy; cls; esp; _} as blk) ~f =
+  f
+    ( fmt_opt opn $ fmt_opt pro $ fmt_opt blk.pro $ psp $ bdy $ cls $ esp
+    $ fmt_opt blk.epi )
+  $ fmt_opt epi
+
+let blk_box blk k =
+  match blk.opn with Some opn -> wrap_k opn blk.cls k | None -> k
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
@@ -179,7 +185,7 @@ let update_config_maybe_disabled c loc l f =
   maybe_disabled c loc l f
 
 let update_config_maybe_disabled_block c loc l f =
-  let fmt bdy = {empty with opn= open_vbox 2; bdy; cls= close_box} in
+  let fmt bdy = {empty with opn= Some (open_vbox 2); bdy; cls= close_box} in
   let c = update_config c l in
   maybe_disabled_k c loc l f fmt
 
@@ -2334,32 +2340,35 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_pack (me, pt) ->
       let outer_parens = parens && has_attr in
       let inner_parens = true in
+      let blk = fmt_module_expr c (sub_mod ~ctx me) in
+      let opn_paren =
+        match c.conf.fmt_opts.indicate_multiline_delimiters.v with
+        | `No | `Closing_on_separate_line -> str "("
+        | `Space ->
+            let level =
+              if Option.is_none pt then 1
+              else if Option.is_some blk.opn then 3
+              else 2
+            in
+            fits_breaks ~level "(" "( "
+      and cls_paren = closing_paren c ~offset:(-2) in
+      let pro =
+        fmt_if_k inner_parens opn_paren
+        $ str "module"
+        $ fmt_extension_suffix c ext
+        $ char ' '
+      and epi = fmt_if_k inner_parens cls_paren in
       let fmt_mod m =
-        Params.parens_if outer_parens c.conf
-          ( match pt with
-          | Some (id, cnstrs) ->
-              let opn_paren =
-                match c.conf.fmt_opts.indicate_multiline_delimiters.v with
-                | `No | `Closing_on_separate_line -> str "("
-                | `Space -> fits_breaks "(" "( "
-              in
-              let cls_paren = closing_paren c ~offset:(-2) in
-              hvbox 2
-                ( hovbox 0
-                    ( fmt_if_k inner_parens opn_paren
-                    $ str "module"
-                    $ fmt_extension_suffix c ext
-                    $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id )
-                $ fmt_package_type c ctx cnstrs
-                $ fmt_if_k inner_parens cls_paren
-                $ fmt_atrs )
-          | None ->
-              Params.Exp.wrap c.conf ~parens:inner_parens
-                (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
-              $ fmt_atrs )
+        match pt with
+        | Some (id, cnstrs) ->
+            hvbox 2
+              ( hovbox 0 (m $ fmt "@ : " $ fmt_longident_loc c id)
+              $ fmt_package_type c ctx cnstrs )
+        | None -> m
       in
       hvbox 0
-        (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
+        (Params.parens_if outer_parens c.conf
+           (compose_module ~pro ~epi blk ~f:fmt_mod $ fmt_atrs) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid, (typ1, typ2), exp) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
@@ -3383,7 +3392,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       let before = Cmts.fmt_before c pmty_loc in
       let within = Cmts.fmt_within c ~pro:noop pmty_loc in
       let after = Cmts.fmt_after c pmty_loc in
-      { opn= noop
+      { opn= None
       ; pro= Some (before $ str "sig" $ fmt_if empty " ")
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= within $ fmt_signature c ctx s
@@ -3510,7 +3519,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         let force_before = not (Mty.is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
-      let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
+      let keyword, ({pro; psp; bdy; esp; epi; _} as blk) =
         let kwd = str "include" $ fmt_extension_suffix c ext in
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me; pmty_loc; pmty_attributes= _} ->
@@ -3520,7 +3529,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
             , fmt_module_expr c (sub_mod ~ctx me) )
         | _ -> (kwd, fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
-      let box = wrap_k opn cls in
+      let box = blk_box blk in
       hvbox 0
         ( doc_before
         $ hvbox 0
@@ -3640,8 +3649,8 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let box_t = wrap_k blk_t.opn blk_t.cls in
-  let box_b = wrap_k blk_b.opn blk_b.cls in
+  let box_t = blk_box blk_t in
+  let box_b = blk_box blk_b in
   let fmt_arg ~prev:_ arg_mtyp ~next =
     let maybe_box k =
       match arg_mtyp.txt with
@@ -3663,7 +3672,7 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
                   $ esp
                   $ ( match next with
                     | Some {txt= `Named (_, {opn; pro= Some _; _}); _} ->
-                        opn $ open_hvbox 0
+                        fmt_opt opn $ open_hvbox 0
                     | _ -> noop )
                   $ fmt_opt epi ) ) )
   in
@@ -3692,7 +3701,7 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
                     0
                     ( ( match arg_blks with
                       | {txt= `Named (_, {opn; pro= Some _; _}); _} :: _ ->
-                          opn $ open_hvbox 0
+                          fmt_opt opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4
                         ( str keyword
@@ -3796,7 +3805,7 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
   let has_kwd = Option.is_some keyword in
   let kwd_and_pro = Option.is_some blk.pro && has_kwd in
   doc_before
-  $ wrap_k blk.opn blk.cls
+  $ blk_box blk
       (hvbox_if (Option.is_none blk.pro) 2
          ( hvbox_if kwd_and_pro 2 (fmt_opt keyword $ fmt_opt blk.pro)
          $ blk.psp $ blk.bdy ) )
@@ -3842,6 +3851,18 @@ and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
                   $ break 1 0 $ x )
               $ fmt_attributes_and_docstrings c attrs ) }
     | `Block (blk_a, arg_is_simple) ->
+        let ocp_indent_compat blk =
+          if c.conf.fmt_opts.ocp_indent_compat.v && not arg_is_simple then
+            (* Indent body of docked struct. *)
+            { blk with
+              opn= Some (open_hvbox 2)
+            ; psp= fmt "@;<1000 2>"
+            ; cls= close_box
+            ; bdy= blk.bdy $ blk.esp $ fmt_opt blk.epi
+            ; esp= noop
+            ; epi= None }
+          else blk
+        in
         let fmt_rator =
           let break_struct =
             c.conf.fmt_opts.break_struct.v && (not dock_struct)
@@ -3857,15 +3878,16 @@ and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
           $ Cmts.fmt_after c loc
         in
         if Option.is_some blk_a.pro then
-          { blk_a with
-            pro=
-              Some
-                ( Cmts.fmt_before c loc $ hvbox 2 fmt_rator
-                $ fmt_opt blk_a.pro )
-          ; epi= Some epi }
+          ocp_indent_compat
+            { blk_a with
+              pro=
+                Some
+                  ( Cmts.fmt_before c loc $ hvbox 2 fmt_rator
+                  $ fmt_opt blk_a.pro )
+            ; epi= Some epi }
         else
           { blk_a with
-            opn= open_hvbox 2 $ blk_a.opn
+            opn= Some (open_hvbox 2 $ fmt_opt blk_a.opn)
           ; bdy= Cmts.fmt_before c loc $ open_hvbox 2 $ fmt_rator $ blk_a.bdy
           ; cls= close_box $ blk_a.cls $ close_box
           ; epi= Some epi } )
@@ -3873,7 +3895,7 @@ and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
       let blk_f = fmt_module_expr ~dock_struct:false c (sub_mod ~ctx me_f) in
       let has_epi = Cmts.has_after c.cmts loc || not (List.is_empty attrs) in
       { empty with
-        opn= blk_f.opn $ open_hvbox 2
+        opn= Some (fmt_opt blk_f.opn $ open_hvbox 2)
       ; bdy=
           hvbox 2
             ( Cmts.fmt_before c loc
@@ -3918,7 +3940,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
-      { opn= blk_t.opn $ blk_e.opn $ open_hovbox 2
+      { opn= Some (fmt_opt blk_t.opn $ fmt_opt blk_e.opn $ open_hovbox 2)
       ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
       ; psp= fmt "@,"
       ; bdy=
@@ -3953,7 +3975,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             ) }
   | Pmod_ident lid ->
       { empty with
-        opn= open_hvbox 2
+        opn= Some (open_hvbox 2)
       ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_longident_loc c lid
@@ -3966,7 +3988,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       let before = Cmts.fmt_before c pmod_loc in
       let within = Cmts.fmt_within c ~pro:noop pmod_loc in
       let after = Cmts.fmt_after c pmod_loc in
-      { opn= noop
+      { opn= None
       ; pro= Some (before $ str "struct" $ fmt_if empty " ")
       ; psp=
           fmt_if_k (not empty)
@@ -3988,7 +4010,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
           $ fmt_package_type c ctx cstrs )
       in
       { empty with
-        opn= open_hvbox 2
+        opn= Some (open_hvbox 2)
       ; cls= close_box
       ; bdy=
           Cmts.fmt c pmod_loc
@@ -4007,7 +4029,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_hole ->
       { empty with
-        opn= open_hvbox 2
+        opn= Some (open_hvbox 2)
       ; cls= close_box
       ; bdy=
           Cmts.fmt c pmod_loc
