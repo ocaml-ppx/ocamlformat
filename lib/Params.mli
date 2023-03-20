@@ -45,13 +45,14 @@ type cases =
   ; break_after_arrow: Fmt.t
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
+  ; expr_parens: bool option
   ; close_paren_branch: Fmt.t }
 
 val get_cases :
      Conf.t
+  -> ctx:Ast.t
   -> first:bool
-  -> indent:int
-  -> parens_branch:bool
+  -> last:bool
   -> xbch:expression Ast.xt
   -> cases
 

@@ -7663,3 +7663,12 @@ let _ =
                                          eeee) -> FFFFFFFFF gg)
     ~h
 ;;
+
+let _ =
+  fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    ~f:(fun (type a) foooooooooooooooooooooooooooooooooo : 'a ->
+      match fooooooooooooooooooooooooooooooooooooooo with
+      | Fooooooooooooooooooooooooooooooooooooooo -> x
+      | Fooooooooooooooooooooooooooooooooooooooo -> x )

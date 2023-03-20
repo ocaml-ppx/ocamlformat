@@ -6,6 +6,7 @@
 
 ### Bug fixes
 
+- Remove double parenthesis around tuple in a match (#2308, @Julow)
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
 - Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
@@ -17,7 +18,7 @@
 
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
-- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, #2289, #2299, #2302, #2309, @gpetiot, @Julow)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2281, #2284, #2289, #2299, #2302, #2309, #2310, @gpetiot, @Julow)
 - Improve formatting of class signatures (#2301, @gpetiot, @Julow)
 
 ### New features
