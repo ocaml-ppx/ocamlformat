@@ -9921,11 +9921,11 @@ let _ = foo |> List.map (function A -> do_something ())
 let _ =
   foo
   |> List.map (function
-         | A -> do_something ()
-         | A -> do_something ()
-         | A -> do_something ()
-         | A -> do_something ()
-         | A -> do_something_else ())
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
   |> bar
 ;;
 
