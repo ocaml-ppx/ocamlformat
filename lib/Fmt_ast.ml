@@ -93,15 +93,18 @@ module Indent = struct
 
   let fun_args ?(rec_flag = false) = _ocp (if rec_flag then 10 else 6) 4
 
-  let docked_function ~ctx c =
-    if c.conf.fmt_opts.ocp_indent_compat.v then 3
+  let docked_function ~parens ~ctx c =
+    if c.conf.fmt_opts.ocp_indent_compat.v then if parens then 3 else 2
     else
       let default = if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4 in
       Params.function_indent c.conf ~ctx ~default
 
-  let fun_args_group ast c =
+  let fun_args_group lbl ast c =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
-    else match ast.pexp_desc with Pexp_function _ -> 2 | _ -> 3
+    else
+      match ast.pexp_desc with
+      | Pexp_function _ -> 2
+      | _ -> ( match lbl with Nolabel -> 3 | _ -> 2 )
 
   let record_docstring c =
     let ocp =
@@ -1473,7 +1476,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
     in
     hovbox
-      (Indent.fun_args_group ast c)
+      (Indent.fun_args_group lbl ast c)
       (fmt_label_arg c ?box ?epi (lbl, xarg))
     $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
@@ -2000,7 +2003,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let e1N = List.rev rev_e1N in
           let ctx'' = Exp eN in
           hvbox
-            (Indent.docked_function ~ctx c)
+            (Indent.docked_function ~parens ~ctx c)
             ( expr_epi
             $ Params.parens_if parens c.conf
                 ( wrap
