@@ -70,15 +70,11 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
-let pstr_typext (te, ext) =
-  (Pstr_typext te, ext)
 let pstr_type ((nr, ext), tys) =
   (Pstr_type (nr, tys), ext)
 let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 
-let psig_typext (te, ext) =
-  (Psig_typext te, ext)
 let psig_type ((nr, ext), tys) =
   (Psig_type (nr, tys), ext)
 let psig_typesubst ((nr, ext), tys) =
@@ -1353,12 +1349,12 @@ structure_item:
         { Pstr_primitive $1 }
     | primitive_declaration
         { Pstr_primitive $1 }
+    | str_type_extension
+        { Pstr_typext $1 }
     )
   | wrap_mkstr_ext(
       type_declarations
         { pstr_type $1 }
-    | str_type_extension
-        { pstr_typext $1 }
     | str_exception_declaration
         { pstr_exception $1 }
     )
@@ -1633,6 +1629,8 @@ signature_item:
         { Psig_value $1 }
     | value_description
         { Psig_value $1 }
+    | sig_type_extension
+        { Psig_typext $1 }
     )
     { $1 }
   | wrap_mksig_ext(
@@ -1640,8 +1638,6 @@ signature_item:
         { psig_type $1 }
     | type_subst_declarations
         { psig_typesubst $1 }
-    | sig_type_extension
-        { psig_typext $1 }
     | sig_exception_declaration
         { psig_exception $1 }
     | open_description
@@ -3150,18 +3146,17 @@ label_declaration_semi:
 %inline type_extension(declaration):
   TYPE
   ext = ext
-  attrs1 = attributes
+  before = attributes
   no_nonrec_flag
   params = type_parameters
   tid = mkrhs(type_longident)
   PLUSEQ
   priv = private_flag
   cs = bar_llist(declaration)
-  attrs2 = post_item_attributes
+  after = post_item_attributes
     { let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
-      Te.mk tid cs ~params ~priv ~attrs ~docs,
-      ext }
+      let attrs = Attr.ext_attrs ?ext ~before ~after () in
+      Te.mk tid cs ~params ~priv ~attrs ~docs }
 ;
 %inline extension_constructor(opening):
     extension_constructor_declaration(opening)

@@ -639,7 +639,7 @@ and type_extension =
      ptyext_constructors: extension_constructor list;
      ptyext_private: private_flag;
      ptyext_loc: Location.t;
-     ptyext_attributes: attributes;  (** ... [\@\@id1] [\@\@id2] *)
+     ptyext_attributes: ext_attrs;  (** ... [\@\@id1] [\@\@id2] *)
     }
 (**
    Definition of new extensions constructors for the extensive sum type [t]

@@ -533,7 +533,7 @@ end
 
 (** Type extensions *)
 module Te = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.ext_attrs ()) ?(docs = empty_docs)
         ?(params = []) ?(priv = Public) path constructors =
     {
      ptyext_path = path;
@@ -541,7 +541,7 @@ module Te = struct
      ptyext_constructors = constructors;
      ptyext_private = priv;
      ptyext_loc = loc;
-     ptyext_attributes = add_docs_attrs docs attrs;
+     ptyext_attributes = add_docs_attrs' docs attrs;
     }
 
   let mk_exception ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)

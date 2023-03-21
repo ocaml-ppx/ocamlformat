@@ -616,7 +616,7 @@ and type_kind i ppf x =
 
 and type_extension i ppf x =
   line i ppf "type_extension %a\n" fmt_location x.ptyext_loc;
-  attributes i ppf x.ptyext_attributes;
+  ext_attrs i ppf x.ptyext_attributes;
   let i = i+1 in
   line i ppf "ptyext_path = %a\n" fmt_longident_loc x.ptyext_path;
   line i ppf "ptyext_params =\n";

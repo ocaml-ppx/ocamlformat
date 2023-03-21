@@ -3576,22 +3576,24 @@ and fmt_constructor_arguments_result c ctx vars args res =
   in
   fmt_constructor_arguments c ctx ~pre ?vars:fmt_vars args $ opt res fmt_type
 
-and fmt_type_extension ?ext c ctx
+and fmt_type_extension c ctx
     { ptyext_attributes
     ; ptyext_params
     ; ptyext_path
     ; ptyext_constructors
     ; ptyext_private
     ; ptyext_loc } =
-  let c = update_config c ptyext_attributes in
-  let doc, atrs = doc_atrs ptyext_attributes in
+  let c = update_config_attrs c ptyext_attributes in
+  let ext = ptyext_attributes.attrs_extension in
+  let doc, _doc_after, attrs_before, attrs_after = fmt_docstring_around_item_attrs ~force_before:true c ptyext_attributes in
   let fmt_ctor ctor = hvbox 0 (fmt_extension_constructor c ctx ctor) in
   Cmts.fmt c ptyext_loc
   @@ hvbox 2
-       ( fmt_docstring c ~epi:cut_break doc
+       ( doc
        $ hvbox c.conf.fmt_opts.type_decl_indent.v
            ( str "type"
            $ fmt_extension_suffix c ext
+           $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
            $ str " "
            $ hvbox_if
                (not (List.is_empty ptyext_params))
@@ -3604,7 +3606,7 @@ and fmt_type_extension ?ext c ctx
                  let bar_fits = if first then "" else "| " in
                  cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
                  $ fmt_ctor x ) )
-       $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
+       $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
 
 and fmt_type_exception ~pre c ctx
     {ptyexn_attributes= item_attrs; ptyexn_constructor; ptyexn_loc} =
@@ -3863,7 +3865,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds fmt_module_declaration (fun x -> Md x) sub_md
   | Psig_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
-  | Psig_typext te -> fmt_type_extension ?ext c ctx te
+  | Psig_typext te -> fmt_type_extension c ctx te
   | Psig_value vd -> fmt_value_description c ctx vd
   | Psig_class cl -> fmt_class_types c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
@@ -4449,7 +4451,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   | Pstr_recmodule mbs ->
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
-  | Pstr_typext te -> fmt_type_extension ?ext c ctx te
+  | Pstr_typext te -> fmt_type_extension c ctx te
   | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_has_ext= _}
     ->
       let update_config c i =

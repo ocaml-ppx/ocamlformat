@@ -285,7 +285,7 @@ module T = struct
        ptyext_loc;
        ptyext_attributes} =
     let loc = sub.location sub ptyext_loc in
-    let attrs = sub.attributes sub ptyext_attributes in
+    let attrs = sub.ext_attrs sub ptyext_attributes in
     Te.mk ~loc ~attrs
       (map_loc sub ptyext_path)
       (List.map (sub.extension_constructor sub) ptyext_constructors)

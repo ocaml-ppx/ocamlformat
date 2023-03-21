@@ -182,7 +182,7 @@ and[@foo] y = x
 type%foo[@foo] t = int
 and[@foo] t = int
 
-type%foo t += T [@@foo]
+type%foo [@foo] t += T
 
 class%foo [@foo] x = x
 
@@ -210,7 +210,8 @@ module type S = sig
   type%foo[@foo] t = int
   and[@foo] t' = int
 
-  type%foo t += T [@@foo]
+  type%foo [@foo] t += T
+
   exception%foo X [@foo]
 
   module%foo [@foo] M : S
