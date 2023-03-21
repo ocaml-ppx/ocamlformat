@@ -3281,17 +3281,18 @@ and fmt_case c ctx ~first ~last case =
           ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
           $ p.close_paren_branch ) )
 
-and fmt_value_description ?ext c ctx vd =
+and fmt_value_description c ctx vd =
   let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes; pval_loc}
       =
     vd
   in
-  update_config_maybe_disabled c pval_loc pval_attributes
+  update_config_maybe_disabled_attrs c pval_loc pval_attributes
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
-  let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~is_val:true c pval_attributes
+  let doc_before, doc_after, attrs_before, attrs_after =
+    fmt_docstring_around_item_attrs ~is_val:true c pval_attributes
   in
+  let ext = pval_attributes.attrs_extension in
   let fmt_val_prim {txt= s; loc} =
     hvbox 0 @@ Cmts.fmt c loc
     @@
@@ -3304,6 +3305,7 @@ and fmt_value_description ?ext c ctx vd =
     $ box_fun_sig_args c 2
         ( str pre
         $ fmt_extension_suffix c ext
+        $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
         $ str " "
         $ Cmts.fmt c loc
             (wrap_if
@@ -3318,7 +3320,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_if (not (List.is_empty pval_prim)) (space_break $ str "= ")
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim space_break fmt_val_prim )
-    $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
+    $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
     $ doc_after )
 
 and fmt_tydcl_params c ctx params =
@@ -3862,7 +3864,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
       fmt_recmodule c ctx mds fmt_module_declaration (fun x -> Md x) sub_md
   | Psig_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
-  | Psig_value vd -> fmt_value_description ?ext c ctx vd
+  | Psig_value vd -> fmt_value_description c ctx vd
   | Psig_class cl -> fmt_class_types c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
       fmt_class_types c ~pre:"class type" ~sep:"=" cl
@@ -4443,7 +4445,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
           (str "open" $ fmt_extension_suffix c ext)
       in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
-  | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
+  | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule mbs ->
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx

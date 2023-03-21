@@ -799,7 +799,7 @@ let default_mapper =
         Val.mk
           (map_loc this pval_name)
           (this.typ this pval_type)
-          ~attrs:(this.attributes this pval_attributes)
+          ~attrs:(this.ext_attrs this pval_attributes)
           ~loc:(this.location this pval_loc)
           ~prim:(List.map (map_loc this) pval_prim)
       );

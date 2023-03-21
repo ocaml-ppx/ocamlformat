@@ -361,15 +361,18 @@ module Cf = struct
 end
 
 module Val = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.ext_attrs ()) ?(docs = empty_docs)
         ?(prim = []) name typ =
     {
      pval_name = name;
      pval_type = typ;
-     pval_attributes = add_docs_attrs docs attrs;
+     pval_attributes = add_docs_attrs' docs attrs;
      pval_loc = loc;
      pval_prim = prim;
     }
+
+  let mk_exh ~loc ~attrs ~docs ?prim name typ =
+    mk ~loc ~attrs ~docs ?prim name typ 
 end
 
 module Md = struct

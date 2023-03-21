@@ -72,8 +72,6 @@ let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
 let pstr_typext (te, ext) =
   (Pstr_typext te, ext)
-let pstr_primitive (vd, ext) =
-  (Pstr_primitive vd, ext)
 let pstr_type ((nr, ext), tys) =
   (Pstr_type (nr, tys), ext)
 let pstr_exception (te, ext) =
@@ -81,8 +79,6 @@ let pstr_exception (te, ext) =
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
-let psig_value (vd, ext) =
-  (Psig_value vd, ext)
 let psig_type ((nr, ext), tys) =
   (Psig_type (nr, tys), ext)
 let psig_typesubst ((nr, ext), tys) =
@@ -1353,13 +1349,13 @@ structure_item:
         { Pstr_class $1 }
     | class_type_declarations
         { Pstr_class_type $1 }
+    | value_description
+        { Pstr_primitive $1 }
+    | primitive_declaration
+        { Pstr_primitive $1 }
     )
   | wrap_mkstr_ext(
-      primitive_declaration
-        { pstr_primitive $1 }
-    | value_description
-        { pstr_primitive $1 }
-    | type_declarations
+      type_declarations
         { pstr_type $1 }
     | str_type_extension
         { pstr_typext $1 }
@@ -1633,14 +1629,14 @@ signature_item:
         { Psig_class $1 }
     | class_type_declarations
         { Psig_class_type $1 }
+    | primitive_declaration
+        { Psig_value $1 }
+    | value_description
+        { Psig_value $1 }
     )
     { $1 }
   | wrap_mksig_ext(
-      value_description
-        { psig_value $1 }
-    | primitive_declaration
-        { psig_value $1 }
-    | type_declarations
+      type_declarations
         { psig_type $1 }
     | type_subst_declarations
         { psig_typesubst $1 }
@@ -2855,37 +2851,29 @@ pattern_comma_list(self):
 /* Value descriptions */
 
 value_description:
-  VAL
-  ext = ext
-  attrs1 = attributes
-  id = mkrhs(val_ident)
-  COLON
-  ty = possibly_poly(core_type)
-  attrs2 = post_item_attributes
-    { let attrs = attrs1 @ attrs2 in
-      let loc = make_loc $sloc in
-      let docs = symbol_docs $sloc in
-      Val.mk id ty ~attrs ~loc ~docs,
-      ext }
+  ext_attrs_no_text (
+    VAL,
+    id = mkrhs(val_ident)
+    COLON
+    ty = possibly_poly(core_type)
+    { Val.mk_exh id ty }
+  )
+  { $1 }
 ;
 
 /* Primitive declarations */
 
 primitive_declaration:
-  EXTERNAL
-  ext = ext
-  attrs1 = attributes
-  id = mkrhs(val_ident)
-  COLON
-  ty = possibly_poly(core_type)
-  EQUAL
-  prim = mkrhs(raw_string)+
-  attrs2 = post_item_attributes
-    { let attrs = attrs1 @ attrs2 in
-      let loc = make_loc $sloc in
-      let docs = symbol_docs $sloc in
-      Val.mk id ty ~prim ~attrs ~loc ~docs,
-      ext }
+  ext_attrs_no_text (
+    EXTERNAL,
+    id = mkrhs(val_ident)
+    COLON
+    ty = possibly_poly(core_type)
+    EQUAL
+    prim = mkrhs(raw_string)+
+    { Val.mk_exh id ty ~prim }
+  )
+  { $1 }
 ;
 
 (* Type declarations and type substitutions. *)

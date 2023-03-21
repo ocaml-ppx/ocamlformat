@@ -529,7 +529,7 @@ and value_description =
      pval_name: string loc;
      pval_type: core_type;
      pval_prim: string loc list;
-     pval_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pval_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      pval_loc: Location.t;
     }
 (** Values of type {!value_description} represents:

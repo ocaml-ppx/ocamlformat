@@ -97,7 +97,9 @@ module Right = struct
 
   (* val x : < ... > *)
   let value_description = function
-    | {pval_attributes= _ :: _; _} -> false
+    | { pval_attributes= {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
+      ; _ } ->
+        false
     | {pval_prim= _ :: _; _} -> false
     | {pval_type= ct; _} -> core_type ct
 
