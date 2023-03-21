@@ -329,11 +329,6 @@ module Structure_item = struct
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
      |Pstr_extension (_, atrs) ->
         List.exists ~f:Attr.is_doc atrs
-    | Pstr_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ } ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
     | Pstr_open {popen_attributes= ea; _}
      |Pstr_class_type ({pci_attributes= ea; _} :: _)
      |Pstr_class ({pci_attributes= ea; _} :: _)
@@ -346,7 +341,11 @@ module Structure_item = struct
     | Pstr_module
         {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
      |Pstr_include
-        {pincl_mod= {pmod_attributes= attrs; _}; pincl_attributes= ea; _} ->
+        {pincl_mod= {pmod_attributes= attrs; _}; pincl_attributes= ea; _}
+     |Pstr_exception
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= attrs; _}
+        ; _ } ->
         Ext_attrs.has_doc ea || List.exists ~f:Attr.is_doc attrs
     | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
@@ -421,9 +420,7 @@ module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
     | Psig_attribute atr -> Attr.is_doc atr
-    (* one attribute list *)
-    | Psig_extension (_, atrs) ->
-        List.exists ~f:Attr.is_doc atrs (* two attribute list *)
+    | Psig_extension (_, atrs) -> List.exists ~f:Attr.is_doc atrs
     | Psig_class_type ({pci_attributes= ea; _} :: _)
      |Psig_class ({pci_attributes= ea; _} :: _)
      |Psig_modtype {pmtd_ext_attrs= ea; _}
@@ -432,20 +429,18 @@ module Signature_item = struct
      |Psig_open {popen_attributes= ea; _}
      |Psig_type (_, {ptype_attributes= ea; _} :: _)
      |Psig_typesubst ({ptype_attributes= ea; _} :: _)
-     |Psig_value {pval_attributes= ea; _} 
+     |Psig_value {pval_attributes= ea; _}
      |Psig_typext {ptyext_attributes= ea; _} ->
         Ext_attrs.has_doc ea
-    | Psig_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ } ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    (* three attribute list *)
     | Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
      |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
      |Psig_include
-        {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _} ->
+        {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _}
+     |Psig_exception
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= atrs; _}
+        ; _ } ->
         Ext_attrs.has_doc ea || (List.exists ~f:Attr.is_doc) atrs
     | Psig_type (_, [])
      |Psig_typesubst []

@@ -544,12 +544,12 @@ module Te = struct
      ptyext_attributes = add_docs_attrs' docs attrs;
     }
 
-  let mk_exception ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk_exception ?(loc = !default_loc) ?(attrs = Attr.ext_attrs ()) ?(docs = empty_docs)
       constructor =
     {
      ptyexn_constructor = constructor;
      ptyexn_loc = loc;
-     ptyexn_attributes = add_docs_attrs docs attrs;
+     ptyexn_attributes = add_docs_attrs' docs attrs;
     }
 
   let constructor ?(loc = !default_loc) ?(attrs = [])

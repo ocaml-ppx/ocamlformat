@@ -72,16 +72,12 @@ let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
 let pstr_type (nr, tys) =
    Pstr_type (nr, tys)
-let pstr_exception (te, ext) =
-  (Pstr_exception te, ext)
 
 let psig_type (nr, tys) =
   Psig_type (nr, tys)
 let psig_typesubst (nr, tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
   Psig_typesubst tys
-let psig_exception (te, ext) =
-  (Psig_exception te, ext)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -143,8 +139,6 @@ let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
 (*
 let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
 *)
-let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
-let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 
 let mkinfix arg1 op arg2 =
   Pexp_infix(op, arg1, arg2)
@@ -363,22 +357,6 @@ let wrap_mod_attrs ~loc:_ attrs body =
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
 *)
-
-let wrap_str_ext ~loc body ext =
-  match ext with
-  | None -> body
-  | Some id -> ghstr ~loc (Pstr_extension ((id, PStr [body]), []))
-
-let wrap_mkstr_ext ~loc (item, ext) =
-  wrap_str_ext ~loc (mkstr ~loc item) ext
-
-let wrap_sig_ext ~loc body ext =
-  match ext with
-  | None -> body
-  | Some id -> ghsig ~loc (Psig_extension ((id, PSig [body]), []))
-
-let wrap_mksig_ext ~loc (item, ext) =
-  wrap_sig_ext ~loc (mksig ~loc item) ext
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
@@ -1353,10 +1331,8 @@ structure_item:
         { Pstr_typext $1 }
     | type_declarations
         { pstr_type $1 }
-    )
-  | wrap_mkstr_ext(
-     str_exception_declaration
-        { pstr_exception $1 }
+    | str_exception_declaration
+        { Pstr_exception $1 }
     )
     { $1 }
 ;
@@ -1637,11 +1613,8 @@ signature_item:
         { psig_typesubst $1 }
     | open_description
         { Psig_open $1 }
-    )
-    { $1 }
-  | wrap_mksig_ext(
-      sig_exception_declaration
-        { psig_exception $1 }
+    | str_exception_declaration 
+        { Psig_exception $1 }
     )
     { $1 }
 
@@ -3060,32 +3033,34 @@ str_exception_declaration:
     { $1 }
 | EXCEPTION
   ext = ext
-  attrs1 = attributes
+  before = attributes
   id = mkrhs(constr_ident)
   EQUAL
   lid = mkrhs(constr_longident)
-  attrs2 = attributes
-  attrs = post_item_attributes
+  attrs_inside = attributes
+  after = post_item_attributes
   { let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
+    let attrs = Attr.ext_attrs ~before ~after ?ext () in
     Te.mk_exception ~attrs
-      (Te.rebind id lid ~attrs:(attrs1 @ attrs2) ~loc ~docs)
-    , ext }
+      (Te.rebind id lid ~attrs:attrs_inside ~loc ~docs)
+  }
 ;
 sig_exception_declaration:
   EXCEPTION
   ext = ext
-  attrs1 = attributes
+  before = attributes
   id = mkrhs(constr_ident)
   vars_args_res = generalized_constructor_arguments
-  attrs2 = attributes
-  attrs = post_item_attributes
+  attrs_inside = attributes
+  after = post_item_attributes
     { let vars, args, res = vars_args_res in
-      let loc = make_loc ($startpos, $endpos(attrs2)) in
+      let loc = make_loc ($startpos, $endpos(attrs_inside)) in
       let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ~before ~after ?ext () in
       Te.mk_exception ~attrs
-        (Te.decl id ~vars ~args ?res ~attrs:(attrs1 @ attrs2) ~loc ~docs)
-      , ext }
+        (Te.decl id ~vars ~args ?res ~attrs:attrs_inside ~loc ~docs)
+    }
 ;
 %inline let_exception_declaration:
     mkrhs(constr_ident) generalized_constructor_arguments attributes

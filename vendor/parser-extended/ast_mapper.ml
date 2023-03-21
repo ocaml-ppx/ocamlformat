@@ -295,7 +295,7 @@ module T = struct
   let map_type_exception sub
       {ptyexn_constructor; ptyexn_loc; ptyexn_attributes} =
     let loc = sub.location sub ptyexn_loc in
-    let attrs = sub.attributes sub ptyexn_attributes in
+    let attrs = sub.ext_attrs sub ptyexn_attributes in
     Te.mk_exception ~loc ~attrs
       (sub.extension_constructor sub ptyexn_constructor)
 

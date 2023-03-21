@@ -658,7 +658,7 @@ and type_exception =
   {
     ptyexn_constructor : extension_constructor;
     ptyexn_loc : Location.t;
-    ptyexn_attributes : attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+    ptyexn_attributes : ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
   }
 (** Definition of a new exception ([exception E]). *)
 

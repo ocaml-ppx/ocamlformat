@@ -226,7 +226,7 @@ class type%foo [@foo] x = x
 
 external%foo [@foo] x : _ = ""
 
-exception%foo X [@foo]
+exception%foo [@foo] X
 
 module%foo [@foo] M = M
 
@@ -251,7 +251,7 @@ module type S = sig
 
   type%foo [@foo] t += T
 
-  exception%foo X [@foo]
+  exception%foo [@foo] X
 
   module%foo [@foo] M : S
 

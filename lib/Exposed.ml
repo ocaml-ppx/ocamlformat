@@ -95,7 +95,10 @@ module Right = struct
 
   (* exception C of ... * ... * < ... > *)
   let type_exception = function
-    | {ptyexn_attributes= _ :: _; _} -> false
+    | { ptyexn_attributes=
+          {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
+      ; _ } ->
+        false
     | {ptyexn_constructor; _} -> extension_constructor ptyexn_constructor
 
   (* val x : < ... > *)

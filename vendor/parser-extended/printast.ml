@@ -627,7 +627,7 @@ and type_extension i ppf x =
 
 and type_exception i ppf x =
   line i ppf "type_exception %a\n" fmt_location x.ptyexn_loc;
-  attributes i ppf x.ptyexn_attributes;
+  ext_attrs i ppf x.ptyexn_attributes;
   let i = i+1 in
   line i ppf "ptyext_constructor =\n";
   let i = i+1 in
