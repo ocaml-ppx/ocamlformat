@@ -7694,3 +7694,7 @@ type t =
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact] }
+
+let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
+    ~enables ~files =
+  match segs with [] | [""] -> (ignores, enables, files, None)

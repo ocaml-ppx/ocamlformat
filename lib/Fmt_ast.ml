@@ -85,7 +85,7 @@ module Indent = struct
 
   let fun_type_annot = _ocp 2 4
 
-  let fun_args = _ocp 6 4
+  let fun_args ?(rec_flag = false) = _ocp (if rec_flag then 10 else 6) 4
 
   let docked_function ~ctx c =
     if c.conf.fmt_opts.ocp_indent_compat.v then 3
@@ -4260,7 +4260,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
               ( hvbox_if toplevel indent
                   ( hovbox 2
                       ( hovbox (Indent.fun_type_annot c)
-                          ( box_fun_decl_args c (Indent.fun_args c)
+                          ( box_fun_decl_args c
+                              (Indent.fun_args ~rec_flag c)
                               ( hovbox 4
                                   ( fmt_str_loc c lb_op
                                   $ fmt_extension_suffix c ext
