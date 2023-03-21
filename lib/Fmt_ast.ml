@@ -86,6 +86,12 @@ module Indent = struct
   let fun_type_annot = _ocp 2 4
 
   let fun_args = _ocp 6 4
+
+  let docked_function ~ctx c =
+    if c.conf.fmt_opts.ocp_indent_compat.v then 3
+    else
+      let default = if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4 in
+      Params.function_indent c.conf ~ctx ~default
 end
 
 module Break = struct
@@ -1951,13 +1957,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let e1N = List.rev rev_e1N in
           let ctx'' = Exp eN in
-          let default_indent =
-            if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4
-          in
-          let indent =
-            Params.function_indent c.conf ~ctx ~default:default_indent
-          in
-          hvbox indent
+          hvbox
+            (Indent.docked_function ~ctx c)
             (Params.parens_if parens c.conf
                ( hovbox 2
                    (wrap

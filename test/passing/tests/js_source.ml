@@ -7677,3 +7677,11 @@ type t
 [@@deriving
   some_deriver_name another_deriver_name another_deriver_name
     another_deriver_name yet_another_such_name such_that_they_line_wrap]
+
+let pat =
+  String.Search_pattern.create
+    (String.init len ~f:(function
+        | 0 -> '\n'
+        | n when n < len - 1 -> ' '
+        | _ -> '*'))
+;;
