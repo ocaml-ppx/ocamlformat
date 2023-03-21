@@ -3552,7 +3552,7 @@ let ssmap =
    end
    in
    (module S)
-    : (module MapT with type key = string and type data = string and type map = SSMap.map))
+   : (module MapT with type key = string and type data = string and type map = SSMap.map))
 ;;
 
 let ssmap = (module SSMap : MapT with type key = _ and type data = _ and type map = _)
@@ -9847,14 +9847,14 @@ let () =
 
 let () =
   ((one_mississippi, two_mississippi, three_mississippi, four_mississippi)
-    : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
+   : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
 ;;
 
 let _ =
   ((match foo with
     | Bar -> bar
     | Baz -> baz)
-    : string)
+   : string)
 ;;
 
 let _ =
