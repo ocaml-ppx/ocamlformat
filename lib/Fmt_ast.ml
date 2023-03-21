@@ -96,6 +96,14 @@ module Indent = struct
   let fun_args_group ast c =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
     else match ast.pexp_desc with Pexp_function _ -> 2 | _ -> 3
+
+  let record_docstring c =
+    let ocp =
+      match c.conf.fmt_opts.break_separators.v with
+      | `Before -> -2
+      | `After -> 0
+    in
+    _ocp ocp 4 c
 end
 
 module Break = struct
@@ -3219,7 +3227,8 @@ and fmt_label_declaration c ctx ?(last = false) decl =
   in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
-    $ hvbox 4
+    $ hvbox
+        (Indent.record_docstring c)
         ( hvbox 3
             ( hvbox 4
                 ( hvbox 2

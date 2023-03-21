@@ -7685,3 +7685,12 @@ let pat =
         | n when n < len - 1 -> ' '
         | _ -> '*'))
 ;;
+
+type t =
+  { break_separators: [`Before | `After]
+  ; break_sequences: bool
+  ; break_string_literals: [`Auto | `Never]
+        (** How to potentially break string literals into new lines. *)
+  ; break_struct: bool
+  ; cases_exp_indent: int
+  ; cases_matching_exp_indent: [`Normal | `Compact] }
