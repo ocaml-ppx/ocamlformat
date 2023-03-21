@@ -92,6 +92,10 @@ module Indent = struct
     else
       let default = if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4 in
       Params.function_indent c.conf ~ctx ~default
+
+  let fun_args_group ast c =
+    if not c.conf.fmt_opts.ocp_indent_compat.v then 2
+    else match ast.pexp_desc with Pexp_function _ -> 2 | _ -> 3
 end
 
 module Break = struct
@@ -1454,7 +1458,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
       | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
     in
-    hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
+    hovbox
+      (Indent.fun_args_group ast c)
+      (fmt_label_arg c ?box ?epi (lbl, xarg))
     $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =

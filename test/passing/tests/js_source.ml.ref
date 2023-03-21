@@ -910,8 +910,8 @@ let id x = x
 
 let idb1 =
   (fun id ->
-    let _ = id true in
-    id)
+     let _ = id true in
+     id)
     id
 ;;
 
@@ -1059,8 +1059,8 @@ let rec devariantize : type t. t ty -> variant -> t =
     let builder = create_builder () in
     List.iter2
       (fun (Field { label; field_type; set }) (lab, v) ->
-        if label <> lab then raise VariantMismatch;
-        set builder (devariantize field_type v))
+         if label <> lab then raise VariantMismatch;
+         set builder (devariantize field_type v))
       fields
       fl;
     of_builder builder
@@ -9642,7 +9642,7 @@ let _ =
 let g =
   f
     ~x
-      (* this is a multiple-line-spanning
+       (* this is a multiple-line-spanning
                 comment *)
     ~y
 ;;
