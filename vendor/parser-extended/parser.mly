@@ -70,16 +70,16 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
-let pstr_type ((nr, ext), tys) =
-  (Pstr_type (nr, tys), ext)
+let pstr_type (nr, tys) =
+   Pstr_type (nr, tys)
 let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 
-let psig_type ((nr, ext), tys) =
-  (Psig_type (nr, tys), ext)
-let psig_typesubst ((nr, ext), tys) =
+let psig_type (nr, tys) =
+  Psig_type (nr, tys)
+let psig_typesubst (nr, tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
-  (Psig_typesubst tys, ext)
+  Psig_typesubst tys
 let psig_exception (te, ext) =
   (Psig_exception te, ext)
 
@@ -1351,11 +1351,11 @@ structure_item:
         { Pstr_primitive $1 }
     | str_type_extension
         { Pstr_typext $1 }
+    | type_declarations
+        { pstr_type $1 }
     )
   | wrap_mkstr_ext(
-      type_declarations
-        { pstr_type $1 }
-    | str_exception_declaration
+     str_exception_declaration
         { pstr_exception $1 }
     )
     { $1 }
@@ -1525,7 +1525,7 @@ open_description:
   { let attrs = Attr.ext_attrs ?ext ~before ~after () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Opn.mk id ~override ~attrs ~loc ~docs, ext
+    Opn.mk id ~override ~attrs ~loc ~docs
   }
 ;
 
@@ -1631,17 +1631,17 @@ signature_item:
         { Psig_value $1 }
     | sig_type_extension
         { Psig_typext $1 }
-    )
-    { $1 }
-  | wrap_mksig_ext(
-      type_declarations
+    | type_declarations
         { psig_type $1 }
     | type_subst_declarations
         { psig_typesubst $1 }
-    | sig_exception_declaration
-        { psig_exception $1 }
     | open_description
-        { let (body, ext) = $1 in (Psig_open body, ext) }
+        { Psig_open $1 }
+    )
+    { $1 }
+  | wrap_mksig_ext(
+      sig_exception_declaration
+        { psig_exception $1 }
     )
     { $1 }
 
@@ -2923,7 +2923,7 @@ generic_type_declaration(flag, kind):
       let docs = symbol_docs $sloc in
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
-      (flag, ext),
+      flag,
       Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
