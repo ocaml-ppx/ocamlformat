@@ -431,54 +431,48 @@ type let_binding =
     lb_expression: expression;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
-    lb_attributes: attributes;
-    lb_docs: docs Lazy.t;
-    lb_text: text Lazy.t;
+    lb_attributes: ext_attrs;
     lb_loc: Location.t; }
 
 type let_bindings' =
   { lbs_bindings: let_binding list;
     lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option }
+    lbs_has_ext: bool }
 
-let mklb first ~loc (p, args, typ, e, is_pun) attrs =
+let mklb ?(text=[]) ~docs ~loc (p, e, typ, is_pun) attrs =
   {
     lb_pattern = p;
     lb_args = args;
     lb_expression = e;
     lb_constraint=typ;
     lb_is_pun = is_pun;
-    lb_attributes = attrs;
-    lb_docs = symbol_docs_lazy loc;
-    lb_text = (if first then empty_text_lazy
-               else symbol_text_lazy (fst loc));
+    lb_attributes = add_text_attrs' text (add_docs_attrs' docs attrs);
     lb_loc = make_loc loc;
   }
 
 let addlb lbs lb =
-  if lb.lb_is_pun && lbs.lbs_extension = None then syntax_error ();
+  (* [let%foo x = y and z in] should be allowed, but not [let x = y and z in] *)
+  if lb.lb_is_pun && not lbs.lbs_has_ext then syntax_error ();
   { lbs with lbs_bindings = lb :: lbs.lbs_bindings }
 
-let mklbs ext rf lb =
+let mklbs rf lb =
   let lbs = {
     lbs_bindings = [];
     lbs_rec = rf;
-    lbs_extension = ext;
+    lbs_has_ext = Option.is_some (lb.lb_attributes.attrs_extension)
   } in
   addlb lbs lb
 
-let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext } =
   let pvbs_bindings =
     List.rev_map
       (fun lb ->
          Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           ~docs:(Lazy.force lb.lb_docs)
-           ~text:(Lazy.force lb.lb_text)
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
            lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
-  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
+  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_has_ext = lbs_has_ext }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
@@ -488,7 +482,7 @@ let expr_of_let_bindings ~loc ~loc_in lbs body =
 
 let class_of_let_bindings ~loc ~loc_in lbs body =
   (* Our use of let_bindings(no_ext) guarantees the following: *)
-  assert (lbs.lbs_extension = None);
+  assert (not lbs.lbs_has_ext);
   mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
@@ -2517,23 +2511,26 @@ let_bindings(EXT):
 %inline let_binding(EXT):
   LET
   ext = EXT
-  attrs1 = attributes
+  before = attributes
   rec_flag = rec_flag
   body = let_binding_body
-  attrs2 = post_item_attributes
+  after = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
-      mklbs ext rec_flag (mklb ~loc:$sloc true body attrs)
+      let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ?ext ~after ~before () in
+      mklbs rec_flag (mklb ~loc:$sloc body ~docs attrs)
     }
 ;
 and_let_binding:
   AND
-  attrs1 = attributes
+  before = attributes
   body = let_binding_body
-  attrs2 = post_item_attributes
+  after = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
-      mklb ~loc:$sloc false body attrs
+      let text = symbol_text $symbolstartpos in
+      let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ~after ~before () in
+      mklb ~text ~docs ~loc:$sloc body attrs
     }
 ;
 letop_binding_body:

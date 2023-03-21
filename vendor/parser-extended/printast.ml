@@ -1081,7 +1081,7 @@ and case i ppf {pc_lhs; pc_guard; pc_rhs} =
 
 and value_binding i ppf x =
   line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  attributes (i+1) ppf x.pvb_attributes;
+  ext_attrs (i+1) ppf x.pvb_attributes;
   pattern (i+1) ppf x.pvb_pat;
   Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
   expression (i+1) ppf x.pvb_expr

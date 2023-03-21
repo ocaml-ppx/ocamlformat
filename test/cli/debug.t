@@ -19,6 +19,7 @@
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -47,6 +48,7 @@
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -75,6 +77,7 @@
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -102,6 +105,7 @@
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -145,6 +149,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -158,6 +163,7 @@
                   before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -199,6 +205,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -212,6 +219,7 @@
                   before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -253,6 +261,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -266,6 +275,7 @@
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
                    after: (* after unit *)
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -306,6 +316,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -319,6 +330,7 @@
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
                    after: (* after unit *)
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)

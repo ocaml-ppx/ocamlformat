@@ -1108,15 +1108,15 @@ and value_binding =
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
-    pvb_attributes: attributes;
+    pvb_attributes: ext_attrs;
     pvb_loc: Location.t;
   }(** [let pat : type_constraint = exp] *)
 
 and value_bindings =
   {
     pvbs_bindings: value_binding list;
+    pvbs_has_ext: bool;
     pvbs_rec: rec_flag;
-    pvbs_extension: string loc option
   }
 
 and module_binding =

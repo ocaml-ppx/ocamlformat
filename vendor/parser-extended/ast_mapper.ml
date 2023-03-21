@@ -636,10 +636,9 @@ module E = struct
 end
 
 module PVB = struct
-  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension } =
+  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_has_ext } =
     let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
-    let pvbs_extension = map_opt (map_loc sub) pvbs_extension in
-    { pvbs_bindings; pvbs_rec; pvbs_extension }
+    { pvbs_bindings; pvbs_rec; pvbs_has_ext }
 end
 
 module P = struct
@@ -887,7 +886,7 @@ let default_mapper =
            ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun
            ~loc:(this.location this pvb_loc)
-           ~attrs:(this.attributes this pvb_attributes)
+           ~attrs:(this.ext_attrs this pvb_attributes)
       );
     value_bindings = PVB.map_value_bindings;
 
