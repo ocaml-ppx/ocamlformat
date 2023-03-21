@@ -7733,3 +7733,7 @@ let _ =
           do_something ();
           do_something_else ())
   |> bar
+
+let raise_length_mismatch name n1 n2 =
+  invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
+[@@cold] [@@inline never] [@@local never] [@@specialise never]

@@ -4258,13 +4258,25 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let pre_body, body = fmt_body c lb_exp in
   let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
-  let toplevel, in_, cmts_before, cmts_after =
+  let toplevel, in_, epi, cmts_before, cmts_after =
     match in_ with
     | Some in_ ->
-        (false, in_ indent, Cmts.fmt_before c lb_loc, Cmts.fmt_after c lb_loc)
+        ( false
+        , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
+        , fmt_opt epi
+        , Cmts.fmt_before c lb_loc
+        , Cmts.fmt_after c lb_loc )
     | None ->
+        let epi =
+          let pre : sp =
+            if c.conf.fmt_opts.ocp_indent_compat.v then Break (1, 0)
+            else Break (1, 2)
+          in
+          fmt_item_attributes c ~pre at_at_attrs $ fmt_opt epi
+        in
         ( true
         , noop
+        , epi
         , Cmts.Toplevel.fmt_before c lb_loc
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
@@ -4298,9 +4310,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
                   $ fmt_if (not lb_pun) "@ "
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after )
-          $ fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs
           $ in_ )
-      $ fmt_opt epi )
+      $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
