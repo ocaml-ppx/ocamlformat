@@ -7768,3 +7768,10 @@ let _ =
           do_something ();
           do_something_else ())
   |> bar
+
+let _ =
+  let module M = struct
+    include ( val foooooooooooooooooooooooooooooooooooooooo
+                : fooooooooooooooooooooooooooooooooooooooooo )
+  end in
+  ()

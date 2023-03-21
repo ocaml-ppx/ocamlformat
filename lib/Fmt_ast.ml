@@ -119,6 +119,8 @@ module Break = struct
   let _ocp a b c = fmt (if c.conf.fmt_opts.ocp_indent_compat.v then a else b)
 
   let type_constr = _ocp "@;<1 2>" "@ "
+
+  let unpack_annot = _ocp "@ " "@;<1 2>"
 end
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
@@ -4058,9 +4060,10 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ after ) }
   | Pmod_unpack (e, ty1, ty2) ->
       let package_type sep (lid, cstrs) =
-        hvbox 0
-          ( hovbox 0 (str sep $ fmt_longident_loc c lid)
-          $ fmt_package_type c ctx cstrs )
+        Break.unpack_annot c
+        $ hvbox 0
+            ( hovbox 0 (str sep $ fmt_longident_loc c lid)
+            $ fmt_package_type c ctx cstrs )
       in
       { empty with
         opn= Some (open_hvbox 2)
@@ -4071,8 +4074,8 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                 (wrap_fits_breaks ~space:false c.conf "(" ")"
                    ( str "val "
                    $ fmt_expression c (sub_exp ~ctx e)
-                   $ opt ty1 (fun x -> break 1 2 $ package_type ": " x)
-                   $ opt ty2 (fun x -> break 1 2 $ package_type ":> " x) ) )
+                   $ opt ty1 (package_type ": ")
+                   $ opt ty2 (package_type ":> ") ) )
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
       { empty with
