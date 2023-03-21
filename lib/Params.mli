@@ -148,7 +148,7 @@ module Align : sig
 
   val infix_op : Conf.t -> Fmt.t -> Fmt.t
 
-  val match_ : Conf.t -> Fmt.t -> Fmt.t
+  val match_ : Conf.t -> xexp:expression Ast.xt -> Fmt.t -> Fmt.t
 
   val function_ :
     Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t

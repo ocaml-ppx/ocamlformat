@@ -7750,3 +7750,15 @@ end = struct
   external unsafe_memset : t -> pos:int -> len:int -> char -> unit = "bigstring_memset_stub"
   [@@noalloc]
 end
+
+let _ =
+  foo
+  $$ ( match group with [] -> impossible "previous match"
+    | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+  $$ bar
+
+let _ =
+  foo
+  $$ ( try group with [] -> impossible "previous match"
+    | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+  $$ bar
