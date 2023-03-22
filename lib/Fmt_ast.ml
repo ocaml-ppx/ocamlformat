@@ -1629,7 +1629,7 @@ and fmt_pat_cons c ~parens args =
 
 and fmt_match c ?epi ~parens ?ext ctx xexp cs e0 keyword =
   let ctx0 = xexp.ctx in
-  let indent = Params.match_indent c.conf ~ctx:ctx0 in
+  let indent = Params.match_indent c.conf ~parens ~ctx:ctx0 in
   hvbox indent
     ( fmt_opt epi
     $ Params.Exp.wrap c.conf ~parens ~disambiguate:true

@@ -7762,3 +7762,10 @@ let _ =
   $$ ( try group with [] -> impossible "previous match"
     | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
   $$ bar
+
+let _ =
+  x == exp
+  ||
+  match x with
+  | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+  | _ -> false
