@@ -9909,12 +9909,12 @@ type t =
   }
 
 let rec collect_files
-          ~enable_outside_detected_project
-          ~root
-          ~segs
-          ~ignores
-          ~enables
-          ~files
+      ~enable_outside_detected_project
+      ~root
+      ~segs
+      ~ignores
+      ~enables
+      ~files
   =
   match segs with
   | [] | [ "" ] -> ignores, enables, files, None
