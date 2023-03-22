@@ -18,6 +18,9 @@ val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 module Exp : sig
   module Infix_op_arg : sig
     val wrap : Conf.t -> ?parens_nested:bool -> parens:bool -> Fmt.t -> Fmt.t
+
+    val dock : Conf.t -> expression Ast.xt -> bool
+    (** Whether the RHS of an infix operator should be docked. *)
   end
 
   val wrap :

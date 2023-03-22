@@ -648,12 +648,12 @@ end
 let write_int i = Msg.write Msg.Int i
 
 module StrM = Msg.Define (struct
-  type t = string
+    type t = string
 
-  let label = "string"
-  let read s = s
-  let write s = s
-end)
+    let label = "string"
+    let read s = s
+    let write s = s
+  end)
 
 type 'a Msg.tag += String = StrM.C
 
@@ -3140,8 +3140,8 @@ module M_valid : S = struct
 end
 
 module FM_valid = F (struct
-  type t = int
-end)
+    type t = int
+  end)
 
 [%%expect {|
 module M_valid : S
@@ -3266,8 +3266,8 @@ module M_invalid : S = struct
 end
 
 module FM_invalid = F (struct
-  type t = string
-end)
+    type t = string
+  end)
 
 [%%expect
   {|
@@ -3314,20 +3314,20 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
 (* No real improvement here? *)
 let make_set (type s) cmp : (module Set.S with type elt = s) =
   (module Set.Make (struct
-    type t = s
+      type t = s
 
-    let compare = cmp
-  end))
+      let compare = cmp
+    end))
 ;;
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
   sort
     (module Set.Make (struct
-      type t = s
+        type t = s
 
-      let compare = cmp
-    end))
+        let compare = cmp
+      end))
 ;;
 
 module type S = sig
@@ -3566,16 +3566,16 @@ open MoreLabels
 (* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 module Names = Set.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 (* Variables are common to lambda and expr *)
 
@@ -3776,16 +3776,16 @@ open MoreLabels
 (* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 module Names = Set.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 (* To build recursive objects *)
 
@@ -4022,16 +4022,16 @@ open MoreLabels
 (* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 module Names = Set.Make (struct
-  type t = string
+    type t = string
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
 
 (* To build recursive objects *)
 
@@ -4770,8 +4770,8 @@ module Int = struct
 end
 
 module M = F (struct
-  module type T = S
-end)
+    module type T = S
+  end)
 
 let () = flag := false
 
@@ -6531,10 +6531,10 @@ module A' = Make' (struct end)
 
 module TT = struct
   module IntSet = Set.Make (struct
-    type t = int
+      type t = int
 
-    let compare = compare
-  end)
+      let compare = compare
+    end)
 end
 
 let () =
@@ -9918,4 +9918,79 @@ let rec collect_files
   =
   match segs with
   | [] | [ "" ] -> ignores, enables, files, None
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    ~f:(fun (type a) foooooooooooooooooooooooooooooooooo : 'a ->
+      match fooooooooooooooooooooooooooooooooooooooo with
+      | Fooooooooooooooooooooooooooooooooooooooo -> x
+      | Fooooooooooooooooooooooooooooooooooooooo -> x)
+;;
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+;;
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+  |> bar
+;;
+
+let _ =
+  foo
+  |> List.map
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+;;
+
+let _ = foo |> List.map (function A -> do_something ())
+
+let _ =
+  foo
+  |> List.map (function
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something_else ())
+  |> bar
+;;
+
+let _ =
+  foo
+  |> List.double_map
+       ~f1:(fun x ->
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something_else ())
+       ~f2:(fun x ->
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something_else ())
+  |> bar
 ;;

@@ -45,6 +45,19 @@ module Exp = struct
           (Fmt.fits_breaks ")" ?hint cls)
           k
       else k
+
+    let dock (c : Conf.t) xarg =
+      if not c.fmt_opts.ocp_indent_compat.v then false
+      else
+        match xarg.ast.pexp_desc with
+        | Pexp_apply (_, args) -> (
+          (* Rhs is an apply and it ends with a [fun]. *)
+          match List.last_exn args with
+          | _, {pexp_desc= Pexp_fun _ | Pexp_newtype _ | Pexp_function _; _}
+            ->
+              true
+          | _ -> false )
+        | _ -> false
   end
 
   let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
