@@ -424,3 +424,7 @@ let[@a
 let raise_length_mismatch name n1 n2 =
   invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
   [@@cold] [@@inline never] [@@local never] [@@specialise never]
+
+external unsafe_memset : t -> pos:int -> len:int -> char -> unit
+  = "bigstring_memset_stub"
+  [@@noalloc]

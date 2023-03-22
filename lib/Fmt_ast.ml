@@ -3069,6 +3069,9 @@ and fmt_value_description ?ext c ctx vd =
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
+  let attrs_indent : sp =
+    Break (1, c.conf.fmt_opts.stritem_attributes_indent.v)
+  in
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
@@ -3088,7 +3091,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim "@;" fmt_val_prim )
-    $ fmt_item_attributes c ~pre:(Break (1, 2)) atrs
+    $ fmt_item_attributes c ~pre:attrs_indent atrs
     $ doc_after )
 
 and fmt_tydcl_params c ctx params =
