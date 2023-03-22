@@ -4269,8 +4269,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | None ->
         let epi =
           let pre : sp =
-            if c.conf.fmt_opts.ocp_indent_compat.v then Break (1, 0)
-            else Break (1, 2)
+            Break (1, c.conf.fmt_opts.stritem_attributes_indent.v)
           in
           fmt_item_attributes c ~pre at_at_attrs $ fmt_opt epi
         in

@@ -420,3 +420,7 @@ let[@a
         (* ... *)
         (* ... *)
         attr (* ... *)]
+
+let raise_length_mismatch name n1 n2 =
+  invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
+  [@@cold] [@@inline never] [@@local never] [@@specialise never]
