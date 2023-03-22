@@ -579,4 +579,9 @@ module Align = struct
       | _ -> parens && not c.fmt_opts.align_symbol_open_paren.v
     in
     hvbox_if align 0 t
+
+  let fun_decl (c : Conf.t) ~decl ~pattern ~args =
+    if c.fmt_opts.ocp_indent_compat.v then
+      hovbox 4 (decl $ hvbox 2 (pattern $ args))
+    else hovbox 4 (decl $ pattern) $ args
 end

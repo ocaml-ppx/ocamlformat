@@ -154,4 +154,6 @@ module Align : sig
 
   val function_ :
     Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
+
+  val fun_decl : Conf.t -> decl:Fmt.t -> pattern:Fmt.t -> args:Fmt.t -> Fmt.t
 end

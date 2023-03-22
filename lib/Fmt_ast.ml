@@ -4304,6 +4304,20 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
         , Cmts.Toplevel.fmt_before c lb_loc
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
+  let decl_args =
+    let decl =
+      fmt_str_loc c lb_op
+      $ fmt_extension_suffix c ext
+      $ fmt_attributes c at_attrs $ fmt_if rec_flag " rec"
+      $ fmt_or pat_has_cmt "@ " " "
+    and pattern = fmt_pattern c lb_pat
+    and args =
+      fmt_if_k
+        (not (List.is_empty xargs))
+        (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
+    in
+    box_fun_decl_args c 4 (Params.Align.fun_decl c.conf ~decl ~pattern ~args)
+  in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ cmts_before
   $ hvbox 0
@@ -4312,20 +4326,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
               ( hvbox_if toplevel indent
                   ( hovbox 2
                       ( hovbox (Indent.fun_type_annot c)
-                          ( box_fun_decl_args c (Indent.fun_args c)
-                              ( hovbox 4
-                                  ( fmt_str_loc c lb_op
-                                  $ fmt_extension_suffix c ext
-                                  $ fmt_attributes c at_attrs
-                                  $ fmt_if rec_flag " rec"
-                                  $ fmt_or pat_has_cmt "@ " " "
-                                  $ fmt_pattern c lb_pat )
-                              $ fmt_if_k
-                                  (not (List.is_empty xargs))
-                                  ( fmt "@ "
-                                  $ wrap_fun_decl_args c
-                                      (fmt_fun_args c xargs) ) )
-                          $ fmt_cstr )
+                          (decl_args $ fmt_cstr)
                       $ fmt_if_k (not lb_pun)
                           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v
                              (fits_breaks " =" ~hint:(1000, 0) "=")
