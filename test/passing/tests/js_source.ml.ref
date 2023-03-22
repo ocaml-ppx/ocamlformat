@@ -5457,13 +5457,13 @@ module M2 : sig
   end
 end = (
   M :
-    sig
-      module N : sig
-        val x : int
-      end
+  sig
+    module N : sig
+      val x : int
+    end
 
-      module N' = N
-    end)
+    module N' = N
+  end)
 ;;
 
 M2.N'.x
@@ -5496,13 +5496,13 @@ module M2 : sig
   end
 end = (
   M :
-    sig
-      module C : sig
-        val chr : int -> char
-      end
+  sig
+    module C : sig
+      val chr : int -> char
+    end
 
-      module C' = C
-    end)
+    module C' = C
+  end)
 ;;
 
 M2.C'.chr 66;;
