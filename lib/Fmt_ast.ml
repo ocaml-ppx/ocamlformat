@@ -1552,7 +1552,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
   in
   let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
-    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
      |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
      |Pexp_try _ | Pexp_letopen _ ->
         true
