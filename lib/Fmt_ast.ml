@@ -93,11 +93,11 @@ module Indent = struct
 
   let fun_args = _ocp 6 4
 
-  let docked_function ~parens ~ctx c =
+  let docked_function ~parens ~xexp c =
     if c.conf.fmt_opts.ocp_indent_compat.v then if parens then 3 else 2
     else
       let default = if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4 in
-      Params.function_indent c.conf ~ctx ~default
+      Params.function_indent c.conf ~parens:false ~xexp ~default
 
   let fun_args_group lbl ast c =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
@@ -1860,7 +1860,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
-      let indent = Params.function_indent c.conf ~ctx in
+      let indent = Params.function_indent c.conf ~parens ~xexp:xr in
       Params.parens_if parens c.conf
         (hvbox indent
            ( hvbox 0
@@ -2011,9 +2011,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             if c.conf.fmt_opts.wrap_fun_args.v then hovbox 2 else hvbox 2
           in
           let e1N = List.rev rev_e1N in
+          let xlast_arg = sub_exp ~ctx eN in
           let ctx'' = Exp eN in
           hvbox
-            (Indent.docked_function ~parens ~ctx c)
+            (Indent.docked_function ~parens ~xexp:xlast_arg c)
             ( expr_epi
             $ Params.parens_if parens c.conf
                 ( wrap
@@ -2158,7 +2159,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         else 0
       in
       let indent =
-        Params.function_indent c.conf ~ctx ~default:default_indent
+        Params.function_indent c.conf ~parens ~xexp ~default:default_indent
       in
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
@@ -2176,7 +2177,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ str "->" $ pre_body )
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
-      let indent = Params.function_indent c.conf ~ctx in
+      let indent = Params.function_indent c.conf ~parens ~xexp in
       Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
       @@ Params.Align.function_ c.conf ~parens ~ctx0 ~self:exp
       @@ ( hvbox 2
@@ -4248,7 +4249,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi _ctx
     {lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
@@ -4286,9 +4287,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   in
   let indent =
     match lb_exp.ast.pexp_desc with
-    | Pexp_function _ ->
-        Params.function_indent c.conf ~ctx
-          ~default:c.conf.fmt_opts.let_binding_indent.v
+    | Pexp_function _ -> c.conf.fmt_opts.function_indent.v
     | (Pexp_fun _ | Pexp_newtype _)
       when c.conf.fmt_opts.let_binding_deindent_fun.v ->
         max (c.conf.fmt_opts.let_binding_indent.v - 1) 0

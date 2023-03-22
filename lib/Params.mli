@@ -132,7 +132,8 @@ val match_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
+val function_indent :
+  ?default:int -> Conf.t -> parens:bool -> xexp:expression Ast.xt -> int
 (** [function_indent c ~ctx ~default] returns the indentation used for the
     function in context [ctx], depending on the `function-indent-nested`
     option, or using the [default] indentation (0 if not provided) if the

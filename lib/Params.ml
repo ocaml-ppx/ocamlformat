@@ -15,6 +15,19 @@ open Asttypes
 open Fmt
 open Ast
 
+(** Whether [exp] occurs in [args] as a labelled argument. *)
+let is_labelled_arg args exp =
+  List.exists
+    ~f:(function
+      | Nolabel, _ -> false
+      | Labelled _, x | Optional _, x -> phys_equal x exp )
+    args
+
+let is_labelled_arg' xexp =
+  match xexp.Ast.ctx with
+  | Exp {pexp_desc= Pexp_apply (_, args); _} -> is_labelled_arg args xexp.ast
+  | _ -> false
+
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
@@ -536,9 +549,13 @@ let match_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.fmt_opts.match_indent.v
   | _ -> default
 
-let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
-  match (c.fmt_opts.function_indent_nested.v, ctx) with
-  | `Always, _ | _, (Top | Sig _ | Str _) -> c.fmt_opts.function_indent.v
+let function_indent ?(default = 0) (c : Conf.t) ~parens ~xexp =
+  match c.fmt_opts.function_indent_nested.v with
+  | `Always -> c.fmt_opts.function_indent.v
+  | _
+    when c.fmt_opts.ocp_indent_compat.v && parens
+         && not (is_labelled_arg' xexp) ->
+      default + 1
   | _ -> default
 
 let comma_sep (c : Conf.t) : Fmt.s =
@@ -552,14 +569,6 @@ let semi_sep (c : Conf.t) : Fmt.s =
   | `After -> ";@;<1 2>"
 
 module Align = struct
-  (** Whether [exp] occurs in [args] as a labelled argument. *)
-  let is_labelled_arg args exp =
-    List.exists
-      ~f:(function
-        | Nolabel, _ -> false
-        | Labelled _, x | Optional _, x -> phys_equal x exp )
-      args
-
   let general (c : Conf.t) t =
     hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t
 
