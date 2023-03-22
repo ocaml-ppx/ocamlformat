@@ -127,3 +127,15 @@ let { x (*b*) : z } = e
 let { (* a *) x (*b*) : (* c *) z (* d *) } = e
 
 let _ = { (*a*)x(*b*) : (*c*)t(*d*) :> (*e*)t(*f*) = (*g*)e(*h*) }
+
+type t = C of (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*)
+
+type t = C : (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*) -> t
+
+let _ = { x = (x : t) }
+let _ = { x :> t = (x : t) }
+let _ = { x = (x :> t) }
+let _ = { x = (x : t :> t) }
+let _ = { x : t = (x :> t) }
+
+let { x = (x : t) } = x

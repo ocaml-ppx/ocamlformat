@@ -1,4 +1,4 @@
 (library
  (name parser_shims)
- (public_name ocamlformat.parser_shims)
+ (public_name ocamlformat-lib.parser_shims)
  (libraries compiler-libs.common))

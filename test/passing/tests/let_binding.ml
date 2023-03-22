@@ -222,3 +222,12 @@ let _ =
     yyy
   in
   zzz
+
+[@@@ocamlformat "let-binding-spacing=double-semicolon"]
+
+module A = struct
+  let f : int S.t ab -> float S.t ab -> string =
+   fun (l : int S.t ab) (r : float S.t ab) ->
+    match (l, r) with A, B -> "f A B"
+ ;;
+end

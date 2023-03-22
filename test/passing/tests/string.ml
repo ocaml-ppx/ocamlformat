@@ -39,3 +39,7 @@ external%c print: str:string -> d:int -> void = {|
   printf("%s (%d)\n",$str,$d);
   fflush(stdout);
 |}
+
+external x : t = (* a *) "x" (* b *) "y" (* c *)
+
+external x : t = (* aaaaaaa aaaaaa aaaaaa *) "xxxxxx xxxxx xxxx" (* bbbbbb bbbbb bbbbbb *) "yyyy yyyy yyyyy" (* cccccc ccccc cccccc *)

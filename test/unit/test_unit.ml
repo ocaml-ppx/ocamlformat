@@ -1,5 +1,5 @@
 open Base
-open Ocamlformat
+open Ocamlformat_lib
 
 module Test_location = struct
   let test_compare_width_decreasing =
@@ -46,7 +46,7 @@ module Test_noit = struct
     let compare_width_decreasing (sa, ea) (sb, eb) =
       Poly.compare (sa, -ea) (sb, -eb)
 
-    let pp ppf (s, e) = Caml.Format.fprintf ppf "(%d, %d)" s e
+    let pp ppf (s, e) = Stdlib.Format.fprintf ppf "(%d, %d)" s e
 
     let equal = Poly.equal
   end
@@ -122,4 +122,4 @@ let tests =
   ; ("Range", Test_range.tests)
   ; ("Translation_unit", Test_translation_unit.tests) ]
 
-let () = Alcotest.run "ocamlformat" tests
+let () = Alcotest.run "ocamlformat" tests ~compact:true

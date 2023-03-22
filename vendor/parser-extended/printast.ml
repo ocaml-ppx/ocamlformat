@@ -223,7 +223,7 @@ let rec core_type i ppf x =
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
       list i core_type ppf l
   | Ptyp_alias (ct, s) ->
-      line i ppf "Ptyp_alias \"%s\"\n" s;
+      line i ppf "Ptyp_alias \"%a\"\n" fmt_string_loc s;
       core_type i ppf ct;
   | Ptyp_poly (sl, ct) ->
       line i ppf "Ptyp_poly%a\n" typevars sl;
@@ -300,10 +300,9 @@ and pattern i ppf x =
   | Ppat_list (l) ->
       line i ppf "Ppat_list\n";
       list i pattern ppf l;
-  | Ppat_or (p1, p2) ->
+  | Ppat_or l ->
       line i ppf "Ppat_or\n";
-      pattern i ppf p1;
-      pattern i ppf p2;
+      list i pattern ppf l
   | Ppat_lazy p ->
       line i ppf "Ppat_lazy\n";
       pattern i ppf p;
@@ -454,9 +453,10 @@ and expression i ppf x =
   | Pexp_newtype (s, e) ->
       line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
       expression i ppf e
-  | Pexp_pack me ->
+  | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
-      module_expr i ppf me
+      module_expr i ppf me;
+      option i package_type ppf pt
   | Pexp_open (lid, e) ->
       line i ppf "Pexp_open\n";
       longident_loc i ppf lid;
@@ -479,6 +479,9 @@ and expression i ppf x =
       line i ppf "Pexp_hole\n"
   | Pexp_beginend e ->
       line i ppf "Pexp_beginend\n";
+      expression i ppf e
+  | Pexp_parens e ->
+      line i ppf "Pexp_parens\n";
       expression i ppf e
   | Pexp_cons l ->
       line i ppf "Pexp_cons\n";
@@ -515,7 +518,7 @@ and value_description i ppf x =
        x.pval_name fmt_location x.pval_loc;
   attributes i ppf x.pval_attributes;
   core_type (i+1) ppf x.pval_type;
-  list (i+1) string ppf x.pval_prim
+  list (i+1) string_loc ppf x.pval_prim
 
 and type_parameter i ppf (x, _variance) = core_type i ppf x
 
@@ -723,7 +726,7 @@ and class_expr i ppf x =
 
 and class_structure i ppf { pcstr_self = p; pcstr_fields = l } =
   line i ppf "class_structure\n";
-  pattern (i+1) ppf p;
+  option (i+1) pattern ppf p;
   list (i+1) class_field ppf l;
 
 and class_field i ppf x =
@@ -1016,7 +1019,7 @@ and constructor_decl i ppf
 
 and constructor_arguments i ppf = function
   | Pcstr_tuple l -> list i core_type ppf l
-  | Pcstr_record l -> list i label_decl ppf l
+  | Pcstr_record (_, l) -> list i label_decl ppf l
 
 and label_decl i ppf {pld_name; pld_mutable; pld_type; pld_loc; pld_attributes}=
   line i ppf "%a\n" fmt_location pld_loc;

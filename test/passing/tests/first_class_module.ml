@@ -106,3 +106,8 @@ let _ =
 
     let y = 1
   end )
+
+(* Three form that have an equivalent AST: *)
+let x : (module S) = (module M)
+let x = ((module M) : (module S))
+let x = (module M : S)

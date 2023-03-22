@@ -915,6 +915,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to class_sig.mli.stdout
+   (with-stderr-to class_sig.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/class_sig.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig.mli class_sig.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig.mli.err class_sig.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to class_type.ml.stdout
    (with-stderr-to class_type.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/class_type.ml})))))
@@ -1981,7 +1999,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/first_class_module.ml first_class_module.ml.stdout)))
+ (action (diff tests/first_class_module.ml.ref first_class_module.ml.stdout)))
 
 (rule
  (alias runtest)
@@ -3166,7 +3184,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to js_source.ml.ocp.output
-     (run %{bin:ocp-indent} %{dep:tests/js_source.ml.ref}))))
+     (run %{bin:ocp-indent} --config JaneStreet %{dep:tests/js_source.ml.ref}))))
 
 (rule
  (alias runtest)

@@ -28,6 +28,18 @@ type 'a t =
   | Repl_file : repl_file t
   | Documentation : Odoc_parser.Ast.t t
 
+type any_t = Any : 'a t -> any_t [@@unboxed]
+
+let of_syntax = function
+  | Syntax.Structure -> Any Structure
+  | Signature -> Any Signature
+  | Use_file -> Any Use_file
+  | Core_type -> Any Core_type
+  | Module_type -> Any Module_type
+  | Expression -> Any Expression
+  | Repl_file -> Any Repl_file
+  | Documentation -> Any Documentation
+
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
@@ -46,18 +58,78 @@ module Parse = struct
     let open Asttypes in
     let open Ast_mapper in
     let record_field m (f, t, v) =
-      match v with
-      | Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
+      match (t, v) with
+      (* [{ x = x }] -> [{ x }] *)
+      | ( _
+        , Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
+        )
         when Std_longident.field_alias ~field:f.txt v_txt ->
           (f, t, None)
-      | v -> (f, t, Option.map ~f:(m.expr m) v)
+      (* [{ x = (x : t) }] -> [{ x : t }] *)
+      (* [{ x :> t = (x : t) }] -> [{ x : t :> t }] *)
+      | ( (None, t2)
+        , Some
+            { pexp_desc=
+                Pexp_constraint
+                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                    ; pexp_attributes= []
+                    ; _ }
+                  , t1 )
+            ; pexp_attributes= []
+            ; _ } )
+        when Std_longident.field_alias ~field:f.txt v_txt ->
+          (f, (Some t1, t2), None)
+      (* [{ x = (x :> t) }] -> [{ x :> t }] *)
+      (* [{ x = (x : t :> t) }] -> [{ x : t :> t }] *)
+      | ( (None, None)
+        , Some
+            { pexp_desc=
+                Pexp_coerce
+                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                    ; pexp_attributes= []
+                    ; _ }
+                  , t1
+                  , t2 )
+            ; pexp_attributes= []
+            ; _ } )
+        when Std_longident.field_alias ~field:f.txt v_txt ->
+          (f, (t1, Some t2), None)
+      (* [{ x : t = (x :> t) }] -> [{ x : t :> t }] *)
+      | ( (Some t1, None)
+        , Some
+            { pexp_desc=
+                Pexp_coerce
+                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                    ; pexp_attributes= []
+                    ; _ }
+                  , None
+                  , t2 )
+            ; pexp_attributes= []
+            ; _ } )
+        when Std_longident.field_alias ~field:f.txt v_txt ->
+          (f, (Some t1, Some t2), None)
+      | _ -> (f, t, Option.map ~f:(m.expr m) v)
     in
     let pat_record_field m (f, t, v) =
-      match v with
-      | Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
+      match (t, v) with
+      (* [{ x = x }] -> [{ x }] *)
+      | _, Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
         when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
           (f, t, None)
-      | v -> (f, t, Option.map ~f:(m.pat m) v)
+      (* [{ x = (x : t) }] -> [{ x : t}] *)
+      | ( None
+        , Some
+            { ppat_desc=
+                Ppat_constraint
+                  ( { ppat_desc= Ppat_var {txt= v_txt; _}
+                    ; ppat_attributes= []
+                    ; _ }
+                  , t )
+            ; ppat_attributes= []
+            ; _ } )
+        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+          (f, Some t, None)
+      | _ -> (f, t, Option.map ~f:(m.pat m) v)
     in
     let binding_op (m : Ast_mapper.mapper) b =
       let b' =
@@ -78,10 +150,17 @@ module Parse = struct
              | _ -> false ->
           let pats = List.(rev (tl_exn (rev l))) in
           {p with ppat_desc= Ppat_list pats}
-      (* [{ x = x }] -> [{ x }] *)
+      (* Field alias shorthand *)
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
+      (* [(module M) : (module T)] -> [(module M : T)] *)
+      | { ppat_desc=
+            Ppat_constraint
+              ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
+        ; _ } as p ->
+          {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
@@ -99,7 +178,7 @@ module Parse = struct
       | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _}
         when not preserve_beginend ->
           m.expr m e'
-      (* [{ x = x }] -> [{ x }] *)
+      (* Field alias shorthand *)
       | {pexp_desc= Pexp_record (fields, with_); _} as e ->
           let fields = List.map ~f:(record_field m) fields in
           { e with
@@ -118,6 +197,22 @@ module Parse = struct
              && not (Std_longident.is_monadic_binding longident) ->
           let label_loc = {txt= op; loc= loc_op} in
           {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
+      (* [(module M) : (module T)] -> [(module M : T)] *)
+      | { pexp_desc=
+            Pexp_constraint
+              ( { pexp_desc= Pexp_pack (name, None)
+                ; pexp_attributes= []
+                ; pexp_loc
+                ; _ }
+              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _}
+              )
+        ; _ } as p
+        when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
+          (* Match locations to differentiate between the two position for
+             the constraint, we want to shorten the second: - [let _ :
+             (module S) = (module M)] - [let _ = ((module M) : (module
+             S))] *)
+          {p with pexp_desc= Pexp_pack (name, Some pt)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}

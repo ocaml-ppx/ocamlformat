@@ -13,13 +13,6 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-val or_pat :
-  ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
-(** [or_pat allow_attribute cmts pat] returns the list of patterns of a
-    pattern disjunction. [allow_attribute] is set by default, otherwise
-    patterns with not empty attributes are not processed (i.e. they are
-    returned without modification). *)
-
 type arg_kind =
   | Val of arg_label * pattern Ast.xt * expression Ast.xt option
   | Newtypes of string loc list

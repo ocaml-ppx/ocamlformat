@@ -19,10 +19,11 @@ val update : ?quiet:bool -> t -> Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 
-val update_value :
-  t -> name:string -> value:string -> (t, Config_option.Error.t) Result.t
+val update_value : t -> name:string -> value:string -> (t, Error.t) Result.t
 
 val update_state : t -> [`Enable | `Disable] -> t
+
+val parse_state_attr : Parsetree.attribute -> [`Enable | `Disable] option
 
 val parse_line :
      t
@@ -30,7 +31,7 @@ val parse_line :
   -> ?disable_conf_attrs:bool
   -> from:[< `Attribute of Warnings.loc | `File of Warnings.loc]
   -> string
-  -> (t, Config_option.Error.t) Result.t
+  -> (t, Error.t) Result.t
 
 val print_config : t -> unit
 
@@ -40,13 +41,17 @@ val warn :
   loc:Warnings.loc -> ('a, Format.formatter, unit, unit) format4 -> 'a
 
 module UI : sig
-  val profile : t Config_option.UI.t
+  val profile : t Conf_decl.UI.t
 
-  val fmt_opts : t Config_option.UI.t list
+  val fmt_opts : t Conf_decl.UI.t list
 
-  val opr_opts : t Config_option.UI.t list
+  val opr_opts : t Conf_decl.UI.t list
 end
 
 module Operational : sig
   val update : f:(opr_opts -> opr_opts) -> t -> t
 end
+
+val term : (t -> t) Cmdliner.Term.t
+
+val options : Conf_decl.Store.t

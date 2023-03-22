@@ -203,7 +203,7 @@ module T = struct
           (Flag.map_obj_closed sub o)
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
-    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) (map_loc sub s)
     | Ptyp_variant (rl, b, ll) ->
         variant ~loc ~attrs (List.map (row_field sub) rl) b
           (map_opt (List.map (variant_var sub)) ll)
@@ -241,8 +241,10 @@ module T = struct
 
   let map_constructor_arguments sub = function
     | Pcstr_tuple l -> Pcstr_tuple (List.map (sub.typ sub) l)
-    | Pcstr_record l ->
-        Pcstr_record (List.map (sub.label_declaration sub) l)
+    | Pcstr_record (loc, l) ->
+        let loc = sub.location sub loc in
+        let l = List.map (sub.label_declaration sub) l in
+        Pcstr_record (loc, l)
 
   let map_type_extension sub
       {ptyext_path; ptyext_params;
@@ -553,7 +555,10 @@ module E = struct
     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
     | Pexp_newtype (s, e) ->
         newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
-    | Pexp_pack me -> pack ~loc ~attrs (sub.module_expr sub me)
+    | Pexp_pack (me, pt) ->
+        pack ~loc ~attrs
+          (sub.module_expr sub me)
+          (map_opt (map_package_type sub) pt)
     | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
     | Pexp_letopen (o, e) ->
         letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
@@ -564,6 +569,7 @@ module E = struct
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
     | Pexp_hole -> hole ~loc ~attrs ()
     | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
+    | Pexp_parens e -> parens ~loc ~attrs (sub.expr sub e)
     | Pexp_cons l -> cons ~loc ~attrs (List.map (sub.expr sub) l)
     | Pexp_prefix (op, e) ->
         prefix ~loc ~attrs (map_loc sub op) (sub.expr sub e)
@@ -628,7 +634,7 @@ module P = struct
         record ~loc ~attrs fields (Flag.map_obj_closed sub cf)
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
-    | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
+    | Ppat_or pl -> or_ ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_constraint (p, t) ->
         constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
     | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
@@ -697,7 +703,7 @@ module CE = struct
 
   let map_structure sub {pcstr_self; pcstr_fields} =
     {
-      pcstr_self = sub.pat sub pcstr_self;
+      pcstr_self = map_opt (sub.pat sub) pcstr_self;
       pcstr_fields = List.map (sub.class_field sub) pcstr_fields;
     }
 
@@ -753,7 +759,7 @@ let default_mapper =
           (this.typ this pval_type)
           ~attrs:(this.attributes this pval_attributes)
           ~loc:(this.location this pval_loc)
-          ~prim:pval_prim
+          ~prim:(List.map (map_loc this) pval_prim)
       );
 
     pat = P.map;

@@ -9,10 +9,11 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
 module Location = Migrate_ast.Location
 open Extended_ast
+open Asttypes
 open Fmt
+open Ast
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
@@ -44,6 +45,19 @@ module Exp = struct
           (Fmt.fits_breaks ")" ?hint cls)
           k
       else k
+
+    let dock (c : Conf.t) xarg =
+      if not c.fmt_opts.ocp_indent_compat.v then false
+      else
+        match xarg.ast.pexp_desc with
+        | Pexp_apply (_, args) -> (
+          (* Rhs is an apply and it ends with a [fun]. *)
+          match List.last_exn args with
+          | _, {pexp_desc= Pexp_fun _ | Pexp_newtype _ | Pexp_function _; _}
+            ->
+              true
+          | _ -> false )
+        | _ -> false
   end
 
   let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
@@ -91,13 +105,39 @@ type cases =
   ; break_after_arrow: Fmt.t
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
+  ; expr_parens: bool option
   ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
-  let beginend =
-    match xbch.Ast.ast with
-    | {pexp_desc= Pexp_beginend _; _} -> true
+let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
+  let indent =
+    match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
+    | ( `Compact
+      , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+        , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
+        2
+    | _, _ -> c.fmt_opts.cases_exp_indent.v
+  in
+  let align_nested_match =
+    match (ast.pexp_desc, c.fmt_opts.nested_match.v) with
+    | (Pexp_match _ | Pexp_try _), `Align -> last
     | _ -> false
+  in
+  let body_has_parens =
+    match ast.pexp_desc with
+    | Pexp_tuple _ when Poly.(c.fmt_opts.parens_tuple.v = `Always) ->
+        (* [fmt_expression] doesn't respect [~parens] for tuples when this
+           option is set to [always]. *)
+        true
+    | _ -> Ast.Exp.is_symbol ast
+  in
+  let parens_branch, expr_parens =
+    if align_nested_match then (false, Some false)
+    else if c.fmt_opts.leading_nested_match_parens.v then (false, None)
+    else (parenze_exp xast && not body_has_parens, Some false)
+  in
+  let indent = if align_nested_match then 0 else indent in
+  let beginend =
+    match ast with {pexp_desc= Pexp_beginend _; _} -> true | _ -> false
   in
   let open_paren_branch =
     if beginend then fmt "@;<1 0>begin" else fmt_if parens_branch " ("
@@ -125,6 +165,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= noop
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
+      ; expr_parens
       ; close_paren_branch }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
@@ -135,6 +176,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
       ; open_paren_branch
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
+      ; expr_parens
       ; close_paren_branch }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
@@ -145,6 +187,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
+      ; expr_parens
       ; close_paren_branch }
   | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
@@ -155,6 +198,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
+      ; expr_parens
       ; close_paren_branch }
   | `Vertical ->
       { leading_space= break_unless_newline 1000 0
@@ -165,6 +209,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch ~xbch =
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
       ; open_paren_branch
       ; break_after_opening_paren= break 1000 0
+      ; expr_parens
       ; close_paren_branch }
 
 let wrap_collec c ~space_around opn cls =
@@ -500,3 +545,33 @@ let semi_sep (c : Conf.t) : Fmt.s =
   match c.fmt_opts.break_separators.v with
   | `Before -> "@,; "
   | `After -> ";@;<1 2>"
+
+module Align = struct
+  (** Whether [exp] occurs in [args] as a labelled argument. *)
+  let is_labelled_arg args exp =
+    List.exists
+      ~f:(function
+        | Nolabel, _ -> false
+        | Labelled _, x | Optional _, x -> phys_equal x exp )
+      args
+
+  let general (c : Conf.t) t =
+    hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t
+
+  let infix_op = general
+
+  let match_ = general
+
+  let function_ (c : Conf.t) ~parens ~(ctx0 : Ast.t) ~self t =
+    let align =
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
+        ->
+          false
+      | Exp {pexp_desc= Pexp_apply (_, args); _}
+        when is_labelled_arg args self ->
+          false
+      | _ -> parens && not c.fmt_opts.align_symbol_open_paren.v
+    in
+    hvbox_if align 0 t
+end

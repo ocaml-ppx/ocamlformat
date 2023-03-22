@@ -21,7 +21,7 @@ The recommended way is to use a versioned default profile, such as:
 
 {[
 profile = default
-version = 0.24.1
+version = 0.25.1
 ]}
 
 (or replace with the output of [ocamlformat --version])
@@ -63,13 +63,10 @@ ml] and then running [ocamlformat] on this output.
 
 {1 How to ignore directories?}
 
-It is possible to disable OCamlFormat for the files of a directory by having an [.ocamlformat] file containing disable in this directory, or listing the files to ignore in an [.ocamlformat-ignore] file.
+It is possible to disable OCamlFormat for the files of a directory by having an [.ocamlformat] file containing disable in this directory, or listing the files to ignore in an [.ocamlformat-ignore] file:
 
-For now it is not possible to recursively ignore all subdirectories and files from a parent directory, you need to list all the descendants of the directory to ignore them, e.g.:
 {[
-dir/*
-dir/*/*
-dir/*/*/*
+dir/**
 ]}
 
 It is also possible to add an [.ocamlformat-ignore] file containing [*] in every directory that needs to be ignored.

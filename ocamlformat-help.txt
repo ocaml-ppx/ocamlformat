@@ -352,12 +352,12 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. The flag is unset by default.
 
-       -p {conventional|default|ocamlformat|janestreet},
-       --profile={conventional|default|ocamlformat|janestreet}
+       -p {default|conventional|ocamlformat|janestreet},
+       --profile={default|conventional|ocamlformat|janestreet}
            Select a preset profile which sets all options, overriding lower
-           priority configuration. The conventional profile aims to be as
-           familiar and "conventional" appearing as the available options
-           allow. default is an alias for the conventional profile. The
+           priority configuration. default is an alias for the conventional
+           profile. The conventional profile aims to be as familiar and
+           "conventional" appearing as the available options allow. The
            ocamlformat profile aims to take advantage of the strengths of a
            parsetree-based auto-formatter, and to limit the consequences of
            the weaknesses imposed by the current implementation. This is a

@@ -27,6 +27,10 @@ type 'a t =
   | Repl_file : repl_file t
   | Documentation : Odoc_parser.Ast.t t
 
+type any_t = Any : 'a t -> any_t [@@unboxed]
+
+val of_syntax : Syntax.t -> any_t
+
 module Parse : sig
   val ast :
     'a t -> preserve_beginend:bool -> input_name:string -> string -> 'a

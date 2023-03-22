@@ -13,3 +13,7 @@ exception Second_exception
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {{!some ref} fooooooooooooo
     oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
+
+class c : 'a -> object
+  val x : 'b
+end

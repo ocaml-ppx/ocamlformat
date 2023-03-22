@@ -114,7 +114,7 @@ let () =
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)
-        ((lazy x) [@foo])] -> ()
+             ((lazy x) [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
@@ -134,18 +134,17 @@ class x =
   end [@foo]
 
 (* Class type expressions *)
-class type t =
-  object
-    inherit t [@@foo]
-    val x : t [@@foo]
-    val mutable x : t [@@foo]
-    method x : t [@@foo]
-    method private x : t [@@foo]
-    constraint t = t' [@@foo]
-    [@@@abc]
-    [%%id]
-    [@@@aaa]
-  end[@foo]
+class type t = object
+  inherit t [@@foo]
+  val x : t [@@foo]
+  val mutable x : t [@@foo]
+  method x : t [@@foo]
+  method private x : t [@@foo]
+  constraint t = t' [@@foo]
+  [@@@abc]
+  [%%id]
+  [@@@aaa]
+end[@foo]
 
 (* Type expressions *)
 type t = [%foo: ((module M)[@foo])]
@@ -233,18 +232,16 @@ and 'a name = Class : 'a class_name -> (< cast : 'a. 'a name -> 'a ; .. > as 'a)
 
 exception Bad_cast
 
-class type castable =
-  object
-    method cast : 'a. 'a name -> 'a
-  end
+class type castable = object
+  method cast : 'a. 'a name -> 'a
+end
 
 (* Lets create a castable class with a name*)
 
-class type foo_t =
-  object
-    inherit castable
-    method foo : string
-  end
+class type foo_t = object
+  inherit castable
+  method foo : string
+end
 
 type 'a class_name += Foo : foo_t class_name
 
@@ -260,11 +257,10 @@ class foo : foo_t =
 
 (* Now we can create a subclass of foo *)
 
-class type bar_t =
-  object
-    inherit foo
-    method bar : string
-  end
+class type bar_t = object
+  inherit foo
+  method bar : string
+end
 
 type 'a class_name += Bar : bar_t class_name
 
@@ -1342,14 +1338,14 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-          | `A n -> "A", Some (Tdyn (Int, n))
-          | `B s -> "B", Some (Tdyn (String, s))
-          | `C -> "C", None)
+        | `A n -> "A", Some (Tdyn (Int, n))
+        | `B s -> "B", Some (Tdyn (String, s))
+        | `C -> "C", None)
     , function
-        | "A", Some (Tdyn (Int, n)) -> `A n
-        | "B", Some (Tdyn (String, s)) -> `B s
-        | "C", None -> `C
-        | _ -> invalid_arg "ty_abc" )
+      | "A", Some (Tdyn (Int, n)) -> `A n
+      | "B", Some (Tdyn (String, s)) -> `B s
+      | "C", None -> `C
+      | _ -> invalid_arg "ty_abc" )
 ;;
 
 (* Breaks: no way to pattern-match on a full recursive type *)
@@ -1359,11 +1355,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-             | `Nil -> "Nil", None
-             | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
-           | "Nil", None -> `Nil
-           | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
+         | "Nil", None -> `Nil
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
 ;;
 
 (* Define Sum using object instead of record for first-class polymorphism *)
@@ -1445,20 +1441,20 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 ;;
 
 (*
-type (_,_) ty_assoc =
-  | Anil : (unit,'e) ty_assoc
-  | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+   type (_,_) ty_assoc =
+   | Anil : (unit,'e) ty_assoc
+   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
-and (_,_) ty_pvar =
-  | Pnil : ('a,'e) ty_pvar
-  | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
-  | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
+   and (_,_) ty_pvar =
+   | Pnil : ('a,'e) ty_pvar
+   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
+   | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
 *)
 (*
    An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School:
-     Generic Programming in Omega, by Tim Sheard and Nathan Linger
-          http://web.cecs.pdx.edu/~sheard/
+   Generic Programming in Omega, by Tim Sheard and Nathan Linger
+   http://web.cecs.pdx.edu/~sheard/
 *)
 
 (* Basic types *)
@@ -1646,14 +1642,14 @@ let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
 (*
-let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
-  fun le a b ->
-  match a, b, le with
-  | NZ, m, _ -> Diff (m, PlusZ m)
-  | NS x, NZ, _ -> assert false
-  | NS x, NS y, q ->
-      match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-;;
+   let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
+   fun le a b ->
+   match a, b, le with
+   | NZ, m, _ -> Diff (m, PlusZ m)
+   | NS x, NZ, _ -> assert false
+   | NS x, NS y, q ->
+   match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
+   ;;
 *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -2838,7 +2834,7 @@ type _ fin =
   | FS : 'a fin -> 'a succ fin
 
 (* We cannot define
-     val empty : zero fin -> 'a
+   val empty : zero fin -> 'a
    because we cannot write an empty pattern matching.
    This might be useful to have *)
 
@@ -3307,7 +3303,7 @@ Error: Types marked with the immediate attribute must be
 
    New: implicit pack is also supported, and you only need to be able
    to infer the the module type path from the context.
- *)
+*)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -3633,7 +3629,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-          if Names.mem s used then data :: acc else acc)
+        if Names.mem s used then data :: acc else acc)
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
     then (
@@ -3802,12 +3798,11 @@ let ( !! ) = Lazy.force
 
 (* The basic operations *)
 
-class type ['a, 'b] ops =
-  object
-    method free : x:'b -> ?y:'c -> Names.t
-    method subst : sub:'a Subst.t -> 'b -> 'a
-    method eval : 'b -> 'a
-  end
+class type ['a, 'b] ops = object
+  method free : x:'b -> ?y:'c -> Names.t
+  method subst : sub:'a Subst.t -> 'b -> 'a
+  method eval : 'b -> 'a
+end
 
 (* Variables are common to lambda and expr *)
 
@@ -3872,7 +3867,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4049,12 +4044,11 @@ let ( !! ) = Lazy.force
 
 (* The basic operations *)
 
-class type ['a, 'b] ops =
-  object
-    method free : 'b -> Names.t
-    method subst : sub:'a Subst.t -> 'b -> 'a
-    method eval : 'b -> 'a
-  end
+class type ['a, 'b] ops = object
+  method free : 'b -> Names.t
+  method subst : sub:'a Subst.t -> 'b -> 'a
+  method eval : 'b -> 'a
+end
 
 (* Variables are common to lambda and expr *)
 
@@ -4115,7 +4109,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-              if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4807,16 +4801,16 @@ end
    module type PR6513_orig = sig
    module type S =
    sig
-        type t
-        type u
+   type t
+   type u
    end
 
    module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
+   with type 'a Xml.wrap = 'a and
+   type 'a wrap = 'a and
+   type 'a list_wrap = 'a list)
+   -> S with type t = Html5_types.div Html5.elt and
+   type u = < foo: Html5.uri >
    end
 *)
 module type S = sig
@@ -5037,10 +5031,9 @@ module M = struct
 end
 
 module B = struct
-  class type a =
-    object
-      method a : 'a. 'a M.s -> 'a
-    end
+  class type a = object
+    method a : 'a. 'a M.s -> 'a
+  end
 end
 
 module M' = M
@@ -5049,17 +5042,13 @@ module B' = B
 class b : B.a =
   object
     method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
-
-    method a : 'a. 'a M.s -> 'a =
-      fun (type a) ((module X) : (module M.S with type a = a)) -> X.v
+    method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
   end
 
 class b' : B.a =
   object
     method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
-
-    method a : 'a. 'a M'.s -> 'a =
-      fun (type a) ((module X) : (module M'.S with type a = a)) -> X.v
+    method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
   end
 
 module type FOO = sig
@@ -5233,30 +5222,29 @@ module type S' = S with module M := String
 
 (* with module type *)
 (*
-module type S = sig module type T module F(X:T) : T end;;
-module type T0 = sig type t end;;
-module type S1 = S with module type T = T0;;
-module type S2 = S with module type T := T0;;
-module type S3 = S with module type T := sig type t = int end;;
-module H = struct
-  include (Hashtbl : module type of Hashtbl with
-           type statistics := Hashtbl.statistics
-           and module type S := Hashtbl.S
-           and module Make := Hashtbl.Make
-           and module MakeSeeded := Hashtbl.MakeSeeded
-           and module type SeededS := Hashtbl.SeededS
-           and module type HashedType := Hashtbl.HashedType
-           and module type SeededHashedType := Hashtbl.SeededHashedType)
-end;;
+   module type S = sig module type T module F(X:T) : T end;;
+   module type T0 = sig type t end;;
+   module type S1 = S with module type T = T0;;
+   module type S2 = S with module type T := T0;;
+   module type S3 = S with module type T := sig type t = int end;;
+   module H = struct
+   include (Hashtbl : module type of Hashtbl with
+   type statistics := Hashtbl.statistics
+   and module type S := Hashtbl.S
+   and module Make := Hashtbl.Make
+   and module MakeSeeded := Hashtbl.MakeSeeded
+   and module type SeededS := Hashtbl.SeededS
+   and module type HashedType := Hashtbl.HashedType
+   and module type SeededHashedType := Hashtbl.SeededHashedType)
+   end;;
 *)
 
 (* A subtle problem appearing with -principal *)
 type -'a t
 
-class type c =
-  object
-    method m : [ `A ] t
-  end
+class type c = object
+  method m : [ `A ] t
+end
 
 module M : sig
   val v : (#c as 'a) -> 'a
@@ -5870,8 +5858,8 @@ end
 include D'
 
 (*
-let () =
-  print_endline (string_of_int D'.M.y)
+   let () =
+   print_endline (string_of_int D'.M.y)
 *)
 open A
 
@@ -6023,10 +6011,9 @@ type expr =
   | `App of expr * expr
   ]
 
-class type exp =
-  object
-    method eval : (string, exp) Hashtbl.t -> expr
-  end
+class type exp = object
+  method eval : (string, exp) Hashtbl.t -> expr
+end
 
 class app e1 e2 : exp =
   object
@@ -6072,14 +6059,14 @@ class ['entity] entity_container =
 let f (x : entity entity_container) = ()
 
 (*
-class world =
-  object
-    val entity_container : entity entity_container = new entity_container
+   class world =
+   object
+   val entity_container : entity entity_container = new entity_container
 
-    method add_entity (s : entity) =
-      entity_container#add_entity (s :> entity)
+   method add_entity (s : entity) =
+   entity_container#add_entity (s :> entity)
 
-  end
+   end
 *)
 (* Two v's in the same class *)
 class c v =
@@ -6120,9 +6107,7 @@ let o =
 ;;
 
 module M : sig
-  class x :
-    int
-    -> object
+  class x : int -> object
       method m : int
     end
 end = struct
@@ -6133,9 +6118,7 @@ end = struct
 end
 
 module M : sig
-  class c :
-    'a
-    -> object
+  class c : 'a -> object
       val x : 'b
     end
 end = struct
@@ -6174,24 +6157,22 @@ class charlie a =
 (* The module begins *)
 exception Out_of_range
 
-class type ['a] cursor =
-  object
-    method get : 'a
-    method incr : unit -> unit
-    method is_last : bool
-  end
+class type ['a] cursor = object
+  method get : 'a
+  method incr : unit -> unit
+  method is_last : bool
+end
 
-class type ['a] storage =
-  object ('self)
-    method first : 'a cursor
-    method len : int
-    method nth : int -> 'a cursor
-    method copy : 'self
-    method sub : int -> int -> 'self
-    method concat : 'a storage -> 'self
-    method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
-    method iter : ('a -> unit) -> unit
-  end
+class type ['a] storage = object ('self)
+  method first : 'a cursor
+  method len : int
+  method nth : int -> 'a cursor
+  method copy : 'self
+  method sub : int -> int -> 'self
+  method concat : 'a storage -> 'self
+  method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
+  method iter : ('a -> unit) -> unit
+end
 
 class virtual ['a, 'cursor] storage_base =
   object (self : 'self)
@@ -6224,18 +6205,16 @@ class virtual ['a, 'cursor] storage_base =
       if self#len > 0 then proc p#get else ()
   end
 
-class type ['a] obj_input_channel =
-  object
-    method get : unit -> 'a
-    method close : unit -> unit
-  end
+class type ['a] obj_input_channel = object
+  method get : unit -> 'a
+  method close : unit -> unit
+end
 
-class type ['a] obj_output_channel =
-  object
-    method put : 'a -> unit
-    method flush : unit -> unit
-    method close : unit -> unit
-  end
+class type ['a] obj_output_channel = object
+  method put : 'a -> unit
+  method flush : unit -> unit
+  method close : unit -> unit
+end
 
 module UChar = struct
   type t = int
@@ -6375,10 +6354,9 @@ module UText = struct
   let iter proc s = s#iter proc
 end
 
-class type foo_t =
-  object
-    method foo : string
-  end
+class type foo_t = object
+  method foo : string
+end
 
 type 'a name =
   | Foo : foo_t name
@@ -6432,10 +6410,9 @@ and argument (func, ty) =
 
 let f (x : #M.foo) = 0
 
-class type ['e] t =
-  object ('s)
-    method update : 'e -> 's
-  end
+class type ['e] t = object ('s)
+  method update : 'e -> 's
+end
 
 module type S = sig
   class base : 'e -> ['e] t
@@ -6504,9 +6481,9 @@ end = struct
   type refer = { poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) }
 end
 (*
-  ocamlc -c pr3918a.mli pr3918b.mli
-  rm -f pr3918a.cmi
-  ocamlc -c pr3918c.ml
+   ocamlc -c pr3918a.mli pr3918b.mli
+   rm -f pr3918a.cmi
+   ocamlc -c pr3918c.ml
 *)
 
 open Pr3918b
@@ -6688,10 +6665,9 @@ type -'typing wrapped = private sexp
 and +'a t = 'a typed wrapped
 and sexp = private untyped wrapped
 
-class type ['a] s3 =
-  object
-    val underlying : 'a t
-  end
+class type ['a] s3 = object
+  val underlying : 'a t
+end
 
 class ['a] s3object r : ['a] s3 =
   object
@@ -7042,9 +7018,7 @@ end
 
 (* Bad (not regular) *)
 module rec M : sig
-  class ['a] c :
-    'a
-    -> object
+  class ['a] c : 'a -> object
       method map : ('a -> 'b) -> 'b M.c
     end
 end = struct
@@ -7055,15 +7029,13 @@ end = struct
 end
 
 (* OK *)
-class type ['node] extension =
-  object
-    method node : 'node
-  end
+class type ['node] extension = object
+  method node : 'node
+end
 
-and ['ext] node =
-  object
-    constraint 'ext = ('ext node #extension[@id])
-  end
+and ['ext] node = object
+  constraint 'ext = ('ext node #extension[@id])
+end
 
 class x =
   object
@@ -7159,7 +7131,7 @@ type 'a tree =
   | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2 (MakeDiet : functor (X : ORD) ->
-      SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
+    SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7390,10 +7362,10 @@ let _ =
 (* Early strict evaluation *)
 
 (*
-module rec Cyclic
-  : sig val x : int end
-  = struct let x = Cyclic.x + 1 end
-;;
+   module rec Cyclic
+   : sig val x : int end
+   = struct let x = Cyclic.x + 1 end
+   ;;
 *)
 
 (* Reordering of evaluation based on dependencies *)
@@ -7487,16 +7459,16 @@ end
 (* Wrong LHS signatures (PR#4336) *)
 
 (*
-module type ASig = sig type a val a:a val print:a -> unit end
-module type BSig = sig type b val b:b val print:b -> unit end
+   module type ASig = sig type a val a:a val print:a -> unit end
+   module type BSig = sig type b val b:b val print:b -> unit end
 
-module A = struct type a = int let a = 0 let print = print_int end
-module B = struct type b = float let b = 0.0 let print = print_float end
+   module A = struct type a = int let a = 0 let print = print_int end
+   module B = struct type b = float let b = 0.0 let print = print_float end
 
-module MakeA (Empty:sig end) : ASig = A
-module MakeB (Empty:sig end) : BSig = B
+   module MakeA (Empty:sig end) : ASig = A
+   module MakeB (Empty:sig end) : BSig = B
 
-module
+   module
    rec NewA : ASig = MakeA (struct end)
    and NewB : BSig with type b = NewA.a = MakeB (struct end);;
 
@@ -7592,7 +7564,7 @@ module type HEAP = sig
 end
 
 module Bootstrap (MakeH : functor (Element : ORDERED) ->
-      HEAP with module Elem = Element)
+    HEAP with module Elem = Element)
     (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
@@ -7740,10 +7712,9 @@ let _ =
 (* Classes *)
 
 module rec Class1 : sig
-  class c :
-    object
-      method m : int -> int
-    end
+  class c : object
+    method m : int -> int
+  end
 end = struct
   class c =
     object
@@ -7752,10 +7723,9 @@ end = struct
 end
 
 and Class2 : sig
-  class d :
-    object
-      method m : int -> int
-    end
+  class d : object
+    method m : int -> int
+  end
 end = struct
   class d =
     object (self)
@@ -7770,10 +7740,9 @@ let _ =
   try
     let module A = struct
       module rec BadClass1 : sig
-        class c :
-          object
-            method m : int
-          end
+        class c : object
+          method m : int
+        end
       end = struct
         class c =
           object
@@ -9591,7 +9560,7 @@ let _ =
 
 let _ =
   List.map rows ~f:(fun row ->
-      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+    Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
 
 module type T = sig
@@ -9674,7 +9643,7 @@ let g =
   f
     ~x
     (* this is a multiple-line-spanning
-              comment *)
+       comment *)
     ~y
 ;;
 
@@ -9783,8 +9752,8 @@ let _ =
   match x with
   | _
     when f
-        ~f:(function [@ocaml.warning
-             (* ....................................... *) "-4"] _ -> .) -> y
+           ~f:(function [@ocaml.warning
+              (* ....................................... *) "-4"] _ -> .) -> y
 ;;
 
 let[@a
@@ -9799,23 +9768,20 @@ let[@a
   with
   | _
     when f
-        ~f:
-          (function[@ocaml.warning (* ....................................... *) "-4"]
-            | _ -> .)
-        ~f:
-          (function[@ocaml.warning
+           ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
+             | _ -> .)
+           ~f:(function[@ocaml.warning
+              (* ....................................... *)
              (* ....................................... *)
-            (* ....................................... *)
-            "foooooooooooooooooooooooooooo \
-             fooooooooooooooooooooooooooooooooooooo"]
-            | _ -> .)
-        ~f:
-          (function[@ocaml.warning
-             (* ....................................... *)
-            let x = a
-            and y = b in
-            x + y]
-            | _ -> .) ->
+             "foooooooooooooooooooooooooooo \
+              fooooooooooooooooooooooooooooooooooooo"]
+             | _ -> .)
+           ~f:(function[@ocaml.warning
+              (* ....................................... *)
+             let x = a
+             and y = b in
+             x + y]
+             | _ -> .) ->
     y [@attr
        (* ... *)
       (* ... *)
@@ -9824,22 +9790,22 @@ let[@a
 
 let x =
   foo (`A b) ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo (`A `b) ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ A; B ] ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ [ A ]; B ] ~f:(fun thing ->
-      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
@@ -9862,23 +9828,155 @@ let x =
   some_fun________________________________
     some_arg______________________________
     ~f:(fun param ->
-        do_something ();
-        do_something_else ();
-        return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 ;;
 
 let x =
   some_value
   |> some_fun (fun x ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
 ;;
 
 let x =
   some_value
   ^ some_fun (fun x ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
+;;
+
+let bind t ~f =
+  unfold_step
+    ~f:(function
+      | Sequence { state = seed; next }, rest ->
+        (match next seed with
+         | Done ->
+           (match rest with
+            | Sequence { state = seed; next } ->
+              (match next seed with
+               | Done -> Done
+               | Skip { state = s } ->
+                 Skip { state = empty, Sequence { state = s; next } }
+               | Yield { value = a; state = s } ->
+                 Skip { state = f a, Sequence { state = s; next } }))
+         | Skip { state = s } -> Skip { state = Sequence { state = s; next }, rest }
+         | Yield { value = a; state = s } ->
+           Yield { value = a; state = Sequence { state = s; next }, rest }))
+    ~init:(empty, t)
+;;
+
+let () =
+  very_long_function_name
+    ~very_long_argument_label:
+      (fun
+        very_long_argument_name_one
+        very_long_argument_name_two
+        very_long_argument_name_three
+        -> ())
+;;
+
+let () =
+  ((one_mississippi, two_mississippi, three_mississippi, four_mississippi)
+   : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
+;;
+
+let _ =
+  ((match foo with
+     | Bar -> bar
+     | Baz -> baz)
+   : string)
+;;
+
+let _ =
+  ((match foo with
+     | Bar -> bar
+     | Baz -> baz)
+   :> string)
+;;
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
+      (fun
+        (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee) -> FFFFFFFFF gg)
+    ~h
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    fooooooooooooooooooooooooooooooooooooooo
+    ~f:(fun (type a) foooooooooooooooooooooooooooooooooo : 'a ->
+      match fooooooooooooooooooooooooooooooooooooooo with
+      | Fooooooooooooooooooooooooooooooooooooooo -> x
+      | Fooooooooooooooooooooooooooooooooooooooo -> x)
+;;
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+;;
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+  |> bar
+;;
+
+let _ =
+  foo
+  |> List.map
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+       fooooooooooo
+;;
+
+let _ = foo |> List.map (function A -> do_something ())
+
+let _ =
+  foo
+  |> List.map (function
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
+  |> bar
+;;
+
+let _ =
+  foo
+  |> List.double_map
+       ~f1:(fun x ->
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something_else ())
+       ~f2:(fun x ->
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something_else ())
+  |> bar
 ;;

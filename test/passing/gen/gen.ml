@@ -1,9 +1,14 @@
 module StringMap = Map.Make (String)
 
+let spf = Printf.sprintf
+
+let dep fname = spf "%%{dep:%s}" fname
+
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
+  ; mutable ocp_opts: string list
   ; mutable base_file: string option
   ; mutable extra_deps: string list
   ; mutable should_fail: bool
@@ -38,6 +43,7 @@ let add_test ?base_file map src_test_name =
     { has_ref= false
     ; has_opts= false
     ; has_ocp= false
+    ; ocp_opts= []
     ; base_file
     ; extra_deps= []
     ; should_fail= false
@@ -70,6 +76,7 @@ let register_file tests fname =
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["ocp"] -> setup.has_ocp <- true
+      | ["ocp-opts"] -> setup.ocp_opts <- read_lines fname
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
@@ -82,18 +89,15 @@ let register_file tests fname =
 let cmd should_fail args =
   let cmd_string = String.concat " " args in
   if should_fail then
-    Printf.sprintf
-      {|(with-accepted-exit-codes 1
-       (run %s))|}
-      cmd_string
-  else Printf.sprintf {|(run %s)|} cmd_string
+    spf {|(with-accepted-exit-codes 1
+       (run %s))|} cmd_string
+  else spf {|(run %s)|} cmd_string
 
 let emit_test test_name setup =
   let opts =
     "--margin-check"
     ::
-    ( if setup.has_opts then
-        read_lines (Printf.sprintf "tests/%s.opts" test_name)
+    ( if setup.has_opts then read_lines (spf "tests/%s.opts" test_name)
       else [] )
   in
   let ref_name =
@@ -107,7 +111,7 @@ let emit_test test_name setup =
   let enabled_if_line =
     match setup.enabled_if with
     | None -> ""
-    | Some clause -> Printf.sprintf "\n (enabled_if %s)" clause
+    | Some clause -> spf "\n (enabled_if %s)" clause
   in
   Printf.printf
     {|
@@ -131,28 +135,28 @@ let emit_test test_name setup =
 |}
     extra_deps enabled_if_line test_name test_name
     (cmd setup.should_fail
-       ( ["%{bin:ocamlformat}"] @ opts
-       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
+       (["%{bin:ocamlformat}"] @ opts @ [dep base_test_name]) )
     enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
+    let ocp_cmd = "%{bin:ocp-indent}" :: (setup.ocp_opts @ [dep ref_name]) in
+    let ocp_out_file = test_name ^ ".ocp.output" in
     Printf.printf
       {|
 (rule
  (deps tests/.ocp-indent %s)%s
  (package ocamlformat)
  (action
-   (with-outputs-to %s.ocp.output
+   (with-outputs-to %s
      %s)))
 
 (rule
  (alias runtest)%s
  (package ocamlformat)
- (action (diff tests/%s.ocp %s.ocp.output)))
+ (action (diff tests/%s.ocp %s)))
 |}
-      extra_deps enabled_if_line test_name
-      (cmd setup.should_fail
-         ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name] )
-      enabled_if_line test_name test_name
+      extra_deps enabled_if_line ocp_out_file
+      (cmd setup.should_fail ocp_cmd)
+      enabled_if_line test_name ocp_out_file
 
 let () =
   let map = ref StringMap.empty in

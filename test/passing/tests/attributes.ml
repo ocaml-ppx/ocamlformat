@@ -152,12 +152,9 @@ let f y = fun [@test] y -> ()
 let (f [@test]) = fun y -> fun [@test] y -> ()
 
 module type T = sig
-  class subst :
-    ((ident -> ident)[@attr])
-    -> (ident -> ident)
-    -> object
-         inherit mapper
-       end[@attr]
+  class subst : ((ident -> ident)[@attr]) -> (ident -> ident) -> object
+    inherit mapper
+  end[@attr]
 end
 
 let _ = fun [@inlined always] x y -> z
@@ -246,6 +243,8 @@ let _ = (f @@ a) [@attr]
 let _ = f ((f @@ a) [@attr])
 
 let _ = f 1 ([e; f] [@a])
+
+let _ = f 1 ([|e; f|] [@a])
 
 let _ =
   object

@@ -28,6 +28,20 @@ function usage()
     echo "usage: $0 -u <GITHUB_USERNAME> -y <GITLAB_USERNAME> -v <RELEASE> [-p <PREFIX>]"
 }
 
+function comment_version()
+{
+    version=$1
+    file=$2
+    sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" $file
+}
+
+function uncomment_version()
+{
+    version=$1
+    file=$2
+    sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" $file
+}
+
 while getopts ":u:y:v:p:" opt; do
     case "$opt" in
         u)
@@ -68,7 +82,7 @@ preview_dir=$prefix/$preview_branch;
 log_dir=$preview_dir/logs;
 
 rm -rf $preview_dir &> /dev/null || true;
-mkdir --parents $log_dir;
+mkdir -p $log_dir;
 
 dirname=`dirname $0`;
 
@@ -97,13 +111,9 @@ while read line; do
     cd $dir;
     git remote add upstream $upstream;
     git checkout -b $preview_branch --quiet;
-
-    sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" .ocamlformat;
+    comment_version $version .ocamlformat;
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
-        sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" devtools/git-gas-diff/.ocamlformat;
-        sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" scripts/lint.sh;
-        git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
     fi;
 
@@ -115,14 +125,10 @@ while read line; do
 
     $dune build @fmt &> $log_dir/$dir.log || true;
     $dune promote &> /dev/null;
-    sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" .ocamlformat;
-
+    uncomment_version $version .ocamlformat;
     git commit --all -m "Preview: upgrade to ocamlformat $version";
 
     if [ "$namespace/$dir" == "tezos/tezos" ]; then
-        sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" devtools/git-gas-diff/.ocamlformat;
-        sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" scripts/lint.sh;
-        git commit --all -m "Update .ocamlformat files";
         bash scripts/lint.sh --update-ocamlformat;
     fi;
 done < $dirname/projects.data;

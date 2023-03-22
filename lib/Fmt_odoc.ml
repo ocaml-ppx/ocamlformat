@@ -96,7 +96,7 @@ let fmt_code_block conf s1 s2 =
         | "" -> ()
         | _ when Option.is_none s1 -> ()
         | _ ->
-            Docstring.warn Caml.Format.err_formatter
+            Docstring.warn Stdlib.Format.err_formatter
               { location
               ; message= Format.sprintf "invalid code block: %s" message } ) ;
         fmt_no_code value )

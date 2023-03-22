@@ -18,7 +18,27 @@ type from =
   | `Profile of string * updated_from
   | `Updated of updated_from * from option (* when redundant definition *) ]
 
-(** Configuration options *)
+module Error = struct
+  type t =
+    | Bad_value of string * string
+    | Malformed of string
+    | Misplaced of string * string
+    | Unknown of string * [`Msg of string] option
+    | Version_mismatch of {read: string; installed: string}
+
+  let to_string = function
+    | Malformed line -> Format.sprintf "Invalid format %S" line
+    | Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
+    | Unknown (name, None) -> Format.sprintf "Unknown option %S" name
+    | Unknown (name, Some (`Msg msg)) ->
+        Format.sprintf "Unknown option %S: %s" name msg
+    | Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
+    | Version_mismatch {read; installed} ->
+        Format.sprintf
+          "Project should be formatted using ocamlformat version %S, but \
+           the installed version is %S"
+          read installed
+end
 
 module Elt = struct
   type 'a t = {v: 'a; from: from}
@@ -70,6 +90,7 @@ type fmt_opts =
   ; leading_nested_match_parens: bool elt
   ; let_and: [`Compact | `Sparse] elt
   ; let_binding_indent: int elt
+  ; let_binding_deindent_fun: bool elt
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon] elt
   ; let_module: [`Compact | `Sparse] elt
   ; line_endings: [`Lf | `Crlf] elt
@@ -110,4 +131,7 @@ type opr_opts =
   ; disable_conf_attrs: bool elt
   ; version_check: bool elt }
 
-type t = {fmt_opts: fmt_opts; opr_opts: opr_opts}
+type t =
+  { fmt_opts: fmt_opts
+  ; opr_opts: opr_opts
+  ; profile: [`default | `conventional | `ocamlformat | `janestreet] elt }

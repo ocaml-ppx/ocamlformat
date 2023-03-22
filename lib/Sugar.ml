@@ -14,20 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
-  let ctx = Pat pat in
-  match pat with
-  | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; ppat_attributes= []; _} ->
-      Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
-      or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat1)
-      @ or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat2)
-  | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; _} when allow_attribute ->
-      Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
-      [sub_pat ~ctx pat1; sub_pat ~ctx pat2]
-  | _ -> [xpat]
-
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
@@ -322,25 +308,23 @@ module Let_binding = struct
           in
           let ctx = Exp body in
           match (body.pexp_desc, pat.ppat_desc) with
-          | ( Pexp_constraint
-                ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-                , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ)
-                )
-            , _ )
-            when Source.type_constraint_is_first typ exp.pexp_loc ->
-              Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
-              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
-          | ( Pexp_constraint
-                ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _})
-            , _ )
-           |Pexp_constraint _, Ppat_constraint _ ->
-              (xpat, `None xargs, xbody)
+          | Pexp_constraint _, Ppat_constraint _ -> (xpat, `None xargs, xbody)
           | Pexp_constraint (exp, typ), _
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                 ~after:exp.pexp_loc ;
-              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
+              let typ_ctx = Exp xbody.ast in
+              let exp_ctx =
+                (* The type constraint is moved to the pattern, so we need to
+                   replace the context from [Pexp_constraint] to [Pexp_fun].
+                   This won't be necessary once the normalization is moved to
+                   [Extended_ast]. *)
+                let pat = Ast_helper.Pat.any () in
+                Exp (Ast_helper.Exp.fun_ Nolabel None pat exp)
+              in
+              ( xpat
+              , `Other (xargs, sub_typ ~ctx:typ_ctx typ)
+              , sub_exp ~ctx:exp_ctx exp )
           (* The type constraint is always printed before the declaration for
              functions, for other value bindings we preserve its position. *)
           | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->

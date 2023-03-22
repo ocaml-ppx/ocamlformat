@@ -9,27 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Error = struct
-  type t =
-    | Bad_value of string * string
-    | Malformed of string
-    | Misplaced of string * string
-    | Unknown of string * [`Msg of string] option
-    | Version_mismatch of {read: string; installed: string}
-
-  let to_string = function
-    | Malformed line -> Format.sprintf "Invalid format %S" line
-    | Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-    | Unknown (name, None) -> Format.sprintf "Unknown option %S" name
-    | Unknown (name, Some (`Msg msg)) ->
-        Format.sprintf "Unknown option %S: %s" name msg
-    | Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
-    | Version_mismatch {read; installed} ->
-        Format.sprintf
-          "Project should be formatted using ocamlformat version %S, but \
-           the installed version is %S"
-          read installed
-end
+module Error = Conf_t.Error
 
 let ocaml_version_conv =
   let parse x =
@@ -68,7 +48,7 @@ type 'a t =
   ; parse: string -> ('a, [`Msg of string]) Result.t
   ; update: Conf_t.t -> 'a Conf_t.elt -> Conf_t.t
   ; allow_inline: bool
-  ; cmdline_get: unit -> 'a option
+  ; term: 'a option Term.t
   ; to_string: 'a -> string
   ; default: 'a
   ; get_value: Conf_t.t -> 'a Conf_t.elt (* ; from: from *)
@@ -107,8 +87,9 @@ let to_ui option =
   in
   UI.{names= option.names; values= option.values; doc= option.doc; update}
 
-type 'a option_decl =
+type 'a declarator =
      names:string list
+  -> default:Conf_t.t
   -> doc:string
   -> kind:kind
   -> ?allow_inline:bool
@@ -119,7 +100,57 @@ type 'a option_decl =
 
 type pack = Pack : 'a t -> pack
 
-let store = ref []
+module Store = struct
+  type elt = pack
+
+  type t = elt list
+
+  type store = t
+
+  let elt opt = Pack opt
+
+  let empty = []
+
+  let add store ele = Pack ele :: store
+
+  let merge s1 s2 = s1 @ s2
+
+  let to_ui = List.map ~f:(fun (Pack opt) -> to_ui opt)
+
+  let to_term store =
+    let compose_terms (t1 : ('a -> 'b) Term.t) (t2 : ('b -> 'c) Term.t) :
+        ('a -> 'c) Term.t =
+      let open Term in
+      const (fun f1 f2 a -> f2 (f1 a)) $ t1 $ t2
+    in
+    let compose (acc : (Conf_t.t -> Conf_t.t) Term.t)
+        (Pack {term; update; get_value; to_string; _}) =
+      let open Term in
+      let update_term =
+        const (fun x ->
+            match x with
+            | None -> fun config -> config
+            | Some x ->
+                let a config =
+                  let redundant =
+                    String.equal (to_string x)
+                      (config |> get_value |> Conf_t.Elt.v |> to_string)
+                  in
+                  let elt = get_value config in
+                  let new_elt = update_elt ~redundant elt x `Commandline in
+                  let config = update config new_elt in
+                  config
+                in
+                a )
+        $ term
+      in
+      compose_terms update_term acc
+    in
+    let term =
+      List.fold_left ~init:(Term.const (fun x -> x)) ~f:compose store
+    in
+    term
+end
 
 let deprecated ~since:dversion dmsg = {dmsg; dversion}
 
@@ -208,7 +239,7 @@ let map_status : [`Valid | `Deprecated of deprecated] -> status = function
   | `Valid -> `Valid
   | `Deprecated x -> `Deprecated x
 
-let flag ~default ~names ~doc ~kind
+let flag ~names ~default ~doc ~kind
     ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
     get_value =
   let open Cmdliner in
@@ -216,6 +247,7 @@ let flag ~default ~names ~doc ~kind
     List.filter_map names ~f:(fun n ->
         if String.length n = 1 then None else Some ("no-" ^ n) )
   in
+  let default = default |> get_value |> Conf_t.Elt.v in
   let doc = generated_flag_doc ~allow_inline ~doc ~kind ~default ~status in
   let invert_doc = "Unset $(b," ^ List.last_exn names ^ ")." in
   let docs = section_name kind status in
@@ -227,29 +259,27 @@ let flag ~default ~names ~doc ~kind
           ; (Some false, info invert_names ~doc:invert_doc ~docs) ] )
   in
   let parse = Arg.conv_parser Arg.bool in
-  let r = mk ~default:None term in
   let to_string = Bool.to_string in
-  let cmdline_get = r in
   let opt =
     { names
     ; values= Bool
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline
     ; default
     ; to_string
-    ; get_value (* ; from *)
+    ; get_value
     ; status= map_status status }
   in
-  store := Pack opt :: !store ;
   opt
 
-let any converter ~values ~default ~docv ~names ~doc ~kind
+let any converter ~values ~docv ~names ~default ~doc ~kind
     ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
     get_value =
   let open Cmdliner in
+  let default = default |> get_value |> Conf_t.Elt.v in
   let doc =
     generated_doc converter ~allow_inline ~doc ~kind ~default ~status
   in
@@ -258,30 +288,28 @@ let any converter ~values ~default ~docv ~names ~doc ~kind
     Arg.(value & opt (some converter) None & info names ~doc ~docs ~docv)
   in
   let parse = Arg.conv_parser converter in
-  let r = mk ~default:None term in
   let to_string = Format.asprintf "%a%!" (Arg.conv_printer converter) in
-  let cmdline_get = r in
   let opt =
     { names
     ; values
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline
     ; default
     ; to_string
     ; get_value (* ; from *)
     ; status= map_status status }
   in
-  store := Pack opt :: !store ;
   opt
 
 let int = any ~values:Int Arg.int
 
 let range = any ~values:Range Range.conv
 
-let ocaml_version = any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
+let ocaml_version : _ declarator =
+  any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 
 let warn_deprecated (config : Conf_t.t) loc fmt =
   Format.kasprintf
@@ -341,9 +369,11 @@ module Value_removed = struct
     Arg.conv (parse, Arg.conv_printer conv)
 end
 
-let choice ~all ?(removed_values = []) ~names ~doc ~kind
-    ?(allow_inline = Poly.(kind = Formatting)) ?status update =
-  let _, default, _, _ = List.hd_exn all in
+let choice ~all ?(removed_values = []) ~names ~default ~doc ~kind
+    ?(allow_inline = Poly.(kind = Formatting)) ?status update get_value =
+  let default_v = default |> get_value |> Conf_t.Elt.v in
+  let _, default', _, _ = List.hd_exn all in
+  assert (Stdlib.(default_v = default')) ;
   let name = Option.value_exn (longest names) in
   let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
   let conv =
@@ -375,7 +405,7 @@ let choice ~all ?(removed_values = []) ~names ~doc ~kind
     update conf elt
   in
   any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
-    ~values:(Choice values)
+    ~values:(Choice values) get_value
 
 let removed_option ~names ~since ~msg =
   let removed = {rversion= since; rmsg= msg} in
@@ -389,29 +419,26 @@ let removed_option ~names ~since ~msg =
   let term =
     Arg.(value & opt (some converter) None & info names ~doc ~docs)
   in
-  let r = mk ~default:None term in
   let to_string _ = "" in
-  let cmdline_get = r in
   let opt =
     { names
     ; values= Choice []
     ; doc
     ; parse
     ; update
-    ; cmdline_get
+    ; term
     ; allow_inline= true
     ; default= ()
     ; to_string
     ; get_value
     ; status }
   in
-  store := Pack opt :: !store
+  opt
 
-let update ~config ~from:new_from ~name ~value ~inline =
-  List.find_map !store
+let update store ~config ~from:new_from ~name ~value ~inline =
+  List.find_map store
     ~f:(fun
-         (Pack {names; parse; update; allow_inline; get_value; to_string; _})
-       ->
+      (Pack {names; parse; update; allow_inline; get_value; to_string; _}) ->
       if List.exists names ~f:(String.equal name) then
         if inline && not allow_inline then
           Some (Error (Error.Misplaced (name, value)))
@@ -451,23 +478,7 @@ let update ~config ~from:new_from ~name ~value ~inline =
 
 let default {default; _} = default
 
-let update_using_cmdline config =
-  let on_pack config (Pack {cmdline_get; update; get_value; to_string; _}) =
-    match cmdline_get () with
-    | None -> config
-    | Some x ->
-        let redundant =
-          String.equal (to_string x)
-            (config |> get_value |> Conf_t.Elt.v |> to_string)
-        in
-        let elt = get_value config in
-        let new_elt = update_elt ~redundant elt x `Commandline in
-        let config = update config new_elt in
-        config
-  in
-  List.fold !store ~init:config ~f:on_pack
-
-let print_config c =
+let print_config store c =
   let on_pack (Pack {names; to_string; get_value; status; _}) =
     let name = Option.value_exn (longest names) in
     let value = c |> get_value |> Conf_t.Elt.v |> to_string in
@@ -477,4 +488,4 @@ let print_config c =
         Format.eprintf "%s=%s%a\n%!" name value pp_from from
     | `Removed _ -> ()
   in
-  List.iter !store ~f:on_pack
+  List.iter store ~f:on_pack

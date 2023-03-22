@@ -1,4 +1,38 @@
-## (unreleased)
+## unreleased
+
+### Removed
+
+### Deprecated
+
+### Bug fixes
+
+- Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
+- Remove double parenthesis around tuple in a match (#2308, @Julow)
+- Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
+- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
+- Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
+- Fix indentation of trailing double-semicolons (#2295, @gpetiot)
+- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
+
+### Changes
+
+- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
+- Restore short form formatting of record field aliases (#2282, @gpetiot)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, @gpetiot, @Julow)
+- Improve formatting of class signatures (#2301, @gpetiot, @Julow)
+
+### New features
+
+- Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
+
+## 0.25.1 (2023-03-06)
+
+### Bug fixes
+
+- Janestreet: Fix indentation of functions passed as labelled argument (#2259, @Julow)
+
+## 0.25.0 (2023-02-24)
 
 ### Library
 
@@ -22,6 +56,12 @@
 - Fix spacing between recursive module bindings and recursive module declarations (#2217, @gpetiot)
 - ocamlformat-rpc: use binary mode for stdin/stdout (#2218, @rgrinberg)
 - Fix interpretation of glob pattern in `.ocamlformat-ignore` under Windows (#2206, @nojb)
+- Remove conf mutability, and correctly display the conventional profile when using print-config (#2233, @EmileTrotignon)
+- Preserve position of comments around type alias (#2239, @EmileTrotignon)
+- Preserve position of comments around constructor record (#2237, @EmileTrotignon)
+- Preserve position of comments around external declaration strings (#2238, @EmileTrotignon, @gpetiot)
+- Preserve position of comments around module pack expressions (#2234, @EmileTrotignon, @gpetiot)
+- Correctly parenthesize array literals with attributes in argument positions (#2250, @ccasin)
 
 ### Changes
 
@@ -38,7 +78,7 @@
 - Remove unnecessary parentheses around partially applied infix operators with attributes (#2198, @gpetiot)
 - JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
-- JaneStreet profile: improve indentation of function body when max-indent is used (#2214, @gpetiot)
+- The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, @gpetiot)
 
 ### New features
 

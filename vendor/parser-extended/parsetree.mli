@@ -133,7 +133,7 @@ and core_type_desc =
             - [T #tconstr]             when [l=[T]],
             - [(T1, ..., Tn) #tconstr] when [l=[T1 ; ... ; Tn]].
          *)
-  | Ptyp_alias of core_type * string  (** [T as 'a]. *)
+  | Ptyp_alias of core_type * string loc  (** [T as 'a]. *)
   | Ptyp_variant of row_field list * closed_flag * variant_var list option
       (** [Ptyp_variant([`A;`B], flag, labels)] represents:
             - [[ `A|`B ]]
@@ -271,7 +271,7 @@ and pattern_desc =
          *)
   | Ppat_array of pattern list  (** Pattern [[| P1; ...; Pn |]] *)
   | Ppat_list of pattern list  (** Pattern [[ P1; ...; Pn ]] *)
-  | Ppat_or of pattern * pattern  (** Pattern [P1 | P2] *)
+  | Ppat_or of pattern list  (** Pattern [P1 | ... | Pn] *)
   | Ppat_constraint of pattern * core_type  (** Pattern [(P : T)] *)
   | Ppat_type of Longident.t loc  (** Pattern [#tconst] *)
   | Ppat_lazy of pattern  (** Pattern [lazy P] *)
@@ -423,11 +423,9 @@ and expression_desc =
            values). *)
   | Pexp_object of class_structure  (** [object ... end] *)
   | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
-  | Pexp_pack of module_expr
-      (** [(module ME)].
-
-           [(module ME : S)] is represented as
-           [Pexp_constraint(Pexp_pack ME, Ptyp_package S)] *)
+  | Pexp_pack of module_expr * package_type option
+      (** - [(module M)] is represented as [Pexp_pack(M, None)]
+          - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
   | Pexp_open of Longident.t loc * expression  (** [M.(E)] *)
   | Pexp_letopen of open_declaration * expression
       (** - [let open M in E]
@@ -439,6 +437,7 @@ and expression_desc =
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
   | Pexp_beginend of expression  (** [begin E end] *)
+  | Pexp_parens of expression  (** [(E)] *)
   | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
   | Pexp_indexop_access of indexop_access
   | Pexp_prefix of string loc * expression  (** [op E] *)
@@ -499,7 +498,7 @@ and value_description =
     {
      pval_name: string loc;
      pval_type: core_type;
-     pval_prim: string list;
+     pval_prim: string loc list;
      pval_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      pval_loc: Location.t;
     }
@@ -588,7 +587,7 @@ and constructor_declaration =
 
 and constructor_arguments =
   | Pcstr_tuple of core_type list
-  | Pcstr_record of label_declaration list
+  | Pcstr_record of Location.t * label_declaration list
       (** Values of type {!constructor_declaration}
     represents the constructor arguments of:
   - [C of T1 * ... * Tn]     when [res = None],
@@ -784,13 +783,12 @@ and class_expr_desc =
 
 and class_structure =
     {
-     pcstr_self: pattern;
+     pcstr_self: pattern option;
      pcstr_fields: class_field list;
     }
 (** Values of type {!class_structure} represents:
     - [object(selfpat) ... end]
-    - [object ... end] when {{!class_structure.pcstr_self}[pcstr_self]}
-                         is {{!pattern_desc.Ppat_any}[Ppat_any]}
+    - [object ... end] when {{!class_structure.pcstr_self}[pcstr_self]} is [None]
 *)
 
 and class_field =
@@ -886,8 +884,7 @@ and signature_item =
 and signature_item_desc =
   | Psig_value of value_description
       (** - [val x: T]
-            - [external x: T = "s1" ... "sn"]
-         *)
+          - [external x: T = "s1" ... "sn"] *)
   | Psig_type of rec_flag * type_declaration list
       (** [type t1 = ... and ... and tn  = ...] *)
   | Psig_typesubst of type_declaration list
@@ -1039,7 +1036,7 @@ and structure_item_desc =
         *)
   | Pstr_primitive of value_description
       (** - [val x: T]
-            - [external x: T = "s1" ... "sn" ]*)
+          - [external x: T = "s1" ... "sn"] *)
   | Pstr_type of rec_flag * type_declaration list
       (** [type t1 = ... and ... and tn = ...] *)
   | Pstr_typext of type_extension  (** [type t1 += ...] *)

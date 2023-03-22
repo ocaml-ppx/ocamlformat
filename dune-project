@@ -27,18 +27,19 @@
  (github ocaml-ppx/ocamlformat))
 
 (package
- (name ocamlformat)
+ (name ocamlformat-lib)
  (synopsis "Auto-formatter for OCaml code")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.3.0)))
   (base
    (>= v0.12.0))
-  (cmdliner
-   (>= 1.1.0))
   dune
   dune-build-info
   either
@@ -51,14 +52,13 @@
   (menhirSdk
    (>= 20201216))
   (ocaml-version
-   (>= 3.3.0))
+   (>= 3.5.0))
   (ocamlformat-rpc-lib
    (and
     :with-test
     (= :version)))
-  ocp-indent
-  (re
-   (>= 1.10.3))
+  (ocp-indent
+   (>= 1.8.0))
   stdio
   (uuseg
    (>= 10.0.0))
@@ -72,6 +72,26 @@
   camlp-streams))
 
 (package
+ (name ocamlformat)
+ (synopsis "Auto-formatter for OCaml code")
+ (description
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+ (depends
+  (ocaml
+   (>= 4.08))
+  (cmdliner
+   (>= 1.1.0))
+  dune
+  (ocamlformat-lib
+   (= :version))
+  (ocamlformat-rpc-lib
+   (and
+    :with-test
+    (= :version)))
+  (re
+   (>= 1.10.3))))
+
+(package
  (name ocamlformat-bench)
  (synopsis "Auto-formatter for OCaml code")
  (description
@@ -79,15 +99,19 @@
  (depends
   (ocaml
    (>= 4.08))
-  (alcotest :with-test)
+  (alcotest
+   (and
+    :with-test
+    (>= 1.3.0)))
   (bechamel
    (>= 0.2.0))
   (bechamel-js
    (>= 0.2.0))
-  (ocamlformat
+  (ocamlformat-lib
    (= :version))
   stdio
-  yojson))
+  (yojson
+   (>= 1.6.0))))
 
 (package
  (name ocamlformat-rpc-lib)

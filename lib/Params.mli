@@ -9,7 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
 open Extended_ast
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
@@ -19,6 +18,9 @@ val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 module Exp : sig
   module Infix_op_arg : sig
     val wrap : Conf.t -> ?parens_nested:bool -> parens:bool -> Fmt.t -> Fmt.t
+
+    val dock : Conf.t -> expression Ast.xt -> bool
+    (** Whether the RHS of an infix operator should be docked. *)
   end
 
   val wrap :
@@ -46,13 +48,14 @@ type cases =
   ; break_after_arrow: Fmt.t
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
+  ; expr_parens: bool option
   ; close_paren_branch: Fmt.t }
 
 val get_cases :
      Conf.t
+  -> ctx:Ast.t
   -> first:bool
-  -> indent:int
-  -> parens_branch:bool
+  -> last:bool
   -> xbch:expression Ast.xt
   -> cases
 
@@ -139,3 +142,14 @@ val comma_sep : Conf.t -> Fmt.s
 
 val semi_sep : Conf.t -> Fmt.s
 (** Like [comma_sep] but use a semicolon as separator. *)
+
+module Align : sig
+  (** Implement the [align_symbol_open_paren] option. *)
+
+  val infix_op : Conf.t -> Fmt.t -> Fmt.t
+
+  val match_ : Conf.t -> Fmt.t -> Fmt.t
+
+  val function_ :
+    Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
+end

@@ -141,6 +141,11 @@ let make_mapper conf ~ignore_doc_comments =
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
              pat3 )
+    | Ppat_constraint (pat1, {ptyp_desc= Ptyp_poly ([], _t); _}) ->
+        (* The parser put the same type constraint in two different nodes:
+           [let _ : typ = exp] is represented as [let _ : typ = (exp :
+           typ)]. *)
+        m.pat m pat1
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =
@@ -200,16 +205,19 @@ let moved_docstrings fragment c s1 s2 =
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let cmt_kind = `Doc_comment in
+  let cmt (loc, x) = Cmt.create x loc in
+  let dropped x = {Cmt.kind= `Dropped (cmt x); cmt_kind} in
+  let added x = {Cmt.kind= `Added (cmt x); cmt_kind} in
+  let modified (x, y) = {Cmt.kind= `Modified (cmt x, cmt y); cmt_kind} in
   match List.zip d1 d2 with
   | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 = List.map ~f:(fun (loc, x) -> Docstring.Removed (loc, x)) l1 in
+      let l1 = List.map ~f:dropped l1 in
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:(fun (loc, x) -> Docstring.Added (loc, x)) l2 in
+      let l2 = List.map ~f:added l2 in
       List.rev_append l1 l2
   | Ok l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
-      List.map
-        ~f:(fun ((loc, x), (_, y)) -> Docstring.Unstable (loc, x, y))
-        l
+      List.map ~f:modified l

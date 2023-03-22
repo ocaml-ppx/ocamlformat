@@ -79,7 +79,7 @@ module Typ :
     val object_: ?loc:loc -> ?attrs:attrs -> object_field list
                    -> obj_closed_flag -> core_type
     val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
-    val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
+    val alias: ?loc:loc -> ?attrs:attrs -> core_type -> str -> core_type
     val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
                  -> variant_var list option -> core_type
     val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
@@ -108,7 +108,7 @@ module Pat:
       -> obj_closed_flag -> pattern
     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
-    val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
+    val or_: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
     val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
     val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
@@ -181,7 +181,8 @@ module Exp:
               -> expression
     val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
     val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
-    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
+    val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> package_type option
+              -> expression
     val open_: ?loc:loc -> ?attrs:attrs -> lid -> expression -> expression
     val letopen: ?loc:loc -> ?attrs:attrs -> open_declaration -> expression
                -> expression
@@ -194,6 +195,7 @@ module Exp:
     val binding_op: str -> pattern -> expression -> loc -> binding_op
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
     val beginend: ?loc:loc -> ?attrs:attrs -> expression -> expression
+    val parens: ?loc:loc -> ?attrs:attrs -> expression -> expression
     val cons: ?loc:loc -> ?attrs:attrs -> expression list -> expression
     val prefix: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
     val infix:
@@ -204,7 +206,7 @@ module Exp:
 module Val:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
-      ?prim:string list -> str -> core_type -> value_description
+      ?prim:str list -> str -> core_type -> value_description
   end
 
 (** Type declarations *)
@@ -473,7 +475,7 @@ module Csig:
 (** Class structures *)
 module Cstr:
   sig
-    val mk: pattern -> class_field list -> class_structure
+    val mk: pattern option -> class_field list -> class_structure
   end
 
 (** Row fields *)

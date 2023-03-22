@@ -11,8 +11,7 @@
           class_expr ([1,0+10]..[1,0+16])
             Pcl_structure
             class_structure
-              pattern ([1,0+16]..[1,0+16]) ghost
-                Ppat_any
+              None
               []
     ]
 ]

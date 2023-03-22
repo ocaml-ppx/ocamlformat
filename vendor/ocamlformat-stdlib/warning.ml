@@ -14,7 +14,7 @@ let with_warning_filter ~filter ~f =
 
 let print_warning l w =
   match Location.default_warning_reporter l w with
-  | Some reporter -> Location.print_report Caml.Format.err_formatter reporter
+  | Some reporter -> Location.print_report Stdlib.Format.err_formatter reporter
   | None -> ()
 
 let is_unexpected_docstring = function

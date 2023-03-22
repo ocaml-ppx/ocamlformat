@@ -1711,12 +1711,12 @@ class_fun_def:
 ;
 class_self_pattern:
     LPAREN pattern RPAREN
-      { reloc_pat ~loc:$sloc $2 }
+      { Some (reloc_pat ~loc:$sloc $2) }
   | mkpat(LPAREN pattern COLON core_type RPAREN
       { Ppat_constraint($2, $4) })
-      { $1 }
+      { Some $1 }
   | /* empty */
-      { ghpat ~loc:$sloc Ppat_any }
+      { None }
 ;
 %inline class_fields:
   flatten(text_cstr(class_field)*)
@@ -2150,8 +2150,11 @@ expr [@recover.expr Annot.Exp.mk ()]:
 ;
 
 simple_expr:
-  | LPAREN seq_expr RPAREN
-      { reloc_exp ~loc:$sloc $2 }
+  | LPAREN e = seq_expr RPAREN
+      { match e.pexp_desc with
+        | Pexp_pack _ ->
+            mkexp ~loc:$sloc (Pexp_parens e)
+        | _ -> reloc_exp ~loc:$sloc e }
   | LPAREN seq_expr type_constraint RPAREN
       { mkexp_constraint ~loc:$sloc $2 $3 }
   | indexop_expr(DOT, seq_expr, { None })
@@ -2172,9 +2175,9 @@ simple_expr:
   | NEW ext_attributes mkrhs(class_longident)
       { Pexp_new($3), $2 }
   | LPAREN MODULE ext_attributes module_expr RPAREN
-      { Pexp_pack $4, $3 }
-  | LPAREN MODULE ext_attributes module_expr COLON package_core_type RPAREN
-      { Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $4), $6), $3 }
+      { Pexp_pack ($4, None), $3 }
+  | LPAREN MODULE ext_attributes module_expr COLON package_type RPAREN
+      { Pexp_pack ($4, Some $6), $3 }
   | OBJECT ext_attributes class_structure END
       { Pexp_object $3, $2 }
 ;
@@ -2236,10 +2239,10 @@ simple_expr:
   | od=open_dot_declaration DOT mkrhs(LBRACKET RBRACKET {Lident "[]"})
       { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
   | od=open_dot_declaration DOT LPAREN MODULE ext_attributes module_expr COLON
-    package_core_type RPAREN
+    package_type RPAREN
       { let modexp =
           mkexp_attrs ~loc:($startpos($3), $endpos)
-            (Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $6), $8)) $5 in
+            (Pexp_pack ($6, Some $8)) $5 in
         Pexp_open(od, modexp) }
 ;
 labeled_simple_expr:
@@ -2492,7 +2495,12 @@ pattern_no_exn:
     | pattern_comma_list(self) %prec below_COMMA
         { Ppat_tuple(List.rev $1) }
     | self BAR pattern
-        { Ppat_or($1, $3) }
+        { let rec or_ p =
+            match p with
+            | {ppat_desc= Ppat_or (x :: t); ppat_attributes= []; _} -> or_ x @ t
+            | _ -> [p]
+          in
+          Ppat_or (or_ $1 @ or_ $3) }
   ) { $1 }
 ;
 
@@ -2624,7 +2632,7 @@ primitive_declaration:
   COLON
   ty = possibly_poly(core_type)
   EQUAL
-  prim = raw_string+
+  prim = mkrhs(raw_string)+
   attrs2 = post_item_attributes
     { let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in
@@ -2866,7 +2874,7 @@ constructor_arguments:
     %prec below_HASH
       { Pcstr_tuple tys }
   | LBRACE label_declarations RBRACE
-      { Pcstr_record $2 }
+      { Pcstr_record (make_loc $sloc, $2) }
 ;
 label_declarations:
     label_declaration                           { [$1] }
@@ -3034,7 +3042,7 @@ alias_type:
     function_type
       { $1 }
   | mktyp(
-      ty = alias_type AS QUOTE tyvar = ident
+      ty = alias_type AS QUOTE tyvar = mkrhs(ident)
         { Ptyp_alias(ty, tyvar) }
     )
     { $1 }

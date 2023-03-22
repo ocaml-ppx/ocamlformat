@@ -26,20 +26,28 @@ let ( init
     , register_reset
     , leading_nested_match_parens
     , parens_ite
-    , ocaml_version ) =
+    , ocaml_version
+    , ocp_indent_compat ) =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
   let ocaml_version = ref Ocaml_version.sys_version in
+  let ocp_indent_compat = ref false in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
     leading_nested_match_parens :=
       conf.fmt_opts.leading_nested_match_parens.v ;
     parens_ite := conf.fmt_opts.parens_ite.v ;
     ocaml_version := conf.opr_opts.ocaml_version.v ;
+    ocp_indent_compat := conf.fmt_opts.ocp_indent_compat.v ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens, parens_ite, ocaml_version)
+  ( init
+  , register
+  , leading_nested_match_parens
+  , parens_ite
+  , ocaml_version
+  , ocp_indent_compat )
 
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
@@ -817,7 +825,7 @@ end = struct
         ignore (f x) ;
         true
       with exc ->
-        let bt = Caml.Printexc.get_backtrace () in
+        let bt = Stdlib.Printexc.get_backtrace () in
         dump x Format.err_formatter ;
         Format.eprintf "%s%!" bt ;
         raise exc )
@@ -830,7 +838,7 @@ end = struct
     let snd_f (_, tI) = typ == tI in
     let check_cstr = function
       | Pcstr_tuple t1N -> List.exists t1N ~f
-      | Pcstr_record ld1N ->
+      | Pcstr_record (_, ld1N) ->
           List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
     in
     let check_ext {pext_kind; _} =
@@ -955,9 +963,7 @@ end = struct
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N); _} as ty))
-        ->
-          assert (typ == ty || List.exists it1N ~f:snd_f)
+      | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
        |Pexp_poly (_, Some t1)
@@ -1218,7 +1224,7 @@ end = struct
             assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) ->
             assert (List.exists p1N ~f:(fun (_, _, x) -> Option.exists x ~f))
-        | Ppat_or (p1, p2) -> assert (p1 == pat || p2 == pat)
+        | Ppat_or l -> assert (List.exists ~f:(fun p -> p == pat) l)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
          |Ppat_construct (_, Some (_, p1))
@@ -1243,12 +1249,14 @@ end = struct
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_cons _ | Pexp_letopen _
+       |Pexp_beginend _ | Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
-          assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
+          assert (
+            Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
+            || check_pcstr_fields pcstr_fields )
       | Pexp_let ({lbs_bindings; _}, _) ->
           assert (check_bindings lbs_bindings)
       | Pexp_letop {let_; ands; _} ->
@@ -1270,7 +1278,8 @@ end = struct
           | Pcl_fun (_, _, p, _) -> p == pat
           | Pcl_constr _ -> false
           | Pcl_structure {pcstr_self; pcstr_fields} ->
-              pcstr_self == pat || check_pcstr_fields pcstr_fields
+              Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
+              || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
           | Pcl_let ({lbs_bindings; _}, _) -> check_bindings lbs_bindings
           | Pcl_constraint _ -> false
@@ -1385,6 +1394,7 @@ end = struct
               || List.exists e1N ~f:(fun (_, _, e) -> Option.exists e ~f) )
         | Pexp_assert e
          |Pexp_beginend e
+         |Pexp_parens e
          |Pexp_constraint (e, _)
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
@@ -1978,8 +1988,8 @@ end = struct
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
          |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
-         |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_indexop_access _
-          ->
+         |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
+         |Pexp_indexop_access _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2057,7 +2067,7 @@ end = struct
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
-       |Pexp_hole | Pexp_while _ | Pexp_beginend _ ->
+       |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
@@ -2131,7 +2141,7 @@ end = struct
     (* Object fields do not require parens, even with trailing attributes *)
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
     | _, {pexp_desc= Pexp_object _; pexp_attributes= []; _}
-      when Ocaml_version.(compare !ocaml_version Releases.v4_14 >= 0) ->
+      when Ocaml_version.(compare !ocaml_version Releases.v4_14_0 >= 0) ->
         false
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
@@ -2172,6 +2182,10 @@ end = struct
     | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}, _
       when idx == exp ->
         false
+    | ( Exp {pexp_desc= Pexp_constraint (e, _) | Pexp_coerce (e, _, _); _}
+      , {pexp_desc= Pexp_tuple _ | Pexp_match _ | Pexp_try _; _} )
+      when e == exp && !ocp_indent_compat ->
+        true
     | ( Exp
           { pexp_desc=
               Pexp_indexop_access
@@ -2269,13 +2283,15 @@ end = struct
         when List.exists args ~f:(fun (_, e0) ->
                  match (e0.pexp_desc, e0.pexp_attributes) with
                  | Pexp_list _, _ :: _ when e0 == exp -> true
+                 | Pexp_array _, _ :: _ when e0 == exp -> true
                  | _ -> false ) ->
           true
       | _ -> (
         match exp.pexp_desc with
-        | Pexp_list _ -> false
+        | Pexp_list _ | Pexp_array _ -> false
         | _ -> Exp.has_trailing_attributes exp || parenze () ) )
     | _, {pexp_desc= Pexp_list _; _} -> false
+    | _, {pexp_desc= Pexp_array _; _} -> false
     | _, exp when Exp.has_trailing_attributes exp -> true
     | _ -> false
 
