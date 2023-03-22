@@ -7672,3 +7672,64 @@ let _ =
       match fooooooooooooooooooooooooooooooooooooooo with
       | Fooooooooooooooooooooooooooooooooooooooo -> x
       | Fooooooooooooooooooooooooooooooooooooooo -> x )
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+
+let _ =
+  foo
+  |> List.map ~f:(fun x ->
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
+  |> bar
+
+let _ =
+  foo
+  |> List.map
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+    fooooooooooo
+
+let _ =
+  foo
+  |> List.map (function A -> do_something ())
+
+let _ =
+  foo
+  |> List.map (function
+      | A -> do_something ();
+      | A -> do_something ();
+      | A -> do_something ();
+      | A -> do_something ();
+      | A -> do_something_else ())
+  |> bar
+
+let _ =
+  foo
+  |> List.double_map ~f1:(fun x ->
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
+      ~f2:(fun x ->
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something ();
+          do_something_else ())
+  |> bar
