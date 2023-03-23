@@ -3069,8 +3069,8 @@ and fmt_value_description ?ext c ctx vd =
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
-  let attrs_indent : sp =
-    Break (1, c.conf.fmt_opts.stritem_attributes_indent.v)
+  let attrs_indent =
+    if c.conf.fmt_opts.stritem_attributes_indent.v then 2 else 0
   in
   hvbox 0
     ( doc_before
@@ -3091,7 +3091,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim "@;" fmt_val_prim )
-    $ fmt_item_attributes c ~pre:attrs_indent atrs
+    $ fmt_item_attributes c ~pre:(Break (1, attrs_indent)) atrs
     $ doc_after )
 
 and fmt_tydcl_params c ctx params =
@@ -4271,10 +4271,11 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
         , Cmts.fmt_after c lb_loc )
     | None ->
         let epi =
-          let pre : sp =
-            Break (1, c.conf.fmt_opts.stritem_attributes_indent.v)
+          let indent =
+            if c.conf.fmt_opts.stritem_attributes_indent.v then indent else 0
           in
-          fmt_item_attributes c ~pre at_at_attrs $ fmt_opt epi
+          fmt_item_attributes c ~pre:(Break (1, indent)) at_at_attrs
+          $ fmt_opt epi
         in
         ( true
         , noop
