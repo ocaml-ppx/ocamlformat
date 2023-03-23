@@ -7920,3 +7920,13 @@ module type For_let_syntax_local =
   For_let_syntax_gen
     with type ('a, 'b) fn := ('a[@local]) -> 'b
      and type ('a, 'b) f_labeled_fn := f:('a[@local]) -> 'b
+
+type fooooooooooooooooooooooooooooooo =
+  ( fooooooooooooooooooooooooooooooo
+  , fooooooooooooooooooooooooooooooo )
+    fooooooooooooooooooooooooooooooo
+
+val fooooooooooooooooooooooooooooooo
+  : ( fooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooo )
+      fooooooooooooooooooooooooooooooo
