@@ -3314,20 +3314,20 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
 (* No real improvement here? *)
 let make_set (type s) cmp : (module Set.S with type elt = s) =
   (module Set.Make (struct
-      type t = s
+       type t = s
 
-      let compare = cmp
-    end))
+       let compare = cmp
+     end))
 ;;
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
   sort
     (module Set.Make (struct
-        type t = s
+         type t = s
 
-        let compare = cmp
-      end))
+         let compare = cmp
+       end))
 ;;
 
 module type S = sig
@@ -10064,3 +10064,13 @@ type action =
   (* foo *)
   | Inplace of [ `Impl | `Intf ] input list
   (** Format in-place, overwriting input file(s). *)
+
+let%test_module "semantics" =
+  (module (
+   struct
+     open Core
+     open Appendable_list
+     module Stable = Stable
+   end :
+     S))
+;;

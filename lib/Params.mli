@@ -157,4 +157,7 @@ module Align : sig
     Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
 
   val fun_decl : Conf.t -> decl:Fmt.t -> pattern:Fmt.t -> args:Fmt.t -> Fmt.t
+
+  val module_pack : Conf.t -> me:module_expr -> bool
+  (** Not implemented as a wrapper to work with the blk system. *)
 end

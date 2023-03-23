@@ -7819,3 +7819,13 @@ type action =
   (* foo *)
   | Inplace of [ `Impl | `Intf ] input list
   (** Format in-place, overwriting input file(s). *)
+
+let%test_module "semantics" =
+  (module (
+   struct
+     open Core
+     open Appendable_list
+     module Stable = Stable
+   end :
+     S))
+;;

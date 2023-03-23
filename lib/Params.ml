@@ -606,4 +606,12 @@ module Align = struct
     if c.fmt_opts.ocp_indent_compat.v then
       hovbox 4 (decl $ hvbox 2 (pattern $ args))
     else hovbox 4 (decl $ pattern) $ args
+
+  let module_pack (c : Conf.t) ~me =
+    if not c.fmt_opts.ocp_indent_compat.v then false
+    else
+      (* Align when the constraint is not desugared. *)
+      match me.pmod_desc with
+      | Pmod_structure _ | Pmod_ident _ -> false
+      | _ -> true
 end

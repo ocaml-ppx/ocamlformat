@@ -2419,8 +2419,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_try (e0, cs) -> fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_parens = parens && has_attr in
-      let inner_parens = true in
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
+      let align = Params.Align.module_pack c.conf ~me in
       let opn_paren =
         match c.conf.fmt_opts.indicate_multiline_delimiters.v with
         | `No | `Closing_on_separate_line -> str "("
@@ -2433,11 +2433,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             fits_breaks ~level "(" "( "
       and cls_paren = closing_paren c ~offset:(-2) in
       let pro =
-        fmt_if_k inner_parens opn_paren
+        fmt_if_k (not align) opn_paren
         $ str "module"
         $ fmt_extension_suffix c ext
         $ char ' '
-      and epi = fmt_if_k inner_parens cls_paren in
+      and epi = cls_paren in
       let fmt_mod m =
         match pt with
         | Some (id, cnstrs) ->
@@ -2448,7 +2448,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox 0
         (Params.parens_if outer_parens c.conf
-           (compose_module ~pro ~epi blk ~f:fmt_mod $ fmt_atrs) )
+           ( fmt_if_k align opn_paren
+           $ compose_module ~pro ~epi blk ~f:fmt_mod
+           $ fmt_atrs ) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid, (typ1, typ2), exp) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
