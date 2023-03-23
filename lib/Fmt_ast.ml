@@ -128,6 +128,8 @@ module Indent = struct
       match me.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
 
+  let mty_with = _ocp 0 2
+
   let variant ~parens c =
     if c.conf.fmt_opts.ocp_indent_compat.v && parens then 3 else 2
 
@@ -3558,7 +3560,8 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
               open_hvbox 0 $ fmt_if parens "(" $ pro )
       ; psp
       ; bdy=
-          fmt_if_k (Option.is_none pro) (open_hvbox 2 $ fmt_if parens "(")
+          fmt_if_k (Option.is_none pro)
+            (open_hvbox (Indent.mty_with c) $ fmt_if parens "(")
           $ hvbox 0 bdy
           $ fmt_if_k (Option.is_some epi) esp
           $ fmt_opt epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
