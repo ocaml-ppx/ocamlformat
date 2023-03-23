@@ -7769,6 +7769,42 @@ let _ =
           do_something_else ())
   |> bar
 
+module Stritem_attributes_indent : sig
+  val f : int -> int -> int -> int -> int
+  [@@cold] [@@inline never] [@@local never] [@@specialise never]
+
+  external unsafe_memset : t -> pos:int -> len:int -> char -> unit
+    = "bigstring_memset_stub"
+  [@@noalloc]
+
+end = struct
+  let raise_length_mismatch name n1 n2 =
+    invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
+  [@@cold] [@@inline never] [@@local never] [@@specialise never]
+
+  external unsafe_memset : t -> pos:int -> len:int -> char -> unit = "bigstring_memset_stub"
+  [@@noalloc]
+end
+
+let _ =
+  foo
+  $$ ( match group with [] -> impossible "previous match"
+    | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+  $$ bar
+
+let _ =
+  foo
+  $$ ( try group with [] -> impossible "previous match"
+    | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+  $$ bar
+
+let _ =
+  x == exp
+  ||
+  match x with
+  | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+  | _ -> false
+
 let _ =
   let module M = struct
     include ( val foooooooooooooooooooooooooooooooooooooooo
