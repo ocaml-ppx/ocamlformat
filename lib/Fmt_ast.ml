@@ -99,6 +99,11 @@ module Indent = struct
       let default = if c.conf.fmt_opts.wrap_fun_args.v then 2 else 4 in
       Params.function_indent c.conf ~parens:false ~xexp ~default
 
+  let docked_function_after_fun ~parens ~lbl c =
+    if c.conf.fmt_opts.ocp_indent_compat.v then
+      if parens && Poly.equal lbl Nolabel then 3 else 2
+    else 0
+
   let fun_args_group lbl ast c =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
     else
@@ -1427,7 +1432,9 @@ and fmt_fun ?force_closing_paren
   let body =
     let box =
       match xbody.ast.pexp_desc with
-      | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
+      | Pexp_fun _ | Pexp_newtype _ -> Some false
+      | Pexp_function _ when not c.conf.fmt_opts.ocp_indent_compat.v ->
+          Some false
       | _ -> None
     in
     fmt_expression c ?box xbody
@@ -1978,7 +1985,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let args =
             let break_body =
               match eN1_body.pexp_desc with
-              | Pexp_function _ -> fmt "@ "
+              | Pexp_function _ ->
+                  break 1
+                    (Indent.docked_function_after_fun ~parens:true ~lbl c)
               | _ -> break 1 (Indent.docked_fun c ~loc:eN1.pexp_loc ~lbl)
             in
             let wrap_intro x =

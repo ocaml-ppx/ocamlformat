@@ -7868,3 +7868,43 @@ let _ =
   `Foooooooooooooooooo
     (name, Format.sprintf "expecting %S but got %S" Version.version value)
 ;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       function
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      function
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       match foo with
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      match foo with
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
