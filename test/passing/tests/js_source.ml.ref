@@ -9819,9 +9819,9 @@ let x =
   some_fun________________________________
     some_arg______________________________
     (fun param ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+       do_something ();
+       do_something_else ();
+       return_this_value)
 ;;
 
 let x =

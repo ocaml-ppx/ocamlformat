@@ -125,6 +125,17 @@ module Indent = struct
 
   let variant ~parens c =
     if c.conf.fmt_opts.ocp_indent_compat.v && parens then 3 else 2
+
+  let docked_fun c ~loc ~lbl =
+    if not c.conf.fmt_opts.ocp_indent_compat.v then 2
+    else
+      let loc, if_breaks =
+        match lbl with
+        | Nolabel -> (loc, 3)
+        | Optional x | Labelled x -> (x.loc, 2)
+      in
+      if Source.begins_line ~ignore_spaces:true c.source loc then if_breaks
+      else 0
 end
 
 module Break = struct
@@ -1965,22 +1976,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let args_before = List.rev rev_args_before in
           let xlast_arg = sub_exp ~ctx eN1 in
           let args =
-            let begin_arg_loc =
-              match lbl with
-              | Nolabel -> eN1.pexp_loc
-              | Optional x | Labelled x -> x.loc
-            in
             let break_body =
               match eN1_body.pexp_desc with
               | Pexp_function _ -> fmt "@ "
-              | _ ->
-                  if c.conf.fmt_opts.ocp_indent_compat.v then
-                    if
-                      Source.begins_line ~ignore_spaces:true c.source
-                        begin_arg_loc
-                    then break 1 2
-                    else fmt "@ "
-                  else fmt "@;<1 2>"
+              | _ -> break 1 (Indent.docked_fun c ~loc:eN1.pexp_loc ~lbl)
             in
             let wrap_intro x =
               wrap
