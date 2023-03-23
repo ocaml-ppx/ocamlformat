@@ -7870,6 +7870,21 @@ let _ =
 ;;
 
 let _ =
+  Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let (`Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+    =
+  x
+
+let (Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+    =
+  x
+
+let _ =
   Foooooooooooooooooooo.foooooooooooooooooooo
     foooooooooooooooooooo
     foooooooooooooooooooo

@@ -1106,7 +1106,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       Cmts.fmt c ppat_loc
         (hvbox 0 (fmt_pat_cons c ~parens (List.map lp ~f:(sub_pat ~ctx))))
   | Ppat_construct (lid, Some (exists, pat)) ->
-      cbox 2
+      cbox
+        (Indent.variant ~parens c)
         (Params.parens_if parens c.conf
            ( fmt_longident_loc c lid $ fmt "@ "
            $ ( match exists with
@@ -1119,7 +1120,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl
   | Ppat_variant (lbl, Some pat) ->
-      cbox 2
+      cbox
+        (Indent.variant ~parens c)
         (Params.parens_if parens c.conf
            (variant_var c lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
   | Ppat_record (flds, closed_flag) ->
