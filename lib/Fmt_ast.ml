@@ -122,6 +122,9 @@ module Indent = struct
     if c.conf.fmt_opts.ocp_indent_compat.v then
       match me.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
+
+  let variant ~parens c =
+    if c.conf.fmt_opts.ocp_indent_compat.v && parens then 3 else 2
 end
 
 module Break = struct
@@ -2152,7 +2155,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
   | Pexp_variant (s, arg) ->
-      hvbox 2
+      hvbox
+        (Indent.variant ~parens c)
         (Params.parens_if parens c.conf
            ( variant_var c s
            $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))

@@ -7829,3 +7829,14 @@ let%test_module "semantics" =
    end :
      S))
 ;;
+
+let _ =
+  Error
+    (`Foooooooooooooooooo
+       (name, Format.sprintf "expecting %S but got %S" Version.version value))
+;;
+
+let _ =
+  `Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
