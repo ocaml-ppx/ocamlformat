@@ -118,9 +118,7 @@ module Indent = struct
 
   let mod_constraint ~me c =
     if c.conf.fmt_opts.ocp_indent_compat.v then
-      match me.pmod_desc with
-      | Pmod_structure _ -> 0
-      | _ -> 2
+      match me.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
 end
 
@@ -140,7 +138,6 @@ module Break = struct
       | Pmty_signature _ -> break 1 0
       | _ -> break 1 2
     else break 1 2
-
 end
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
@@ -4025,13 +4022,17 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
-      { opn= Some (fmt_opt blk_t.opn $ fmt_opt blk_e.opn $ open_hovbox (Indent.mod_constraint ~me c))
+      { opn=
+          Some
+            ( fmt_opt blk_t.opn $ fmt_opt blk_e.opn
+            $ open_hovbox (Indent.mod_constraint ~me c) )
       ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
       ; psp= fmt "@,"
       ; bdy=
           hvbox 0
             ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-            $ fmt_opt blk_e.epi $ fmt " :" $ Break.mod_constraint ~mt c
+            $ fmt_opt blk_e.epi $ fmt " :"
+            $ Break.mod_constraint ~mt c
             $ hvbox 0
                 ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
                 $ fmt_opt blk_t.epi ) )
