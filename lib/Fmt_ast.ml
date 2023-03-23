@@ -114,6 +114,8 @@ module Indent = struct
     in
     _ocp ocp 4 c
 
+  let constructor_docstring = _ocp 0 4
+
   let exp_constraint = _ocp 1 2
 
   let mod_constraint ~me c =
@@ -3325,11 +3327,12 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
-  $ fmt_or_k first (if_newline "| ") (str "| ")
-  $ hvbox ~name:"constructor_decl" 0
-      ( hovbox 2
-          ( hvbox 2
-              ( hovbox ~name:"constructor_decl_name" 0
+  $ hvbox ~name:"constructor_decl" 2
+      ( hvbox
+          (Indent.constructor_docstring c)
+          ( hvbox 4
+              ( fmt_or_k first (if_newline "| ") (str "| ")
+              $ hovbox ~name:"constructor_decl_name" 0
                   (Cmts.fmt c loc
                      (wrap_if
                         (Std_longident.String_id.is_symbol txt)

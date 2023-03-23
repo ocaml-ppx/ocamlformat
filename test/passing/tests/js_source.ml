@@ -7811,3 +7811,11 @@ let _ =
                 : fooooooooooooooooooooooooooooooooooooooooo )
   end in
   ()
+
+type action =
+  | In_out of [ `Impl | `Intf ] input * string option
+  (** Format input file (or [-] for stdin) of given kind to output file,
+      or stdout if None. *)
+  (* foo *)
+  | Inplace of [ `Impl | `Intf ] input list
+  (** Format in-place, overwriting input file(s). *)
