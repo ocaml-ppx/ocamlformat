@@ -25,6 +25,10 @@ let of_ast fragment ast =
     locs := loc :: !locs ;
     loc
   in
-  let mapper = Ast_mapper.{default_mapper with location; attribute} in
+  (* Ignore locations of arg_labels *)
+  let arg_label _ lbl = lbl in
+  let mapper =
+    Ast_mapper.{default_mapper with location; attribute; arg_label}
+  in
   map fragment mapper ast |> ignore ;
   (of_list !locs, !locs)

@@ -397,10 +397,11 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
 let fmt_variance_injectivity c vc = hvbox 0 (list vc "" (fmt_str_loc c))
 
 let fmt_label lbl sep =
+  (* No comment can be attached here. *)
   match lbl with
   | Nolabel -> noop
-  | Labelled l -> str "~" $ str l $ fmt sep
-  | Optional l -> str "?" $ str l $ fmt sep
+  | Labelled l -> str "~" $ str l.txt $ fmt sep
+  | Optional l -> str "?" $ str l.txt $ fmt sep
 
 let fmt_direction_flag = function
   | Upto -> fmt "@ to "
@@ -780,8 +781,8 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   let arg_label lbl =
     match lbl with
     | Nolabel -> None
-    | Labelled l -> Some (str l $ fmt ":@,")
-    | Optional l -> Some (str "?" $ str l $ fmt ":@,")
+    | Labelled l -> Some (str l.txt $ fmt ":@,")
+    | Optional l -> Some (str "?" $ str l.txt $ fmt ":@,")
   in
   let xtI = sub_typ ~ctx tI in
   let arg =
@@ -1279,7 +1280,7 @@ and fmt_fun_args c args =
                 ; _ }
             ; _ } as xpat )
         , None )
-      when String.equal l txt ->
+      when String.equal l.txt txt ->
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
         cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
     | Val ((Optional _ as lbl), xpat, None) ->
@@ -1304,7 +1305,7 @@ and fmt_fun_args c args =
         , ( { ast= {ppat_desc= Ppat_var {txt; loc= _}; ppat_attributes= []; _}
             ; _ } as xpat )
         , Some xexp )
-      when String.equal l txt ->
+      when String.equal l.txt txt ->
         cbox 0
           (wrap "?(" ")"
              ( fmt_pattern c ~box:true xpat
@@ -1320,7 +1321,7 @@ and fmt_fun_args c args =
                 ; _ }
             ; _ } as xpat )
         , Some xexp )
-      when String.equal l txt ->
+      when String.equal l.txt txt ->
         cbox 0
           (wrap "?(" ")"
              ( fmt_pattern c ~parens:false ~box:true xpat
@@ -1332,7 +1333,7 @@ and fmt_fun_args c args =
           | _ -> Some false
         in
         cbox 2
-          ( str "?" $ str l
+          ( str "?" $ str l.txt
           $ wrap_k (fmt ":@,(") (str ")")
               ( fmt_pattern c ?parens ~box:true xpat
               $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
@@ -1446,11 +1447,11 @@ and fmt_fun ?force_closing_paren
 and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
-    when String.equal l i && List.is_empty arg.pexp_attributes ->
+    when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
   | ( (Labelled l | Optional l)
     , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
-    when String.equal l i
+    when String.equal l.txt i
          && List.is_empty arg.pexp_attributes
          && Ocaml_version.(
               compare c.conf.opr_opts.ocaml_version.v Releases.v4_14_0 >= 0 )
@@ -1964,11 +1965,21 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let args_before = List.rev rev_args_before in
           let xlast_arg = sub_exp ~ctx eN1 in
           let args =
+            let begin_arg_loc =
+              match lbl with
+              | Nolabel -> eN1.pexp_loc
+              | Optional x | Labelled x -> x.loc
+            in
             let break_body =
               match eN1_body.pexp_desc with
               | Pexp_function _ -> fmt "@ "
               | _ ->
-                  if c.conf.fmt_opts.ocp_indent_compat.v then fmt "@ "
+                  if c.conf.fmt_opts.ocp_indent_compat.v then
+                    if
+                      Source.begins_line ~ignore_spaces:true c.source
+                        begin_arg_loc
+                    then break 1 2
+                    else fmt "@ "
                   else fmt "@;<1 2>"
             in
             let wrap_intro x =

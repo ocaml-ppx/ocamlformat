@@ -69,3 +69,23 @@ let foooooooooooooooooooooooooooooooo =
       | Tpat_variant (lab', Some arg, _) when lab = lab' -> (p, arg :: rem)
       | Tpat_any -> (p, omega :: rem)
       | _ -> raise NoMatch )
+
+let x =
+  some_fun________________________________
+    some_arg______________________________ (fun param ->
+      do_something () ; do_something_else () ; return_this_value )
+
+let x =
+  some_fun________________________________
+    some_arg______________________________ ~f:(fun param ->
+      do_something () ; do_something_else () ; return_this_value )
+
+let x =
+  some_value
+  |> some_fun (fun x ->
+         do_something () ; do_something_else () ; return_this_value )
+
+let x =
+  some_value
+  ^ some_fun (fun x ->
+        do_something () ; do_something_else () ; return_this_value )
