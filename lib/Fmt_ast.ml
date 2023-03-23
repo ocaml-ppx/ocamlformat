@@ -1900,7 +1900,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let args =
             let begin_arg_loc =
               match lbl with
-              | Nolabel -> pexp_loc
+              | Nolabel -> eN1.pexp_loc
               | Optional x | Labelled x -> x.loc
             in
             let break_body =
