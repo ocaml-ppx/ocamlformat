@@ -28,8 +28,8 @@ module Layout_cache = struct
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
-      | Labelled label -> List [Atom "Labelled"; sexp_of_string label]
-      | Optional label -> List [Atom "Optional"; sexp_of_string label]
+      | Labelled label -> List [Atom "Labelled"; sexp_of_string label.txt]
+      | Optional label -> List [Atom "Optional"; sexp_of_string label.txt]
 
     let sexp_of_t = function
       | Arg (label, expression) ->

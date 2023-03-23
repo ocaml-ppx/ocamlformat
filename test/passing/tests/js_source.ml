@@ -7625,6 +7625,34 @@ let x =
     ^ "Yet another string _________")
 ;;
 
+let x =
+  some_fun________________________________
+    some_arg______________________________ (fun param ->
+    do_something ();
+    do_something_else ();
+    return_this_value)
+
+let x =
+  some_fun________________________________
+    some_arg______________________________ ~f:(fun param ->
+    do_something ();
+    do_something_else ();
+    return_this_value)
+
+let x =
+  some_value
+  |> some_fun (fun x ->
+       do_something ();
+       do_something_else ();
+       return_this_value)
+
+let x =
+  some_value
+  ^ some_fun (fun x ->
+      do_something ();
+      do_something_else ();
+      return_this_value)
+
 let bind t ~f =
   unfold_step
     ~f:(function
