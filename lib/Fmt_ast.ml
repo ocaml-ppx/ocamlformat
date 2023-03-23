@@ -161,6 +161,18 @@ module Break = struct
     else break 1 2
 end
 
+module Box = struct
+  let _ocp a b c k = if c.conf.fmt_opts.ocp_indent_compat.v then a k else b k
+
+  let fun_decl = _ocp (hvbox 2) (hovbox 4)
+
+  let fun_args c k =
+    hvbox_if
+      ( (not c.conf.fmt_opts.wrap_fun_args.v)
+      && not c.conf.fmt_opts.ocp_indent_compat.v )
+      0 k
+end
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -2204,16 +2216,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
            ~offset_closing_paren:(-2)
            ( hovbox 2
-               ( hovbox 4
+               ( Box.fun_decl c
                    ( str "fun"
                    $ fmt_extension_suffix c ext
                    $ str " "
                    $ fmt_attributes c pexp_attributes ~suf:" "
-                   $ hvbox_if
-                       (not c.conf.fmt_opts.wrap_fun_args.v)
-                       0 (fmt_fun_args c xargs)
-                   $ fmt_opt fmt_cstr $ fmt "@ " )
-               $ str "->" $ pre_body )
+                   $ Box.fun_args c (fmt_fun_args c xargs)
+                   $ fmt_opt fmt_cstr )
+               $ fmt "@ " $ str "->" $ pre_body )
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
       let indent = Params.function_indent c.conf ~parens ~xexp in

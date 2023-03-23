@@ -7908,3 +7908,10 @@ let _ =
       | Foooooooooooooooooooo -> foooooooooooooooooooo
       | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
+
+let _ =
+  let x = x in
+  fun foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo
+      foooooooooooooooooo foooooooooooooooooo ->
+    ()
+;;
