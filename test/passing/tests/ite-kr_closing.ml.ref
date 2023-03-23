@@ -213,3 +213,12 @@ let _ =
   else
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
   xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+
+let _ =
+  if
+    (* foooooooooooooooooooooooooooooooooooooooooo *)
+    foooooooooooooooooooooooooooooooooooooooooo
+  then
+    foooooooooooooooooooooooooooooooooooooooooo
+  else
+    foooooooooooooooooooooooooooooooooooooooooo

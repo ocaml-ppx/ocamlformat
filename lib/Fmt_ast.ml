@@ -2282,7 +2282,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                fmt_extension_suffix c ext ) )
                         ~fmt_attributes:
                           (fmt_attributes c ~pre:Blank pexp_attributes)
-                        ~fmt_cond:(fmt_expression c)
+                        ~fmt_cond:(fmt_expression ~box:false c)
                     in
                     parens_prev_bch := parens_bch ;
                     p.box_branch
