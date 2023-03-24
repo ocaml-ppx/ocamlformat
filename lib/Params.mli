@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 open Extended_ast
+open Asttypes
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
@@ -34,6 +35,13 @@ module Exp : sig
     -> parens:bool
     -> Fmt.t
     -> Fmt.t
+end
+
+module Mod : sig
+  type args =
+    {dock: bool  (** Whether each argument [pro] should be docked. *)}
+
+  val get_args : Conf.t -> functor_parameter loc list -> args
 end
 
 val get_or_pattern_sep :

@@ -77,14 +77,16 @@ let empty =
   ; esp= noop
   ; epi= None }
 
-let compose_module ?pro ?epi ({opn; psp; bdy; cls; esp; _} as blk) ~f =
-  f
-    ( fmt_opt opn $ fmt_opt pro $ fmt_opt blk.pro $ psp $ bdy $ cls $ esp
-    $ fmt_opt blk.epi )
-  $ fmt_opt epi
+let blk_box ?(box = true) blk k =
+  match blk.opn with Some opn -> wrap_if_k box opn blk.cls k | None -> k
 
-let blk_box blk k =
-  match blk.opn with Some opn -> wrap_k opn blk.cls k | None -> k
+let compose_module' ?box ?pro ?epi ({psp; bdy; esp; _} as blk) =
+  ( blk_box ?box blk (fmt_opt pro $ (fmt_opt blk.pro $ psp $ bdy)) $ esp
+  , fmt_opt blk.epi $ fmt_opt epi )
+
+let compose_module ?box ?pro ?epi blk ~f =
+  let bdy, epi' = compose_module' ?box ?pro blk in
+  f (bdy $ epi') $ fmt_opt epi
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
@@ -3665,17 +3667,6 @@ and fmt_class_exprs ?ext c ctx cls =
 
 and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty attributes ~rec_flag =
-  let arg_blks =
-    List.map xargs ~f:(fun {loc; txt} ->
-        let txt =
-          match txt with
-          | Unit -> `Unit
-          | Named (name, mt) ->
-              let xmt = sub_mty ~ctx mt in
-              `Named (name, fmt_module_type c xmt)
-        in
-        {loc; txt} )
-  in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
         let blk = fmt_module_type c xmty in
@@ -3685,32 +3676,39 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let box_t = blk_box blk_t in
-  let box_b = blk_box blk_b in
-  let fmt_arg ~prev:_ arg_mtyp ~next =
-    let maybe_box k =
-      match arg_mtyp.txt with
-      | `Named (_, {pro= None; _}) -> hvbox 0 k
-      | _ -> k
-    in
-    fmt "@ "
-    $ maybe_box
-        (Cmts.fmt c arg_mtyp.loc
-           (wrap "(" ")"
-              ( match arg_mtyp.txt with
-              | `Unit -> noop
-              | `Named (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
-                  (* TODO: handle opn *)
-                  fmt_str_loc_opt c name $ str " : "
-                  $ opt pro (fun pro -> pro $ close_box)
-                  $ psp $ bdy
-                  $ fmt_if_k (Option.is_some pro) cls
-                  $ esp
-                  $ ( match next with
-                    | Some {txt= `Named (_, {opn; pro= Some _; _}); _} ->
-                        fmt_opt opn $ open_hvbox 0
-                    | _ -> noop )
-                  $ fmt_opt epi ) ) )
+  let fmt_name_and_mt ~pro ~loc name mt =
+    let xmt = sub_mty ~ctx mt in
+    let blk = fmt_module_type c xmt in
+    let pro =
+      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_str_loc_opt c name
+      $ str " : "
+    and epi = str ")" $ Cmts.fmt_after c loc in
+    compose_module' ~box:false ~pro ~epi blk
+  in
+  let args_p = Params.Mod.get_args c.conf xargs in
+  (* Carry the [epi] to be placed in the next argument's box. *)
+  let fmt_arg ~pro {loc; txt} =
+    match txt with
+    | Unit -> (pro $ fmt "@ " $ Cmts.fmt c loc (str "()"), noop)
+    | Named (name, mt) ->
+        if args_p.dock then
+          (* All signatures, put the [epi] into the box of the next arg and
+             don't break. *)
+          fmt_name_and_mt ~pro:(pro $ str " ") ~loc name mt
+        else
+          let bdy, epi = fmt_name_and_mt ~pro:noop ~loc name mt in
+          (pro $ fmt "@;<1 4>" $ hvbox 0 bdy $ epi, noop)
+  in
+  let rec fmt_args ~pro = function
+    | [] -> pro
+    | hd :: tl ->
+        let bdy, epi = fmt_arg ~pro hd in
+        bdy $ fmt_args ~pro:epi tl
+  in
+  let intro =
+    str keyword
+    $ fmt_extension_suffix c ext
+    $ fmt_if rec_flag " rec" $ str " " $ fmt_str_loc_opt c name
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> Mod.is_simple x.ast)
@@ -3728,24 +3726,11 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
   hvbox
     (if compact then 0 else 2)
     ( doc_before
-    $ box_b
+    $ blk_box blk_b
         ( (if Option.is_some blk_t.epi then hovbox else hvbox)
             0
-            ( box_t
-                ( hvbox_if
-                    (Option.is_some blk_t.pro)
-                    0
-                    ( ( match arg_blks with
-                      | {txt= `Named (_, {opn; pro= Some _; _}); _} :: _ ->
-                          fmt_opt opn $ open_hvbox 0
-                      | _ -> noop )
-                    $ hvbox 4
-                        ( str keyword
-                        $ fmt_extension_suffix c ext
-                        $ fmt_if rec_flag " rec" $ str " "
-                        $ fmt_str_loc_opt c name $ list_pn arg_blks fmt_arg
-                        )
-                    $ fmt_opt blk_t.pro )
+            ( blk_box blk_t
+                ( hvbox 0 (fmt_args ~pro:intro xargs $ fmt_opt blk_t.pro)
                 $ blk_t.psp $ blk_t.bdy )
             $ blk_t.esp $ fmt_opt blk_t.epi
             $ fmt_if (Option.is_some xbody) " ="

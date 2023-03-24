@@ -76,6 +76,22 @@ module Exp = struct
       | `No -> wrap "(" ")" k
 end
 
+module Mod = struct
+  type args = {dock: bool}
+
+  let arg_is_sig arg =
+    match arg.txt with
+    | Named
+        ( _
+        , { pmty_desc=
+              Pmty_signature _ | Pmty_typeof {pmod_desc= Pmod_structure _; _}
+          ; _ } ) ->
+        true
+    | _ -> false
+
+  let get_args (_c : Conf.t) args = {dock= List.for_all ~f:arg_is_sig args}
+end
+
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
   let nspaces = if cmts_before then 1000 else 1 in
