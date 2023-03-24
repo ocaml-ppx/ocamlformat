@@ -15,6 +15,8 @@ open Asttypes
 open Fmt
 open Ast
 
+let ocp c = c.Conf.fmt_opts.ocp_indent_compat.v
+
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
@@ -77,7 +79,7 @@ module Exp = struct
 end
 
 module Mod = struct
-  type args = {dock: bool}
+  type args = {dock: bool; arg_psp: Fmt.t; indent: int}
 
   let arg_is_sig arg =
     match arg.txt with
@@ -89,7 +91,14 @@ module Mod = struct
         true
     | _ -> false
 
-  let get_args (_c : Conf.t) args = {dock= List.for_all ~f:arg_is_sig args}
+  let get_args (c : Conf.t) args =
+    let indent, psp_indent = if ocp c then (2, 2) else (0, 4) in
+    let dock =
+      if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
+      else List.for_all ~f:arg_is_sig args
+    in
+    let arg_psp = if dock then str " " else break 1 psp_indent in
+    {dock; arg_psp; indent}
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)

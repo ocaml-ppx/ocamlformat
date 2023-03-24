@@ -3688,16 +3688,17 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
   let args_p = Params.Mod.get_args c.conf xargs in
   (* Carry the [epi] to be placed in the next argument's box. *)
   let fmt_arg ~pro {loc; txt} =
+    let pro = pro $ args_p.arg_psp in
     match txt with
-    | Unit -> (pro $ fmt "@ " $ Cmts.fmt c loc (str "()"), noop)
+    | Unit -> (pro $ Cmts.fmt c loc (str "()"), noop)
     | Named (name, mt) ->
         if args_p.dock then
           (* All signatures, put the [epi] into the box of the next arg and
              don't break. *)
-          fmt_name_and_mt ~pro:(pro $ str " ") ~loc name mt
+          fmt_name_and_mt ~pro ~loc name mt
         else
           let bdy, epi = fmt_name_and_mt ~pro:noop ~loc name mt in
-          (pro $ fmt "@;<1 4>" $ hvbox 0 bdy $ epi, noop)
+          (pro $ hvbox 0 bdy $ epi, noop)
   in
   let rec fmt_args ~pro = function
     | [] -> pro
@@ -3730,7 +3731,8 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
         ( (if Option.is_some blk_t.epi then hovbox else hvbox)
             0
             ( blk_box blk_t
-                ( hvbox 0 (fmt_args ~pro:intro xargs $ fmt_opt blk_t.pro)
+                ( hvbox args_p.indent
+                    (fmt_args ~pro:intro xargs $ fmt_opt blk_t.pro)
                 $ blk_t.psp $ blk_t.bdy )
             $ blk_t.esp $ fmt_opt blk_t.epi
             $ fmt_if (Option.is_some xbody) " ="

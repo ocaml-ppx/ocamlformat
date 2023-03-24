@@ -39,7 +39,9 @@ end
 
 module Mod : sig
   type args =
-    {dock: bool  (** Whether each argument [pro] should be docked. *)}
+    { dock: bool  (** Whether each argument [pro] should be docked. *)
+    ; arg_psp: Fmt.t  (** Break before every arguments. *)
+    ; indent: int }
 
   val get_args : Conf.t -> functor_parameter loc list -> args
 end
