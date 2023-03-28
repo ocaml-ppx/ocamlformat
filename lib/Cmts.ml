@@ -584,7 +584,7 @@ module Ocp_indent_compat = struct
       (Poly.(pos = After) && String.contains cmt.txt '\n')
       (break_unless_newline 1000 0)
     $ wrap "(*" "*)"
-      @@ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "\n")
+      @@ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "@\n")
       @@ doc
 end
 
