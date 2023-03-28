@@ -7781,3 +7781,9 @@ end
 
 (*
    *)
+
+(**
+   xxx
+*)
+include S1
+(** @inline *)
