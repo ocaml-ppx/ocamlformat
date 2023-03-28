@@ -112,7 +112,7 @@ let make_mapper conf ~ignore_doc_comments =
         List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
       else atrs
     in
-    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
+    Ast_mapper.default_mapper.attributes m atrs |> sort_attributes
   in
   let repl_phrase (m : Ast_mapper.mapper) {prepl_phrase; prepl_output} =
     let p =
