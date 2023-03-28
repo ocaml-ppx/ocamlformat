@@ -589,11 +589,6 @@ module Ocp_indent_compat = struct
 end
 
 let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
-  let cmt =
-    (* Windows compatibility *)
-    let filter = function '\r' -> false | _ -> true in
-    Cmt.create (String.filter cmt.txt ~f:filter) cmt.loc
-  in
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
@@ -615,18 +610,23 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
         | Error (`Msg _) -> `Unwrapped (cmt, None) )
     | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
     | _ -> (
-      match Asterisk_prefixed.split cmt with
-      | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-      (* Comments like [(*\n*)] would be normalized as [(* *)] *)
-      | [""; ""] when conf.fmt_opts.ocp_indent_compat.v ->
-          `Unwrapped (cmt, None)
-      | [""; ""] -> `Verbatim " "
-      | [text] when conf.fmt_opts.wrap_comments.v -> `Wrapped (text, "*)")
-      | [text; ""] when conf.fmt_opts.wrap_comments.v ->
-          `Wrapped (text, " *)")
-      | [_] -> `Unwrapped (cmt, None)
-      | [_; ""] -> `Unwrapped (cmt, Some `Ln)
-      | lines -> `Asterisk_prefixed lines )
+        let cmt =
+          (* Windows compatibility *)
+          let filter = function '\r' -> false | _ -> true in
+          Cmt.create (String.filter cmt.txt ~f:filter) cmt.loc
+        in
+        match Asterisk_prefixed.split cmt with
+        | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
+        (* Comments like [(*\n*)] would be normalized as [(* *)] *)
+        | [""; ""] when conf.fmt_opts.ocp_indent_compat.v ->
+            `Unwrapped (cmt, None)
+        | [""; ""] -> `Verbatim " "
+        | [text] when conf.fmt_opts.wrap_comments.v -> `Wrapped (text, "*)")
+        | [text; ""] when conf.fmt_opts.wrap_comments.v ->
+            `Wrapped (text, " *)")
+        | [_] -> `Unwrapped (cmt, None)
+        | [_; ""] -> `Unwrapped (cmt, Some `Ln)
+        | lines -> `Asterisk_prefixed lines )
   in
   let open Fmt in
   match mode with
