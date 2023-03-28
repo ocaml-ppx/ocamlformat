@@ -589,6 +589,11 @@ module Ocp_indent_compat = struct
 end
 
 let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
+  let cmt =
+    (* Windows compatibility *)
+    let filter = function '\r' -> false | _ -> true in
+    Cmt.create (String.filter cmt.txt ~f:filter) cmt.loc
+  in
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
