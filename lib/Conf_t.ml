@@ -114,7 +114,6 @@ type fmt_opts =
   ; space_around_records: bool elt
   ; space_around_variants: bool elt
   ; stritem_extension_indent: int elt
-  ; stritem_attributes_indent: bool elt
   ; type_decl: [`Compact | `Sparse] elt
   ; type_decl_indent: int elt
   ; wrap_comments: bool elt

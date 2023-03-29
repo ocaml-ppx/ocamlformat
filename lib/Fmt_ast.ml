@@ -1613,19 +1613,21 @@ and fmt_pat_cons c ~parens args =
   Params.Exp.Infix_op_arg.wrap c.conf ~parens ~parens_nested:false
     (list_fl groups fmt_op_arg_group)
 
-and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
-  let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
+and fmt_match c ?epi ~parens ?ext ctx xexp cs e0 keyword =
+  let ctx0 = xexp.ctx in
+  let indent = Params.match_indent c.conf ~parens ~ctx:ctx0 in
   hvbox indent
-    ( Params.Exp.wrap c.conf ~parens ~disambiguate:true
-    @@ Params.Align.match_ c.conf
-    @@ ( hvbox 0
-           ( str keyword
-           $ fmt_extension_suffix c ext
-           $ fmt_attributes c xexp.ast.pexp_attributes
-           $ fmt "@;<1 2>"
-           $ fmt_expression c (sub_exp ~ctx e0)
-           $ fmt "@ with" )
-       $ fmt "@ " $ fmt_cases c ctx cs ) )
+    ( fmt_opt epi
+    $ Params.Exp.wrap c.conf ~parens ~disambiguate:true
+      @@ Params.Align.match_ c.conf ~xexp
+      @@ ( hvbox 0
+             ( str keyword
+             $ fmt_extension_suffix c ext
+             $ fmt_attributes c xexp.ast.pexp_attributes
+             $ fmt "@;<1 2>"
+             $ fmt_expression c (sub_exp ~ctx e0)
+             $ fmt "@ with" )
+         $ fmt "@ " $ fmt_cases c ctx cs ) )
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; ctx= ctx0} as xexp) =
@@ -2353,8 +2355,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                | `No -> ")"
                | `Space -> " )"
                | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
-  | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
-  | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
+  | Pexp_match (e0, cs) ->
+      fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "match"
+  | Pexp_try (e0, cs) -> fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_parens = parens && has_attr in
       let inner_parens = true in
@@ -3065,9 +3068,6 @@ and fmt_value_description ?ext c ctx vd =
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
-  let attrs_indent =
-    if c.conf.fmt_opts.stritem_attributes_indent.v then 2 else 0
-  in
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
@@ -3087,7 +3087,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim "@;" fmt_val_prim )
-    $ fmt_item_attributes c ~pre:(Break (1, attrs_indent)) atrs
+    $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
     $ doc_after )
 
 and fmt_tydcl_params c ctx params =
@@ -4267,11 +4267,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
         , Cmts.fmt_after c lb_loc )
     | None ->
         let epi =
-          let indent =
-            if c.conf.fmt_opts.stritem_attributes_indent.v then indent else 0
-          in
-          fmt_item_attributes c ~pre:(Break (1, indent)) at_at_attrs
-          $ fmt_opt epi
+          fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
         in
         ( true
         , noop
