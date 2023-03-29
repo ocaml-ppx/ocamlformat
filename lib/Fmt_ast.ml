@@ -388,23 +388,8 @@ let virtual_or_override = function
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   assert (not (String.is_empty str_cmt)) ;
-  let fmt_parsed parsed =
-    fmt_if (String.starts_with_whitespace str_cmt) " "
-    $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
-    $ fmt_if
-        (String.length str_cmt > 1 && String.ends_with_whitespace str_cmt)
-        " "
-  in
-  let fmt_raw str_cmt = str str_cmt in
-  let doc =
-    match parsed with
-    | _ when not c.conf.fmt_opts.parse_docstrings.v -> fmt_raw str_cmt
-    | Ok parsed -> fmt_parsed parsed
-    | Error msgs ->
-        if not c.conf.opr_opts.quiet.v then
-          List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
-        fmt_raw str_cmt
-  in
+  let fmt_code = c.fmt_code c.conf in
+  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~input:str_cmt parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
@@ -4466,7 +4451,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d -> Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) d
+  | Documentation, d -> Fmt_odoc.fmt_ast ~fmt_code:(c.fmt_code c.conf) d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in

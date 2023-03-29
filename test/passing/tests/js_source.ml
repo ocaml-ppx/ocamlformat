@@ -7797,3 +7797,12 @@ let _ =
   match x with
   | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
   | _ -> false
+
+(*
+   *)
+
+(**
+   xxx
+*)
+include S1
+(** @inline *)

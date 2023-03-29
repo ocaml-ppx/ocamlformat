@@ -253,7 +253,9 @@ end
 
 (** @canonical Module.Foo.Bar *)
 
-(** {v a v} *)
+(** {v
+a
+    v} *)
 
 (** {[
       b
