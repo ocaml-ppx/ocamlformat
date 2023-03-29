@@ -110,6 +110,9 @@ let mkcf ~loc ?attrs ?docs d =
 
 let mkrhs rhs loc = mkloc rhs (make_loc loc)
 
+let mk_optional lbl loc = Optional (mkrhs lbl loc)
+let mk_labelled lbl loc = Labelled (mkrhs lbl loc)
+
 let push_loc x acc =
   if x.Location.loc_ghost
   then acc
@@ -1986,21 +1989,21 @@ seq_expr:
 ;
 labeled_simple_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
-      { (Optional (fst $3), $4, snd $3) }
+      { mk_optional (fst $3) $sloc, $4, snd $3 }
   | QUESTION label_var
-      { (Optional (fst $2), None, snd $2) }
+      { mk_optional (fst $2) $sloc, None, snd $2 }
   | OPTLABEL LPAREN let_pattern opt_default RPAREN
-      { (Optional $1, $4, $3) }
+      { mk_optional $1 $sloc, $4, $3 }
   | OPTLABEL pattern_var
-      { (Optional $1, None, $2) }
+      { mk_optional $1 $sloc, None, $2 }
   | TILDE LPAREN label_let_pattern RPAREN
-      { (Labelled (fst $3), None, snd $3) }
+      { mk_labelled (fst $3) $sloc, None, snd $3 }
   | TILDE label_var
-      { (Labelled (fst $2), None, snd $2) }
+      { mk_labelled (fst $2) $sloc, None, snd $2 }
   | LABEL simple_pattern
-      { (Labelled $1, None, $2) }
+      { mk_labelled $1 $sloc, None, $2 }
   | simple_pattern
-      { (Nolabel, None, $1) }
+      { Nolabel, None, $1 }
 ;
 
 pattern_var:
@@ -2244,20 +2247,21 @@ simple_expr:
 ;
 labeled_simple_expr:
     simple_expr %prec below_HASH
-      { (Nolabel, $1) }
+      { Nolabel, $1 }
   | LABEL simple_expr %prec below_HASH
-      { (Labelled $1, $2) }
+      { mk_labelled $1 $sloc, $2 }
   | TILDE label = LIDENT
       { let loc = $loc(label) in
-        (Labelled label, mkexpvar ~loc label) }
+        mk_labelled label $sloc, mkexpvar ~loc label }
   | TILDE LPAREN label = LIDENT ty = type_constraint RPAREN
-      { (Labelled label, mkexp_constraint ~loc:($startpos($2), $endpos)
-                           (mkexpvar ~loc:$loc(label) label) ty) }
+      { mk_labelled label $sloc,
+        mkexp_constraint ~loc:($startpos($2), $endpos)
+          (mkexpvar ~loc:$loc(label) label) ty }
   | QUESTION label = LIDENT
       { let loc = $loc(label) in
-        (Optional label, mkexpvar ~loc label) }
+        mk_optional label $sloc, mkexpvar ~loc label }
   | OPTLABEL simple_expr %prec below_HASH
-      { (Optional $1, $2) }
+      { mk_optional $1 $sloc, $2 }
 ;
 %inline lident_list:
   xs = mkrhs(LIDENT)+
@@ -3077,9 +3081,9 @@ function_type:
 ;
 %inline arg_label:
   | label = optlabel
-      { Optional label }
+      { mk_optional label $sloc }
   | label = LIDENT COLON
-      { Labelled label }
+      { mk_labelled label $sloc }
   | /* empty */
       { Nolabel }
 ;
