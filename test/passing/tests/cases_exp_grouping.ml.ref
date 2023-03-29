@@ -9,7 +9,7 @@ let _ =
     | C -> fooooooooooooo
     | D -> fooooooooooooo
   end
-  [@@ocamlformat "break-cases=fit"]
+[@@ocamlformat "break-cases=fit"]
 
 let _ =
   match x with
@@ -30,7 +30,7 @@ let _ =
     | D ->
         fooooooooooooo
     end
-  [@@ocamlformat "break-cases=nested"]
+[@@ocamlformat "break-cases=nested"]
 
 let _ =
   match x with
@@ -50,7 +50,7 @@ let _ =
     | C -> fooooooooooooo
     | D -> fooooooooooooo
   end
-  [@@ocamlformat "break-cases=toplevel"]
+[@@ocamlformat "break-cases=toplevel"]
 
 let _ =
   match x with
@@ -70,7 +70,7 @@ let _ =
     | C -> fooooooooooooo
     | D -> fooooooooooooo
   end
-  [@@ocamlformat "break-cases=fit-or-vertical"]
+[@@ocamlformat "break-cases=fit-or-vertical"]
 
 let _ =
   match x with
@@ -90,4 +90,4 @@ let _ =
     | C -> fooooooooooooo
     | D -> fooooooooooooo
   end
-  [@@ocamlformat "break-cases=all"]
+[@@ocamlformat "break-cases=all"]
