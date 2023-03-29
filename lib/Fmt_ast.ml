@@ -1628,19 +1628,21 @@ and fmt_pat_cons c ~parens args =
   Params.Exp.Infix_op_arg.wrap c.conf ~parens ~parens_nested:false
     (list_fl groups fmt_op_arg_group)
 
-and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
-  let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
+and fmt_match c ?epi ~parens ?ext ctx xexp cs e0 keyword =
+  let ctx0 = xexp.ctx in
+  let indent = Params.match_indent c.conf ~parens ~ctx:ctx0 in
   hvbox indent
-    ( Params.Exp.wrap c.conf ~parens ~disambiguate:true
-    @@ Params.Align.match_ c.conf
-    @@ ( hvbox 0
-           ( str keyword
-           $ fmt_extension_suffix c ext
-           $ fmt_attributes c xexp.ast.pexp_attributes
-           $ fmt "@;<1 2>"
-           $ fmt_expression c (sub_exp ~ctx e0)
-           $ fmt "@ with" )
-       $ fmt "@ " $ fmt_cases c ctx cs ) )
+    ( fmt_opt epi
+    $ Params.Exp.wrap c.conf ~parens ~disambiguate:true
+      @@ Params.Align.match_ c.conf ~xexp
+      @@ ( hvbox 0
+             ( str keyword
+             $ fmt_extension_suffix c ext
+             $ fmt_attributes c xexp.ast.pexp_attributes
+             $ fmt "@;<1 2>"
+             $ fmt_expression c (sub_exp ~ctx e0)
+             $ fmt "@ with" )
+         $ fmt "@ " $ fmt_cases c ctx cs ) )
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; ctx= ctx0} as xexp) =
@@ -2368,8 +2370,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                | `No -> ")"
                | `Space -> " )"
                | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
-  | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
-  | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
+  | Pexp_match (e0, cs) ->
+      fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "match"
+  | Pexp_try (e0, cs) -> fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_parens = parens && has_attr in
       let inner_parens = true in
