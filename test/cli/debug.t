@@ -7,7 +7,7 @@
   >     A.x
   > EOF
 
-  $ ocamlformat --debug a.ml
+  $ (ocamlformat --debug a.ml) 2>&1 | sed 's/\/.*\/\(.*\.boxes\.ml\)/<tmp>\/\1/'
   AST:
   Ptop_def
     [
@@ -35,6 +35,7 @@
         ]
     ]
   
+  [DEBUG] Box structure: <tmp>/a.boxes.ml
   AST:
   Ptop_def
     [
@@ -129,7 +130,7 @@
   > (* after let-binding *)
   > EOF
 
-  $ ocamlformat --debug a.ml
+  $ (ocamlformat --debug a.ml) 2>&1 | sed 's/\/.*\/\(.*\.boxes\.ml\)/<tmp>\/\1/'
   AST:
   Ptop_def
     [
@@ -182,6 +183,7 @@
         ]
     ]
   
+  [DEBUG] Box structure: <tmp>/a.boxes.ml
   AST:
   Ptop_def
     [
