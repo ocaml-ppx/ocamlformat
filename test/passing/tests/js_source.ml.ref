@@ -2363,8 +2363,8 @@ let inlineseq_from_astseq seq =
 ;;
 
 module Add (T : sig
-  type two
-end) =
+    type two
+  end) =
 struct
   type _ t =
     | One : [ `One ] t
@@ -2449,8 +2449,8 @@ let example6 : type a. a wrapPoly -> a -> int =
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
-  type 'a t
-end) =
+    type 'a t
+  end) =
 struct
   type _ ab =
     | A : int S.t ab
@@ -2464,8 +2464,8 @@ struct
 end
 
 module F (S : sig
-  type 'a t
-end) =
+    type 'a t
+  end) =
 struct
   type a = int * int
   type b = int -> int
@@ -2567,9 +2567,9 @@ let f : (int s, int t) eq -> unit = function
 ;;
 
 module M (S : sig
-  type 'a t = T of 'a
-  type 'a s = T of 'a
-end) =
+    type 'a t = T of 'a
+    type 'a s = T of 'a
+  end) =
 struct
   let f : ('a S.s, 'a S.t) eq -> unit = function
     | Refl -> ()
@@ -2605,11 +2605,13 @@ type (_, _) t =
   | A : ('a, 'a) t
   | B : string -> ('a, 'b) t
 
-module M (A : sig
-  module type T
-end) (B : sig
-  module type T
-end) =
+module M
+    (A : sig
+      module type T
+    end)
+    (B : sig
+      module type T
+    end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function
     | B s -> s
@@ -2807,8 +2809,8 @@ let f (type a) (Neq n : (a, a t) eq) = n
 (* warn! *)
 
 module F (T : sig
-  type _ t
-end) =
+    type _ t
+  end) =
 struct
   let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
@@ -4687,11 +4689,11 @@ let x = (3 : X2.F(DUMMY)(DUMMY).t)
 let x = (3 : X2.F(DUMMY)(DUMMY).t')
 
 module F (M : sig
-  type 'a t
-  type 'a u = string
+    type 'a t
+    type 'a u = string
 
-  val f : unit -> _ u t
-end) =
+    val f : unit -> _ u t
+  end) =
 struct
   let t = M.f ()
 end
@@ -4741,11 +4743,12 @@ end
 let f (module M : S with type t = int) = { M.a = 0 }
 let flag = ref false
 
-module F (S : sig
-  module type T
-end)
-(A : S.T)
-(B : S.T) =
+module F
+    (S : sig
+      module type T
+    end)
+    (A : S.T)
+    (B : S.T) =
 struct
   module X = (val if !flag then (module A) else (module B) : S.T)
 end
@@ -4955,8 +4958,8 @@ module type S = sig
 end
 
 module Foo
-  (Bar : S with type a = private [> `A ])
-  (Baz : S with type b = private < b : Bar.b ; .. >) =
+    (Bar : S with type a = private [> `A ])
+    (Baz : S with type b = private < b : Bar.b ; .. >) =
 struct end
 
 module A = struct
@@ -4988,11 +4991,13 @@ let _ = f (module A_alias_expanded) (* ok *)
 let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 let _ = f (module A_alias) (* doesn't type either *)
 
-module Foo (Bar : sig
-  type a = private [> `A ]
-end) (Baz : module type of struct
-  include Bar
-end) =
+module Foo
+    (Bar : sig
+      type a = private [> `A ]
+    end)
+    (Baz : module type of struct
+      include Bar
+    end) =
 struct end
 
 module Bazoinks = struct
@@ -5007,8 +5012,8 @@ type (_, _) eq = Eq : ('a, 'a) eq
 let cast : type a b. (a, b) eq -> a -> b = fun Eq x -> x
 
 module Fix (F : sig
-  type 'a f
-end) =
+    type 'a f
+  end) =
 struct
   type 'a fix = ('a, 'a F.f) eq
 
@@ -5530,8 +5535,8 @@ C.one.Complex.re
 include C
 
 module F (X : sig
-  module C = Char
-end) =
+    module C = Char
+  end) =
 struct
   module C = X.C
 end
@@ -5590,11 +5595,13 @@ module M = struct
   type t = Y.t
 end
 
-module F (Y : sig
-  type t
-end) (M : sig
-  type t = Y.t
-end) =
+module F
+    (Y : sig
+      type t
+    end)
+    (M : sig
+      type t = Y.t
+    end) =
 struct end
 
 module G = F (M.Y)
@@ -6675,8 +6682,8 @@ class ['a] s3object r : ['a] s3 =
   end
 
 module M (T : sig
-  type t
-end) =
+    type t
+  end) =
 struct
   type t = private { t : T.t }
 end
@@ -7130,8 +7137,9 @@ type 'a tree =
   | E
   | N of 'a tree * 'a * 'a tree
 
-module Bootstrap2 (MakeDiet : functor (X : ORD) ->
-  SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
+module Bootstrap2
+    (MakeDiet : functor (X : ORD) -> SET with type t = X.t tree and type elt = X.t) :
+  SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7562,9 +7570,9 @@ module type HEAP = sig
   val deleteMin : heap -> heap
 end
 
-module Bootstrap (MakeH : functor (Element : ORDERED) ->
-  HEAP with module Elem = Element)
-(Element : ORDERED) : HEAP with module Elem = Element = struct
+module Bootstrap
+    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+    (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
@@ -7796,8 +7804,8 @@ and Coerce3 : sig end = struct end
 let _ = test 81 (Coerce2.f1 ()) 1
 
 module Coerce4 (A : sig
-  val f : int -> int
-end) =
+    val f : int -> int
+  end) =
 struct
   let x = 0
   let at a = A.f a
@@ -7844,8 +7852,8 @@ let _ =
 
 (* PR#4316 *)
 module G (S : sig
-  val x : int Lazy.t
-end) =
+    val x : int Lazy.t
+  end) =
 struct
   include S
 end
@@ -7938,8 +7946,8 @@ module type S = sig
 end
 
 module F (X : sig
-  val x : (module S)
-end) =
+    val x : (module S)
+  end) =
 struct
   module A = (val X.x)
 end
@@ -8288,11 +8296,11 @@ module M = struct
 end
 
 module type S = sig
-  module M : sig
-    type t
+    module M : sig
+      type t
+    end
   end
-end
-with module M = M
+  with module M = M
 
 module type Printable = sig
   type t
@@ -8365,9 +8373,9 @@ end
 module type S' = S with module T := M
 
 module type S = sig
-  type 'a t
-end
-with type 'a t := unit
+    type 'a t
+  end
+  with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =
