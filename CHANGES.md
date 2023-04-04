@@ -6,6 +6,7 @@
 
 ### Bug fixes
 
+- Improve formatting of module arguments (#2322, @Julow)
 - Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
