@@ -94,6 +94,8 @@ module Mod = struct
   let get_args (c : Conf.t) args =
     let indent, psp_indent = if ocp c then (2, 2) else (0, 4) in
     let dock =
+      (* ocp-indent-compat: Dock only one argument to avoid alignment of
+         subsequent arguments. *)
       if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
       else List.for_all ~f:arg_is_sig args
     in
