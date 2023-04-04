@@ -3,6 +3,6 @@
  (deps %{bin:ocamlformat}))
 
 (cram
- (applies_to large_string conf removed_option repl_file_errors)
+ (applies_to large_string conf removed_option repl_file_errors debug)
  (enabled_if
   (<> %{os_type} Win32)))

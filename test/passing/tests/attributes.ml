@@ -26,13 +26,13 @@ type t =
         (** docstring that is long enough to break *) }
 
 val foo : int
-  [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
+[@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
 
 val foo : int
-  [@@deprecated "it is good the salad"]
-  [@@warning "-32"]
-  [@@warning "-99"]
-  [@@some long comment]
+[@@deprecated "it is good the salad"]
+[@@warning "-32"]
+[@@warning "-99"]
+[@@some long comment]
 
 type t = A of int [@attr] | B of (float[@attr]) | C [@attr]
 
@@ -423,8 +423,8 @@ let[@a
 
 let raise_length_mismatch name n1 n2 =
   invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
-  [@@cold] [@@inline never] [@@local never] [@@specialise never]
+[@@cold] [@@inline never] [@@local never] [@@specialise never]
 
 external unsafe_memset : t -> pos:int -> len:int -> char -> unit
   = "bigstring_memset_stub"
-  [@@noalloc]
+[@@noalloc]

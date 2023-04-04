@@ -1,10 +1,14 @@
 {0 Editor setup}
 
-{1 Disable outside project}
+{1 Enable formatting outside project}
 
-As mentioned in {!getting_started.options}, when the option [--disable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a [.git] or [.hg] or [dune-project] file. If no configuration file is found, then the formatting is disabled.
+OCamlFormat detects your current project if there is a [.git], a [.hg] or a [dune-project] file in one of the ancestry directories.
 
-This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
+By default, when the option [--enable-outside-detected-project] is not set, [.ocamlformat] files outside of the current project (including the one in [XDG_CONFIG_HOME]) are not read. If no configuration file is found, then the formatting is disabled.
+
+This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor.
+
+If however you wish to format files that stand clear of any project you will need to pass the option [--enable-outside-detected-project].
 
 {1 Emacs setup}
 
@@ -19,11 +23,11 @@ This feature is often the behavior you can expect from OCamlFormat when it is di
   (add-hook 'before-save-hook #'ocamlformat-before-save)))
 ]}
 
-To pass the option [--disable-outside-detected-project] (or [--disable]) to OCamlFormat:
+To pass the option [--enable-outside-detected-project] (or [--disable]) to OCamlFormat:
 - run [emacs]
 - run [M-x customize-group⏎] then enter [ocamlformat⏎]
 - select the Ocamlformat Enable item
-- select the OCamlformat mode in the Value Menu: [Enable] (by default), [Disable] or [Disable outside detected project]
+- select the OCamlformat mode in the Value Menu: [Enable] (by default), [Disable] or [Enable outside detected project]
 - save the buffer ([C-x C-s]) then enter [yes⏎] and exit
 
 Other OCamlFormat options can be set in .ocamlformat configuration files.
@@ -75,7 +79,7 @@ This could be made simpler (by defining an elisp variable corresponding to the s
 
 - install the {{:https://github.com/sbdchd/neoformat#install}Neoformat} plugin
 
-Optional: You can change the options passed to OCamlFormat (to use the option [--disable-outside-detected-project] for example), you can {{:https://github.com/sbdchd/neoformat#config-optional}customize NeoFormat} with:
+Optional: You can change the options passed to OCamlFormat (to use the option [--enable-outside-detected-project] for example), you can {{:https://github.com/sbdchd/neoformat#config-optional}customize NeoFormat} with:
 
 {[
 let g:opambin = substitute(system('opam config var bin'),'\n$','','''')
@@ -83,7 +87,7 @@ let g:neoformat_ocaml_ocamlformat = {
             \ 'exe': g:opambin . '/ocamlformat',
             \ 'no_append': 1,
             \ 'stdin': 1,
-            \ 'args': ['--disable-outside-detected-project', '--name', '"%:p"', '-']
+            \ 'args': ['--enable-outside-detected-project', '--name', '"%:p"', '-']
             \ }
 
 let g:neoformat_enabled_ocaml = ['ocamlformat']

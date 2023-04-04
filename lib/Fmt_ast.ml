@@ -390,23 +390,8 @@ let virtual_or_override = function
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   assert (not (String.is_empty str_cmt)) ;
-  let fmt_parsed parsed =
-    fmt_if (String.starts_with_whitespace str_cmt) " "
-    $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
-    $ fmt_if
-        (String.length str_cmt > 1 && String.ends_with_whitespace str_cmt)
-        " "
-  in
-  let fmt_raw str_cmt = str str_cmt in
-  let doc =
-    match parsed with
-    | _ when not c.conf.fmt_opts.parse_docstrings.v -> fmt_raw str_cmt
-    | Ok parsed -> fmt_parsed parsed
-    | Error msgs ->
-        if not c.conf.opr_opts.quiet.v then
-          List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
-        fmt_raw str_cmt
-  in
+  let fmt_code = c.fmt_code c.conf in
+  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~input:str_cmt parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
@@ -1630,19 +1615,21 @@ and fmt_pat_cons c ~parens args =
   Params.Exp.Infix_op_arg.wrap c.conf ~parens ~parens_nested:false
     (list_fl groups fmt_op_arg_group)
 
-and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
-  let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
+and fmt_match c ?epi ~parens ?ext ctx xexp cs e0 keyword =
+  let ctx0 = xexp.ctx in
+  let indent = Params.match_indent c.conf ~parens ~ctx:ctx0 in
   hvbox indent
-    ( Params.Exp.wrap c.conf ~parens ~disambiguate:true
-    @@ Params.Align.match_ c.conf
-    @@ ( hvbox 0
-           ( str keyword
-           $ fmt_extension_suffix c ext
-           $ fmt_attributes c xexp.ast.pexp_attributes
-           $ fmt "@;<1 2>"
-           $ fmt_expression c (sub_exp ~ctx e0)
-           $ fmt "@ with" )
-       $ fmt "@ " $ fmt_cases c ctx cs ) )
+    ( fmt_opt epi
+    $ Params.Exp.wrap c.conf ~parens ~disambiguate:true
+      @@ Params.Align.match_ c.conf ~xexp
+      @@ ( hvbox 0
+             ( str keyword
+             $ fmt_extension_suffix c ext
+             $ fmt_attributes c xexp.ast.pexp_attributes
+             $ fmt "@;<1 2>"
+             $ fmt_expression c (sub_exp ~ctx e0)
+             $ fmt "@ with" )
+         $ fmt "@ " $ fmt_cases c ctx cs ) )
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; ctx= ctx0} as xexp) =
@@ -2370,8 +2357,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                | `No -> ")"
                | `Space -> " )"
                | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
-  | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
-  | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
+  | Pexp_match (e0, cs) ->
+      fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "match"
+  | Pexp_try (e0, cs) -> fmt_match c ?epi ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_parens = parens && has_attr in
       let inner_parens = true in
@@ -3082,9 +3070,6 @@ and fmt_value_description ?ext c ctx vd =
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
-  let attrs_indent =
-    if c.conf.fmt_opts.stritem_attributes_indent.v then 2 else 0
-  in
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
@@ -3104,7 +3089,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim "@;" fmt_val_prim )
-    $ fmt_item_attributes c ~pre:(Break (1, attrs_indent)) atrs
+    $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
     $ doc_after )
 
 and fmt_tydcl_params c ctx params =
@@ -4269,11 +4254,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
         , Cmts.fmt_after c lb_loc )
     | None ->
         let epi =
-          let indent =
-            if c.conf.fmt_opts.stritem_attributes_indent.v then indent else 0
-          in
-          fmt_item_attributes c ~pre:(Break (1, indent)) at_at_attrs
-          $ fmt_opt epi
+          fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
         in
         ( true
         , noop
@@ -4457,7 +4438,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d -> Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) d
+  | Documentation, d -> Fmt_odoc.fmt_ast ~fmt_code:(c.fmt_code c.conf) d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in

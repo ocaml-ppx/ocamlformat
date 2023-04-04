@@ -59,6 +59,7 @@ module Exp = struct
             ->
               true
           | _ -> false )
+        | Pexp_match _ | Pexp_try _ -> true
         | _ -> false
   end
 
@@ -553,9 +554,12 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
 
-let match_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
+let match_indent ?(default = 0) (c : Conf.t) ~parens ~(ctx : Ast.t) =
   match (c.fmt_opts.match_indent_nested.v, ctx) with
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.fmt_opts.match_indent.v
+  | _, Exp {pexp_desc= Pexp_infix _; _}
+    when c.fmt_opts.ocp_indent_compat.v && parens ->
+      2 (* Match is docked *)
   | _ -> default
 
 let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
@@ -587,7 +591,16 @@ module Align = struct
 
   let infix_op = general
 
-  let match_ = general
+  let match_ (c : Conf.t) ~xexp:{ast; ctx} t =
+    (* Matches on the RHS of an infix are docked in ocp-indent-compat. *)
+    let docked =
+      match ctx with
+      | Exp {pexp_desc= Pexp_infix (_, _, rhs); _} when phys_equal rhs ast ->
+          c.fmt_opts.ocp_indent_compat.v
+      | _ -> false
+    in
+    let align = (not c.fmt_opts.align_symbol_open_paren.v) && not docked in
+    hvbox_if align 0 t
 
   let function_ (c : Conf.t) ~parens ~(ctx0 : Ast.t) ~self t =
     let align =

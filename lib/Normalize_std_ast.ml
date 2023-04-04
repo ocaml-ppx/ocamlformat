@@ -105,7 +105,7 @@ let make_mapper conf ~ignore_doc_comments =
         List.filter atrs ~f:(fun a -> not (is_doc a))
       else atrs
     in
-    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
+    Ast_mapper.default_mapper.attributes m atrs |> sort_attributes
   in
   let expr (m : Ast_mapper.mapper) exp =
     let exp = {exp with pexp_loc_stack= []} in
@@ -187,7 +187,7 @@ let make_docstring_mapper docstrings =
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =
     let atrs = List.filter atrs ~f:is_doc in
-    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
+    Ast_mapper.default_mapper.attributes m atrs |> sort_attributes
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
