@@ -7945,3 +7945,12 @@ val fooooooooooooooooooooooooooooooo
   : ( fooooooooooooooooooooooooooooooo
     , fooooooooooooooooooooooooooooooo )
       fooooooooooooooooooooooooooooooo
+
+(*
+   *)
+
+(**
+   xxx
+*)
+include S1
+(** @inline *)

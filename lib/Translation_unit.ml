@@ -275,10 +275,13 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       in
       (contents, cmts_t)
     in
-    if conf.opr_opts.debug.v then
-      format ~box_debug:true |> fst
-      |> dump_formatted ~suffix:".boxes"
-      |> (ignore : string option -> unit) ;
+    ( if conf.opr_opts.debug.v then
+        format ~box_debug:true |> fst
+        |> dump_formatted ~suffix:".boxes"
+        |> function
+        | Some file ->
+            if i = 1 then Format.eprintf "[DEBUG] Box structure: %s\n" file
+        | None -> () ) ;
     let fmted, cmts_t = format ~box_debug:false in
     let conf =
       if conf.opr_opts.debug.v then conf

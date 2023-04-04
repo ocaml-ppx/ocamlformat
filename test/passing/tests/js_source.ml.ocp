@@ -2610,11 +2610,13 @@ type (_, _) t =
   | A : ('a, 'a) t
   | B : string -> ('a, 'b) t
 
-module M (A : sig
-    module type T
-  end) (B : sig
-          module type T
-        end) =
+module M
+    (A : sig
+       module type T
+     end)
+    (B : sig
+       module type T
+     end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function
     | B s -> s
@@ -2868,8 +2870,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(*  val comp_subst :
-    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(* val comp_subst :
+   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -2964,7 +2966,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-(*  val subst' : 'a ealist -> 'a term -> 'a term *)
+(* val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -4746,9 +4748,10 @@ end
 let f (module M : S with type t = int) = { M.a = 0 }
 let flag = ref false
 
-module F (S : sig
-    module type T
-  end)
+module F
+    (S : sig
+       module type T
+     end)
     (A : S.T)
     (B : S.T) =
 struct
@@ -4993,11 +4996,13 @@ let _ = f (module A_alias_expanded) (* ok *)
 let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 let _ = f (module A_alias) (* doesn't type either *)
 
-module Foo (Bar : sig
-    type a = private [> `A ]
-  end) (Baz : module type of struct
-          include Bar
-        end) =
+module Foo
+    (Bar : sig
+       type a = private [> `A ]
+     end)
+    (Baz : module type of struct
+       include Bar
+     end) =
 struct end
 
 module Bazoinks = struct
@@ -5595,11 +5600,13 @@ module M = struct
   type t = Y.t
 end
 
-module F (Y : sig
-    type t
-  end) (M : sig
-          type t = Y.t
-        end) =
+module F
+    (Y : sig
+       type t
+     end)
+    (M : sig
+       type t = Y.t
+     end) =
 struct end
 
 module G = F (M.Y)
@@ -7135,8 +7142,9 @@ type 'a tree =
   | E
   | N of 'a tree * 'a * 'a tree
 
-module Bootstrap2 (MakeDiet : functor (X : ORD) ->
-    SET with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
+module Bootstrap2
+    (MakeDiet : functor (X : ORD) -> SET with type t = X.t tree and type elt = X.t) :
+  SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7476,7 +7484,6 @@ end
    module
    rec NewA : ASig = MakeA (struct end)
    and NewB : BSig with type b = NewA.a = MakeB (struct end);;
-
 *)
 
 (* Expressions and bindings *)
@@ -7568,8 +7575,8 @@ module type HEAP = sig
   val deleteMin : heap -> heap
 end
 
-module Bootstrap (MakeH : functor (Element : ORDERED) ->
-    HEAP with module Elem = Element)
+module Bootstrap
+    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
     (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
@@ -7877,7 +7884,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml  *)
+(** Pure type-checking tests: see recmod/*.ml *)
 type t =
   | A of
       { x : int
@@ -9696,14 +9703,16 @@ type t =
 type t =
   { field : ty
   (* Here is some verbatim formatted text:
+
      {v
        starting at column 7
-     v}*)
+       v}*)
   }
 
 module Intro_sort = struct
   let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
     (* Fooooooooooooooooooooooooooo:
+
        {v
           1--o-----o-----o--------------1
              |     |     |
@@ -9714,7 +9723,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-        v} *)
+       v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -10209,3 +10218,10 @@ val fooooooooooooooooooooooooooooooo
   : ( fooooooooooooooooooooooooooooooo
     , fooooooooooooooooooooooooooooooo )
       fooooooooooooooooooooooooooooooo
+
+(*
+*)
+
+(** xxx *)
+include S1
+(** @inline *)

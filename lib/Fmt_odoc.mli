@@ -9,4 +9,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val fmt : fmt_code:Fmt.code_formatter -> Odoc_parser.Ast.t -> Fmt.t
+val fmt_ast :
+     ?wrap_docstrings:bool
+  -> fmt_code:Fmt.code_formatter
+  -> Odoc_parser.Ast.t
+  -> Fmt.t
+
+val fmt_parsed :
+     Conf.t
+  -> fmt_code:Fmt.code_formatter
+  -> input:string
+  -> (Odoc_parser.Ast.t, Odoc_parser.Warning.t list) Result.t
+  -> Fmt.t
