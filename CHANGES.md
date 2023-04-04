@@ -15,6 +15,7 @@
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
 - Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
+- Fix identation of module-expr extensions (#<PR_NUMBER>, @gpetiot)
 
 ### Changes
 
