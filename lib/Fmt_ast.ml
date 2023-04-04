@@ -133,6 +133,8 @@ module Indent = struct
   let variant ~parens c =
     if c.conf.fmt_opts.ocp_indent_compat.v && parens then 3 else 2
 
+  let variant_type_arg c = _ocp 2 0 c
+
   let docked_fun c ~loc ~lbl =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
     else
@@ -1025,7 +1027,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
     | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
   in
   hvbox 0
-    ( hvbox 0 (Cmts.fmt c prf_loc row)
+    ( hvbox (Indent.variant_type_arg c) (Cmts.fmt c prf_loc row)
     $ fmt_attributes_and_docstrings c prf_attributes )
 
 and fmt_pattern_attributes c xpat k =
