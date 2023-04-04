@@ -4031,7 +4031,9 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
       { empty with
-        bdy=
+        opn= Some (open_hvbox 2)
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_extension c ctx x1
             $ fmt_attributes_and_docstrings c pmod_attributes ) }

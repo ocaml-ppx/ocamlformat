@@ -116,3 +116,9 @@ let _ =
         N with type t = t (* ff *) )
   in
   ()
+
+module M =
+  [%demo
+  module Foo = Bar
+
+  type t]
