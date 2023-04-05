@@ -3120,7 +3120,10 @@ and fmt_class_params c ctx params =
     (hvbox 0
        (wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param) $ fmt "@ ") )
 
-and fmt_type_declaration c ?ext ?(pre = "") ctx ?name ?(eq = "=") decl =
+and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
+    =
+  protect c (Td decl)
+  @@
   let { ptype_name= {txt; loc}
       ; ptype_params
       ; ptype_cstrs
@@ -3133,16 +3136,17 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?name ?(eq = "=") decl =
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
   @@ fun c ->
+  let ctx = Td decl in
   let fmt_abstract_manifest = function
     | Some m ->
         str " " $ str eq $ fmt_private_flag c priv $ fmt "@ "
-        $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
+        $ fmt_core_type c (sub_typ ~ctx m)
     | None -> noop
   in
   let fmt_manifest = function
     | Some m ->
         str " " $ str eq $ break 1 4
-        $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
+        $ fmt_core_type c (sub_typ ~ctx m)
         $ str " =" $ fmt_private_flag c priv
     | None -> str " " $ str eq $ fmt_private_flag c priv
   in
@@ -3837,12 +3841,13 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
 
 and fmt_with_constraint c ctx ~pre = function
   | Pwith_type (lid, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ctx ~name:lid td
+      fmt_type_declaration ~pre:(pre ^ " type") c ~name:lid (sub_td ~ctx td)
   | Pwith_module (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ctx ~name:lid td
+      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ~name:lid
+        (sub_td ~ctx td)
   | Pwith_modsubst (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
@@ -4087,7 +4092,7 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
       if first then if is_rec then "type" else "type nonrec" else "and"
     in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ctx decl
+    fmt_type_declaration c ~pre ?eq ?ext (sub_td ~ctx decl)
   in
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls

@@ -743,6 +743,8 @@ module rec In_ctx : sig
 
   val sub_typ : ctx:T.t -> core_type -> core_type xt
 
+  val sub_td : ctx:T.t -> type_declaration -> type_declaration xt
+
   val sub_cty : ctx:T.t -> class_type -> class_type xt
 
   val sub_pat : ctx:T.t -> pattern -> pattern xt
@@ -774,6 +776,8 @@ end = struct
   let sub_ast ~ctx ast = {ctx; ast}
 
   let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
+
+  let sub_td ~ctx td = {ctx; ast= td}
 
   let sub_cty ~ctx cty = {ctx; ast= cty}
 
@@ -869,20 +873,6 @@ end = struct
     let check_typexn {ptyexn_constructor; _} =
       check_ext ptyexn_constructor
     in
-    let check_type {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest; _}
-        =
-      List.exists ptype_params ~f:fst_f
-      || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
-             typ == t1 || typ == t2 )
-      || ( match ptype_kind with
-         | Ptype_variant cd1N ->
-             List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
-                 check_cstr pcd_args || Option.exists pcd_res ~f )
-         | Ptype_record ld1N ->
-             List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
-         | _ -> false )
-      || Option.exists ptype_manifest ~f
-    in
     let check_class_type l =
       List.exists l ~f:(fun {pci_expr= {pcty_desc; _}; pci_params; _} ->
           List.exists pci_params ~f:(fun (t, _) -> t == typ)
@@ -916,10 +906,19 @@ end = struct
               | {pof_desc= Otag (_, t1); _} -> typ == t1
               | {pof_desc= Oinherit t1; _} -> typ == t1 ) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f) )
-    | Td {ptype_manifest; _} -> (
-      match ptype_manifest with
-      | Some t -> assert (t == typ)
-      | None -> assert false )
+    | Td {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest; _} ->
+        assert (
+          List.exists ptype_params ~f:fst_f
+          || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
+                 typ == t1 || typ == t2 )
+          || ( match ptype_kind with
+             | Ptype_variant cd1N ->
+                 List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
+                     check_cstr pcd_args || Option.exists pcd_res ~f )
+             | Ptype_record ld1N ->
+                 List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
+             | _ -> false )
+          || Option.exists ptype_manifest ~f )
     | Cty {pcty_desc; _} ->
         assert (
           match pcty_desc with
@@ -968,18 +967,7 @@ end = struct
           | Pcl_open _ -> false
           | Pcl_extension _ -> false
           | Pcl_structure _ -> false )
-    | Mty ctx ->
-        let rec loop m =
-          match m with
-          | Pmty_with (m, c1N) ->
-              List.exists c1N ~f:(function
-                | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
-                    check_type d1
-                | _ -> false )
-              || loop m.pmty_desc
-          | _ -> false
-        in
-        assert (loop ctx.pmty_desc)
+    | Mty _ -> assert false
     | Mod ctx -> (
       match ctx.pmod_desc with
       | Pmod_unpack (_, ty1, ty2) ->
@@ -989,8 +977,8 @@ end = struct
     | Sig ctx -> (
       match ctx.psig_desc with
       | Psig_value {pval_type= t1; _} -> assert (typ == t1)
-      | Psig_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
-      | Psig_typesubst d1N -> assert (List.exists d1N ~f:check_type)
+      | Psig_type (_, _) -> assert false
+      | Psig_typesubst _ -> assert false
       | Psig_typext typext -> assert (check_typext typext)
       | Psig_exception ext -> assert (check_typexn ext)
       | Psig_class_type l -> assert (check_class_type l)
@@ -999,7 +987,7 @@ end = struct
     | Str ctx -> (
       match ctx.pstr_desc with
       | Pstr_primitive {pval_type= t1; _} -> assert (typ == t1)
-      | Pstr_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
+      | Pstr_type (_, _) -> assert false
       | Pstr_typext typext -> assert (check_typext typext)
       | Pstr_exception ext -> assert (check_typexn ext)
       | Pstr_class l ->
@@ -1510,11 +1498,7 @@ end = struct
     let open Prec in
     let open Assoc in
     let is_tuple_lvl1_in_constructor ty = function
-      | {ptype_kind= Ptype_variant cd1N; _} ->
-          List.exists cd1N ~f:(function
-            | {pcd_args= Pcstr_tuple t1N; _} ->
-                List.exists t1N ~f:(phys_equal ty)
-            | _ -> false )
+      | {pcd_args= Pcstr_tuple t1N; _} -> List.exists t1N ~f:(phys_equal ty)
       | _ -> false
     in
     let is_tuple_lvl1_in_ext_constructor ty = function
@@ -1528,12 +1512,9 @@ end = struct
       | _ -> None
     in
     match ctx with
-    | { ctx=
-          ( Str {pstr_desc= Pstr_type (_, t1N); _}
-          | Sig {psig_desc= Psig_type (_, t1N); _}
-          | Sig {psig_desc= Psig_typesubst t1N; _} )
+    | { ctx= Td {ptype_kind= Ptype_variant v; _}
       ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _} as typ) }
-      when List.exists t1N ~f:(is_tuple_lvl1_in_constructor typ) ->
+      when List.exists v ~f:(is_tuple_lvl1_in_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
           ( Str {pstr_desc= Pstr_typext {ptyext_constructors= l; _}; _}
@@ -1778,17 +1759,10 @@ end = struct
           | Sig {psig_desc= Psig_typext _; _} ) } ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
-      ; ctx=
-          ( Str {pstr_desc= Pstr_type (_, t); _}
-          | Sig {psig_desc= Psig_type (_, t); _}
-          | Sig {psig_desc= Psig_typesubst t; _} ) }
-      when List.exists t ~f:(fun t ->
-               match t.ptype_kind with
-               | Ptype_variant l ->
-                   List.exists l ~f:(fun c ->
-                       match c.pcd_args with
-                       | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
-                       | _ -> false )
+      ; ctx= Td {ptype_kind= Ptype_variant l; _} }
+      when List.exists l ~f:(fun c ->
+               match c.pcd_args with
+               | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
                | _ -> false ) ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _ | Ptyp_arrow _ | Ptyp_tuple _; _}
