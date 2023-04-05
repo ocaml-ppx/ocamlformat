@@ -167,6 +167,12 @@ val sub_mty : ctx:t -> module_type -> module_type xt
 val sub_mod : ctx:t -> module_expr -> module_expr xt
 (** Construct a module_expr-in-context. *)
 
+val sub_md : ctx:t -> module_declaration -> module_declaration xt
+(** Construct a module_declaration-in-context. *)
+
+val sub_mb : ctx:t -> module_binding -> module_binding xt
+(** Construct a module_binding-in-context. *)
+
 val sub_sig : ctx:t -> signature_item -> signature_item xt
 (** Construct a signature_item-in-context. *)
 

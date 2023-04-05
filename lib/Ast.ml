@@ -759,6 +759,10 @@ module rec In_ctx : sig
 
   val sub_mod : ctx:T.t -> module_expr -> module_expr xt
 
+  val sub_md : ctx:T.t -> module_declaration -> module_declaration xt
+
+  val sub_mb : ctx:T.t -> module_binding -> module_binding xt
+
   val sub_sig : ctx:T.t -> signature_item -> signature_item xt
 
   val sub_str : ctx:T.t -> structure_item -> structure_item xt
@@ -786,6 +790,10 @@ end = struct
   let sub_mty ~ctx mty = {ctx; ast= mty}
 
   let sub_mod ~ctx mod_ = {ctx; ast= mod_}
+
+  let sub_md ~ctx md = {ctx; ast= md}
+
+  let sub_mb ~ctx mb = {ctx; ast= mb}
 
   let sub_sig ~ctx sig_ = {ctx; ast= sig_}
 
@@ -1803,13 +1811,7 @@ end = struct
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mty {ctx; ast= mty} =
-    Mty.has_trailing_attributes mty
-    ||
-    match (ctx, mty.pmty_desc) with
-    | Str {pstr_desc= Pstr_recmodule _; _}, Pmty_with _ -> true
-    | Sig {psig_desc= Psig_recmodule _; _}, Pmty_with _ -> true
-    | _ -> false
+  let parenze_mty {ctx= _; ast= mty} = Mty.has_trailing_attributes mty
 
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be
       parenthesized in context [ctx]. *)
