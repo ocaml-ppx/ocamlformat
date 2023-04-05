@@ -753,7 +753,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        c.conf
   @@
-  let in_type_declaration = match ctx with Td _ -> true | _ -> false in
+  let in_type_declaration =
+    match ctx with
+    | Td {ptype_manifest= Some t; _} -> phys_equal t typ
+    | _ -> false
+  in
   let ctx = Typ typ in
   let parenze_constraint_ctx =
     match constraint_ctx with
