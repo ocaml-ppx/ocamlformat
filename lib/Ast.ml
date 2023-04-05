@@ -753,6 +753,8 @@ module rec In_ctx : sig
 
   val sub_cf : ctx:T.t -> class_field -> class_field xt
 
+  val sub_ctf : ctx:t -> class_type_field -> class_type_field xt
+
   val sub_mty : ctx:T.t -> module_type -> module_type xt
 
   val sub_mod : ctx:T.t -> module_expr -> module_expr xt
@@ -778,6 +780,8 @@ end = struct
   let sub_cl ~ctx cl = {ctx; ast= cl}
 
   let sub_cf ~ctx cf = {ctx; ast= cf}
+
+  let sub_ctf ~ctx ctf = {ctx; ast= ctf}
 
   let sub_mty ~ctx mty = {ctx; ast= mty}
 
@@ -916,16 +920,7 @@ end = struct
               List.exists t ~f:(fun x -> x.pap_type == typ)
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
-          | Pcty_signature {pcsig_self; pcsig_fields; _} ->
-              Option.exists pcsig_self ~f
-              || List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->
-                     match pctf_desc with
-                     | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
-                     | Pctf_val (_, _, t) -> t == typ
-                     | Pctf_method (_, _, t) -> t == typ
-                     | Pctf_inherit _ -> false
-                     | Pctf_attribute _ -> false
-                     | Pctf_extension _ -> false ) )
+          | Pcty_signature {pcsig_self; _} -> Option.exists pcsig_self ~f )
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
@@ -1040,7 +1035,15 @@ end = struct
           | Pcf_method (_, _, Cfk_concrete _) -> false
           | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
           | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false )
-    | Ctf _ -> assert false
+    | Ctf {pctf_desc; _} ->
+        assert (
+          match pctf_desc with
+          | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
+          | Pctf_val (_, _, t) -> t == typ
+          | Pctf_method (_, _, t) -> t == typ
+          | Pctf_inherit _ -> false
+          | Pctf_attribute _ -> false
+          | Pctf_extension _ -> false )
     | Top | Tli _ | Rep -> assert false
 
   let assert_check_typ xtyp =
@@ -1085,16 +1088,7 @@ end = struct
     | Cty {pcty_desc; _} -> (
       match pcty_desc with
       | Pcty_arrow (_, t) -> assert (t == cty)
-      | Pcty_signature {pcsig_fields; _} ->
-          assert (
-            List.exists pcsig_fields ~f:(fun {pctf_desc; _} ->
-                match pctf_desc with
-                | Pctf_inherit t -> t == cty
-                | Pctf_val _ -> false
-                | Pctf_method _ -> false
-                | Pctf_constraint _ -> false
-                | Pctf_attribute _ -> false
-                | Pctf_extension _ -> false ) )
+      | Pcty_signature _ -> assert false
       | Pcty_open (_, t) -> assert (t == cty)
       | Pcty_constr _ -> assert false
       | Pcty_extension _ -> assert false )
@@ -1115,7 +1109,15 @@ end = struct
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
     | Clf _ -> assert false
-    | Ctf _ -> assert false
+    | Ctf {pctf_desc; _} ->
+        assert (
+          match pctf_desc with
+          | Pctf_inherit t -> t == cty
+          | Pctf_val _ -> false
+          | Pctf_method _ -> false
+          | Pctf_constraint _ -> false
+          | Pctf_attribute _ -> false
+          | Pctf_extension _ -> false )
     | Mty _ -> assert false
     | Mod _ -> assert false
     | Rep -> assert false

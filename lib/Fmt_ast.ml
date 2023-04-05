@@ -2721,7 +2721,9 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
         $ Params.parens_if (no_attr self_) c.conf
             (fmt_core_type c (sub_typ ~ctx self_)) )
   in
-  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
+  let fmt_item c ctx ~prev:_ ~next:_ i =
+    fmt_class_type_field c (sub_ctf ~ctx i)
+  in
   let ast x = Ctf x in
   Params.parens_if parens c.conf
     ( str "object"
@@ -2977,7 +2979,7 @@ and fmt_class_field c {ast= cf; _} =
   | Pcf_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pcf_extension ext -> fmt_item_extension c ctx ext
 
-and fmt_class_type_field c ctx cf =
+and fmt_class_type_field c {ast= cf; _} =
   protect c (Ctf cf)
   @@
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c cf.pctf_loc in
@@ -2986,6 +2988,7 @@ and fmt_class_type_field c ctx cf =
     fmt_docstring_around_item ~is_val:true ~fit:true c cf.pctf_attributes
   in
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
+  let ctx = Ctf cf in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"ctf"
