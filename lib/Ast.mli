@@ -143,6 +143,9 @@ type 'a xt = private {ctx: t; ast: 'a}
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
 
+val sub_td : ctx:t -> type_declaration -> type_declaration xt
+(** Construct a type_declaration-in-context. *)
+
 val sub_cty : ctx:t -> class_type -> class_type xt
 (** Construct a class_type-in-context. *)
 
