@@ -158,6 +158,9 @@ val sub_cl : ctx:t -> class_expr -> class_expr xt
 val sub_cf : ctx:t -> class_field -> class_field xt
 (** Construct a class_field-in-context. *)
 
+val sub_ctf : ctx:t -> class_type_field -> class_type_field xt
+(** Construct a class_type_field-in-context. *)
+
 val sub_mty : ctx:t -> module_type -> module_type xt
 (** Construct a module_type-in-context. *)
 
