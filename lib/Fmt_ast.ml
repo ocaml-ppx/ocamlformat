@@ -2694,7 +2694,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         $ Params.parens c.conf
             (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) )
   in
-  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_field c ctx i in
+  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_field c (sub_cf ~ctx i) in
   let ast x = Clf x in
   hvbox 2
     ( hvbox 0 (str "object" $ fmt_extension_suffix c ext $ self_)
@@ -2918,7 +2918,7 @@ and fmt_class_field_kind c ctx = function
       , fmt "@;<1 2>="
       , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
 
-and fmt_class_field c ctx cf =
+and fmt_class_field c {ast= cf; _} =
   protect c (Clf cf)
   @@
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c cf.pcf_loc in
@@ -2927,6 +2927,7 @@ and fmt_class_field c ctx cf =
     fmt_docstring_around_item ~fit:true c cf.pcf_attributes
   in
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
+  let ctx = Clf cf in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"clf"

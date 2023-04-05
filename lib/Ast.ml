@@ -751,6 +751,8 @@ module rec In_ctx : sig
 
   val sub_cl : ctx:T.t -> class_expr -> class_expr xt
 
+  val sub_cf : ctx:T.t -> class_field -> class_field xt
+
   val sub_mty : ctx:T.t -> module_type -> module_type xt
 
   val sub_mod : ctx:T.t -> module_expr -> module_expr xt
@@ -774,6 +776,8 @@ end = struct
   let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
 
   let sub_cl ~ctx cl = {ctx; ast= cl}
+
+  let sub_cf ~ctx cf = {ctx; ast= cf}
 
   let sub_mty ~ctx mty = {ctx; ast= mty}
 
@@ -867,36 +871,6 @@ end = struct
          | _ -> false )
       || Option.exists ptype_manifest ~f
     in
-    let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun f ->
-          match f.pcf_desc with
-          | Pcf_inherit (_, _, _) -> false
-          | Pcf_val (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_val (_, _, Cfk_concrete _) -> false
-          | Pcf_method (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt); _}))
-            ->
-              let rec loop = function
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
-                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
-                | _ -> false
-              in
-              (match topt with None -> false | Some t -> typ == t)
-              || loop e
-          | Pcf_method (_, _, Cfk_concrete _) -> false
-          | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
-          | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false )
-    in
     let check_class_type l =
       List.exists l ~f:(fun {pci_expr= {pcty_desc; _}; pci_params; _} ->
           List.exists pci_params ~f:(fun (t, _) -> t == typ)
@@ -971,8 +945,7 @@ end = struct
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
       | Pexp_letexception (ext, _) -> assert (check_ext ext)
-      | Pexp_object {pcstr_fields; _} ->
-          assert (check_pcstr_fields pcstr_fields)
+      | Pexp_object _ -> assert false
       | Pexp_record (en1, _) ->
           assert (
             List.exists en1 ~f:(fun (_, (t1, t2), _) ->
@@ -991,8 +964,7 @@ end = struct
           | Pcl_fun _ -> false
           | Pcl_open _ -> false
           | Pcl_extension _ -> false
-          | Pcl_structure {pcstr_fields; _} ->
-              check_pcstr_fields pcstr_fields )
+          | Pcl_structure _ -> false )
     | Mty ctx ->
         let rec loop m =
           match m with
@@ -1039,7 +1011,35 @@ end = struct
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | _ -> assert false )
-    | Clf _ -> assert false
+    | Clf {pcf_desc; _} ->
+        assert (
+          match pcf_desc with
+          | Pcf_inherit (_, _, _) -> false
+          | Pcf_val (_, _, Cfk_virtual t) -> typ == t
+          | Pcf_val
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
+            ->
+              typ == t
+          | Pcf_val (_, _, Cfk_concrete _) -> false
+          | Pcf_method (_, _, Cfk_virtual t) -> typ == t
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
+            ->
+              typ == t
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt); _}))
+            ->
+              let rec loop = function
+                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
+                | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
+                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
+                | _ -> false
+              in
+              (match topt with None -> false | Some t -> typ == t)
+              || loop e
+          | Pcf_method (_, _, Cfk_concrete _) -> false
+          | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
+          | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false )
     | Ctf _ -> assert false
     | Top | Tli _ | Rep -> assert false
 
@@ -1125,18 +1125,8 @@ end = struct
     assert_no_raise ~f:check_cty ~dump xcty
 
   let check_cl {ctx; ast= cl} =
-    let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun f ->
-          match f.pcf_desc with
-          | Pcf_inherit (_, x, _) -> x == cl
-          | _ -> false )
-    in
     match (ctx : t) with
-    | Exp e -> (
-      match e.pexp_desc with
-      | Pexp_object {pcstr_fields; _} ->
-          assert (check_pcstr_fields pcstr_fields)
-      | _ -> assert false )
+    | Exp _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1166,8 +1156,7 @@ end = struct
     | Cl {pcl_desc; _} ->
         assert (
           match pcl_desc with
-          | Pcl_structure {pcstr_fields; _} ->
-              check_pcstr_fields pcstr_fields
+          | Pcl_structure _ -> false
           | Pcl_fun (_, _, _, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
           | Pcl_let (_, x) -> x == cl
@@ -1175,7 +1164,9 @@ end = struct
           | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
           | Pcl_extension _ -> false )
-    | Clf _ -> assert false
+    | Clf {pcf_desc; _} ->
+        assert (
+          match pcf_desc with Pcf_inherit (_, x, _) -> x == cl | _ -> false )
     | Ctf _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
@@ -1186,18 +1177,6 @@ end = struct
     assert_no_raise ~f:check_cl ~dump xcl
 
   let check_pat {ctx; ast= pat} =
-    let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun {pcf_desc; _} ->
-          match pcf_desc with
-          | Pcf_initializer _ -> false
-          | Pcf_val (_, _, _) -> false
-          | Pcf_method (_, _, _) -> false
-          | Pcf_extension (_, PPat (p, _)) -> p == pat
-          | Pcf_extension (_, _) -> false
-          | Pcf_inherit _ -> false
-          | Pcf_constraint _ -> false
-          | Pcf_attribute _ -> false )
-    in
     let check_extensions = function PPat (p, _) -> p == pat | _ -> false in
     let check_subpat ppat =
       ppat == pat
@@ -1253,10 +1232,8 @@ end = struct
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
-      | Pexp_object {pcstr_self; pcstr_fields} ->
-          assert (
-            Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
-            || check_pcstr_fields pcstr_fields )
+      | Pexp_object {pcstr_self; _} ->
+          assert (Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self)
       | Pexp_let ({lbs_bindings; _}, _) ->
           assert (check_bindings lbs_bindings)
       | Pexp_letop {let_; ands; _} ->
@@ -1277,9 +1254,8 @@ end = struct
           match ctx.pcl_desc with
           | Pcl_fun (_, _, p, _) -> p == pat
           | Pcl_constr _ -> false
-          | Pcl_structure {pcstr_self; pcstr_fields} ->
+          | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
-              || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
           | Pcl_let ({lbs_bindings; _}, _) -> check_bindings lbs_bindings
           | Pcl_constraint _ -> false
@@ -1292,7 +1268,17 @@ end = struct
       | Pstr_value {lbs_bindings; _} -> assert (check_bindings lbs_bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
-    | Clf x -> assert (check_pcstr_fields [x])
+    | Clf {pcf_desc; _} ->
+        assert (
+          match pcf_desc with
+          | Pcf_initializer _ -> false
+          | Pcf_val (_, _, _) -> false
+          | Pcf_method (_, _, _) -> false
+          | Pcf_extension (_, PPat (p, _)) -> p == pat
+          | Pcf_extension (_, _) -> false
+          | Pcf_inherit _ -> false
+          | Pcf_constraint _ -> false
+          | Pcf_attribute _ -> false )
     | Ctf _ -> assert false
     | Top | Tli _ | Rep -> assert false
 
@@ -1306,39 +1292,6 @@ end = struct
       | PStr [{pstr_desc= Pstr_eval (e, _); _}] -> e == exp
       | _ -> false
     in
-    let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun {pcf_desc; _} ->
-          match pcf_desc with
-          | Pcf_initializer e -> e == exp
-          | Pcf_val (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_val (_, _, Cfk_virtual _) -> false
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _); _}))
-           |Pcf_method (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_method (_, _, Cfk_virtual _) -> false
-          | Pcf_extension (_, ext) -> check_extensions ext
-          | Pcf_inherit _ -> false
-          | Pcf_constraint _ -> false
-          | Pcf_attribute _ -> false )
-    in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -1350,8 +1303,7 @@ end = struct
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
          |Pexp_unreachable | Pexp_hole ->
             assert false
-        | Pexp_object {pcstr_fields; _} ->
-            assert (check_pcstr_fields pcstr_fields)
+        | Pexp_object _ -> assert false
         | Pexp_let ({lbs_bindings; _}, e) ->
             assert (
               List.exists lbs_bindings ~f:(fun {lb_expression; _} ->
@@ -1449,8 +1401,7 @@ end = struct
           | Pcl_fun (_, eopt, _, e) ->
               Option.exists eopt ~f:(fun e -> e == exp) || loop e
           | Pcl_constr _ -> false
-          | Pcl_structure {pcstr_fields; _} ->
-              check_pcstr_fields pcstr_fields
+          | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
           | Pcl_let ({lbs_bindings; _}, _) ->
               List.exists lbs_bindings ~f:(fun {lb_expression; _} ->
@@ -1462,7 +1413,38 @@ end = struct
         assert (loop ctx)
     | Cty _ -> assert false
     | Ctf _ -> assert false
-    | Clf x -> assert (check_pcstr_fields [x])
+    | Clf {pcf_desc; _} ->
+        assert (
+          match pcf_desc with
+          | Pcf_initializer e -> e == exp
+          | Pcf_val (_, _, Cfk_concrete (_, e)) ->
+              let rec loop x =
+                x == exp
+                ||
+                match x with
+                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+                | _ -> false
+              in
+              loop e
+          | Pcf_val (_, _, Cfk_virtual _) -> false
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _); _}))
+           |Pcf_method (_, _, Cfk_concrete (_, e)) ->
+              let rec loop x =
+                x == exp
+                ||
+                match x with
+                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
+                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
+                | _ -> false
+              in
+              loop e
+          | Pcf_method (_, _, Cfk_virtual _) -> false
+          | Pcf_extension (_, ext) -> check_extensions ext
+          | Pcf_inherit _ -> false
+          | Pcf_constraint _ -> false
+          | Pcf_attribute _ -> false )
     | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ | Rep ->
         assert false
 
@@ -2153,6 +2135,7 @@ end = struct
         false
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
     | Cl {pcl_desc= Pcl_apply _; _}, _ -> parenze ()
+    | Clf _, _ -> parenze ()
     | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}, {pexp_desc; _}
       when !parens_ite
            && List.exists eN ~f:(fun x -> x.if_body == exp)
