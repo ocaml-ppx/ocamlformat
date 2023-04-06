@@ -369,7 +369,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
             let args = args ~suffix:".unequal-ast" in
             internal_error [`Ast_changed] args
         else
-          dump_ast std_fg ~suffix:".ast"
+          dump_ast std_fg ~suffix:""
             (Normalize_std_ast.ast std_fg conf std_t_new.ast)
           |> function
           | Some file ->
