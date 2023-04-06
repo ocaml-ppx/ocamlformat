@@ -7810,3 +7810,9 @@ include S1
 type input =
   { name: string
   ; action: [`Format | `Numeric of range] }
+
+module M =
+  [%demo
+    module Foo = Bar
+
+    type t]

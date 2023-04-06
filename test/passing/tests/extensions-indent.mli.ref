@@ -22,9 +22,9 @@ type t =
      foooooooooooooooooooooooooooo]
 
 [%%ext
-val foooooooooooooooooooooo : fooooooooooo
+   val foooooooooooooooooooooo : fooooooooooo
 
-val fooooooooooooooooooooooooooo : fooooo]
+   val fooooooooooooooooooooooooooo : fooooo]
 
 exception%ext E
 

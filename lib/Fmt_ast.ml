@@ -559,11 +559,17 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
     when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
       fmt_pattern c ~ext (sub_pat ~ctx pat)
   | _ ->
-      wrap "[" "]"
-        ( str (Ext.Key.to_string key)
-        $ fmt_str_loc c ext
-        $ fmt_payload c (Pld pld) pld
-        $ fmt_if (Exposed.Right.payload pld) " " )
+      let indent =
+        match key with
+        | Regular -> c.conf.fmt_opts.extension_indent.v
+        | Item -> c.conf.fmt_opts.stritem_extension_indent.v
+      in
+      hvbox indent
+        (wrap "[" "]"
+           ( str (Ext.Key.to_string key)
+           $ fmt_str_loc c ext
+           $ fmt_payload c (Pld pld) pld
+           $ fmt_if (Exposed.Right.payload pld) " " ) )
 
 and fmt_extension = fmt_extension_aux ~key:Ext.Key.Regular
 
