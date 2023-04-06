@@ -143,6 +143,9 @@ type 'a xt = private {ctx: t; ast: 'a}
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
 
+val sub_td : ctx:t -> type_declaration -> type_declaration xt
+(** Construct a type_declaration-in-context. *)
+
 val sub_cty : ctx:t -> class_type -> class_type xt
 (** Construct a class_type-in-context. *)
 
@@ -155,11 +158,23 @@ val sub_exp : ctx:t -> expression -> expression xt
 val sub_cl : ctx:t -> class_expr -> class_expr xt
 (** Construct a class_expr-in-context. *)
 
+val sub_cf : ctx:t -> class_field -> class_field xt
+(** Construct a class_field-in-context. *)
+
+val sub_ctf : ctx:t -> class_type_field -> class_type_field xt
+(** Construct a class_type_field-in-context. *)
+
 val sub_mty : ctx:t -> module_type -> module_type xt
 (** Construct a module_type-in-context. *)
 
 val sub_mod : ctx:t -> module_expr -> module_expr xt
 (** Construct a module_expr-in-context. *)
+
+val sub_md : ctx:t -> module_declaration -> module_declaration xt
+(** Construct a module_declaration-in-context. *)
+
+val sub_mb : ctx:t -> module_binding -> module_binding xt
+(** Construct a module_binding-in-context. *)
 
 val sub_sig : ctx:t -> signature_item -> signature_item xt
 (** Construct a signature_item-in-context. *)

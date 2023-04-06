@@ -7954,3 +7954,7 @@ val fooooooooooooooooooooooooooooooo
 *)
 include S1
 (** @inline *)
+
+type input =
+  { name: string
+  ; action: [`Format | `Numeric of range] }
