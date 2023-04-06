@@ -7972,3 +7972,9 @@ class x =
       object
         method x = y
       end
+
+module M =
+  [%demo
+    module Foo = Bar
+
+    type t]
