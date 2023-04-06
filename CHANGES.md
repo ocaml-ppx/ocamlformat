@@ -25,6 +25,7 @@
 - Improve formatting of class signatures (#2301, @gpetiot, @Julow)
 - JaneStreet profile: treat comments as doc-comments (#2261, @gpetiot)
 - Don't indent attributes after a let/val/external (#2317, @Julow)
+- Adjust indentation of class-expr function body (#2328, @gpetiot)
 
 ### New features
 

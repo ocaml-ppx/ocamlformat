@@ -7958,3 +7958,17 @@ include S1
 type input =
   { name: string
   ; action: [`Format | `Numeric of range] }
+
+let x =
+  fun [@foo] x ->
+    fun [@foo] y ->
+      object
+        method x = y
+      end
+
+class x =
+  fun [@foo] x ->
+    fun [@foo] y ->
+      object
+        method x = y
+      end

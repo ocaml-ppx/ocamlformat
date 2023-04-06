@@ -367,7 +367,14 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
               args
           else
             let args = args ~suffix:".unequal-ast" in
-            internal_error [`Ast_changed] args ) ;
+            internal_error [`Ast_changed] args
+        else
+          dump_ast std_fg ~suffix:""
+            (Normalize_std_ast.ast std_fg conf std_t_new.ast)
+          |> function
+          | Some file ->
+              if i = 1 then Format.eprintf "[DEBUG] AST structure: %s\n" file
+          | None -> () ) ;
       check_comments conf cmts_t ~old:t ~new_:t_new ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
