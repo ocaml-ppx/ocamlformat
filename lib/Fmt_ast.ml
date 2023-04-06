@@ -2808,7 +2808,12 @@ and fmt_class_expr c ?eol ({ast= exp; ctx= ctx0} as xexp) =
            $ fmt_atrs ) )
   | Pcl_fun _ ->
       let xargs, xbody = Sugar.cl_fun c.cmts xexp in
-      let indent = match ctx0 with Cl _ -> 3 | _ -> 0 in
+      let indent =
+        match ctx0 with
+        | Cl {pcl_desc= Pcl_fun _; _} -> 0
+        | Cl _ -> 3
+        | _ -> 0
+      in
       hvbox indent
         (Params.parens_if parens c.conf
            ( hovbox 2

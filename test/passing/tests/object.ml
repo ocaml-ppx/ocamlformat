@@ -295,3 +295,17 @@ class a x = object end
 class a x = object end
 
 class a x = object (self) end
+
+let x =
+ fun [@foo] x ->
+  fun [@foo] y ->
+   object
+     method x = y
+   end
+
+class x =
+  fun [@foo] x ->
+  fun [@foo] y ->
+  object
+    method x = y
+  end
