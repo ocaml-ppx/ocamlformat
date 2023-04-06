@@ -3764,16 +3764,19 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
+  let args_p = Params.Mod.get_args c.conf xargs in
   let fmt_name_and_mt ~pro ~loc name mt =
     let xmt = sub_mty ~ctx mt in
     let blk = fmt_module_type c ?rec_ xmt in
+    let align_opn, align_cls =
+      if args_p.arg_align then open_hvbox 0, close_box else noop, noop
+    in
     let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_str_loc_opt c name
+      pro $ Cmts.fmt_before c loc $ str "(" $ align_opn $ fmt_str_loc_opt c name
       $ str " : "
-    and epi = str ")" $ Cmts.fmt_after c loc in
+    and epi = str ")" $ Cmts.fmt_after c loc $ align_cls in
     compose_module' ~box:false ~pro ~epi blk
   in
-  let args_p = Params.Mod.get_args c.conf xargs in
   (* Carry the [epi] to be placed in the next argument's box. *)
   let fmt_arg ~pro {loc; txt} =
     let pro = pro $ args_p.arg_psp in

@@ -41,7 +41,10 @@ module Mod : sig
   type args =
     { dock: bool  (** Whether each argument's [pro] should be docked. *)
     ; arg_psp: Fmt.t  (** Break before every arguments. *)
-    ; indent: int }
+    ; indent: int
+    ; arg_align: bool
+          (** Whether arguments should be aligned on opening parentheses *)
+    }
 
   val get_args : Conf.t -> functor_parameter loc list -> args
 end
