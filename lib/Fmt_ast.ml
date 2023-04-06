@@ -2781,7 +2781,7 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_class_expr c ?eol ({ast= exp; _} as xexp) =
+and fmt_class_expr c ?eol ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
@@ -2808,8 +2808,13 @@ and fmt_class_expr c ?eol ({ast= exp; _} as xexp) =
            $ fmt_atrs ) )
   | Pcl_fun _ ->
       let xargs, xbody = Sugar.cl_fun c.cmts xexp in
-      hvbox
-        (if Option.is_none eol then 2 else 1)
+      let indent =
+        match ctx0 with
+        | Cl {pcl_desc= Pcl_fun _; _} -> 0
+        | Cl _ -> 3
+        | _ -> 0
+      in
+      hvbox indent
         (Params.parens_if parens c.conf
            ( hovbox 2
                ( box_fun_decl_args c 0
