@@ -560,9 +560,10 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
       fmt_pattern c ~ext (sub_pat ~ctx pat)
   | _ ->
       let indent =
-        match key with
-        | Regular -> c.conf.fmt_opts.extension_indent.v
-        | Item -> c.conf.fmt_opts.stritem_extension_indent.v
+        match pld with
+        | PStr [{pstr_desc= Pstr_eval _; _}] | PTyp _ | PPat _ ->
+            c.conf.fmt_opts.extension_indent.v
+        | PSig _ | PStr _ -> c.conf.fmt_opts.stritem_extension_indent.v
       in
       hvbox indent
         (wrap "[" "]"

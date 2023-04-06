@@ -119,6 +119,6 @@ let _ =
 
 module M =
   [%demo
-    module Foo = Bar
+  module Foo = Bar
 
-    type t]
+  type t]
