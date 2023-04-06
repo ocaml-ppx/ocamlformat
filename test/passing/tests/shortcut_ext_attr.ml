@@ -36,25 +36,25 @@ let () =
 (* Class expressions *)
 class x =
   fun [@foo] x ->
-    let[@foo] x = 33 in
-    object
-      inherit x [@@foo]
+  let[@foo] x = 33 in
+  object
+    inherit x [@@foo]
 
-      val x = 333 [@@foo]
+    val x = 333 [@@foo]
 
-      val virtual x : t [@@foo]
+    val virtual x : t [@@foo]
 
-      val! mutable x = 3 [@@foo]
+    val! mutable x = 3 [@@foo]
 
-      method x = 3 [@@foo]
+    method x = 3 [@@foo]
 
-      method virtual x : t [@@foo]
+    method virtual x : t [@@foo]
 
-      method! private x = 3 [@@foo]
+    method! private x = 3 [@@foo]
 
-      initializer x [@@foo]
-    end
-    [@foo]
+    initializer x [@@foo]
+  end
+  [@foo]
 
 (* Class type expressions *)
 class type t = object

@@ -155,11 +155,11 @@ class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
   (fun x ->
-    object
-      inherit f a
+     object
+       inherit f a
 
-      method x a b = a + b
-    end )
+       method x a b = a + b
+     end )
     0
 
 class c =
