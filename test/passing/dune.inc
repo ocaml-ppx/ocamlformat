@@ -75,6 +75,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to arg_labels.ml.stdout
+   (with-stderr-to arg_labels.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/arg_labels.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/arg_labels.ml.ref arg_labels.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/arg_labels.ml.err arg_labels.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to args_grouped-conventional.ml.stdout
    (with-stderr-to args_grouped-conventional.ml.stderr
      (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 --max-iters=3 %{dep:tests/args_grouped.ml})))))

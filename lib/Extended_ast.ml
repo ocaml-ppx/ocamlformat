@@ -191,7 +191,7 @@ module Parse = struct
                     Pexp_ident {txt= Lident op as longident; loc= loc_op}
                 ; pexp_attributes= []
                 ; _ }
-              , [(Nolabel, l); (Nolabel, r)] )
+              , [(None, l); (None, r)] )
         ; _ } as e
         when Std_longident.is_infix longident
              && not (Std_longident.is_monadic_binding longident) ->

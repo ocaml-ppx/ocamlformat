@@ -98,10 +98,15 @@ let variant_var sub x =
 let map_package_type sub (lid, l) =
   (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
 
-let map_arg_label sub = function
-  | Asttypes.Nolabel -> Asttypes.Nolabel
-  | Labelled x -> Labelled (map_loc sub x)
+let map_named_arg_label sub = function
+  | Asttypes.Labelled x -> Asttypes.Labelled (map_loc sub x)
   | Optional x -> Optional (map_loc sub x)
+
+let map_arg_label sub =
+  map_opt @@ fun x ->
+  let loc = sub.location sub x.loc in
+  let txt = map_named_arg_label sub x.txt in
+  {txt; loc}
 
 module Flag = struct
   open Asttypes

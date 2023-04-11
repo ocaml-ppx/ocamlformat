@@ -18,6 +18,9 @@ type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
 
+let label_loc_if_exists lbl pat =
+  Option.value_map lbl ~f:(fun x -> x.loc) ~default:pat.ppat_loc
+
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
@@ -26,8 +29,8 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
       match pexp_desc with
       | Pexp_fun (label, default, pattern, body) ->
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
-              ~after:body.pexp_loc ;
+            Cmts.relocate cmts ~src:pexp_loc ~after:body.pexp_loc
+              ~before:(label_loc_if_exists label pattern) ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           ( Val
               ( label
@@ -59,8 +62,8 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
       match pcl_desc with
       | Pcl_fun (label, default, pattern, body) ->
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pcl_loc ~before:pattern.ppat_loc
-              ~after:body.pcl_loc ;
+            Cmts.relocate cmts ~src:pcl_loc ~after:body.pcl_loc
+              ~before:(label_loc_if_exists label pattern) ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
           ( Val
               ( label
@@ -320,7 +323,7 @@ module Let_binding = struct
                    This won't be necessary once the normalization is moved to
                    [Extended_ast]. *)
                 let pat = Ast_helper.Pat.any () in
-                Exp (Ast_helper.Exp.fun_ Nolabel None pat exp)
+                Exp (Ast_helper.Exp.fun_ None None pat exp)
               in
               ( xpat
               , `Other (xargs, sub_typ ~ctx:typ_ctx typ)

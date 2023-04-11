@@ -177,10 +177,16 @@ let option i f ppf x =
 let longident_loc i ppf li = line i ppf "%a\n" fmt_longident_loc li
 let string i ppf s = line i ppf "\"%s\"\n" s
 let string_loc i ppf s = line i ppf "%a\n" fmt_string_loc s
-let arg_label i ppf = function
-  | Nolabel -> line i ppf "Nolabel\n"
-  | Optional s -> line i ppf "Optional %a\n" fmt_string_loc s
-  | Labelled s -> line i ppf "Labelled %a\n" fmt_string_loc s
+
+let named_arg_label ppf = function
+  | Optional s -> fprintf ppf "Optional %a" fmt_string_loc s
+  | Labelled s -> fprintf ppf "Labelled %a" fmt_string_loc s
+
+let named_arg_label_loc ppf x =
+  fprintf ppf "(%a) %a" named_arg_label x.txt fmt_location x.loc
+
+let arg_label i ppf x =
+  line i ppf "%a\n" (fmt_opt named_arg_label_loc) x
 
 let paren_kind i ppf = function
   | Paren -> line i ppf "Paren\n"

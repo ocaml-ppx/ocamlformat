@@ -581,9 +581,7 @@ module Align = struct
   (** Whether [exp] occurs in [args] as a labelled argument. *)
   let is_labelled_arg args exp =
     List.exists
-      ~f:(function
-        | Nolabel, _ -> false
-        | Labelled _, x | Optional _, x -> phys_equal x exp )
+      ~f:(function None, _ -> false | _, x -> phys_equal x exp)
       args
 
   let general (c : Conf.t) t =

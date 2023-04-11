@@ -339,12 +339,21 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
 
 let fmt_variance_injectivity c vc = hvbox 0 (list vc "" (fmt_str_loc c))
 
-let fmt_label lbl sep =
-  (* No comment can be attached here. *)
+let fmt_label ?(arrow_param = false) c lbl sep =
+  opt lbl
+  @@ fun {txt; loc= _lbl_loc} ->
+  (* Comments attached at [_lbl_loc] must be printed in the calling points *)
+  ( match txt with
+  | Labelled l -> fmt_if (not arrow_param) "~" $ fmt_str_loc c l
+  | Optional l -> str "?" $ fmt_str_loc c l )
+  $ fmt sep
+
+let wrap_label_cmts ?(box = true) c lbl k =
   match lbl with
-  | Nolabel -> noop
-  | Labelled l -> str "~" $ str l.txt $ fmt sep
-  | Optional l -> str "?" $ str l.txt $ fmt sep
+  | Some {loc; _} ->
+      let has_cmts = Cmts.has_before c.cmts loc in
+      hvbox_if (box && has_cmts) 0 @@ Cmts.fmt c loc @@ k
+  | None -> k
 
 let fmt_direction_flag = function
   | Upto -> fmt "@ to "
@@ -701,27 +710,22 @@ and type_constr_and_body c xbody =
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
       let typ_ctx = Exp body in
-      let exp_ctx =
-        Exp Ast_helper.(Exp.fun_ Nolabel None (Pat.any ()) exp)
-      in
+      let exp_ctx = Exp Ast_helper.(Exp.fun_ None None (Pat.any ()) exp) in
       ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
       , sub_exp ~ctx:exp_ctx exp )
   | _ -> (None, xbody)
 
 and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
-  let arg_label lbl =
-    match lbl with
-    | Nolabel -> None
-    | Labelled l -> Some (str l.txt $ fmt ":@,")
-    | Optional l -> Some (str "?" $ str l.txt $ fmt ":@,")
-  in
-  let xtI = sub_typ ~ctx tI in
-  let arg =
-    match arg_label lI with
-    | None -> fmt_core_type c xtI
-    | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
-  in
-  hvbox 0 (Cmts.fmt_before c locI $ arg)
+  hvbox 0
+    ( Cmts.fmt_before c locI
+    $ hovbox_if (Option.is_some lI) 2
+        ( opt lI (fun _ ->
+              (* Comments attched to the label should only be placed around
+                 [lI] and not the core_Type to be consistent with the
+                 parser. *)
+              wrap_label_cmts c lI (fmt_label ~arrow_param:true c lI "")
+              $ fmt ":@," )
+        $ fmt_core_type c (sub_typ ~ctx tI) ) )
 
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
@@ -778,7 +782,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_arrow (ctl, ct2) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
         ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.ptyp_loc ;
-      let ct2 = {pap_label= Nolabel; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
+      let ct2 = {pap_label= None; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
       let xt1N = List.rev (ct2 :: List.rev ctl) in
       let indent =
         if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2 else 0
@@ -1201,7 +1205,7 @@ and fmt_fun_args c args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
     match a with
     | Val
-        ( ((Labelled l | Optional l) as lbl)
+        ( (Some {txt= (Labelled l | Optional l) as lbl; loc= _} as lbl_opt)
         , ( { ast=
                 { ppat_desc=
                     ( Ppat_var {txt; loc= _}
@@ -1216,8 +1220,10 @@ and fmt_fun_args c args =
         , None )
       when String.equal l.txt txt ->
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
-        cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
-    | Val ((Optional _ as lbl), xpat, None) ->
+        wrap_label_cmts c lbl_opt
+          (cbox 0
+             (str symbol $ Cmts.fmt c l.loc @@ fmt_pattern ~box:true c xpat) )
+    | Val ((Some {txt= Optional _; loc= _} as lbl), xpat, None) ->
         let has_attr = not (List.is_empty xpat.ast.ppat_attributes) in
         let outer_parens, inner_parens =
           match xpat.ast.ppat_desc with
@@ -1227,26 +1233,29 @@ and fmt_fun_args c args =
           | Ppat_or _ -> (has_attr, true)
           | _ -> (not has_attr, false)
         in
-        cbox 2
-          ( fmt_label lbl ":@,"
-          $ hovbox 0
-            @@ Params.parens_if outer_parens c.conf
-                 (fmt_pattern ~parens:inner_parens c xpat) )
-    | Val (((Labelled _ | Nolabel) as lbl), xpat, None) ->
-        cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
+        wrap_label_cmts c lbl
+          (cbox 2
+             ( fmt_label c lbl ":@,"
+             $ hovbox 0
+               @@ Params.parens_if outer_parens c.conf
+                    (fmt_pattern ~parens:inner_parens c xpat) ) )
+    | Val (((None | Some {txt= Labelled _; _}) as lbl), xpat, None) ->
+        wrap_label_cmts c lbl
+          (cbox 2 (fmt_label c lbl ":@," $ fmt_pattern c xpat))
     | Val
-        ( Optional l
+        ( (Some {txt= Optional l; loc= _} as lbl)
         , ( { ast= {ppat_desc= Ppat_var {txt; loc= _}; ppat_attributes= []; _}
             ; _ } as xpat )
         , Some xexp )
       when String.equal l.txt txt ->
-        cbox 0
-          (wrap "?(" ")"
-             ( fmt_pattern c ~box:true xpat
-             $ fmt " =@;<1 2>"
-             $ hovbox 2 (fmt_expression c xexp) ) )
+        wrap_label_cmts c lbl
+          (cbox 0
+             (wrap "?(" ")"
+                ( Cmts.fmt c l.loc (fmt_pattern c ~box:true xpat)
+                $ fmt " =@;<1 2>"
+                $ hovbox 2 (fmt_expression c xexp) ) ) )
     | Val
-        ( Optional l
+        ( (Some {txt= Optional l; loc= _} as lbl)
         , ( { ast=
                 { ppat_desc=
                     Ppat_constraint
@@ -1256,22 +1265,25 @@ and fmt_fun_args c args =
             ; _ } as xpat )
         , Some xexp )
       when String.equal l.txt txt ->
-        cbox 0
-          (wrap "?(" ")"
-             ( fmt_pattern c ~parens:false ~box:true xpat
-             $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
-    | Val (Optional l, xpat, Some xexp) ->
+        wrap_label_cmts c lbl
+          (cbox 0
+             (wrap "?(" ")"
+                ( Cmts.fmt c l.loc
+                    (fmt_pattern c ~parens:false ~box:true xpat)
+                $ fmt " =@;<1 2>" $ fmt_expression c xexp ) ) )
+    | Val ((Some {txt= Optional l; loc= _} as lbl), xpat, Some xexp) ->
         let parens =
           match xpat.ast.ppat_desc with
           | Ppat_unpack _ -> None
           | _ -> Some false
         in
-        cbox 2
-          ( str "?" $ str l.txt
-          $ wrap_k (fmt ":@,(") (str ")")
-              ( fmt_pattern c ?parens ~box:true xpat
-              $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
-    | Val ((Labelled _ | Nolabel), _, Some _) ->
+        wrap_label_cmts c lbl
+          (cbox 2
+             ( str "?" $ fmt_str_loc c l
+             $ wrap_k (fmt ":@,(") (str ")")
+                 ( fmt_pattern c ?parens ~box:true xpat
+                 $ fmt " =@;<1 2>" $ fmt_expression c xexp ) ) )
+    | Val ((None | Some {txt= Labelled _; _}), _, Some _) ->
         impossible "not accepted by parser"
     | Newtypes [] -> impossible "not accepted by parser"
     | Newtypes names ->
@@ -1335,7 +1347,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 and fmt_fun ?force_closing_paren
     ?(wrap_intro = fun x -> hvbox 2 x $ fmt "@ ") ?(box = true) ~label
     ?(parens = false) c ({ast; _} as xast) =
-  let has_label = match label with Nolabel -> false | _ -> true in
+  let has_label = Option.is_some label in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
      before Sugar.fun_ is important. *)
@@ -1364,26 +1376,37 @@ and fmt_fun ?force_closing_paren
     if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
     else (":", fmt "@ ")
   in
+  let label_has_cmts =
+    Option.value_map label ~default:false ~f:(fun {loc; _} ->
+        Cmts.has_before c.cmts loc )
+  in
   hovbox_if box 2
     ( wrap_intro
-        (hvbox_if has_cmts_outer 0
-           ( cmts_outer
+        (hvbox_if
+           (has_cmts_outer || label_has_cmts)
+           0
+           ( opt label (fun {loc; _} -> Cmts.fmt_before c loc)
+           $ cmts_outer
            $ hvbox 2
-               ( fmt_label label label_sep $ cmts_inner $ fmt_if parens "("
-               $ fmt "fun" $ break_fun
+               ( fmt_label c label label_sep
+               $ cmts_inner $ fmt_if parens "(" $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
                    $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
                ) ) )
     $ body $ closing
-    $ Cmts.fmt_after c ast.pexp_loc )
+    $ Cmts.fmt_after c ast.pexp_loc
+    $ opt label (fun {loc; _} -> Cmts.fmt_after c loc) )
 
 and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
-  | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
+  | ( Some {txt= Labelled l | Optional l; loc= lbl_loc}
+    , Pexp_ident {txt= Lident i; loc} )
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
-      Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-  | ( (Labelled l | Optional l)
+      Cmts.fmt c lbl_loc @@ Cmts.fmt c loc
+      @@ Cmts.fmt c ?eol arg.pexp_loc
+      @@ fmt_label c lbl ""
+  | ( (Some {txt= (Labelled l | Optional l) as lbl; loc= _} as lbl_opt)
     , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
     when String.equal l.txt i
          && List.is_empty arg.pexp_attributes
@@ -1391,28 +1414,27 @@ and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
               compare c.conf.opr_opts.ocaml_version.v Releases.v4_14_0 >= 0 )
     ->
       let lbl =
-        match lbl with
-        | Labelled _ -> str "~"
-        | Optional _ -> str "?"
-        | Nolabel -> noop
+        match lbl with Labelled _ -> str "~" | Optional _ -> str "?"
       in
-      lbl $ fmt_expression c ~box ?epi xarg
-  | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
-    ->
+      wrap_label_cmts c lbl_opt
+        (lbl $ Cmts.fmt c l.loc (fmt_expression c ~box ?epi xarg))
+  | Some _, _ when Cmts.has_after c.cmts xarg.ast.pexp_loc ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
-      hvbox_if box 2
-        ( hvbox_if box 0
-            (fmt_expression c
-               ~pro:(fmt_label lbl ":@;<0 2>")
-               ~box ?epi xarg )
-        $ cmts_after )
-  | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
+      wrap_label_cmts c lbl
+        (hvbox_if box 2
+           ( hvbox_if box 0
+               (fmt_expression c
+                  ~pro:(fmt_label c lbl ":@;<0 2>")
+                  ~box ?epi xarg )
+           $ cmts_after ) )
+  | Some _, (Pexp_fun _ | Pexp_newtype _) ->
       fmt_fun ~box ~label:lbl ~parens:true c xarg
   | _ ->
       let label_sep : s =
         if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
       in
-      fmt_label lbl label_sep $ fmt_expression c ~box ?epi xarg
+      wrap_label_cmts c lbl
+        (fmt_label c lbl label_sep $ fmt_expression c ~box ?epi xarg)
 
 and expression_width c xe =
   String.length
@@ -1431,7 +1453,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let epi =
       match (lbl, last) with
       | _, true -> None
-      | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
+      | None, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
       | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
     in
     hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
@@ -1652,7 +1674,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let ctx = Exp exp in
   let fmt_args_grouped ?epi e0 a1N =
-    fmt_args_grouped c ctx ?epi ((Nolabel, e0) :: a1N)
+    fmt_args_grouped c ctx ?epi ((None, e0) :: a1N)
   in
   hvbox_if box 0 ~name:"expr"
   @@ fmt_cmts
@@ -1895,9 +1917,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let xlast_arg = sub_exp ~ctx eN1 in
           let args =
             let begin_arg_loc =
-              match lbl with
-              | Nolabel -> eN1.pexp_loc
-              | Optional x | Labelled x -> x.loc
+              Option.value_map lbl ~f:(fun x -> x.loc) ~default:eN1.pexp_loc
             in
             let break_body =
               match eN1_body.pexp_desc with
@@ -1954,8 +1974,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 ( hovbox 4
                     ( wrap
                         ( intro_epi $ fmt_args_grouped e0 e1N $ fmt "@ "
+                        $ opt lbl (fun {loc; _} -> Cmts.fmt_before c loc)
                         $ Cmts.fmt_before c pexp_loc
-                        $ fmt_label lbl ":" $ str "(function"
+                        $ fmt_label c lbl ":" $ str "(function"
                         $ fmt_attributes c ~pre:Blank eN.pexp_attributes )
                     $ fmt "@ " $ leading_cmt
                     $ hvbox 0
@@ -1964,7 +1985,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         $ fmt "@ ->" )
                     $ fmt "@ "
                     $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                    $ closing_paren c ~force $ Cmts.fmt_after c pexp_loc )
+                    $ closing_paren c ~force $ Cmts.fmt_after c pexp_loc
+                    $ opt lbl (fun {loc; _} -> Cmts.fmt_after c loc) )
                 $ fmt_atrs ) )
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc; _} as eN)) :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
@@ -1985,11 +2007,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ Params.parens_if parens c.conf
                 ( wrap
                     ( intro_epi $ fmt_args_grouped e0 e1N $ fmt "@ "
+                    $ opt lbl (fun {loc; _} -> Cmts.fmt_before c loc)
                     $ Cmts.fmt_before c pexp_loc
-                    $ fmt_label lbl ":" $ str "(function"
+                    $ fmt_label c lbl ":" $ str "(function"
                     $ fmt_attributes c ~pre:Blank eN.pexp_attributes )
                 $ fmt "@ " $ fmt_cases c ctx'' cs $ closing_paren c
-                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ) )
+                $ Cmts.fmt_after c pexp_loc
+                $ opt lbl (fun {loc; _} -> Cmts.fmt_after c loc)
+                $ fmt_atrs ) )
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes

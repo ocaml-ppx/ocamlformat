@@ -26,10 +26,13 @@ module Layout_cache = struct
 
     let pattern_to_string e = Format.asprintf "%a" Printast.pattern e
 
-    let sexp_of_arg_label = function
-      | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
-      | Labelled label -> List [Atom "Labelled"; sexp_of_string label.txt]
+    let sexp_of_named_arg_label = function
+      | Asttypes.Labelled label ->
+          Sexp.List [Atom "Labelled"; sexp_of_string label.txt]
       | Optional label -> List [Atom "Optional"; sexp_of_string label.txt]
+
+    let sexp_of_arg_label =
+      sexp_of_option @@ fun x -> sexp_of_named_arg_label x.Location.txt
 
     let sexp_of_t = function
       | Arg (label, expression) ->

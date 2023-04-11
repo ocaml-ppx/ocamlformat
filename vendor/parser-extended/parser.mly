@@ -103,8 +103,8 @@ let mkcf ~loc ?attrs ?docs d =
 
 let mkrhs rhs loc = mkloc rhs (make_loc loc)
 
-let mk_optional lbl loc = Optional (mkrhs lbl loc)
-let mk_labelled lbl loc = Labelled (mkrhs lbl loc)
+let mk_optional lbl loc = Some (mkloc (Optional lbl) (make_loc loc))
+let mk_labelled lbl loc = Some (mkloc (Labelled lbl) (make_loc loc))
 
 let push_loc x acc =
   if x.Location.loc_ghost
@@ -2033,18 +2033,18 @@ labeled_simple_pattern:
       { mk_optional (fst $3) $sloc, $4, snd $3 }
   | QUESTION label_var
       { mk_optional (fst $2) $sloc, None, snd $2 }
-  | OPTLABEL LPAREN let_pattern opt_default RPAREN
+  | mkrhs(OPTLABEL) LPAREN let_pattern opt_default RPAREN
       { mk_optional $1 $sloc, $4, $3 }
-  | OPTLABEL pattern_var
+  | mkrhs(OPTLABEL) pattern_var
       { mk_optional $1 $sloc, None, $2 }
   | TILDE LPAREN label_let_pattern RPAREN
       { mk_labelled (fst $3) $sloc, None, snd $3 }
   | TILDE label_var
       { mk_labelled (fst $2) $sloc, None, snd $2 }
-  | LABEL simple_pattern
+  | mkrhs(LABEL) simple_pattern
       { mk_labelled $1 $sloc, None, $2 }
   | simple_pattern
-      { Nolabel, None, $1 }
+      { None, None, $1 }
 ;
 
 pattern_var:
@@ -2068,7 +2068,7 @@ label_let_pattern:
 ;
 %inline label_var:
     mkrhs(LIDENT)
-      { ($1.Location.txt, mkpat ~loc:$sloc (Ppat_var $1)) }
+      { ($1, mkpat ~loc:$sloc (Ppat_var $1)) }
 ;
 let_pattern:
     pattern
@@ -2334,20 +2334,21 @@ simple_expr:
 ;
 labeled_simple_expr:
     simple_expr %prec below_HASH
-      { Nolabel, $1 }
-  | LABEL simple_expr %prec below_HASH
+      { None, $1 }
+  | mkrhs(LABEL) simple_expr %prec below_HASH
       { mk_labelled $1 $sloc, $2 }
   | TILDE label = LIDENT
       { let loc = $loc(label) in
-        mk_labelled label $sloc, mkexpvar ~loc label }
+        mk_labelled (mkrhs label loc) $sloc, mkexpvar ~loc label }
   | TILDE LPAREN label = LIDENT ty = type_constraint RPAREN
-      { mk_labelled label $sloc,
+      { let loc = $loc(label) in
+        mk_labelled (mkrhs label loc) $sloc,
         mkexp_constraint ~loc:($startpos($2), $endpos)
-          (mkexpvar ~loc:$loc(label) label) ty }
+          (mkexpvar ~loc label) ty }
   | QUESTION label = LIDENT
       { let loc = $loc(label) in
-        mk_optional label $sloc, mkexpvar ~loc label }
-  | OPTLABEL simple_expr %prec below_HASH
+        mk_optional (mkrhs label loc) $sloc, mkexpvar ~loc label }
+  | mkrhs(OPTLABEL) simple_expr %prec below_HASH
       { mk_optional $1 $sloc, $2 }
 ;
 %inline lident_list:
@@ -3203,12 +3204,12 @@ function_type:
     { $1 }
 ;
 %inline arg_label:
-  | label = optlabel
+  | label = mkrhs(optlabel)
       { mk_optional label $sloc }
-  | label = LIDENT COLON
+  | label = mkrhs(LIDENT) COLON
       { mk_labelled label $sloc }
   | /* empty */
-      { Nolabel }
+      { None }
 ;
 (* Tuple types include:
    - atomic types (see below);

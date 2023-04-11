@@ -59,10 +59,11 @@ type 'a loc = 'a Location.loc = {
   loc : Location.t;
 }
 
-type arg_label =
-    Nolabel
+type named_arg_label =
   | Labelled of string loc (** [label:T -> ...] *)
   | Optional of string loc (** [?label:T -> ...] *)
+
+type arg_label = named_arg_label loc option
 
 type variant_var = string loc loc  (** [`A] *)
 

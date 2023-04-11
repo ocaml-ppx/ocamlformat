@@ -28,7 +28,7 @@
                 Pexp_ident "print_endline" (a.ml[3,43+2]..[3,43+15])
               [
                 <arg>
-                Nolabel
+                None
                   expression (a.ml[4,59+4]..[4,59+7])
                     Pexp_ident "A.x" (a.ml[4,59+4]..[4,59+7])
               ]
@@ -56,7 +56,7 @@
                 Pexp_ident "print_endline" (a.ml[3,43+2]..[3,43+15])
               [
                 <arg>
-                Nolabel
+                None
                   expression (a.ml[4,59+4]..[4,59+7])
                     Pexp_ident "A.x" (a.ml[4,59+4]..[4,59+7])
               ]
@@ -84,7 +84,7 @@
                 Pexp_ident "print_endline" (a.ml[2,34+9]..[2,34+22])
               [
                 <arg>
-                Nolabel
+                None
                   expression (a.ml[2,34+23]..[2,34+26])
                     Pexp_ident "A.x" (a.ml[2,34+23]..[2,34+26])
               ]
@@ -111,7 +111,7 @@
                 Pexp_ident "print_endline" (a.ml[2,34+9]..[2,34+22])
               [
                 <arg>
-                Nolabel
+                None
                   expression (a.ml[2,34+23]..[2,34+26])
                     Pexp_ident "A.x" (a.ml[2,34+23]..[2,34+26])
               ]
