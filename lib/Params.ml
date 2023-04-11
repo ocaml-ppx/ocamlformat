@@ -590,6 +590,14 @@ let function_indent ?(default = 0) (c : Conf.t) ~parens ~xexp =
       default + 1
   | _ -> default
 
+let fun_indent ?eol (c : Conf.t) =
+  match c.fmt_opts.function_indent_nested.v with
+  | `Always -> c.fmt_opts.function_indent.v
+  | _ ->
+      if Option.is_none eol then 2
+      else if c.fmt_opts.let_binding_deindent_fun.v then 1
+      else 0
+
 let comma_sep (c : Conf.t) : Fmt.s =
   match c.fmt_opts.break_separators.v with
   | `Before -> "@,, "

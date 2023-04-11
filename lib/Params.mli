@@ -152,6 +152,10 @@ val function_indent :
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
+val fun_indent : ?eol:Fmt.t -> Conf.t -> int
+(** [fun_undent ?eol c] returns the indentation used for the function,
+    depending on the `function-indent-nested` option. *)
+
 val comma_sep : Conf.t -> Fmt.s
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)

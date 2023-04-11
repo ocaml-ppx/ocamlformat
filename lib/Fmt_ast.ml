@@ -170,7 +170,7 @@ end
 module Box = struct
   let _ocp a b c k = if c.conf.fmt_opts.ocp_indent_compat.v then a k else b k
 
-  let fun_decl = _ocp (hvbox 2) (hovbox 4)
+  let fun_decl ~parens = _ocp (hvbox (if parens then 1 else 2)) (hovbox 4)
 
   let fun_args c k =
     hvbox_if
@@ -2204,19 +2204,21 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match xbody.ast.pexp_desc with Pexp_function _ -> true | _ -> false
       in
       let pre_body, body = fmt_body c ?ext xbody in
-      let default_indent =
-        if Option.is_none eol then 2
-        else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
-        else 0
-      in
       let indent =
-        Params.function_indent c.conf ~parens ~xexp ~default:default_indent
+        if body_is_function then
+          let default_indent =
+            if Option.is_none eol then 2
+            else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
+            else 0
+          in
+          Params.function_indent c.conf ~parens ~xexp ~default:default_indent
+        else Params.fun_indent c.conf ?eol
       in
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
            ~offset_closing_paren:(-2)
            ( hovbox 2
-               ( Box.fun_decl c
+               ( Box.fun_decl ~parens c
                    ( str "fun"
                    $ fmt_extension_suffix c ext
                    $ str " "

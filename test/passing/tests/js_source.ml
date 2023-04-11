@@ -7978,3 +7978,12 @@ module M =
     module Foo = Bar
 
     type t]
+;;
+
+let _ =
+  Some
+    (fun fooooooooooooooooooooooooooooooo
+        fooooooooooooooooooooooooooooooo
+        fooooooooooooooooooooooooooooooo ->
+        foo)
+;;
