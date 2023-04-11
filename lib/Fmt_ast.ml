@@ -2781,7 +2781,7 @@ and fmt_class_type c ({ast= typ; _} as xtyp) =
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_class_expr c ?eol ({ast= exp; ctx= ctx0} as xexp) =
+and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
@@ -2793,7 +2793,7 @@ and fmt_class_expr c ?eol ({ast= exp; ctx= ctx0} as xexp) =
     (* TODO: consider [e0] when grouping *)
     fmt_class_expr c (sub_cl ~ctx e0) $ fmt "@ " $ fmt_args_grouped c ctx a1N
   in
-  let fmt_cmts = Cmts.fmt c ?eol pcl_loc in
+  let fmt_cmts = Cmts.fmt c pcl_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space pcl_attributes in
   hvbox 0 @@ fmt_cmts
   @@
@@ -2823,8 +2823,7 @@ and fmt_class_expr c ?eol ({ast= exp; ctx= ctx0} as xexp) =
                    $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" )
-           $ fmt "@ "
-           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody ) )
+           $ fmt "@ " $ fmt_class_expr c xbody ) )
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
