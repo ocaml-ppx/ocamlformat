@@ -3781,11 +3781,11 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
     let xmt = sub_mty ~ctx mt in
     let blk = fmt_module_type c ?rec_ xmt in
     let align_opn, align_cls =
-      if args_p.arg_align then open_hvbox 0, close_box else noop, noop
+      if args_p.arg_align then (open_hvbox 0, close_box) else (noop, noop)
     in
     let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ align_opn $ fmt_str_loc_opt c name
-      $ str " : "
+      pro $ Cmts.fmt_before c loc $ str "(" $ align_opn
+      $ fmt_str_loc_opt c name $ str " : "
     and epi = str ")" $ Cmts.fmt_after c loc $ align_cls in
     compose_module' ~box:false ~pro ~epi blk
   in
