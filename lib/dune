@@ -33,7 +33,6 @@
   ocaml_common
   parser_standard
   parser_extended
-  parser_recovery
   ocamlformat_result
   ocamlformat_stdlib
   ocaml-version

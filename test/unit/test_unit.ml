@@ -116,7 +116,6 @@ let tests =
   ; ("Eol_compat", Test_eol_compat.tests)
   ; ("non overlapping interval tree", Test_noit.tests)
   ; ("Ast", Test_ast.tests)
-  ; ("Indent", Test_indent.tests)
   ; ("Literal_lexer", Test_literal_lexer.tests)
   ; ("Fmt", Test_fmt.tests)
   ; ("Range", Test_range.tests)

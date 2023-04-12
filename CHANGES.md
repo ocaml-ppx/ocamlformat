@@ -2,6 +2,8 @@
 
 ### Removed
 
+- Remove `--numeric` feature (#<PR_NUMBER>, @gpetiot)
+
 ### Deprecated
 
 ### Bug fixes

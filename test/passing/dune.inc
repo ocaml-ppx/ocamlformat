@@ -2046,60 +2046,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to format_invalid_files-0.ml.stdout
-   (with-stderr-to format_invalid_files-0.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric --range=11-13 %{dep:tests/format_invalid_files.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files-0.ml.ref format_invalid_files-0.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files-0.ml.err format_invalid_files-0.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to format_invalid_files.ml.stdout
-   (with-stderr-to format_invalid_files.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric --range=7-8 %{dep:tests/format_invalid_files.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files.ml.ref format_invalid_files.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files.ml.err format_invalid_files.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to format_invalid_files_with_locations.ml.stdout
-   (with-stderr-to format_invalid_files_with_locations.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric --range=1-11 %{dep:tests/format_invalid_files_with_locations.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files_with_locations.ml.ref format_invalid_files_with_locations.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/format_invalid_files_with_locations.ml.err format_invalid_files_with_locations.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to fun_decl.ml.stdout
    (with-stderr-to fun_decl.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/fun_decl.ml})))))
@@ -4257,42 +4203,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/parens_tuple_patterns.ml.err parens_tuple_patterns.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to partial.ml.stdout
-   (with-stderr-to partial.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric --range=2-14 %{dep:tests/partial.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/partial.ml.ref partial.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/partial.ml.err partial.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to partial_double_quotes.ml.stdout
-   (with-stderr-to partial_double_quotes.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --numeric --range=1-1 %{dep:tests/partial_double_quotes.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/partial_double_quotes.ml.ref partial_double_quotes.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/partial_double_quotes.ml.err partial_double_quotes.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

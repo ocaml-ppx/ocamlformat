@@ -1,7 +1,4 @@
 (test
  (name test_unit)
- (deps
-  ../passing/tests/partial.ml
-  ../passing/tests/format_invalid_files_with_locations.ml)
  (package ocamlformat-lib)
  (libraries alcotest base ocamlformat-lib))
