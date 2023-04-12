@@ -2,7 +2,7 @@
 
 ### Removed
 
-- Remove `--numeric` feature (#<PR_NUMBER>, @gpetiot)
+- Remove `--numeric` feature (#2333, @gpetiot)
 
 ### Deprecated
 
