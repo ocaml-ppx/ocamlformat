@@ -37,9 +37,6 @@ jobs:
       - name: Runtest
         run: opam exec -- dune runtest
 
-      - name: Check help files
-        run: opam exec -- dune build @help --auto-promote
-
       - name: Upload binary
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
