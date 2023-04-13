@@ -66,7 +66,7 @@ COMMON OPTIONS
            Show version information.
 
 EXIT STATUS
-       ocamlformat-rpc exits with the following status:
+       ocamlformat-rpc exits with:
 
        0   on success.
 
