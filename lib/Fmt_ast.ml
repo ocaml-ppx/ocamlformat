@@ -343,10 +343,12 @@ let fmt_label ?(arrow_param = false) c lbl sep =
   opt lbl
   @@ fun {txt; loc= _lbl_loc} ->
   (* Comments attached at [_lbl_loc] must be printed in the calling points *)
-  ( match txt with
-  | Labelled l -> fmt_if (not arrow_param) "~" $ fmt_str_loc c l
-  | Optional l -> str "?" $ fmt_str_loc c l )
-  $ fmt sep
+  let pre, l =
+    match txt with
+    | Labelled l -> (fmt_if (not arrow_param) "~", l)
+    | Optional l -> (str "?", l)
+  in
+  pre $ Cmts.fmt c l.loc (str l.txt $ fmt sep)
 
 let wrap_label_cmts ?(box = true) c lbl k =
   match lbl with
