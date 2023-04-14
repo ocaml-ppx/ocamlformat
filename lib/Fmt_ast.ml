@@ -1353,11 +1353,12 @@ and fmt_fun ?force_closing_paren
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
      before Sugar.fun_ is important. *)
-  let has_cmts_outer, cmts_outer, cmts_inner =
+  let has_cmts_outer, cmts_outer, _has_cmts_inner, cmts_inner =
     let eol = if has_label then Some (fmt "@,") else None in
     let has_cmts = Cmts.has_before c.cmts ast.pexp_loc in
     let cmts = Cmts.fmt_before ?eol c ast.pexp_loc in
-    if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
+    if has_label then (false, noop, has_cmts, cmts)
+    else (has_cmts, cmts, false, noop)
   in
   let xargs, xbody = Sugar.fun_ c.cmts xast in
   let fmt_cstr, xbody = type_constr_and_body c xbody in
@@ -1372,26 +1373,32 @@ and fmt_fun ?force_closing_paren
     if parens then closing_paren c ?force:force_closing_paren ~offset:(-2)
     else noop
   in
+  let label_has_cmts_before =
+    Option.value_map label ~default:false ~f:(fun {loc; _} ->
+        Cmts.has_before c.cmts loc )
+  in
+  let label_has_cmts_after =
+    Option.value_map label ~default:false ~f:(fun {loc; _} ->
+        Cmts.has_after c.cmts loc )
+  in
   let (label_sep : s), break_fun =
     (* Break between the label and the fun to avoid ocp-indent's
        alignment. *)
     if c.conf.fmt_opts.ocp_indent_compat.v then ("@,", fmt "@;<1 2>")
-    else ("", fmt "@ ")
-  in
-  let label_has_cmts =
-    Option.value_map label ~default:false ~f:(fun {loc; _} ->
-        Cmts.has_before c.cmts loc )
+    else
+      ( (if label_has_cmts_after && not _has_cmts_inner then "@," else "")
+      , fmt "@ " )
   in
   hovbox_if box 2
     ( wrap_intro
         (hvbox_if
-           (has_cmts_outer || label_has_cmts)
+           (has_cmts_outer || label_has_cmts_before)
            0
            ( opt label (fun {loc; _} -> Cmts.fmt_before c loc)
            $ cmts_outer
            $ hvbox 2
-               ( fmt_label c label ":" label_sep
-               $ cmts_inner $ fmt_if parens "(" $ fmt "fun" $ break_fun
+               ( hvbox 0 (fmt_label c label ":" "" $ cmts_inner)
+               $ fmt label_sep $ fmt_if parens "(" $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
                    $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
@@ -1481,7 +1488,12 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     is_simple c.conf (expression_width c) xexp && not breaks
   in
   let break x y =
-    Cmts.has_after c.cmts (snd x).pexp_loc || not (is_simple x && is_simple y)
+    Option.value_map (fst x) ~default:false ~f:(fun {loc; _} ->
+        Cmts.has_after c.cmts loc )
+    || Cmts.has_after c.cmts (snd x).pexp_loc
+    || Option.value_map (fst y) ~default:false ~f:(fun {loc; _} ->
+           Cmts.has_before c.cmts loc )
+    || not (is_simple x && is_simple y)
   in
   let groups =
     if c.conf.fmt_opts.wrap_fun_args.v then List.group args ~break
