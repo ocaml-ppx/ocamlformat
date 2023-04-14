@@ -10,10 +10,7 @@
 (**************************************************************************)
 
 val fmt_ast :
-     ?wrap_docstrings:bool
-  -> fmt_code:Fmt.code_formatter
-  -> Odoc_parser.Ast.t
-  -> Fmt.t
+  Conf.t -> fmt_code:Fmt.code_formatter -> Odoc_parser.Ast.t -> Fmt.t
 
 val fmt_parsed :
      Conf.t
