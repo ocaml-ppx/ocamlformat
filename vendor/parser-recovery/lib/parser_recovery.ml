@@ -56,34 +56,36 @@ module Without_recovery : RECOVER_INTF = struct
   let recovery_env = function I.InputNeeded env -> env | _ -> assert false
 end
 
-module With_recovery : PARSE_INTF = struct
+type 'a t = 'a * [`Recovered | `Not_recovered]
+
+module With_recovery = struct
   module M = Without_recovery
 
   type 'a parser = Correct of 'a M.parser | Recovering of 'a R.candidates
 
   let initial entry_point position = Correct (M.initial entry_point position)
 
-  type 'a step = Intermediate of 'a parser | Success of 'a | Error
+  type 'a step = Intermediate of 'a parser | Success of 'a t | Error
 
   let step parser token =
     match parser with
     | Correct parser -> (
         match M.step parser token with
         | M.Intermediate parser -> Intermediate (Correct parser)
-        | M.Success x -> Success x
+        | M.Success x -> Success (x, `Not_recovered)
         | M.Error ->
             let env = M.recovery_env parser in
             Intermediate (Recovering (R.generate env)) )
     | Recovering candidates -> (
         match R.attempt candidates token with
         | `Ok (cp, _) -> Intermediate (Correct (M.recover cp))
-        | `Accept x -> Success x
+        | `Accept x -> Success (x, `Recovered)
         | `Fail -> (
             match token with
             | Parser.EOF, _, _ -> (
                 match candidates.final with
                 | None -> Error
-                | Some x -> Success x )
+                | Some x -> Success (x, `Recovered) )
             | _ -> Intermediate parser ) )
 end
 
@@ -91,7 +93,7 @@ let parse_with_recovery entrypoint tokens =
   let module P = With_recovery in
   let rec step tokens = function
     | P.Error -> failwith "Parsing failed"
-    | P.Success x -> x
+    | P.Success (x, b) -> x, b
     | P.Intermediate p -> offer p tokens
   and offer p tokens =
     let token, rest =
@@ -123,3 +125,12 @@ let structure = parse P.Incremental.implementation
 let signature = parse P.Incremental.interface
 
 let use_file = parse P.Incremental.use_file
+
+let core_type = parse P.Incremental.parse_core_type
+
+let module_type = parse P.Incremental.parse_module_type
+
+let expression = parse P.Incremental.parse_expression
+
+module Parser = Parser
+module Lexer = Lexer

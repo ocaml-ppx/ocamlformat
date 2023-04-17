@@ -188,9 +188,9 @@ let recover (type a) (fg : a Extended_ast.t) ~input_name str : a =
   let lexbuf = Lexing.from_string str in
   Location.init lexbuf input_name ;
   match fg with
-  | Structure -> Parser_recovery.structure lexbuf
-  | Signature -> Parser_recovery.signature lexbuf
-  | Use_file -> Parser_recovery.use_file lexbuf
+  | Structure -> fst @@ Parser_recovery.structure lexbuf
+  | Signature -> fst @@ Parser_recovery.signature lexbuf
+  | Use_file -> fst @@ Parser_recovery.use_file lexbuf
   | Core_type -> failwith "no recovery for core_type"
   | Module_type -> failwith "no recovery for module_type"
   | Expression -> failwith "no recovery for expression"
@@ -315,7 +315,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
-        | t_new -> Ok t_new
+        | t_new -> Ok {t_new with ast= fst t_new.ast}
       in
       let+ std_t_new =
         match
@@ -331,14 +331,18 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       in
       (* Ast not preserved ? *)
       ( if
-          (not
-             (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
-                ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
+          Option.for_all std_t ~f:(fun std_t ->
+              not
+                (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
+                   ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
           && not
                (Normalize_extended_ast.equal fg conf t.ast t_new.ast
                   ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
           let old_ast =
+            let open Option in
+            std_t
+            >>= fun std_t ->
             dump_ast std_fg ~suffix:".old"
               (Normalize_std_ast.ast std_fg conf std_t.ast)
           in
@@ -353,21 +357,24 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
             |> List.filter_map ~f:(fun (s, f_opt) ->
                    Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
           in
-          if
-            Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
-              std_t.ast std_t_new.ast
-          then
-            let docstrings =
-              Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
-                std_t_new.ast
-            in
-            let args = args ~suffix:".unequal-docs" in
-            internal_error
-              (List.map ~f:(fun x -> `Comment x) docstrings)
-              args
-          else
-            let args = args ~suffix:".unequal-ast" in
-            internal_error [`Ast_changed] args
+          match std_t with
+          | Some std_t ->
+              if
+                Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
+                  std_t.ast std_t_new.ast
+              then
+                let docstrings =
+                  Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
+                    std_t_new.ast
+                in
+                let args = args ~suffix:".unequal-docs" in
+                internal_error
+                  (List.map ~f:(fun x -> `Comment x) docstrings)
+                  args
+              else
+                let args = args ~suffix:".unequal-ast" in
+                internal_error [`Ast_changed] args
+          | None -> ()
         else
           dump_ast std_fg ~suffix:""
             (Normalize_std_ast.ast std_fg conf std_t_new.ast)
@@ -384,7 +391,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           ) )
       else
         (* All good, continue *)
-        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new std_t_new
+        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new (Some std_t_new)
   in
   try print_check ~i:1 ~conf ~prev_source parsed std_parsed with
   | Sys_error msg -> Error (User_error msg)
@@ -405,8 +412,13 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
     parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
   in
   let+ std_parsed =
-    parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+    match snd parsed.ast with
+    | `Recovered -> Ok None
+    | `Not_recovered ->
+        Result.map ~f:Option.some
+        @@ parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   in
+  let parsed = {parsed with ast= fst parsed.ast} in
   let+ strlocs, formatted =
     format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
       ~std_parsed conf
@@ -433,10 +445,10 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   let lines = String.split_lines source in
   Location.input_name := input_name ;
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
-  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
+  let parse_ast x = Extended_ast.Parse.ast ~preserve_beginend x in
   let parse_or_recover ~src =
     match parse_result parse_ast fg conf ~source:src ~input_name with
-    | Ok parsed -> Ok parsed
+    | Ok parsed -> Ok {parsed with ast= fst parsed.ast}
     | Error _ -> parse_result recover fg conf ~source:src ~input_name
   in
   match
@@ -444,6 +456,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
     let+ std_parsed =
       parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
     in
+    let std_parsed = Some std_parsed in
     let+ _, fmted_src =
       format fg std_fg ~input_name ~prev_source:source ~parsed ~std_parsed
         conf
@@ -452,7 +465,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
       parse_result parse_ast fg ~source:fmted_src conf ~input_name
     in
     let unformatted = (parsed.ast, source) in
-    let formatted = (fmted_ast, fmted_src) in
+    let formatted = (fst fmted_ast, fmted_src) in
     Ok
       (Indent.Valid_ast.indent_range fg ~lines ~range ~unformatted ~formatted)
   with

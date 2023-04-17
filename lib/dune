@@ -23,6 +23,8 @@
    -open
    Parser_extended
    -open
+   Parser_recovery
+   -open
    Ocamlformat_stdlib
    -open
    Ocamlformat_result.Global_scope))

@@ -4480,14 +4480,24 @@ let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let ctx = Top in
   Ok (fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code)
 
+let did_not_need_recovery (ast, recovered) =
+  match recovered with
+  | `Recovered -> Error (`Msg "invalid input")
+  | `Not_recovered -> Ok ast
+
 let fmt_code ~debug =
+  let open Result in
   let rec fmt_code (conf : Conf.t) s =
     let warn = conf.fmt_opts.parse_toplevel_phrases.v in
     let input_name = !Location.input_name in
     match Parse_with_comments.parse_toplevel conf ~input_name ~source:s with
     | Either.First {ast; comments; source; prefix= _} ->
+        did_not_need_recovery ast
+        >>= fun ast ->
         fmt_parse_result conf ~debug Use_file ast source comments ~fmt_code
     | Second {ast; comments; source; prefix= _} ->
+        did_not_need_recovery ast
+        >>= fun ast ->
         fmt_parse_result conf ~debug Repl_file ast source comments ~fmt_code
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
         Error (`Msg (Format.asprintf "expecting: %s" x))

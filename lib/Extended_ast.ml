@@ -14,6 +14,8 @@ include Parsetree
 
 let equal_core_type : core_type -> core_type -> bool = Poly.equal
 
+type 'a recovered = 'a Parser_recovery.t
+
 type use_file = toplevel_phrase list
 
 type repl_file = repl_phrase list
@@ -217,23 +219,25 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
 
-  let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
-    map fg (normalize_mapper ~preserve_beginend)
+  let ast (type a) (fg : a t) ~preserve_beginend ~input_name str :
+      a recovered =
+    (fun (x, r) -> (map fg (normalize_mapper ~preserve_beginend) x, r))
     @@
     let lexbuf = Lexing.from_string str in
     Location.init lexbuf input_name ;
+    let module Parse = Parser_recovery in
     match fg with
-    | Structure -> Parse.implementation lexbuf
-    | Signature -> Parse.interface lexbuf
+    | Structure -> Parse.structure lexbuf
+    | Signature -> Parse.signature lexbuf
     | Use_file -> Parse.use_file lexbuf
     | Core_type -> Parse.core_type lexbuf
     | Module_type -> Parse.module_type lexbuf
     | Expression -> Parse.expression lexbuf
-    | Repl_file -> Toplevel_lexer.repl_file lexbuf
+    | Repl_file -> (Toplevel_lexer.repl_file lexbuf, `Not_recovered)
     | Documentation ->
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
-        Docstring.parse_file pos str
+        (Docstring.parse_file pos str, `Not_recovered)
 end
 
 module Printast = struct

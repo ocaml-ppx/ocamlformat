@@ -13,6 +13,8 @@ open Parser_extended
 
 include module type of Parsetree
 
+type 'a recovered = 'a Parser_recovery.t
+
 type use_file = toplevel_phrase list
 
 type repl_file = repl_phrase list
@@ -33,7 +35,11 @@ val of_syntax : Syntax.t -> any_t
 
 module Parse : sig
   val ast :
-    'a t -> preserve_beginend:bool -> input_name:string -> string -> 'a
+       'a t
+    -> preserve_beginend:bool
+    -> input_name:string
+    -> string
+    -> 'a recovered
 end
 
 val equal_core_type : core_type -> core_type -> bool
