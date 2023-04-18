@@ -723,7 +723,7 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
     $ hovbox_if (Option.is_some lI) 2
         ( opt lI (fun _ ->
               (* Comments attched to the label should only be placed around
-                 [lI] and not the core_Type to be consistent with the
+                 [lI] and not the core_type to be consistent with the
                  parser. *)
               wrap_label_cmts c lI
                 (fmt_label ~arrow_param:true c lI ":" "@,") )
@@ -1487,12 +1487,11 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
     is_simple c.conf (expression_width c) xexp && not breaks
   in
+  let maybe = Option.value_map ~default:false in
   let break x y =
-    Option.value_map (fst x) ~default:false ~f:(fun {loc; _} ->
-        Cmts.has_after c.cmts loc )
+    maybe (fst x) ~f:(fun {loc; _} -> Cmts.has_after c.cmts loc)
     || Cmts.has_after c.cmts (snd x).pexp_loc
-    || Option.value_map (fst y) ~default:false ~f:(fun {loc; _} ->
-           Cmts.has_before c.cmts loc )
+    || maybe (fst y) ~f:(fun {loc; _} -> Cmts.has_before c.cmts loc)
     || not (is_simple x && is_simple y)
   in
   let groups =
