@@ -1409,10 +1409,10 @@ and fmt_fun ?force_closing_paren
 
 and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
-  | ( Some {txt= Labelled l | Optional l; loc= lbl_loc}
+  | ( (Some {txt= Labelled l | Optional l; loc= _} as lbl)
     , Pexp_ident {txt= Lident i; loc} )
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
-      Cmts.fmt c lbl_loc @@ Cmts.fmt c loc
+      wrap_label_cmts c lbl @@ Cmts.fmt c loc
       @@ Cmts.fmt c ?eol arg.pexp_loc
       @@ fmt_label c lbl "" ""
   | ( (Some {txt= (Labelled l | Optional l) as lbl; loc= _} as lbl_opt)
