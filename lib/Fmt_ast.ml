@@ -22,7 +22,7 @@ type c =
   ; debug: bool
   ; source: Source.t
   ; cmts: Cmts.t
-  ; fmt_code: Conf.t -> Fmt.code_formatter }
+  ; fmt_code: Fmt_odoc.fmt_code }
 
 module Cmts = struct
   include Cmts
@@ -388,10 +388,9 @@ let virtual_or_override = function
   | Cfk_concrete (Override, _) -> str "!"
   | Cfk_concrete (Fresh, _) -> noop
 
-let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
-  assert (not (String.is_empty str_cmt)) ;
-  let fmt_code = c.fmt_code c.conf in
-  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~input:str_cmt parsed in
+let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
+  assert (not (String.is_empty input)) ;
+  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code:c.fmt_code ~input parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
@@ -4472,8 +4471,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d ->
-      Fmt_odoc.fmt_ast c.conf ~fmt_code:(c.fmt_code c.conf) d
+  | Documentation, d -> Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in

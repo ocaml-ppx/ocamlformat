@@ -13,7 +13,9 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type c = {fmt_code: Fmt.code_formatter; conf: Conf.t}
+type fmt_code = Conf.t -> string -> Fmt.t or_error
+
+type c = {fmt_code: fmt_code; conf: Conf.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -91,7 +93,7 @@ let fmt_code_block c s1 s2 =
   let Odoc_parser.Loc.{location; value} = s2 in
   match s1 with
   | Some ({value= "ocaml"; _}, _) | None -> (
-    match c.fmt_code value with
+    match c.fmt_code c.conf value with
     | Ok formatted -> hvbox 0 (wrap_code formatted)
     | Error (`Msg message) ->
         ( match message with

@@ -9,12 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val fmt_ast :
-  Conf.t -> fmt_code:Fmt.code_formatter -> Odoc_parser.Ast.t -> Fmt.t
+type fmt_code = Conf.t -> string -> Fmt.t or_error
+
+val fmt_ast : Conf.t -> fmt_code:fmt_code -> Odoc_parser.Ast.t -> Fmt.t
 
 val fmt_parsed :
      Conf.t
-  -> fmt_code:Fmt.code_formatter
+  -> fmt_code:fmt_code
   -> input:string
   -> (Odoc_parser.Ast.t, Odoc_parser.Warning.t list) Result.t
   -> Fmt.t

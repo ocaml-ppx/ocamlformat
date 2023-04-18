@@ -605,7 +605,7 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
         let len = String.length str - if dollar_suf then 2 else 1 in
         let source = String.sub ~pos:1 ~len str in
-        match fmt_code source with
+        match fmt_code conf source with
         | Ok formatted -> `Code (formatted, cls)
         | Error (`Msg _) -> `Unwrapped (cmt, None) )
     | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
@@ -648,7 +648,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] -> fmt_cmt conf cmt ~fmt_code:(fmt_code conf) pos
+         | [cmt] -> fmt_cmt conf cmt ~fmt_code pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
