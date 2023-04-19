@@ -137,6 +137,8 @@ module Indent = struct
 
   let variant_type_arg c = _ocp 2 0 c
 
+  let type_constr c = _ocp 2 0 c
+
   let docked_fun c ~loc ~lbl =
     if not c.conf.fmt_opts.ocp_indent_compat.v then 2
     else
@@ -151,8 +153,6 @@ end
 
 module Break = struct
   let _ocp a b c = fmt (if c.conf.fmt_opts.ocp_indent_compat.v then a else b)
-
-  let type_constr = _ocp "@;<1 2>" "@ "
 
   let unpack_annot = _ocp "@ " "@;<1 2>"
 
@@ -887,13 +887,16 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
           (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
-      fmt_core_type c (sub_typ ~ctx t1)
-      $ Break.type_constr c $ fmt_longident_loc c lid
+      hvbox (Indent.type_constr c)
+        ( fmt_core_type c (sub_typ ~ctx t1)
+        $ fmt "@ " $ fmt_longident_loc c lid )
   | Ptyp_constr (lid, t1N) ->
-      wrap_fits_breaks c.conf "(" ")"
-        (list t1N (Params.comma_sep c.conf)
-           (sub_typ ~ctx >> fmt_core_type c) )
-      $ Break.type_constr c $ fmt_longident_loc c lid
+      hvbox (Indent.type_constr c)
+        ( hvbox 0
+            (wrap_fits_breaks c.conf "(" ")"
+               (list t1N (Params.comma_sep c.conf)
+                  (sub_typ ~ctx >> fmt_core_type c) ) )
+        $ fmt "@ " $ fmt_longident_loc c lid )
   | Ptyp_extension ext ->
       hvbox c.conf.fmt_opts.extension_indent.v (fmt_extension c ctx ext)
   | Ptyp_package (id, cnstrs) ->

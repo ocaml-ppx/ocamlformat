@@ -10210,13 +10210,11 @@ module type For_let_syntax_local =
    and type ('a, 'b) f_labeled_fn := f:('a[@local]) -> 'b
 
 type fooooooooooooooooooooooooooooooo =
-  ( fooooooooooooooooooooooooooooooo
-  , fooooooooooooooooooooooooooooooo )
+  (fooooooooooooooooooooooooooooooo, fooooooooooooooooooooooooooooooo)
     fooooooooooooooooooooooooooooooo
 
 val fooooooooooooooooooooooooooooooo
-  : ( fooooooooooooooooooooooooooooooo
-    , fooooooooooooooooooooooooooooooo )
+  : (fooooooooooooooooooooooooooooooo, fooooooooooooooooooooooooooooooo)
       fooooooooooooooooooooooooooooooo
 
 (*
@@ -10259,3 +10257,12 @@ let _ =
       fooooooooooooooooooooooooooooooo ->
       foo)
 ;;
+
+type t =
+  { xxxxxx :
+      t
+        (* _________________________________________________________________________
+           ____________________________________________________________________
+           ___________ *)
+        XXXXXXX.t
+  }
