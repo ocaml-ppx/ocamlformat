@@ -9,7 +9,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type fmt_code = Conf.t -> string -> Fmt.t or_error
+(** [offset] is the column at which the content of the comment begins. It is
+    used to adjust the margin. *)
+type fmt_code = Conf.t -> offset:int -> string -> string or_error
 
 val fmt_ast : Conf.t -> fmt_code:fmt_code -> Odoc_parser.Ast.t -> Fmt.t
 
@@ -17,5 +19,6 @@ val fmt_parsed :
      Conf.t
   -> fmt_code:fmt_code
   -> input:string
+  -> offset:int
   -> (Odoc_parser.Ast.t, Odoc_parser.Warning.t list) Result.t
   -> Fmt.t
