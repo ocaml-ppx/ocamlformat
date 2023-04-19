@@ -571,7 +571,12 @@ module Cinaps = struct
     match String.split_lines code with
     | [] | [""] -> wrap (str " ")
     | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
-    | lines -> wrap (fmt "@\n" $ list lines "@\n" str $ fmt "@;<1000 -2>")
+    | lines ->
+        let fmt_line = function
+          | "" -> fmt "\n"
+          | line -> fmt "@\n" $ str line
+        in
+        wrap (list lines "" fmt_line $ fmt "@;<1000 -2>")
 end
 
 module Ocp_indent_compat = struct
