@@ -42,6 +42,9 @@ jobs:
       - name: Check help files
         run: opam exec -- dune build @help --auto-promote
 
+      - name: Check manpages
+        run: opam exec -- dune build @gen_manpage --auto-promote
+
       - name: Upload binary
         if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3

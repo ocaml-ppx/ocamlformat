@@ -10,6 +10,7 @@ OCamlFormat is a tool to format OCaml code.
 {1 Table of Content}
 - {{!page-getting_started}Getting started}
 - {{!page-editor_setup}Editor setup}
+- {{!page-manpage_ocamlformat}Manpage}
 - {{!page-howtos}How-To's}
 - {{!page-faq}Frequently asked questions}
 - {{!page-api}API}

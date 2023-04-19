@@ -2,7 +2,7 @@
 
 [ocamlformat-rpc] is a RPC mode for OCamlFormat, a tool to format OCaml code.
 
-[ocamlformat-rpc] listens to RPC requests, provided on the standard input, and prints the response on the standard output.
+[ocamlformat-rpc] listens to RPC requests, provided on the standard input, and prints the response on the standard output. See the {{!manpage_ocamlformat_rpc}manpage} for options.
 
 {1 Agreeing on a RPC version}
 
