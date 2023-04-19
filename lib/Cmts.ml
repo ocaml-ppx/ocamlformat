@@ -562,6 +562,18 @@ module Verbatim = struct
     $ wrap "(*" "*)" @@ str s
 end
 
+module Cinaps = struct
+  open Fmt
+
+  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
+  let fmt ~cls code =
+    let wrap k = hvbox 2 (fmt "(*$" $ k $ fmt cls) in
+    match String.split_lines code with
+    | [] | [""] -> wrap (str " ")
+    | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
+    | lines -> wrap (fmt "@\n" $ list lines "@\n" str $ fmt "@;<1000 -2>")
+end
+
 module Ocp_indent_compat = struct
   let fmt ~fmt_code conf (cmt : Cmt.t) ~offset (pos : Cmt.pos) ~post =
     let pre, doc, post =
@@ -631,8 +643,7 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
   let open Fmt in
   match mode with
   | `Verbatim x -> Verbatim.fmt x pos
-  | `Code (x, cls) ->
-      hvbox 2 @@ wrap "(*$@;" cls (Verbatim.fmt x pos $ fmt "@;<1 -2>")
+  | `Code (code, cls) -> Cinaps.fmt ~cls code
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
       (* TODO: [offset] should be computed from location. *)
