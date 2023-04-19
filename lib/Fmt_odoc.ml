@@ -13,7 +13,9 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type c = {fmt_code: Fmt.code_formatter; conf: Conf.t}
+type fmt_code = Conf.t -> offset:int -> string -> string or_error
+
+type c = {fmt_code: fmt_code; conf: Conf.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -83,16 +85,17 @@ let fmt_code_block c s1 s2 =
     else if String.length l = 0 then str "\n"
     else fmt "@," $ str l
   in
-  let fmt_no_code s =
+  let fmt_code s =
     let lines = String.split_lines s in
     let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
     box (wrap_code (vbox 0 (list_fl lines fmt_line)))
   in
-  let Odoc_parser.Loc.{location; value} = s2 in
+  let Odoc_parser.Loc.{location; value= original} = s2 in
   match s1 with
   | Some ({value= "ocaml"; _}, _) | None -> (
-    match c.fmt_code value with
-    | Ok formatted -> hvbox 0 (wrap_code formatted)
+    (* [offset] doesn't take into account code blocks nested into lists. *)
+    match c.fmt_code c.conf ~offset:2 original with
+    | Ok formatted -> fmt_code formatted
     | Error (`Msg message) ->
         ( match message with
         | "" -> ()
@@ -103,8 +106,8 @@ let fmt_code_block c s1 s2 =
                 { location
                 ; message= Format.sprintf "invalid code block: %s" message }
         ) ;
-        fmt_no_code value )
-  | Some _ -> fmt_no_code value
+        fmt_code original )
+  | Some _ -> fmt_code original
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 
@@ -310,20 +313,24 @@ let fmt_ast conf ~fmt_code (docs : t) =
   let c = {fmt_code; conf} in
   vbox 0 (list_block_elem docs (fmt_block_element c))
 
-let fmt_parsed (conf : Conf.t) ~fmt_code ~input:str_cmt parsed =
+let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
+  let begin_space = String.starts_with_whitespace input in
+  let offset = offset + if begin_space then 1 else 0 in
+  let fmt_code conf ~offset:offset' input =
+    fmt_code conf ~offset:(offset + offset') input
+  in
   let fmt_parsed parsed =
-    fmt_if (String.starts_with_whitespace str_cmt) " "
+    fmt_if begin_space " "
     $ fmt_ast conf ~fmt_code parsed
     $ fmt_if
-        (String.length str_cmt > 1 && String.ends_with_whitespace str_cmt)
+        (String.length input > 1 && String.ends_with_whitespace input)
         " "
   in
-  let fmt_raw str_cmt = str str_cmt in
   match parsed with
-  | _ when not conf.fmt_opts.parse_docstrings.v -> fmt_raw str_cmt
+  | _ when not conf.fmt_opts.parse_docstrings.v -> str input
   | Ok parsed -> fmt_parsed parsed
   | Error msgs ->
       if not conf.opr_opts.quiet.v then
         List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
-      fmt_raw str_cmt
+      str input

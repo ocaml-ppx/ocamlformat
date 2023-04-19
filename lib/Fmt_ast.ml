@@ -22,7 +22,7 @@ type c =
   ; debug: bool
   ; source: Source.t
   ; cmts: Cmts.t
-  ; fmt_code: Conf.t -> Fmt.code_formatter }
+  ; fmt_code: Fmt_odoc.fmt_code }
 
 module Cmts = struct
   include Cmts
@@ -479,10 +479,13 @@ let virtual_or_override = function
   | Cfk_concrete (Override, _) -> str "!"
   | Cfk_concrete (Fresh, _) -> noop
 
-let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
-  assert (not (String.is_empty str_cmt)) ;
-  let fmt_code = c.fmt_code c.conf in
-  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~input:str_cmt parsed in
+let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
+  assert (not (String.is_empty input)) ;
+  let offset =
+    let pos = loc.Location.loc_start in
+    pos.pos_cnum - pos.pos_bol + 3
+  and fmt_code = c.fmt_code in
+  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~offset ~input parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
@@ -4575,17 +4578,26 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d ->
-      Fmt_odoc.fmt_ast c.conf ~fmt_code:(c.fmt_code c.conf) d
+  | Documentation, d -> Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in
   let ctx = Top in
-  Ok (fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code)
+  let code =
+    set_margin conf.Conf.fmt_opts.margin.v
+    $ fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code
+  in
+  Ok (Format_.asprintf "%a" Fmt.eval code)
 
 let fmt_code ~debug =
-  let rec fmt_code (conf : Conf.t) s =
-    let warn = conf.fmt_opts.parse_toplevel_phrases.v in
+  let rec fmt_code (conf : Conf.t) ~offset s =
+    let {Conf.fmt_opts; _} = conf in
+    let conf =
+      (* Adjust margin according to [offset]. *)
+      let margin = {fmt_opts.margin with v= fmt_opts.margin.v - offset} in
+      {conf with fmt_opts= {fmt_opts with margin}}
+    in
+    let warn = fmt_opts.parse_toplevel_phrases.v in
     let input_name = !Location.input_name in
     match Parse_with_comments.parse_toplevel conf ~input_name ~source:s with
     | Either.First {ast; comments; source; prefix= _} ->
