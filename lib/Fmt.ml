@@ -355,5 +355,3 @@ let fill_text ?(epi = "") text =
                | Some _ when not (String.is_empty curr) -> fmt "@ "
                | _ -> noop )
          $ str epi ) )
-
-type code_formatter = string -> t or_error
