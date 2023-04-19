@@ -664,7 +664,7 @@ COMMON OPTIONS
            Show version information.
 
 EXIT STATUS
-       ocamlformat exits with the following status:
+       ocamlformat exits with:
 
        0   on success.
 

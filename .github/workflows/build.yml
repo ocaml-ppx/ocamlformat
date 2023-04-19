@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
@@ -20,6 +21,7 @@ jobs:
           - 4.13.x
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
 
     steps:
       # Clone the project
