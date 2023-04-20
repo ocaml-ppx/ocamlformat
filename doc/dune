@@ -17,7 +17,10 @@
  (action
   (with-stdout-to
    manpage_ocamlformat_rpc.mld.gen
-   (run ../tools/gen_manpage/gen_manpage.exe %{bin:ocamlformat-rpc} --help=plain))))
+   (run
+    ../tools/gen_manpage/gen_manpage.exe
+    %{bin:ocamlformat-rpc}
+    --help=plain))))
 
 (rule
  (alias gen_manpage)
