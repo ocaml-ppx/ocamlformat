@@ -10266,3 +10266,18 @@ type t =
            ___________ *)
         XXXXXXX.t
   }
+
+module Test_gen
+    (For_tests : For_tests_gen)
+    (Tested :
+       S_gen with type 'a src := 'a For_tests.Src.t with type 'a dst := 'a For_tests.Dst.t)
+    (Tested :
+       S_gen
+     with type 'a src := 'a For_tests.Src.t
+     with type 'a dst := 'a For_tests.Dst.t
+      and type 'a dst := 'a For_tests.Dst.t
+      and type 'a dst := 'a For_tests.Dst.t) =
+struct
+  open Tested
+  open For_tests
+end

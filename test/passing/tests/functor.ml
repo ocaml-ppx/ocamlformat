@@ -71,10 +71,11 @@ module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
 module Make
     (TT : TableFormat.TABLES)
     (IT : InspectionTableFormat.TABLES with type 'a lr1state = int)
-    (ET : EngineTypes.TABLE
-            with type terminal = int
-             and type nonterminal = int
-             and type semantic_value = Obj.t)
+    (ET :
+       EngineTypes.TABLE
+         with type terminal = int
+          and type nonterminal = int
+          and type semantic_value = Obj.t)
     (E : sig
       type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
     end) =

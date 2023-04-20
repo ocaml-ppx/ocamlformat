@@ -130,6 +130,8 @@ module Indent = struct
       match me.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
 
+  let mty = _ocp 2 3
+
   let mty_with = _ocp 0 2
 
   let variant ~parens c =
@@ -3792,7 +3794,8 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
     in
     let pro =
       pro $ Cmts.fmt_before c loc $ str "(" $ align_opn
-      $ fmt_str_loc_opt c name $ str " : "
+      $ fmt_str_loc_opt c name $ str " :"
+      $ fmt_or_k (Option.is_some blk.pro) (str " ") (break 1 (Indent.mty c))
     and epi = str ")" $ Cmts.fmt_after c loc $ align_cls in
     compose_module' ~box:false ~pro ~epi blk
   in
