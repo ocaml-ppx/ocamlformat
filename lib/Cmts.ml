@@ -562,8 +562,25 @@ module Verbatim = struct
     $ wrap "(*" "*)" @@ str s
 end
 
+module Cinaps = struct
+  open Fmt
+
+  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
+  let fmt ~cls code =
+    let wrap k = hvbox 2 (fmt "(*$" $ k $ fmt cls) in
+    match String.split_lines code with
+    | [] | [""] -> wrap (str " ")
+    | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
+    | lines ->
+        let fmt_line = function
+          | "" -> fmt "\n"
+          | line -> fmt "@\n" $ str line
+        in
+        wrap (list lines "" fmt_line $ fmt "@;<1000 -2>")
+end
+
 module Ocp_indent_compat = struct
-  let fmt ~fmt_code conf (cmt : Cmt.t) (pos : Cmt.pos) ~post =
+  let fmt ~fmt_code conf (cmt : Cmt.t) ~offset (pos : Cmt.pos) ~post =
     let pre, doc, post =
       let lines = String.split_lines cmt.txt in
       match lines with
@@ -578,7 +595,7 @@ module Ocp_indent_compat = struct
     (* Disable warnings when parsing fails *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc parsed in
+    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
     let open Fmt in
     fmt_if_k
       (Poly.(pos = After) && String.contains cmt.txt '\n')
@@ -605,7 +622,7 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
         let len = String.length str - if dollar_suf then 2 else 1 in
         let source = String.sub ~pos:1 ~len str in
-        match fmt_code source with
+        match fmt_code conf ~offset:4 source with
         | Ok formatted -> `Code (formatted, cls)
         | Error (`Msg _) -> `Unwrapped (cmt, None) )
     | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
@@ -631,10 +648,11 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
   let open Fmt in
   match mode with
   | `Verbatim x -> Verbatim.fmt x pos
-  | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
+  | `Code (code, cls) -> Cinaps.fmt ~cls code
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
-      Ocp_indent_compat.fmt ~fmt_code conf x pos ~post:ln
+      (* TODO: [offset] should be computed from location. *)
+      Ocp_indent_compat.fmt ~fmt_code conf x ~offset:2 pos ~post:ln
   | `Unwrapped (x, _) -> Unwrapped.fmt x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
 
@@ -648,7 +666,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] -> fmt_cmt conf cmt ~fmt_code:(fmt_code conf) pos
+         | [cmt] -> fmt_cmt conf cmt ~fmt_code pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )

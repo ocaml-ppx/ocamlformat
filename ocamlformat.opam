@@ -9,7 +9,8 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "ocaml" {>= "4.08"}
-  "cmdliner" {>= "1.1.0"}
+  "cmdliner" {not(with-test) & >= "1.1.0"}
+  "cmdliner" {with-test & >= "1.2.0"}
   "dune" {>= "2.8"}
   "ocamlformat-lib" {= version}
   "ocamlformat-rpc-lib" {with-test & = version}

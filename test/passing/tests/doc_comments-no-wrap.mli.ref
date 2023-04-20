@@ -151,7 +151,8 @@ val x : x
 
     {[
       let verbatim s =
-        s |> String.split_lines |> List.map ~f:String.strip
+        s |> String.split_lines
+        |> List.map ~f:String.strip
         |> fun s -> list s "@," Fmt.str
     ]} *)
 
@@ -621,3 +622,11 @@ type x =
       \f\hat\xi\,e^{2 \pi i \xi x}
       \,d\xi
     } *)
+
+(** {[
+      let _ =
+        {|
+         Doc-comment contains code blocks that contains string with breaks and
+         ending with trailing spaces.
+        |}
+    ]} *)

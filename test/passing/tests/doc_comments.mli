@@ -628,3 +628,10 @@ type x =
     \,d\xi
     }
 *)
+
+(** {[
+     let _ = {|
+        Doc-comment contains code blocks that contains string with breaks and
+        ending with trailing spaces.
+       |}
+   ]} *)

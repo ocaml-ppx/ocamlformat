@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- Fix formatting of string literals in code blocks (#2338, @Julow)
 - Improve formatting of module arguments (#2322, @Julow)
 - Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
@@ -18,6 +19,7 @@
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
 - Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
 - Fix identation of module-expr extensions (#2323, @gpetiot)
+- Don't print warnings related to odoc code-blocks when '--quiet' is set (#2336, @gpetiot)
 
 ### Changes
 
