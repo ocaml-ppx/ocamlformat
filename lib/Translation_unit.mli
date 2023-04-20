@@ -28,15 +28,3 @@ val parse_and_format :
   -> (string, Error.t) Result.t
 (** [parse_and_format kind ?output_file ~input_name ~source conf opts] parses
     and formats [source] as a list of fragments. *)
-
-val numeric :
-     Syntax.t
-  -> input_name:string
-  -> source:string
-  -> range:Range.t
-  -> Conf.t
-  -> int list
-(** [numeric ~input_name ~source ~range conf opts] returns the indentation of
-    the range of lines [range] (line numbers ranging from 1 to number of
-    lines), where the line numbers are relative to [source] and the
-    indentation is relative to the formatted output. *)

@@ -24,7 +24,6 @@ type t =
   ; kind: Syntax.t option
   ; inputs: file list
   ; name: string option
-  ; numeric: bool
   ; output: string option
   ; print_config: bool
   ; root: string option
@@ -41,7 +40,6 @@ let default =
   ; kind= None
   ; inputs= []
   ; name= None
-  ; numeric= false
   ; output= None
   ; print_config= false
   ; root= None
@@ -209,16 +207,6 @@ let name =
     ~set:(fun name conf -> {conf with name})
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
-let numeric =
-  let doc =
-    "Instead of re-formatting the file, output one integer per line \
-     corresponding to the indentation value, printing as many values as \
-     lines in the document."
-  in
-  declare_option
-    ~set:(fun numeric conf -> {conf with numeric})
-    Arg.(value & flag & info ["numeric"] ~doc ~docs)
-
 let output =
   let docv = "DST" in
   let doc =
@@ -336,7 +324,6 @@ let terms =
   ; kind
   ; inputs
   ; name
-  ; numeric
   ; output
   ; print_config
   ; root
@@ -627,7 +614,6 @@ type action =
   | Inplace of input list
   | Check of input list
   | Print_config of Conf.t
-  | Numeric of input
 
 let make_action ~enable_outside_detected_project ~root action inputs =
   let make_file ?name kind file =
@@ -676,9 +662,9 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin
       in
       Ok (Print_config conf)
-  | (`No_action | `Output _ | `Inplace | `Check | `Numeric), `No_input ->
+  | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
-  | (`No_action | `Output _ | `Numeric), `Several_files _ ->
+  | (`No_action | `Output _), `Several_files _ ->
       Error
         "Must specify exactly one input file without --inplace or --check"
   | `Inplace, `Stdin _ ->
@@ -695,9 +681,6 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
       let+ inputs = make_inputs inputs in
       Ok (Check inputs)
-  | `Numeric, ((`Stdin _ | `Single_file _) as inp) ->
-      let+ inp = make_input inp in
-      Ok (Numeric inp)
 
 let validate_inputs () =
   match (!global_conf.inputs, !global_conf.kind, !global_conf.name) with
@@ -743,8 +726,7 @@ let validate_action () =
       ; Option.some_if !global_conf.inplace (`Inplace, "--inplace")
       ; Option.some_if !global_conf.check (`Check, "--check")
       ; Option.some_if !global_conf.print_config
-          (`Print_config, "--print-config")
-      ; Option.some_if !global_conf.numeric (`Numeric, "--numeric") ]
+          (`Print_config, "--print-config") ]
   with
   | [] -> Ok `No_action
   | [(action, _)] -> Ok action

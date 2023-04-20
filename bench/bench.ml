@@ -21,7 +21,7 @@ type input =
   ; kind: Syntax.t
   ; source: string
   ; conf: Conf.t
-  ; action: [`Format | `Numeric of range] }
+  ; action: [`Format] }
 
 let inputs =
   let dir = "_build/default/bench/test" in
@@ -31,13 +31,7 @@ let inputs =
     ; kind= Syntax.Structure
     ; source= source_ml
     ; conf= Conf.default
-    ; action= `Format }
-  ; { name= "numeric:conventional"
-    ; input_name= "source.ml"
-    ; kind= Syntax.Structure
-    ; source= source_ml
-    ; conf= Conf.default
-    ; action= `Numeric (10_000, 10_000) } ]
+    ; action= `Format } ]
 
 let tests =
   List.map
@@ -50,12 +44,7 @@ let tests =
         | `Format ->
             ignore
               (Translation_unit.parse_and_format kind ~input_name ~source
-                 conf )
-        | `Numeric range ->
-            let range = Range.make source ~range in
-            ignore
-              (Translation_unit.numeric kind ~input_name ~source ~range conf)
-        ) )
+                 conf ) ) )
     inputs
 
 let benchmark () =

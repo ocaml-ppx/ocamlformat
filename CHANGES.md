@@ -2,6 +2,8 @@
 
 ### Removed
 
+- Remove `--numeric` feature (#2333, @gpetiot)
+
 ### Deprecated
 
 ### Bug fixes

@@ -600,11 +600,6 @@ OPTIONS
        --no-version-check
            Unset version-check.
 
-       --numeric
-           Instead of re-formatting the file, output one integer per line
-           corresponding to the indentation value, printing as many values as
-           lines in the document.
-
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
