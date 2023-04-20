@@ -4,7 +4,10 @@ let () =
   match Array.to_list Sys.argv with
   | _ :: exe :: args ->
       pf "{0 Manpage: %s}\n\n{v\n%!" (Filename.basename exe) ;
-      let s = Sys.command (Filename.quote_command exe args) in
+      let s =
+        Sys.command
+          (String.concat " " (List.map Filename.quote (exe :: args)))
+      in
       if s <> 0 then exit s ;
       pf "v}\n%!"
   | [] | [_] ->
