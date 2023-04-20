@@ -465,7 +465,7 @@ let mk_directive ~loc name arg =
 %token BARBAR                 "||"
 %token BARRBRACKET            "|]"
 %token BEGIN                  "begin"
-%token <char> CHAR            "'a'" (* just an example *)
+%token <char * string> CHAR   "'a'" (* just an example *)
 %token CLASS                  "class"
 %token COLON                  ":"
 %token COLONCOLON             "::"
@@ -3382,7 +3382,8 @@ meth_list:
 constant:
   | INT          { let (n, m) = $1 in
                    mkconst ~loc:$sloc (Pconst_integer (n, m)) }
-  | CHAR         { mkconst ~loc:$sloc (Pconst_char $1) }
+  | CHAR         { let (c, s) = $1 in
+                   mkconst ~loc:$sloc (Pconst_char (c, s)) }
   | STRING       { let (s, strloc, d) = $1 in
                    mkconst ~loc:$sloc (Pconst_string (s,strloc,d)) }
   | FLOAT        { let (f, m) = $1 in
