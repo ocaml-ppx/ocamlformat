@@ -30,7 +30,7 @@ profile = default
 version = 0.25.1
 ```
 
-For more information on configuration options, check out the [documentation](https://ocaml.org/p/ocamlformat) or run `ocamlformat --help`.
+For more information on configuration options, check out the [documentation](https://ocaml.org/p/ocamlformat/latest/doc/index.html) or run `ocamlformat --help`.
 
 The most convenient way to format your code is through the `dune` build system. Just run the following command:
 

@@ -64,7 +64,7 @@ If no profile is selected, the [default] one is used.
 
 {1 Options}
 
-The full options' documentation is available through [ocamlformat --help].
+The full options' documentation is available {{!manpage_ocamlformat}on this page} or through [ocamlformat --help].
 Options can be modified by the means of:
 - an [.ocamlformat] configuration file with an [option = VAL] line
 - using the [OCAMLFORMAT] environment variable: [OCAMLFORMAT=option=VAL,...,option=VAL]

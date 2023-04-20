@@ -1,3 +1,6 @@
+{0 Manpage: ocamlformat-rpc}
+
+{v
 NAME
        ocamlformat-rpc - RPC mode for OCamlFormat, a tool to format OCaml
        code.
@@ -76,3 +79,4 @@ EXIT STATUS
 
        125 on unexpected internal errors (bugs).
 
+v}

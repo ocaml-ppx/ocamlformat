@@ -1,3 +1,6 @@
+{0 Manpage: ocamlformat}
+
+{v
 NAME
        ocamlformat - A tool to format OCaml code.
 
@@ -680,3 +683,4 @@ ENVIRONMENT
        OCAMLFORMAT
            See option --config.
 
+v}
