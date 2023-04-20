@@ -1,11 +1,12 @@
 --- parser-extended/lexer.mll
 +++ parser-recovery/lib/lexer.mll
 @@@@
+ 
  let is_keyword name = Hashtbl.mem keyword_table name
  
  let check_label_name lexbuf name =
    if is_keyword name then error lexbuf (Keyword_as_label name)
- 
+-
 -(* To "unlex" a few characters *)
 -let set_lexeme_length buf n = (
 -  let open Lexing in
@@ -36,12 +37,11 @@
 -  | INT (txt, None) -> Some (disambiguate lexbuf txt)
 -  | FLOAT (txt, _)  -> Some (disambiguate lexbuf txt)
 -  | _ -> None
--
+ 
  (* Update the current location with file name and line number. *)
  
  let update_loc lexbuf file line absolute chars =
    let pos = lexbuf.lex_curr_p in
-   let new_file = match file with
 @@@@
  
  let escaped_newlines = ref false
@@ -429,13 +429,6 @@
    | mkmty(
        mkrhs(mty_longident)
          { Pmty_ident $1 }
--    | LPAREN RPAREN MINUSGREATER module_type
--        { Pmty_functor(Unit, $4) }
-     | module_type MINUSGREATER module_type
-         %prec below_WITH
-         { Pmty_functor(Named (mknoloc None, $1), $3) }
-     | module_type WITH separated_nonempty_llist(AND, with_constraint)
-         { Pmty_with($1, $3) }
 @@@@
  
  (* The body (right-hand side) of a module declaration. *)
@@ -524,11 +517,13 @@
        { let loc = ($startpos($2), $endpos($5)) in
          let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
 @@@@
+     { array, d, Paren,   i, r }
+   | array=simple_expr d=dot LBRACE i=index RBRACE r=right
      { array, d, Brace,   i, r }
    | array=simple_expr d=dot LBRACKET i=index RBRACKET r=right
      { array, d, Bracket, i, r }
- ;
- 
+-;
+-
 -%inline indexop_error(dot, index):
 -  | simple_expr dot _p=LPAREN index  _e=error
 -    { indexop_unclosed_error $loc(_p)  Paren $loc(_e) }
@@ -536,8 +531,8 @@
 -    { indexop_unclosed_error $loc(_p) Brace $loc(_e) }
 -  | simple_expr dot _p=LBRACKET index  _e=error
 -    { indexop_unclosed_error $loc(_p) Bracket $loc(_e) }
--;
--
+ ;
+ 
  %inline qualified_dotop: ioption(DOT mkrhs(mod_longident) {$2}) DOTOP { $1, $2 };
  
 -expr:
