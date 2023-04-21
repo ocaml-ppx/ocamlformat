@@ -1089,10 +1089,10 @@ parse_any_longident:
 functor_arg:
     (* An anonymous and untyped argument. *)
     LPAREN RPAREN
-      { Unit }
+      { mkloc Unit (make_loc $sloc) }
   | (* An argument accompanied with an explicit type. *)
     LPAREN x = mkrhs(module_name) COLON mty = module_type RPAREN
-      { Named (x, mty) }
+      { mkloc (Named (x, mty)) (make_loc $sloc) }
 ;
 
 module_name:
@@ -1428,10 +1428,12 @@ module_type:
       mkrhs(mty_longident)
         { Pmty_ident $1 }
     | LPAREN RPAREN MINUSGREATER module_type
-        { Pmty_functor([Unit], $4) }
+        { let arg_loc = make_loc ($startpos($1), $endpos($2)) in
+          Pmty_functor([mkloc Unit arg_loc], $4) }
     | module_type MINUSGREATER module_type
         %prec below_WITH
-        { Pmty_functor([Named (mknoloc None, $1)], $3) }
+        { let arg_loc = make_loc $loc($1) in
+          Pmty_functor([mkloc (Named (mknoloc None, $1)) arg_loc], $3) }
     | module_type WITH separated_nonempty_llist(AND, with_constraint)
         { Pmty_with($1, $3) }
 /*  | LPAREN MODULE mkrhs(mod_longident) RPAREN

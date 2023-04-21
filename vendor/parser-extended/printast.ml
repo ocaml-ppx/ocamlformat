@@ -778,8 +778,12 @@ and class_declaration i ppf x =
   line i ppf "pci_expr =\n";
   class_expr (i+1) ppf x.pci_expr;
 
-and functor_parameter i ppf = function
-  | Unit -> line i ppf "Unit\n"
+and functor_parameter i ppf x =
+  line i ppf "functor_parameter %a\n" fmt_location x.loc;
+  let i = i+1 in
+  match x.txt with
+  | Unit ->
+      line i ppf "Unit\n"
   | Named (s, mt) ->
       line i ppf "Named %a\n" fmt_str_opt_loc s;
       module_type i ppf mt

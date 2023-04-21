@@ -330,9 +330,14 @@ module CT = struct
       (List.map (sub.class_type_field sub) pcsig_fields)
 end
 
-let map_functor_param sub = function
-  | Unit -> Unit
-  | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+let map_functor_param sub {loc; txt} =
+  let loc = sub.location sub loc in
+  let txt =
+    match txt with
+    | Unit -> Unit
+    | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+  in
+  {loc; txt}
 
 module MT = struct
   (* Type expressions for the module language *)
