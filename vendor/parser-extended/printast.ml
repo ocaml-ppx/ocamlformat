@@ -429,8 +429,9 @@ and expression i ppf x =
   | Pexp_override (l) ->
       line i ppf "Pexp_override\n";
       list i string_x_expression ppf l;
-  | Pexp_letmodule (s, me, e) ->
+  | Pexp_letmodule (s, args, me, e) ->
       line i ppf "Pexp_letmodule %a\n" fmt_str_opt_loc s;
+      list i functor_parameter ppf args;
       module_expr i ppf me;
       expression i ppf e;
   | Pexp_letexception (cd, e) ->
@@ -998,12 +999,14 @@ and module_type_declaration i ppf x =
 and module_declaration i ppf pmd =
   line i ppf "module_declaration %a %a\n" fmt_str_opt_loc pmd.pmd_name
     fmt_location pmd.pmd_loc;
+  list i functor_parameter ppf pmd.pmd_args;
   attributes i ppf pmd.pmd_attributes;
   module_type (i+1) ppf pmd.pmd_type;
 
 and module_binding i ppf x =
   line i ppf "module_binding %a %a\n" fmt_str_opt_loc x.pmb_name
     fmt_location x.pmb_loc;
+  list i functor_parameter ppf x.pmb_args;
   attributes i ppf x.pmb_attributes;
   module_expr (i+1) ppf x.pmb_expr
 

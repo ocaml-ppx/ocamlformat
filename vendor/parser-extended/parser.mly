@@ -1080,10 +1080,13 @@ parse_any_longident:
 (* Functor arguments appear in module expressions and module types. *)
 
 %inline functor_args:
-  reversed_nonempty_llist(functor_arg)
+  llist(functor_arg)
     { $1 }
-    (* Produce a reversed list on purpose;
-       later processed using [fold_left]. *)
+;
+
+%inline nonempty_functor_args:
+  nonempty_llist(functor_arg)
+    { $1 }
 ;
 
 functor_arg:
@@ -1120,7 +1123,7 @@ module_expr:
       { unclosed "struct" $loc($1) "end" $loc($4) }
   | SIG error
       { expecting $loc($1) "struct" }
-  | FUNCTOR attrs = attributes args = functor_args MINUSGREATER me = module_expr
+  | FUNCTOR attrs = attributes args = nonempty_functor_args MINUSGREATER me = module_expr
       { mkmod ~loc:$sloc ~attrs (Pmod_functor (args, me)) }
   | me = paren_module_expr
       { me }
@@ -1264,12 +1267,13 @@ structure_item:
   MODULE
   ext = ext attrs1 = attributes
   name = mkrhs(module_name)
+  args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
       let loc = make_loc $sloc in
       let attrs = attrs1 @ attrs2 in
-      let body = Mb.mk name body ~attrs ~loc ~docs in
+      let body = Mb.mk name args body ~attrs ~loc ~docs in
       Pstr_module body, ext }
 ;
 
@@ -1282,8 +1286,6 @@ module_binding_body:
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
-    | arg = functor_arg body = module_binding_body
-        { Pmod_functor([arg], body) }
   ) { $1 }
 ;
 
@@ -1300,6 +1302,7 @@ module_binding_body:
   attrs1 = attributes
   REC
   name = mkrhs(module_name)
+  args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
   {
@@ -1307,7 +1310,7 @@ module_binding_body:
     let attrs = attrs1 @ attrs2 in
     let docs = symbol_docs $sloc in
     ext,
-    Mb.mk name body ~attrs ~loc ~docs
+    Mb.mk name args body ~attrs ~loc ~docs
   }
 ;
 
@@ -1316,6 +1319,7 @@ module_binding_body:
   AND
   attrs1 = attributes
   name = mkrhs(module_name)
+  args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
   {
@@ -1323,7 +1327,7 @@ module_binding_body:
     let attrs = attrs1 @ attrs2 in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
-    Mb.mk name body ~attrs ~loc ~text ~docs
+    Mb.mk name args body ~attrs ~loc ~text ~docs
   }
 ;
 
@@ -1412,7 +1416,7 @@ module_type:
       { unclosed "sig" $loc($1) "end" $loc($4) }
   | STRUCT error
       { expecting $loc($1) "sig" }
-  | FUNCTOR attrs = attributes args = functor_args
+  | FUNCTOR attrs = attributes args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
       { mkmty ~loc:$sloc ~attrs (Pmty_functor (args, mty)) }
@@ -1510,27 +1514,16 @@ signature_item:
   MODULE
   ext = ext attrs1 = attributes
   name = mkrhs(module_name)
-  body = module_declaration_body
+  args = functor_args
+  COLON
+  body = module_type
   attrs2 = post_item_attributes
   {
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Md.mk name body ~attrs ~loc ~docs, ext
+    Md.mk name args body ~attrs ~loc ~docs, ext
   }
-;
-
-(* The body (right-hand side) of a module declaration. *)
-module_declaration_body:
-    COLON mty = module_type
-      { mty }
-  | EQUAL error
-      { expecting $loc($1) ":" }
-  | mkmty(
-      arg = functor_arg body = module_declaration_body
-        { Pmty_functor([arg], body) }
-    )
-    { $1 }
 ;
 
 (* A module alias declaration (in a signature). *)
@@ -1545,7 +1538,7 @@ module_declaration_body:
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Md.mk name body ~attrs ~loc ~docs, ext
+    Md.mk name [] body ~attrs ~loc ~docs, ext
   }
 ;
 %inline module_expr_alias:
@@ -1588,7 +1581,7 @@ module_subst:
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    ext, Md.mk name mty ~attrs ~loc ~docs
+    ext, Md.mk name [] mty ~attrs ~loc ~docs
   }
 ;
 %inline and_module_declaration:
@@ -1603,7 +1596,7 @@ module_subst:
     let docs = symbol_docs $sloc in
     let loc = make_loc $sloc in
     let text = symbol_text $symbolstartpos in
-    Md.mk name mty ~attrs ~loc ~text ~docs
+    Md.mk name [] mty ~attrs ~loc ~text ~docs
   }
 ;
 
@@ -2124,8 +2117,8 @@ expr:
 /* END AVOID */
 ;
 %inline expr_attrs:
-  | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
-      { Pexp_letmodule($4, $5, $7), $3 }
+  | LET MODULE ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
+      { Pexp_letmodule($4, $5, $6, $8), $3 }
   | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
       { Pexp_letexception($4, $6), $3 }
   | LET OPEN override_flag ext_attributes module_expr IN seq_expr

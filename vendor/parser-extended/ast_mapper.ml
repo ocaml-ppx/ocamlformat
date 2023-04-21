@@ -546,8 +546,10 @@ module E = struct
     | Pexp_override sel ->
         override ~loc ~attrs
           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)
-    | Pexp_letmodule (s, me, e) ->
-        letmodule ~loc ~attrs (map_loc sub s) (sub.module_expr sub me)
+    | Pexp_letmodule (s, args, me, e) ->
+        letmodule ~loc ~attrs (map_loc sub s)
+          (List.map (map_functor_param sub) args)
+          (sub.module_expr sub me)
           (sub.expr sub e)
     | Pexp_letexception (cd, e) ->
         letexception ~loc ~attrs
@@ -775,9 +777,10 @@ let default_mapper =
     let_bindings = LB.map_let_bindings;
 
     module_declaration =
-      (fun this {pmd_name; pmd_type; pmd_attributes; pmd_loc} ->
+      (fun this {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} ->
          Md.mk
            (map_loc this pmd_name)
+           (List.map (map_functor_param this) pmd_args)
            (this.module_type this pmd_type)
            ~attrs:(this.attributes this pmd_attributes)
            ~loc:(this.location this pmd_loc)
@@ -802,8 +805,10 @@ let default_mapper =
       );
 
     module_binding =
-      (fun this {pmb_name; pmb_expr; pmb_attributes; pmb_loc} ->
-         Mb.mk (map_loc this pmb_name) (this.module_expr this pmb_expr)
+      (fun this {pmb_name; pmb_args; pmb_expr; pmb_attributes; pmb_loc} ->
+         Mb.mk (map_loc this pmb_name)
+           (List.map (map_functor_param this) pmb_args)
+           (this.module_expr this pmb_expr)
            ~attrs:(this.attributes this pmb_attributes)
            ~loc:(this.location this pmb_loc)
       );
