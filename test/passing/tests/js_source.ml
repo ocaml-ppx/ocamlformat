@@ -7824,3 +7824,9 @@ class x =
       object
         method x = y
       end
+
+(*{v
+
+      foo
+
+v}*)

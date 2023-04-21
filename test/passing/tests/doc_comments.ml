@@ -305,3 +305,10 @@ let a = 1
        let _ = x in
        f @@ g @@ h @@ fun x -> y
     ]} *)
+
+
+(**{v
+
+  foo
+
+v}*)
