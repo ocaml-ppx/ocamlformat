@@ -104,29 +104,6 @@ let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   else
     {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
 
-let is_long_functor_syntax (t : t) ~(from : Location.t) = function
-  | Unit -> false
-  | Named ({loc= _; _}, _) -> (
-    (* since 4.12 the functor keyword is just before the loc of the functor
-       parameter *)
-    match
-      find_token_before t
-        ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
-        from.loc_start
-    with
-    | Some (Parser.FUNCTOR, _) -> true
-    | _ -> false )
-
-let is_long_pmod_functor t {pmod_desc; pmod_loc= from; _} =
-  match pmod_desc with
-  | Pmod_functor (fp, _) -> is_long_functor_syntax t ~from fp
-  | _ -> false
-
-let is_long_pmty_functor t {pmty_desc; pmty_loc= from; _} =
-  match pmty_desc with
-  | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
-  | _ -> false
-
 let string_literal t mode loc =
   Option.value_exn ~message:"Parse error while reading string literal"
     (Literal_lexer.string mode (string_at t loc))
