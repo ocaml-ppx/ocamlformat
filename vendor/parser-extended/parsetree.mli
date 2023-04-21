@@ -862,8 +862,8 @@ and module_type =
 and module_type_desc =
   | Pmty_ident of Longident.t loc  (** [Pmty_ident(S)] represents [S] *)
   | Pmty_signature of signature  (** [sig ... end] *)
-  | Pmty_functor of functor_parameter * module_type
-      (** [functor(X : MT1) -> MT2] *)
+  | Pmty_functor of functor_parameter list * module_type
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT] *)
   | Pmty_with of module_type * with_constraint list  (** [MT with ...] *)
   | Pmty_typeof of module_expr  (** [module type of ME] *)
   | Pmty_extension of extension  (** [[%id]] *)
@@ -1010,8 +1010,8 @@ and module_expr =
 and module_expr_desc =
   | Pmod_ident of Longident.t loc  (** [X] *)
   | Pmod_structure of structure  (** [struct ... end] *)
-  | Pmod_functor of functor_parameter * module_expr
-      (** [functor(X : MT1) -> ME] *)
+  | Pmod_functor of functor_parameter list * module_expr
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> ME] *)
   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
   | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
   | Pmod_unpack of expression * package_type option * package_type option

@@ -299,10 +299,6 @@ let mkpat_attrs ~loc d attrs =
 
 let wrap_class_attrs ~loc:_ body attrs =
   {body with pcl_attributes = attrs @ body.pcl_attributes}
-let wrap_mod_attrs ~loc:_ attrs body =
-  {body with pmod_attributes = attrs @ body.pmod_attributes}
-let wrap_mty_attrs ~loc:_ attrs body =
-  {body with pmty_attributes = attrs @ body.pmty_attributes}
 
 let wrap_str_ext ~loc body ext =
   match ext with
@@ -1093,10 +1089,10 @@ parse_any_longident:
 functor_arg:
     (* An anonymous and untyped argument. *)
     LPAREN RPAREN
-      { $startpos, Unit }
+      { Unit }
   | (* An argument accompanied with an explicit type. *)
     LPAREN x = mkrhs(module_name) COLON mty = module_type RPAREN
-      { $startpos, Named (x, mty) }
+      { Named (x, mty) }
 ;
 
 module_name:
@@ -1125,11 +1121,7 @@ module_expr:
   | SIG error
       { expecting $loc($1) "struct" }
   | FUNCTOR attrs = attributes args = functor_args MINUSGREATER me = module_expr
-      { wrap_mod_attrs ~loc:$sloc attrs (
-          List.fold_left (fun acc (startpos, arg) ->
-            mkmod ~loc:(startpos, $endpos) (Pmod_functor (arg, acc))
-          ) me args
-        ) }
+      { mkmod ~loc:$sloc ~attrs (Pmod_functor (args, me)) }
   | me = paren_module_expr
       { me }
   | me = module_expr attr = attribute
@@ -1290,9 +1282,8 @@ module_binding_body:
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
-    | arg_and_pos = functor_arg body = module_binding_body
-        { let (_, arg) = arg_and_pos in
-          Pmod_functor(arg, body) }
+    | arg = functor_arg body = module_binding_body
+        { Pmod_functor([arg], body) }
   ) { $1 }
 ;
 
@@ -1424,11 +1415,7 @@ module_type:
   | FUNCTOR attrs = attributes args = functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { wrap_mty_attrs ~loc:$sloc attrs (
-          List.fold_left (fun acc (startpos, arg) ->
-            mkmty ~loc:(startpos, $endpos) (Pmty_functor (arg, acc))
-          ) mty args
-        ) }
+      { mkmty ~loc:$sloc ~attrs (Pmty_functor (args, mty)) }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
@@ -1441,10 +1428,10 @@ module_type:
       mkrhs(mty_longident)
         { Pmty_ident $1 }
     | LPAREN RPAREN MINUSGREATER module_type
-        { Pmty_functor(Unit, $4) }
+        { Pmty_functor([Unit], $4) }
     | module_type MINUSGREATER module_type
         %prec below_WITH
-        { Pmty_functor(Named (mknoloc None, $1), $3) }
+        { Pmty_functor([Named (mknoloc None, $1)], $3) }
     | module_type WITH separated_nonempty_llist(AND, with_constraint)
         { Pmty_with($1, $3) }
 /*  | LPAREN MODULE mkrhs(mod_longident) RPAREN
@@ -1538,9 +1525,8 @@ module_declaration_body:
   | EQUAL error
       { expecting $loc($1) ":" }
   | mkmty(
-      arg_and_pos = functor_arg body = module_declaration_body
-        { let (_, arg) = arg_and_pos in
-          Pmty_functor(arg, body) }
+      arg = functor_arg body = module_declaration_body
+        { Pmty_functor([arg], body) }
     )
     { $1 }
 ;

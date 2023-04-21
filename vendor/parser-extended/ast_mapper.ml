@@ -345,9 +345,9 @@ module MT = struct
     | Pmty_ident s -> ident ~loc ~attrs (map_loc sub s)
     | Pmty_alias s -> alias ~loc ~attrs (map_loc sub s)
     | Pmty_signature sg -> signature ~loc ~attrs (sub.signature sub sg)
-    | Pmty_functor (param, mt) ->
+    | Pmty_functor (params, mt) ->
         functor_ ~loc ~attrs
-          (map_functor_param sub param)
+          (List.map (map_functor_param sub) params)
           (sub.module_type sub mt)
     | Pmty_with (mt, l) ->
         with_ ~loc ~attrs (sub.module_type sub mt)
@@ -409,9 +409,9 @@ module M = struct
     match desc with
     | Pmod_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pmod_structure str -> structure ~loc ~attrs (sub.structure sub str)
-    | Pmod_functor (param, body) ->
+    | Pmod_functor (params, body) ->
         functor_ ~loc ~attrs
-          (map_functor_param sub param)
+          (List.map (map_functor_param sub) params)
           (sub.module_expr sub body)
     | Pmod_apply (m1, m2) ->
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
