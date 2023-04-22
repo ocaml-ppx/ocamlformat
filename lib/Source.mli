@@ -47,8 +47,6 @@ val find_token_before :
 
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
-val char_literal : t -> Location.t -> string
-
 val is_long_pmod_functor : t -> module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
     [Pmod_functor] expression that is expressed in long ('functor (M) ->')

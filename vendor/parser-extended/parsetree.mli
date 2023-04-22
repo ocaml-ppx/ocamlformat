@@ -29,7 +29,10 @@ type constant_desc =
      Suffixes [[g-z][G-Z]] are accepted by the parser.
      Suffixes except ['l'], ['L'] and ['n'] are rejected by the typechecker
   *)
-  | Pconst_char of char  (** Character such as ['c']. *)
+  | Pconst_char of char * string
+      (** [Pconst_char (c, s)] describes a character [c] and its literal string representation [s].
+
+          e.g. the character ['\n'] is represented by the literal string ["\\n"]. *)
   | Pconst_string of string * Location.t * string option
       (** Constant string such as ["constant"] or
           [{delim|other constant|delim}].

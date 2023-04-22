@@ -264,7 +264,7 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   match pconst_desc with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
+  | Pconst_char (_, s) -> wrap "'" "'" @@ str s
   | Pconst_string (s, loc', Some delim) ->
       Cmts.fmt c loc'
       @@ wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)

@@ -98,7 +98,7 @@ let fmt_constant i f x =
   let i = i+1 in
   match x.pconst_desc with
   | Pconst_integer (j,m) -> line i f "PConst_int (%s,%a)\n" j fmt_char_option m
-  | Pconst_char (c) -> line i f "PConst_char %02x\n" (Char.code c)
+  | Pconst_char (c, s) -> line i f "PConst_char (%02x,%s)\n" (Char.code c) s
   | Pconst_string (s, strloc, None) ->
       line i f "PConst_string(%S,%a,None)\n" s fmt_location strloc
   | Pconst_string (s, strloc, Some delim) ->

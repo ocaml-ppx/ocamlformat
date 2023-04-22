@@ -131,10 +131,6 @@ let string_literal t mode loc =
   Option.value_exn ~message:"Parse error while reading string literal"
     (Literal_lexer.string mode (string_at t loc))
 
-let char_literal t loc =
-  Option.value_exn ~message:"Parse error while reading char literal"
-    (Literal_lexer.char (string_at t loc))
-
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   if not ignore_spaces then Position.column l.loc_start = 0
   else

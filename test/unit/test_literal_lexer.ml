@@ -1,8 +1,6 @@
 open Base
 open Ocamlformat_lib
 
-let single_quote = '\''
-
 let double_quote = '"'
 
 let backslash = '\\'
@@ -50,32 +48,4 @@ let tests_string =
         ~expected_preserve:(String.of_char_list [backslash; 'n'])
         ~expected_normalize:(String.of_char_list [newline]) ]
 
-let tests_char =
-  let test_opt name s ~expected =
-    ( "char: " ^ name
-    , `Quick
-    , fun () ->
-        let got = Literal_lexer.char s in
-        Alcotest.check
-          (Alcotest.option Alcotest.string)
-          Stdlib.__LOC__ expected got )
-  in
-  let test name s ~expected = test_opt name s ~expected:(Some expected) in
-  [ test_opt "not a character literal" {|c|} ~expected:None
-  ; test "escaped newline"
-      (String.of_char_list [single_quote; newline; single_quote])
-      ~expected:(String.of_char_list [backslash; 'n'])
-  ; test "letter" {|'c'|} ~expected:"c"
-  ; test "escaped backslash" {|'\\'|} ~expected:{|\\|}
-  ; test "escaped single quote" {|'\''|} ~expected:{|\'|}
-  ; test "escaped double quote" {|'\"'|} ~expected:{|\"|}
-  ; test "backslash n" {|'\n'|} ~expected:{|\n|}
-  ; test "backslash t" {|'\t'|} ~expected:{|\t|}
-  ; test "backslash b" {|'\b'|} ~expected:{|\b|}
-  ; test "backslash r" {|'\r'|} ~expected:{|\r|}
-  ; test "backslash space" {|'\ '|} ~expected:{|\ |}
-  ; test "decimal escape" {|'\123'|} ~expected:{|\123|}
-  ; test "octal escape" {|'\o356'|} ~expected:{|\o356|}
-  ; test "hex escape" {|'\xde'|} ~expected:{|\xde|} ]
-
-let tests = tests_string @ tests_char
+let tests = tests_string
