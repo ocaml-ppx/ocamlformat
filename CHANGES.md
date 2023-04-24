@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-- Fix formatting of string literals in code blocks (#2338, @Julow)
+- Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
 - Improve formatting of module arguments (#2322, @Julow)
 - Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
