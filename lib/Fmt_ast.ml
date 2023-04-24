@@ -226,13 +226,12 @@ let fmt_recmodule c ctx items fmt_item ast sub =
    enclosing box to break across multiple lines. *)
 
 let rec fmt_longident (li : Longident.t) =
+  let fmt_id id =
+    wrap_if (Std_longident.String_id.is_symbol id) "( " " )" (str id)
+  in
   match li with
-  | Lident id -> str id
-  | Ldot (li, id) ->
-      hvbox 0
-        ( fmt_longident li $ fmt "@,."
-        $ wrap_if (Std_longident.String_id.is_symbol id) "( " " )" (str id)
-        )
+  | Lident id -> fmt_id id
+  | Ldot (li, id) -> hvbox 0 (fmt_longident li $ fmt "@,." $ fmt_id id)
   | Lapply (li1, li2) ->
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
@@ -2060,9 +2059,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            (Params.parens_if parens c.conf
               ( wrap_k opn cls (Cmts.fmt_within c ~pro ~epi pexp_loc)
               $ fmt_atrs ) )
-  | Pexp_construct (({txt= Lident "::"; loc= _} as lid), None) ->
-      Params.parens_if parens c.conf
-        (Params.parens c.conf (fmt_longident_loc c lid $ fmt_atrs))
   | Pexp_construct (lid, None) ->
       Params.parens_if parens c.conf (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_cons l ->
@@ -2072,20 +2068,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (List.mapi l ~f:(fun i e ->
                     (false, noop, noop, (fmt_if (i > 0) "::", sub_exp ~ctx e)) )
                ) )
-        $ fmt_atrs )
-  | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
-      let opn, cls =
-        match c.conf.fmt_opts.indicate_multiline_delimiters.v with
-        | `No -> (str "(", str ")")
-        | `Space -> (str "( ", str " )")
-        | `Closing_on_separate_line ->
-            (str "( ", fits_breaks ")" ~hint:(1000, -2) ")")
-      in
-      Params.parens_if parens c.conf
-        ( hvbox 2
-            ( wrap_k opn cls (fmt_longident_loc c lid)
-            $ fmt "@ "
-            $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
   | Pexp_construct (lid, Some arg) ->
       Params.parens_if parens c.conf
@@ -2146,12 +2128,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
          $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
-      let inner_parens = Exp.is_symbol exp || Exp.is_monadic_binding exp in
       Cmts.fmt c loc
       @@ wrap_if outer_parens "(" ")"
-      @@ ( wrap_if inner_parens "( " " )"
-             (fmt_longident txt $ Cmts.fmt_within c loc)
-         $ fmt_atrs )
+      @@ (fmt_longident txt $ Cmts.fmt_within c loc $ fmt_atrs)
   | Pexp_ifthenelse (if_branches, else_) ->
       let last_loc =
         match else_ with
