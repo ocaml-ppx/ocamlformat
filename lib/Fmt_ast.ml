@@ -4406,7 +4406,8 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in ~body
   in
   let blank_line_after_in =
     let last_bind = List.last_exn bindings in
-    sequence_blank_line c last_bind.lb_loc body_loc
+    let loc_in = Option.value loc_in ~default:last_bind.lb_loc in
+    sequence_blank_line c loc_in body_loc
   in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
     (vbox 0
@@ -4535,8 +4536,10 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?loc_in ?epi
                       $ fmt_if_k (not lb_pun) pre_body )
                   $ fmt_if (not lb_pun) "@ "
                   $ fmt_if_k (not lb_pun) body )
-              $ cmts_after )
-          $ in_ )
+              $ cmts_after
+              $ opt loc_in (Cmts.fmt_before c) )
+          $ in_
+          $ opt loc_in (Cmts.fmt_after c) )
       $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 

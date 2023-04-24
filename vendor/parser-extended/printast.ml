@@ -1120,7 +1120,10 @@ and include_description i = include_infos "include_description" module_type i
 and include_declaration i = include_infos "include_declaration" module_expr i
 
 and value_bindings i ppf x =
-  list i value_binding ppf x.pvbs_bindings
+  list i value_binding ppf x.pvbs_bindings;
+  match x.pvbs_loc_in with
+  | Some loc -> line i ppf "in_loc: %a\n" fmt_location loc
+  | None -> ()
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"

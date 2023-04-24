@@ -170,15 +170,16 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
-                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
-                       after: (* after unit *)
                     None
               ]
+              in_loc: (a.ml[5,90+140]..[5,90+142])
+              comments
+                before: (* after unit *)
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
         ]
@@ -223,15 +224,16 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
-                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
-                       after: (* after unit *)
                     None
               ]
+              in_loc: (a.ml[5,90+140]..[5,90+142])
+              comments
+                before: (* after unit *)
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
         ]
@@ -261,8 +263,6 @@
               Pexp_let Nonrec
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
-                comments
-                   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -278,13 +278,69 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
+                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[9,183+4]..[10,210+28])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
+                       after: (* after unit *)
                     None
               ]
+              in_loc: (a.ml[12,260+2]..[12,260+4])
+              expression (a.ml[13,265+2]..[13,265+3])
+                Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
+        ]
+    ]
+  
+  AST:
+  Ptop_def
+    [
+      structure_item (a.ml[2,25+0]..[13,265+3])
+      comments
+        before: (* before let-binding *)
+         after: (* after let-binding *)
+        Pstr_value Nonrec
+        [
+          <def> (a.ml[2,25+0]..[13,265+3])
+          comments
+            before: (* before let-binding *)
+             after: (* after let-binding *)
+            pattern (a.ml[2,25+4]..[2,25+6])
+              Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
+              None
+            expression (a.ml[5,90+2]..[13,265+3])
+            comments
+              before: (* before x binding #1 *)
+              before: (* before x binding #2 *)
+              Pexp_let Nonrec
+              [
+                <def> (a.ml[5,90+2]..[10,210+28])
+                  pattern (a.ml[5,90+21]..[5,90+22])
+                  comments
+                    before: (* before x *)
+                     after: (* after x #1 *)
+                     after: (* after x #2 *)
+                    Ppat_var "x" (a.ml[5,90+21]..[5,90+22])
+                    comments
+                      before: (* before x *)
+                       after: (* after x #1 *)
+                       after: (* after x #2 *)
+                  expression (a.ml[9,183+4]..[10,210+28])
+                  comments
+                    before: (* before unit *)
+                    within: (* within unit #1 *)
+                    within: (* within unit #2 *)
+                     after: (* after unit *)
+                    Pexp_construct "()" (a.ml[9,183+4]..[10,210+28])
+                    comments
+                      before: (* before unit *)
+                      within: (* within unit #1 *)
+                      within: (* within unit #2 *)
+                       after: (* after unit *)
+                    None
+              ]
+              in_loc: (a.ml[12,260+2]..[12,260+4])
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
         ]
@@ -337,6 +393,60 @@
                       within: (* within unit #2 *)
                     None
               ]
+              in_loc: (a.ml[12,260+2]..[12,260+4])
+              expression (a.ml[13,265+2]..[13,265+3])
+                Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
+        ]
+    ]
+  
+  AST:
+  Ptop_def
+    [
+      structure_item (a.ml[2,25+0]..[13,265+3])
+      comments
+        before: (* before let-binding *)
+         after: (* after let-binding *)
+        Pstr_value Nonrec
+        [
+          <def> (a.ml[2,25+0]..[13,265+3])
+          comments
+            before: (* before let-binding *)
+             after: (* after let-binding *)
+            pattern (a.ml[2,25+4]..[2,25+6])
+              Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
+              None
+            expression (a.ml[5,90+2]..[13,265+3])
+            comments
+              before: (* before x binding #1 *)
+              before: (* before x binding #2 *)
+              Pexp_let Nonrec
+              [
+                <def> (a.ml[5,90+2]..[10,210+28])
+                comments
+                   after: (* after unit *)
+                  pattern (a.ml[5,90+21]..[5,90+22])
+                  comments
+                    before: (* before x *)
+                     after: (* after x #1 *)
+                     after: (* after x #2 *)
+                    Ppat_var "x" (a.ml[5,90+21]..[5,90+22])
+                    comments
+                      before: (* before x *)
+                       after: (* after x #1 *)
+                       after: (* after x #2 *)
+                  expression (a.ml[9,183+4]..[10,210+28])
+                  comments
+                    before: (* before unit *)
+                    within: (* within unit #1 *)
+                    within: (* within unit #2 *)
+                    Pexp_construct "()" (a.ml[9,183+4]..[10,210+28])
+                    comments
+                      before: (* before unit *)
+                      within: (* within unit #1 *)
+                      within: (* within unit #2 *)
+                    None
+              ]
+              in_loc: (a.ml[12,260+2]..[12,260+4])
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
         ]

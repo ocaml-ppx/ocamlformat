@@ -75,9 +75,8 @@ let foo x y =
 
 let foo x y =
   do_some_setup x ;
-  let () = do_some_setup y in
+  let () = do_some_setup y in (* Empty line after let *)
 
-  (* Empty line after let *)
   important_function x ;
   another_important_function x y ;
   cleanup x y
