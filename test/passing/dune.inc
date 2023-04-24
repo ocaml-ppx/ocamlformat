@@ -2174,7 +2174,7 @@
  (action
   (with-stdout-to generative.ml.stdout
    (with-stderr-to generative.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/generative.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/generative.ml})))))
 
 (rule
  (alias runtest)
