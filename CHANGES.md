@@ -86,6 +86,7 @@ profile. This started with version 0.26.0.
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
+- Fix the formatting of the `in` keyword when `[@ocamlformat disable]` is attached to a let-binding (#2242, @EmileTrotignon)
 
 ### Changed
 
