@@ -2174,12 +2174,12 @@
  (action
   (with-stdout-to generative.ml.stdout
    (with-stderr-to generative.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/generative.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/generative.ml})))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/generative.ml generative.ml.stdout)))
+ (action (diff tests/generative.ml.ref generative.ml.stdout)))
 
 (rule
  (alias runtest)
