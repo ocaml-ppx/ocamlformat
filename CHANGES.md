@@ -34,6 +34,7 @@
 
 ### New features
 
+- Handle short syntax for generative functor types (#2348, @gpetiot)
 - Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
 
 ## 0.25.1 (2023-03-06)

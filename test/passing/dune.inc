@@ -2172,6 +2172,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to generative-510.ml.stdout
+   (with-stderr-to generative-510.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocaml-version=5.1.0 %{dep:tests/generative.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/generative-510.ml.ref generative-510.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/generative-510.ml.err generative-510.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to generative.ml.stdout
    (with-stderr-to generative.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/generative.ml})))))
