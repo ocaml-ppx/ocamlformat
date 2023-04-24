@@ -566,17 +566,17 @@ module Cinaps = struct
   open Fmt
 
   (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
-  let fmt ~cls code =
-    let wrap k = hvbox 2 (fmt "(*$" $ k $ fmt cls) in
-    match String.split_lines code with
-    | [] | [""] -> wrap (str " ")
-    | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
-    | lines ->
-        let fmt_line = function
-          | "" -> fmt "\n"
-          | line -> fmt "@\n" $ str line
-        in
-        wrap (list lines "" fmt_line $ fmt "@;<1000 -2>")
+  let fmt ~opn_pos ~cls code =
+    let code =
+      match String.split_lines code with
+      | [] | [""] -> noop
+      | [line] -> fmt "@ " $ str line
+      | first_line :: tl_lines ->
+          fmt "@,"
+          $ Unwrapped.fmt_multiline_cmt ~opn_pos ~starts_with_sp:false
+              first_line tl_lines
+    in
+    hvbox 2 (fmt "(*$" $ code $ fmt "@;<1 -2>" $ fmt cls)
 end
 
 module Ocp_indent_compat = struct
@@ -648,7 +648,7 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
   let open Fmt in
   match mode with
   | `Verbatim x -> Verbatim.fmt x pos
-  | `Code (code, cls) -> Cinaps.fmt ~cls code
+  | `Code (code, cls) -> Cinaps.fmt ~opn_pos:cmt.Cmt.loc.loc_start ~cls code
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
       (* TODO: [offset] should be computed from location. *)
