@@ -215,42 +215,7 @@ module Parse = struct
           {p with pexp_desc= Pexp_pack (name, Some pt)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
-    let module_expr (m : Ast_mapper.mapper) me =
-      let me =
-        match me with
-        (* [functor () -> functor () -> E] => [functor () () -> E] *)
-        | { pmod_desc=
-              Pmod_functor
-                ( args
-                , { pmod_desc= Pmod_functor (args', me')
-                  ; pmod_attributes= []
-                  ; _ } )
-          ; pmod_attributes= []
-          ; _ } ->
-            {me with pmod_desc= Pmod_functor (args @ args', me')}
-        | x -> x
-      in
-      Ast_mapper.default_mapper.module_expr m me
-    in
-    let module_type (m : Ast_mapper.mapper) mt =
-      let mt =
-        match mt with
-        (* [functor () -> functor () -> E] => [functor () () -> E] *)
-        | { pmty_desc=
-              Pmty_functor
-                ( args
-                , { pmty_desc= Pmty_functor (args', mt')
-                  ; pmty_attributes= []
-                  ; _ } )
-          ; pmty_attributes= []
-          ; _ } ->
-            {mt with pmty_desc= Pmty_functor (args @ args', mt')}
-        | x -> x
-      in
-      Ast_mapper.default_mapper.module_type m mt
-    in
-    Ast_mapper.
-      {default_mapper with expr; pat; binding_op; module_expr; module_type}
+    Ast_mapper.{default_mapper with expr; pat; binding_op}
 
   let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
     map fg (normalize_mapper ~preserve_beginend)
