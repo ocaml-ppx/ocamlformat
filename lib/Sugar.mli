@@ -51,26 +51,6 @@ val sequence :
 (** [sequence cmts exp] returns the list of expressions (with the optional
     extension) from a sequence of expressions [exp]. *)
 
-val functor_type :
-     Cmts.t
-  -> for_functor_kw:bool
-  -> source_is_long:(module_type -> bool)
-  -> module_type Ast.xt
-  -> functor_parameter loc list * module_type Ast.xt
-(** [functor_type cmts for_functor_kw m] returns the list of module types
-    applied to the functor of module type [m]. [for_functor_kw] indicates if
-    the keyword [functor] is used. *)
-
-val functor_ :
-     Cmts.t
-  -> for_functor_kw:bool
-  -> source_is_long:(module_expr -> bool)
-  -> module_expr Ast.xt
-  -> functor_parameter loc list * module_expr Ast.xt
-(** [functor_ cmts for_functor_kw m] returns the list of module types applied
-    to the functor of module [m]. [for_functor_kw] indicates if the keyword
-    [functor] is used. *)
-
 val mod_with :
      module_type Ast.xt
   -> (with_constraint list * Warnings.loc * attributes) list

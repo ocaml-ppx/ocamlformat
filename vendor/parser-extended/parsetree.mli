@@ -408,7 +408,7 @@ and expression_desc =
   | Pexp_setinstvar of label loc * expression  (** [x <- 2] *)
   | Pexp_override of (label loc * expression) list
       (** [{< x1 = E1; ...; xn = En >}] *)
-  | Pexp_letmodule of string option loc * module_expr * expression
+  | Pexp_letmodule of string option loc * functor_parameter loc list * module_expr * expression
       (** [let module M = ME in E] *)
   | Pexp_letexception of extension_constructor * expression
       (** [let exception C in E] *)
@@ -862,8 +862,8 @@ and module_type =
 and module_type_desc =
   | Pmty_ident of Longident.t loc  (** [Pmty_ident(S)] represents [S] *)
   | Pmty_signature of signature  (** [sig ... end] *)
-  | Pmty_functor of functor_parameter * module_type
-      (** [functor(X : MT1) -> MT2] *)
+  | Pmty_functor of functor_parameter loc list * module_type
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT] *)
   | Pmty_with of module_type * with_constraint list  (** [MT with ...] *)
   | Pmty_typeof of module_expr  (** [module type of ME] *)
   | Pmty_extension of extension  (** [[%id]] *)
@@ -914,6 +914,7 @@ and signature_item_desc =
 and module_declaration =
     {
      pmd_name: string option loc;
+     pmd_args: functor_parameter loc list;
      pmd_type: module_type;
      pmd_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      pmd_loc: Location.t;
@@ -1010,8 +1011,8 @@ and module_expr =
 and module_expr_desc =
   | Pmod_ident of Longident.t loc  (** [X] *)
   | Pmod_structure of structure  (** [struct ... end] *)
-  | Pmod_functor of functor_parameter * module_expr
-      (** [functor(X : MT1) -> ME] *)
+  | Pmod_functor of functor_parameter loc list * module_expr
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> ME] *)
   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
   | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
   | Pmod_unpack of expression * package_type option * package_type option
@@ -1078,6 +1079,7 @@ and let_bindings =
 and module_binding =
     {
      pmb_name: string option loc;
+     pmb_args: functor_parameter loc list;
      pmb_expr: module_expr;
      pmb_attributes: attributes;
      pmb_loc: Location.t;

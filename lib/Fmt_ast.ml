@@ -158,14 +158,6 @@ let box_fun_sig_args c =
   | `Fit_or_vertical -> hvbox
   | `Wrap | `Smart -> hovbox
 
-let sugar_pmod_functor c ~for_functor_kw pmod =
-  let source_is_long = Source.is_long_pmod_functor c.source in
-  Sugar.functor_ c.cmts ~for_functor_kw ~source_is_long pmod
-
-let sugar_pmty_functor c ~for_functor_kw pmty =
-  let source_is_long = Source.is_long_pmty_functor c.source in
-  Sugar.functor_type c.cmts ~for_functor_kw ~source_is_long pmty
-
 let closing_paren ?force ?(offset = 0) c =
   match c.conf.fmt_opts.indicate_multiline_delimiters.v with
   | `No -> str ")"
@@ -2240,11 +2232,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
-  | Pexp_letmodule (name, pmod, exp) ->
+  | Pexp_letmodule (name, args, pmod, exp) ->
       let keyword = "let module" in
-      let xargs, xbody =
-        sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmod)
-      in
+      let xbody = sub_mod ~ctx pmod in
       let xbody, xmty =
         match xbody.ast with
         | { pmod_desc= Pmod_constraint (body_me, body_mt)
@@ -2265,7 +2255,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (parens || not (List.is_empty pexp_attributes))
             c.conf
             ( hvbox 2
-                (fmt_module c ctx keyword ~eqty:":" name xargs (Some xbody)
+                (fmt_module c ctx keyword ~eqty:":" name args (Some xbody)
                    xmty [] ~epi:(str "in") ~can_sparse ?ext ~rec_flag:false )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
@@ -3447,17 +3437,15 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
           Some
             ( str "end" $ after
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
-  | Pmty_functor _ ->
-      let for_functor_kw = true in
-      let xargs, mt2 = sugar_pmty_functor c ~for_functor_kw xmty in
-      let blk = fmt_module_type c mt2 in
+  | Pmty_functor (args, mt) ->
+      let blk = fmt_module_type c (sub_mty ~ctx mt) in
       { blk with
         pro=
           Some
             ( str "functor"
             $ fmt_attributes c ~pre:Blank pmty_attributes
             $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" (fmt_functor_param c ctx)
+            $ list args "@;<1 2>" (fmt_functor_param c ctx)
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
       ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
@@ -3767,22 +3755,19 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
 and fmt_module_declaration ?ext c ~rec_flag ~first {ast= pmd; _} =
   protect c (Md pmd)
   @@
-  let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
+  let {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
   let ctx = Md pmd in
   let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
-  let xargs, xmty =
-    if rec_flag then ([], sub_mty ~ctx pmd_type)
-    else sugar_pmty_functor c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
-  in
+  let xmty = sub_mty ~ctx pmd_type in
   let eqty =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module ~rec_:rec_flag ?ext c ctx keyword pmd_name xargs None ?eqty
-       (Some xmty) ~rec_flag:(rec_flag && first) pmd_attributes )
+    (fmt_module ~rec_:rec_flag ?ext c ctx keyword pmd_name pmd_args None
+       ?eqty (Some xmty) ~rec_flag:(rec_flag && first) pmd_attributes )
 
 and fmt_module_substitution ?ext c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
@@ -3995,8 +3980,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
-  | Pmod_functor _ ->
-      let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
+  | Pmod_functor (args, me) ->
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         bdy=
@@ -4007,10 +3991,11 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                    ( str "functor"
                    $ fmt_attributes c ~pre:Blank atrs
                    $ fmt "@;<1 2>"
-                   $ list xargs "@;<1 2>" (fmt_functor_param c ctx)
+                   $ list args "@;<1 2>" (fmt_functor_param c ctx)
                    $ fmt "@;<1 2>->@;<1 2>"
-                   $ compose_module (fmt_module_expr c me) ~f:(hvbox 0) ) )
-            ) }
+                   $ compose_module
+                       (fmt_module_expr c (sub_mod ~ctx me))
+                       ~f:(hvbox 0) ) ) ) }
   | Pmod_ident lid ->
       { empty with
         opn= Some (open_hvbox 2)
@@ -4337,9 +4322,7 @@ and fmt_module_binding ?ext c ~rec_flag ~first {ast= pmb; _} =
   let ctx = Mb pmb in
   let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
-  let xargs, xbody =
-    sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmb.pmb_expr)
-  in
+  let xbody = sub_mod ~ctx pmb.pmb_expr in
   let xbody, xmty =
     match xbody.ast with
     | { pmod_desc= Pmod_constraint (body_me, body_mt)
@@ -4352,7 +4335,7 @@ and fmt_module_binding ?ext c ~rec_flag ~first {ast= pmb; _} =
   in
   Cmts.fmt c pmb.pmb_loc
     (fmt_module ~rec_:rec_flag ?ext c ctx keyword
-       ~rec_flag:(rec_flag && first) ~eqty:":" pmb.pmb_name xargs
+       ~rec_flag:(rec_flag && first) ~eqty:":" pmb.pmb_name pmb.pmb_args
        (Some xbody) xmty pmb.pmb_attributes )
 
 let fmt_toplevel_directive c ~semisemi dir =
