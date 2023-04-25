@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix formatting of string literals in code blocks (#2338, @Julow)
 - Improve formatting of module arguments (#2322, @Julow)
 - Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
