@@ -8011,3 +8011,8 @@ struct
   open Tested
   open For_tests
 end
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : YYYYYYYYYYYYYYYYYYYYY.t
+    (* ____________________________________ *)
+  }

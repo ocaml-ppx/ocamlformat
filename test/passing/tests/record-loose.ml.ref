@@ -138,3 +138,8 @@ let _ = {x : t :> t}
 let _ = {x : t :> t}
 
 let {x : t} = x
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :
+      YYYYYYYYYYYYYYYYYYYYY.t
+    (* ____________________________________ *) }

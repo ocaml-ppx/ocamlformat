@@ -139,3 +139,8 @@ let _ = { x = (x : t :> t) }
 let _ = { x : t = (x :> t) }
 
 let { x = (x : t) } = x
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : YYYYYYYYYYYYYYYYYYYYY.t
+    (* ____________________________________ *)
+  }

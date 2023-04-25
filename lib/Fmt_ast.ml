@@ -3344,7 +3344,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
              (fits_breaks ~level:5 "" ";") )
           (str ";")
   in
-  hovbox 0
+  hvbox 0
     ( Cmts.fmt_before c pld_loc
     $ hvbox
         (Indent.record_docstring c)
