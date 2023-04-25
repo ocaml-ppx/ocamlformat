@@ -8016,3 +8016,9 @@ type t =
   { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : YYYYYYYYYYYYYYYYYYYYY.t
     (* ____________________________________ *)
   }
+
+(*{v
+
+      foo
+
+v}*)

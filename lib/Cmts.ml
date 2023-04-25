@@ -794,7 +794,7 @@ let remaining_locs t = Set.to_list t.remaining
 let is_docstring (conf : Conf.t) (Cmt.{txt; loc} as cmt) =
   match txt with
   | "" | "*" -> Either.Second cmt
-  | _ when Char.equal txt.[0] '*' || conf.fmt_opts.ocp_indent_compat.v ->
+  | _ when Char.equal txt.[0] '*' ->
       (* Doc comments here (comming directly from the lexer) include their
          leading star [*]. It is not part of the docstring and should be
          dropped. When [ocp-indent-compat] is set, regular comments are
@@ -803,4 +803,10 @@ let is_docstring (conf : Conf.t) (Cmt.{txt; loc} as cmt) =
       let cmt = Cmt.create txt loc in
       if conf.fmt_opts.parse_docstrings.v then Either.First cmt
       else Either.Second cmt
+  | _
+    when conf.fmt_opts.ocp_indent_compat.v
+         && conf.fmt_opts.parse_docstrings.v ->
+      (* In ocp_indent_compat mode, comments are parsed like docstrings. *)
+      let cmt = Cmt.create txt loc in
+      Either.First cmt
   | _ -> Either.Second cmt

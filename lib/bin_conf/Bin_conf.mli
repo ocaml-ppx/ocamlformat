@@ -34,7 +34,6 @@ type action =
       (** Check whether the input files already are formatted. *)
   | Print_config of Ocamlformat_lib.Conf.t
       (** Print the configuration and exit. *)
-  | Numeric of input
 
 val action :
   unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t

@@ -10,4 +10,4 @@ let f = (`A) a b
 
 let f = (`A x) a b
 
-let f = ((::)) a b c
+let f = (( :: )) a b c

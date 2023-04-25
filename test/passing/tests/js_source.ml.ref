@@ -10287,3 +10287,7 @@ type t =
       YYYYYYYYYYYYYYYYYYYYY.t
     (* ____________________________________ *)
   }
+
+(*{v
+      foo
+  v}*)

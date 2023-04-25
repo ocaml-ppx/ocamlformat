@@ -1,1 +1,0 @@
-class c = (object end :

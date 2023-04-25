@@ -1,3 +1,6 @@
+{0 Manpage: ocamlformat}
+
+{v
 NAME
        ocamlformat - A tool to format OCaml code.
 
@@ -597,11 +600,6 @@ OPTIONS
        --no-version-check
            Unset version-check.
 
-       --numeric
-           Instead of re-formatting the file, output one integer per line
-           corresponding to the indentation value, printing as many values as
-           lines in the document.
-
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
@@ -664,7 +662,7 @@ COMMON OPTIONS
            Show version information.
 
 EXIT STATUS
-       ocamlformat exits with the following status:
+       ocamlformat exits with:
 
        0   on success.
 
@@ -680,3 +678,4 @@ ENVIRONMENT
        OCAMLFORMAT
            See option --config.
 
+v}

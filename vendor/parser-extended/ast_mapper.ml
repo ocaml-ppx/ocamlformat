@@ -330,9 +330,14 @@ module CT = struct
       (List.map (sub.class_type_field sub) pcsig_fields)
 end
 
-let map_functor_param sub = function
-  | Unit -> Unit
-  | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+let map_functor_param sub {loc; txt} =
+  let loc = sub.location sub loc in
+  let txt =
+    match txt with
+    | Unit -> Unit
+    | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+  in
+  {loc; txt}
 
 module MT = struct
   (* Type expressions for the module language *)
@@ -345,9 +350,9 @@ module MT = struct
     | Pmty_ident s -> ident ~loc ~attrs (map_loc sub s)
     | Pmty_alias s -> alias ~loc ~attrs (map_loc sub s)
     | Pmty_signature sg -> signature ~loc ~attrs (sub.signature sub sg)
-    | Pmty_functor (param, mt) ->
+    | Pmty_functor (params, mt) ->
         functor_ ~loc ~attrs
-          (map_functor_param sub param)
+          (List.map (map_functor_param sub) params)
           (sub.module_type sub mt)
     | Pmty_with (mt, l) ->
         with_ ~loc ~attrs (sub.module_type sub mt)
@@ -409,9 +414,9 @@ module M = struct
     match desc with
     | Pmod_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pmod_structure str -> structure ~loc ~attrs (sub.structure sub str)
-    | Pmod_functor (param, body) ->
+    | Pmod_functor (params, body) ->
         functor_ ~loc ~attrs
-          (map_functor_param sub param)
+          (List.map (map_functor_param sub) params)
           (sub.module_expr sub body)
     | Pmod_apply (m1, m2) ->
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
@@ -541,8 +546,10 @@ module E = struct
     | Pexp_override sel ->
         override ~loc ~attrs
           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)
-    | Pexp_letmodule (s, me, e) ->
-        letmodule ~loc ~attrs (map_loc sub s) (sub.module_expr sub me)
+    | Pexp_letmodule (s, args, me, e) ->
+        letmodule ~loc ~attrs (map_loc sub s)
+          (List.map (map_functor_param sub) args)
+          (sub.module_expr sub me)
           (sub.expr sub e)
     | Pexp_letexception (cd, e) ->
         letexception ~loc ~attrs
@@ -770,9 +777,10 @@ let default_mapper =
     let_bindings = LB.map_let_bindings;
 
     module_declaration =
-      (fun this {pmd_name; pmd_type; pmd_attributes; pmd_loc} ->
+      (fun this {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} ->
          Md.mk
            (map_loc this pmd_name)
+           (List.map (map_functor_param this) pmd_args)
            (this.module_type this pmd_type)
            ~attrs:(this.attributes this pmd_attributes)
            ~loc:(this.location this pmd_loc)
@@ -797,8 +805,10 @@ let default_mapper =
       );
 
     module_binding =
-      (fun this {pmb_name; pmb_expr; pmb_attributes; pmb_loc} ->
-         Mb.mk (map_loc this pmb_name) (this.module_expr this pmb_expr)
+      (fun this {pmb_name; pmb_args; pmb_expr; pmb_attributes; pmb_loc} ->
+         Mb.mk (map_loc this pmb_name)
+           (List.map (map_functor_param this) pmb_args)
+           (this.module_expr this pmb_expr)
            ~attrs:(this.attributes this pmb_attributes)
            ~loc:(this.location this pmb_loc)
       );

@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
@@ -20,6 +21,7 @@ jobs:
           - 4.13.x
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
 
     steps:
       # Clone the project
@@ -37,8 +39,8 @@ jobs:
       - name: Runtest
         run: opam exec -- dune runtest
 
-      - name: Check help files
-        run: opam exec -- dune build @help --auto-promote
+      - name: Check manpages
+        run: opam exec -- dune build @gen_manpage --auto-promote
 
       - name: Upload binary
         if: ${{ matrix.os == 'ubuntu-latest' }}

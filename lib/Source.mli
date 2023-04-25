@@ -47,18 +47,6 @@ val find_token_before :
 
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
-val char_literal : t -> Location.t -> string
-
-val is_long_pmod_functor : t -> module_expr -> bool
-(** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
-    [Pmod_functor] expression that is expressed in long ('functor (M) ->')
-    form in source. *)
-
-val is_long_pmty_functor : t -> module_type -> bool
-(** [is_long_pmty_functor source mod_type] holds if [mod_type] is a
-    [Pmty_functor] type that is expressed in long ('functor (M) ->') form in
-    source. *)
-
 val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool

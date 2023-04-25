@@ -44,7 +44,7 @@ module Const = struct
   let nativeint ?loc ?(suffix='n') i =
     integer ?loc ~suffix (Nativeint.to_string i)
   let float ?loc ?suffix f = mk ?loc (Pconst_float (f, suffix))
-  let char ?loc c = mk ?loc (Pconst_char c)
+  let char ?loc c s = mk ?loc (Pconst_char (c, s))
   let string ?quotation_delimiter ?(loc= !default_loc) s =
     mk ~loc (Pconst_string (s, loc, quotation_delimiter))
 end
@@ -145,7 +145,7 @@ module Exp = struct
   let indexop_access ?loc ?attrs pia_lhs pia_kind pia_paren pia_rhs =
     mk ?loc ?attrs (Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs})
   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
-  let letmodule ?loc ?attrs a b c= mk ?loc ?attrs (Pexp_letmodule (a, b, c))
+  let letmodule ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_letmodule (a, b, c, d))
   let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))
   let assert_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_assert a)
   let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_lazy a)
@@ -367,9 +367,10 @@ end
 
 module Md = struct
   let mk ?(loc = !default_loc) ?(attrs = [])
-        ?(docs = empty_docs) ?(text = []) name typ =
+        ?(docs = empty_docs) ?(text = []) name args typ =
     {
      pmd_name = name;
+     pmd_args = args;
      pmd_type = typ;
      pmd_attributes =
        add_text_attrs text (add_docs_attrs docs attrs);
@@ -403,9 +404,10 @@ end
 
 module Mb = struct
   let mk ?(loc = !default_loc) ?(attrs = [])
-        ?(docs = empty_docs) ?(text = []) name expr =
+        ?(docs = empty_docs) ?(text = []) name args expr =
     {
      pmb_name = name;
+     pmb_args = args;
      pmb_expr = expr;
      pmb_attributes =
        add_text_attrs text (add_docs_attrs docs attrs);
