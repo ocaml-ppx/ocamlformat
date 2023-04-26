@@ -803,6 +803,7 @@ let is_docstring (conf : Conf.t) (Cmt.{txt; loc} as cmt) =
       let cmt = Cmt.create txt loc in
       if conf.fmt_opts.parse_docstrings.v then Either.First cmt
       else Either.Second cmt
+  | _ when Char.equal txt.[0] '$' -> Either.Second cmt
   | _
     when conf.fmt_opts.ocp_indent_compat.v
          && conf.fmt_opts.parse_docstrings.v ->
