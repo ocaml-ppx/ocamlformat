@@ -7851,3 +7851,11 @@ let _ =
   ()
 *)
 (*$*)
+
+(*$
+    [%string
+      {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    |}]
+*)
+(*$*)
