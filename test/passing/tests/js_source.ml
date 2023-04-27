@@ -8027,3 +8027,11 @@ v}*)
     {|
          f|}
 *)
+
+type t =
+  { xxxxxxxxxxxxxxxxxxx : yyy
+                          [@zzzzzzzzzzzzzzzzzzz
+                             (* ________________________________
+                                ___ *)
+                            _______]
+  }

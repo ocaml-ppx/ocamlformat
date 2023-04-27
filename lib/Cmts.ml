@@ -726,7 +726,7 @@ module Toplevel = struct
               if Source.begins_line t.source first_loc then
                 fmt_or
                   (Source.empty_line_before t.source first_loc)
-                  "\n@;<1000 0>" "@\n"
+                  "\n@;<1000 0>" "@;<1000 0>"
               else break 1 0
         in
         let epi =
@@ -736,7 +736,7 @@ module Toplevel = struct
               if Source.ends_line t.source last_loc then
                 fmt_or
                   (Source.empty_line_after t.source last_loc)
-                  "\n@;<1000 0>" "@\n"
+                  "\n@;<1000 0>" "@;<1000 0>"
               else break 1 0
           | After -> noop
         in
