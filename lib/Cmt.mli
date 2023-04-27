@@ -37,6 +37,18 @@ module Comparator_no_loc : sig
   include Comparator.S with type t := t
 end
 
-val unindent_lines : offset:int -> string list -> string list
-(** Detect and remove the baseline indentation of a comment or a code block.
-    [offset] is the column number at which the first line starts. *)
+type decoded_kind =
+  | Verbatim of string  (** Original content. *)
+  | Doc of string  (** Original content. *)
+  | Normal of string  (** Original content with whitespaces trimmed. *)
+  | Code of string list
+      (** Source code is line splitted with baseline indentation removed. *)
+  | Asterisk_prefixed of string list
+      (** Line splitted with asterisks removed. *)
+
+type decoded =
+  { prefix: string  (** Just after the opening. *)
+  ; suffix: string  (** Just before the closing. *)
+  ; kind: decoded_kind }
+
+val decode : t -> decoded

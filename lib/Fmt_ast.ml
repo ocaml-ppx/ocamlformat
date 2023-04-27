@@ -36,8 +36,7 @@ module Cmts = struct
   let fmt c ?pro ?epi ?eol ?adj loc =
     (* remove the before comments from the map first *)
     let before = fmt_before c ?pro ?epi ?eol ?adj loc in
-    (* remove the within comments from the map by accepting the
-       continuation *)
+    (* remove the within comments from the map by accepting the continuation *)
     fun inner ->
       (* delay the after comments until the within comments have been
          removed *)
@@ -717,8 +716,7 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
-   of the expression, i.e. if the expression is part of a `fun`
-   expression. *)
+   of the expression, i.e. if the expression is part of a `fun` expression. *)
 and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
     ({ast= typ; ctx} as xtyp) =
   protect c (Typ typ)
@@ -1351,8 +1349,7 @@ and fmt_fun ?force_closing_paren
     else noop
   in
   let (label_sep : s), break_fun =
-    (* Break between the label and the fun to avoid ocp-indent's
-       alignment. *)
+    (* Break between the label and the fun to avoid ocp-indent's alignment. *)
     if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
     else (":", fmt "@ ")
   in
@@ -2626,8 +2623,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_beginend e ->
       let wrap_beginend =
         match ctx0 with
-        (* begin-end keywords are handled when printing if-then-else
-           branch *)
+        (* begin-end keywords are handled when printing if-then-else branch *)
         | Exp {pexp_desc= Pexp_ifthenelse (_, Some z); _}
           when Base.phys_equal xexp.ast z ->
             Fn.id

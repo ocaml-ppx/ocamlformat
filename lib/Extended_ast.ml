@@ -210,8 +210,7 @@ module Parse = struct
         when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
           (* Match locations to differentiate between the two position for
              the constraint, we want to shorten the second: - [let _ :
-             (module S) = (module M)] - [let _ = ((module M) : (module
-             S))] *)
+             (module S) = (module M)] - [let _ = ((module M) : (module S))] *)
           {p with pexp_desc= Pexp_pack (name, Some pt)}
       | e -> Ast_mapper.default_mapper.expr m e
     in
