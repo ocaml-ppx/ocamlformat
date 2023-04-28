@@ -21,3 +21,7 @@ let _ = ( let++ ) [@attr] ;;
 ( let++ ) [@attr]
 
 let ( let++ ), (( and++ ) [@attr]) = X.((( let++ ) [@attr]), ( and++ ))
+
+let is_empty = function [] -> true | ( :: ) _ -> false
+
+let is_empty = (( :: ), ( :: ) 1, (Foo) 2)

@@ -1124,7 +1124,13 @@ module_expr:
   | SIG error
       { expecting $loc($1) "struct" }
   | FUNCTOR attrs = attributes args = nonempty_functor_args MINUSGREATER me = module_expr
-      { mkmod ~loc:$sloc ~attrs (Pmod_functor (args, me)) }
+      { let me =
+          match attrs, me with
+          | [], {pmod_desc= Pmod_functor (args', me'); pmod_attributes= []; _} ->
+              Pmod_functor (args @ args', me')
+          | _ -> Pmod_functor (args, me)
+        in
+        mkmod ~loc:$sloc ~attrs me }
   | me = paren_module_expr
       { me }
   | me = module_expr attr = attribute
@@ -1419,7 +1425,13 @@ module_type:
   | FUNCTOR attrs = attributes args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { mkmty ~loc:$sloc ~attrs (Pmty_functor (args, mty)) }
+      { let mty =
+          match attrs, mty with
+          | [], {pmty_desc= Pmty_functor (args', mty'); pmty_attributes= []; _} ->
+              Pmty_functor (args @ args', mty')
+          | _ -> Pmty_functor (args, mty)
+        in
+        mkmty ~loc:$sloc ~attrs mty }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
