@@ -11,7 +11,7 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [-n] [-o] [-l] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-n] [-o] [-l] [-s] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
 # the base branch is the merge-base between the test branch and main.
@@ -20,12 +20,15 @@
 # If -n is passed, values of -a and -b are paths to ocamlformat binaries
 # instead of revs.
 #
-# If -o is passed, ocp-indent is applied after ocamlformat in each pass.
+# If -o is passed, ocp-indent is applied after ocamlformat in the first pass.
+# Pass it twice to apply ocp-indent after each passes.
 # Options can be passed to it using the 'OCP_INDENT_CONFIG' environment
 # variable.
 #
 # If -l is passed, it will not pull the latest version of the source code used
 # for testing.
+#
+# If -s is passed, diffs are not shown.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
@@ -42,13 +45,15 @@ arg_b=
 arg_n=0
 arg_o=0
 arg_l=0
-while getopts "a:b:nol" opt; do
+arg_s=0
+while getopts "a:b:nols" opt; do
   case "$opt" in
     a) arg_a=$OPTARG ;;
     b) arg_b=$OPTARG ;;
     n) arg_n=1 ;;
-    o) arg_o=1 ;;
+    o) arg_o=$((arg_o + 1)) ;;
     l) arg_l=1 ;;
+    s) arg_s=1 ;;
   esac
 done
 shift $((OPTIND-1))
@@ -102,13 +107,17 @@ else
   exe_b=`realpath $arg_b`
 fi
 
-make -C test-extra test_setup test_unstage test_clean
+run () { make -C test-extra "$@"; }
+
+run test_setup test_unstage test_clean
 if [[ $arg_l -eq 0 ]]; then
-  make -C test-extra test_pull
+  run test_pull
 fi
 
-apply_ocp=()
-if [[ $arg_o -eq 1 ]]; then apply_ocp=(apply_ocp); fi
-
-OCAMLFORMAT="$opts_a" make -C test-extra "OCAMLFORMAT_EXE=$exe_a" test "${apply_ocp[@]}" test_stage
-OCAMLFORMAT="$opts_b" make -C test-extra "OCAMLFORMAT_EXE=$exe_b" test "${apply_ocp[@]}" test_diff
+OCAMLFORMAT="$opts_a" run "OCAMLFORMAT_EXE=$exe_a" test
+if [[ $arg_o -ge 1 ]]; then run apply_ocp; fi
+run test_stage
+OCAMLFORMAT="$opts_b" run "OCAMLFORMAT_EXE=$exe_b" test
+if [[ $arg_o -ge 2 ]]; then run apply_ocp; fi
+if [[ $arg_s -eq 0 ]]; then run test_diff; fi
+run test_numstat
