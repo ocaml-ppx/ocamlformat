@@ -497,31 +497,10 @@ module Asterisk_prefixed = struct
 end
 
 module Unwrapped = struct
-  let unindent_lines ~opn_pos first_line tl_lines =
-    let indent_of_line s =
-      (* index of first non-whitespace is indentation, None means white
-         line *)
-      String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
-    in
-    (* The indentation of the first line must account for the location of the
-       comment opening *)
-    let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
-    let fl_offset = opn_pos.Lexing.pos_cnum - opn_pos.pos_bol + 2 in
-    let fl_indent = fl_spaces + fl_offset in
-    let min_indent =
-      List.fold_left ~init:fl_indent
-        ~f:(fun acc s ->
-          Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
-        tl_lines
-    in
-    (* Completely trim the first line *)
-    String.drop_prefix first_line fl_spaces
-    :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
-
-  let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
+  let fmt_multiline_cmt ?epi ~offset ~starts_with_sp lines =
     let open Fmt in
     let is_white_line s = String.for_all s ~f:Char.is_whitespace in
-    let unindented = unindent_lines ~opn_pos first_line tl_lines in
+    let unindented = Cmt.unindent_lines ~offset lines in
     let fmt_line ~first ~last:_ s =
       let sep, sp =
         if is_white_line s then (str "\n", noop)
@@ -531,11 +510,11 @@ module Unwrapped = struct
     in
     vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
-  let fmt Cmt.{txt= s; loc} =
+  let fmt ~offset s =
     let open Fmt in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     match String.split_lines (String.rstrip s) with
-    | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
+    | first_line :: _ :: _ as lines when not (String.is_empty first_line) ->
         let epi =
           (* Preserve position of closing but strip empty lines at the end *)
           match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
@@ -548,8 +527,8 @@ module Unwrapped = struct
         (* Preserve the first level of indentation *)
         let starts_with_sp = is_sp first_line.[0] in
         wrap "(*" "*)"
-        @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
-             first_line tl
+        @@ fmt_multiline_cmt ~offset ~epi ~starts_with_sp
+             lines
     | _ -> wrap "(*" "*)" @@ str s
 end
 
@@ -580,25 +559,25 @@ module Cinaps = struct
 end
 
 module Ocp_indent_compat = struct
-  let fmt ~fmt_code conf (cmt : Cmt.t) ~offset (pos : Cmt.pos) ~post =
+  let fmt ~fmt_code conf txt ~loc ~offset (pos : Cmt.pos) ~post =
     let pre, doc, post =
-      let lines = String.split_lines cmt.txt in
+      let lines = String.split_lines txt in
       match lines with
-      | [] -> (false, cmt.txt, false)
+      | [] -> (false, txt, false)
       | h :: _ ->
           let pre = String.is_empty (String.strip h) in
-          let doc = if pre then String.lstrip cmt.txt else cmt.txt in
+          let doc = if pre then String.lstrip txt else txt in
           let doc = if Option.is_some post then String.rstrip doc else doc in
           (pre, doc, Option.is_some post)
     in
-    let parsed = Docstring.parse ~loc:cmt.loc doc in
+    let parsed = Docstring.parse ~loc doc in
     (* Disable warnings when parsing fails *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
     let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
     let open Fmt in
     fmt_if_k
-      (Poly.(pos = After) && String.contains cmt.txt '\n')
+      (Poly.(pos = After) && String.contains txt '\n')
       (break_unless_newline 1000 0)
     $ wrap "(*" "*)"
       @@ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "@\n")
@@ -606,6 +585,10 @@ module Ocp_indent_compat = struct
 end
 
 let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
+        let offset = 
+          let pos = cmt.loc.Location.loc_start in
+          pos.pos_cnum - pos.pos_bol + 2
+        in
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
@@ -621,28 +604,36 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
         let len = String.length str - if dollar_suf then 2 else 1 in
+        let offset = offset + 1 in
         let source = String.sub ~pos:1 ~len str in
-        match fmt_code conf ~offset:4 source with
+  let source =
+    String.split_lines source
+    |> Cmt.unindent_lines ~offset
+    |> String.concat ~sep:"\n"
+  in
+        match fmt_code conf ~offset source with
         | Ok formatted -> `Code (formatted, cls)
-        | Error (`Msg _) -> `Unwrapped (cmt, None) )
+        | Error (`Msg _) -> `Unwrapped (str, None) )
     | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
     | _ -> (
-        let cmt =
+        let txt =
           (* Windows compatibility *)
           let filter = function '\r' -> false | _ -> true in
-          Cmt.create (String.filter cmt.txt ~f:filter) cmt.loc
+          String.filter cmt.txt ~f:filter
         in
+        let cmt =
+          Cmt.create txt cmt.loc in
         match Asterisk_prefixed.split cmt with
         | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
         (* Comments like [(*\n*)] would be normalized as [(* *)] *)
         | [""; ""] when conf.fmt_opts.ocp_indent_compat.v ->
-            `Unwrapped (cmt, None)
+            `Unwrapped (txt, None)
         | [""; ""] -> `Verbatim " "
         | [text] when conf.fmt_opts.wrap_comments.v -> `Wrapped (text, "*)")
         | [text; ""] when conf.fmt_opts.wrap_comments.v ->
             `Wrapped (text, " *)")
-        | [_] -> `Unwrapped (cmt, None)
-        | [_; ""] -> `Unwrapped (cmt, Some `Ln)
+        | [_] -> `Unwrapped (txt, None)
+        | [_; ""] -> `Unwrapped (txt, Some `Ln)
         | lines -> `Asterisk_prefixed lines )
   in
   let open Fmt in
@@ -651,9 +642,8 @@ let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
   | `Code (code, cls) -> Cinaps.fmt ~cls code
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
-      (* TODO: [offset] should be computed from location. *)
-      Ocp_indent_compat.fmt ~fmt_code conf x ~offset:2 pos ~post:ln
-  | `Unwrapped (x, _) -> Unwrapped.fmt x
+      Ocp_indent_compat.fmt ~fmt_code conf x ~loc:cmt.loc ~offset pos ~post:ln
+  | `Unwrapped (x, _) -> Unwrapped.fmt ~offset x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =

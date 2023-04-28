@@ -36,3 +36,7 @@ module Comparator_no_loc : sig
 
   include Comparator.S with type t := t
 end
+
+val unindent_lines : offset:int -> string list -> string list
+(** Detect and remove the baseline indentation of a comment or a code block.
+    [offset] is the column number at which the first line starts. *)
