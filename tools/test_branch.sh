@@ -28,7 +28,7 @@
 # If -l is passed, it will not pull the latest version of the source code used
 # for testing.
 #
-# If -s is passed, show the total diff summary instead of the diffs.
+# If -s is passed, diffs are not shown.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
@@ -119,6 +119,5 @@ if [[ $arg_o -ge 1 ]]; then run apply_ocp; fi
 run test_stage
 OCAMLFORMAT="$opts_b" run "OCAMLFORMAT_EXE=$exe_b" test
 if [[ $arg_o -ge 2 ]]; then run apply_ocp; fi
-if [[ $arg_s -eq 1 ]]; then run test_numstat
-else run test_diff
-fi
+if [[ $arg_s -eq 0 ]]; then run test_diff; fi
+run test_numstat
