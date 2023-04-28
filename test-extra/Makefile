@@ -133,3 +133,11 @@ test_margins:
 apply_ocp:
 	@echo "Running ocp-indent with options '$(OCP_INDENT_CONFIG)'"
 	@-find $(ALL_DIRS) $(FIND_ARGS) | parallel ocp-indent --config "$(OCP_INDENT_CONFIG)" --inplace
+
+# Number of addition and deletion in each files in a parsable format
+.PHONY: test_numstat
+test_numstat:
+	@for dir in $(ALL_DIRS); do git -C $$dir diff --numstat; done | { \
+	tadd=0; tdel=0; \
+	while read add del _; do tadd=$$((tadd + add)); tdel=$$((tdel + del)); done; \
+	echo "Total: +$$tadd -$$tdel"; }

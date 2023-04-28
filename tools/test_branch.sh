@@ -11,7 +11,7 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [-n] [-o] [-l] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-n] [-o] [-l] [-s] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
 # the base branch is the merge-base between the test branch and main.
@@ -26,6 +26,8 @@
 #
 # If -l is passed, it will not pull the latest version of the source code used
 # for testing.
+#
+# If -s is passed, show the total diff summary instead of the diffs.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
@@ -42,13 +44,15 @@ arg_b=
 arg_n=0
 arg_o=0
 arg_l=0
-while getopts "a:b:nol" opt; do
+arg_s=0
+while getopts "a:b:nols" opt; do
   case "$opt" in
     a) arg_a=$OPTARG ;;
     b) arg_b=$OPTARG ;;
     n) arg_n=1 ;;
     o) arg_o=1 ;;
     l) arg_l=1 ;;
+    s) arg_s=1 ;;
   esac
 done
 shift $((OPTIND-1))
@@ -110,5 +114,8 @@ fi
 apply_ocp=()
 if [[ $arg_o -eq 1 ]]; then apply_ocp=(apply_ocp); fi
 
+last_action=test_diff
+if [[ $arg_s -eq 1 ]]; then last_action=test_numstat; fi
+
 OCAMLFORMAT="$opts_a" make -C test-extra "OCAMLFORMAT_EXE=$exe_a" test "${apply_ocp[@]}" test_stage
-OCAMLFORMAT="$opts_b" make -C test-extra "OCAMLFORMAT_EXE=$exe_b" test "${apply_ocp[@]}" test_diff
+OCAMLFORMAT="$opts_b" make -C test-extra "OCAMLFORMAT_EXE=$exe_b" test "${apply_ocp[@]}" "$last_action"
