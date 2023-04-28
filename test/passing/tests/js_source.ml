@@ -7859,3 +7859,17 @@ zzzzzzzzzzzzzzzzzzzzzzzzzzzz
     |}]
 *)
 (*$*)
+
+(*$
+    {|
+         f|}
+*)
+
+let () =
+  match () with
+  | _ ->
+    fun _ : _ ->
+    (match () with
+     | _ -> ())
+  | _ -> ()
+;;

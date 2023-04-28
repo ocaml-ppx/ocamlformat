@@ -169,7 +169,10 @@ module Exp = struct
      |{pexp_desc= Pexp_ifthenelse _; _}, Non_apply
      |( {pexp_desc= Pexp_sequence _; _}
       , (Non_apply | Sequence | Then | ThenElse) )
-     |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+     |( { pexp_desc=
+            ( Pexp_function _ | Pexp_match _ | Pexp_try _
+            | Pexp_fun (_, _, _, {pexp_desc= Pexp_constraint _; _}) )
+        ; _ }
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
