@@ -3378,7 +3378,7 @@ and fmt_extension_constructor c ctx ec =
 
 and fmt_functor_param c ctx {loc; txt= arg} =
   match arg with
-  | Unit -> Cmts.fmt c loc (str "()")
+  | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
   | Named (name, mt) ->
       let xmt = sub_mty ~ctx mt in
       Cmts.fmt c loc
@@ -3421,7 +3421,8 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       { blk with
         pro=
           Some
-            ( str "functor"
+            ( Cmts.fmt_before c pmty_loc
+            $ str "functor"
             $ fmt_attributes c ~pre:Blank pmty_attributes
             $ fmt "@;<1 2>"
             $ list args "@;<1 2>" (fmt_functor_param c ctx)
@@ -3668,7 +3669,8 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
   let fmt_arg ~pro {loc; txt} =
     let pro = pro $ args_p.arg_psp in
     match txt with
-    | Unit -> (pro $ Cmts.fmt c loc (str "()"), noop)
+    | Unit ->
+        (pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc)), noop)
     | Named (name, mt) ->
         if args_p.dock then
           (* All signatures, put the [epi] into the box of the next arg and
