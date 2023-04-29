@@ -2,7 +2,7 @@
 
 ### Removed
 
-- Remove `--numeric` feature (#2333, @gpetiot)
+- Remove `--numeric` feature (#2333, #2357, @gpetiot)
 
 ### Deprecated
 
