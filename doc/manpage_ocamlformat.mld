@@ -628,12 +628,6 @@ OPTIONS
        -q, --quiet
            Quiet. May be set in .ocamlformat. The flag is unset by default.
 
-       --range=X-Y
-           Apply the formatting to a range of lines. Must be included between
-           1 and the number of lines of the input. If a range is invalid the
-           whole input is considered. Warning: only supported in conbination
-           with `--numeric` for now. The default value is <whole input>.
-
        --repl-file
            Parse input as toplevel phrases with their output.
 

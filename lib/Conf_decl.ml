@@ -306,8 +306,6 @@ let any converter ~values ~docv ~names ~default ~doc ~kind
 
 let int = any ~values:Int Arg.int
 
-let range = any ~values:Range Range.conv
-
 let ocaml_version : _ declarator =
   any ~values:Ocaml_version ocaml_version_conv ~docv:"V"
 

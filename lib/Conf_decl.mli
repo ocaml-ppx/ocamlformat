@@ -107,8 +107,6 @@ val flag : bool declarator
 
 val int : docv:string -> int declarator
 
-val range : docv:string -> (string -> Range.t) declarator
-
 val ocaml_version : Ocaml_version.t declarator
 
 val any : 'a Cmdliner.Arg.conv -> values:typ -> docv:string -> 'a declarator
