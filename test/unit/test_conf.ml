@@ -14,7 +14,6 @@ let test_ui =
     )
   in
   [ test "margin" (find "margin" Conf.UI.fmt_opts) ~names:["m"; "margin"]
-  ; test "range" (find "range" Conf.UI.opr_opts) ~names:["range"]
   ; test "profile" Conf.UI.profile ~names:["p"; "profile"] ]
 
 let tests = test_ui

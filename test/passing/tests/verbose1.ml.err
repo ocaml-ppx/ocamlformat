@@ -5,7 +5,6 @@ margin-check=true (command line)
 max-iters=2 (file tests/.ocamlformat:6)
 ocaml-version=4.13.0 (file tests/.ocamlformat:7)
 quiet=false
-range=<whole input>
 disable-conf-attrs=false
 version-check=true
 assignment-operator=end-line (profile ocamlformat (file tests/.ocamlformat:1))
