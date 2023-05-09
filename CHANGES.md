@@ -25,6 +25,7 @@
 
 ### Changes
 
+- Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, @gpetiot, @Julow)
