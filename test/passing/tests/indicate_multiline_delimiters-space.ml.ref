@@ -49,7 +49,7 @@ let x =
   | Empty | Leaf _ -> assert false
   | Node
       ( {left= lr_left; key= _; value= fooooooo; height= _; right= lr_right}
-      as lr_node ) ->
+        as lr_node ) ->
       left_node.right <- lr_left ;
       root_node.left <- lr_right ;
       lr_node.right <- tree
