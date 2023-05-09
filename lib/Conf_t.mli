@@ -131,7 +131,6 @@ type opr_opts =
   ; ocaml_version: Ocaml_version.t elt
         (** Version of OCaml syntax of the output. *)
   ; quiet: bool elt
-  ; range: (string -> Range.t) elt  (** Unused. *)
   ; disable_conf_attrs: bool elt
   ; version_check: bool elt }
 

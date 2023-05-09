@@ -603,11 +603,6 @@ let comma_sep (c : Conf.t) : Fmt.s =
   | `Before -> "@,, "
   | `After -> ",@;<1 2>"
 
-let semi_sep (c : Conf.t) : Fmt.s =
-  match c.fmt_opts.break_separators.v with
-  | `Before -> "@,; "
-  | `After -> ";@;<1 2>"
-
 module Align = struct
   let general (c : Conf.t) t =
     hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t

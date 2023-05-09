@@ -7414,3 +7414,12 @@ let eradicate_meta_class_is_nullsafe =
       "Class is marked @Nullsafe and has 0 issues"
       (* Should be enabled for special integrations *)
     ~enabled:false Info
+
+let () =
+  match () with
+  | _ ->
+    fun _ : _ ->
+    (match () with
+     | _ -> ())
+  | _ -> ()
+;;

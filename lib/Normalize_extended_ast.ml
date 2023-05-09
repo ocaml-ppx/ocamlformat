@@ -11,6 +11,10 @@
 
 open Extended_ast
 
+let start_column loc =
+  let pos = loc.Location.loc_start in
+  pos.pos_cnum - pos.pos_bol
+
 let dedup_cmts fragment ast comments =
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
@@ -49,7 +53,12 @@ let normalize_parse_result ast_kind ast comments =
     (normalize_comments (dedup_cmts ast_kind ast))
     comments
 
-let normalize_code conf (m : Ast_mapper.mapper) txt =
+let normalize_code conf (m : Ast_mapper.mapper) ~offset txt =
+  let txt =
+    String.split_lines txt
+    |> Cmt.unindent_lines ~offset
+    |> String.concat ~sep:"\n"
+  in
   let input_name = "<output>" in
   match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
   | First {ast; comments; _} ->
@@ -86,7 +95,10 @@ let make_mapper conf ~ignore_doc_comments =
                   , [] )
             ; _ } as pstr ) ]
       when Ast.Attr.is_doc attr ->
-        let normalize_code = normalize_code conf m in
+        let normalize_code =
+          (* Indentation is already stripped by odoc-parser. *)
+          normalize_code conf m ~offset:0
+        in
         let doc' = docstring conf ~normalize_code doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
@@ -154,11 +166,6 @@ let make_mapper conf ~ignore_doc_comments =
 let ast fragment ~ignore_doc_comments c =
   map fragment (make_mapper c ~ignore_doc_comments)
 
-let docstring conf =
-  let mapper = make_mapper conf ~ignore_doc_comments:false in
-  let normalize_code = normalize_code conf mapper in
-  docstring conf ~normalize_code
-
 let diff ~f ~cmt_kind x y =
   let dropped x = {Cmt.kind= `Dropped x; cmt_kind} in
   let added x = {Cmt.kind= `Added x; cmt_kind} in
@@ -173,8 +180,14 @@ let diff ~f ~cmt_kind x y =
   |> function [] -> Ok () | errors -> Error errors
 
 let diff_docstrings c x y =
+  let mapper = make_mapper c ~ignore_doc_comments:false in
+  let docstring {Cmt.txt; loc} =
+    let offset = start_column loc + 3 in
+    let normalize_code = normalize_code c mapper ~offset in
+    docstring c ~normalize_code txt
+  in
   let norm z =
-    let f Cmt.{txt; loc} = Cmt.create (docstring c txt) loc in
+    let f (Cmt.{loc; _} as cmt) = Cmt.create (docstring cmt) loc in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
   diff ~f:norm ~cmt_kind:`Doc_comment x y
@@ -196,7 +209,8 @@ let diff_cmts (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
-            Cmt.create (normalize_code source) z.loc
+            let offset = start_column z.loc + 3 in
+            Cmt.create (normalize_code ~offset source) z.loc
           else norm_non_code z
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)

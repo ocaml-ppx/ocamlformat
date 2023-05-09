@@ -10294,7 +10294,7 @@ type t =
 
 (*$
   {|
-         f|}
+        f|}
 *)
 
 type t =
@@ -10304,3 +10304,40 @@ type t =
                                 ___ *)
                             _______]
   }
+
+let _ =
+  match () with
+  (*$ Printf.(printf "\n  | _ -> .\n;;\n") *)
+  | _ -> .
+;;
+
+(*$*)
+
+(*$ "________________________" $*)
+
+(*$
+  let open! Core in
+  ()
+*)
+(*$*)
+
+(*$
+  [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+      |}]
+*)
+(*$*)
+
+(*$
+  {|
+        f|}
+*)
+
+let () =
+  match () with
+  | _ ->
+    (fun _ : _ ->
+       match () with
+       | _ -> ())
+  | _ -> ()
+;;

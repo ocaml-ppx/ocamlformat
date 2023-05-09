@@ -87,3 +87,26 @@ module Comparator_no_loc = struct
 end
 
 type pos = Before | Within | After
+
+let unindent_lines ~offset first_line tl_lines =
+  let indent_of_line s =
+    (* index of first non-whitespace is indentation, None means white line *)
+    String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
+  in
+  (* The indentation of the first line must account for the location of the
+     comment opening *)
+  let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
+  let fl_indent = fl_spaces + offset in
+  let min_indent =
+    List.fold_left ~init:fl_indent
+      ~f:(fun acc s ->
+        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
+      tl_lines
+  in
+  (* Completely trim the first line *)
+  String.drop_prefix first_line fl_spaces
+  :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
+
+let unindent_lines ~offset = function
+  | [] -> []
+  | hd :: tl -> unindent_lines ~offset hd tl

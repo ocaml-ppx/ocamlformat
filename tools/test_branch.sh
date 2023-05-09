@@ -11,7 +11,7 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [-n] [-o] [-l] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-n] [-o] [-l] [-s] [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
 # the base branch is the merge-base between the test branch and main.
@@ -28,6 +28,8 @@
 # If -l is passed, it will not pull the latest version of the source code used
 # for testing.
 #
+# If -s is passed, diffs are not shown.
+#
 # The first arg is the value of OCAMLFORMAT to be used when formatting
 # using the base branch (a)
 #
@@ -43,13 +45,15 @@ arg_b=
 arg_n=0
 arg_o=0
 arg_l=0
-while getopts "a:b:nol" opt; do
+arg_s=0
+while getopts "a:b:nols" opt; do
   case "$opt" in
     a) arg_a=$OPTARG ;;
     b) arg_b=$OPTARG ;;
     n) arg_n=1 ;;
     o) arg_o=$((arg_o + 1)) ;;
     l) arg_l=1 ;;
+    s) arg_s=1 ;;
   esac
 done
 shift $((OPTIND-1))
@@ -115,4 +119,5 @@ if [[ $arg_o -ge 1 ]]; then run apply_ocp; fi
 run test_stage
 OCAMLFORMAT="$opts_b" run "OCAMLFORMAT_EXE=$exe_b" test
 if [[ $arg_o -ge 2 ]]; then run apply_ocp; fi
-run test_diff
+if [[ $arg_s -eq 0 ]]; then run test_diff; fi
+run test_numstat
