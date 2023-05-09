@@ -7831,6 +7831,35 @@ class x =
 
 v}*)
 
+let _ =
+  match () with
+  (*$
+    Printf.(
+      printf "\n  | _ -> .\n;;\n")
+  *)
+  | _ -> .
+;;
+(*$*)
+
+(*$
+  "________________________"
+
+             $*)
+
+(*$
+  let open! Core in
+  ()
+*)
+(*$*)
+
+(*$
+    [%string
+      {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    |}]
+*)
+(*$*)
+
 (*$
     {|
          f|}
