@@ -21,7 +21,7 @@ depends: [
   "menhirSdk" {>= "20201216"}
   "ocaml-version" {>= "3.5.0"}
   "ocamlformat-rpc-lib" {with-test & = version}
-  "ocp-indent" {>= "1.8.0"}
+  "ocp-indent" {with-test = "false" & >= "1.8.0" | with-test & >= "1.8.1"}
   "stdio"
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}
