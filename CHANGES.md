@@ -27,7 +27,7 @@
 
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
-- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, @gpetiot, @Julow)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, @gpetiot, @Julow)
 - Improve formatting of class signatures (#2301, @gpetiot, @Julow)
 - JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, @gpetiot, @Julow)
 - Don't indent attributes after a let/val/external (#2317, @Julow)
