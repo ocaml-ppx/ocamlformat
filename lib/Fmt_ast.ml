@@ -974,12 +974,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       in
       hovbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
-           $ fmt "@ as@ "
-           $ Cmts.fmt c loc
-               (wrap_if
-                  (Std_longident.String_id.is_symbol txt)
-                  "( " " )" (str txt) ) ) )
+           (hovbox 0
+              ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
+              $ fmt "@ as@ "
+              $ Cmts.fmt c loc
+                  (wrap_if
+                     (Std_longident.String_id.is_symbol txt)
+                     "( " " )" (str txt) ) ) ) )
   | Ppat_constant const -> fmt_constant c const
   | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
   | Ppat_tuple pats ->
@@ -2402,7 +2403,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           [ { pstr_desc=
                 Pstr_eval
                   ( ( {pexp_desc= Pexp_sequence _; pexp_attributes= []; _} as
-                    e1 )
+                      e1 )
                   , _ )
             ; pstr_loc= _ } ] )
     when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
@@ -2488,7 +2489,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           [ ( { pstr_desc=
                   Pstr_eval
                     ( ( {pexp_desc= Pexp_infix _; pexp_attributes= []; _} as
-                      e1 )
+                        e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
