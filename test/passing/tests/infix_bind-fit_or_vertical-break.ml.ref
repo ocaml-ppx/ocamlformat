@@ -189,8 +189,7 @@ let f =
   (* fooooooooooooooo foooooooooooooooo *)
   Ok ()
   >>= (* *)
-  function
-  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  function Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
@@ -203,8 +202,7 @@ let f =
   Ok ()
   >>= (* fooooooooooooooo fooooooooooooooo fooooooooooooooo
          foooooooooooooooo *)
-  function
-  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  function Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 (** The tests below are testing a dropped comment with
     `--no-break-infix-before-func` *)
