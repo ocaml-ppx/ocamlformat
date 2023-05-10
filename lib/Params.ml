@@ -80,7 +80,7 @@ module Exp = struct
 end
 
 module Mod = struct
-  type args = {dock: bool; arg_psp: Fmt.t; indent: int}
+  type args = {dock: bool; arg_psp: Fmt.t; indent: int; align: bool}
 
   let arg_is_sig arg =
     match arg.txt with
@@ -101,7 +101,8 @@ module Mod = struct
       else List.for_all ~f:arg_is_sig args
     in
     let arg_psp = if dock then str " " else break 1 psp_indent in
-    {dock; arg_psp; indent}
+    let align = ocp c in
+    {dock; arg_psp; indent; align}
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)

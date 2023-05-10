@@ -3678,7 +3678,8 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
           fmt_name_and_mt ~pro ~loc name mt
         else
           let bdy, epi = fmt_name_and_mt ~pro:noop ~loc name mt in
-          (pro $ hvbox 0 bdy $ epi, noop)
+          let bdy_indent = if args_p.align then 1 else 0 in
+          (pro $ hvbox bdy_indent bdy $ epi, noop)
   in
   let rec fmt_args ~pro = function
     | [] -> pro
