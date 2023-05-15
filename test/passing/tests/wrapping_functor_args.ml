@@ -12,29 +12,25 @@ module OauthClient =
     (Sociaml_oauth_client.Posix.MAC_SHA1)
     (Sociaml_oauth_client.Posix.Random)
 
-module F1
-    (G : functor (_ : T) -> T)
-    (A : sig
-      val x : int
-    end) =
-struct end
+module F1 (G : functor (_ : T) -> T)
+                                          (A : sig
+                                      val x : int
+                                    end) = struct end
 
 module F2
-    (G : functor
-      (_ : T)
-      ->
-      T_________________________________________________________________________)
-    (A : sig
-      val x : int
-    end) =
+      (G : functor (_ : T) ->
+  T_________________________________________________________________________)
+                                                                             (A : sig
+                                                                             val x :
+                                                                             int
+                                                                             end) =
 struct end
 
 module F3
-    (G : functor
-      (_ : T____________________________________________)
-      (_ : T____________________________________________)
-      -> T)
-    (A : sig
+      (G : functor
+             (_ : T____________________________________________)
+             (_ : T____________________________________________) ->
+  T)
+          (A : sig
       val x : int
-    end) =
-struct end
+    end) = struct end

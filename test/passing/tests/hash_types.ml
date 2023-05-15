@@ -1,7 +1,6 @@
 module F (X : sig
-  type t
-end) =
-struct
+    type t
+  end) = struct
   class type ['a] c = object
     method m : 'a -> X.t
   end

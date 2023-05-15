@@ -49,5 +49,5 @@ let () =
 
 let f () =
   let module (* comment *)
-  M = struct end in
+      M = struct end in
   ()
