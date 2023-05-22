@@ -2607,11 +2607,11 @@ type (_, _) t =
 
 module M
     (A : sig
-      module type T
-    end)
+       module type T
+     end)
     (B : sig
-      module type T
-    end) =
+       module type T
+     end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function
     | B s -> s
@@ -4745,8 +4745,8 @@ let flag = ref false
 
 module F
     (S : sig
-      module type T
-    end)
+       module type T
+     end)
     (A : S.T)
     (B : S.T) =
 struct
@@ -4993,11 +4993,11 @@ let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo
     (Bar : sig
-      type a = private [> `A ]
-    end)
+       type a = private [> `A ]
+     end)
     (Baz : module type of struct
-      include Bar
-    end) =
+       include Bar
+     end) =
 struct end
 
 module Bazoinks = struct
@@ -5597,11 +5597,11 @@ end
 
 module F
     (Y : sig
-      type t
-    end)
+       type t
+     end)
     (M : sig
-      type t = Y.t
-    end) =
+       type t = Y.t
+     end) =
 struct end
 
 module G = F (M.Y)
