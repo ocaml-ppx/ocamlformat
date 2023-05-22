@@ -51,13 +51,12 @@ module type M = sig
 
   module T : (S with type t = (r[@test3]) [@test4])
 
-  module T :
-    (S
-      with type t = t
-       and type u := u
-       and module R = R
-       and module S := S
-     [@test])
+  module T : (S
+    with type t = t
+     and type u := u
+     and module R = R
+     and module S := S
+   [@test])
 
   module T : module type of X [@test5]
 

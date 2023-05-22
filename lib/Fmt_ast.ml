@@ -3434,12 +3434,14 @@ and fmt_module_type c ?(box=true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t =
       )
   | Pmty_functor (args, mt) ->
       let pro =
-        pro 
-            $ hvbox 2 (str "functor"
-            $ fmt_attributes c ~pre:Blank pmty_attributes
-            $ fmt "@ "
-            $ list args "@ " (fmt_functor_param c ctx))
-            $ fmt " ->@ "
+        hvbox 2 (
+          pro $ str "functor"
+          $ fmt_attributes c ~pre:Blank pmty_attributes
+          $ fmt "@ "
+          $ list args "@ " (fmt_functor_param c ctx)
+          $ fmt " ->"
+        )
+        $ fmt "@ "
       in
       hvbox_if box 2 (fmt_module_type c ~pro (sub_mty ~ctx mt) $ epi ~attr:false)
   | Pmty_with _ ->
@@ -3455,7 +3457,7 @@ and fmt_module_type c ?(box=true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t =
       in
       hovbox_if box 2 (
         fmt_module_type c ~pro mt $ list_fl wcs fmt_cstrs
-      $ epi ~attr:true
+      $ epi ~attr:false (* Handled by [Sugar.mod_with]. *)
     )
   | Pmty_typeof me ->
       let pro = pro $ fmt "module type of@ " in
@@ -3510,7 +3512,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         let force_before = not (Mty.is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
-        let pro = str "include" $ fmt_extension_suffix c ext in
+        let pro = str "include" $ fmt_extension_suffix c ext $ str " " in
       hvbox 0
         ( doc_before
         $ hvbox 0 (
