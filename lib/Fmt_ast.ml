@@ -3426,11 +3426,11 @@ and fmt_module_type c ?(box=true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t =
         pro $
         str "sig"
         $ (if empty then str " " else break 1000 0 )
-      $ Cmts.fmt_within c pmty_loc
-          $ fmt_signature c ctx s
-          $ (if empty then noop else break 1000 ~-2 )
-          $ str "end"
-          $ fmt_attributes_and_docstrings c pmty_attributes  $ epi ~attr:false
+        $ Cmts.fmt_within c pmty_loc
+        $ fmt_signature c ctx s
+        $ (if empty then noop else break 1000 ~-2 )
+        $ str "end"
+        $ fmt_attributes_and_docstrings c pmty_attributes  $ epi ~attr:false
       )
   | Pmty_functor (args, mt) ->
       let pro =
@@ -3443,7 +3443,7 @@ and fmt_module_type c ?(box=true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t =
         )
         $ fmt "@ "
       in
-      hvbox_if box 2 (fmt_module_type c ~pro (sub_mty ~ctx mt) $ epi ~attr:false)
+      fmt_module_type c ~box ~pro (sub_mty ~ctx mt) $ epi ~attr:false
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
@@ -3613,26 +3613,32 @@ and fmt_class_exprs ?ext c ctx cls =
 and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword
     ?(eqty = "=") name xargs xbody xmty attributes ~rec_flag =
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let fmt_name_and_mt ~box ~pro ~loc name mt =
-    let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_str_loc_opt c name
-      $ str " : "
-    and epi = str ")" $ Cmts.fmt_after c loc in
-    fmt_module_type ~box ~pro ~epi c (sub_mty ~ctx mt)
-  in
   let args_p = Params.Mod.get_args c.conf xargs in
-  (* Carry the [epi] to be placed in the next argument's box. *)
-  let fmt_arg ~box ~pro {loc; txt} =
+  let fmt_name_and_mt ~pro ~docked ~loc name mt =
+    let pro = pro $ str "(" in
+    let pro_inner, pro_outer = if docked then pro, noop else noop, pro in
+    let intro = pro_inner $ fmt_str_loc_opt c name $ str " : " and epi = str ")" in
+    pro_outer $
+    hvbox_if (not docked && args_p.align) 0 (
+      Cmts.fmt_before c loc $
+    fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
+    $ Cmts.fmt_after c loc
+  in
+  let fmt_arg ~pro ~docked {loc; txt} =
     let pro = pro $ args_p.arg_psp in
     match txt with
     | Unit -> pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
     | Named (name, mt) ->
-        let outer_box, box = if args_p.align then hvbox 1, false else Fn.id, box in
-        outer_box (fmt_name_and_mt ~box ~pro ~loc name mt)
+        fmt_name_and_mt ~pro ~docked ~loc name mt
   in
-  let rec fmt_args ~box ~pro = function
+  let rec fmt_args_docked ~pro = function
     | [] -> pro
-    | hd :: tl -> fmt_arg ~box ~pro hd $ fmt_args ~box ~pro:noop tl
+    | hd :: tl -> fmt_args_docked ~pro:(fmt_arg ~pro ~docked:true hd) tl
+  in
+  let rec fmt_args_wrapped = function
+    | [] -> noop
+    | hd :: tl ->
+        fmt_arg ~pro:noop ~docked:false hd $ fmt_args_wrapped tl
   in
   let intro =
     str keyword
@@ -3655,14 +3661,10 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword
 
   let fmt_mty =
     let args =
-          (* All signatures, put the [epi] into the box of the next arg and
-             don't break. *)
         if args_p.dock then
-      hovbox 4 (
-      fmt_args ~box:false ~pro:intro xargs
-    )
+          fmt_args_docked ~pro:intro xargs
         else
-      fmt_args ~box:true ~pro:intro xargs
+          (intro $ fmt_args_wrapped xargs)
     in
     hvbox args_p.indent (
       match xmty with
