@@ -24,43 +24,31 @@ module type BAR = sig
   and B : FOO
 end
 
-module type M =
-  module type of M
-    with module A := A
-    (*test*)
-     and module A = A
-    (*test*)
-     and module A = A
-    with module A = A
-    (*test*)
-    with module A = A
+module type M = module type of M
+  with module A := A (*test*) and module A = A (*test*) and module A = A
+  with module A = A (*test*) with module A = A
 
-module U :
-  S
-    with type ttttttttt = int
-     and type uuuuuuuu = int
-     and type vvvvvvvvvvv = int = struct end
+module U : S
+  with type ttttttttt = int
+   and type uuuuuuuu = int
+   and type vvvvvvvvvvv = int = struct end
 
-module U :
-  S
-    with type ttttttttt = int
-     and type uuuuuuu = int
-    with type vvvvvvvvv = int = struct end
+module U : S with type ttttttttt = int and type uuuuuuu = int
+  with type vvvvvvvvv = int = struct end
 
-module U :
-  S
-    with type Command.t =
-      [ `Halt
-      | `Unknown
-      | `Error of string
-      | `Config of (string * string) list
-      | `Format of string ]
-     and type Command.t =
-      [ `Halt
-      | `Unknown
-      | `Error of string
-      | `Config of (string * string) list
-      | `Format of string ] = struct end
+module U : S
+  with type Command.t =
+    [ `Halt
+    | `Unknown
+    | `Error of string
+    | `Config of (string * string) list
+    | `Format of string ]
+   and type Command.t =
+    [ `Halt
+    | `Unknown
+    | `Error of string
+    | `Config of (string * string) list
+    | `Format of string ] = struct end
 
 module U = (val S : S with type t = int and type u = int)
 
@@ -75,24 +63,24 @@ end
 module type S' = functor
   (A : A)
   (B : sig
-     type t
-   end)
+         type t
+       end)
   (Cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
    : sig
-     type t
-   end)
-  -> S with type t = B.t
+       type t
+     end) -> S with type t = B.t
 
 module M : sig
   include (* foo *) module type of K
 
   include module type of
-      Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
-        (Fooooooooooooo)
+    Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
+      (Fooooooooooooo)
 
-  include (* fooooooooo *) module type of
-      Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
-        (Fooooooooooooo)
+  include (* fooooooooo *)
+    module type of
+    Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
+      (Fooooooooooooo)
 end = struct end
 
 let foo (type foooo fooo_ooooo)

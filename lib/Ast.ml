@@ -1788,9 +1788,13 @@ end = struct
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mty {ctx= _; ast= mty} =
-    match mty.pmty_desc with
-    | Pmty_ident _ | Pmty_extension _ -> false
+  let parenze_mty {ctx; ast= mty} =
+    match (ctx, mty.pmty_desc) with
+    | _, (Pmty_ident _ | Pmty_extension _ | Pmty_signature _) -> false
+    (* [Pmty_with] must be parenthesed when on the RHS of a recursive module
+       decl. This is an over-approximation. *)
+    | Md _, Pmty_with _ -> true
+    | (Str _ | Sig _), _ -> false
     | _ -> Mty.has_trailing_attributes mty
 
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be

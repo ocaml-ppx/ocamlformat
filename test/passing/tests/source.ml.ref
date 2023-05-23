@@ -14,12 +14,11 @@ end [@foo]
 [@@foo]
 
 module type S = sig
-  include
-    ((module type of M [@foo]) [@foo] with type t := M.t [@foo])
-  [@@foo]
+  include (module type of M [@foo]) [@foo] with type t := M.t [@foo] [@@foo]
 
   [@@@foo]
-end [@foo]
+end
+  [@foo]
 [@@foo]
 
 [@@@foo]
@@ -182,11 +181,11 @@ type t = [%foo: ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo]
-  (M : S)
-  -> functor
-  (_ : (module type of M) [@foo])
-  -> sig end [@foo]
+module type S = functor [@foo] (M : S) ->
+  functor
+  (_ : (module type of M) [@foo]) ->
+  sig end
+  [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
 
@@ -196,9 +195,9 @@ module type S = functor (M : S) (_ : S) -> S
 
 module type S = functor (_ : functor (M : S) -> S) -> S
 
-module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
+module type S = functor (_ : (functor [@foo] (_ : S) -> S)) -> S
 
-module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
+module type S = functor (_ : (functor [@foo] (M : S) -> S)) -> S
 
 module type S = sig
   module rec A : (S with type t = t)
@@ -658,7 +657,8 @@ module Msg : sig
     val read : string -> t
   end
 
-  module Define (D : Desc) : sig
+  module Define
+    (D : Desc) : sig
     type 'a tag += C : D.t tag
   end
 end = struct
@@ -2340,8 +2340,7 @@ let inlineseq_from_astseq seq =
 
 module Add (T : sig
   type two
-end) =
-struct
+end) = struct
   type _ t = One : [`One] t | Two : T.two t
 
   let add (type a) : a t * a t -> string = function
@@ -2404,8 +2403,7 @@ let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
   type 'a t
-end) =
-struct
+end) = struct
   type _ ab = A : int S.t ab | B : float S.t ab
 
   let f : int S.t ab -> float S.t ab -> string =
@@ -2415,8 +2413,7 @@ end
 
 module F (S : sig
   type 'a t
-end) =
-struct
+end) = struct
   type a = int * int
 
   type b = int -> int
@@ -2503,8 +2500,7 @@ module M (S : sig
   type 'a t = T of 'a
 
   type 'a s = T of 'a
-end) =
-struct
+end) = struct
   let f : ('a S.s, 'a S.t) eq -> unit = function Refl -> ()
 end
 
@@ -2534,8 +2530,7 @@ module M (A : sig
   module type T
 end) (B : sig
   module type T
-end) =
-struct
+end) = struct
   let f : ((module A.T), (module B.T)) t -> string = function B s -> s
 end
 
@@ -2710,8 +2705,7 @@ let f (type a) (Neq n : (a, a t) eq) = n
 
 module F (T : sig
   type _ t
-end) =
-struct
+end) = struct
   let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
 
@@ -2890,8 +2884,8 @@ let magic : 'a 'b. 'a -> 'b =
   let module M =
     (functor
       (T : sig
-         type 'a t
-       end)
+             type 'a t
+           end)
       ->
       struct
         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
@@ -4448,8 +4442,7 @@ module F (M : sig
   type 'a u = string
 
   val f : unit -> _ u t
-end) =
-struct
+end) = struct
   let t = M.f ()
 end
 
@@ -4503,11 +4496,10 @@ let flag = ref false
 
 module F
     (S : sig
-      module type T
-    end)
+       module type T
+     end)
     (A : S.T)
-    (B : S.T) =
-struct
+    (B : S.T) = struct
   module X = (val if !flag then (module A) else (module B) : S.T)
 end
 
@@ -4555,8 +4547,8 @@ module type PR6513 = sig
     type uri
   end
 
-  module Make : functor (Html5 : T with type 'a wrap = 'a) ->
-    S with type u = < foo: Html5.uri >
+  module Make : functor (Html5 : T with type 'a wrap = 'a) -> S
+    with type u = < foo: Html5.uri >
 end
 
 (* Requires -package tyxml module type PR6513_orig = sig module type S = sig
@@ -4711,8 +4703,7 @@ end
 
 module Foo
     (Bar : S with type a = private [> `A])
-    (Baz : S with type b = private < b: Bar.b ; .. >) =
-struct end
+    (Baz : S with type b = private < b: Bar.b ; .. >) = struct end
 
 module A = struct
   module type A_S = sig end
@@ -4752,10 +4743,10 @@ let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
   type a = private [> `A]
-end) (Baz : module type of struct
-  include Bar
-end) =
-struct end
+end) (Baz : module type of
+  struct
+    include Bar
+  end) = struct end
 
 module Bazoinks = struct
   type a = [`A]
@@ -4770,8 +4761,7 @@ let cast : type a b. (a, b) eq -> a -> b = fun Eq x -> x
 
 module Fix (F : sig
   type 'a f
-end) =
-struct
+end) = struct
   type 'a fix = ('a, 'a F.f) eq
 
   let uniq (type a b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
@@ -5177,7 +5167,8 @@ module F (X : sig end) = struct
   module N' = N
 end
 
-module G : functor (X : sig end) -> sig
+module G : functor (X : sig end) ->
+  sig
   module N' : sig
     val x : int
   end
@@ -5292,8 +5283,7 @@ include C
 
 module F (X : sig
   module C = Char
-end) =
-struct
+end) = struct
   module C = X.C
 end
 
@@ -5357,8 +5347,7 @@ module F (Y : sig
   type t
 end) (M : sig
   type t = Y.t
-end) =
-struct end
+end) = struct end
 
 module G = F (M.Y)
 
@@ -6447,8 +6436,7 @@ class ['a] s3object r : ['a] s3 =
 
 module M (T : sig
   type t
-end) =
-struct
+end) = struct
   type t = private {t: T.t}
 end
 
@@ -6838,9 +6826,9 @@ module PR_4261 = struct
     type t = D.t
   end
 
-  module rec U : (T with module D = U') = U
+  module rec U : T with module D = U' = U
 
-  and U' : (S with type t = U'.t) = U
+  and U' : S with type t = U'.t = U
 end
 
 (* Bad - PR 4512 *)
@@ -6848,7 +6836,7 @@ module type S' = sig
   type t = int
 end
 
-module rec M : (S' with type t = M.t) = struct
+module rec M : S' with type t = M.t = struct
   type t = M.t
 end
 
@@ -6916,10 +6904,9 @@ end
 type 'a tree = E | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2
-    (MakeDiet : functor
-      (X : ORD)
-      -> SET with type t = X.t tree and type elt = X.t) :
-  SET with type elt = int = struct
+  (MakeDiet : functor (X : ORD) -> SET
+     with type t = X.t tree and type elt = X.t) : SET with type elt = int =
+struct
   type elt = int
 
   module rec Elt : sig
@@ -6941,7 +6928,7 @@ module Bootstrap2
       | D (_, d, _) -> Diet.iter (iter f) d
   end
 
-  and Diet : (SET with type t = Elt.t tree and type elt = Elt.t) =
+  and Diet : SET with type t = Elt.t tree and type elt = Elt.t =
     MakeDiet (Elt)
 
   type t = Diet.t
@@ -7025,7 +7012,7 @@ module PR_4557 = struct
       let compare x y = 0
     end
 
-    and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
+    and ModSet : Set.S with type elt = Mod.t = Set.Make (Mod)
   end
 end
 
@@ -7059,7 +7046,7 @@ module F (X : Set.OrderedType) = struct
     let compare x y = 0
   end
 
-  and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
+  and ModSet : Set.S with type elt = Mod.t = Set.Make (Mod)
 end
 (* Tests for recursive modules *)
 
@@ -7085,7 +7072,7 @@ end = struct
     | Node s, Node t -> ASet.compare s t
 end
 
-and ASet : (Set.S with type elt = A.t) = Set.Make (A)
+and ASet : Set.S with type elt = A.t = Set.Make (A)
 
 let _ =
   let x = A.Node (ASet.add (A.Leaf 3) (ASet.singleton (A.Leaf 2))) in
@@ -7341,8 +7328,8 @@ module type HEAP = sig
 end
 
 module Bootstrap
-    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
-    (Element : ORDERED) : HEAP with module Elem = Element = struct
+  (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+  (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
@@ -7378,7 +7365,7 @@ module Bootstrap
       | E, E -> false
   end
 
-  and PrimH : (HEAP with type Elem.t = BE.t) = MakeH (BE)
+  and PrimH : HEAP with type Elem.t = BE.t = MakeH (BE)
 
   type heap = BE.t
 
@@ -7554,8 +7541,7 @@ let _ = test 81 (Coerce2.f1 ()) 1
 
 module Coerce4 (A : sig
   val f : int -> int
-end) =
-struct
+end) = struct
   let x = 0
 
   let at a = A.f a
@@ -7597,8 +7583,7 @@ let _ =
 (* PR#4316 *)
 module G (S : sig
   val x : int Lazy.t
-end) =
-struct
+end) = struct
   include S
 end
 
@@ -7677,8 +7662,7 @@ end
 
 module F (X : sig
   val x : (module S)
-end) =
-struct
+end) = struct
   module A = (val X.x)
 end
 
@@ -7956,7 +7940,7 @@ end
 module type EVALUATOR = sig
   module Value : VALUE
 
-  module Ast : AST with module Value := Value
+  module Ast : (AST with module Value := Value)
 
   type state = Value.state
 
@@ -7978,7 +7962,7 @@ end
 module type INTERP = sig
   include EVALUATOR
 
-  module Parser : PARSER with type chunk = Ast.chunk
+  module Parser : (PARSER with type chunk = Ast.chunk)
 
   val dostring : state -> string -> value list
 
@@ -8006,9 +7990,9 @@ module type COMBINED_COMMON = sig
     type t
   end
 
-  module TV1 : TYPEVIEW with type combined := T.t
+  module TV1 : (TYPEVIEW with type combined := T.t)
 
-  module TV2 : TYPEVIEW with type combined := T.t
+  module TV2 : (TYPEVIEW with type combined := T.t)
 end
 
 module type COMBINED_TYPE = sig
@@ -8035,7 +8019,7 @@ end
 module type WEAPON_LIB = sig
   type t = Weapon.t
 
-  module T : USERTYPE with type t = t
+  module T : (USERTYPE with type t = t)
 
   module Make : functor (TV : TYPEVIEW with type t = t) -> USERCODE(TV).F
 end
@@ -8052,8 +8036,7 @@ module type S = sig
   module M : sig
     type t
   end
-end
-with module M = M
+end with module M = M
 
 module type Printable = sig
   type t
@@ -8132,8 +8115,7 @@ module type S' = S with module T := M
 
 module type S = sig
   type 'a t
-end
-with type 'a t := unit
+end with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =
