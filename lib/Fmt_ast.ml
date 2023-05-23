@@ -3428,11 +3428,12 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
   | Pmty_ident lid -> pro $ fmt_longident_loc c lid $ epi ~attr:true
   | Pmty_signature s ->
       let empty = List.is_empty s && not (Cmts.has_within c.cmts pmty_loc) in
+      (* Side effect before [epi ~attr] is important. *)
+      let cmts_within = Cmts.fmt_within ~pro:noop c pmty_loc in
       hvbox_if box 2
         ( pro $ str "sig"
         $ (if empty then str " " else break 1000 0)
-        $ Cmts.fmt_within c pmty_loc
-        $ fmt_signature c ctx s
+        $ cmts_within $ fmt_signature c ctx s
         $ (if empty then noop else break 1000 ~-2)
         $ str "end"
         $ fmt_attributes_and_docstrings c pmty_attributes
@@ -3618,7 +3619,7 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let args_p = Params.Mod.get_args c.conf xargs in
   let fmt_name_and_mt ~pro ~docked ~loc name mt =
-    let pro = pro $ str "(" in
+    let pro = pro $ Cmts.fmt_before c loc $ str "(" in
     let pro_inner, pro_outer = if docked then (pro, noop) else (noop, pro) in
     let intro = pro_inner $ fmt_str_loc_opt c name $ str " : "
     and epi = str ")" in
@@ -3626,8 +3627,7 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     $ hvbox_if
         ((not docked) && args_p.align)
         0
-        ( Cmts.fmt_before c loc
-        $ fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt) )
+        (fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
     $ Cmts.fmt_after c loc
   in
   let fmt_arg ~pro ~docked {loc; txt} =
