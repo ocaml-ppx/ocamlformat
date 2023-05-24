@@ -562,7 +562,7 @@ module Ocp_indent_compat = struct
     let pre, doc, post =
       let lines = String.split_lines txt in
       match lines with
-      | [] -> (false, txt, false)
+      | [] | [_] -> (false, txt, false)
       | h :: _ ->
           let pre = String.is_empty (String.strip h) in
           let doc = if pre then String.lstrip txt else txt in
