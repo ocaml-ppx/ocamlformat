@@ -3673,7 +3673,8 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     in
     match xmty with
     | Some xmty ->
-        let pro = args ~epi:(str " " $ str eqty $ str " ") in
+        let break = if args_p.dock then str " " else fmt "@ " in
+        let pro = args ~epi:(str " " $ str eqty $ break) in
         fmt_module_type ~pro c xmty
     | None -> args ~epi:noop
   in
