@@ -3680,7 +3680,9 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     (if compact then 0 else 2)
     ( doc_before
     $ blk_box blk_b
-        ( hovbox 0
+        (* Avod break after [=] if there was a module type. *)
+        ( (if Option.is_some xmty then hovbox else hvbox)
+            0
             ( fmt_mty
             $ fmt_if (Option.is_some xbody) " ="
             $ fmt_if_k compact fmt_pro )

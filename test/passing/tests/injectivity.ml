@@ -60,19 +60,22 @@ type !'a u = int constraint 'a = 'b t
 
 module F (X : sig
   type 'a t
-end) = struct
+end) =
+struct
   type !'a u = 'b constraint 'a = < b: 'b > constraint 'b = _ X.t
 end
 
 module F (X : sig
   type 'a t
-end) = struct
+end) =
+struct
   type !'a u = 'b X.t constraint 'a = < b: 'b X.t >
 end
 
 module F (X : sig
   type 'a t
-end) = struct
+end) =
+struct
   type !'a u = 'b constraint 'a = < b: (_ X.t as 'b) >
 end
 

@@ -76,7 +76,8 @@ module Make
         and type semantic_value = Obj.t)
     (E : sig
        type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
-     end) = struct
+     end) =
+struct
   type t = t
 end
 

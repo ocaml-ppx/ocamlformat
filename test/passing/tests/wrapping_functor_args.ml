@@ -4,4 +4,5 @@ module F3
        (_ : T____________________________________________) -> T)
     (A : sig
        val x : int
-     end) = struct end
+     end) =
+struct end
