@@ -1791,6 +1791,8 @@ end = struct
   let parenze_mty {ctx; ast= mty} =
     match (ctx, mty.pmty_desc) with
     | _, (Pmty_ident _ | Pmty_extension _ | Pmty_signature _) -> false
+    (* Currently, attributes on a [Pmty_functor] are always in short form. *)
+    | _, Pmty_functor _ -> false
     (* [Pmty_with] must be parenthesed when on the RHS of a module decl
        followed by an [and]. This is an over-approximation. *)
     | Md (_, true), Pmty_with _ -> true

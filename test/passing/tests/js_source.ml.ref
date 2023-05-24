@@ -161,8 +161,8 @@ module type S = functor (_ : S) (_ : S) -> S
 module type S = functor (_ : functor (_ : S) -> S) -> S
 module type S = functor (M : S) (_ : S) -> S
 module type S = functor (_ : functor (M : S) -> S) -> S
-module type S = functor (_ : (functor [@foo] (_ : S) -> S)) -> S
-module type S = functor (_ : (functor [@foo] (M : S) -> S)) -> S
+module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
+module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
   module rec A : (S with type t = t)

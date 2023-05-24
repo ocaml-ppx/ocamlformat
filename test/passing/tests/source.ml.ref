@@ -192,9 +192,9 @@ module type S = functor (M : S) (_ : S) -> S
 
 module type S = functor (_ : functor (M : S) -> S) -> S
 
-module type S = functor (_ : (functor [@foo] (_ : S) -> S)) -> S
+module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
 
-module type S = functor (_ : (functor [@foo] (M : S) -> S)) -> S
+module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
   module rec A : (S with type t = t)
@@ -9184,3 +9184,6 @@ let eradicate_meta_class_is_nullsafe =
 
 let () =
   match () with _ -> ( fun _ : _ -> match () with _ -> () ) | _ -> ()
+
+(* Long-form attribute on a functor module type expr. *)
+module type S = functor (A : B) -> functor [@foo] (C : D) -> S'

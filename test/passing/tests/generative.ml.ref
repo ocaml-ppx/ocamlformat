@@ -9,7 +9,7 @@ module F2 : functor () () -> sig end = F1
 
 module F2 : (*xx*) functor ( (*yy*) ) (*zz*) -> sig end = F1
 
-module F2 : functor () -> (functor [@attr] () () -> sig end) = F1
+module F2 : functor () -> functor [@attr] () () -> sig end = F1
 
 module F2 : functor () () () () -> sig end = F1
 
