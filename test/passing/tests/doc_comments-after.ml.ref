@@ -119,12 +119,12 @@ module Comment_placement : sig
 
   (** This one _still_ goes after *)
   module Index2
-    (Paramater_module : BAR_LONG_MODULE_TYPE_NAME)
-    (Foo : BAR)
-    (Foo : BAR)
-    (Foo : BAR)
-    (Foo : BAR)
-    (Foo : BAR) : sig end
+      (Paramater_module : BAR_LONG_MODULE_TYPE_NAME)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR) : sig end
 
   (** Doc comment still goes after *)
   module Make (Config : sig

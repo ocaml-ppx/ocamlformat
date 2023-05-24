@@ -3665,16 +3665,17 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       attributes
   in
   let fmt_mty =
-    let args =
-      if args_p.dock then fmt_args_docked ~pro:intro xargs
-      else intro $ fmt_args_wrapped xargs
+    let args ~epi =
+      hvbox args_p.indent
+        ( ( if args_p.dock then fmt_args_docked ~pro:intro xargs
+            else intro $ fmt_args_wrapped xargs )
+        $ epi )
     in
-    hvbox args_p.indent
-      ( match xmty with
-      | Some xmty ->
-          let pro = args $ str " " $ str eqty $ str " " in
-          fmt_module_type ~pro c xmty
-      | None -> args )
+    match xmty with
+    | Some xmty ->
+        let pro = args ~epi:(str " " $ str eqty $ str " ") in
+        fmt_module_type ~pro c xmty
+    | None -> args ~epi:noop
   in
   hvbox
     (if compact then 0 else 2)

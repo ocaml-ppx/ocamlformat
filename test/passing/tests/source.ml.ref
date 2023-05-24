@@ -654,8 +654,7 @@ module Msg : sig
     val read : string -> t
   end
 
-  module Define
-    (D : Desc) : sig
+  module Define (D : Desc) : sig
     type 'a tag += C : D.t tag
   end
 end = struct
@@ -6915,8 +6914,8 @@ end
 type 'a tree = E | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2
-  (MakeDiet : functor (X : ORD) -> SET
-     with type t = X.t tree and type elt = X.t) : SET with type elt = int =
+    (MakeDiet : functor (X : ORD) -> SET
+       with type t = X.t tree and type elt = X.t) : SET with type elt = int =
 struct
   type elt = int
 
@@ -7339,8 +7338,8 @@ module type HEAP = sig
 end
 
 module Bootstrap
-  (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
-  (Element : ORDERED) : HEAP with module Elem = Element = struct
+    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+    (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
