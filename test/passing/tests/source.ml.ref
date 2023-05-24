@@ -5174,8 +5174,7 @@ module F (X : sig end) = struct
   module N' = N
 end
 
-module G : functor (X : sig end) ->
-  sig
+module G : functor (X : sig end) -> sig
   module N' : sig
     val x : int
   end
@@ -8022,8 +8021,8 @@ module type BARECODE = sig
 end
 
 module USERCODE (X : TYPEVIEW) = struct
-  module type F = functor (C : CORE with type V.usert = X.combined) ->
-    BARECODE with type state := C.V.state
+  module type F = functor (C : CORE with type V.usert = X.combined) -> BARECODE
+    with type state := C.V.state
 end
 
 module Weapon = struct

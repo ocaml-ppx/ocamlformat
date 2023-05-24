@@ -3439,18 +3439,20 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
         $ fmt_attributes_and_docstrings c pmty_attributes
         $ epi ~attr:false )
   | Pmty_functor (args, mt) ->
-      let pro =
+      let intro =
         hvbox 2
           ( pro $ str "functor"
           $ fmt_attributes c ~pre:Blank pmty_attributes
           $ fmt "@ "
           $ list args "@ " (fmt_functor_param c ctx)
           $ fmt " ->" )
-        $ fmt "@ "
       and epi = epi ~attr:false in
       if Params.Mty.dock_functor_rhs c.conf ~rhs:mt then
+        let pro = intro $ str " " in
         fmt_module_type c ~box ~pro ~epi (sub_mty ~ctx mt)
-      else hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
+      else
+        let pro = intro $ fmt "@ " in
+        hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =

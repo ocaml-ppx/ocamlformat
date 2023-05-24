@@ -5423,8 +5423,7 @@ module F (X : sig end) = struct
   module N' = N
 end
 
-module G : functor (X : sig end) ->
-sig
+module G : functor (X : sig end) -> sig
   module N' : sig
     val x : int
   end

@@ -14,8 +14,7 @@ module type M = functor (S : S) () -> sig end
 
 module type M = functor
   (SSSSS : SSSSSSSSSSSSSS)
-  (TTTTT : TTTTTTTTTTTTTTTT) ->
-  sig
+  (TTTTT : TTTTTTTTTTTTTTTT) -> sig
   val t1 : a
 
   val t2 : b
