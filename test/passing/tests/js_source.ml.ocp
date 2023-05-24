@@ -8199,7 +8199,7 @@ end
 
 module type EVALUATOR = sig
   module Value : VALUE
-  module Ast : (AST with module Value := Value)
+  module Ast : AST with module Value := Value
 
   type state = Value.state
   type value = Value.value
@@ -8219,7 +8219,7 @@ end
 
 module type INTERP = sig
   include EVALUATOR
-  module Parser : (PARSER with type chunk = Ast.chunk)
+  module Parser : PARSER with type chunk = Ast.chunk
 
   val dostring : state -> string -> value list
   val mk : unit -> state
@@ -8244,8 +8244,8 @@ module type COMBINED_COMMON = sig
     type t
   end
 
-  module TV1 : (TYPEVIEW with type combined := T.t)
-  module TV2 : (TYPEVIEW with type combined := T.t)
+  module TV1 : TYPEVIEW with type combined := T.t
+  module TV2 : TYPEVIEW with type combined := T.t
 end
 
 module type COMBINED_TYPE = sig
@@ -8271,7 +8271,7 @@ end
 module type WEAPON_LIB = sig
   type t = Weapon.t
 
-  module T : (USERTYPE with type t = t)
+  module T : USERTYPE with type t = t
   module Make : functor (TV : TYPEVIEW with type t = t) -> USERCODE(TV).F
 end
 

@@ -3535,7 +3535,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds
         (fmt_module_declaration ?ext)
-        (fun x -> Md x)
+        (fun x -> Md (x, true))
         sub_md
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
@@ -3699,12 +3699,12 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
           $ epi ) )
 
 and fmt_module_declaration ?ext c ~rec_flag ~first {ast= pmd; _} =
-  protect c (Md pmd)
+  let ctx = Md (pmd, rec_flag) in
+  protect c ctx
   @@
   let {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
-  let ctx = Md pmd in
   let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
   let xmty = sub_mty ~ctx pmd_type in
