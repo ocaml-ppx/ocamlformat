@@ -48,6 +48,12 @@ module Mod : sig
   val get_args : Conf.t -> functor_parameter loc list -> args
 end
 
+module Mty : sig
+  val dock_functor_rhs : Conf.t -> rhs:module_type -> bool
+  (** Whether functor types should be docked on the same line or break after
+      the [->]. *)
+end
+
 val get_or_pattern_sep :
   ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
 

@@ -105,6 +105,13 @@ module Mod = struct
     {dock; arg_psp; indent; align}
 end
 
+module Mty = struct
+  let dock_functor_rhs (_c : Conf.t) ~rhs =
+    match rhs.pmty_desc with
+    | Pmty_signature _ | Pmty_with _ -> true
+    | _ -> false
+end
+
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
   let nspaces = if cmts_before then 1000 else 1 in

@@ -3447,8 +3447,10 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
           $ list args "@ " (fmt_functor_param c ctx)
           $ fmt " ->" )
         $ fmt "@ "
-      in
-      fmt_module_type c ~box ~pro (sub_mty ~ctx mt) $ epi ~attr:false
+      and epi = epi ~attr:false in
+      if Params.Mty.dock_functor_rhs c.conf ~rhs:mt then
+        fmt_module_type c ~box ~pro ~epi (sub_mty ~ctx mt)
+      else hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
