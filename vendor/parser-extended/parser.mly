@@ -1429,6 +1429,8 @@ module_type:
           match attrs, mty with
           | [], {pmty_desc= Pmty_functor (args', mty'); pmty_attributes= []; _} ->
               Pmty_functor (args @ args', mty')
+          | [], {pmty_desc= Pmty_gen (loc, mty'); pmty_attributes= []; _} ->
+              Pmty_functor (args @ [mkloc Unit loc], mty')
           | _ -> Pmty_functor (args, mty)
         in
         mkmty ~loc:$sloc ~attrs mty }
@@ -1445,7 +1447,7 @@ module_type:
         { Pmty_ident $1 }
     | LPAREN RPAREN MINUSGREATER module_type
         { let arg_loc = make_loc ($startpos($1), $endpos($2)) in
-          Pmty_functor([mkloc Unit arg_loc], $4) }
+          Pmty_gen(arg_loc, $4) }
     | module_type MINUSGREATER module_type
         %prec below_WITH
         { let arg_loc = make_loc $loc($1) in
