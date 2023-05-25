@@ -113,13 +113,14 @@ let emit_test test_name setup =
     | None -> ""
     | Some clause -> spf "\n (enabled_if %s)" clause
   in
+  let output_fname = test_name ^ ".stdout" in
   Printf.printf
     {|
 (rule
  (deps tests/.ocamlformat %s)%s
  (package ocamlformat)
  (action
-  (with-stdout-to %s.stdout
+  (with-stdout-to %s
    (with-stderr-to %s.stderr
      %s))))
 
@@ -133,12 +134,14 @@ let emit_test test_name setup =
  (package ocamlformat)
  (action (diff %s %s.stderr)))
 |}
-    extra_deps enabled_if_line test_name test_name
+    extra_deps enabled_if_line output_fname test_name
     (cmd setup.should_fail
        (["%{bin:ocamlformat}"] @ opts @ [dep base_test_name]) )
     enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
-    let ocp_cmd = "%{bin:ocp-indent}" :: (setup.ocp_opts @ [dep ref_name]) in
+    let ocp_cmd =
+      "%{bin:ocp-indent}" :: (setup.ocp_opts @ [dep output_fname])
+    in
     let ocp_out_file = test_name ^ ".ocp.output" in
     Printf.printf
       {|
