@@ -17,11 +17,6 @@ open Asttypes
 open Ast
 open Fmt
 
-module V = struct
-  let at_least (c : Conf.t) v =
-    Ocaml_version.compare c.opr_opts.ocaml_version.v v >= 0
-end
-
 type c =
   { conf: Conf.t
   ; debug: bool
@@ -3440,18 +3435,10 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
             blk.psp }
   | Pmty_gen (gen_loc, mt) ->
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      let pre =
-        if V.at_least c.conf Ocaml_version.Releases.v5_1_0 then noop
-        else
-          str "functor"
-          $ fmt_attributes c ~pre:Blank pmty_attributes
-          $ fmt "@;<1 2>"
-      in
       { blk with
         pro=
           Some
             ( Cmts.fmt_before c pmty_loc
-            $ pre
             $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
