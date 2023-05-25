@@ -8078,3 +8078,83 @@ let () =
      | _ -> ())
   | _ -> ()
 ;;
+
+(* ocp-indent-compat: Docked fun after apply only if on the same line. *)
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo:(fun foo -> bar)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo:(fun foo -> bar)
+       ~fooooooooooooooooooooooooooooooo
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo:(fun foo ->
+         match bar with
+         | Some _ -> foo
+         | None -> baz)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (fun foo -> bar)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (fun foo ->
+    match bar with
+    | Some _ -> foo
+    | None -> baz)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+       ~fooooooooooooooooooooooooooooooo
+       (fun foo ->
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooofoooooooooo
+       (fun foo ->
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function foo -> bar)
+;;
+
+let _ =
+  fooooooooooooooooooooooooooooooo
+  |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
+    | Some _ -> foo
+    | None -> baz)
+;;
+
+(* *)
