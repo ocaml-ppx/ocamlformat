@@ -460,6 +460,35 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
+module Wrapped = struct
+  let fmt text =
+    let open Fmt in
+    assert (not (String.is_empty text)) ;
+    let fmt_line line =
+      let words =
+        List.filter ~f:(Fn.non String.is_empty)
+          (String.split_on_chars line
+             ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
+      in
+      list words "@ " str
+    in
+    let lines =
+      List.remove_consecutive_duplicates
+        ~equal:(fun x y -> String.is_empty x && String.is_empty y)
+        (String.split (String.rstrip text) ~on:'\n')
+    in
+    hvbox 0
+      (hovbox 0
+         (list_pn lines (fun ~prev:_ curr ~next ->
+              fmt_line curr
+              $
+              match next with
+              | Some str when String.for_all str ~f:Char.is_whitespace ->
+                  close_box $ fmt "\n@," $ open_hovbox 0
+              | Some _ when not (String.is_empty curr) -> fmt "@ "
+              | _ -> noop ) ) )
+end
+
 module Asterisk_prefixed = struct
   let fmt lines =
     let open Fmt in
@@ -471,36 +500,20 @@ module Asterisk_prefixed = struct
 end
 
 module Unwrapped = struct
-  let fmt_multiline_cmt ?epi ~starts_with_sp lines =
+  let fmt_multiline_cmt lines =
     let open Fmt in
     let is_white_line s = String.for_all s ~f:Char.is_whitespace in
     let fmt_line ~first ~last:_ s =
-      let sep, sp =
-        if is_white_line s then (str "\n", noop)
-        else (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
-      in
-      fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
+      let s = String.rstrip s in
+      let sep = if is_white_line s then str "\n" else fmt "@;<1000 0>" in
+      fmt_if_k (not first) sep $ str s
     in
-    vbox 0 ~name:"multiline" (list_fl lines fmt_line $ fmt_opt epi)
+    vbox 0 ~name:"multiline" (list_fl lines fmt_line)
 
-  let fmt s =
-    let open Fmt in
-    let is_sp = function ' ' | '\t' -> true | _ -> false in
-    match String.split_lines (String.rstrip s) with
-    | first_line :: _ :: _ as lines when not (String.is_empty first_line) ->
-        let epi =
-          (* Preserve position of closing but strip empty lines at the end *)
-          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
-          | Some i when Char.( = ) s.[i] '\n' ->
-              break 1000 (-2) (* Break before closing *)
-          | Some i when i < String.length s - 1 ->
-              str " " (* Preserve a space at the end *)
-          | _ -> noop
-        in
-        (* Preserve the first level of indentation *)
-        let starts_with_sp = is_sp first_line.[0] in
-        fmt_multiline_cmt ~epi ~starts_with_sp lines
-    | _ -> str s
+  let fmt txt =
+    match String.split_lines txt with
+    | _ :: _ as lines -> fmt_multiline_cmt lines
+    | [] -> Fmt.noop
 end
 
 module Verbatim = struct
@@ -565,7 +578,7 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
   | Doc txt ->
       Ocp_indent_compat.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2 pos
   | Normal txt ->
-      if conf.fmt_opts.wrap_comments.v then fill_text txt ~epi:""
+      if conf.fmt_opts.wrap_comments.v then Wrapped.fmt txt
       else if conf.fmt_opts.ocp_indent_compat.v then
         (* TODO: [offset] should be computed from location. *)
         Ocp_indent_compat.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2 pos

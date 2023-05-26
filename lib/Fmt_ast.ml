@@ -38,8 +38,7 @@ module Cmts = struct
     let before = fmt_before c ?pro ?epi ?eol ?adj loc in
     (* remove the within comments from the map by accepting the continuation *)
     fun inner ->
-      (* delay the after comments until the within comments have been
-         removed *)
+      (* delay the after comments until the within comments have been removed *)
       let after = fmt_after c ?pro ?epi loc in
       let open Fmt in
       before $ inner $ after

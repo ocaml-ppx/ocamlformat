@@ -42,7 +42,7 @@ type decoded_kind =
   | Doc of string  (** Original content. *)
   | Normal of string  (** Original content with whitespaces trimmed. *)
   | Code of string list
-      (** Source code is line splitted with baseline indentation removed. *)
+      (** Source code is line splitted with indentation removed. *)
   | Asterisk_prefixed of string list
       (** Line splitted with asterisks removed. *)
 

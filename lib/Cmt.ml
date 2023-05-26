@@ -122,33 +122,14 @@ let unindent_lines ~opn_pos txt =
   | [] -> []
   | hd :: tl -> unindent_lines ~opn_pos hd tl
 
-let split_asterisk_prefixed ~opn_pos txt =
-  let len = Position.column opn_pos + 3 in
-  let pat =
-    String.Search_pattern.create
-      (String.init len ~f:(function
-        | 0 -> '\n'
-        | n when n < len - 1 -> ' '
-        | _ -> '*' ) )
-  in
-  let rec split_ pos =
-    match String.Search_pattern.index pat ~pos ~in_:txt with
-    | Some 0 -> "" :: split_ len
-    | Some idx -> String.sub txt ~pos ~len:(idx - pos) :: split_ (idx + len)
-    | _ ->
-        let drop = function ' ' | '\t' -> true | _ -> false in
-        let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-        if String.is_empty line then [" "]
-        else if Char.equal line.[String.length line - 1] '\n' then
-          [String.drop_suffix line 1; ""]
-        else if Char.is_whitespace txt.[String.length txt - 1] then
-          [line ^ " "]
-        else [line]
-  in
-  split_ 0
+let split_asterisk_prefixed lines =
+  if List.for_all ~f:(String.is_prefix ~prefix:"*") lines then
+    Some (List.map lines ~f:(fun s -> String.drop_prefix s 1))
+  else None
+
+let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
 let decode {txt; loc} =
-  let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind} in
   let txt =
     (* Windows compatibility *)
     let f = function '\r' -> false | _ -> true in
@@ -170,19 +151,18 @@ let decode {txt; loc} =
     | '=' -> mk (Verbatim txt)
     | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
     | _ -> (
-      match split_asterisk_prefixed ~opn_pos txt with
-      | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-      (* Comments like [(*\n*)] would be normalized as [(* *)] *)
-      (* | [""; ""] when conf.fmt_opts.ocp_indent_compat.v -> *)
-      | [""; ""] -> mk (Verbatim " ")
-      | [txt] -> mk (Normal txt)
-      | [txt; ""] -> mk ~suffix:" " (Normal txt)
-      | lines -> mk (Asterisk_prefixed lines) )
+        let prefix = if String.starts_with_whitespace txt then " " else ""
+        and suffix = if String.ends_with_whitespace txt then " " else "" in
+        let lines = unindent_lines ~opn_pos txt in
+        match split_asterisk_prefixed lines with
+        | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
+        | None -> mk ~prefix ~suffix (Normal (String.concat ~sep:"\n" lines))
+        )
   else
     match txt with
     (* "(**)" is not parsed as a docstring but as a regular comment
        containing '*' and would be rewritten as "(***)" *)
     | "*" when Location.width loc = 4 -> mk (Verbatim "")
     | ("*" | "$") as txt -> mk (Verbatim txt)
-    | "\n" -> mk (Verbatim " ")
+    | "\n" | " " -> mk (Verbatim " ")
     | _ -> mk (Normal txt)
