@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
 - Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
