@@ -184,8 +184,7 @@ let () =
   (* *)
   ()
 
-(* break when unicode sequence length measured in bytes but ¬ in code
-   points *)
+(* break when unicode sequence length measured in bytes but ¬ in code points *)
 
 type t =
   | Aaaaaaaaaa
@@ -383,8 +382,7 @@ let _ =
   || (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo
     fooooooooooooooo
-    #= (* convert from foos to bars blah blah blah blah blah blah blah
-          blah *)
+    #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
     foooooooooooooooooooooooo
     foooooooooooooooo fooooooooooooooo
 
@@ -416,7 +414,6 @@ type a = b (* a *) as (* b *) 'c (* c *)
 type t =
   { (* comment before mutable *)
     mutable
-      (* really long comment that doesn't fit on the same line as other
-         stuff *)
+      (* really long comment that doesn't fit on the same line as other stuff *)
       x:
       int }

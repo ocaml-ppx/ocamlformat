@@ -26,7 +26,8 @@ let t4 :
 ;;
 
 let foo : type a. a =
-  (* aaaaaa *)
+  (* aaaaaa 
+     *)
   failwith "foo"
 ;;
 

@@ -85,8 +85,7 @@ let run_format conf x =
        `ocamlformat` processes it as a use file (toplevel phrases) anyway.
 
        `ocaml-lsp` should use core types, module types and signatures.
-       `ocaml-mdx` should use toplevel phrases, expressions and
-       signatures. *)
+       `ocaml-mdx` should use toplevel phrases, expressions and signatures. *)
     [ format Core_type
     ; format Signature
     ; format Module_type
