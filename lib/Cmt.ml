@@ -176,7 +176,7 @@ let decode {txt; loc} =
       (* | [""; ""] when conf.fmt_opts.ocp_indent_compat.v -> *)
       | [""; ""] -> mk (Verbatim " ")
       | [txt] -> mk (Normal txt)
-      | [txt; ""] -> mk ~prefix:" " (Normal txt)
+      | [txt; ""] -> mk ~suffix:" " (Normal txt)
       | lines -> mk (Asterisk_prefixed lines) )
   else
     match txt with

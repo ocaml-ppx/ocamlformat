@@ -227,7 +227,7 @@ let foooooooooooooo = function
      Foooooooooooooooooooooooooooooooooooo foooooooooooooooooooooooo foooooo.
      Foooooooooooooooooooooooooooooooooooooo foooooooooooooooooooo
      foooooooooooooooooo foooooooo. Foooooooooooo fooooooooooo fooooooooooooo
-     foooooooooooooo foooooo.*)
+     foooooooooooooo foooooo. *)
   | Foooooooooo
   | FooooFoooooFoooooo (* fooooooooooooooooooooooooooooooooooo *)
   | Foooo

@@ -1476,10 +1476,10 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 
    and (_,_) ty_pvar = | Pnil : ('a,'e) ty_pvar | Pconst : 't * ('b,'e)
    ty_pvar -> ('t -> 'b, 'e) ty_pvar | Parg : 't * ('a,'e) ty * ('b,'e)
-   ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar*)
+   ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar *)
 (* An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School: Generic Programming in Omega, by Tim Sheard
-   and Nathan Linger http://web.cecs.pdx.edu/~sheard/*)
+   and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
 
 (* Basic types *)
 
@@ -1661,7 +1661,7 @@ type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 (* let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff = fun le
    a b -> match a, b, le with | NZ, m, _ -> Diff (m, PlusZ m) | NS x, NZ, _
    -> assert false | NS x, NS y, q -> match diff (smaller q) x y with Diff
-   (m, p) -> Diff (m, PlusS p) ;;*)
+   (m, p) -> Diff (m, PlusS p) ;; *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
  fun le a b ->
@@ -3163,7 +3163,7 @@ Error: Types marked with the immediate attribute must be
    function definition, match clauses, and let ... in.
 
    New: implicit pack is also supported, and you only need to be able to
-   infer the the module type path from the context.*)
+   infer the the module type path from the context. *)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -4386,7 +4386,7 @@ let f3 (x : M'.t) : Std2.M.t = x
 
    type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a)
    Hashtbl1.t type doesnt_type = unit constraint 'a Coverage.Table.t =
-   (Coverage.t, 'a) Hashtbl2.t end*)
+   (Coverage.t, 'a) Hashtbl2.t end *)
 module type INCLUDING = sig
   include module type of List
 
@@ -4564,7 +4564,7 @@ end
 
    module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a and
    type 'a wrap = 'a and type 'a list_wrap = 'a list) -> S with type t =
-   Html5_types.div Html5.elt and type u = < foo: Html5.uri > end*)
+   Html5_types.div Html5.elt and type u = < foo: Html5.uri > end *)
 module type S = sig
   include Set.S
 
@@ -4779,7 +4779,7 @@ end
 
 (* This would allow: module FixId = Fix (struct type 'a f = 'a end) let bad :
    (int, string) eq = FixId.uniq Eq Eq let _ = Printf.printf "Oh dear: %s"
-   (cast bad 42)*)
+   (cast bad 42) *)
 module M = struct
   module type S = sig
     type a
@@ -5002,7 +5002,7 @@ module type S' = S with module M := String
    Hashtbl.S and module Make := Hashtbl.Make and module MakeSeeded :=
    Hashtbl.MakeSeeded and module type SeededS := Hashtbl.SeededS and module
    type HashedType := Hashtbl.HashedType and module type SeededHashedType :=
-   Hashtbl.SeededHashedType) end;;*)
+   Hashtbl.SeededHashedType) end;; *)
 
 (* A subtle problem appearing with -principal *)
 type -'a t
@@ -5432,7 +5432,7 @@ end
    let s = List.fold_right SInt.add [1;2;3] SInt.empty;; module SInt2 =
    Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
    let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';; (*
-   invariants are broken *)*)
+   invariants are broken *) *)
 
 (* Check behavior with submodules *)
 module M = struct
@@ -5619,11 +5619,11 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A: module C : sig
-   module L : module type of List end = A*)
+   module L : module type of List end = A *)
 
 include D'
 
-(* let () = print_endline (string_of_int D'.M.y)*)
+(* let () = print_endline (string_of_int D'.M.y) *)
 open A
 
 let f = L.map S.capitalize
@@ -5637,7 +5637,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A: module C : sig
-   module L : module type of List end = A*)
+   module L : module type of List end = A *)
 
 (* No dependency on D *)
 let x = 3
@@ -5840,7 +5840,7 @@ let f (x : entity entity_container) = ()
 
    method add_entity (s : entity) = entity_container#add_entity (s :> entity)
 
-   end*)
+   end *)
 (* Two v's in the same class *)
 class c v =
   object
@@ -6282,7 +6282,7 @@ module M : sig
 end = struct
   type refer = {poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a)}
 end
-(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml*)
+(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml *)
 
 open Pr3918b
 
@@ -7139,7 +7139,7 @@ let _ =
 (* Early strict evaluation *)
 
 (* module rec Cyclic : sig val x : int end = struct let x = Cyclic.x + 1 end
-   ;;*)
+   ;; *)
 
 (* Reordering of evaluation based on dependencies *)
 
