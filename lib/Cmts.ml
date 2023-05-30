@@ -517,12 +517,9 @@ module Unwrapped = struct
 end
 
 module Verbatim = struct
-  let fmt s (pos : Cmt.pos) =
+  let fmt s (_pos : Cmt.pos) =
     let open Fmt in
-    fmt_if_k
-      (Poly.(pos = After) && String.contains s '\n')
-      (break_unless_newline 1000 0)
-    $ str s
+    str s
 end
 
 module Cinaps = struct
