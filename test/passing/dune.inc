@@ -1721,7 +1721,7 @@
  (action
   (with-stdout-to error4.ml.stdout
    (with-stderr-to error4.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --no-comment-check %{dep:tests/error4.ml})))))
+     (run %{bin:ocamlformat} --margin-check --no-comment-check --max-iter=3 %{dep:tests/error4.ml})))))
 
 (rule
  (alias runtest)
