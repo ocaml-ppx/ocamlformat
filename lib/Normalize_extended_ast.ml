@@ -38,32 +38,24 @@ let dedup_cmts fragment ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
-let normalize_comments dedup fmt comments =
-  let comments = dedup comments in
-  List.sort comments ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-      Migrate_ast.Location.compare a b )
-  |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
+let normalize_parse_result ~normalize_cmts ast_kind ast comments =
+  let pp_cmt fmt cmts =
+    List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," cmt) cmts
+  in
+  Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast pp_cmt
+    (normalize_cmts (dedup_cmts ast_kind ast comments))
 
-let normalize_parse_result ast_kind ast comments =
-  Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast
-    (normalize_comments (dedup_cmts ast_kind ast))
-    comments
-
-let normalize_code conf (m : Ast_mapper.mapper) txt =
+let normalize_code conf ~normalize_cmts (m : Ast_mapper.mapper) txt =
   let input_name = "<output>" in
   match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
   | First {ast; comments; _} ->
-      normalize_parse_result Use_file
+      normalize_parse_result ~normalize_cmts Use_file
         (List.map ~f:(m.toplevel_phrase m) ast)
         comments
   | Second {ast; comments; _} ->
-      normalize_parse_result Repl_file
+      normalize_parse_result ~normalize_cmts Repl_file
         (List.map ~f:(m.repl_phrase m) ast)
         comments
-  | exception _ -> txt
-
-let docstring (c : Conf.t) =
-  Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings.v
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
@@ -87,7 +79,11 @@ let make_mapper conf ~ignore_doc_comments =
             ; _ } as pstr ) ]
       when Ast.Attr.is_doc attr ->
         let normalize_code = normalize_code conf m in
-        let doc' = docstring conf ~normalize_code doc in
+        let parse_docstrings = conf.fmt_opts.parse_docstrings.v in
+        let doc' =
+          Normalize_cmts.normalize_docstring ~normalize_code
+            ~parse_docstrings doc
+        in
         Ast_mapper.default_mapper.attribute m
           { attr with
             attr_payload=
@@ -154,70 +150,12 @@ let make_mapper conf ~ignore_doc_comments =
 let ast fragment ~ignore_doc_comments c =
   map fragment (make_mapper c ~ignore_doc_comments)
 
-module Normalized_cmt = struct
-  type t =
-    { cmt_kind: [`Comment | `Doc_comment]
-    ; norm: string
-    ; orig: Cmt.t  (** Not compared. *) }
-
-  let compare a b = Poly.compare (a.cmt_kind, a.norm) (b.cmt_kind, b.norm)
-
-  let of_cmt ~normalize_code ~normalize_doc orig =
-    let cmt_kind, norm =
-      let decoded = Cmt.decode orig in
-      match decoded.Cmt.kind with
-      | Verbatim txt -> (`Comment, txt)
-      | Doc txt -> (`Doc_comment, normalize_doc txt)
-      | Normal txt -> (`Comment, Docstring.normalize_text txt)
-      | Code code -> (`Comment, normalize_code (String.concat ~sep:"\n" code))
-      | Asterisk_prefixed lines ->
-          ( `Comment
-          , String.concat ~sep:" "
-              (List.map ~f:Docstring.normalize_text lines) )
-    in
-    {cmt_kind; norm; orig}
-
-  let dropped {cmt_kind; orig; _} = {Cmt.kind= `Dropped orig; cmt_kind}
-
-  let added {cmt_kind; orig; _} = {Cmt.kind= `Added orig; cmt_kind}
-
-  let sexp_of_t _ = Sexp.Atom "Normalized_cmt.t"
-
-  module Comparator = struct
-    type nonrec t = t
-
-    include Comparator.Make (struct
-      type nonrec t = t
-
-      let compare, sexp_of_t = (compare, sexp_of_t)
-    end)
-  end
-end
-
-let diff ~f x y =
-  (*= [symmetric_diff x y] returns a sequence of changes between [x] and [y]:
-      - [First k] means [k] is in [x] but not [y]
-      - [Second k] means [k] is in [y] but not [x] *)
-  Set.symmetric_diff (f x) (f y)
-  |> Sequence.to_list
-  (*= - [First _] is reported as a comment dropped
-      - [Second _] is reported as a comment added *)
-  |> List.map
-       ~f:
-         (Either.value_map ~first:Normalized_cmt.dropped
-            ~second:Normalized_cmt.added )
-  |> function [] -> Ok () | errors -> Error errors
-
-let diff_cmts (conf : Conf.t) x y =
-  let mapper = make_mapper conf ~ignore_doc_comments:false in
-  let normalize_code = normalize_code conf mapper in
-  let normalize_doc = docstring conf ~normalize_code in
-  let f z =
-    let f = Normalized_cmt.of_cmt ~normalize_code ~normalize_doc in
-    Set.of_list (module Normalized_cmt.Comparator) (List.map ~f z)
-  in
-  diff ~f x y
-
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = ast fragment c ~ignore_doc_comments in
   equal fragment (map ast1) (map ast2)
+
+let diff_cmts conf x y =
+  let mapper = make_mapper conf ~ignore_doc_comments:false in
+  let normalize_code = normalize_code conf mapper in
+  Normalize_cmts.diff_cmts ~normalize_code
+    ~parse_docstrings:conf.fmt_opts.parse_docstrings.v x y
