@@ -44,4 +44,4 @@ We welcome contributions to ocamlformat! If you find a bug or want to suggest a 
 
 ## 📜 License
 
-ocamlformat is released under the [MIT License](./LICENSE.md).
+ocamlformat is released under a [dual MIT/LGPL license](./LICENSE.md).
