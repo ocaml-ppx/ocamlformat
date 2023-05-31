@@ -97,7 +97,8 @@ type decoded_kind =
 
 type decoded = {prefix: string; suffix: string; kind: decoded_kind}
 
-let unindent_lines ~opn_pos first_line tl_lines =
+(** [opn_offset] indicates at which column the body of the comment starts. *)
+let unindent_lines ~opn_offset first_line tl_lines =
   let indent_of_line s =
     (* index of first non-whitespace is indentation, None means white line *)
     String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
@@ -105,22 +106,21 @@ let unindent_lines ~opn_pos first_line tl_lines =
   (* The indentation of the first line must account for the location of the
      comment opening *)
   let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
-  let fl_offset = opn_pos.Lexing.pos_cnum - opn_pos.pos_bol + 2 in
-  let fl_indent = fl_spaces + fl_offset in
+  let fl_indent = fl_spaces + opn_offset in
   let min_indent =
     List.fold_left ~init:fl_indent
       ~f:(fun acc s ->
-        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
+        match indent_of_line s with Some i -> min acc i | None -> acc )
       tl_lines
   in
   (* Completely trim the first line *)
   String.drop_prefix first_line fl_spaces
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
-let unindent_lines ~opn_pos txt =
+let unindent_lines ~opn_offset txt =
   match String.split_lines txt with
   | [] -> []
-  | hd :: tl -> unindent_lines ~opn_pos hd tl
+  | hd :: tl -> unindent_lines ~opn_offset hd tl
 
 let split_asterisk_prefixed lines =
   if List.for_all ~f:(String.is_prefix ~prefix:"*") lines then
@@ -135,27 +135,31 @@ let decode {txt; loc} =
     let f = function '\r' -> false | _ -> true in
     String.filter txt ~f
   in
-  let opn_pos = loc.Location.loc_start in
+  let opn_offset =
+    let {Lexing.pos_cnum; pos_bol; _} = loc.Location.loc_start in
+    pos_cnum - pos_bol + 2
+  in
   if String.length txt >= 2 then
     match txt.[0] with
     | '$' when not (Char.is_whitespace txt.[1]) -> mk (Verbatim txt)
     | '$' ->
+        let opn_offset = opn_offset + 1 in
         let dollar_suf = Char.equal txt.[String.length txt - 1] '$' in
         let suffix = if dollar_suf then "$" else "" in
         let len = String.length txt - if dollar_suf then 2 else 1 in
-        let source = String.sub ~pos:1 ~len txt in
-        let source =
-          String.lstrip ~drop:(function '\n' -> true | _ -> false) source
-        in
-        let lines = unindent_lines ~opn_pos source in
+        (* Strip white lines at the end but not at the start until after
+           [unindent_lines] is called. *)
+        let source = String.rstrip (String.sub ~pos:1 ~len txt) in
+        let lines = unindent_lines ~opn_offset source in
         let lines = List.map ~f:String.rstrip lines in
+        let lines = List.drop_while ~f:String.is_empty lines in
         mk ~prefix:"$" ~suffix (Code lines)
     | '=' -> mk (Verbatim txt)
     | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
     | _ -> (
         let prefix = if String.starts_with_whitespace txt then " " else ""
         and suffix = if String.ends_with_whitespace txt then " " else "" in
-        let lines = unindent_lines ~opn_pos txt in
+        let lines = unindent_lines ~opn_offset txt in
         match split_asterisk_prefixed lines with
         | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
         | None ->
