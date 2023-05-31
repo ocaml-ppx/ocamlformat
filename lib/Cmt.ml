@@ -147,7 +147,9 @@ let decode {txt; loc} =
         let source =
           String.lstrip ~drop:(function '\n' -> true | _ -> false) source
         in
-        mk ~prefix:"$" ~suffix (Code (unindent_lines ~opn_pos source))
+        let lines = unindent_lines ~opn_pos source in
+        let lines = List.map ~f:String.rstrip lines in
+        mk ~prefix:"$" ~suffix (Code lines)
     | '=' -> mk (Verbatim txt)
     | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
     | _ -> (
