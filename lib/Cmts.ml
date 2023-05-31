@@ -517,7 +517,7 @@ module Unwrapped = struct
 end
 
 module Verbatim = struct
-  let fmt s (_pos : Cmt.pos) =
+  let fmt s =
     let open Fmt in
     str s
 end
@@ -538,32 +538,28 @@ module Cinaps = struct
         list lines "" fmt_line $ fmt "@;<1000 -2>"
 end
 
-module Ocp_indent_compat = struct
-  let fmt ~fmt_code conf ~loc txt ~offset (pos : Cmt.pos) =
-    let endl = String.ends_with_whitespace txt in
-    let pre, doc =
+module Doc = struct
+  let fmt ~fmt_code conf ~loc txt ~offset =
+    (* Whether the doc starts and ends with an empty line. *)
+    let pre_nl =
       let lines = String.split_lines txt in
       match lines with
-      | [] | [_] -> (false, txt)
-      | h :: _ ->
-          let pre = String.is_empty (String.strip h) in
-          let doc = if pre then String.lstrip txt else txt in
-          let doc = if endl then String.rstrip doc else doc in
-          (pre, doc)
+      | [] | [_] -> false
+      | h :: _ -> String.is_empty (String.strip h)
     in
+    let trail_nl = String.ends_with_whitespace txt in
+    let doc = if pre_nl then String.lstrip txt else txt in
+    let doc = if trail_nl then String.rstrip doc else doc in
     let parsed = Docstring.parse ~loc doc in
-    (* Disable warnings when parsing fails *)
+    (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
     let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
     let open Fmt in
-    fmt_if_k
-      (Poly.(pos = After) && String.contains txt '\n')
-      (break_unless_newline 1000 0)
-    $ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if endl "@\n") @@ doc
+    wrap_k (fmt_if pre_nl "@;<1000 3>") (fmt_if trail_nl "@\n") @@ doc
 end
 
-let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
   let open Fmt in
   let decoded = Cmt.decode cmt in
   (fun k ->
@@ -571,14 +567,13 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
       (str "(*" $ str decoded.prefix $ k $ str decoded.suffix $ str "*)") )
   @@
   match decoded.kind with
-  | Verbatim txt -> Verbatim.fmt txt pos
-  | Doc txt ->
-      Ocp_indent_compat.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2 pos
+  | Verbatim txt -> Verbatim.fmt txt
+  | Doc txt -> Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2
   | Normal txt ->
       if conf.fmt_opts.wrap_comments.v then Wrapped.fmt txt
       else if conf.fmt_opts.ocp_indent_compat.v then
         (* TODO: [offset] should be computed from location. *)
-        Ocp_indent_compat.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2 pos
+        Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2
       else Unwrapped.fmt txt
   | Code code -> Cinaps.fmt code
   | Asterisk_prefixed lines -> Asterisk_prefixed.fmt lines
