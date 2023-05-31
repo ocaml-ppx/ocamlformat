@@ -508,7 +508,7 @@ module Unwrapped = struct
       let sep = if is_white_line s then str "\n" else fmt "@;<1000 0>" in
       fmt_if_k (not first) sep $ str s
     in
-    vbox 0 ~name:"multiline" (list_fl lines fmt_line)
+    vbox 0 ~name:"unwrapped" (list_fl lines fmt_line)
 
   let fmt txt =
     match String.split_lines txt with

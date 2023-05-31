@@ -158,8 +158,14 @@ let decode {txt; loc} =
         let lines = unindent_lines ~opn_pos txt in
         match split_asterisk_prefixed lines with
         | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
-        | None -> mk ~prefix ~suffix (Normal (String.concat ~sep:"\n" lines))
-        )
+        | None ->
+            (* Reconstruct the text with indentation removed and heading and
+               trailing empty lines removed. *)
+            let txt = String.strip (String.concat ~sep:"\n" lines) in
+            let cmt =
+              if String.is_empty txt then Verbatim "" else Normal txt
+            in
+            mk ~prefix ~suffix cmt )
   else
     match txt with
     (* "(**)" is not parsed as a docstring but as a regular comment
