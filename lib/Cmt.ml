@@ -104,9 +104,12 @@ let unindent_lines ~opn_offset first_line tl_lines =
     String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
   in
   (* The indentation of the first line must account for the location of the
-     comment opening *)
-  let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
-  let fl_indent = fl_spaces + opn_offset in
+     comment opening. Don't account for the first line if it's empty. *)
+  let fl_spaces, fl_indent =
+    match indent_of_line first_line with
+    | Some i -> (i, i + opn_offset)
+    | None -> (0, Stdlib.max_int)
+  in
   let min_indent =
     List.fold_left ~init:fl_indent
       ~f:(fun acc s ->
