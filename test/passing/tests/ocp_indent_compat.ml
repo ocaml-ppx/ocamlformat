@@ -2,7 +2,8 @@
 
 [@@@ocamlformat "break-colon=before"]
 
-(* Bad: unboxing the function type *)
+(* Bad: unboxing the function type
+  *)
 external i : (int -> float[@unboxed]) = "i" "i_nat"
 
 module type M = sig
@@ -15,12 +16,14 @@ module type M = sig
        * (string Location.loc * payload) list
 
   val transl_modtype_longident
-    (* from Typemod *)
+    (* from Typemod
+      *)
     : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
     (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *)
+       foooooooooooooo foooooooooooo
+      *)
     : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val imported_sets_of_closures_table
@@ -37,15 +40,20 @@ module type M = sig
     -> 'a t
 
   val select
-    :  (* The fsevents context *)
+    :  (* The fsevents context
+         *)
        env
-    -> (* Additional file descriptor to select for reading *)
+    -> (* Additional file descriptor to select for reading
+         *)
        ?read_fdl:fd_select list
-    -> (* Additional file descriptor to select for writing *)
+    -> (* Additional file descriptor to select for writing
+         *)
        ?write_fdl:fd_select list
-    -> (* Timeout...like Unix.select *)
+    -> (* Timeout...like Unix.select
+         *)
        timeout:float
-    -> (* The callback for file system events *)
+    -> (* The callback for file system events
+         *)
        (event list -> unit)
     -> unit
 

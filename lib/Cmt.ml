@@ -132,7 +132,7 @@ let split_asterisk_prefixed lines =
 
 let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
-let decode {txt; loc} =
+let decode ~parse_comments_as_doc {txt; loc} =
   let txt =
     (* Windows compatibility *)
     let f = function '\r' -> false | _ -> true in
@@ -159,6 +159,7 @@ let decode {txt; loc} =
         mk ~prefix:"$" ~suffix (Code lines)
     | '=' -> mk (Verbatim txt)
     | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
+    | _ when parse_comments_as_doc -> mk (Doc txt)
     | _ -> (
         let prefix = if String.starts_with_whitespace txt then " " else ""
         and suffix = if String.ends_with_whitespace txt then " " else "" in

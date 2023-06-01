@@ -561,7 +561,8 @@ end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
   let open Fmt in
-  let decoded = Cmt.decode cmt in
+  let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
+  let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (fun k ->
     hvbox 2
       (str "(*" $ str decoded.prefix $ k $ str decoded.suffix $ str "*)") )
@@ -571,9 +572,6 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
   | Doc txt -> Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2
   | Normal txt ->
       if conf.fmt_opts.wrap_comments.v then Wrapped.fmt txt
-      else if conf.fmt_opts.ocp_indent_compat.v then
-        (* TODO: [offset] should be computed from location. *)
-        Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2
       else Unwrapped.fmt txt
   | Code code -> Cinaps.fmt code
   | Asterisk_prefixed lines -> Asterisk_prefixed.fmt lines

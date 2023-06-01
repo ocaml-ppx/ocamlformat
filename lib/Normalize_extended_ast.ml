@@ -162,9 +162,9 @@ module Normalized_cmt = struct
 
   let compare a b = Poly.compare (a.cmt_kind, a.norm) (b.cmt_kind, b.norm)
 
-  let of_cmt ~normalize_code ~normalize_doc orig =
+  let of_cmt ~parse_comments_as_doc ~normalize_code ~normalize_doc orig =
     let cmt_kind, norm =
-      let decoded = Cmt.decode orig in
+      let decoded = Cmt.decode ~parse_comments_as_doc orig in
       match decoded.Cmt.kind with
       | Verbatim txt -> (`Comment, txt)
       | Doc txt -> (`Doc_comment, normalize_doc txt)
@@ -209,11 +209,15 @@ let diff ~f x y =
   |> function [] -> Ok () | errors -> Error errors
 
 let diff_cmts (conf : Conf.t) x y =
+  let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   let mapper = make_mapper conf ~ignore_doc_comments:false in
   let normalize_code = normalize_code conf mapper in
   let normalize_doc = docstring conf ~normalize_code in
   let f z =
-    let f = Normalized_cmt.of_cmt ~normalize_code ~normalize_doc in
+    let f =
+      Normalized_cmt.of_cmt ~parse_comments_as_doc ~normalize_code
+        ~normalize_doc
+    in
     Set.of_list (module Normalized_cmt.Comparator) (List.map ~f z)
   in
   diff ~f x y
