@@ -550,22 +550,22 @@ module Doc = struct
   let fmt ~fmt_code conf ~loc txt ~offset =
     (* Whether the doc starts and ends with an empty line. *)
     let pre_nl, trail_nl =
-      let lines = String.split_lines txt in
+      let lines = String.split ~on:'\n' txt in
       match lines with
       | [] | [_] -> (false, false)
       | h :: _ ->
           let l = List.last_exn lines in
           (is_only_whitespaces h, is_only_whitespaces l)
     in
-    let doc = if pre_nl then String.lstrip txt else txt in
-    let doc = if trail_nl then String.rstrip doc else doc in
-    let parsed = Docstring.parse ~loc doc in
+    let txt = if pre_nl then String.lstrip txt else txt in
+    let txt = if trail_nl then String.rstrip txt else txt in
+    let parsed = Docstring.parse ~loc txt in
     (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
+    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
     let open Fmt in
-    wrap_k (fmt_if pre_nl "@;<1000 3>") (fmt_if trail_nl "@\n") @@ doc
+    wrap_k (fmt_if pre_nl "@;<1000 1>") (fmt_if trail_nl "@;<1000 -2>") doc
 end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =

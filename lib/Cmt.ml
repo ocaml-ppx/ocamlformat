@@ -132,9 +132,7 @@ let split_asterisk_prefixed lines =
 
 let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
-let is_all_whitespace s =
-  Option.is_none
-  @@ String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
+let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
 
 let decode ~parse_comments_as_doc {txt; loc} =
   let txt =
@@ -159,7 +157,7 @@ let decode ~parse_comments_as_doc {txt; loc} =
         let source = String.rstrip (String.sub ~pos:1 ~len txt) in
         let lines = unindent_lines ~opn_offset source in
         let lines = List.map ~f:String.rstrip lines in
-        let lines = List.drop_while ~f:String.is_empty lines in
+        let lines = List.drop_while ~f:is_all_whitespace lines in
         let code = String.concat ~sep:"\n" lines in
         mk ~prefix:"$" ~suffix (Code code)
     | '=' -> mk (Verbatim txt)
