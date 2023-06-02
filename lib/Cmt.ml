@@ -92,7 +92,7 @@ type decoded_kind =
   | Verbatim of string
   | Doc of string
   | Normal of string
-  | Code of string list
+  | Code of string
   | Asterisk_prefixed of string list
 
 type decoded = {prefix: string; suffix: string; kind: decoded_kind}
@@ -160,7 +160,8 @@ let decode ~parse_comments_as_doc {txt; loc} =
         let lines = unindent_lines ~opn_offset source in
         let lines = List.map ~f:String.rstrip lines in
         let lines = List.drop_while ~f:String.is_empty lines in
-        mk ~prefix:"$" ~suffix (Code lines)
+        let code = String.concat ~sep:"\n" lines in
+        mk ~prefix:"$" ~suffix (Code code)
     | '=' -> mk (Verbatim txt)
     | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
     | _ when is_all_whitespace txt ->

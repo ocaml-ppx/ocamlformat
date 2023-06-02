@@ -169,7 +169,7 @@ module Normalized_cmt = struct
       | Verbatim txt -> (`Comment, txt)
       | Doc txt -> (`Doc_comment, normalize_doc txt)
       | Normal txt -> (`Comment, Docstring.normalize_text txt)
-      | Code code -> (`Comment, normalize_code (String.concat ~sep:"\n" code))
+      | Code code -> (`Comment, normalize_code code)
       | Asterisk_prefixed lines ->
           ( `Comment
           , String.concat ~sep:" "

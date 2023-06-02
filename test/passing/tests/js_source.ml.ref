@@ -10053,10 +10053,7 @@ class x =
 
 let _ =
   match () with
-  (*$
-    Printf.(
-      printf "\n  | _ -> .\n;;\n")
-  *)
+  (*$ Printf.(printf "\n  | _ -> .\n;;\n") *)
   | _ -> .
 ;;
 
@@ -10071,8 +10068,7 @@ let _ =
 (*$*)
 
 (*$
-      [%string
-        {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   zzzzzzzzzzzzzzzzzzzzzzzzzzzz
       |}]
 *)

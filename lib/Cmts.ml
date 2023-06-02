@@ -528,9 +528,8 @@ end
 module Cinaps = struct
   open Fmt
 
-  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
-  let fmt code =
-    match code with
+  let fmt_code_str code =
+    match String.split_lines code with
     | [] | [""] -> str " "
     | [line] -> fmt "@ " $ str line $ fmt "@;<1 -2>"
     | lines ->
@@ -539,6 +538,12 @@ module Cinaps = struct
           | line -> fmt "@\n" $ str line
         in
         list lines "" fmt_line $ fmt "@;<1000 -2>"
+
+  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
+  let fmt ~fmt_code conf ~offset code =
+    match fmt_code conf ~offset code with
+    | Ok code -> fmt_code_str code
+    | Error _ -> fmt_code_str code
 end
 
 module Doc = struct
@@ -567,17 +572,19 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
   let open Fmt in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
+  (* TODO: Offset should be computed from location. *)
+  let offset = 2 + String.length decoded.prefix in
   (fun k ->
     hvbox 2
       (str "(*" $ str decoded.prefix $ k $ str decoded.suffix $ str "*)") )
   @@
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt txt
-  | Doc txt -> Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset:2
+  | Doc txt -> Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset
   | Normal txt ->
       if conf.fmt_opts.wrap_comments.v then Wrapped.fmt txt
       else Unwrapped.fmt txt
-  | Code code -> Cinaps.fmt code
+  | Code code -> Cinaps.fmt ~fmt_code conf ~offset code
   | Asterisk_prefixed lines -> Asterisk_prefixed.fmt lines
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =

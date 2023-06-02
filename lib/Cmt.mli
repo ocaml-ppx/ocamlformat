@@ -41,8 +41,7 @@ type decoded_kind =
   | Verbatim of string  (** Original content. *)
   | Doc of string  (** Original content. *)
   | Normal of string  (** Original content with whitespaces trimmed. *)
-  | Code of string list
-      (** Source code is line splitted with indentation removed. *)
+  | Code of string  (** Source code with indentation removed. *)
   | Asterisk_prefixed of string list
       (** Line splitted with asterisks removed. *)
 
