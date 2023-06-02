@@ -460,6 +460,8 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
+let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
+
 module Wrapped = struct
   let fmt text =
     let open Fmt in
@@ -483,7 +485,7 @@ module Wrapped = struct
               fmt_line curr
               $
               match next with
-              | Some str when String.for_all str ~f:Char.is_whitespace ->
+              | Some str when is_only_whitespaces str ->
                   close_box $ fmt "\n@," $ open_hovbox 0
               | Some _ when not (String.is_empty curr) -> fmt "@ "
               | _ -> noop ) ) )
@@ -502,10 +504,11 @@ end
 module Unwrapped = struct
   let fmt_multiline_cmt lines =
     let open Fmt in
-    let is_white_line s = String.for_all s ~f:Char.is_whitespace in
     let fmt_line ~first ~last:_ s =
       let s = String.rstrip s in
-      let sep = if is_white_line s then str "\n" else fmt "@;<1000 0>" in
+      let sep =
+        if is_only_whitespaces s then str "\n" else fmt "@;<1000 0>"
+      in
       fmt_if_k (not first) sep $ str s
     in
     vbox 0 ~name:"unwrapped" (list_fl lines fmt_line)
@@ -541,13 +544,14 @@ end
 module Doc = struct
   let fmt ~fmt_code conf ~loc txt ~offset =
     (* Whether the doc starts and ends with an empty line. *)
-    let pre_nl =
+    let pre_nl, trail_nl =
       let lines = String.split_lines txt in
       match lines with
-      | [] | [_] -> false
-      | h :: _ -> String.is_empty (String.strip h)
+      | [] | [_] -> (false, false)
+      | h :: _ ->
+          let l = List.last_exn lines in
+          (is_only_whitespaces h, is_only_whitespaces l)
     in
-    let trail_nl = String.ends_with_whitespace txt in
     let doc = if pre_nl then String.lstrip txt else txt in
     let doc = if trail_nl then String.rstrip doc else doc in
     let parsed = Docstring.parse ~loc doc in

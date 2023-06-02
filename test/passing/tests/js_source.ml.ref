@@ -77,8 +77,7 @@ and _ = ()
 
 let%foo _ = ()
 
-(* Expressions
-  *)
+(* Expressions *)
 let () =
   let%foo[@foo] x = 3
   and[@foo] y = 4 in
@@ -114,14 +113,12 @@ let () =
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
-    | [%foo? (* Pattern expressions
-               *)
+    | [%foo? (* Pattern expressions *)
         ((lazy x) [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
-(* Class expressions
-  *)
+(* Class expressions *)
 class x =
   fun [@foo] x ->
   let[@foo] x = 3 in
@@ -136,8 +133,7 @@ class x =
     initializer x [@@foo]
   end [@foo]
 
-(* Class type expressions
-  *)
+(* Class type expressions *)
 class type t = object
   inherit t [@@foo]
   val x : t [@@foo]
@@ -150,16 +146,13 @@ class type t = object
   [@@@aaa]
 end[@foo]
 
-(* Type expressions
-  *)
+(* Type expressions *)
 type t = [%foo: ((module M)[@foo])]
 
-(* Module expressions
-  *)
+(* Module expressions *)
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
-(* Module type expression
-  *)
+(* Module type expression *)
 module type S = functor [@foo] (M : S) -> functor (_ : (module type of M) [@foo]) -> sig end
 [@foo]
 
@@ -175,8 +168,7 @@ module type S = sig
   and B : (S with type t = t)
 end
 
-(* Structure items
-  *)
+(* Structure items *)
 let%foo[@foo] x = 4
 and[@foo] y = x
 
@@ -197,8 +189,7 @@ module type%foo S = S [@@foo]
 include%foo M [@@foo]
 open%foo M [@@foo]
 
-(* Signature items
-  *)
+(* Signature items *)
 module type S = sig
   val%foo x : t [@@foo]
   external%foo x : t = "" [@@foo]
@@ -235,8 +226,7 @@ open M;;
 
 ([%extension_constructor A] : extension_constructor)
 
-(* By using two types we can have a recursive constraint
-  *)
+(* By using two types we can have a recursive constraint *)
 type 'a class_name = .. constraint 'a = < cast : 'a. 'a name -> 'a ; .. >
 and 'a name = Class : 'a class_name -> (< cast : 'a. 'a name -> 'a ; .. > as 'a) name
 
@@ -265,8 +255,7 @@ class foo : foo_t =
     method foo = "foo"
   end
 
-(* Now we can create a subclass of foo
-  *)
+(* Now we can create a subclass of foo *)
 
 class type bar_t = object
   inherit foo
@@ -289,8 +278,7 @@ class bar : bar_t =
     [%%id]
   end
 
-(* Now lets create a mutable list of castable objects
-  *)
+(* Now lets create a mutable list of castable objects *)
 
 let clist : castable list ref = ref []
 let push_castable (c : #castable) = clist := (c :> castable) :: !clist
@@ -303,8 +291,7 @@ let pop_castable () =
   | [] -> raise Not_found
 ;;
 
-(* We can add foos and bars to this list, and retrive them
-  *)
+(* We can add foos and bars to this list, and retrive them *)
 
 push_castable (new foo);;
 push_castable (new bar);;
@@ -314,34 +301,27 @@ let c1 : castable = pop_castable ()
 let c2 : castable = pop_castable ()
 let c3 : castable = pop_castable ()
 
-(* We can also downcast these values to foos and bars
-  *)
+(* We can also downcast these values to foos and bars *)
 
 let f1 : foo = c1#cast (Class Foo)
 
-(* Ok
-  *)
+(* Ok *)
 let f2 : foo = c2#cast (Class Foo)
 
-(* Ok
-  *)
+(* Ok *)
 let f3 : foo = c3#cast (Class Foo)
 
-(* Ok
-  *)
+(* Ok *)
 
 let b1 : bar = c1#cast (Class Bar)
 
-(* Exception Bad_cast
-  *)
+(* Exception Bad_cast *)
 let b2 : bar = c2#cast (Class Bar)
 
-(* Ok
-  *)
+(* Ok *)
 let b3 : bar = c3#cast (Class Bar)
 
-(* Exception Bad_cast
-  *)
+(* Exception Bad_cast *)
 
 type foo = ..
 type foo += A | B of int
@@ -352,39 +332,31 @@ let is_a x =
   | _ -> false
 ;;
 
-(* The type must be open to create extension
-  *)
+(* The type must be open to create extension *)
 
 type foo
-type foo += A of int (* Error type is not open
-                       *)
+type foo += A of int (* Error type is not open *)
 
-(* The type parameters must match
-  *)
+(* The type parameters must match *)
 
 type 'a foo = ..
-type ('a, 'b) foo += A of int (* Error: type parameter mismatch
-                                *)
+type ('a, 'b) foo += A of int (* Error: type parameter mismatch *)
 
-(* In a signature the type does not have to be open
-  *)
+(* In a signature the type does not have to be open *)
 
 module type S = sig
   type foo
   type foo += A of float
 end
 
-(* But it must still be extensible
-  *)
+(* But it must still be extensible *)
 
 module type S = sig
   type foo = A of int
-  type foo += B of float (* Error foo does not have an extensible type
-                           *)
+  type foo += B of float (* Error foo does not have an extensible type *)
 end
 
-(* Signatures can change the grouping of extensions
-  *)
+(* Signatures can change the grouping of extensions *)
 
 type foo = ..
 
@@ -401,8 +373,7 @@ end
 
 module M_S : S = M
 
-(* Extensions can be GADTs
-  *)
+(* Extensions can be GADTs *)
 
 type 'a foo = ..
 type _ foo += A : int -> int foo | B : int foo
@@ -414,20 +385,16 @@ let get_num : type a. a foo -> a -> a option =
   | _ -> None
 ;;
 
-(* Extensions must obey constraints
-  *)
+(* Extensions must obey constraints *)
 
 type 'a foo = .. constraint 'a = [> `Var ]
 type 'a foo += A of 'a
 
-let a = A 9 (* ERROR: Constraints not met
-              *)
+let a = A 9 (* ERROR: Constraints not met *)
 
-type 'a foo += B : int foo (* ERROR: Constraints not met
-                             *)
+type 'a foo += B : int foo (* ERROR: Constraints not met *)
 
-(* Signatures can make an extension private
-  *)
+(* Signatures can make an extension private *)
 
 type foo = ..
 
@@ -449,11 +416,9 @@ let is_s x =
   | _ -> false
 ;;
 
-let a2 = M_S.A 20 (* ERROR: Cannot create a value using a private constructor
-                    *)
+let a2 = M_S.A 20 (* ERROR: Cannot create a value using a private constructor *)
 
-(* Extensions can be rebound
-  *)
+(* Extensions can be rebound *)
 
 type foo = ..
 
@@ -463,21 +428,17 @@ end
 
 type foo += A2 = M.A1
 type bar = ..
-type bar += A3 = M.A1 (* Error: rebind wrong type
-                        *)
+type bar += A3 = M.A1 (* Error: rebind wrong type *)
 
 module M = struct
   type foo += private B1 of int
 end
 
 type foo += private B2 = M.B1
-type foo += B3 = M.B1 (* Error: rebind private extension
-                        *)
-type foo += C = Unknown (* Error: unbound extension
-                          *)
+type foo += B3 = M.B1 (* Error: rebind private extension *)
+type foo += C = Unknown (* Error: unbound extension *)
 
-(* Extensions can be rebound even if type is closed
-  *)
+(* Extensions can be rebound even if type is closed *)
 
 module M : sig
   type foo
@@ -489,8 +450,7 @@ end
 
 type M.foo += A2 = M.A1
 
-(* Rebinding handles abbreviations
-  *)
+(* Rebinding handles abbreviations *)
 
 type 'a foo = ..
 type 'a foo1 = 'a foo = ..
@@ -498,25 +458,20 @@ type 'a foo2 = 'a foo = ..
 type 'a foo1 += A of int | B of 'a | C : int foo1
 type 'a foo2 += D = A | E = B | F = C
 
-(* Extensions must obey variances
-  *)
+(* Extensions must obey variances *)
 
 type +'a foo = ..
 type 'a foo += A of (int -> 'a)
 type 'a foo += B of ('a -> int)
-(* ERROR: Parameter variances are not satisfied
-  *)
+(* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
-(* ERROR: Parameter variances are not satisfied
-  *)
+(* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
-type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match
-                                   *)
+type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
 
-(* Exceptions are compatible with extensions
-  *)
+(* Exceptions are compatible with extensions *)
 
 module M : sig
   type exn += Foo of int * float | Bar : 'a list -> exn
@@ -542,33 +497,27 @@ end = struct
   exception Foo = Foo
 end
 
-(* Test toplevel printing
-  *)
+(* Test toplevel printing *)
 
 type foo = ..
 type foo += Foo of int * int option | Bar of int option
 
-let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully
-                                        *)
+let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
-let y = x (* Prints Bar but not Foo (which has been shadowed)
-            *)
+let y = x (* Prints Bar but not Foo (which has been shadowed) *)
 
 exception Foo of int * int option
 exception Bar of int option
 
-let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully
-                                        *)
+let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
-let y = x (* Prints Bar and part of Foo (which has been shadowed)
-            *)
+let y = x (* Prints Bar and part of Foo (which has been shadowed) *)
 
-(* Test Obj functions
-  *)
+(* Test Obj functions *)
 
 type foo = ..
 type foo += Foo | Bar of int
@@ -577,17 +526,14 @@ let extension_name e = Obj.extension_name (Obj.extension_constructor e)
 let extension_id e = Obj.extension_id (Obj.extension_constructor e)
 let n1 = extension_name Foo
 let n2 = extension_name (Bar 1)
-let t = extension_id (Bar 2) = extension_id (Bar 3) (* true
-                                                      *)
-let f = extension_id (Bar 2) = extension_id Foo (* false
-                                                  *)
+let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
+let f = extension_id (Bar 2) = extension_id Foo (* false *)
 let is_foo x = extension_id Foo = extension_id x
 
 type foo += Foo
 
 let f = is_foo Foo
-let _ = Obj.extension_constructor 7 (* Invald_arg
-                                      *)
+let _ = Obj.extension_constructor 7 (* Invald_arg *)
 
 let _ =
   Obj.extension_constructor
@@ -596,11 +542,9 @@ let _ =
     end)
 ;;
 
-(* Invald_arg
-  *)
+(* Invald_arg *)
 
-(* Typed names
-  *)
+(* Typed names *)
 
 module Msg : sig
   type 'a tag
@@ -658,8 +602,7 @@ end = struct
     write_raw k.label content
   ;;
 
-  (* Add int kind
-    *)
+  (* Add int kind *)
 
   type 'a tag += Int : int tag
 
@@ -675,8 +618,7 @@ end = struct
     Hashtbl.add writeTbl (T Int) { f }
   ;;
 
-  (* Support user defined kinds
-    *)
+  (* Support user defined kinds *)
 
   module type Desc = sig
     type t
@@ -725,8 +667,7 @@ let read_one () =
   | _ -> print_string "Unknown"
 ;;
 
-(* Example of algorithm parametrized with modules
-  *)
+(* Example of algorithm parametrized with modules *)
 
 let sort (type s) set l =
   let module Set = (val set : Set.S with type elt = s) in
@@ -753,8 +694,7 @@ let () =
     (String.concat "  " (List.map (String.concat "/") (both [ "abc"; "xyz"; "def" ])))
 ;;
 
-(* Hiding the internal representation
-  *)
+(* Hiding the internal representation *)
 
 module type S = sig
   type t
@@ -803,8 +743,7 @@ let () =
   List.iter print (List.map apply [ int; apply int; apply (apply str) ])
 ;;
 
-(* Existential types + type equality witnesses -> pseudo GADT
-  *)
+(* Existential types + type equality witnesses -> pseudo GADT *)
 
 module TypEq : sig
   type ('a, 'b) t
@@ -891,8 +830,7 @@ let () =
   print_endline (Print.to_string (pair int (pair str int)) (123, ("A", 456)))
 ;;
 
-(* #6262: first-class modules and module type aliases
-  *)
+(* #6262: first-class modules and module type aliases *)
 
 module type S1 = sig end
 module type S2 = S1
@@ -909,8 +847,7 @@ end
 
 let _f (x : (module X.S)) : (module Y.S) = x
 
-(* PR#6194, main example
-  *)
+(* PR#6194, main example *)
 module type S3 = sig
   val x : bool
 end
@@ -938,8 +875,7 @@ let fbool (type t) (x : t) (tag : t ty) =
   | Bool -> x
 ;;
 
-(* val fbool : 'a -> 'a ty -> 'a = <fun>
-  *)
+(* val fbool : 'a -> 'a ty -> 'a = <fun> *)
 
 (** OK: the return value is x of type t **)
 
@@ -948,8 +884,7 @@ let fint (type t) (x : t) (tag : t ty) =
   | Int -> x > 0
 ;;
 
-(* val fint : 'a -> 'a ty -> bool = <fun>
-  *)
+(* val fint : 'a -> 'a ty -> bool = <fun> *)
 
 (** OK: the return value is x > 0 of type bool;
     This has used the equation t = bool, not visible in the return type **)
@@ -960,8 +895,7 @@ let f (type t) (x : t) (tag : t ty) =
   | Bool -> x
 ;;
 
-(* val f : 'a -> 'a ty -> bool = <fun>
-  *)
+(* val f : 'a -> 'a ty -> bool = <fun> *)
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with
@@ -970,8 +904,7 @@ let g (type t) (x : t) (tag : t ty) =
 ;;
 
 (* Error: This expression has type bool but an expression was expected of type
-   t = int
-  *)
+   t = int *)
 
 let id x = x
 
@@ -1001,8 +934,7 @@ let g (type t) (x : t) (tag : t ty) =
 (* (c) Alain Frisch / Lexifi *)
 (* cf. http://www.lexifi.com/blog/dynamic-types *)
 
-(* Basic tag
-  *)
+(* Basic tag *)
 
 type 'a ty =
   | Int : int ty
@@ -1010,8 +942,7 @@ type 'a ty =
   | List : 'a ty -> 'a list ty
   | Pair : ('a ty * 'b ty) -> ('a * 'b) ty
 
-(* Tagging data
-  *)
+(* Tagging data *)
 
 type variant =
   | VInt of int
@@ -1021,20 +952,15 @@ type variant =
 
 let rec variantize : type t. t ty -> t -> variant =
   fun ty x ->
-  (* type t is abstract here
-    *)
+  (* type t is abstract here *)
   match ty with
-  | Int -> VInt x (* in this branch: t = int
-                    *)
-  | String -> VString x (* t = string
-                          *)
-  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a
-                                                      *)
+  | Int -> VInt x (* in this branch: t = int *)
+  | String -> VString x (* t = string *)
+  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
   | Pair (ty1, ty2) -> VPair (variantize ty1 (fst x), variantize ty2 (snd x))
 ;;
 
-(* t = ('a, 'b) for some 'a and 'b
-  *)
+(* t = ('a, 'b) for some 'a and 'b *)
 
 exception VariantMismatch
 
@@ -1048,8 +974,7 @@ let rec devariantize : type t. t ty -> variant -> t =
   | _ -> raise VariantMismatch
 ;;
 
-(* Handling records
-  *)
+(* Handling records *)
 
 type 'a ty =
   | Int : int ty
@@ -1071,8 +996,7 @@ and ('a, 'b) field =
   ; get : 'a -> 'b
   }
 
-(* Again
-  *)
+(* Again *)
 
 type variant =
   | VInt of int
@@ -1083,19 +1007,14 @@ type variant =
 
 let rec variantize : type t. t ty -> t -> variant =
   fun ty x ->
-  (* type t is abstract here
-    *)
+  (* type t is abstract here *)
   match ty with
-  | Int -> VInt x (* in this branch: t = int
-                    *)
-  | String -> VString x (* t = string
-                          *)
-  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a
-                                                      *)
+  | Int -> VInt x (* in this branch: t = int *)
+  | String -> VString x (* t = string *)
+  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
   | Pair (ty1, ty2) ->
     VPair (variantize ty1 (fst x), variantize ty2 (snd x))
-    (* t = ('a, 'b) for some 'a and 'b
-      *)
+    (* t = ('a, 'b) for some 'a and 'b *)
   | Record { fields } ->
     VRecord
       (List.map
@@ -1103,8 +1022,7 @@ let rec variantize : type t. t ty -> t -> variant =
          fields)
 ;;
 
-(* Extraction
-  *)
+(* Extraction *)
 
 type 'a ty =
   | Int : int ty
@@ -1190,16 +1108,13 @@ type (_, _) ty =
   | List : ('a, 'e) ty -> ('a list, 'e) ty
   | Option : ('a, 'e) ty -> ('a option, 'e) ty
   | Pair : (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
-  (* Support for type variables and recursive types
-    *)
+  (* Support for type variables and recursive types *)
   | Var : ('a, 'a -> 'e) ty
   | Rec : ('a, 'a -> 'e) ty -> ('a, 'e) ty
   | Pop : ('a, 'e) ty -> ('a, 'b -> 'e) ty
-  (* Change the representation of a type
-    *)
+  (* Change the representation of a type *)
   | Conv : string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
-  (* Sum types (both normal sums and polymorphic variants)
-    *)
+  (* Sum types (both normal sums and polymorphic variants) *)
   | Sum : ('a, 'e, 'b) ty_sum -> ('a, 'e) ty
 
 and ('a, 'e, 'b) ty_sum =
@@ -1208,30 +1123,25 @@ and ('a, 'e, 'b) ty_sum =
   ; sum_inj : 'c. ('b, 'c) ty_sel * 'c -> 'a
   }
 
-and 'e ty_dyn = (* dynamic type
-                  *)
+and 'e ty_dyn = (* dynamic type *)
   | Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
-  (* selector from a list of types
-    *)
+  (* selector from a list of types *)
   | Thd : ('a -> 'b, 'a) ty_sel
   | Ttl : ('b -> 'c, 'd) ty_sel -> ('a -> 'b -> 'c, 'd) ty_sel
 
 and (_, _) ty_case =
-  (* type a sum case
-    *)
+  (* type a sum case *)
   | TCarg : ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
   | TCnoarg : ('b, noarg) ty_sel -> ('e, 'b) ty_case
 
 type _ ty_env =
-  (* type variable substitution
-    *)
+  (* type variable substitution *)
   | Enil : unit ty_env
   | Econs : ('a, 'e) ty * 'e ty_env -> ('a -> 'e) ty_env
 
-(* Comparing selectors
-  *)
+(* Comparing selectors *)
 type (_, _) eq = Eq : ('a, 'a) eq
 
 let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
@@ -1245,8 +1155,7 @@ let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option 
   | _ -> None
 ;;
 
-(* Auxiliary function to get the type of a case from its selector
-  *)
+(* Auxiliary function to get the type of a case from its selector *)
 let rec get_case
   : type a b e.
     (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
@@ -1264,8 +1173,7 @@ let rec get_case
   | [] -> raise Not_found
 ;;
 
-(* Untyped representation of values
-  *)
+(* Untyped representation of values *)
 type variant =
   | VInt of int
   | VString of string
@@ -1332,15 +1240,13 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
   | _ -> raise VariantMismatch
 ;;
 
-(* First attempt: represent 1-constructor variants using Conv
-  *)
+(* First attempt: represent 1-constructor variants using Conv *)
 let wrap_A t = Conv ("`A", (fun (`A x) -> x), (fun x -> `A x), t)
 let ty a = Rec (wrap_A (Option (Pair (a, Var))))
 let v = variantize Enil (ty Int)
 let x = v (`A (Some (1, `A (Some (2, `A None)))))
 
-(* Can also use it to decompose a tuple
-  *)
+(* Can also use it to decompose a tuple *)
 
 let triple t1 t2 t3 =
   Conv
@@ -1352,17 +1258,14 @@ let triple t1 t2 t3 =
 
 let v = variantize Enil (triple String Int Int) ("A", 2, 3)
 
-(* Second attempt: introduce a real sum construct
-  *)
+(* Second attempt: introduce a real sum construct *)
 let ty_abc =
-  (* Could also use [get_case] for proj, but direct definition is shorter
-    *)
+  (* Could also use [get_case] for proj, but direct definition is shorter *)
   let proj = function
     | `A n -> "A", Some (Tdyn (Int, n))
     | `B s -> "B", Some (Tdyn (String, s))
     | `C -> "C", None
-  (* Define inj in advance to be able to write the type annotation easily
-    *)
+  (* Define inj in advance to be able to write the type annotation easily *)
   and inj
     : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
@@ -1371,8 +1274,7 @@ let ty_abc =
     | Ttl Thd, v -> `B v
     | Ttl (Ttl Thd), Noarg -> `C
   in
-  (* Coherence of sum_inj and sum_cases is checked by the typing
-    *)
+  (* Coherence of sum_inj and sum_cases is checked by the typing *)
   Sum
     { sum_proj = proj
     ; sum_inj = inj
@@ -1387,8 +1289,7 @@ let ty_abc =
 let v = variantize Enil ty_abc (`A 3)
 let a = devariantize Enil ty_abc v
 
-(* And an example with recursion...
-  *)
+(* And an example with recursion... *)
 type 'a vlist =
   [ `Nil
   | `Cons of 'a * 'a vlist
@@ -1409,15 +1310,13 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
               function
              | Thd, Noarg -> `Nil
              | Ttl Thd, v -> `Cons v)
-           (* One can also write the type annotation directly
-             *)
+           (* One can also write the type annotation directly *)
        })
 ;;
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
 
-(* Simpler but weaker approach
-  *)
+(* Simpler but weaker approach *)
 
 type (_, _) ty =
   | Int : (int, _) ty
@@ -1436,8 +1335,7 @@ type (_, _) ty =
 and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
-  (* Could also use [get_case] for proj, but direct definition is shorter
-    *)
+  (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
        | `A n -> "A", Some (Tdyn (Int, n))
@@ -1450,8 +1348,7 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
       | _ -> invalid_arg "ty_abc" )
 ;;
 
-(* Breaks: no way to pattern-match on a full recursive type
-  *)
+(* Breaks: no way to pattern-match on a full recursive type *)
 let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   fun t ->
   let targ = Pair (Pop t, Var) in
@@ -1465,8 +1362,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
 ;;
 
-(* Define Sum using object instead of record for first-class polymorphism
-  *)
+(* Define Sum using object instead of record for first-class polymorphism *)
 
 type (_, _) ty =
   | Int : (int, _) ty
@@ -1552,17 +1448,14 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
      and (_,_) ty_pvar =
      | Pnil : ('a,'e) ty_pvar
      | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
-     | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
-  *)
+     | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar *)
 (*
      An attempt at encoding omega examples from the 2nd Central European
      Functional Programming School:
      Generic Programming in Omega, by Tim Sheard and Nathan Linger
-     http://web.cecs.pdx.edu/~sheard/
-  *)
+     http://web.cecs.pdx.edu/~sheard/ *)
 
-(* Basic types
-  *)
+(* Basic types *)
 
 type ('a, 'b) sum =
   | Inl of 'a
@@ -1575,8 +1468,7 @@ type _ nat =
   | NZ : zero nat
   | NS : 'a nat -> 'a succ nat
 
-(* 2: A simple example
-  *)
+(* 2: A simple example *)
 
 type (_, _) seq =
   | Snil : ('a, zero) seq
@@ -1587,8 +1479,7 @@ let l1 = Scons (3, Scons (5, Snil))
 (* We do not have type level functions, so we need to use witnesses. *)
 (* We copy here the definitions from section 3.9 *)
 (* Note the addition of the ['a nat] argument to PlusZ, since we do not
-   have kinds
-  *)
+   have kinds *)
 type (_, _, _) plus =
   | PlusZ : 'a nat -> (zero, 'a, 'a) plus
   | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
@@ -1599,8 +1490,7 @@ let rec length : type a n. (a, n) seq -> n nat = function
 ;;
 
 (* app returns the catenated lists with a witness proving that
-   the size is the sum of its two inputs
-  *)
+   the size is the sum of its two inputs *)
 type (_, _, _) app = App : ('a, 'p) seq * ('n, 'm, 'p) plus -> ('a, 'n, 'm) app
 
 let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
@@ -1612,11 +1502,9 @@ let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
     App (Scons (x, xs''), PlusS pl)
 ;;
 
-(* 3.1 Feature: kinds
-  *)
+(* 3.1 Feature: kinds *)
 
-(* We do not have kinds, but we can encode them as predicates
-  *)
+(* We do not have kinds, but we can encode them as predicates *)
 
 type tp = TP
 type nd = ND
@@ -1634,8 +1522,7 @@ type _ boolean =
   | BT : tt boolean
   | BF : ff boolean
 
-(* 3.3 Feature : GADTs
-  *)
+(* 3.3 Feature : GADTs *)
 
 type (_, _) path =
   | Pnone : 'a -> (tp, 'a) path
@@ -1668,8 +1555,7 @@ let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
   | Pright p, Tfork (_, r) -> extract p r
 ;;
 
-(* 3.4 Pattern : Witness
-  *)
+(* 3.4 Pattern : Witness *)
 
 type (_, _) le =
   | LeZ : 'a nat -> (zero, 'a) le
@@ -1696,8 +1582,7 @@ let rec summandLessThanSum : type a b c. (a, b, c) plus -> (a, c) le =
   | PlusS p' -> LeS (summandLessThanSum p')
 ;;
 
-(* 3.8 Pattern: Leibniz Equality
-  *)
+(* 3.8 Pattern: Leibniz Equality *)
 
 type (_, _) equal = Eq : ('a, 'a) equal
 
@@ -1714,8 +1599,7 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
   | _ -> None
 ;;
 
-(* Extra: associativity of addition
-  *)
+(* Extra: associativity of addition *)
 
 let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
   fun p1 p2 ->
@@ -1745,11 +1629,9 @@ let rec plus_assoc
     Eq
 ;;
 
-(* 3.9 Computing Programs and Properties Simultaneously
-  *)
+(* 3.9 Computing Programs and Properties Simultaneously *)
 
-(* Plus and app1 are moved to section 2
-  *)
+(* Plus and app1 are moved to section 2 *)
 
 let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
   | LeS x -> x
@@ -1765,8 +1647,7 @@ type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
      | NS x, NZ, _ -> assert false
      | NS x, NS y, q ->
      match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-     ;;
-  *)
+     ;; *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
   fun le a b ->
@@ -1780,8 +1661,7 @@ let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
   fun le a b ->
   match a, b, le with
-  (* warning
-    *)
+  (* warning *)
   | NZ, m, LeZ _ -> Diff (m, PlusZ m)
   | NS x, NS y, LeS q ->
     (match diff q x y with
@@ -1815,8 +1695,7 @@ let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
        if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
 ;;
 
-(* 4.1 AVL trees
-  *)
+(* 4.1 AVL trees *)
 
 type (_, _, _) balance =
   | Less : ('h, 'h succ, 'h succ) balance
@@ -1970,8 +1849,7 @@ let delete x (Avl t) =
   | Ddecr (_, t) -> Avl t
 ;;
 
-(* Exercise 22: Red-black trees
-  *)
+(* Exercise 22: Red-black trees *)
 
 type red = RED
 type black = BLACK
@@ -2060,8 +1938,7 @@ let rec ins : type c n. int -> (c, n) sub_tree -> (c, n) ctxt -> rb_tree =
 
 let insert e (Root t) = ins e t CNil
 
-(* 5.7 typed object languages using GADTs
-  *)
+(* 5.7 typed object languages using GADTs *)
 
 type _ term =
   | Const : int -> int term
@@ -2149,8 +2026,7 @@ let ex3 = Abs ("x", Rint, Ap (Add, Pair (Var ("x", Rint), Var ("x", Rint))))
 let ex4 = Ap (ex3, Const 3)
 let v4 = eval_term [] ex4
 
-(* 5.9/5.10 Language with binding
-  *)
+(* 5.9/5.10 Language with binding *)
 
 type rnil = RNIL
 type ('a, 'b, 'c) rcons = RCons of 'a * 'b * 'c
@@ -2200,12 +2076,10 @@ let double = Abs (X, App (App (Shift add, Var X), Var X))
 let ex3 = App (double, _3)
 let v3 = eval_lam env0 ex3
 
-(* 5.13: Constructing typing derivations at runtime
-  *)
+(* 5.13: Constructing typing derivations at runtime *)
 
 (* Modified slightly to use the language of 5.10, since this is more fun.
-   Of course this works also with the language of 5.12.
-  *)
+   Of course this works also with the language of 5.12. *)
 
 type _ rep =
   | I : int rep
@@ -2295,8 +2169,7 @@ let eval_checked env = function
 
 let v2 = eval_checked env0 c2
 
-(* 5.12 Soundness
-  *)
+(* 5.12 Soundness *)
 
 type pexp = PEXP
 type pval = PVAL
@@ -2403,12 +2276,10 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> . (* error
-             *)
+  | _ -> . (* error *)
 ;;
 
-(* let x = f Tint (Tvar Zero) ;;
-  *)
+(* let x = f Tint (Tvar Zero) ;; *)
 type inkind =
   [ `Link
   | `Nonlink
@@ -2451,8 +2322,7 @@ let inlineseq_from_astseq seq =
   List.map process_any seq
 ;;
 
-(* OK
-  *)
+(* OK *)
 type _ linkp =
   | Nonlink : [ `Nonlink ] linkp
   | Maylink : inkind linkp
@@ -2472,8 +2342,7 @@ let inlineseq_from_astseq seq =
   List.map (process Maylink) seq
 ;;
 
-(* Bad
-  *)
+(* Bad *)
 type _ linkp2 = Kind : 'a linkp -> ([< inkind ] as 'a) linkp2
 
 let inlineseq_from_astseq seq =
@@ -2550,8 +2419,7 @@ type tag =
 type 'a poly =
   | AandBTags : [< `TagA of int | `TagB ] poly
   | ATag : [< `TagA of int ] poly
-(* constraint 'a = [< `TagA of int | `TagB]
-  *)
+(* constraint 'a = [< `TagA of int | `TagB] *)
 
 let intA = function
   | `TagA i -> i
@@ -2572,12 +2440,10 @@ let example6 : type a. a wrapPoly -> a -> int =
   fun w ->
   match w with
   | WrapPoly ATag -> intA
-  | WrapPoly _ -> intA (* This should not be allowed
-                         *)
+  | WrapPoly _ -> intA (* This should not be allowed *)
 ;;
 
-let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault
-                                              *)
+let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
     type 'a t
@@ -2725,8 +2591,7 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> . (* error
-             *)
+  | _ -> . (* error *)
 ;;
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
@@ -2854,16 +2719,14 @@ type (_, _) t =
 
 let get1 (Cons (x, _) : (_ * 'a, 'a) t) = x
 
-(* warn, cf PR#6993
-  *)
+(* warn, cf PR#6993 *)
 
 let get1' = function
   | (Cons (x, _) : (_ * 'a, 'a) t) -> x
   | Nil -> assert false
 ;;
 
-(* ok
-  *)
+(* ok *)
 type _ t =
   | Int : int -> int t
   | String : string -> string t
@@ -2883,8 +2746,7 @@ type _ t = I : int t
 
 let f (type a) (x : a t) =
   let module M = struct
-    let (I : a t) = x (* fail because of toplevel let
-                        *)
+    let (I : a t) = x (* fail because of toplevel let *)
     let x = (I : a t)
   end
   in
@@ -2900,8 +2762,7 @@ let bad (type a) =
     module rec M : sig
       val e : (int, a) eq
     end = struct
-      let (Refl : (int, a) eq) = M.e (* must fail for soundness
-                                       *)
+      let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
       let e : (int, a) eq = Refl
     end
   end
@@ -2928,8 +2789,7 @@ let undetected : ('a -> 'b -> nil) t -> 'a n -> 'b n -> unit =
 
 type _ t = T : int t
 
-(* Should raise Not_found
-  *)
+(* Should raise Not_found *)
 let _ =
   match (raise Not_found : float t) with
   | _ -> .
@@ -2943,15 +2803,13 @@ type 'a t
 
 let f (type a) (Neq n : (a, a t) eq) = n
 
-(* warn!
-  *)
+(* warn! *)
 
 module F (T : sig
     type _ t
   end) =
 struct
-  let f (type a) (Neq n : (a, a T.t) eq) = n (* warn!
-                                               *)
+  let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
 
 (* First-Order Unification by Structural Recursion *)
@@ -2961,8 +2819,7 @@ end
 (* This is a translation of the code part to ocaml *)
 (* Of course, we do not prove other properties, not even termination *)
 
-(* 2.2 Inductive Families
-  *)
+(* 2.2 Inductive Families *)
 
 type zero = Zero
 type _ succ = Succ
@@ -2978,11 +2835,9 @@ type _ fin =
 (* We cannot define
    val empty : zero fin -> 'a
    because we cannot write an empty pattern matching.
-   This might be useful to have
-  *)
+   This might be useful to have *)
 
-(* In place, prove that the parameter is 'a succ
-  *)
+(* In place, prove that the parameter is 'a succ *)
 type _ is_succ = IS : 'a succ is_succ
 
 let fin_succ : type n. n fin -> n is_succ = function
@@ -2990,8 +2845,7 @@ let fin_succ : type n. n fin -> n is_succ = function
   | FS _ -> IS
 ;;
 
-(* 3 First-Order Terms, Renaming and Substitution
-  *)
+(* 3 First-Order Terms, Renaming and Substitution *)
 
 type 'a term =
   | Var of 'a fin
@@ -3009,11 +2863,9 @@ let rec pre_subst f = function
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
 (* val comp_subst :
-   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term
-  *)
+   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
-(* 4 The Occur-Check, through thick and thin
-  *)
+(* 4 The Occur-Check, through thick and thin *)
 
 let rec thin : type n. n succ fin -> n fin -> n succ fin =
   fun x y ->
@@ -3029,8 +2881,7 @@ let bind t f =
   | Some x -> f x
 ;;
 
-(* val bind : 'a option -> ('a -> 'b option) -> 'b option
-  *)
+(* val bind : 'a option -> ('a -> 'b option) -> 'b option *)
 
 let rec thick : type n. n succ fin -> n succ fin -> n fin option =
   fun x y ->
@@ -3060,15 +2911,12 @@ let subst_var x t' y =
   | Some y' -> Var y'
 ;;
 
-(* val subst_var : 'a succ fin -> 'a term -> 'a succ fin -> 'a term
-  *)
+(* val subst_var : 'a succ fin -> 'a term -> 'a succ fin -> 'a term *)
 
 let subst x t' = pre_subst (subst_var x t')
-(* val subst : 'a succ fin -> 'a term -> 'a succ term -> 'a term
-  *)
+(* val subst : 'a succ fin -> 'a term -> 'a succ term -> 'a term *)
 
-(* 5 A Refinement of Substitution
-  *)
+(* 5 A Refinement of Substitution *)
 
 type (_, _) alist =
   | Anil : ('n, 'n) alist
@@ -3090,8 +2938,7 @@ type _ ealist = EAlist : ('a, 'b) alist -> 'a ealist
 
 let asnoc a t' x = EAlist (Asnoc (a, t', x))
 
-(* Extra work: we need sub to work on ealist too, for examples
-  *)
+(* Extra work: we need sub to work on ealist too, for examples *)
 let rec weaken_fin : type n. n fin -> n succ fin = function
   | FZ -> FZ
   | FS x -> FS (weaken_fin x)
@@ -3111,11 +2958,9 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-(* val subst' : 'a ealist -> 'a term -> 'a term
-  *)
+(* val subst' : 'a ealist -> 'a term -> 'a term *)
 
-(* 6 First-Order Unification
-  *)
+(* 6 First-Order Unification *)
 
 let flex_flex x y =
   match thick x y with
@@ -3123,12 +2968,10 @@ let flex_flex x y =
   | None -> EAlist Anil
 ;;
 
-(* val flex_flex : 'a succ fin -> 'a succ fin -> 'a succ ealist
-  *)
+(* val flex_flex : 'a succ fin -> 'a succ fin -> 'a succ ealist *)
 
 let flex_rigid x t = bind (check x t) (fun t' -> Some (asnoc Anil t' x))
-(* val flex_rigid : 'a succ fin -> 'a succ term -> 'a succ ealist option
-  *)
+(* val flex_rigid : 'a succ fin -> 'a succ term -> 'a succ ealist option *)
 
 let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
   fun s t acc ->
@@ -3153,8 +2996,7 @@ let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
 ;;
 
 let mgu s t = amgu s t (EAlist Anil)
-(* val mgu : 'a term -> 'a term -> 'a ealist option
-  *)
+(* val mgu : 'a term -> 'a term -> 'a ealist option *)
 
 let s = Fork (Var FZ, Fork (Var (FS (FS FZ)), Leaf))
 let t = Fork (Var (FS FZ), Var (FS FZ))
@@ -3168,8 +3010,7 @@ let d =
 let s' = subst' d s
 let t' = subst' d t
 
-(* Injectivity
-  *)
+(* Injectivity *)
 
 type (_, _) eq = Refl : ('a, 'a) eq
 
@@ -3191,8 +3032,7 @@ let magic : 'a 'b. 'a -> 'b =
   M.f Refl
 ;;
 
-(* Variance and subtyping
-  *)
+(* Variance and subtyping *)
 
 type (_, +_) eq = Refl : ('a, 'a) eq
 
@@ -3211,8 +3051,7 @@ let magic : 'a 'b. 'a -> 'b =
     #m
 ;;
 
-(* Record patterns
-  *)
+(* Record patterns *)
 
 type _ t =
   | IntLit : int t
@@ -3245,24 +3084,19 @@ module type S = sig type t [@@immediate] end
 module F : functor (M : S) -> S
 |}]
 
-(* VALID DECLARATIONS
-  *)
+(* VALID DECLARATIONS *)
 
 module A = struct
-  (* Abstract types can be immediate
-    *)
+  (* Abstract types can be immediate *)
   type t [@@immediate]
 
-  (* [@@immediate] tag here is unnecessary but valid since t has it
-    *)
+  (* [@@immediate] tag here is unnecessary but valid since t has it *)
   type s = t [@@immediate]
 
-  (* Again, valid alias even without tag
-    *)
+  (* Again, valid alias even without tag *)
   type r = s
 
-  (* Mutually recursive declarations work as well
-    *)
+  (* Mutually recursive declarations work as well *)
   type p = q [@@immediate]
   and q = int
 end
@@ -3279,8 +3113,7 @@ module A :
   end
 |}]
 
-(* Valid using with constraints
-  *)
+(* Valid using with constraints *)
 module type X = sig
   type t
 end
@@ -3300,8 +3133,7 @@ module Y : sig type t = int end
 module Z : sig type t [@@immediate] end
 |}]
 
-(* Valid using an explicit signature
-  *)
+(* Valid using an explicit signature *)
 module M_valid : S = struct
   type t = int
 end
@@ -3315,8 +3147,7 @@ module M_valid : S
 module FM_valid : S
 |}]
 
-(* Practical usage over modules
-  *)
+(* Practical usage over modules *)
 module Foo : sig
   type t
 
@@ -3377,14 +3208,11 @@ val test_bar : unit -> unit = <fun>
 
 (* Uncomment these to test. Should see substantial speedup!
 let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
-let () = Printf.printf "With @@immediate: %fs\n" (test test_bar)
-  *)
+let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
 
-(* INVALID DECLARATIONS
-  *)
+(* INVALID DECLARATIONS *)
 
-(* Cannot directly declare a non-immediate type as immediate
-  *)
+(* Cannot directly declare a non-immediate type as immediate *)
 module B = struct
   type t = string [@@immediate]
 end
@@ -3396,8 +3224,7 @@ Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
 |}]
 
-(* Not guaranteed that t is immediate, so this is an invalid declaration
-  *)
+(* Not guaranteed that t is immediate, so this is an invalid declaration *)
 module C = struct
   type t
   type s = t [@@immediate]
@@ -3410,8 +3237,7 @@ Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
 |}]
 
-(* Can't ascribe to an immediate type signature with a non-immediate type
-  *)
+(* Can't ascribe to an immediate type signature with a non-immediate type *)
 module D : sig
   type t [@@immediate]
 end = struct
@@ -3433,8 +3259,7 @@ Error: Signature mismatch:
        the first is not an immediate type.
 |}]
 
-(* Same as above but with explicit signature
-  *)
+(* Same as above but with explicit signature *)
 module M_invalid : S = struct
   type t = string
 end
@@ -3455,8 +3280,7 @@ Error: Signature mismatch:
        the first is not an immediate type.
 |}]
 
-(* Can't use a non-immediate type even if mutually recursive
-  *)
+(* Can't use a non-immediate type even if mutually recursive *)
 module E = struct
   type t = s [@@immediate]
   and s = string
@@ -3479,17 +3303,14 @@ Error: Types marked with the immediate attribute must be
      New: implicit pack is also supported, and you only need to be able
      to infer the the module type path from the context.
   *)
-(* ocaml -principal
-  *)
+(* ocaml -principal *)
 
-(* Use a module pattern
-  *)
+(* Use a module pattern *)
 let sort (type s) (module Set : Set.S with type elt = s) l =
   Set.elements (List.fold_right Set.add l Set.empty)
 ;;
 
-(* No real improvement here?
-  *)
+(* No real improvement here? *)
 let make_set (type s) cmp : (module Set.S with type elt = s) =
   (module Set.Make (struct
       type t = s
@@ -3498,8 +3319,7 @@ let make_set (type s) cmp : (module Set.S with type elt = s) =
     end))
 ;;
 
-(* No type annotation here
-  *)
+(* No type annotation here *)
 let sort_cmp (type s) cmp =
   sort
     (module Set.Make (struct
@@ -3518,8 +3338,7 @@ end
 let f (module M : S with type t = int) = M.x
 let f (module M : S with type t = 'a) = M.x
 
-(* Error
-  *)
+(* Error *)
 let f (type a) (module M : S with type t = a) = M.x;;
 
 f
@@ -3541,8 +3360,7 @@ type 'a s = { s : (module S with type t = 'a) };;
 
 let f { s = (module M) } = M.x
 
-(* Error
-  *)
+(* Error *)
 let f (type a) ({ s = (module M) } : a s) = M.x
 
 type s = { s : (module S with type t = int) }
@@ -3562,8 +3380,7 @@ let m =
   end)
 ;;
 
-(* Error
-  *)
+(* Error *)
 let m =
   (module struct
     let x = 3
@@ -3585,14 +3402,12 @@ M.x
 
 let (module M) = m
 
-(* Error: only allowed in [let .. in]
-  *)
+(* Error: only allowed in [let .. in] *)
 class c =
   let (module M) = m in
   object end
 
-(* Error again
-  *)
+(* Error again *)
 module M = (val m)
 
 module type S' = sig
@@ -3600,8 +3415,7 @@ module type S' = sig
 end
 ;;
 
-(* Even works with recursion, but must be fully explicit
-  *)
+(* Even works with recursion, but must be fully explicit *)
 let rec (module M : S') =
   (module struct
     let f n = if n <= 0 then 1 else n * M.f (n - 1)
@@ -3609,8 +3423,7 @@ let rec (module M : S') =
 in
 M.f 3
 
-(* Subtyping
-  *)
+(* Subtyping *)
 
 module type S = sig
   type t
@@ -3687,8 +3500,7 @@ let rec to_string : 'a. 'a Typ.typ -> 'a -> string =
     Printf.sprintf "(%s,%s)" (to_string P.t1 x1) (to_string P.t2 x2)
 ;;
 
-(* Wrapping maps
-  *)
+(* Wrapping maps *)
 module type MapT = sig
   include Map.S
 
@@ -3750,8 +3562,7 @@ add ssmap
 open StdLabels
 open MoreLabels
 
-(* Use maps for substitutions and sets for free variables
-  *)
+(* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
     type t = string
@@ -3765,8 +3576,7 @@ module Names = Set.Make (struct
     let compare = compare
   end)
 
-(* Variables are common to lambda and expr
-  *)
+(* Variables are common to lambda and expr *)
 
 type var = [ `Var of string ]
 
@@ -3780,8 +3590,7 @@ let free_var : var -> _ = function
   | `Var s -> Names.singleton s
 ;;
 
-(* The lambda language: free variables, substitutions, and evaluation
-  *)
+(* The lambda language: free variables, substitutions, and evaluation *)
 
 type 'a lambda =
   [ `Var of string
@@ -3836,15 +3645,13 @@ let eval_lambda ~eval_rec ~subst l =
   | t -> t
 ;;
 
-(* Specialized versions to use on lambda
-  *)
+(* Specialized versions to use on lambda *)
 
 let rec free1 x = free_lambda ~free_rec:free1 x
 let rec subst1 ~subst = subst_lambda ~subst_rec:subst1 ~free:free1 ~subst
 let rec eval1 x = eval_lambda ~eval_rec:eval1 ~subst:subst1 x
 
-(* The expr language of arithmetic expressions
-  *)
+(* The expr language of arithmetic expressions *)
 
 type 'a expr =
   [ `Var of string
@@ -3862,8 +3669,7 @@ let free_expr ~free_rec : _ expr -> _ = function
   | `Mult (x, y) -> Names.union (free_rec x) (free_rec y)
 ;;
 
-(* Here map_expr helps a lot
-  *)
+(* Here map_expr helps a lot *)
 let map_expr ~map_rec : _ expr -> _ = function
   | #var as x -> x
   | `Num _ as x -> x
@@ -3893,15 +3699,13 @@ let eval_expr ~eval_rec e =
   | #expr as e -> e
 ;;
 
-(* Specialized versions
-  *)
+(* Specialized versions *)
 
 let rec free2 x = free_expr ~free_rec:free2 x
 let rec subst2 ~subst = subst_expr ~subst_rec:subst2 ~subst
 let rec eval2 x = eval_expr ~eval_rec:eval2 x
 
-(* The lexpr language, reunion of lambda and expr
-  *)
+(* The lexpr language, reunion of lambda and expr *)
 
 type lexpr =
   [ `Var of string
@@ -3963,14 +3767,12 @@ let () =
   print_newline ()
 ;;
 
-(* Full fledge version, using objects to structure code
-  *)
+(* Full fledge version, using objects to structure code *)
 
 open StdLabels
 open MoreLabels
 
-(* Use maps for substitutions and sets for free variables
-  *)
+(* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
     type t = string
@@ -3984,8 +3786,7 @@ module Names = Set.Make (struct
     let compare = compare
   end)
 
-(* To build recursive objects
-  *)
+(* To build recursive objects *)
 
 let lazy_fix make =
   let rec obj () = make (lazy (obj ()) : _ Lazy.t) in
@@ -3994,8 +3795,7 @@ let lazy_fix make =
 
 let ( !! ) = Lazy.force
 
-(* The basic operations
-  *)
+(* The basic operations *)
 
 class type ['a, 'b] ops = object
   method free : x:'b -> ?y:'c -> Names.t
@@ -4003,8 +3803,7 @@ class type ['a, 'b] ops = object
   method eval : 'b -> 'a
 end
 
-(* Variables are common to lambda and expr
-  *)
+(* Variables are common to lambda and expr *)
 
 type var = [ `Var of string ]
 
@@ -4020,8 +3819,7 @@ class ['a] var_ops =
     method eval (#var as v) = v
   end
 
-(* The lambda language: free variables, substitutions, and evaluation
-  *)
+(* The lambda language: free variables, substitutions, and evaluation *)
 
 type 'a lambda =
   [ `Var of string
@@ -4084,13 +3882,11 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
       | t -> t
   end
 
-(* Operations specialized to lambda
-  *)
+(* Operations specialized to lambda *)
 
 let lambda = lazy_fix (new lambda_ops)
 
-(* The expr language of arithmetic expressions
-  *)
+(* The expr language of arithmetic expressions *)
 
 type 'a expr =
   [ `Var of string
@@ -4145,13 +3941,11 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
       | e -> e
   end
 
-(* Specialized versions
-  *)
+(* Specialized versions *)
 
 let expr = lazy_fix (new expr_ops)
 
-(* The lexpr language, reunion of lambda and expr
-  *)
+(* The lexpr language, reunion of lambda and expr *)
 
 type 'a lexpr =
   [ 'a lambda
@@ -4219,14 +4013,12 @@ let () =
   print_newline ()
 ;;
 
-(* Full fledge version, using objects to structure code
-  *)
+(* Full fledge version, using objects to structure code *)
 
 open StdLabels
 open MoreLabels
 
-(* Use maps for substitutions and sets for free variables
-  *)
+(* Use maps for substitutions and sets for free variables *)
 
 module Subst = Map.Make (struct
     type t = string
@@ -4240,8 +4032,7 @@ module Names = Set.Make (struct
     let compare = compare
   end)
 
-(* To build recursive objects
-  *)
+(* To build recursive objects *)
 
 let lazy_fix make =
   let rec obj () = make (lazy (obj ()) : _ Lazy.t) in
@@ -4250,8 +4041,7 @@ let lazy_fix make =
 
 let ( !! ) = Lazy.force
 
-(* The basic operations
-  *)
+(* The basic operations *)
 
 class type ['a, 'b] ops = object
   method free : 'b -> Names.t
@@ -4259,8 +4049,7 @@ class type ['a, 'b] ops = object
   method eval : 'b -> 'a
 end
 
-(* Variables are common to lambda and expr
-  *)
+(* Variables are common to lambda and expr *)
 
 type var = [ `Var of string ]
 
@@ -4275,8 +4064,7 @@ let var =
   end
 ;;
 
-(* The lambda language: free variables, substitutions, and evaluation
-  *)
+(* The lambda language: free variables, substitutions, and evaluation *)
 
 type 'a lambda =
   [ `Var of string
@@ -4337,13 +4125,11 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   end
 ;;
 
-(* Operations specialized to lambda
-  *)
+(* Operations specialized to lambda *)
 
 let lambda = lazy_fix lambda_ops
 
-(* The expr language of arithmetic expressions
-  *)
+(* The expr language of arithmetic expressions *)
 
 type 'a expr =
   [ `Var of string
@@ -4396,13 +4182,11 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   end
 ;;
 
-(* Specialized versions
-  *)
+(* Specialized versions *)
 
 let expr = lazy_fix expr_ops
 
-(* The lexpr language, reunion of lambda and expr
-  *)
+(* The lexpr language, reunion of lambda and expr *)
 
 type 'a lexpr =
   [ 'a lambda
@@ -4581,13 +4365,11 @@ let _ = foo ()
 
 type 'a t = [ `A of 'a t t ] as 'a
 
-(* fails
-  *)
+(* fails *)
 
 type 'a t = [ `A of 'a t t ]
 
-(* fails
-  *)
+(* fails *)
 
 type 'a t = [ `A of 'a t t ] constraint 'a = 'a t
 type 'a t = [ `A of 'a t ] constraint 'a = 'a t
@@ -4597,20 +4379,17 @@ type 'a v = [ `A of u v ] constraint 'a = t
 and t = u
 and u = t
 
-(* fails
-  *)
+(* fails *)
 
 type 'a t = 'a
 
 let f (x : 'a t as 'a) = ()
 
-(* fails
-  *)
+(* fails *)
 
 let f (x : 'a t) (y : 'a) = x = y
 
-(* PR#6505
-  *)
+(* PR#6505 *)
 module type PR6505 = sig
   type 'o is_an_object = < .. > as 'o
   and 'o abs constraint 'o = 'o is_an_object
@@ -4619,16 +4398,13 @@ module type PR6505 = sig
   val unabs : 'o abs -> 'o
 end
 
-(* fails
-  *)
-(* PR#5835
-  *)
+(* fails *)
+(* PR#5835 *)
 let f ~x = x + 1;;
 
 f ?x:0
 
-(* PR#6352
-  *)
+(* PR#6352 *)
 let foo (f : unit -> unit) = ()
 let g ?x () = ();;
 
@@ -4637,14 +4413,11 @@ foo
    g)
 ;;
 
-(* PR#5748
-  *)
+(* PR#5748 *)
 foo (fun ?opt () -> ())
 
-(* fails
-  *)
-(* PR#5907
-  *)
+(* fails *)
+(* PR#5907 *)
 
 type 'a t = 'a
 
@@ -4680,18 +4453,15 @@ let f (x : [< `A | `B ]) =
   | `A | `B | `C -> 0
 ;;
 
-(* warn
-  *)
+(* warn *)
 let f (x : [ `A | `B ]) =
   match x with
   | `A | `B | `C -> 0
 ;;
 
-(* fail
-  *)
+(* fail *)
 
-(* PR#6787
-  *)
+(* PR#6787 *)
 let revapply x f = f x
 
 let f x (g : [< `Foo ]) =
@@ -4699,8 +4469,7 @@ let f x (g : [< `Foo ]) =
   revapply y (fun (`Bar i, _) -> i)
 ;;
 
-(* f : 'a -> [< `Foo ] -> 'a
-  *)
+(* f : 'a -> [< `Foo ] -> 'a *)
 
 let rec x =
   [| x |];
@@ -4723,8 +4492,7 @@ let _ = fun (x : a t) -> f x
 let _ = fun (x : a t) -> g x
 let _ = fun (x : a t) -> h x
 
-(* PR#7012
-  *)
+(* PR#7012 *)
 
 type t =
   [ 'A_name
@@ -4734,8 +4502,7 @@ type t =
 let f (x : 'id_arg) = x
 let f (x : 'Id_arg) = x
 
-(* undefined labels
-  *)
+(* undefined labels *)
 type t =
   { x : int
   ; y : int
@@ -4745,19 +4512,16 @@ type t =
 { x = 3; z = 2 };;
 fun { x = 3; z = 2 } -> ();;
 
-(* mixed labels
-  *)
+(* mixed labels *)
 { x = 3; contents = 2 }
 
-(* private types
-  *)
+(* private types *)
 type u = private { mutable u : int };;
 
 { u = 3 };;
 fun x -> x.u <- 3
 
-(* Punning and abbreviations
-  *)
+(* Punning and abbreviations *)
 module M = struct
   type t =
     { x : int
@@ -4769,14 +4533,12 @@ let f { M.x; y } = x + y
 let r = { M.x = 1; y = 2 }
 let z = f r
 
-(* messages
-  *)
+(* messages *)
 type foo = { mutable y : int }
 
 let f (r : int) = r.y <- 3
 
-(* bugs
-  *)
+(* bugs *)
 type foo =
   { y : int
   ; z : int
@@ -4792,12 +4554,10 @@ let r : foo = { ZZZ.x = 2 };;
 
 (ZZZ.X : int option)
 
-(* PR#5865
-  *)
+(* PR#5865 *)
 let f (x : Complex.t) = x.Complex.z
 
-(* PR#6394
-  *)
+(* PR#6394 *)
 
 module rec X : sig
   type t = int * bool
@@ -4811,8 +4571,7 @@ end = struct
   ;;
 end
 
-(* PR#6768
-  *)
+(* PR#6768 *)
 
 type _ prod = Prod : ('a * 'y) prod
 
@@ -4844,8 +4603,7 @@ end =
 let f1 (x : (_, _) Hash1.t) : (_, _) Hashtbl.t = x
 let f2 (x : (_, _) Hash2.t) : (_, _) Hashtbl.t = x
 
-(* Another case, not using include
-  *)
+(* Another case, not using include *)
 
 module Std2 = struct
   module M = struct
@@ -4872,8 +4630,7 @@ let f3 (x : M'.t) : Std2.M.t = x
    type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
    type doesnt_type = unit
    constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-   end
-  *)
+   end *)
 module type INCLUDING = sig
   include module type of List
   include module type of ListLabels
@@ -4992,8 +4749,7 @@ struct
   module X = (val if !flag then (module A) else (module B) : S.T)
 end
 
-(* If the above were accepted, one could break soundness
-  *)
+(* If the above were accepted, one could break soundness *)
 module type S = sig
   type t
 
@@ -5054,8 +4810,7 @@ end
    type 'a list_wrap = 'a list)
    -> S with type t = Html5_types.div Html5.elt and
    type u = < foo: Html5.uri >
-   end
-  *)
+   end *)
 module type S = sig
   include Set.S
 
@@ -5183,8 +4938,7 @@ module X = struct
   end
 end
 
-(* open X  (* works! *)
-  *)
+(* open X  (* works! *) *)
 module Y = X.Y
 
 type 'a arg_t = 'at constraint 'a = (module Y.S with type t = 'at)
@@ -5214,15 +4968,12 @@ module type S = sig
 end
 
 let f (type a) (module X : S with type t = a) = ()
-let _ = f (module A) (* ok
-                       *)
+let _ = f (module A) (* ok *)
 
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
-let _ = f (module A_annotated_alias) (* ok
-                                       *)
-let _ = f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok
-                                                                        *)
+let _ = f (module A_annotated_alias) (* ok *)
+let _ = f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok *)
 
 module A_alias = A
 
@@ -5230,14 +4981,10 @@ module A_alias_expanded = struct
   include A_alias
 end
 
-let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok
-                                                                       *)
-let _ = f (module A_alias_expanded) (* ok
-                                      *)
-let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type
-                                                              *)
-let _ = f (module A_alias) (* doesn't type either
-                             *)
+let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
+let _ = f (module A_alias_expanded) (* ok *)
+let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
+let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo
     (Bar : sig
@@ -5253,8 +5000,7 @@ module Bazoinks = struct
 end
 
 module Bug = Foo (Bazoinks) (Bazoinks)
-(* PR#6992, reported by Stephen Dolan
-  *)
+(* PR#6992, reported by Stephen Dolan *)
 
 type (_, _) eq = Eq : ('a, 'a) eq
 
@@ -5272,8 +5018,7 @@ end
 (* This would allow:
    module FixId = Fix (struct type 'a f = 'a end)
    let bad : (int, string) eq = FixId.uniq Eq Eq
-   let _ = Printf.printf "Oh dear: %s" (cast bad 42)
-  *)
+   let _ = Printf.printf "Oh dear: %s" (cast bad 42) *)
 module M = struct
   module type S = sig
     type a
@@ -5310,8 +5055,7 @@ module type FOO = sig
 end
 
 module type BAR = sig
-  (* Works: module rec A : (sig include FOO with type t = < b:B.t > end)
-    *)
+  (* Works: module rec A : (sig include FOO with type t = < b:B.t > end) *)
   module rec A : (FOO with type t = < b : B.t >)
   and B : FOO
 end
@@ -5396,8 +5140,7 @@ end = struct
   let add_dec dec = Fast.attach Dem.key dec
 end
 
-(* simpler version
-  *)
+(* simpler version *)
 
 module Simple = struct
   type 'a t
@@ -5460,8 +5203,7 @@ module rec M : sig
 end = struct
   external f : int -> int = "%identity"
 end
-(* with module
-  *)
+(* with module *)
 
 module type S = sig
   type t
@@ -5477,8 +5219,7 @@ end
 
 module type S' = S with module M := String
 
-(* with module type
-  *)
+(* with module type *)
 (*
      module type S = sig module type T module F(X:T) : T end;;
      module type T0 = sig type t end;;
@@ -5494,11 +5235,9 @@ module type S' = S with module M := String
      and module type SeededS := Hashtbl.SeededS
      and module type HashedType := Hashtbl.HashedType
      and module type SeededHashedType := Hashtbl.SeededHashedType)
-     end;;
-  *)
+     end;; *)
 
-(* A subtle problem appearing with -principal
-  *)
+(* A subtle problem appearing with -principal *)
 type -'a t
 
 class type c = object
@@ -5514,24 +5253,21 @@ end = struct
   ;;
 end
 
-(* PR#4838
-  *)
+(* PR#4838 *)
 
 let id =
   let module M = struct end in
   fun x -> x
 ;;
 
-(* PR#4511
-  *)
+(* PR#4511 *)
 
 let ko =
   let module M = struct end in
   fun _ -> ()
 ;;
 
-(* PR#5993
-  *)
+(* PR#5993 *)
 
 module M : sig
   type -'a t = private int
@@ -5539,8 +5275,7 @@ end = struct
   type +'a t = private int
 end
 
-(* PR#6005
-  *)
+(* PR#6005 *)
 
 module type A = sig
   type t = X of int
@@ -5550,8 +5285,7 @@ type u = X of bool
 
 module type B = A with type t = u
 
-(* fail
-  *)
+(* fail *)
 
 (* PR#5815 *)
 (* ---> duplicated exception name is now an error *)
@@ -5561,8 +5295,7 @@ module type S = sig
   exception Foo of bool
 end
 
-(* PR#6410
-  *)
+(* PR#6410 *)
 
 module F (X : sig end) = struct
   let x = 3
@@ -5571,8 +5304,7 @@ end
 
 F.x
 
-(* fail
-  *)
+(* fail *)
 module C = Char;;
 
 C.chr 66
@@ -5610,8 +5342,7 @@ module G (X : sig end) = struct
   module M = X
 end
 
-(* does not alias X
-  *)
+(* does not alias X *)
 module M = G (struct end)
 
 module M' = struct
@@ -5754,8 +5485,7 @@ end =
   M
 ;;
 
-(* sound, but should probably fail
-  *)
+(* sound, but should probably fail *)
 M1.C'.escaped 'A'
 
 module M2 : sig
@@ -5804,16 +5534,14 @@ struct
   module C = X.C
 end
 
-(* Applicative functors
-  *)
+(* Applicative functors *)
 module S = String
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
 let f (x : StringSet.t) : SSet.t = x
 
-(* Also using include (cf. Leo's mail 2013-11-16)
-  *)
+(* Also using include (cf. Leo's mail 2013-11-16) *)
 module F (M : sig end) : sig
   type t
 end = struct
@@ -5855,8 +5583,7 @@ end
 
 module M = struct
   module X = struct end
-  module Y = FF (X) (* XXX
-                      *)
+  module Y = FF (X) (* XXX *)
 
   type t = Y.t
 end
@@ -5875,8 +5602,7 @@ module G = F (M.Y)
 (*module N = G (M);;
   module N = F (M.Y) (M);;*)
 
-(* PR#6307
-  *)
+(* PR#6307 *)
 
 module A1 = struct end
 module A2 = struct end
@@ -5892,15 +5618,12 @@ end
 module F (L : module type of L1) = struct end
 module F1 = F (L1)
 
-(* ok
-  *)
+(* ok *)
 module F2 = F (L2)
 
-(* should succeed too
-  *)
+(* should succeed too *)
 
-(* Counter example: why we need to be careful with PR#6307
-  *)
+(* Counter example: why we need to be careful with PR#6307 *)
 module Int = struct
   type t = int
 
@@ -5920,8 +5643,7 @@ end
 
 module type S = module type of M
 
-(* keep alias
-  *)
+(* keep alias *)
 
 module Int2 = struct
   type t = int
@@ -5934,8 +5656,7 @@ module type S' = sig
   include S with module I := I
 end
 
-(* fail
-  *)
+(* fail *)
 
 (* (* if the above succeeded, one could break invariants *)
    module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
@@ -5947,11 +5668,9 @@ end
    let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
    let s' : SInt2.t = conv eq s;;
    SInt2.elements s';;
-   SInt2.mem 2 s';; (* invariants are broken *)
-  *)
+   SInt2.mem 2 s';; (* invariants are broken *) *)
 
-(* Check behavior with submodules
-  *)
+(* Check behavior with submodules *)
 module M = struct
   module N = struct
     module I = Int
@@ -5984,8 +5703,7 @@ end
 
 module type S = module type of M
 
-(* PR#6365
-  *)
+(* PR#6365 *)
 module type S = sig
   module M : sig
     type t
@@ -6004,11 +5722,9 @@ module H' = H
 
 module type S' = S with module M = H'
 
-(* shouldn't introduce an alias
-  *)
+(* shouldn't introduce an alias *)
 
-(* PR#6376
-  *)
+(* PR#6376 *)
 module type Alias = sig
   module N : sig end
   module M = N
@@ -6022,8 +5738,7 @@ module type A = Alias with module N := F(List)
 
 module rec Bad : A = Bad
 
-(* Shinwell 2014-04-23
-  *)
+(* Shinwell 2014-04-23 *)
 module B = struct
   module R = struct
     type t = string
@@ -6039,8 +5754,7 @@ end
 
 let x : K.N.t = "foo"
 
-(* PR#6465
-  *)
+(* PR#6465 *)
 
 module M = struct
   type t = A
@@ -6057,8 +5771,7 @@ module P : sig
 end =
   M
 
-(* should be ok
-  *)
+(* should be ok *)
 module P : sig
   type t = M.t = A
 
@@ -6098,11 +5811,9 @@ end
 
 module R' : S = R
 
-(* should be ok
-  *)
+(* should be ok *)
 
-(* PR#6578
-  *)
+(* PR#6578 *)
 
 module M = struct
   let f x = x
@@ -6140,15 +5851,13 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-   module C : sig module L : module type of List end = A
-  *)
+   module C : sig module L : module type of List end = A *)
 
 include D'
 
 (*
      let () =
-     print_endline (string_of_int D'.M.y)
-  *)
+     print_endline (string_of_int D'.M.y) *)
 open A
 
 let f = L.map S.capitalize
@@ -6161,11 +5870,9 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-   module C : sig module L : module type of List end = A
-  *)
+   module C : sig module L : module type of List end = A *)
 
-(* No dependency on D
-  *)
+(* No dependency on D *)
 let x = 3
 
 module M = struct
@@ -6183,13 +5890,11 @@ module type S' = sig
 end
 
 (* ok to convert between structurally equal signatures, and parameters
-   are inferred
-  *)
+   are inferred *)
 let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
-(* with subtyping it is also ok to forget some types
-  *)
+(* with subtyping it is also ok to forget some types *)
 module type S2 = sig
   type u
   type t
@@ -6200,15 +5905,12 @@ let g2 x = (x : (module S2 with type t = 'a and type u = 'b) :> (module S'))
 let h x = (x : (module S2 with type t = 'a) :> (module S with type t = 'a))
 let f2 (x : (module S2 with type t = 'a and type u = 'b)) : (module S') = x
 
-(* fail
-  *)
+(* fail *)
 let k (x : (module S2 with type t = 'a)) : (module S with type t = 'a) = x
 
-(* fail
-  *)
+(* fail *)
 
-(* but you cannot forget values (no physical coercions)
-  *)
+(* but you cannot forget values (no physical coercions) *)
 module type S3 = sig
   type u
   type t
@@ -6218,13 +5920,10 @@ end
 
 let g3 x = (x : (module S3 with type t = 'a and type u = 'b) :> (module S'))
 
-(* fail
-  *)
-(* Using generative functors
-  *)
+(* fail *)
+(* Using generative functors *)
 
-(* Without type
-  *)
+(* Without type *)
 module type S = sig
   val x : int
 end
@@ -6237,19 +5936,15 @@ let v =
 
 module F () = (val v)
 
-(* ok
-  *)
+(* ok *)
 module G (X : sig end) : S = F ()
 
-(* ok
-  *)
+(* ok *)
 module H (X : sig end) = (val v)
 
-(* ok
-  *)
+(* ok *)
 
-(* With type
-  *)
+(* With type *)
 module type S = sig
   type t
 
@@ -6266,44 +5961,34 @@ let v =
 
 module F () = (val v)
 
-(* ok
-  *)
+(* ok *)
 module G (X : sig end) : S = F ()
 
-(* fail
-  *)
+(* fail *)
 module H () = F ()
 
-(* ok
-  *)
+(* ok *)
 
-(* Alias
-  *)
+(* Alias *)
 module U = struct end
 module M = F (struct end)
 
-(* ok
-  *)
+(* ok *)
 module M = F (U)
 
-(* fail
-  *)
+(* fail *)
 
-(* Cannot coerce between applicative and generative
-  *)
+(* Cannot coerce between applicative and generative *)
 module F1 (X : sig end) = struct end
 module F2 : functor () -> sig end = F1
 
-(* fail
-  *)
+(* fail *)
 module F3 () = struct end
 module F4 : functor (X : sig end) -> sig end = F3
 
-(* fail
-  *)
+(* fail *)
 
-(* tests for shortened functor notation ()
-  *)
+(* tests for shortened functor notation () *)
 module X (X : sig end) (Y : sig end) = functor (Z : sig end) -> struct end
 module Y = functor (X : sig end) (Y : sig end) (Z : sig end) -> struct end
 module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
@@ -6377,10 +6062,8 @@ let f (x : entity entity_container) = ()
      method add_entity (s : entity) =
      entity_container#add_entity (s :> entity)
 
-     end
-  *)
-(* Two v's in the same class
-  *)
+     end *)
+(* Two v's in the same class *)
 class c v =
   object
     initializer print_endline v
@@ -6390,8 +6073,7 @@ class c v =
 
 new c "42"
 
-(* Two hidden v's in the same class!
-  *)
+(* Two hidden v's in the same class! *)
 class c (v : int) =
   object
     method v0 = v
@@ -6449,8 +6131,7 @@ class c (x : int) =
 
 let r = (new c 2)#x
 
-(* test.ml
-  *)
+(* test.ml *)
 class alfa =
   object (_ : 'self)
     method x : 'a. ('a, out_channel, unit) format -> 'a = Printf.printf
@@ -6468,8 +6149,7 @@ class charlie a =
     initializer y#x "charlie initialized"
   end
 
-(* The module begins
-  *)
+(* The module begins *)
 exception Out_of_range
 
 class type ['a] cursor = object
@@ -6665,9 +6345,7 @@ module UText = struct
     done
   ;;
 
-  let concat s1 s2 = s1#concat (s2 (* : #ustorage
-                                     *) :> uchar storage)
-
+  let concat s1 s2 = s1#concat (s2 (* : #ustorage *) :> uchar storage)
   let iter proc s = s#iter proc
 end
 
@@ -6771,8 +6449,7 @@ end
 type refer1 = < poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 type refer2 = < poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 
-(* Actually this should succeed ...
-  *)
+(* Actually this should succeed ... *)
 let f (x : refer1) : refer2 = x
 
 module Classdef = struct
@@ -6801,8 +6478,7 @@ end
 (*
      ocamlc -c pr3918a.mli pr3918b.mli
      rm -f pr3918a.cmi
-     ocamlc -c pr3918c.ml
-  *)
+     ocamlc -c pr3918c.ml *)
 
 open Pr3918b
 
@@ -6845,8 +6521,7 @@ module Make' (Unit : sig end) : Priv' = struct
 end
 
 module A' = Make' (struct end)
-(* PR5057
-  *)
+(* PR5057 *)
 
 module TT = struct
   module IntSet = Set.Make (struct
@@ -6874,8 +6549,7 @@ let () =
   f `A
 ;;
 
-(* This one should fail
-  *)
+(* This one should fail *)
 
 let f flag =
   let module T =
@@ -7022,8 +6696,7 @@ end =
 
 let f (x : F0.t) : Foobar.t = x
 
-(* fails
-  *)
+(* fails *)
 
 module F = Foobar
 
@@ -7046,8 +6719,7 @@ end =
 
 fun (x : M1.t) : M2.t -> x
 
-(* fails
-  *)
+(* fails *)
 
 module M3 : sig
   type t = private M1.t
@@ -7063,22 +6735,19 @@ module M4 : sig
 end =
   M2
 
-(* fails
-  *)
+(* fails *)
 module M4 : sig
   type t = private M3.t
 end =
   M
 
-(* fails
-  *)
+(* fails *)
 module M4 : sig
   type t = private M3.t
 end =
   M1
 
-(* might be ok
-  *)
+(* might be ok *)
 module M5 : sig
   type t = private M1.t
 end =
@@ -7089,8 +6758,7 @@ module M6 : sig
 end =
   M1
 
-(* fails
-  *)
+(* fails *)
 
 module Bar : sig
   type t = private Foobar.t
@@ -7102,8 +6770,7 @@ end = struct
   let f (x : int) : t = x
 end
 
-(* must fail
-  *)
+(* must fail *)
 
 module M : sig
   type t = private T of int
@@ -7147,8 +6814,7 @@ module M4 : sig
 end =
   M
 
-(* Error: The variant or record definition does not match that of type M.t
-  *)
+(* Error: The variant or record definition does not match that of type M.t *)
 
 module M5 : sig
   type t = M.t = private T of int
@@ -7195,8 +6861,7 @@ end = struct
   type 'a t = 'a M.t = private T of 'a
 end
 
-(* PR#6090
-  *)
+(* PR#6090 *)
 module Test = struct
   type t = private A
 end
@@ -7207,15 +6872,12 @@ let f (x : Test.t) : Test2.t = x
 let f Test2.A = ()
 let a = Test2.A
 
-(* fail
-  *)
+(* fail *)
 (* The following should fail from a semantical point of view,
-   but allow it for backward compatibility
-  *)
+   but allow it for backward compatibility *)
 module Test2 : module type of Test with type t = private Test.t = Test
 
-(* PR#6331
-  *)
+(* PR#6331 *)
 type t = private < x : int ; .. > as 'a
 type t = private (< x : int ; .. > as 'a) as 'a
 type t = private < x : int > as 'a
@@ -7223,16 +6885,14 @@ type t = private (< x : int > as 'a) as 'b
 type 'a t = private < x : int ; .. > as 'a
 type 'a t = private 'a constraint 'a = < x : int ; .. >
 
-(* Bad (t = t)
-  *)
+(* Bad (t = t) *)
 module rec A : sig
   type t = A.t
 end = struct
   type t = A.t
 end
 
-(* Bad (t = t)
-  *)
+(* Bad (t = t) *)
 module rec A : sig
   type t = B.t
 end = struct
@@ -7245,8 +6905,7 @@ end = struct
   type t = A.t
 end
 
-(* OK (t = int)
-  *)
+(* OK (t = int) *)
 module rec A : sig
   type t = B.t
 end = struct
@@ -7259,16 +6918,14 @@ end = struct
   type t = int
 end
 
-(* Bad (t = int * t)
-  *)
+(* Bad (t = int * t) *)
 module rec A : sig
   type t = int * A.t
 end = struct
   type t = int * A.t
 end
 
-(* Bad (t = t -> int)
-  *)
+(* Bad (t = t -> int) *)
 module rec A : sig
   type t = B.t -> int
 end = struct
@@ -7281,8 +6938,7 @@ end = struct
   type t = A.t
 end
 
-(* OK (t = <m:t>)
-  *)
+(* OK (t = <m:t>) *)
 module rec A : sig
   type t = < m : B.t >
 end = struct
@@ -7295,16 +6951,14 @@ end = struct
   type t = A.t
 end
 
-(* Bad (not regular)
-  *)
+(* Bad (not regular) *)
 module rec A : sig
   type 'a t = < m : 'a list A.t >
 end = struct
   type 'a t = < m : 'a list A.t >
 end
 
-(* Bad (not regular)
-  *)
+(* Bad (not regular) *)
 module rec A : sig
   type 'a t = < m : 'a list B.t ; n : 'a array B.t >
 end = struct
@@ -7317,8 +6971,7 @@ end = struct
   type 'a t = 'a A.t
 end
 
-(* Bad (not regular)
-  *)
+(* Bad (not regular) *)
 module rec A : sig
   type 'a t = 'a B.t
 end = struct
@@ -7331,8 +6984,7 @@ end = struct
   type 'a t = < m : 'a list A.t ; n : 'a array A.t >
 end
 
-(* OK
-  *)
+(* OK *)
 module rec A : sig
   type 'a t = 'a array B.t * 'a list B.t
 end = struct
@@ -7345,8 +6997,7 @@ end = struct
   type 'a t = < m : 'a B.t >
 end
 
-(* Bad (not regular)
-  *)
+(* Bad (not regular) *)
 module rec A : sig
   type 'a t = 'a list B.t
 end = struct
@@ -7359,8 +7010,7 @@ end = struct
   type 'a t = < m : 'a array B.t >
 end
 
-(* Bad (not regular)
-  *)
+(* Bad (not regular) *)
 module rec M : sig
   class ['a] c : 'a -> object
     method map : ('a -> 'b) -> 'b M.c
@@ -7372,8 +7022,7 @@ end = struct
     end
 end
 
-(* OK
-  *)
+(* OK *)
 class type ['node] extension = object
   method node : 'node
 end
@@ -7389,8 +7038,7 @@ class x =
 
 type t = x node
 
-(* Bad - PR 4261
-  *)
+(* Bad - PR 4261 *)
 
 module PR_4261 = struct
   module type S = sig
@@ -7407,8 +7055,7 @@ module PR_4261 = struct
   and U' : (S with type t = U'.t) = U
 end
 
-(* Bad - PR 4512
-  *)
+(* Bad - PR 4512 *)
 module type S' = sig
   type t = int
 end
@@ -7417,8 +7064,7 @@ module rec M : (S' with type t = M.t) = struct
   type t = M.t
 end
 
-(* PR#4450
-  *)
+(* PR#4450 *)
 
 module PR_4450_1 = struct
   module type MyT = sig
@@ -7459,8 +7105,7 @@ module PR_4450_2 = struct
 end
 
 (* A synthetic example of bootstrapped data structure
-   (suggested by J-C Filliatre)
-  *)
+   (suggested by J-C Filliatre) *)
 
 module type ORD = sig
   type t
@@ -7513,8 +7158,7 @@ module Bootstrap2
 
   let iter f = Diet.iter (Elt.iter f)
 end
-(* PR 4470: simplified from OMake's sources
-  *)
+(* PR 4470: simplified from OMake's sources *)
 
 module rec DirElt : sig
   type t =
@@ -7537,8 +7181,7 @@ and DirHash : sig
 end = struct
   type t = DirCompare.t list
 end
-(* PR 4758, PR 4266
-  *)
+(* PR 4758, PR 4266 *)
 
 module PR_4758 = struct
   module type S = sig end
@@ -7555,8 +7198,7 @@ module PR_4758 = struct
     module Other = A
   end
 
-  module C' = C (* check that we can take an alias
-                  *)
+  module C' = C (* check that we can take an alias *)
 
   module F (X : sig end) = struct
     type t
@@ -7565,8 +7207,7 @@ module PR_4758 = struct
   let f (x : F(C).t) : F(C').t = x
 end
 
-(* PR 4557
-  *)
+(* PR 4557 *)
 module PR_4557 = struct
   module F (X : Set.OrderedType) = struct
     module rec Mod : sig
@@ -7626,8 +7267,7 @@ module F (X : Set.OrderedType) = struct
 
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
 end
-(* Tests for recursive modules
-  *)
+(* Tests for recursive modules *)
 
 let test number result expected =
   if result = expected
@@ -7636,8 +7276,7 @@ let test number result expected =
   flush stdout
 ;;
 
-(* Tree of sets
-  *)
+(* Tree of sets *)
 
 module rec A : sig
   type t =
@@ -7671,8 +7310,7 @@ let _ =
   test 14 (A.compare x y) 1
 ;;
 
-(* Simple value recursion
-  *)
+(* Simple value recursion *)
 
 module rec Fib : sig
   val f : int -> int
@@ -7682,8 +7320,7 @@ end
 
 let _ = test 20 (Fib.f 10) 89
 
-(* Update function by infix
-  *)
+(* Update function by infix *)
 
 module rec Fib2 : sig
   val f : int -> int
@@ -7694,8 +7331,7 @@ end
 
 let _ = test 21 (Fib2.f 10) 89
 
-(* Early application
-  *)
+(* Early application *)
 
 let _ =
   let res =
@@ -7718,18 +7354,15 @@ let _ =
   test 30 res true
 ;;
 
-(* Early strict evaluation
-  *)
+(* Early strict evaluation *)
 
 (*
      module rec Cyclic
      : sig val x : int end
      = struct let x = Cyclic.x + 1 end
-     ;;
-  *)
+     ;; *)
 
-(* Reordering of evaluation based on dependencies
-  *)
+(* Reordering of evaluation based on dependencies *)
 
 module rec After : sig
   val x : int
@@ -7745,8 +7378,7 @@ end
 
 let _ = test 40 After.x 4
 
-(* Type identity between A.t and t within A's definition
-  *)
+(* Type identity between A.t and t within A's definition *)
 
 module rec Strengthen : sig
   type t
@@ -7797,8 +7429,7 @@ end = struct
   end
 end
 
-(* Polymorphic recursion
-  *)
+(* Polymorphic recursion *)
 
 module rec PolyRec : sig
   type 'a t =
@@ -7819,8 +7450,7 @@ end = struct
   ;;
 end
 
-(* Wrong LHS signatures (PR#4336)
-  *)
+(* Wrong LHS signatures (PR#4336) *)
 
 (*
      module type ASig = sig type a val a:a val print:a -> unit end
@@ -7837,8 +7467,7 @@ end
      and NewB : BSig with type b = NewA.a = MakeB (struct end);;
   *)
 
-(* Expressions and bindings
-  *)
+(* Expressions and bindings *)
 
 module StringSet = Set.Make (String)
 
@@ -7904,8 +7533,7 @@ let _ =
   test 51 (Expr.simpl e) e'
 ;;
 
-(* Okasaki's bootstrapping
-  *)
+(* Okasaki's bootstrapping *)
 
 module type ORDERED = sig
   type t
@@ -8074,8 +7702,7 @@ let _ =
   test 62 (C.findMin (C.deleteMin (C.deleteMin h))) 4
 ;;
 
-(* Classes
-  *)
+(* Classes *)
 
 module rec Class1 : sig
   class c : object
@@ -8128,8 +7755,7 @@ let _ =
   | Undefined_recursive_module _ -> test 71 true true
 ;;
 
-(* Coercions
-  *)
+(* Coercions *)
 
 module rec Coerce1 : sig
   val g : int -> int
@@ -8186,8 +7812,7 @@ end =
 
 let _ = test 82 (Coerce6.at 100) 5
 
-(* Miscellaneous bug reports
-  *)
+(* Miscellaneous bug reports *)
 
 module rec F : sig
   type t =
@@ -8211,8 +7836,7 @@ let _ =
   test 101 (F.f (F.Y 2)) true
 ;;
 
-(* PR#4316
-  *)
+(* PR#4316 *)
 module G (S : sig
     val x : int Lazy.t
   end) =
@@ -8232,8 +7856,7 @@ end =
   G (M1)
 
 let _ = test 102 (Lazy.force M2.x) 3
-let _ = Gc.full_major () (* will shortcut forwarding in M1.x
-                           *)
+let _ = Gc.full_major () (* will shortcut forwarding in M1.x *)
 
 module rec M3 : sig
   val x : int Lazy.t
@@ -8251,28 +7874,22 @@ type t =
 
 let f (A r) = r
 
-(* -> escape
-  *)
+(* -> escape *)
 let f (A r) = r.x
 
-(* ok
-  *)
+(* ok *)
 let f x = A { x; y = x }
 
-(* ok
-  *)
+(* ok *)
 let f (A r) = A { r with y = r.x + 1 }
 
-(* ok
-  *)
+(* ok *)
 let f () = A { a = 1 }
 
-(* customized error message
-  *)
+(* customized error message *)
 let f () = A { x = 1; y = 3 }
 
-(* ok
-  *)
+(* ok *)
 
 type _ t =
   | A :
@@ -8283,12 +7900,10 @@ type _ t =
 
 let f (A { x; y }) = A { x; y = () }
 
-(* ok
-  *)
+(* ok *)
 let f (A ({ x; y } as r)) = A { x = r.x; y = r.y }
 
-(* ok
-  *)
+(* ok *)
 
 module M = struct
   type 'a t =
@@ -8323,8 +7938,7 @@ struct
   module A = (val X.x)
 end
 
-(* -> this expression creates fresh types (not really!)
-  *)
+(* -> this expression creates fresh types (not really!) *)
 
 module type S = sig
   exception A of { x : int }
@@ -8371,8 +7985,7 @@ module Z = struct
   type X2.t += A of { x : int }
 end
 
-(* PR#6716
-  *)
+(* PR#6716 *)
 
 type _ c = C : [ `A ] c
 type t = T : { x : [< `A ] c } -> t
@@ -8470,8 +8083,7 @@ open Core.Std
 let x = Int.Map.empty
 let y = x + x
 
-(* Avoid ambiguity
-  *)
+(* Avoid ambiguity *)
 
 module M = struct
   type t = A
@@ -8529,8 +8141,7 @@ module N2 = struct
   and v = M1.v
 end
 
-(* PR#6566
-  *)
+(* PR#6566 *)
 module type PR6566 = sig
   type t = string
 end
@@ -8554,32 +8165,26 @@ module M2 = struct
 end
 
 (* Adapted from: An Expressive Language of Signatures
-   by Norman Ramsey, Kathleen Fisher and Paul Govereau
-  *)
+   by Norman Ramsey, Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value (* a Lua value
-               *)
-  type state (* the state of a Lua interpreter
-               *)
-  type usert (* a user-defined value
-               *)
+  type value (* a Lua value *)
+  type state (* the state of a Lua interpreter *)
+  type usert (* a user-defined value *)
 end
 
 module type CORE0 = sig
   module V : VALUE
 
   val setglobal : V.state -> string -> V.value -> unit
-  (* five more functions common to core and evaluator
-    *)
+  (* five more functions common to core and evaluator *)
 end
 
 module type CORE = sig
   include CORE0
 
   val apply : V.value -> V.state -> V.value list -> V.value
-  (* apply function f in state s to list of args
-    *)
+  (* apply function f in state s to list of args *)
 end
 
 module type AST = sig
@@ -8700,8 +8305,7 @@ module type PrintableComparable = sig
   include Comparable with type t = t
 end
 
-(* Fails
-  *)
+(* Fails *)
 module type PrintableComparable = sig
   type t
 
@@ -8759,8 +8363,7 @@ module type S = sig
   end
   with type 'a t := unit
 
-(* Fails
-  *)
+(* Fails *)
 let property (type t) () =
   let module M = struct
     exception E of t
@@ -8797,16 +8400,14 @@ let sort_uniq (type s) cmp l =
 let () = print_endline (String.concat "," (sort_uniq compare [ "abc"; "xyz"; "abc" ]))
 let f x (type a) (y : a) = x = y
 
-(* Fails
-  *)
+(* Fails *)
 class ['a] c =
   object (self)
     method m : 'a -> 'a = fun x -> x
     method n : 'a -> 'a = fun (type g) (x : g) -> self#m x
   end
 
-(* Fails
-  *)
+(* Fails *)
 
 external a : (int[@untagged]) -> unit = "a" "a_nat"
 external b : (int32[@unboxed]) -> unit = "b" "b_nat"
@@ -8835,8 +8436,7 @@ module Global_attributes = struct
   external d : float -> float = "d" "noalloc"
   external e : float -> float = "e"
 
-  (* Should output a warning: no native implementation provided
-    *)
+  (* Should output a warning: no native implementation provided *)
   external f : (int32[@unboxed]) -> (int32[@unboxed]) = "f" "noalloc"
   external g : int32 -> int32 = "g" "g_nat" [@@unboxed] [@@noalloc]
   external h : (int[@untagged]) -> (int[@untagged]) = "h" "h_nat" "noalloc"
@@ -8853,8 +8453,7 @@ module Old_style_warning = struct
   external e : float -> float = "c" "float"
 end
 
-(* Bad: attributes not reported in the interface
-  *)
+(* Bad: attributes not reported in the interface *)
 
 module Bad1 : sig
   external f : int -> int = "f" "f_nat"
@@ -8880,8 +8479,7 @@ end = struct
   external f : (float[@unboxed]) -> float = "f" "f_nat"
 end
 
-(* Bad: attributes in the interface but not in the implementation
-  *)
+(* Bad: attributes in the interface but not in the implementation *)
 
 module Bad5 : sig
   external f : int -> (int[@untagged]) = "f" "f_nat"
@@ -8907,35 +8505,29 @@ end = struct
   external f : float -> float = "a" "a_nat"
 end
 
-(* Bad: unboxed or untagged with the wrong type
-  *)
+(* Bad: unboxed or untagged with the wrong type *)
 
 external g : (float[@untagged]) -> float = "g" "g_nat"
 external h : (int[@unboxed]) -> float = "h" "h_nat"
 
-(* Bad: unboxing the function type
-  *)
+(* Bad: unboxing the function type *)
 external i : (int -> float[@unboxed]) = "i" "i_nat"
 
-(* Bad: unboxing a "deep" sub-type.
-  *)
+(* Bad: unboxing a "deep" sub-type. *)
 external j : int -> (float[@unboxed]) * float = "j" "j_nat"
 
 (* This should be rejected, but it is quite complicated to do
-   in the current state of things
-  *)
+   in the current state of things *)
 
 external k : int -> (float[@unboxd]) = "k" "k_nat"
 
-(* Bad: old style annotations + new style attributes
-  *)
+(* Bad: old style annotations + new style attributes *)
 
 external l : float -> float = "l" "l_nat" "float" [@@unboxed]
 external m : (float[@unboxed]) -> float = "m" "m_nat" "float"
 external n : float -> float = "n" "noalloc" [@@noalloc]
 
-(* Warnings: unboxed / untagged without any native implementation
-  *)
+(* Warnings: unboxed / untagged without any native implementation *)
 external o : (float[@unboxed]) -> float = "o"
 external p : float -> (float[@unboxed]) = "p"
 external q : (int[@untagged]) -> float = "q"
@@ -8946,15 +8538,13 @@ external t : float -> float = "t" [@@unboxed]
 let _ = ignore ( + )
 let _ = raise Exit 3;;
 
-(* comment 9644 of PR#6000
-  *)
+(* comment 9644 of PR#6000 *)
 
 fun b -> if b then format_of_string "x" else "y";;
 fun b -> if b then "x" else format_of_string "y";;
 fun b : (_, _, _) format -> if b then "x" else "y"
 
-(* PR#7135
-  *)
+(* PR#7135 *)
 
 module PR7135 = struct
   module M : sig
@@ -8968,8 +8558,7 @@ module PR7135 = struct
   let lift2 (f : int -> int -> int) (x : t) (y : t) = f (x :> int) (y :> int)
 end
 
-(* exemple of non-ground coercion
-  *)
+(* exemple of non-ground coercion *)
 
 module Test1 = struct
   type t = private int
@@ -8980,15 +8569,13 @@ module Test1 = struct
   ;;
 end
 
-(* Warn about all relevant cases when possible
-  *)
+(* Warn about all relevant cases when possible *)
 let f = function
   | None, None -> 1
   | Some _, Some _ -> 2
 ;;
 
-(* Exhaustiveness check is very slow
-  *)
+(* Exhaustiveness check is very slow *)
 type _ t =
   | A : int t
   | B : bool t
@@ -9010,35 +8597,30 @@ let f
   | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
 
-(*| _ -> _
-  *)
+(*| _ -> _ *)
 
-(* Unused cases
-  *)
+(* Unused cases *)
 let f (x : int t) =
   match x with
   | A -> 1
   | _ -> 2
 ;;
 
-(* warn
-  *)
+(* warn *)
 let f (x : unit t option) =
   match x with
   | None -> 1
   | _ -> 2
 ;;
 
-(* warn?
-  *)
+(* warn? *)
 let f (x : unit t option) =
   match x with
   | None -> 1
   | Some _ -> 2
 ;;
 
-(* warn
-  *)
+(* warn *)
 let f (x : int t option) =
   match x with
   | None -> 1
@@ -9050,11 +8632,9 @@ let f (x : int t option) =
   | None -> 1
 ;;
 
-(* warn
-  *)
+(* warn *)
 
-(* Example with record, type, single case
-  *)
+(* Example with record, type, single case *)
 
 type 'a box = Box of 'a
 
@@ -9071,8 +8651,7 @@ let f : (string t box pair * bool) option -> unit = function
   | None -> ()
 ;;
 
-(* Examples from ML2015 paper
-  *)
+(* Examples from ML2015 paper *)
 
 type _ t =
   | Int : int t
@@ -9148,8 +8727,7 @@ let inv_zero : type a b c d. (a, b, c) plus -> (c, d, zero) plus -> bool =
   | Plus0, Plus0 -> true
 ;;
 
-(* Empty match
-  *)
+(* Empty match *)
 
 type _ t = Int : int t
 
@@ -9158,46 +8736,39 @@ let f (x : bool t) =
   | _ -> .
 ;;
 
-(* ok
-  *)
+(* ok *)
 
-(* trefis in PR#6437
-  *)
+(* trefis in PR#6437 *)
 
 let f () =
   match None with
   | _ -> .
 ;;
 
-(* error
-  *)
+(* error *)
 let g () =
   match None with
   | _ -> ()
   | exception _ -> .
 ;;
 
-(* error
-  *)
+(* error *)
 let h () =
   match None with
   | _ -> .
   | exception _ -> .
 ;;
 
-(* error
-  *)
+(* error *)
 let f x =
   match x with
   | _ -> ()
   | None -> .
 ;;
 
-(* do not warn
-  *)
+(* do not warn *)
 
-(* #7059, all clauses guarded
-  *)
+(* #7059, all clauses guarded *)
 
 let f x y =
   match 1 with
@@ -9214,8 +8785,7 @@ let f : label choice -> bool = function
   | Left -> true
 ;;
 
-(* warn
-  *)
+(* warn *)
 exception A
 
 type a = A;;
@@ -9267,8 +8837,7 @@ end
 type t = A : t
 
 module X1 : sig end = struct
-  let _f ~x (* x unused argument
-              *) = function
+  let _f ~x (* x unused argument *) = function
     | A ->
       let x = () in
       x
@@ -9276,8 +8845,7 @@ module X1 : sig end = struct
 end
 
 module X2 : sig end = struct
-  let x = 42 (* unused value
-               *)
+  let x = 42 (* unused value *)
 
   let _f = function
     | A ->
@@ -9288,12 +8856,10 @@ end
 
 module X3 : sig end = struct
   module O = struct
-    let x = 42 (* unused
-                 *)
+    let x = 42 (* unused *)
   end
 
-  open O (* unused open
-           *)
+  open O (* unused open *)
 
   let _f = function
     | A ->
@@ -9302,8 +8868,7 @@ module X3 : sig end = struct
   ;;
 end
 
-(* Use type information
-  *)
+(* Use type information *)
 module M1 = struct
   type t =
     { x : int
@@ -9319,19 +8884,16 @@ end
 module OK = struct
   open M1
 
-  let f1 (r : t) = r.x (* ok
-                         *)
+  let f1 (r : t) = r.x (* ok *)
 
   let f2 r =
     ignore (r : t);
-    r.x (* non principal
-          *)
+    r.x (* non principal *)
   ;;
 
   let f3 (r : t) =
     match r with
-    | { x; y } -> y + y (* ok
-                          *)
+    | { x; y } -> y + y (* ok *)
   ;;
 end
 
@@ -9344,8 +8906,7 @@ module F1 = struct
   ;;
 end
 
-(* fails
-  *)
+(* fails *)
 
 module F2 = struct
   open M1
@@ -9357,8 +8918,7 @@ module F2 = struct
   ;;
 end
 
-(* fails for -principal
-  *)
+(* fails for -principal *)
 
 (* Use type information with modules*)
 module M = struct
@@ -9368,16 +8928,13 @@ end
 
 let f (r : M.t) = r.M.x
 
-(* ok
-  *)
+(* ok *)
 let f (r : M.t) = r.x
 
-(* warning
-  *)
+(* warning *)
 let f ({ x } : M.t) = x
 
-(* warning
-  *)
+(* warning *)
 
 module M = struct
   type t =
@@ -9416,8 +8973,7 @@ module OK = struct
   let f (r : M.t) = r.x
 end
 
-(* Use field information
-  *)
+(* Use field information *)
 module M = struct
   type u =
     { x : bool
@@ -9437,16 +8993,14 @@ module OK = struct
   let f { x; z } = x, z
 end
 
-(* ok
-  *)
+(* ok *)
 module F3 = struct
   open M
 
   let r = { x = true; z = 'z' }
 end
 
-(* fail for missing label
-  *)
+(* fail for missing label *)
 
 module OK = struct
   type u =
@@ -9463,11 +9017,9 @@ module OK = struct
   let r = { x = 3; y = true }
 end
 
-(* ok
-  *)
+(* ok *)
 
-(* Corner cases
-  *)
+(* Corner cases *)
 
 module F4 = struct
   type foo =
@@ -9480,8 +9032,7 @@ module F4 = struct
   let b : bar = { x = 3; y = 4 }
 end
 
-(* fail but don't warn
-  *)
+(* fail but don't warn *)
 
 module M = struct
   type foo =
@@ -9499,8 +9050,7 @@ end
 
 let r = { M.x = 3; N.y = 4 }
 
-(* error: different definitions
-  *)
+(* error: different definitions *)
 
 module MN = struct
   include M
@@ -9514,11 +9064,9 @@ end
 
 let r = { MN.x = 3; NM.y = 4 }
 
-(* error: type would change with order
-  *)
+(* error: type would change with order *)
 
-(* Lpw25
-  *)
+(* Lpw25 *)
 
 module M = struct
   type foo =
@@ -9577,11 +9125,9 @@ end
 
 let f (r : B.t) = r.A.x
 
-(* fail
-  *)
+(* fail *)
 
-(* Spellchecking
-  *)
+(* Spellchecking *)
 
 module F8 = struct
   type t =
@@ -9592,8 +9138,7 @@ module F8 = struct
   let a : t = { x = 1; yyz = 2 }
 end
 
-(* PR#6004
-  *)
+(* PR#6004 *)
 
 type t = A
 type s = A
@@ -9601,17 +9146,14 @@ type s = A
 class f (_ : t) = object end
 class g = f A
 
-(* ok
-  *)
+(* ok *)
 
 class f (_ : 'a) (_ : 'a) = object end
 class g = f (A : t) A
 
-(* warn with -principal
-  *)
+(* warn with -principal *)
 
-(* PR#5980
-  *)
+(* PR#5980 *)
 
 module Shadow1 = struct
   type t = { x : int }
@@ -9620,8 +9162,7 @@ module Shadow1 = struct
     type s = { x : string }
   end
 
-  open M (* this open is unused, it isn't reported as shadowing 'x'
-           *)
+  open M (* this open is unused, it isn't reported as shadowing 'x' *)
 
   let y : t = { x = 0 }
 end
@@ -9633,14 +9174,12 @@ module Shadow2 = struct
     type s = { x : string }
   end
 
-  open M (* this open shadows label 'x'
-           *)
+  open M (* this open shadows label 'x' *)
 
   let y = { x = "" }
 end
 
-(* PR#6235
-  *)
+(* PR#6235 *)
 
 module P6235 = struct
   type t = { loc : string }
@@ -9658,8 +9197,7 @@ module P6235 = struct
   ;;
 end
 
-(* Remove interaction between branches
-  *)
+(* Remove interaction between branches *)
 
 module P6235' = struct
   type t = { loc : string }
@@ -9821,15 +9359,12 @@ let () = proj1 (inj2 42)
 let _ = ~-1
 
 class id = [%exp]
-(* checkpoint
-  *)
+(* checkpoint *)
 
-(* Subtyping is "syntactic"
-  *)
+(* Subtyping is "syntactic" *)
 let _ = fun (x : < x : int >) y z -> (y :> 'a), (x :> 'a), (z :> 'a)
 
-(* - : (< x : int > as 'a) -> 'a -> 'a * 'a = <fun>
-  *)
+(* - : (< x : int > as 'a) -> 'a -> 'a * 'a = <fun> *)
 
 class ['a] c () =
   object
@@ -9841,8 +9376,7 @@ and ['a] d () =
     inherit ['a] c ()
   end
 
-(* PR#7329 Pattern open
-  *)
+(* PR#7329 Pattern open *)
 let _ =
   let module M = struct
     type t = { x : int }
@@ -9883,8 +9417,7 @@ let g x = ~$(x.contents)
 let ( ~$ ) x y = x, y
 let g x y = ~$(x.contents) y.contents
 
-(* PR#7506: attributes on list tail
-  *)
+(* PR#7506: attributes on list tail *)
 
 let tail1 = [ 1; 2 ] [@hello]
 let tail2 = 0 :: ([ 1; 2 ] [@hello])
@@ -9919,13 +9452,11 @@ fun contents -> { contents = contents [@foo] };;
 (();
  ()) [@foo]
 
-(* https://github.com/LexiFi/gen_js_api/issues/61
-  *)
+(* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
 let () = foo##.bar := ()
 
-(* "let open" in classes and class types
-  *)
+(* "let open" in classes and class types *)
 
 class c =
   let open M in
@@ -9939,8 +9470,7 @@ class type ct =
   method f : t
 end
 
-(* M.(::) notation
-  *)
+(* M.(::) notation *)
 module Exotic_list = struct
   module Inner = struct
     type ('a, 'b) t =
@@ -10044,8 +9574,8 @@ exception Second_exception
 
 module M = struct
   type t
-  [@@immediate] (* ______________________________________
-                  *) [@@deriving variants, sexp_of]
+  [@@immediate] (* ______________________________________ *)
+  [@@deriving variants, sexp_of]
 end
 
 module type Basic3 = sig
@@ -10076,8 +9606,7 @@ let _ =
   [ very_long_function_name____________________ very_long_argument_name____________ ]
 ;;
 
-(* FIX: exceed 90 columns
-  *)
+(* FIX: exceed 90 columns *)
 let _ =
   [%str
     let () = very_long_function_name__________________ very_long_argument_name____________]
@@ -10088,8 +9617,7 @@ let _ =
   }
 ;;
 
-(* FIX: exceed 90 columns
-  *)
+(* FIX: exceed 90 columns *)
 let _ =
   match () with
   | _ ->
@@ -10100,27 +9628,24 @@ let _ =
 
 let _ =
   aaaaaaa
-    (* __________________________________________________________________________________
-      *) := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    (* __________________________________________________________________________________ *)
+    := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ;;
 
 let g = f ~x (* this is a multiple-line-spanning
-                comment
-               *) ~y
+                comment *) ~y
 
 let f =
   very_long_function_name
     ~x:very_long_variable_name (* this is a multiple-line-spanning
-                                  comment
-                                 *)
+                                  comment *)
     ~y
 ;;
 
 let _ =
   match x with
   | { y =
-        (* _____________________________________________________________________
-          *)
+        (* _____________________________________________________________________ *)
         ( X _ | Y _ )
     } -> ()
 ;;
@@ -10129,8 +9654,7 @@ let _ =
   match x with
   | { y =
         ( Z
-        (* _____________________________________________________________________
-          *)
+        (* _____________________________________________________________________ *)
         | X _
         | Y _ )
     } -> ()
@@ -10138,26 +9662,16 @@ let _ =
 
 type t =
   [ `XXXX
-    (* __________________________________________________________________________________
-      *)
-  | `XXXX (* __________________________________________________________________
-            *)
-  | `XXXX (* _____________________________________________________
-            *)
-  | `XXXX (* ___________________________________________________
-            *)
-  | `XXXX (* ___________________________________________________
-            *)
-  | `XXXX (* ________________________________________________
-            *)
-  | `XXXX (* __________________________________________
-            *)
-  | `XXXX (* _________________________________________
-            *)
-  | `XXXX (* ______________________________________
-            *)
-  | `XXXX (* ____________________________________
-            *)
+    (* __________________________________________________________________________________ *)
+  | `XXXX (* __________________________________________________________________ *)
+  | `XXXX (* _____________________________________________________ *)
+  | `XXXX (* ___________________________________________________ *)
+  | `XXXX (* ___________________________________________________ *)
+  | `XXXX (* ________________________________________________ *)
+  | `XXXX (* __________________________________________ *)
+  | `XXXX (* _________________________________________ *)
+  | `XXXX (* ______________________________________ *)
+  | `XXXX (* ____________________________________ *)
   ]
 
 type t =
@@ -10182,8 +9696,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-       v}
-      *)
+       v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -10203,8 +9716,7 @@ let nullsafe_optimistic_third_party_params_in_non_strict =
          there was no actionable way to change third party annotations. Now
          that we have such a support, this behavior should be reconsidered,
          provided our tooling and error reporting is friendly enough to be
-         smoothly used by developers.
-        *)
+         smoothly used by developers. *)
     ~default:true
     "Nullsafe: in this mode we treat non annotated third party method params as if they \
      were annotated as nullable."
@@ -10212,8 +9724,7 @@ let nullsafe_optimistic_third_party_params_in_non_strict =
 
 let foo () =
   if%bind
-    (* this is a medium length comment of some sort
-      *)
+    (* this is a medium length comment of some sort *)
     this is a medium length expression of_some sort
   then x
   else y
@@ -10221,35 +9732,31 @@ let foo () =
 
 let xxxxxx =
   let%map (* _____________________________
-             __________
-            *) () = yyyyyyyy in
+             __________ *) () = yyyyyyyy in
   { zzzzzzzzzzzzz }
 ;;
 
 let _ =
   match x with
   | _
-    when f ~f:(function [@ocaml.warning (* .......................................
-                                          *) "-4"] _ -> .) -> y
+    when f
+           ~f:(function [@ocaml.warning
+                          (* ....................................... *) "-4"] _ -> .) -> y
 ;;
 
 let[@a
-     (* .............................................. ........................... .......................... ......................
-       *)
+     (* .............................................. ........................... .......................... ...................... *)
      foo
      (* ....................... *)
      (* ................................. *)
      (* ...................... *)] _
   =
-  match[@ocaml.warning (* .......................................
-                         *) "-4"]
-    x [@attr (* .......................... ..................
-               *) some_attr]
+  match[@ocaml.warning (* ....................................... *) "-4"]
+    x [@attr (* .......................... .................. *) some_attr]
   with
   | _
     when f
-           ~f:(function[@ocaml.warning (* .......................................
-                                         *) "-4"]
+           ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
              | _ -> .)
            ~f:(function[@ocaml.warning
                          (* ....................................... *)
@@ -10258,8 +9765,7 @@ let[@a
                           fooooooooooooooooooooooooooooooooooooo"]
              | _ -> .)
            ~f:(function[@ocaml.warning
-                         (* .......................................
-                           *)
+                         (* ....................................... *)
                          let x = a
                          and y = b in
                          x + y]
@@ -10267,8 +9773,7 @@ let[@a
     y [@attr
         (* ... *)
         (* ... *)
-        attr (* ...
-               *)]
+        attr (* ... *)]
 ;;
 
 let x =
@@ -10587,8 +10092,7 @@ let () =
   | _ -> ()
 ;;
 
-(* ocp-indent-compat: Docked fun after apply only if on the same line.
-  *)
+(* ocp-indent-compat: Docked fun after apply only if on the same line. *)
 
 let _ =
   fooooooooooooooooooooooooooooooo
