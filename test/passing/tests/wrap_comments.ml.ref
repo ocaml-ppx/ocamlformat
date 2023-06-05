@@ -103,7 +103,8 @@ let _ =
   ; "c"
     (* first line
 
-       second line *)
+       second line
+    *)
   ; "d"
     (* first line
 
@@ -112,11 +113,13 @@ let _ =
   ; "e"
     (* first line
 
-       second line *)
+       second line
+    *)
   ; "f"
     (* first line
 
-       second line *)
+       second line
+    *)
   ; "g" ]
 
 let _ =
@@ -134,7 +137,8 @@ let _ =
 
 let _ =
   (*no space before
-    just newline after *)
+    just newline after
+  *)
   0
 
 let _ =
@@ -154,5 +158,7 @@ let _ =
   ()
 
 let _ =
-  (* blah blah *)
+  (*
+    blah blah
+  *)
   ()

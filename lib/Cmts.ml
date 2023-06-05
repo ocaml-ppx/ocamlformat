@@ -466,6 +466,8 @@ module Wrapped = struct
   let fmt ~pro ~epi text =
     let open Fmt in
     assert (not (String.is_empty text)) ;
+    let prefix = if String.starts_with_whitespace text then " " else ""
+    and suffix = if String.ends_with_whitespace text then " " else "" in
     let fmt_line line =
       let words =
         List.filter ~f:(Fn.non String.is_empty)
@@ -479,17 +481,16 @@ module Wrapped = struct
         ~equal:(fun x y -> String.is_empty x && String.is_empty y)
         (String.split (String.rstrip text) ~on:'\n')
     in
-    hvbox 0
-      ( pro
-      $ hovbox 0
-          ( list_pn lines (fun ~prev:_ curr ~next ->
-                fmt_line curr
-                $
-                match next with
-                | Some str when is_only_whitespaces str -> fmt "\n@\n"
-                | Some _ when not (String.is_empty curr) -> fmt "@ "
-                | _ -> noop )
-          $ epi ) )
+    pro $ str prefix
+    $ hovbox 0
+        ( list_pn lines (fun ~prev:_ curr ~next ->
+              fmt_line curr
+              $
+              match next with
+              | Some str when is_only_whitespaces str -> fmt "\n@\n"
+              | Some _ when not (String.is_empty curr) -> fmt "@ "
+              | _ -> noop )
+        $ str suffix $ epi )
 end
 
 module Asterisk_prefixed = struct
@@ -504,19 +505,31 @@ module Asterisk_prefixed = struct
 end
 
 module Unwrapped = struct
-  let fmt_multiline_cmt lines =
-    let open Fmt in
-    let fmt_line ~first ~last:_ s =
-      let sep = if is_only_whitespaces s then str "\n" else fmt "@," in
-      fmt_if_k (not first) sep $ str s
-    in
-    list_fl lines fmt_line
+  open Fmt
 
+  let has_trailing_empty_lines s =
+    let pos =
+      match String.rfindi s ~f:(fun _ c -> not (Char.is_whitespace c)) with
+      | Some i -> i + 1
+      | None -> 0
+    in
+    String.contains ~pos s '\n'
+
+  let fmt_line ~first:_ ~last l =
+    (* The last line will be followed by the [epi]. *)
+    if is_only_whitespaces l && not last then str "\n" else fmt "@," $ str l
+
+  (** [txt] contains trailing spaces and leading/trailing empty lines. *)
   let fmt ~pro ~epi txt =
-    let open Fmt in
-    match String.split_lines txt with
-    | _ :: _ as lines ->
-        pro $ vbox 0 ~name:"unwrapped" (fmt_multiline_cmt lines $ epi)
+    let txt, epi =
+      (* Preserve one trailing newline. *)
+      if has_trailing_empty_lines txt then
+        (String.rstrip txt, fmt "@\n" $ epi)
+      else (txt, epi)
+    in
+    match String.split ~on:'\n' txt with
+    | hd :: tl ->
+        pro $ vbox 0 ~name:"unwrapped" (str hd $ list_fl tl fmt_line) $ epi
     | [] -> noop
 end
 

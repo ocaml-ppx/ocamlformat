@@ -108,7 +108,7 @@ let unindent_lines ~opn_offset first_line tl_lines =
   let fl_spaces, fl_indent =
     match indent_of_line first_line with
     | Some i -> (i, i + opn_offset)
-    | None -> (0, Stdlib.max_int)
+    | None -> (String.length first_line, Stdlib.max_int)
   in
   let min_indent =
     List.fold_left ~init:fl_indent
@@ -121,7 +121,7 @@ let unindent_lines ~opn_offset first_line tl_lines =
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
 let unindent_lines ~opn_offset txt =
-  match String.split_lines txt with
+  match String.split ~on:'\n' txt with
   | [] -> []
   | hd :: tl -> unindent_lines ~opn_offset hd tl
 
@@ -134,13 +134,6 @@ let split_asterisk_prefixed = function
 let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
 let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
-
-let remove_head_tail_empty_lines lines =
-  lines
-  |> List.drop_while ~f:is_all_whitespace
-  |> List.rev
-  |> List.drop_while ~f:is_all_whitespace
-  |> List.rev
 
 let decode ~parse_comments_as_doc {txt; loc} =
   let txt =
@@ -159,10 +152,10 @@ let decode ~parse_comments_as_doc {txt; loc} =
         let opn_offset = opn_offset + 1 in
         let dollar_suf = Char.equal txt.[String.length txt - 1] '$' in
         let suffix = if dollar_suf then "$" else "" in
-        let len = String.length txt - if dollar_suf then 2 else 1 in
-        (* Strip white lines at the end but not at the start until after
-           [unindent_lines] is called. *)
-        let source = String.rstrip (String.sub ~pos:1 ~len txt) in
+        let source =
+          let len = String.length txt - if dollar_suf then 2 else 1 in
+          String.sub ~pos:1 ~len txt
+        in
         let lines = unindent_lines ~opn_offset source in
         let lines = List.map ~f:String.rstrip lines in
         let lines = List.drop_while ~f:is_all_whitespace lines in
@@ -174,22 +167,20 @@ let decode ~parse_comments_as_doc {txt; loc} =
         mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
     | _ when parse_comments_as_doc -> mk (Doc txt)
     | _ -> (
-        let prefix = if String.starts_with_whitespace txt then " " else "" in
-        let suffix, txt =
-          if String.ends_with_whitespace txt then
-            (" ", String.drop_suffix txt 1)
-          else ("", txt)
-        in
         let lines = unindent_lines ~opn_offset txt in
+        (* Don't add a space to the prefix if the first line was only
+           spaces. *)
+        let prefix =
+          if
+            String.starts_with_whitespace txt
+            && not (String.is_empty (List.hd_exn lines))
+          then " "
+          else ""
+        in
         match split_asterisk_prefixed lines with
         | Some deprefixed_lines ->
-            mk ~prefix ~suffix (Asterisk_prefixed deprefixed_lines)
-        | None ->
-            let lines = remove_head_tail_empty_lines lines in
-            (* Reconstruct the text with indentation removed and heading and
-               trailing empty lines removed. *)
-            let txt = String.concat ~sep:"\n" lines in
-            mk ~prefix ~suffix (Normal txt) )
+            mk ~prefix (Asterisk_prefixed deprefixed_lines)
+        | None -> mk ~prefix (Normal (String.concat ~sep:"\n" lines)) )
   else
     match txt with
     (* "(**)" is not parsed as a docstring but as a regular comment
