@@ -495,13 +495,12 @@ end
 module Asterisk_prefixed = struct
   let fmt ~pro ~epi lines =
     let open Fmt in
-    vbox 1
-      ( pro
-      $ list_fl lines (fun ~first ~last line ->
-            match line with
-            | "" when last -> fmt "@,"
-            | _ -> fmt_if (not first) "@," $ str "*" $ str line )
-      $ epi )
+    let fmt_lines =
+      match lines with
+      | hd :: tl -> str hd $ list tl "" (fun s -> fmt "@,*" $ str s)
+      | [] -> noop
+    in
+    vbox 1 (pro $ fmt_lines $ epi)
 end
 
 module Unwrapped = struct

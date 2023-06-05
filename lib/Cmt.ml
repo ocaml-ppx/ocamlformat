@@ -125,10 +125,11 @@ let unindent_lines ~opn_offset txt =
   | [] -> []
   | hd :: tl -> unindent_lines ~opn_offset hd tl
 
-let split_asterisk_prefixed lines =
-  if List.for_all ~f:(String.is_prefix ~prefix:"*") lines then
-    Some (List.map lines ~f:(fun s -> String.drop_prefix s 1))
-  else None
+let split_asterisk_prefixed = function
+  | hd :: (_ :: _ as tl)
+    when List.for_all ~f:(String.is_prefix ~prefix:"*") tl ->
+      Some (hd :: List.map tl ~f:(fun s -> String.drop_prefix s 1))
+  | _ -> None
 
 let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
@@ -173,6 +174,7 @@ let decode ~parse_comments_as_doc {txt; loc} =
         mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
     | _ when parse_comments_as_doc -> mk (Doc txt)
     | _ -> (
+        let prefix = if String.starts_with_whitespace txt then " " else "" in
         let suffix, txt =
           if String.ends_with_whitespace txt then
             (" ", String.drop_suffix txt 1)
@@ -180,11 +182,9 @@ let decode ~parse_comments_as_doc {txt; loc} =
         in
         let lines = unindent_lines ~opn_offset txt in
         match split_asterisk_prefixed lines with
-        | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
+        | Some deprefixed_lines ->
+            mk ~prefix ~suffix (Asterisk_prefixed deprefixed_lines)
         | None ->
-            let prefix =
-              if String.starts_with_whitespace txt then " " else ""
-            in
             let lines = remove_head_tail_empty_lines lines in
             (* Reconstruct the text with indentation removed and heading and
                trailing empty lines removed. *)

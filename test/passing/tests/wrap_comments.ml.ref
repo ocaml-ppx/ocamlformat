@@ -88,7 +88,7 @@ let rex =
 type foo =
   { some_field: int
         (* long long long long long long long long long long long long long long
-           * long long long long *)
+         * long long long long *)
   ; another_field: string }
 
 let _ =
