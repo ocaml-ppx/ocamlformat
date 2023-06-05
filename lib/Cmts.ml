@@ -577,14 +577,21 @@ module Doc = struct
       $ epi )
 end
 
-let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
   let open Fmt in
+  let break =
+    fmt_if_k
+      (Poly.(pos = After) && String.contains cmt.Cmt.txt '\n')
+      (break_unless_newline 1000 0)
+  in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
   let pro = str "(*" $ str decoded.prefix
   and epi = str decoded.suffix $ str "*)" in
+  break
+  $
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
   | Doc txt -> Doc.fmt ~pro ~epi ~fmt_code conf ~loc:cmt.loc txt ~offset

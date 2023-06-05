@@ -9,18 +9,22 @@ type t =
 let _ =
   [ "a"
   ; "b" (* first line second line *)
-  ; "c" (* first line
+  ; "c"
+    (* first line
 
-           second line *)
-  ; "d" (* first line
+       second line *)
+  ; "d"
+    (* first line
 
-           second line *)
-  ; "e" (* first line
+       second line *)
+  ; "e"
+    (* first line
 
-           second line *)
-  ; "f" (* first line
+       second line *)
+  ; "f"
+    (* first line
 
-           second line *)
+       second line *)
   ; "g" ]
 
 let _ =
@@ -93,21 +97,26 @@ type foo =
 
 let _ =
   [ "a"
-  ; "b" (* first line
-           second line *)
-  ; "c" (* first line
+  ; "b"
+    (* first line
+       second line *)
+  ; "c"
+    (* first line
 
-           second line *)
-  ; "d" (* first line
+       second line *)
+  ; "d"
+    (* first line
 
 
-           second line *)
-  ; "e" (* first line
+       second line *)
+  ; "e"
+    (* first line
 
-           second line *)
-  ; "f" (* first line
+       second line *)
+  ; "f"
+    (* first line
 
-           second line *)
+       second line *)
   ; "g" ]
 
 let _ =
