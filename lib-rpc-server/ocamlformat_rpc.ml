@@ -82,10 +82,12 @@ let run_format conf x =
     (* The formatting functions are ordered in such a way that the ones
        expecting a keyword first (like signatures) are placed before the more
        general ones (like toplevel phrases). Parsing a file as `--impl` with
-       `ocamlformat` processes it as a use file (toplevel phrases) anyway.
+       `ocamlformat` processes it as a use file (toplevel phrases)
+       anyway.
 
        `ocaml-lsp` should use core types, module types and signatures.
-       `ocaml-mdx` should use toplevel phrases, expressions and signatures. *)
+       `ocaml-mdx` should use toplevel phrases, expressions and
+       signatures. *)
     [ format Core_type
     ; format Signature
     ; format Module_type

@@ -1377,7 +1377,8 @@ module Formatting = struct
       ; elt let_open ]
 end
 
-(* Flags that can be modified in the config file that don't affect formatting *)
+(* Flags that can be modified in the config file that don't affect
+   formatting *)
 
 let kind = Decl.Operational
 

@@ -463,7 +463,7 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
 let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
 
 module Wrapped = struct
-  let fmt text =
+  let fmt ~pro ~epi text =
     let open Fmt in
     assert (not (String.is_empty text)) ;
     let fmt_line line =
@@ -480,49 +480,51 @@ module Wrapped = struct
         (String.split (String.rstrip text) ~on:'\n')
     in
     hvbox 0
-      (hovbox 0
-         (list_pn lines (fun ~prev:_ curr ~next ->
-              fmt_line curr
-              $
-              match next with
-              | Some str when is_only_whitespaces str ->
-                  close_box $ fmt "\n@," $ open_hovbox 0
-              | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> noop ) ) )
+      ( pro
+      $ hovbox 0
+          ( list_pn lines (fun ~prev:_ curr ~next ->
+                fmt_line curr
+                $
+                match next with
+                | Some str when is_only_whitespaces str -> fmt "\n@\n"
+                | Some _ when not (String.is_empty curr) -> fmt "@ "
+                | _ -> noop )
+          $ epi ) )
 end
 
 module Asterisk_prefixed = struct
-  let fmt lines =
+  let fmt ~pro ~epi lines =
     let open Fmt in
     vbox 1
-      (list_fl lines (fun ~first ~last line ->
-           match line with
-           | "" when last -> fmt "@,"
-           | _ -> fmt_if (not first) "@," $ str "*" $ str line ) )
+      ( pro
+      $ list_fl lines (fun ~first ~last line ->
+            match line with
+            | "" when last -> fmt "@,"
+            | _ -> fmt_if (not first) "@," $ str "*" $ str line )
+      $ epi )
 end
 
 module Unwrapped = struct
   let fmt_multiline_cmt lines =
     let open Fmt in
     let fmt_line ~first ~last:_ s =
-      let s = String.rstrip s in
-      let sep =
-        if is_only_whitespaces s then str "\n" else fmt "@;<1000 0>"
-      in
+      let sep = if is_only_whitespaces s then str "\n" else fmt "@," in
       fmt_if_k (not first) sep $ str s
     in
-    vbox 0 ~name:"unwrapped" (list_fl lines fmt_line)
+    list_fl lines fmt_line
 
-  let fmt txt =
+  let fmt ~pro ~epi txt =
+    let open Fmt in
     match String.split_lines txt with
-    | _ :: _ as lines -> fmt_multiline_cmt lines
-    | [] -> Fmt.noop
+    | _ :: _ as lines ->
+        pro $ vbox 0 ~name:"unwrapped" (fmt_multiline_cmt lines $ epi)
+    | [] -> noop
 end
 
 module Verbatim = struct
-  let fmt s =
+  let fmt ~pro ~epi s =
     let open Fmt in
-    str s
+    pro $ str s $ epi
 end
 
 module Cinaps = struct
@@ -540,14 +542,17 @@ module Cinaps = struct
         list lines "" fmt_line $ fmt "@;<1000 -2>"
 
   (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
-  let fmt ~fmt_code conf ~offset code =
-    match fmt_code conf ~offset code with
-    | Ok code -> fmt_code_str code
-    | Error _ -> fmt_code_str code
+  let fmt ~pro ~epi ~fmt_code conf ~offset code =
+    let code =
+      match fmt_code conf ~offset code with
+      | Ok code -> code
+      | Error _ -> code
+    in
+    hvbox 2 (pro $ fmt_code_str code $ epi)
 end
 
 module Doc = struct
-  let fmt ~fmt_code conf ~loc txt ~offset =
+  let fmt ~pro ~epi ~fmt_code conf ~loc txt ~offset =
     (* Whether the doc starts and ends with an empty line. *)
     let pre_nl, trail_nl =
       let lines = String.split ~on:'\n' txt in
@@ -565,7 +570,12 @@ module Doc = struct
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
     let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
     let open Fmt in
-    wrap_k (fmt_if pre_nl "@;<1000 1>") (fmt_if trail_nl "@;<1000 -2>") doc
+    hvbox 2
+      ( pro
+      $ fmt_if pre_nl "@;<1000 1>"
+      $ doc
+      $ fmt_if trail_nl "@;<1000 -2>"
+      $ epi )
 end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
@@ -574,18 +584,16 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (_pos : Cmt.pos) =
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
-  (fun k ->
-    hvbox 2
-      (str "(*" $ str decoded.prefix $ k $ str decoded.suffix $ str "*)") )
-  @@
+  let pro = str "(*" $ str decoded.prefix
+  and epi = str decoded.suffix $ str "*)" in
   match decoded.kind with
-  | Verbatim txt -> Verbatim.fmt txt
-  | Doc txt -> Doc.fmt ~fmt_code conf ~loc:cmt.loc txt ~offset
+  | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
+  | Doc txt -> Doc.fmt ~pro ~epi ~fmt_code conf ~loc:cmt.loc txt ~offset
   | Normal txt ->
-      if conf.fmt_opts.wrap_comments.v then Wrapped.fmt txt
-      else Unwrapped.fmt txt
-  | Code code -> Cinaps.fmt ~fmt_code conf ~offset code
-  | Asterisk_prefixed lines -> Asterisk_prefixed.fmt lines
+      if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
+      else Unwrapped.fmt ~pro ~epi txt
+  | Code code -> Cinaps.fmt ~pro ~epi ~fmt_code conf ~offset code
+  | Asterisk_prefixed lines -> Asterisk_prefixed.fmt ~pro ~epi lines
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in

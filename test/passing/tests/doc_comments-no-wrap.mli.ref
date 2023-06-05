@@ -426,7 +426,7 @@ end
 
     {[
       (** This is a comment with code inside [ let code inside = f inside ] *)
-      let code inside (* comment *) = f inside
+      let code inside (* comment   *) = f inside
     ]}
 
     Code block with metadata:
@@ -439,7 +439,7 @@ end
     ]}
     {@ocaml kind=toplevel env=e1[
       (** This is a comment with code inside [ let code inside = f inside ] *)
-      let code inside (* comment *) = f inside
+      let code inside (* comment   *) = f inside
     ]} *)
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo}

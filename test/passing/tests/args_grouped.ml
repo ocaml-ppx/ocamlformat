@@ -73,10 +73,9 @@ let gen_with_record_deps ~expand t resolved_forms ~dep_kind =
 
 let f =
   very_long_function_name
-    ~very_long_variable_name:(very_long expression)
-      (* this is a
-         multiple-line-spanning
-         comment *)
+    ~very_long_variable_name:(very_long expression) (* this is a
+                                                       multiple-line-spanning
+                                                       comment *)
     ~y
 
 let eradicate_meta_class_is_nullsafe =

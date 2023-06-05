@@ -9,10 +9,18 @@ type t =
 let _ =
   [ "a"
   ; "b" (* first line second line *)
-  ; "c" (* first line second line *)
-  ; "d" (* first line second line *)
-  ; "e" (* first line second line *)
-  ; "f" (* first line second line *)
+  ; "c" (* first line
+
+           second line *)
+  ; "d" (* first line
+
+           second line *)
+  ; "e" (* first line
+
+           second line *)
+  ; "f" (* first line
+
+           second line *)
   ; "g" ]
 
 let _ =
@@ -40,41 +48,41 @@ type t =
 let rex =
   Pcre.regexp
     ( "^[0-9]{2}"
-    (* xxxxxxxxxxx *)
+    (* xxxxxxxxxxx               *)
     ^ "(.{12})"
-    (* xxxxxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxxxxx        *)
     ^ "(.{4})"
-    (* xxxxxxxxxxxx *)
+    (* xxxxxxxxxxxx              *)
     ^ "([0-9]{3})"
-    (* xxxxxxxx *)
+    (* xxxxxxxx                  *)
     ^ "(.{60})"
-    (* xxxxxxxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxxxxxxx      *)
     ^ "(.{12})"
-    (* xxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxx           *)
     ^ "(.{12})"
-    (* xxxxxxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxxxxxx       *)
     ^ "([0-9]{3})"
     (* xxxxxxxxxxxxxxxxxxxxxxxxx *)
     ^ "([0-9]{3})"
-    (* xxxxxxxxxxx *)
+    (* xxxxxxxxxxx               *)
     ^ "(.{15})"
-    (* xxxxxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxxxxx        *)
     ^ "([0-9]{7})"
-    (* xxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxx             *)
     ^ "(.{10})"
-    (* xxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxx             *)
     ^ date_fmt
-    (* xxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxx             *)
     ^ "([0-9]{18})"
-    (* xxxxx *)
+    (* xxxxx                     *)
     ^ "(.)"
-    (* xxxxxxxxxxx *)
+    (* xxxxxxxxxxx               *)
     ^ "([0-9]{3})"
-    (* xxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxx            *)
     ^ "(.{15})"
-    (* xxxxxxxxxxxxxxxxxxxx *)
+    (* xxxxxxxxxxxxxxxxxxxx      *)
     ^ "(.{3})"
-    (* xxxxxxxxxx *)
+    (* xxxxxxxxxx                *)
     ^ "(.{27})$" )
 
 type foo =
@@ -85,26 +93,21 @@ type foo =
 
 let _ =
   [ "a"
-  ; "b"
-    (* first line
-       second line *)
-  ; "c"
-    (* first line
+  ; "b" (* first line
+           second line *)
+  ; "c" (* first line
 
-       second line *)
-  ; "d"
-    (* first line
+           second line *)
+  ; "d" (* first line
 
 
-       second line *)
-  ; "e"
-    (* first line
+           second line *)
+  ; "e" (* first line
 
-       second line *)
-  ; "f"
-    (* first line
+           second line *)
+  ; "f" (* first line
 
-       second line *)
+           second line *)
   ; "g" ]
 
 let _ =

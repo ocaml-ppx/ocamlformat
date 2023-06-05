@@ -5838,7 +5838,8 @@ let f (x : entity entity_container) = ()
 (* class world = object val entity_container : entity entity_container = new
    entity_container
 
-   method add_entity (s : entity) = entity_container#add_entity (s :> entity)
+   method add_entity (s : entity) = entity_container#add_entity (s :>
+   entity)
 
    end *)
 (* Two v's in the same class *)
@@ -6282,7 +6283,8 @@ module M : sig
 end = struct
   type refer = {poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a)}
 end
-(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml *)
+(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c
+   pr3918c.ml *)
 
 open Pr3918b
 

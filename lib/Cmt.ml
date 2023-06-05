@@ -134,6 +134,13 @@ let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
 let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
 
+let remove_head_tail_empty_lines lines =
+  lines
+  |> List.drop_while ~f:is_all_whitespace
+  |> List.rev
+  |> List.drop_while ~f:is_all_whitespace
+  |> List.rev
+
 let decode ~parse_comments_as_doc {txt; loc} =
   let txt =
     (* Windows compatibility *)
@@ -166,16 +173,22 @@ let decode ~parse_comments_as_doc {txt; loc} =
         mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
     | _ when parse_comments_as_doc -> mk (Doc txt)
     | _ -> (
-        let prefix = if String.starts_with_whitespace txt then " " else ""
-        and suffix = if String.ends_with_whitespace txt then " " else "" in
-        let txt = String.rstrip txt in
+        let suffix, txt =
+          if String.ends_with_whitespace txt then
+            (" ", String.drop_suffix txt 1)
+          else ("", txt)
+        in
         let lines = unindent_lines ~opn_offset txt in
         match split_asterisk_prefixed lines with
         | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
         | None ->
+            let prefix =
+              if String.starts_with_whitespace txt then " " else ""
+            in
+            let lines = remove_head_tail_empty_lines lines in
             (* Reconstruct the text with indentation removed and heading and
                trailing empty lines removed. *)
-            let txt = String.lstrip (String.concat ~sep:"\n" lines) in
+            let txt = String.concat ~sep:"\n" lines in
             mk ~prefix ~suffix (Normal txt) )
   else
     match txt with
