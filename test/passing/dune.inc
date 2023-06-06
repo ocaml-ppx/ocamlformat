@@ -4684,7 +4684,7 @@
  (action
   (with-stdout-to sequence.ml.stdout
    (with-stderr-to sequence.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --sequence-blank-line=compact --max-iter=3 %{dep:tests/sequence.ml})))))
+     (run %{bin:ocamlformat} --margin-check --sequence-blank-line=compact %{dep:tests/sequence.ml})))))
 
 (rule
  (alias runtest)
