@@ -22,7 +22,6 @@ We actively welcome pull requests.
 4. If you have added code that should be tested, add tests (they should be located in the `tests/passing` directory).
 '.
 5. Ensure the test suite passes (see [Running the tests](#running-the-tests)).
-6. If you haven't already, complete the Contributor License Agreement ("CLA").
 
 When acknowledged, the project maintainers will add [labels](#ocamlformat-labels) to your pull request throughout its lifespan.
 
@@ -51,19 +50,11 @@ bashcompinit
 source <path-to-ocamlformat>/tools/ocamlformat_test_branch
 ```
 
-## Contributor License Agreement ("CLA")
-
-In order to accept your pull request, we need you to submit a CLA. You only need to do this once to work on any of Facebook's open source projects. Complete your CLA here: <https://code.facebook.com/cla>. If you have any questions, please drop us a line at cla@fb.com.
-
 ## License
 
 By contributing to OCamlFormat, you agree that your contributions will be licensed under the LICENSE file in the root directory of this source tree.
 
 ## OCamlFormat Labels
-
-### Pull Request specific
-
-- [CLA Signed](https://github.com/ocaml-ppx/ocamlformat/labels/CLA%20Signed): Added automatically as long as the user signed the Contributor License Agreement (see above)
 
 ### Issue specific
 
