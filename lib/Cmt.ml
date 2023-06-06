@@ -126,12 +126,19 @@ let unindent_lines ~opn_offset txt =
   | hd :: tl -> unindent_lines ~opn_offset hd tl
 
 let split_asterisk_prefixed =
-  let line_is_asterisk_prefixed s =
+  let line_is_asterisk_prefixed s = String.is_prefix s ~prefix:"*" in
+  let line_is_asterisk_or_space_prefixed s =
     if String.is_empty s then true
     else match s.[0] with '*' | ' ' -> true | _ -> false
   in
+  (* Whether every lines starts with "*" or " ". At least one line must start
+     with a "*" and completely empty lines are allowed. *)
+  let lines_are_asterisk_prefixed lines =
+    List.exists ~f:line_is_asterisk_prefixed lines
+    && List.for_all ~f:line_is_asterisk_or_space_prefixed lines
+  in
   function
-  | hd :: (_ :: _ as tl) when List.for_all ~f:line_is_asterisk_prefixed tl ->
+  | hd :: (_ :: _ as tl) when lines_are_asterisk_prefixed tl ->
       Some (hd :: List.map tl ~f:(fun s -> String.drop_prefix s 1))
   | _ -> None
 
