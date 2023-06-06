@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- Consistent formatting of comments (#2371, @Julow)
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
