@@ -494,14 +494,14 @@ module Wrapped = struct
 end
 
 module Asterisk_prefixed = struct
-  let fmt ~pro ~epi lines =
-    let open Fmt in
-    let fmt_lines =
-      match lines with
-      | hd :: tl -> str hd $ list tl "" (fun s -> fmt "@,*" $ str s)
-      | [] -> noop
-    in
-    vbox 1 (pro $ fmt_lines $ epi)
+  open Fmt
+
+  let fmt_line ~first:_ ~last s =
+    if last && String.is_empty s then fmt "@," else fmt "@,*" $ str s
+
+  let fmt ~pro ~epi = function
+    | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
+    | [] -> noop
 end
 
 module Unwrapped = struct

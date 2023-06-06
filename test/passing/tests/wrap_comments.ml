@@ -54,6 +54,16 @@ let _ =
   ()
 ;;
 
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+ *)
+
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
@@ -179,3 +189,13 @@ let _ =
   *)
   ()
 ;;
+
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+ *)

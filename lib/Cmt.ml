@@ -125,9 +125,13 @@ let unindent_lines ~opn_offset txt =
   | [] -> []
   | hd :: tl -> unindent_lines ~opn_offset hd tl
 
-let split_asterisk_prefixed = function
-  | hd :: (_ :: _ as tl)
-    when List.for_all ~f:(String.is_prefix ~prefix:"*") tl ->
+let split_asterisk_prefixed =
+  let line_is_asterisk_prefixed s =
+    if String.is_empty s then true
+    else match s.[0] with '*' | ' ' -> true | _ -> false
+  in
+  function
+  | hd :: (_ :: _ as tl) when List.for_all ~f:line_is_asterisk_prefixed tl ->
       Some (hd :: List.map tl ~f:(fun s -> String.drop_prefix s 1))
   | _ -> None
 
