@@ -51,9 +51,9 @@ let normalize_code conf (m : Ast_mapper.mapper) txt =
   | {ast; comments; _} ->
       let comments = dedup_cmts Structure ast comments in
       let print_comments fmt (l : Cmt.t list) =
-        List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-            Migrate_ast.Location.compare a b )
-        |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
+        List.sort l ~compare:(fun a b ->
+            Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
+        |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (Cmt.txt cmt))
       in
       let ast = m.structure m ast in
       Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation ast

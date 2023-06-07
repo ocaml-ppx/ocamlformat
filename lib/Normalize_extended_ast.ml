@@ -40,9 +40,9 @@ let dedup_cmts fragment ast comments =
 
 let normalize_comments dedup fmt comments =
   let comments = dedup comments in
-  List.sort comments ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-      Migrate_ast.Location.compare a b )
-  |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
+  List.sort comments ~compare:(fun a b ->
+      Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
+  |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (Cmt.txt cmt))
 
 let normalize_parse_result ast_kind ast comments =
   Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast

@@ -161,7 +161,7 @@ end = struct
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun map cmt ->
-        let pos = cmt.Cmt.loc.loc_start in
+        let pos = (Cmt.loc cmt).loc_start in
         Map.add_multi map ~key:pos ~data:cmt )
 
   let to_list map = List.concat (Map.data map)
@@ -188,16 +188,16 @@ end = struct
       | _ -> true
     in
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl
-      when is_adjacent ~filter:ignore_docstrings src prev loc -> (
+    | cmt :: _ as cmtl
+      when is_adjacent ~filter:ignore_docstrings src prev (Cmt.loc cmt) -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
-      | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
+      | [cmtl] when is_adjacent src (Cmt.loc (List.last_exn cmtl)) next ->
           let open Location in
-          let first_loc = (List.hd_exn cmtl).loc in
-          let last_loc = (List.last_exn cmtl).loc in
+          let first_loc = Cmt.loc (List.hd_exn cmtl) in
+          let last_loc = Cmt.loc (List.last_exn cmtl) in
           let same_line_as_prev l =
             prev.loc_end.pos_lnum = l.loc_start.pos_lnum
           in
@@ -211,7 +211,9 @@ end = struct
             | 0, _ -> `After_prev
             | 1, 1 ->
                 if
-                  Location.compare_start_col (List.last_exn cmtl).loc next
+                  Location.compare_start_col
+                    (Cmt.loc (List.last_exn cmtl))
+                    next
                   <= 0
                 then `Before_next
                 else `After_prev
@@ -229,8 +231,8 @@ end = struct
           let prev, next =
             if not (same_line_as_prev next) then
               let next, prev =
-                List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
-                    match decide l with
+                List.partition_tf cmtl ~f:(fun cmt ->
+                    match decide (Cmt.loc cmt) with
                     | `After_prev -> false
                     | `Before_next -> true )
               in
@@ -249,10 +251,10 @@ let add_cmts t position loc ?deep_loc cmts =
     let key =
       match deep_loc with
       | Some deep_loc ->
-          let cmt = List.last_exn cmtl in
+          let cmt_loc = Cmt.loc (List.last_exn cmtl) in
           if
-            is_adjacent t.source deep_loc cmt.loc
-            && not (Source.begins_line ~ignore_spaces:true t.source cmt.loc)
+            is_adjacent t.source deep_loc cmt_loc
+            && not (Source.begins_line ~ignore_spaces:true t.source cmt_loc)
           then deep_loc
           else loc
       | None -> loc
@@ -294,8 +296,8 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
       | Some prev_loc -> add_cmts t `After prev_loc cmts ?deep_loc
       | None ->
           if t.debug then
-            List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-                Format_.eprintf "lost: %s@\n%!" txt ) ) ;
+            List.iter (CmtSet.to_list cmts) ~f:(fun cmt ->
+                Format_.eprintf "lost: %s@\n%!" (Cmt.txt cmt) ) ) ;
       deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
@@ -321,8 +323,8 @@ let relocate (t : t) ~src ~before ~after =
 
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
-    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
-        Location.compare_end loc sep < 0 )
+    Multimap.partition_multi map ~src ~dst ~f:(fun cmt ->
+        Location.compare_end (Cmt.loc cmt) sep < 0 )
   in
   update_cmts t `Before ~f ; update_cmts t `Within ~f
 
@@ -446,7 +448,8 @@ let find_cmts ?(filter = Fn.const true) t pos loc =
       update_cmts t pos ~f:(Map.set ~key:loc ~data:not_picked) ;
       picked )
 
-let break_comment_group source {Cmt.loc= a; _} {Cmt.loc= b; _} =
+let break_comment_group source a b =
+  let a = Cmt.loc a and b = Cmt.loc b in
   let vertical_align =
     Location.line_difference a b = 1 && Location.compare_start_col a b = 0
   in
@@ -592,7 +595,7 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
   let open Fmt in
   let break =
     fmt_if_k
-      (Poly.(pos = After) && String.contains cmt.Cmt.txt '\n')
+      (Poly.(pos = After) && String.contains (Cmt.txt cmt) '\n')
       (break_unless_newline 1000 0)
   in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
@@ -605,7 +608,8 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
   $
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
-  | Doc txt -> Doc.fmt ~pro ~epi ~fmt_code conf ~loc:cmt.loc txt ~offset
+  | Doc txt ->
+      Doc.fmt ~pro ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
   | Normal txt ->
       if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
       else Unwrapped.fmt ~pro ~epi txt
@@ -625,9 +629,12 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
          $
          match next with
-         | Some ({loc= next; _} :: _) ->
-             let Cmt.{loc= last; _} = List.last_exn group in
-             fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
+         | Some (next :: _) ->
+             let last = List.last_exn group in
+             fmt_if
+               (Location.line_difference (Cmt.loc last) (Cmt.loc next) > 1)
+               "\n"
+             $ fmt "@ "
          | _ -> noop ) )
 
 (** Format comments for loc. *)
@@ -638,7 +645,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
   | None | Some [] -> noop
   | Some cmts ->
       let epi =
-        let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+        let last_loc = Cmt.loc (List.last_exn cmts) in
         let eol_cmt = Source.ends_line t.source last_loc in
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
         fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
@@ -671,7 +678,8 @@ module Toplevel = struct
     let open Fmt in
     match found with
     | None | Some [] -> noop
-    | Some (({loc= first_loc; _} : Cmt.t) :: _ as cmts) ->
+    | Some (first :: _ as cmts) ->
+        let first_loc = Cmt.loc first in
         let pro =
           match pos with
           | Before -> noop
@@ -683,7 +691,7 @@ module Toplevel = struct
               else break 1 0
         in
         let epi =
-          let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+          let last_loc = Cmt.loc (List.last_exn cmts) in
           match pos with
           | Before | Within ->
               if Source.ends_line t.source last_loc then
@@ -715,8 +723,8 @@ let drop_inside t loc =
   let clear pos =
     update_cmts t pos
       ~f:
-        (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
-             not (Location.contains loc cmt_loc) ) )
+        (Multimap.filter ~f:(fun cmt ->
+             not (Location.contains loc (Cmt.loc cmt)) ) )
   in
   clear `Before ;
   clear `Within ;
