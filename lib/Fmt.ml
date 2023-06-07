@@ -319,39 +319,3 @@ and vbox_if ?name cnd n = wrap_if_k cnd (open_vbox ?name n) close_box
 and hvbox_if ?name cnd n = wrap_if_k cnd (open_hvbox ?name n) close_box
 
 and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
-
-(** Text filling --------------------------------------------------------*)
-
-let fill_text ?(epi = "") text =
-  assert (not (String.is_empty text)) ;
-  let fmt_line line =
-    let words =
-      List.filter ~f:(Fn.non String.is_empty)
-        (String.split_on_chars line
-           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
-    in
-    list words "@ " str
-  in
-  let lines =
-    List.remove_consecutive_duplicates
-      ~equal:(fun x y -> String.is_empty x && String.is_empty y)
-      (String.split (String.rstrip text) ~on:'\n')
-  in
-  let pro = if String.starts_with_whitespace text then " " else "" in
-  let epi =
-    if String.length text > 1 && String.ends_with_whitespace text then
-      " " ^ epi
-    else epi
-  in
-  str pro
-  $ hvbox 0
-      (hovbox 0
-         ( list_pn lines (fun ~prev:_ curr ~next ->
-               fmt_line curr
-               $
-               match next with
-               | Some str when String.for_all str ~f:Char.is_whitespace ->
-                   close_box $ fmt "\n@," $ open_hovbox 0
-               | Some _ when not (String.is_empty curr) -> fmt "@ "
-               | _ -> noop )
-         $ str epi ) )

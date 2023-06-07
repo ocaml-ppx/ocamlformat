@@ -9,10 +9,22 @@ type t =
 let _ =
   [ "a"
   ; "b" (* first line second line *)
-  ; "c" (* first line second line *)
-  ; "d" (* first line second line *)
-  ; "e" (* first line second line *)
-  ; "f" (* first line second line *)
+  ; "c"
+    (* first line
+
+       second line *)
+  ; "d"
+    (* first line
+
+       second line *)
+  ; "e"
+    (* first line
+
+       second line *)
+  ; "f"
+    (* first line
+
+       second line *)
   ; "g" ]
 
 let _ =
@@ -29,6 +41,16 @@ let _ =
 let _ =
   (* blah blah *)
   ()
+
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+*)
 
 [@@@ocamlformat "wrap-comments=false"]
 
@@ -87,33 +109,33 @@ let _ =
   [ "a"
   ; "b"
     (* first line
-       second line *)
+     second line *)
   ; "c"
     (* first line
 
-       second line
+     second line
     *)
   ; "d"
     (* first line
 
 
-       second line *)
+     second line *)
   ; "e"
     (* first line
 
-       second line
+     second line
     *)
   ; "f"
     (* first line
 
-       second line
+     second line
     *)
   ; "g" ]
 
 let _ =
   let _ =
     (* This is indented 7
-       This 0 *)
+This 0 *)
     0
   in
   0
@@ -146,7 +168,17 @@ let _ =
   ()
 
 let _ =
-  (*
-     blah blah
+  (* 
+    blah blah
   *)
   ()
+
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+*)

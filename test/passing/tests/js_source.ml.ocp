@@ -10217,8 +10217,7 @@ val fooooooooooooooooooooooooooooooo
   : (fooooooooooooooooooooooooooooooo, fooooooooooooooooooooooooooooooo)
       fooooooooooooooooooooooooooooooo
 
-(*
-*)
+(* *)
 
 (** xxx *)
 include S1
@@ -10294,7 +10293,7 @@ type t =
 
 (*$
   {|
-        f|}
+       f|}
 *)
 
 type t =
@@ -10322,15 +10321,16 @@ let _ =
 (*$*)
 
 (*$
-  [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  zzzzzzzzzzzzzzzzzzzzzzzzzzzz
-      |}]
+  [%string
+    {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    |}]
 *)
 (*$*)
 
 (*$
   {|
-        f|}
+       f|}
 *)
 
 let () =

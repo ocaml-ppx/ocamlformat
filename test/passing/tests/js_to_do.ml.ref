@@ -14,7 +14,8 @@ let _ =
 (* js-type *)
 
 (* The following tests incorporate several subtle and different indentation
-   ideas. Please consider this only a proposal for discussion, for now.
+   ideas. Please consider this only a proposal for discussion, for
+   now.
 
    First, notice the display treatment of "(,)" tuples, analogous to "[;]"
    lists. While "(,)" is an intensional combination of "()" and ",", unlike

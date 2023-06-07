@@ -161,7 +161,7 @@ end = struct
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun map cmt ->
-        let pos = cmt.Cmt.loc.loc_start in
+        let pos = (Cmt.loc cmt).loc_start in
         Map.add_multi map ~key:pos ~data:cmt )
 
   let to_list map = List.concat (Map.data map)
@@ -188,16 +188,16 @@ end = struct
       | _ -> true
     in
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl
-      when is_adjacent ~filter:ignore_docstrings src prev loc -> (
+    | cmt :: _ as cmtl
+      when is_adjacent ~filter:ignore_docstrings src prev (Cmt.loc cmt) -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
-      | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
+      | [cmtl] when is_adjacent src (Cmt.loc (List.last_exn cmtl)) next ->
           let open Location in
-          let first_loc = (List.hd_exn cmtl).loc in
-          let last_loc = (List.last_exn cmtl).loc in
+          let first_loc = Cmt.loc (List.hd_exn cmtl) in
+          let last_loc = Cmt.loc (List.last_exn cmtl) in
           let same_line_as_prev l =
             prev.loc_end.pos_lnum = l.loc_start.pos_lnum
           in
@@ -211,7 +211,9 @@ end = struct
             | 0, _ -> `After_prev
             | 1, 1 ->
                 if
-                  Location.compare_start_col (List.last_exn cmtl).loc next
+                  Location.compare_start_col
+                    (Cmt.loc (List.last_exn cmtl))
+                    next
                   <= 0
                 then `Before_next
                 else `After_prev
@@ -229,8 +231,8 @@ end = struct
           let prev, next =
             if not (same_line_as_prev next) then
               let next, prev =
-                List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
-                    match decide l with
+                List.partition_tf cmtl ~f:(fun cmt ->
+                    match decide (Cmt.loc cmt) with
                     | `After_prev -> false
                     | `Before_next -> true )
               in
@@ -249,10 +251,10 @@ let add_cmts t position loc ?deep_loc cmts =
     let key =
       match deep_loc with
       | Some deep_loc ->
-          let cmt = List.last_exn cmtl in
+          let cmt_loc = Cmt.loc (List.last_exn cmtl) in
           if
-            is_adjacent t.source deep_loc cmt.loc
-            && not (Source.begins_line ~ignore_spaces:true t.source cmt.loc)
+            is_adjacent t.source deep_loc cmt_loc
+            && not (Source.begins_line ~ignore_spaces:true t.source cmt_loc)
           then deep_loc
           else loc
       | None -> loc
@@ -294,8 +296,8 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
       | Some prev_loc -> add_cmts t `After prev_loc cmts ?deep_loc
       | None ->
           if t.debug then
-            List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-                Format_.eprintf "lost: %s@\n%!" txt ) ) ;
+            List.iter (CmtSet.to_list cmts) ~f:(fun cmt ->
+                Format_.eprintf "lost: %s@\n%!" (Cmt.txt cmt) ) ) ;
       deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
@@ -321,8 +323,8 @@ let relocate (t : t) ~src ~before ~after =
 
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
-    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
-        Location.compare_end loc sep < 0 )
+    Multimap.partition_multi map ~src ~dst ~f:(fun cmt ->
+        Location.compare_end (Cmt.loc cmt) sep < 0 )
   in
   update_cmts t `Before ~f ; update_cmts t `Within ~f
 
@@ -446,7 +448,8 @@ let find_cmts ?(filter = Fn.const true) t pos loc =
       update_cmts t pos ~f:(Map.set ~key:loc ~data:not_picked) ;
       picked )
 
-let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
+let break_comment_group source a b =
+  let a = Cmt.loc a and b = Cmt.loc b in
   let vertical_align =
     Location.line_difference a b = 1 && Location.compare_start_col a b = 0
   in
@@ -456,201 +459,166 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
          (Source.tokens_between source a.loc_end b.loc_start
               ~filter:(function _ -> true) )
   in
-  not
-    ( (Location.is_single_line a margin && Location.is_single_line b margin)
-    && (vertical_align || horizontal_align) )
+  not (vertical_align || horizontal_align)
+
+let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
+
+module Wrapped = struct
+  let fmt ~pro ~epi text =
+    let open Fmt in
+    assert (not (String.is_empty text)) ;
+    let prefix = if String.starts_with_whitespace text then " " else ""
+    and suffix = if String.ends_with_whitespace text then " " else "" in
+    let fmt_line line =
+      let words =
+        List.filter ~f:(Fn.non String.is_empty)
+          (String.split_on_chars line
+             ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
+      in
+      list words "@ " str
+    in
+    let lines =
+      List.remove_consecutive_duplicates
+        ~equal:(fun x y -> String.is_empty x && String.is_empty y)
+        (String.split (String.rstrip text) ~on:'\n')
+    in
+    pro $ str prefix
+    $ hovbox 0
+        ( list_pn lines (fun ~prev:_ curr ~next ->
+              fmt_line curr
+              $
+              match next with
+              | Some str when is_only_whitespaces str -> fmt "\n@\n"
+              | Some _ when not (String.is_empty curr) -> fmt "@ "
+              | _ -> noop )
+        $ str suffix $ epi )
+end
 
 module Asterisk_prefixed = struct
-  let split Cmt.{txt; loc= {Location.loc_start; _}} =
-    let len = Position.column loc_start + 3 in
-    let pat =
-      String.Search_pattern.create
-        (String.init len ~f:(function
-          | 0 -> '\n'
-          | n when n < len - 1 -> ' '
-          | _ -> '*' ) )
-    in
-    let rec split_ pos =
-      match String.Search_pattern.index pat ~pos ~in_:txt with
-      | Some 0 -> "" :: split_ len
-      | Some idx -> String.sub txt ~pos ~len:(idx - pos) :: split_ (idx + len)
-      | _ ->
-          let drop = function ' ' | '\t' -> true | _ -> false in
-          let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-          if String.is_empty line then [" "]
-          else if Char.equal line.[String.length line - 1] '\n' then
-            [String.drop_suffix line 1; ""]
-          else if Char.is_whitespace txt.[String.length txt - 1] then
-            [line ^ " "]
-          else [line]
-    in
-    split_ 0
+  open Fmt
 
-  let fmt lines =
-    let open Fmt in
-    vbox 1
-      ( fmt "(*"
-      $ list_fl lines (fun ~first:_ ~last line ->
-            match line with
-            | "" when last -> fmt ")"
-            | _ -> str line $ fmt_or last "*)" "@,*" ) )
+  let fmt_line ~first:_ ~last s =
+    if last && is_only_whitespaces s then fmt "@," else fmt "@,*" $ str s
+
+  let fmt ~pro ~epi = function
+    | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
+    | [] -> noop
 end
 
 module Unwrapped = struct
-  let fmt_multiline_cmt ?epi ~offset ~starts_with_sp lines =
-    let open Fmt in
-    let is_white_line s = String.for_all s ~f:Char.is_whitespace in
-    let unindented = Cmt.unindent_lines ~offset lines in
-    let fmt_line ~first ~last:_ s =
-      let sep, sp =
-        if is_white_line s then (str "\n", noop)
-        else (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
-      in
-      fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
-    in
-    vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
+  open Fmt
 
-  let fmt ~offset s =
-    let open Fmt in
-    let is_sp = function ' ' | '\t' -> true | _ -> false in
-    match String.split_lines (String.rstrip s) with
-    | first_line :: _ :: _ as lines when not (String.is_empty first_line) ->
-        let epi =
-          (* Preserve position of closing but strip empty lines at the end *)
-          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
-          | Some i when Char.( = ) s.[i] '\n' ->
-              break 1000 (-2) (* Break before closing *)
-          | Some i when i < String.length s - 1 ->
-              str " " (* Preserve a space at the end *)
-          | _ -> noop
-        in
-        (* Preserve the first level of indentation *)
-        let starts_with_sp = is_sp first_line.[0] in
-        wrap "(*" "*)"
-        @@ fmt_multiline_cmt ~offset ~epi ~starts_with_sp lines
-    | _ -> wrap "(*" "*)" @@ str s
+  let has_trailing_empty_lines s =
+    let pos =
+      match String.rfindi s ~f:(fun _ c -> not (Char.is_whitespace c)) with
+      | Some i -> i + 1
+      | None -> 0
+    in
+    String.contains ~pos s '\n'
+
+  let fmt_line ~first:_ ~last:_ l =
+    (* The last line will be followed by the [epi]. *)
+    str "\n" $ str l
+
+  (** [txt] contains trailing spaces and leading/trailing empty lines. *)
+  let fmt ~pro ~epi txt =
+    let txt, epi =
+      (* Preserve one trailing newline. *)
+      if has_trailing_empty_lines txt then
+        (String.rstrip txt, fmt "@\n" $ epi)
+      else (txt, epi)
+    in
+    match String.split ~on:'\n' txt with
+    | hd :: tl ->
+        vbox 0 ~name:"unwrapped" (pro $ str hd $ list_fl tl fmt_line) $ epi
+    | [] -> noop
 end
 
 module Verbatim = struct
-  let fmt s (pos : Cmt.pos) =
+  let fmt ~pro ~epi s =
     let open Fmt in
-    fmt_if_k
-      (Poly.(pos = After) && String.contains s '\n')
-      (break_unless_newline 1000 0)
-    $ wrap "(*" "*)" @@ str s
+    pro $ str s $ epi
 end
 
 module Cinaps = struct
   open Fmt
 
-  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
-  let fmt ~cls code =
-    let wrap k = hvbox 2 (fmt "(*$" $ k $ fmt cls) in
+  let fmt_code_str code =
     match String.split_lines code with
-    | [] | [""] -> wrap (str " ")
-    | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
+    | [] | [""] -> str " "
+    | [line] -> fmt "@ " $ str line $ fmt "@;<1 -2>"
     | lines ->
         let fmt_line = function
           | "" -> fmt "\n"
           | line -> fmt "@\n" $ str line
         in
-        wrap (list lines "" fmt_line $ fmt "@;<1000 -2>")
+        list lines "" fmt_line $ fmt "@;<1000 -2>"
+
+  (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
+  let fmt ~pro ~epi ~fmt_code conf ~offset code =
+    let code =
+      match fmt_code conf ~offset code with
+      | Ok code -> code
+      | Error _ -> code
+    in
+    hvbox 2 (pro $ fmt_code_str code $ epi)
 end
 
-module Ocp_indent_compat = struct
-  let fmt ~fmt_code conf txt ~loc ~offset (pos : Cmt.pos) ~post =
-    let pre, doc, post =
-      let lines = String.split_lines txt in
+module Doc = struct
+  let fmt ~pro ~epi ~fmt_code conf ~loc txt ~offset =
+    (* Whether the doc starts and ends with an empty line. *)
+    let pre_nl, trail_nl =
+      let lines = String.split ~on:'\n' txt in
       match lines with
-      | [] | [_] -> (false, txt, false)
+      | [] | [_] -> (false, false)
       | h :: _ ->
-          let pre = String.is_empty (String.strip h) in
-          let doc = if pre then String.lstrip txt else txt in
-          let doc = if Option.is_some post then String.rstrip doc else doc in
-          (pre, doc, Option.is_some post)
+          let l = List.last_exn lines in
+          (is_only_whitespaces h, is_only_whitespaces l)
     in
-    let parsed = Docstring.parse ~loc doc in
-    (* Disable warnings when parsing fails *)
+    let txt = if pre_nl then String.lstrip txt else txt in
+    let txt = if trail_nl then String.rstrip txt else txt in
+    let parsed = Docstring.parse ~loc txt in
+    (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
+    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
     let open Fmt in
-    fmt_if_k
-      (Poly.(pos = After) && String.contains txt '\n')
-      (break_unless_newline 1000 0)
-    $ wrap "(*" "*)"
-      @@ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "@\n")
-      @@ doc
+    hvbox 2
+      ( pro
+      $ fmt_if pre_nl "@;<1000 1>"
+      $ doc
+      $ fmt_if trail_nl "@;<1000 -2>"
+      $ epi )
 end
 
-let fmt_cmt (conf : Conf.t) (cmt : Cmt.t) ~fmt_code pos =
-  let offset =
-    let pos = cmt.loc.Location.loc_start in
-    pos.pos_cnum - pos.pos_bol + 2
-  in
-  let mode =
-    match cmt.txt with
-    | "" -> impossible "not produced by parser"
-    (* "(**)" is not parsed as a docstring but as a regular comment
-       containing '*' and would be rewritten as "(***)" *)
-    | "*" when Location.width cmt.loc = 4 -> `Verbatim ""
-    | "*" -> `Verbatim "*"
-    | "$" -> `Verbatim "$"
-    (* Qtest pragmas *)
-    | str when Char.(str.[0] = '$' && not (is_whitespace str.[1])) ->
-        `Verbatim str
-    | str when Char.equal str.[0] '$' -> (
-        let dollar_suf = Char.equal str.[String.length str - 1] '$' in
-        let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
-        let len = String.length str - if dollar_suf then 2 else 1 in
-        let offset = offset + 1 in
-        let source = String.sub ~pos:1 ~len str in
-        let source =
-          String.split_lines source
-          |> Cmt.unindent_lines ~offset
-          |> String.concat ~sep:"\n"
-        in
-        match fmt_code conf ~offset source with
-        | Ok formatted -> `Code (formatted, cls)
-        | Error (`Msg _) -> `Unwrapped (str, None) )
-    | str when Char.equal str.[0] '=' -> `Verbatim cmt.txt
-    | _ -> (
-        let txt =
-          (* Windows compatibility *)
-          let filter = function '\r' -> false | _ -> true in
-          String.filter cmt.txt ~f:filter
-        in
-        let cmt = Cmt.create txt cmt.loc in
-        match Asterisk_prefixed.split cmt with
-        | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-        (* Comments like [(*\n*)] would be normalized as [(* *)] *)
-        | [""; ""] when conf.fmt_opts.ocp_indent_compat.v ->
-            `Unwrapped (txt, None)
-        | [""; ""] -> `Verbatim " "
-        | [text] when conf.fmt_opts.wrap_comments.v -> `Wrapped (text, "*)")
-        | [text; ""] when conf.fmt_opts.wrap_comments.v ->
-            `Wrapped (text, " *)")
-        | [_] -> `Unwrapped (txt, None)
-        | [_; ""] -> `Unwrapped (txt, Some `Ln)
-        | lines -> `Asterisk_prefixed lines )
-  in
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
   let open Fmt in
-  match mode with
-  | `Verbatim x -> Verbatim.fmt x pos
-  | `Code (code, cls) -> Cinaps.fmt ~cls code
-  | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
-  | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
-      Ocp_indent_compat.fmt ~fmt_code conf x ~loc:cmt.loc ~offset pos
-        ~post:ln
-  | `Unwrapped (x, _) -> Unwrapped.fmt ~offset x
-  | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
+  let break =
+    fmt_if_k
+      (Poly.(pos = After) && String.contains (Cmt.txt cmt) '\n')
+      (break_unless_newline 1000 0)
+  in
+  let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
+  let decoded = Cmt.decode ~parse_comments_as_doc cmt in
+  (* TODO: Offset should be computed from location. *)
+  let offset = 2 + String.length decoded.prefix in
+  let pro = str "(*" $ str decoded.prefix
+  and epi = str decoded.suffix $ str "*)" in
+  break
+  $
+  match decoded.kind with
+  | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
+  | Doc txt ->
+      Doc.fmt ~pro ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
+  | Normal txt ->
+      if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
+      else Unwrapped.fmt ~pro ~epi txt
+  | Code code -> Cinaps.fmt ~pro ~epi ~fmt_code conf ~offset code
+  | Asterisk_prefixed lines -> Asterisk_prefixed.fmt ~pro ~epi lines
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
-  let groups =
-    List.group cmts
-      ~break:(break_comment_group t.source conf.fmt_opts.margin.v)
-  in
+  let groups = List.group cmts ~break:(break_comment_group t.source) in
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
@@ -661,9 +629,12 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
          $
          match next with
-         | Some ({loc= next; _} :: _) ->
-             let Cmt.{loc= last; _} = List.last_exn group in
-             fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
+         | Some (next :: _) ->
+             let last = List.last_exn group in
+             fmt_if
+               (Location.line_difference (Cmt.loc last) (Cmt.loc next) > 1)
+               "\n"
+             $ fmt "@ "
          | _ -> noop ) )
 
 (** Format comments for loc. *)
@@ -674,7 +645,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
   | None | Some [] -> noop
   | Some cmts ->
       let epi =
-        let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+        let last_loc = Cmt.loc (List.last_exn cmts) in
         let eol_cmt = Source.ends_line t.source last_loc in
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
         fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
@@ -707,7 +678,8 @@ module Toplevel = struct
     let open Fmt in
     match found with
     | None | Some [] -> noop
-    | Some (({loc= first_loc; _} : Cmt.t) :: _ as cmts) ->
+    | Some (first :: _ as cmts) ->
+        let first_loc = Cmt.loc first in
         let pro =
           match pos with
           | Before -> noop
@@ -719,7 +691,7 @@ module Toplevel = struct
               else break 1 0
         in
         let epi =
-          let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+          let last_loc = Cmt.loc (List.last_exn cmts) in
           match pos with
           | Before | Within ->
               if Source.ends_line t.source last_loc then
@@ -751,8 +723,8 @@ let drop_inside t loc =
   let clear pos =
     update_cmts t pos
       ~f:
-        (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
-             not (Location.contains loc cmt_loc) ) )
+        (Multimap.filter ~f:(fun cmt ->
+             not (Location.contains loc (Cmt.loc cmt)) ) )
   in
   clear `Before ;
   clear `Within ;
@@ -779,24 +751,3 @@ let remaining_comments t =
 let remaining_before t loc = Map.find_multi t.cmts_before loc
 
 let remaining_locs t = Set.to_list t.remaining
-
-let is_docstring (conf : Conf.t) (Cmt.{txt; loc} as cmt) =
-  match txt with
-  | "" | "*" -> Either.Second cmt
-  | _ when Char.equal txt.[0] '*' ->
-      (* Doc comments here (comming directly from the lexer) include their
-         leading star [*]. It is not part of the docstring and should be
-         dropped. When [ocp-indent-compat] is set, regular comments are
-         treated as doc-comments. *)
-      let txt = String.drop_prefix txt 1 in
-      let cmt = Cmt.create txt loc in
-      if conf.fmt_opts.parse_docstrings.v then Either.First cmt
-      else Either.Second cmt
-  | _ when Char.equal txt.[0] '$' -> Either.Second cmt
-  | _
-    when conf.fmt_opts.ocp_indent_compat.v
-         && conf.fmt_opts.parse_docstrings.v ->
-      (* In ocp_indent_compat mode, comments are parsed like docstrings. *)
-      let cmt = Cmt.create txt loc in
-      Either.First cmt
-  | _ -> Either.Second cmt

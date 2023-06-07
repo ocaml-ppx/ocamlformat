@@ -16,10 +16,6 @@ val equal :
   'a Extended_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
-val diff_docstrings :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (unit, Cmt.error list) Result.t
-(** Difference between two lists of doc comments. *)
-
 val diff_cmts :
   Conf.t -> Cmt.t list -> Cmt.t list -> (unit, Cmt.error list) Result.t
 (** Difference between two lists of comments. *)
