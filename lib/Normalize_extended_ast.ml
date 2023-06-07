@@ -29,7 +29,7 @@ let dedup_cmts fragment ast comments =
                 ; _ } ]
         ; _ }
         when Ast.Attr.is_doc atr ->
-          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in

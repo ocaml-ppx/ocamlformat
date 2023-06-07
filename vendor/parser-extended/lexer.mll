@@ -289,17 +289,18 @@ let warn_latin1 lexbuf =
     (Location.curr lexbuf)
     "ISO-Latin1 characters in identifiers"
 
-let handle_docstrings = ref true
-let comment_list = ref []
+type comment = [ `Comment of string | `Docstring of string ]
 
-let add_comment com =
-  comment_list := com :: !comment_list
+let handle_docstrings = ref true
+let comment_list : (comment * _) list ref = ref []
+
+let add_comment (txt, loc) =
+  comment_list := (`Comment txt, loc) :: !comment_list
 
 let add_docstring_comment ds =
-  let com =
-    ("*" ^ Docstrings.docstring_body ds, Docstrings.docstring_loc ds)
-  in
-    add_comment com
+  let txt = Docstrings.docstring_body ds
+  and loc = Docstrings.docstring_loc ds in
+  comment_list := (`Docstring txt, loc) :: !comment_list
 
 let comments () = List.rev !comment_list
 

@@ -12,21 +12,30 @@
 open Migrate_ast
 
 module T = struct
-  type t = {txt: string; loc: Location.t}
+  type t =
+    | Comment of {txt: string; loc: Location.t}
+    | Docstring of {txt: string; loc: Location.t}
 
-  let loc t = t.loc
+  let loc (Comment {loc; _} | Docstring {loc; _}) = loc
 
-  let txt t = t.txt
+  let txt (Comment {txt; _} | Docstring {txt; _}) = txt
 
-  let create txt loc = {txt; loc}
+  let create_comment txt loc = Comment {txt; loc}
 
-  let compare =
-    Comparable.lexicographic
-      [ Comparable.lift String.compare ~f:txt
-      ; Comparable.lift Location.compare ~f:loc ]
+  let create_docstring txt loc = Docstring {txt; loc}
 
-  let sexp_of_t {txt; loc} =
-    Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
+  let compare = Poly.compare
+
+  let sexp_of_t cmt =
+    let kind, txt, loc =
+      match cmt with
+      | Comment {txt; loc} -> ("comment", txt, loc)
+      | Docstring {txt; loc} -> ("docstring", txt, loc)
+    in
+    Sexp.List
+      [ Sexp.Atom kind
+      ; Sexp.Atom txt
+      ; Sexp.Atom (Format.asprintf "%a" Migrate_ast.Location.fmt loc) ]
 end
 
 include T
@@ -137,7 +146,7 @@ let split_asterisk_prefixed =
 
 let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
 
-let decode ~parse_comments_as_doc {txt; loc} =
+let decode_comment ~parse_comments_as_doc txt loc =
   let txt =
     (* Windows compatibility *)
     let f = function '\r' -> false | _ -> true in
@@ -164,7 +173,6 @@ let decode ~parse_comments_as_doc {txt; loc} =
         let code = String.concat ~sep:"\n" lines in
         mk ~prefix:"$" ~suffix (Code code)
     | '=' -> mk (Verbatim txt)
-    | '*' -> mk ~prefix:"*" (Doc (String.drop_prefix txt 1))
     | _ when is_all_whitespace txt ->
         mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
     | _ when parse_comments_as_doc -> mk (Doc txt)
@@ -194,3 +202,13 @@ let decode ~parse_comments_as_doc {txt; loc} =
     | ("*" | "$") as txt -> mk (Verbatim txt)
     | "\n" | " " -> mk (Verbatim " ")
     | _ -> mk (Normal txt)
+
+let decode_docstring _loc = function
+  | "" -> mk (Verbatim "")
+  | ("*" | "$") as txt -> mk (Verbatim txt)
+  | "\n" | " " -> mk (Verbatim " ")
+  | txt -> mk ~prefix:"*" (Doc txt)
+
+let decode ~parse_comments_as_doc = function
+  | Comment {txt; loc} -> decode_comment ~parse_comments_as_doc txt loc
+  | Docstring {txt; loc} -> decode_docstring loc txt

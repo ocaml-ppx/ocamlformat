@@ -84,9 +84,11 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~input_name
         let ast = parse fragment ~input_name source in
         Warnings.check_fatal () ;
         let comments =
-          List.map
-            ~f:(fun (txt, loc) -> Cmt.create txt loc)
-            (Lexer.comments ())
+          let mk_cmt = function
+            | `Comment txt, loc -> Cmt.create_comment txt loc
+            | `Docstring txt, loc -> Cmt.create_docstring txt loc
+          in
+          List.map ~f:mk_cmt (Lexer.comments ())
         in
         let tokens =
           let lexbuf, _ = fresh_lexbuf source in
