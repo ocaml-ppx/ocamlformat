@@ -495,7 +495,7 @@ module Asterisk_prefixed = struct
   open Fmt
 
   let fmt_line ~first:_ ~last s =
-    if last && String.is_empty s then fmt "@," else fmt "@,*" $ str s
+    if last && is_only_whitespaces s then fmt "@," else fmt "@,*" $ str s
 
   let fmt ~pro ~epi = function
     | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
