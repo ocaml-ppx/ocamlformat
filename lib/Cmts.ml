@@ -513,9 +513,9 @@ module Unwrapped = struct
     in
     String.contains ~pos s '\n'
 
-  let fmt_line ~first:_ ~last l =
+  let fmt_line ~first:_ ~last:_ l =
     (* The last line will be followed by the [epi]. *)
-    if is_only_whitespaces l && not last then str "\n" else fmt "@," $ str l
+    str "\n" $ str l
 
   (** [txt] contains trailing spaces and leading/trailing empty lines. *)
   let fmt ~pro ~epi txt =

@@ -117,7 +117,7 @@ let unindent_lines ?max_indent ~content_offset txt =
 let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
 
 let split_asterisk_prefixed =
-  let prefix = " *" in
+  let prefix = "*" in
   let drop_prefix s = String.drop_prefix s (String.length prefix) in
   let rec lines_are_asterisk_prefixed = function
     | [] -> true
@@ -169,12 +169,9 @@ let decode ~parse_comments_as_doc {txt; loc} =
         mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
     | _ when parse_comments_as_doc -> mk (Doc txt)
     | _ -> (
-        (* Indentation baseline is at the level of the opening to avoid
-           indenting commented code. *)
         let lines =
-          let content_offset = opn_offset + 2
-          and max_indent = opn_offset - 1 in
-          unindent_lines ~max_indent ~content_offset txt
+          let content_offset = opn_offset + 2 in
+          unindent_lines ~content_offset txt
         in
         (* Don't add a space to the prefix if the first line was only
            spaces. *)
@@ -188,7 +185,7 @@ let decode ~parse_comments_as_doc {txt; loc} =
         match split_asterisk_prefixed lines with
         | Some deprefixed_lines ->
             mk ~prefix (Asterisk_prefixed deprefixed_lines)
-        | None -> mk ~prefix (Normal (String.concat ~sep:"\n" lines)) )
+        | None -> mk (Normal txt) )
   else
     match txt with
     (* "(**)" is not parsed as a docstring but as a regular comment
