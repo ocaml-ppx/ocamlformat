@@ -489,10 +489,10 @@ module Asterisk_prefixed = struct
     in
     split_ 0
 
-  let fmt lines =
+  let fmt ~opn lines =
     let open Fmt in
     vbox 1
-      ( fmt "(*"
+      ( opn
       $ list_fl lines (fun ~first:_ ~last line ->
             match line with
             | "" when last -> fmt ")"
@@ -513,7 +513,7 @@ module Unwrapped = struct
     in
     vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
-  let fmt ~offset s =
+  let fmt ~opn ~offset s =
     let open Fmt in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     match String.split_lines (String.rstrip s) with
@@ -529,9 +529,8 @@ module Unwrapped = struct
         in
         (* Preserve the first level of indentation *)
         let starts_with_sp = is_sp first_line.[0] in
-        wrap "(*" "*)"
-        @@ fmt_multiline_cmt ~offset ~epi ~starts_with_sp lines
-    | _ -> wrap "(*" "*)" @@ str s
+        opn $ fmt_multiline_cmt ~offset ~epi ~starts_with_sp lines $ str "*)"
+    | _ -> opn $ str s $ str "*)"
 end
 
 module Verbatim = struct
@@ -561,7 +560,7 @@ module Cinaps = struct
 end
 
 module Ocp_indent_compat = struct
-  let fmt ~fmt_code conf txt ~loc ~offset (pos : Cmt.pos) ~post =
+  let fmt ~fmt_code conf txt ~loc ~offset ~opn (pos : Cmt.pos) ~post =
     let pre, doc, post =
       let lines = String.split_lines txt in
       match lines with
@@ -581,9 +580,9 @@ module Ocp_indent_compat = struct
     fmt_if_k
       (Poly.(pos = After) && String.contains txt '\n')
       (break_unless_newline 1000 0)
-    $ wrap "(*" "*)"
-      @@ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "@\n")
-      @@ doc
+    $ opn
+    $ wrap_k (fmt_if pre "@;<1000 3>") (fmt_if post "@\n") doc
+    $ str "*)"
 end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
@@ -594,7 +593,7 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
   in
   let mode =
     match Cmt.txt cmt with
-    | "" -> impossible "not produced by parser"
+    | "" -> `Verbatim ""
     (* "(**)" is not parsed as a docstring but as a regular comment
        containing '*' and would be rewritten as "(***)" *)
     | "*" when Location.width loc = 4 -> `Verbatim ""
@@ -638,14 +637,15 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
         | lines -> `Asterisk_prefixed lines )
   in
   let open Fmt in
+  let opn = if Cmt.is_docstring cmt then str "(**" else str "(*" in
   match mode with
   | `Verbatim x -> Verbatim.fmt x pos
   | `Code (code, cls) -> Cinaps.fmt ~cls code
-  | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
+  | `Wrapped (x, epi) -> opn $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
-      Ocp_indent_compat.fmt ~fmt_code conf x ~loc ~offset pos ~post:ln
-  | `Unwrapped (x, _) -> Unwrapped.fmt ~offset x
-  | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x
+      Ocp_indent_compat.fmt ~fmt_code conf x ~loc ~offset ~opn pos ~post:ln
+  | `Unwrapped (x, _) -> Unwrapped.fmt ~opn ~offset x
+  | `Asterisk_prefixed x -> Asterisk_prefixed.fmt ~opn x
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
@@ -787,22 +787,15 @@ let remaining_before t loc = Map.find_multi t.cmts_before loc
 let remaining_locs t = Set.to_list t.remaining
 
 let is_docstring (conf : Conf.t) cmt =
-  match Cmt.txt cmt with
-  | "" | "*" -> Either.Second cmt
-  | txt when Char.equal txt.[0] '*' ->
-      (* Doc comments here (comming directly from the lexer) include their
-         leading star [*]. It is not part of the docstring and should be
-         dropped. When [ocp-indent-compat] is set, regular comments are
-         treated as doc-comments. *)
-      let txt = String.drop_prefix txt 1 in
-      let cmt = Cmt.create txt (Cmt.loc cmt) in
-      if conf.fmt_opts.parse_docstrings.v then Either.First cmt
-      else Either.Second cmt
-  | txt when Char.equal txt.[0] '$' -> Either.Second cmt
-  | txt
-    when conf.fmt_opts.ocp_indent_compat.v
-         && conf.fmt_opts.parse_docstrings.v ->
-      (* In ocp_indent_compat mode, comments are parsed like docstrings. *)
-      let cmt = Cmt.create txt (Cmt.loc cmt) in
-      Either.First cmt
-  | _ -> Either.Second cmt
+  let might_be_docstring cmt =
+    match Cmt.txt cmt with
+    | "" | "*" -> false
+    | txt -> not (Char.equal txt.[0] '$')
+  in
+  (* In ocp_indent_compat mode, comments are parsed like docstrings. *)
+  if
+    conf.fmt_opts.parse_docstrings.v
+    && ( Cmt.is_docstring cmt
+       || (conf.fmt_opts.ocp_indent_compat.v && might_be_docstring cmt) )
+  then Either.First cmt
+  else Either.Second cmt

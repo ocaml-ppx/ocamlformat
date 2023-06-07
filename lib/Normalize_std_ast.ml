@@ -33,7 +33,7 @@ let dedup_cmts fragment ast comments =
                 ; _ } ]
         ; _ }
         when is_doc atr ->
-          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
@@ -206,7 +206,7 @@ let moved_docstrings fragment c s1 s2 =
   let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
   let cmt_kind = `Doc_comment in
-  let cmt (loc, x) = Cmt.create x loc in
+  let cmt (loc, x) = Cmt.create_docstring x loc in
   let dropped x = {Cmt.kind= `Dropped (cmt x); cmt_kind} in
   let added x = {Cmt.kind= `Added (cmt x); cmt_kind} in
   let modified (x, y) = {Cmt.kind= `Modified (cmt x, cmt y); cmt_kind} in

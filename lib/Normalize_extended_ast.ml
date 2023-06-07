@@ -33,7 +33,7 @@ let dedup_cmts fragment ast comments =
                 ; _ } ]
         ; _ }
         when Ast.Attr.is_doc atr ->
-          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
@@ -187,7 +187,7 @@ let diff_docstrings c x y =
     docstring c ~normalize_code (Cmt.txt cmt)
   in
   let norm z =
-    let f cmt = Cmt.create (docstring cmt) (Cmt.loc cmt) in
+    let f cmt = Cmt.create_docstring (docstring cmt) (Cmt.loc cmt) in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
   diff ~f:norm ~cmt_kind:`Doc_comment x y
@@ -197,7 +197,9 @@ let diff_cmts (conf : Conf.t) x y =
   let normalize_code = normalize_code conf mapper in
   let norm z =
     let norm_non_code cmt =
-      Cmt.create (Docstring.normalize_text (Cmt.txt cmt)) (Cmt.loc cmt)
+      Cmt.create_comment
+        (Docstring.normalize_text (Cmt.txt cmt))
+        (Cmt.loc cmt)
     in
     let f z =
       match Cmt.txt z with
@@ -211,7 +213,7 @@ let diff_cmts (conf : Conf.t) x y =
             let source = String.sub ~pos:1 ~len str in
             let loc = Cmt.loc z in
             let offset = start_column loc + 3 in
-            Cmt.create (normalize_code ~offset source) loc
+            Cmt.create_comment (normalize_code ~offset source) loc
           else norm_non_code z
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
