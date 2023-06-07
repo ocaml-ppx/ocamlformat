@@ -130,7 +130,8 @@ let split_asterisk_prefixed =
   (* Check whether the second line is not empty to avoid matching a comment
      with no asterisks. *)
   | fst_line :: (snd_line :: _ as tl)
-    when lines_are_asterisk_prefixed tl && not (String.is_empty snd_line) ->
+    when lines_are_asterisk_prefixed tl && not (is_all_whitespace snd_line)
+    ->
       Some (fst_line :: List.map tl ~f:drop_prefix)
   | _ -> None
 
