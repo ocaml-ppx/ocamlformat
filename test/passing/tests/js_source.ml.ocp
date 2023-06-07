@@ -10089,9 +10089,10 @@ let _ =
 (*$*)
 
 (*$
-  [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  zzzzzzzzzzzzzzzzzzzzzzzzzzzz
-      |}]
+  [%string
+    {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    |}]
 *)
 (*$*)
 

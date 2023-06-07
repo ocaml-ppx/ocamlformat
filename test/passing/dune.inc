@@ -165,6 +165,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to asterisk_prefixed_cmts.ml.stdout
+   (with-stderr-to asterisk_prefixed_cmts.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/asterisk_prefixed_cmts.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/asterisk_prefixed_cmts.ml.ref asterisk_prefixed_cmts.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/asterisk_prefixed_cmts.ml.err asterisk_prefixed_cmts.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to attribute_and_expression.ml.stdout
    (with-stderr-to attribute_and_expression.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/attribute_and_expression.ml})))))

@@ -446,7 +446,7 @@ let find_cmts ?(filter = Fn.const true) t pos loc =
       update_cmts t pos ~f:(Map.set ~key:loc ~data:not_picked) ;
       picked )
 
-let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
+let break_comment_group source {Cmt.loc= a; _} {Cmt.loc= b; _} =
   let vertical_align =
     Location.line_difference a b = 1 && Location.compare_start_col a b = 0
   in
@@ -456,9 +456,7 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
          (Source.tokens_between source a.loc_end b.loc_start
               ~filter:(function _ -> true) )
   in
-  not
-    ( (Location.is_single_line a margin && Location.is_single_line b margin)
-    && (vertical_align || horizontal_align) )
+  not (vertical_align || horizontal_align)
 
 let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
 
@@ -616,10 +614,7 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
-  let groups =
-    List.group cmts
-      ~break:(break_comment_group t.source conf.fmt_opts.margin.v)
-  in
+  let groups = List.group cmts ~break:(break_comment_group t.source) in
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
