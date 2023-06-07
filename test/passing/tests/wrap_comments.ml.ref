@@ -48,9 +48,9 @@ let _ =
  *)
 
 (*
- * foo
- * bar
- *)
+  * foo
+    bar
+*)
 
 [@@@ocamlformat "wrap-comments=false"]
 
@@ -179,6 +179,6 @@ let _ =
  *)
 
 (*
- * foo
- * bar
- *)
+  * foo
+    bar
+*)
