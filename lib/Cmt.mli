@@ -11,7 +11,7 @@
 
 open Migrate_ast
 
-type t = private {txt: string; loc: Location.t}
+type t
 
 val create : string -> Location.t -> t
 

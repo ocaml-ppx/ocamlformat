@@ -114,8 +114,8 @@ let collection_last_cmt ?pro c (loc : Location.t) locs =
       with
       | [] -> noop
       | (_, semicolon_loc) :: _ ->
-          Cmts.fmt_after ?pro c last ~filter:(fun Cmt.{loc; _} ->
-              Location.compare loc semicolon_loc >= 0 ) )
+          Cmts.fmt_after ?pro c last ~filter:(fun cmt ->
+              Location.compare (Cmt.loc cmt) semicolon_loc >= 0 ) )
 
 let fmt_elements_collection ?pro ?(first_sep = true) ?(last_sep = true) c
     (p : Params.elements_collection) f loc fmt_x xs =
@@ -488,9 +488,10 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   | `Preserve_one ->
       let rec loop prev_pos = function
         | cmt :: tl ->
+            let loc = Cmt.loc cmt in
             (* Check empty line before each comment *)
-            Source.empty_line_between c.source prev_pos cmt.Cmt.loc.loc_start
-            || loop cmt.Cmt.loc.loc_end tl
+            Source.empty_line_between c.source prev_pos loc.loc_start
+            || loop loc.loc_end tl
         | [] ->
             (* Check empty line after all comments *)
             Source.empty_line_between c.source prev_pos l2.loc_start

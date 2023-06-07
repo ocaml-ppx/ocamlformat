@@ -44,9 +44,9 @@ let dedup_cmts fragment ast comments =
 
 let normalize_comments dedup fmt comments =
   let comments = dedup comments in
-  List.sort comments ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-      Migrate_ast.Location.compare a b )
-  |> List.iter ~f:(fun {Cmt.txt; _} -> Format.fprintf fmt "%s," txt)
+  List.sort comments ~compare:(fun a b ->
+      Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
+  |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (Cmt.txt cmt))
 
 let normalize_parse_result ast_kind ast comments =
   Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast
@@ -181,13 +181,13 @@ let diff ~f ~cmt_kind x y =
 
 let diff_docstrings c x y =
   let mapper = make_mapper c ~ignore_doc_comments:false in
-  let docstring {Cmt.txt; loc} =
-    let offset = start_column loc + 3 in
+  let docstring cmt =
+    let offset = start_column (Cmt.loc cmt) + 3 in
     let normalize_code = normalize_code c mapper ~offset in
-    docstring c ~normalize_code txt
+    docstring c ~normalize_code (Cmt.txt cmt)
   in
   let norm z =
-    let f (Cmt.{loc; _} as cmt) = Cmt.create (docstring cmt) loc in
+    let f cmt = Cmt.create (docstring cmt) (Cmt.loc cmt) in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
   in
   diff ~f:norm ~cmt_kind:`Doc_comment x y
@@ -196,8 +196,8 @@ let diff_cmts (conf : Conf.t) x y =
   let mapper = make_mapper conf ~ignore_doc_comments:false in
   let normalize_code = normalize_code conf mapper in
   let norm z =
-    let norm_non_code {Cmt.txt; loc} =
-      Cmt.create (Docstring.normalize_text txt) loc
+    let norm_non_code cmt =
+      Cmt.create (Docstring.normalize_text (Cmt.txt cmt)) (Cmt.loc cmt)
     in
     let f z =
       match Cmt.txt z with
@@ -209,8 +209,9 @@ let diff_cmts (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
-            let offset = start_column z.loc + 3 in
-            Cmt.create (normalize_code ~offset source) z.loc
+            let loc = Cmt.loc z in
+            let offset = start_column loc + 3 in
+            Cmt.create (normalize_code ~offset source) loc
           else norm_non_code z
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
