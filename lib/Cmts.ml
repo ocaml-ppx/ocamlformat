@@ -527,7 +527,7 @@ module Unwrapped = struct
     in
     match String.split ~on:'\n' txt with
     | hd :: tl ->
-        pro $ vbox 0 ~name:"unwrapped" (str hd $ list_fl tl fmt_line) $ epi
+        vbox 0 ~name:"unwrapped" (pro $ str hd $ list_fl tl fmt_line) $ epi
     | [] -> noop
 end
 

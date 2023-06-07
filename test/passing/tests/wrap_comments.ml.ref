@@ -48,8 +48,8 @@ let _ =
  *)
 
 (*
-  * foo
-    bar
+ * foo
+   bar
 *)
 
 [@@@ocamlformat "wrap-comments=false"]
@@ -135,7 +135,7 @@ let _ =
 let _ =
   let _ =
     (* This is indented 7
-       This 0 *)
+    This 0 *)
     0
   in
   0
@@ -179,6 +179,6 @@ let _ =
  *)
 
 (*
-  * foo
-    bar
+ * foo
+   bar
 *)
