@@ -1471,15 +1471,22 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
             function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
        end ) )
 
-(* type (_,_) ty_assoc = | Anil : (unit,'e) ty_assoc | Acons : string *
-   ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+(*
+type (_,_) ty_assoc =
+  | Anil : (unit,'e) ty_assoc
+  | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
-   and (_,_) ty_pvar = | Pnil : ('a,'e) ty_pvar | Pconst : 't * ('b,'e)
-   ty_pvar -> ('t -> 'b, 'e) ty_pvar | Parg : 't * ('a,'e) ty * ('b,'e)
-   ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar *)
-(* An attempt at encoding omega examples from the 2nd Central European
-   Functional Programming School: Generic Programming in Omega, by Tim Sheard
-   and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
+and (_,_) ty_pvar =
+  | Pnil : ('a,'e) ty_pvar
+  | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
+  | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
+*)
+(*
+   An attempt at encoding omega examples from the 2nd Central European
+   Functional Programming School:
+     Generic Programming in Omega, by Tim Sheard and Nathan Linger
+          http://web.cecs.pdx.edu/~sheard/
+*)
 
 (* Basic types *)
 
@@ -1501,8 +1508,8 @@ let l1 = Scons (3, Scons (5, Snil))
 
 (* We do not have type level functions, so we need to use witnesses. *)
 (* We copy here the definitions from section 3.9 *)
-(* Note the addition of the ['a nat] argument to PlusZ, since we do not have
-   kinds *)
+(* Note the addition of the ['a nat] argument to PlusZ, since we do not
+   have kinds *)
 type (_, _, _) plus =
   | PlusZ : 'a nat -> (zero, 'a, 'a) plus
   | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
@@ -3156,14 +3163,16 @@ Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
 |}]
 
-(* Implicit unpack allows to omit the signature in (val ...) expressions.
+(*
+   Implicit unpack allows to omit the signature in (val ...) expressions.
 
-   It also adds (module M : S) and (module M) patterns, relying on implicit
-   (val ...) for the implementation. Such patterns can only be used in
-   function definition, match clauses, and let ... in.
+   It also adds (module M : S) and (module M) patterns, relying on
+   implicit (val ...) for the implementation. Such patterns can only
+   be used in function definition, match clauses, and let ... in.
 
-   New: implicit pack is also supported, and you only need to be able to
-   infer the the module type path from the context. *)
+   New: implicit pack is also supported, and you only need to be able
+   to infer the the module type path from the context.
+ *)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -4994,15 +5003,23 @@ end
 module type S' = S with module M := String
 
 (* with module type *)
-(* module type S = sig module type T module F(X:T) : T end;; module type T0 =
-   sig type t end;; module type S1 = S with module type T = T0;; module type
-   S2 = S with module type T := T0;; module type S3 = S with module type T :=
-   sig type t = int end;; module H = struct include (Hashtbl : module type of
-   Hashtbl with type statistics := Hashtbl.statistics and module type S :=
-   Hashtbl.S and module Make := Hashtbl.Make and module MakeSeeded :=
-   Hashtbl.MakeSeeded and module type SeededS := Hashtbl.SeededS and module
-   type HashedType := Hashtbl.HashedType and module type SeededHashedType :=
-   Hashtbl.SeededHashedType) end;; *)
+(*
+module type S = sig module type T module F(X:T) : T end;;
+module type T0 = sig type t end;;
+module type S1 = S with module type T = T0;;
+module type S2 = S with module type T := T0;;
+module type S3 = S with module type T := sig type t = int end;;
+module H = struct
+  include (Hashtbl : module type of Hashtbl with
+           type statistics := Hashtbl.statistics
+           and module type S := Hashtbl.S
+           and module Make := Hashtbl.Make
+           and module MakeSeeded := Hashtbl.MakeSeeded
+           and module type SeededS := Hashtbl.SeededS
+           and module type HashedType := Hashtbl.HashedType
+           and module type SeededHashedType := Hashtbl.SeededHashedType)
+end;;
+*)
 
 (* A subtle problem appearing with -principal *)
 type -'a t
@@ -5835,13 +5852,16 @@ class ['entity] entity_container =
 
 let f (x : entity entity_container) = ()
 
-(* class world = object val entity_container : entity entity_container = new
-   entity_container
+(*
+class world =
+  object
+    val entity_container : entity entity_container = new entity_container
 
-   method add_entity (s : entity) = entity_container#add_entity (s :>
-   entity)
+    method add_entity (s : entity) =
+      entity_container#add_entity (s :> entity)
 
-   end *)
+  end
+*)
 (* Two v's in the same class *)
 class c v =
   object
