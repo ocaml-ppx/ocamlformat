@@ -40,10 +40,6 @@ coverage:
 	echo "Coverage report generated in _coverage/"
 	echo " => open _coverage/index.html"
 
-headers:
-	tools/update_headers.sh
-	dune build @fmt --auto-promote
-
 .PHONY: bench
 bench:
 	@dune build bench/test/source_bench.ml

@@ -253,6 +253,7 @@ let rec mty_is_simple x =
    |Pmty_extension _
    |Pmty_functor (_, _) ->
       false
+  | Pmty_gen (_, t) -> mty_is_simple t
   | Pmty_typeof e -> mod_is_simple e
   | Pmty_with (t, ([] | [_])) -> mty_is_simple t
 
@@ -1387,15 +1388,7 @@ end = struct
        |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
         ->
           assert false )
-    | Mod {pmod_desc= Pmod_unpack (e1, _, _); _} -> (
-      match e1 with
-      | { pexp_desc=
-            Pexp_constraint
-              (e, {ptyp_desc= Ptyp_package _; ptyp_attributes= []; _})
-        ; pexp_attributes= []
-        ; _ } ->
-          assert (e == exp)
-      | e -> assert (e == exp) )
+    | Mod {pmod_desc= Pmod_unpack (e1, _, _); _} -> assert (e1 == exp)
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with

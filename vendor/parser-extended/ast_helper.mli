@@ -261,6 +261,7 @@ module Mty:
     val signature: ?loc:loc -> ?attrs:attrs -> signature -> module_type
     val functor_: ?loc:loc -> ?attrs:attrs ->
       functor_parameter with_loc list -> module_type -> module_type
+    val gen: ?loc:loc -> ?attrs:attrs -> loc -> module_type -> module_type
     val with_: ?loc:loc -> ?attrs:attrs -> module_type ->
       with_constraint list -> module_type
     val typeof_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type

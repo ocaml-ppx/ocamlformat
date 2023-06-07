@@ -8,6 +8,8 @@
 
 ### Bug fixes
 
+- Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
+- Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
 - Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
@@ -36,6 +38,7 @@
 
 ### New features
 
+- Handle short syntax for generative functor types (#2348, @gpetiot)
 - Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
 
 ## 0.25.1 (2023-03-06)
