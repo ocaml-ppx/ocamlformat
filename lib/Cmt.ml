@@ -71,21 +71,6 @@ let pp_error fs {kind; cmt_kind} =
              formatting using the option --no-parse-docstrings.\n\
              %!" )
 
-module T_no_loc = struct
-  include T
-
-  let compare =
-    Comparable.lexicographic [Comparable.lift String.compare ~f:txt]
-end
-
-type loc = t
-
-module Comparator_no_loc = struct
-  type t = loc
-
-  include Comparator.Make (T_no_loc)
-end
-
 type pos = Before | Within | After
 
 type decoded_kind =
