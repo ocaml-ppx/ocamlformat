@@ -12,21 +12,32 @@
 open Migrate_ast
 
 module T = struct
-  type t = {txt: string; loc: Location.t}
+  type t =
+    | Comment of {txt: string; loc: Location.t}
+    | Docstring of {txt: string; loc: Location.t}
 
-  let loc t = t.loc
+  let loc (Comment {loc; _} | Docstring {loc; _}) = loc
 
-  let txt t = t.txt
+  let txt (Comment {txt; _} | Docstring {txt; _}) = txt
 
-  let create txt loc = {txt; loc}
+  let create_comment txt loc = Comment {txt; loc}
 
-  let compare =
-    Comparable.lexicographic
-      [ Comparable.lift String.compare ~f:txt
-      ; Comparable.lift Location.compare ~f:loc ]
+  let create_docstring txt loc = Docstring {txt; loc}
 
-  let sexp_of_t {txt; loc} =
-    Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
+  let is_docstring = function Comment _ -> false | Docstring _ -> true
+
+  let compare = Poly.compare
+
+  let sexp_of_t cmt =
+    let kind, txt, loc =
+      match cmt with
+      | Comment {txt; loc} -> ("comment", txt, loc)
+      | Docstring {txt; loc} -> ("docstring", txt, loc)
+    in
+    Sexp.List
+      [ Sexp.Atom kind
+      ; Sexp.Atom txt
+      ; Sexp.Atom (Format.asprintf "%a" Migrate_ast.Location.fmt loc) ]
 end
 
 include T
