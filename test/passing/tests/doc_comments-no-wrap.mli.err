@@ -1,7 +1,3 @@
-File "tests/doc_comments.mli", line 1, characters 0-1:
-1 | (** Manpages. See {!Cmdliner.Manpage}. *)
-    ^
-Alert deprecated: ISO-Latin1 characters in identifiers
 Warning: tests/doc_comments.mli:10 exceeds the margin
 Warning: tests/doc_comments.mli:78 exceeds the margin
 Warning: tests/doc_comments.mli:80 exceeds the margin
