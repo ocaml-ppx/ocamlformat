@@ -28,6 +28,7 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
      ?disable_w50:bool
+  -> ?disable_deprecated:bool
   -> ('b -> input_name:string -> string -> 'a)
   -> 'b
   -> Conf.t
@@ -38,6 +39,7 @@ val parse :
 
 val parse_toplevel :
      ?disable_w50:bool
+  -> ?disable_deprecated:bool
   -> Conf.t
   -> input_name:string
   -> source:string

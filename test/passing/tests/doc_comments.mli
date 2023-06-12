@@ -635,3 +635,6 @@ type x =
         ending with trailing spaces.
        |}
    ]} *)
+
+(** ISO-Latin1 characters in identifiers
+    {[ω]}*)
