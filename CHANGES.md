@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-- Consistent formatting of comments (#2371, @Julow)
+- Consistent formatting of comments (#2371, #2372, @Julow)
 - Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
