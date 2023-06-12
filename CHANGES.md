@@ -28,6 +28,7 @@
 
 ### Changes
 
+- Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)
