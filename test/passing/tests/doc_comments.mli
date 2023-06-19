@@ -638,3 +638,7 @@ type x =
 
 (** ISO-Latin1 characters in identifiers
     {[ω]}*)
+
+(** Here, [my_list=[]]. *)
+
+(** Here, [my_list=\[\]]. *)
