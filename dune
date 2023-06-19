@@ -15,3 +15,13 @@
    (:standard -noassert))))
 
 (data_only_dirs test-extra)
+
+(rule
+ (with-stdout-to
+  dune-project.formatted
+  (run dune format-dune-file dune-project)))
+
+(rule
+ (alias fmt)
+ (action
+  (diff dune-project dune-project.formatted)))
