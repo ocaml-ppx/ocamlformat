@@ -43,10 +43,7 @@ let escape_brackets s =
   ensure_escape ~escapeworthy s
 
 let escape_all s =
-  let escapeworthy = function
-    | '@' | '{' | '}' | '[' | ']' -> true
-    | _ -> false
-  in
+  let escapeworthy = function '{' | '}' | '[' | ']' -> true | _ -> false in
   ensure_escape ~escapeworthy s
 
 let split_on_whitespaces =
@@ -187,7 +184,9 @@ let rec fmt_inline_elements c elements =
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (fmt "@ ")
           (non_wrap_space sp)
         $ aux t
-    | `Word w :: t -> str_normalized c w $ aux t
+    | `Word w :: t ->
+        fmt_if (String.is_prefix ~prefix:"@" w) "\\"
+        $ str_normalized c w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
