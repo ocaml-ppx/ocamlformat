@@ -638,3 +638,6 @@ type x =
 
 (** ISO-Latin1 characters in identifiers
     {[ω]}*)
+
+(** at@ *)
+(** \@at *)
