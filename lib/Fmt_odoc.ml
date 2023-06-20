@@ -177,17 +177,12 @@ let rec fmt_inline_elements c elements =
   in
   let rec aux = function
     | [] -> noop
-    | `Space sp :: `Word w :: t ->
-        (* Escape lines starting with '+' or '-' *)
-        let escape =
-          if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then
-            "\\"
-          else ""
-        in
+    | `Space sp :: `Word (("-" | "+") as w) :: t ->
+        (* Escape lines starting with '+' or '-'. *)
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v
-          (cbreak ~fits:("", 1, "") ~breaks:("", 0, escape))
+          (cbreak ~fits:("", 1, "") ~breaks:("", 0, "\\"))
           (non_wrap_space sp)
-        $ str_normalized c w $ aux t
+        $ str w $ aux t
     | `Space sp :: t ->
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (fmt "@ ")
           (non_wrap_space sp)
