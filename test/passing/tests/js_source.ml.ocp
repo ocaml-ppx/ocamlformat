@@ -10191,5 +10191,4 @@ let _ =
 (* *)
 
 (** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
-    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    [xxxxxxx] *)
+    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)

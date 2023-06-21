@@ -133,8 +133,7 @@ let fmt_code_block c s1 s2 =
         fmt_code original )
   | Some _ -> fmt_code original
 
-let fmt_code_span s =
-  hovbox 0 (wrap "[" "]" (str (escape_balanced_brackets s)))
+let fmt_code_span s = wrap "[" "]" (str (escape_balanced_brackets s))
 
 let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
 
