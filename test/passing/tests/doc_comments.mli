@@ -643,5 +643,8 @@ type x =
 
 (** Here, [my_list=\[\]]. *)
 
+(** This code block will change due to the brackets being re-escaped.
+    [ [ \[ [] ] ]. *)
+
 (** at@ *)
 (** \@at *)
