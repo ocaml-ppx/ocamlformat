@@ -38,17 +38,21 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   stash len ;
   Buffer.contents dst
 
-let insert_at s ins ats =
+(** Insert [ins] into [s] at every indexes in [ats]. *)
+let insert_ats s ins ats =
   let len = String.length s in
-  let b = Buffer.create (String.length s + (len * List.length ats)) in
+  let b = Buffer.create (len + (String.length ins * List.length ats)) in
   let stash pos until = Buffer.add_substring b s ~pos ~len:(until - pos) in
   let rec loop last_ins = function
     | [] -> stash last_ins len
     | i :: tl -> stash last_ins i ; Buffer.add_string b ins ; loop i tl
   in
-  loop 0 ats ; Buffer.contents b
+  loop 0 (List.sort ~compare:Int.compare ats) ;
+  Buffer.contents b
 
 let escape_balanced_brackets s =
+  (* Do not escape paired brackets. Opening and closing that couldn't be
+     paired will be escaped. *)
   let rec brackets_to_escape opens closes i =
     if i >= String.length s then opens @ closes
     else
@@ -63,8 +67,7 @@ let escape_balanced_brackets s =
       in
       brackets_to_escape opens closes (i + 1)
   in
-  insert_at s "\\"
-    (List.sort ~compare:Int.compare (brackets_to_escape [] [] 0))
+  insert_ats s "\\" (brackets_to_escape [] [] 0)
 
 let escape_all s =
   let escapeworthy = function '{' | '}' | '[' | ']' -> true | _ -> false in
