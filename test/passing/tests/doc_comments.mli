@@ -639,5 +639,12 @@ type x =
 (** ISO-Latin1 characters in identifiers
     {[ω]}*)
 
+(** Here, [my_list=[]]. *)
+
+(** Here, [my_list=\[\]]. *)
+
+(** This code block will change due to the brackets being re-escaped.
+    [ [ \[ [] ] ]. *)
+
 (** at@ *)
 (** \@at *)
