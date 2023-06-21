@@ -90,16 +90,74 @@ module Debug = struct
 
   let with_box k =
     let g = !debug in
-    let open Fpath in
-    let extra_dir = v (Caml.Sys.getcwd ()) / "extra" in
-    let css = to_string (extra_dir / "debug-boxes.css") in
     with_pp (fun fs ->
         Format_.fprintf fs
-          {|<html><head><link rel="stylesheet" href="%s"></head><body>|} css ;
+          {|
+<html>
+  <head>
+    <style>
+    .box {
+      border: 2px solid black;
+      display: inline-block;
+      font-family: courier;
+      margin: 0;
+      padding: 4px;
+    }
+    .box:hover {
+      border-color: red;
+    }
+    .name {
+      font-family: arial;
+      font-style: italic;
+      font-weight: lighter;
+      font-size: 10px;
+      padding: 1px;
+      margin: 0 0 4px 0;
+    }
+    .break {
+      background-color: black;
+      color: white;
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px;
+    }
+    .cbreak {
+      background-color: purple;
+    }
+    .if_newline {
+      background-color: green;
+    }
+    .break_unless_newline {
+      background-color: blue;
+    }
+    .fits_or_breaks {
+      background-color: red;
+    }
+    .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+      position: absolute;
+      z-index: 1;
+    }
+    .break:hover .tooltiptext {
+      visibility: visible;
+    }
+    </style>
+  </head>
+  <body>
+|} ;
         debug := true )
     $ k
     $ with_pp (fun fs ->
-          Format_.fprintf fs {|</body></html>|} ;
+          Format_.fprintf fs {|
+  </body>
+</html>
+|} ;
           debug := g )
 
   let box_open ?name box_kind n fs =
