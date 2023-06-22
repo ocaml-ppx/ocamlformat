@@ -22,7 +22,6 @@ clean:
 
 .PHONY: fmt
 fmt:
-	tmp=$(mktemp -t 'dune-format'); dune format-dune-file dune-project > tmp; mv -f tmp dune-project
 	dune build @fmt
 
 .PHONY: test regtests regtests-promote

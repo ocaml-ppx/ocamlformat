@@ -28,6 +28,7 @@
 
 ### Changes
 
+- Escape less in doc-comments when possible (#2376, #2377, @Julow)
 - Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)

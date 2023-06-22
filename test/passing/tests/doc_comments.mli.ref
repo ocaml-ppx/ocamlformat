@@ -203,7 +203,7 @@ val x : x
 
 (** {:https://github.com/} *)
 
-(** An array index offset: [exp1\[exp2\]] *)
+(** An array index offset: [exp1[exp2]] *)
 
 (** to extend \{foo syntax *)
 
@@ -246,7 +246,7 @@ module Foo : sig
   (** B *)
 end
 
-(** [\[ \] \[\] \]] *)
+(** [[ ] [] \]] *)
 
 (** \{ \} \[ \] \@ \@ *)
 
@@ -495,7 +495,7 @@ val k : int
 
 (** Brackets must not be escaped in the first argument of some tags: *)
 
-(** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.\[x\]]. *)
+(** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.[x]]. *)
 
 (** @author [Abc] [def] \[hij\] *)
 
@@ -630,3 +630,14 @@ type x =
     {[
       ω
     ]}*)
+
+(** Here, [my_list=[]]. *)
+
+(** Here, [my_list=[]]. *)
+
+(** This code block will change due to the brackets being re-escaped.
+    [ \[ [ [] ] ]. *)
+
+(** at@ *)
+
+(** \@at *)
