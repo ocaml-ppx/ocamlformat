@@ -30,6 +30,9 @@ let css =
   .cbreak {
     background-color: purple;
   }
+  .keyword {
+    background-color: yellow;
+  }
   .if_newline {
     background-color: green;
   }
@@ -101,46 +104,43 @@ let break fs n o =
        %i</span></div>"
       n o n o
 
-let fmt fs f =
+let pp_keyword fs s = fprintf fs "<span class=\"keyword\">%s</span>" s
+
+let _pp_format_lit fs =
+  let open CamlinternalFormatBasics in
+  function
+  | Close_box -> pp_keyword fs "@]"
+  | Close_tag -> pp_keyword fs "@}"
+  | Break (str, _, _) -> pp_keyword fs str
+  | FFlush -> pp_keyword fs "@?"
+  | Force_newline -> pp_keyword fs "@\\n"
+  | Flush_newline -> pp_keyword fs "@."
+  | Magic_size (str, _) -> pp_keyword fs str
+  | Escaped_at -> fprintf fs "@@"
+  | Escaped_percent -> fprintf fs "@@%%"
+  | Scan_indic c -> pp_keyword fs ("@" ^ String.make 1 c)
+
+let rec _format_string :
+    type a b c d e f.
+    _ -> (a, b, c, d, e, f) CamlinternalFormatBasics.fmt -> unit =
+  let open CamlinternalFormatBasics in
+  fun fs -> function
+    | String_literal (s, tl) -> fprintf fs "%s%a" s _format_string tl
+    | Char_literal (c, tl) -> fprintf fs "%c%a" c _format_string tl
+    | Formatting_lit (lit, tl) ->
+        fprintf fs "%a%a" _pp_format_lit lit _format_string tl
+    | Formatting_gen (Open_box (Format (n, _)), tl) ->
+        pp_keyword fs "@[" ; _format_string fs n ; _format_string fs tl
+    | Formatting_gen (Open_tag (Format (n, _)), tl) ->
+        pp_keyword fs "@{" ; _format_string fs n ; _format_string fs tl
+    | End_of_format -> ()
+    | _ -> pp_keyword fs "??"
+
+and fmt fs f =
+  let open CamlinternalFormatBasics in
   if !debug then
-    let sub s ~after:i =
-      String.sub s ~pos:(i + 1) ~len:(String.length s - i - 1)
-    in
-    let rec loop = function
-      | "" -> ()
-      | s -> (
-        match String.index s '@' with
-        | Some i ->
-            if i > 0 && Char.(String.get s (i - 1) <> '\\') then
-              if i < String.length s - 1 then
-                match String.get s (i + 1) with
-                | ' ' ->
-                    break fs 1 0 ;
-                    loop (sub s ~after:i)
-                | ',' ->
-                    break fs 0 0 ;
-                    loop (sub s ~after:i)
-                | ';' -> (
-                  match String.index s '>' with
-                  | Some e ->
-                      let subs = String.sub s ~pos:i ~len:(e - i + 1) in
-                      let n, o =
-                        try
-                          Caml.Scanf.sscanf subs "@;<%i %i>" (fun x y ->
-                              (x, y) )
-                        with _ -> (1, 0)
-                      in
-                      break fs n o ;
-                      loop (sub s ~after:e)
-                  | None ->
-                      break fs 1 0 ;
-                      loop (sub s ~after:i) )
-                | _ -> loop (sub s ~after:i)
-              else ()
-            else loop (sub s ~after:i)
-        | None -> () )
-    in
-    loop (Caml.string_of_format f)
+    let (Format (fmt, _)) = f in
+    _format_string fs fmt
 
 let cbreak fs ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
   if !debug then
