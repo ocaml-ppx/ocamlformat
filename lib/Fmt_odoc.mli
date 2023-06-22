@@ -22,3 +22,5 @@ val fmt_parsed :
   -> offset:int
   -> (Odoc_parser.Ast.t, Odoc_parser.Warning.t list) Result.t
   -> Fmt.t
+(** [source] is the global source in which the locations in the AST make
+    sense. [input] is the content of the doc-comment. *)

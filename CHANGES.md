@@ -28,6 +28,7 @@
 
 ### Changes
 
+- Preserve empty lines in doc-comments (#2379, @Julow)
 - Escape less in doc-comments when possible (#2376, #2377, @Julow)
 - Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
