@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-- Consistent formatting of comments (#2371, @Julow)
+- Consistent formatting of comments (#2371, #2372, @Julow)
 - Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
@@ -28,6 +28,8 @@
 
 ### Changes
 
+- Escape less in doc-comments when possible (#2376, #2377, @Julow)
+- Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
 - Restore short form formatting of record field aliases (#2282, @gpetiot)

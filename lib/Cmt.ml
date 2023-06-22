@@ -24,6 +24,8 @@ module T = struct
 
   let create_docstring txt loc = Docstring {txt; loc}
 
+  let is_docstring = function Comment _ -> false | Docstring _ -> true
+
   let compare = Poly.compare
 
   let sexp_of_t cmt =
