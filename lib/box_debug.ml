@@ -1,3 +1,5 @@
+open Format_
+
 let css =
   {|
   .box {
@@ -58,7 +60,7 @@ let debug = ref false
 let with_box k fs =
   let g = !debug in
   debug := true ;
-  Format_.fprintf fs
+  fprintf fs
     {|
 <html>
   <head>
@@ -78,25 +80,23 @@ let box_open ?name box_kind n fs =
   if !debug then (
     let name =
       match name with
-      | Some s -> Format_.sprintf "%s:%s" box_kind s
+      | Some s -> sprintf "%s:%s" box_kind s
       | None -> box_kind
     in
-    let name = if n = 0 then name else Format_.sprintf "%s(%d)" name n in
-    Format_.open_vbox 0 ;
-    Format_.fprintf fs "<div class=\"box\">" ;
-    Format_.pp_print_break fs 1 2 ;
-    Format_.fprintf fs "<p class=\"name\">%s</p>" name ;
-    Format_.pp_print_break fs 1 2 )
+    let name = if n = 0 then name else sprintf "%s(%d)" name n in
+    open_vbox 0 ;
+    fprintf fs "<div class=\"box\">" ;
+    pp_print_break fs 1 2 ;
+    fprintf fs "<p class=\"name\">%s</p>" name ;
+    pp_print_break fs 1 2 )
 
 let box_close fs =
   if !debug then (
-    Format_.pp_close_box fs () ;
-    Format_.pp_print_break fs 0 0 ;
-    Format_.fprintf fs "</div>" )
+    pp_close_box fs () ; pp_print_break fs 0 0 ; fprintf fs "</div>" )
 
 let break fs n o =
   if !debug then
-    Format_.fprintf fs
+    fprintf fs
       "<div class=\"break\">(%i,%i)<span class=\"tooltiptext\">break %i \
        %i</span></div>"
       n o n o
@@ -144,7 +144,7 @@ let fmt fs f =
 
 let cbreak fs ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
   if !debug then
-    Format_.fprintf fs
+    fprintf fs
       "<div class=\"break cbreak\">(%s,%i,%s) (%s,%i,%s)<span \
        class=\"tooltiptext\">cbreak ~fits:(%S, %i, %S) ~breaks:(%S, %i, \
        %S)</span></div>"
@@ -152,21 +152,21 @@ let cbreak fs ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
 
 let if_newline fs s =
   if !debug then
-    Format_.fprintf fs
+    fprintf fs
       "<div class=\"break if_newline\">(%s)<span \
        class=\"tooltiptext\">if_newline %S</span></div>"
       s s
 
 let break_unless_newline fs n o =
   if !debug then
-    Format_.fprintf fs
+    fprintf fs
       "<div class=\"break break_unless_newline\">(%i,%i)<span \
        class=\"tooltiptext\">break_unless_newline %i %i</span></div>"
       n o n o
 
 let fits_or_breaks fs fits n o breaks =
   if !debug then
-    Format_.fprintf fs
+    fprintf fs
       "<div class=\"break fits_or_breaks\">(%s,%i,%i,%s)<span \
        class=\"tooltiptext\">fits_or_breaks %S %i %i %S</span></div>"
       fits n o breaks fits n o breaks
