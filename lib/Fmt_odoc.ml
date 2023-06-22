@@ -13,22 +13,9 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-(** Odoc locations are represented as line/column and don't work well with
-    the [Source] module. Additionally [Source] functions operate on tokens
-    and cannot see the content of doc comments. *)
-module Doc_source = struct
-  type t = {src: string array}
-
-  let of_source src =
-    let src = Array.of_list (String.split_lines (Source.text src)) in
-    {src}
-
-  let is_line_empty t l = String.for_all t.src.(l - 1) ~f:Char.is_whitespace
-end
-
 type fmt_code = Conf.t -> offset:int -> string -> string or_error
 
-type c = {fmt_code: fmt_code; conf: Conf.t; source: Doc_source.t}
+type c = {fmt_code: fmt_code; conf: Conf.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -185,12 +172,9 @@ let block_element_should_blank elem next =
   | (`List _ | `Tag _), _ | `Paragraph _, `Paragraph _ -> true
   | _, _ -> false
 
-let should_preserve_blank c (a : Loc.span) (b : Loc.span) =
-  let rec loop a b =
-    if a >= b then false
-    else Doc_source.is_line_empty c.source a || loop (a + 1) b
-  in
-  loop (a.end_.line + 1) b.start.line
+let should_preserve_blank _c (a : Loc.span) (b : Loc.span) =
+  (* Whether there were already an empty line *)
+  b.start.line - a.end_.line > 1
 
 (* Format a list of block_elements separated by newlines Inserts blank line
    depending on [block_element_should_blank] *)
@@ -352,15 +336,11 @@ let fmt_block_element c elm =
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 
-let fmt_ast ~source conf ~fmt_code (docs : t) =
-  (* We cannot use the content of the comment as source because the locations
-     in the AST are based on the absolute position in the whole source
-     file. *)
-  let source = Doc_source.of_source source in
-  let c = {fmt_code; conf; source} in
+let fmt_ast conf ~fmt_code (docs : t) =
+  let c = {fmt_code; conf} in
   vbox 0 (list_block_elem c docs (fmt_block_element c))
 
-let fmt_parsed (conf : Conf.t) ~fmt_code ~source ~input ~offset parsed =
+let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
   let begin_space = String.starts_with_whitespace input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
@@ -370,7 +350,7 @@ let fmt_parsed (conf : Conf.t) ~fmt_code ~source ~input ~offset parsed =
   in
   let fmt_parsed parsed =
     fmt_if begin_space " "
-    $ fmt_ast ~source conf ~fmt_code parsed
+    $ fmt_ast conf ~fmt_code parsed
     $ fmt_if
         (String.length input > 1 && String.ends_with_whitespace input)
         " "

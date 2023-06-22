@@ -560,8 +560,7 @@ module Cinaps = struct
 end
 
 module Ocp_indent_compat = struct
-  let fmt ~source ~fmt_code conf txt ~loc ~offset ~opn (pos : Cmt.pos) ~post
-      =
+  let fmt ~fmt_code conf txt ~loc ~offset ~opn (pos : Cmt.pos) ~post =
     let pre, doc, post =
       let lines = String.split_lines txt in
       match lines with
@@ -576,9 +575,7 @@ module Ocp_indent_compat = struct
     (* Disable warnings when parsing fails *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc =
-      Fmt_odoc.fmt_parsed ~source conf ~fmt_code ~input:doc ~offset parsed
-    in
+    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:doc ~offset parsed in
     let open Fmt in
     fmt_if_k
       (Poly.(pos = After) && String.contains txt '\n')
@@ -588,7 +585,7 @@ module Ocp_indent_compat = struct
     $ str "*)"
 end
 
-let fmt_cmt ~source (conf : Conf.t) cmt ~fmt_code pos =
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
   let loc = Cmt.loc cmt in
   let offset =
     let pos = loc.Location.loc_start in
@@ -646,8 +643,7 @@ let fmt_cmt ~source (conf : Conf.t) cmt ~fmt_code pos =
   | `Code (code, cls) -> Cinaps.fmt ~cls code
   | `Wrapped (x, epi) -> opn $ fill_text x ~epi
   | `Unwrapped (x, ln) when conf.fmt_opts.ocp_indent_compat.v ->
-      Ocp_indent_compat.fmt ~source ~fmt_code conf x ~loc ~offset ~opn pos
-        ~post:ln
+      Ocp_indent_compat.fmt ~fmt_code conf x ~loc ~offset ~opn pos ~post:ln
   | `Unwrapped (x, _) -> Unwrapped.fmt ~opn ~offset x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt ~opn x
 
@@ -661,7 +657,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] -> fmt_cmt ~source:t.source conf cmt ~fmt_code pos
+         | [cmt] -> fmt_cmt conf cmt ~fmt_code pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
