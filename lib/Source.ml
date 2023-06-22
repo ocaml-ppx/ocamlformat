@@ -15,6 +15,8 @@ open Extended_ast
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
 
+let text t = t.text
+
 let create ~text ~tokens =
   let tokens =
     List.filter tokens ~f:(fun (tok, _) ->

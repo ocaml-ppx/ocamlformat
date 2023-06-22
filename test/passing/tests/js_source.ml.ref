@@ -9697,7 +9697,6 @@ type t =
 type t =
   { field : ty
       (* Here is some verbatim formatted text:
-
          {v
        starting at column 7
          v}*)
@@ -9706,7 +9705,6 @@ type t =
 module Intro_sort = struct
   let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
     (* Fooooooooooooooooooooooooooo:
-
        {v
           1--o-----o-----o--------------1
              |     |     |

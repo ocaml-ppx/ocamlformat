@@ -1,6 +1,5 @@
 val x : y
 (** Blablabla. Otherwise, the given protocol can not be:
-
     - registered into {!resolvers}
     - used as a service with {!serve_with_handler]/{!serve}
 

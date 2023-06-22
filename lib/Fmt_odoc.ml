@@ -13,9 +13,22 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
+(** Odoc locations are represented as line/column and don't work well with
+    the [Source] module. Additionally [Source] functions operate on tokens
+    and cannot see the content of doc comments. *)
+module Doc_source = struct
+  type t = {src: string array}
+
+  let of_source src =
+    let src = Array.of_list (String.split_lines (Source.text src)) in
+    {src}
+
+  let is_line_empty t l = String.for_all t.src.(l - 1) ~f:Char.is_whitespace
+end
+
 type fmt_code = Conf.t -> offset:int -> string -> string or_error
 
-type c = {fmt_code: fmt_code; conf: Conf.t}
+type c = {fmt_code: fmt_code; conf: Conf.t; source: Doc_source.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -164,27 +177,35 @@ let list_should_use_heavy_syntax items =
   in
   List.exists items ~f:heavy_nestable_block_elements
 
-(* Decide if should break between two elements *)
-let block_element_should_break elem next =
+(* Decide if a blank line should be added between two elements *)
+let block_element_should_blank elem next =
   match (elem, next) with
-  (* Mandatory breaks *)
-  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
-  (* Arbitrary breaks *)
-  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
+  | `Tag _, `Tag _ -> false
+  (* Mandatory blanks lines. *)
+  | (`List _ | `Tag _), _ | `Paragraph _, `Paragraph _ -> true
   | _, _ -> false
 
+let should_preserve_blank c (a : Loc.span) (b : Loc.span) =
+  let rec loop a b =
+    if a >= b then false
+    else Doc_source.is_line_empty c.source a || loop (a + 1) b
+  in
+  loop (a.end_.line + 1) b.start.line
+
 (* Format a list of block_elements separated by newlines Inserts blank line
-   depending on [block_element_should_break] *)
-let list_block_elem elems f =
+   depending on [block_element_should_blank] *)
+let list_block_elem c elems f =
   list_pn elems (fun ~prev:_ elem ~next ->
       let break =
         match next with
-        | Some {Loc.value= n; _}
-          when block_element_should_break
-                 (elem.value :> block_element)
-                 (n :> block_element) ->
-            fmt "\n@\n"
-        | Some _ -> fmt "@\n"
+        | Some n ->
+            if
+              block_element_should_blank
+                (elem.Loc.value :> block_element)
+                (n.value :> block_element)
+              || should_preserve_blank c elem.location n.location
+            then fmt "\n@\n"
+            else fmt "@\n"
         | None -> noop
       in
       f elem $ break )
@@ -281,7 +302,7 @@ and fmt_list_light c kind items =
   vbox 0 (list items "@," fmt_item)
 
 and fmt_nestable_block_elements c elems =
-  list_block_elem elems (fmt_nestable_block_element c)
+  list_block_elem c elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
@@ -331,20 +352,25 @@ let fmt_block_element c elm =
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 
-let fmt_ast conf ~fmt_code (docs : t) =
-  let c = {fmt_code; conf} in
-  vbox 0 (list_block_elem docs (fmt_block_element c))
+let fmt_ast ~source conf ~fmt_code (docs : t) =
+  (* We cannot use the content of the comment as source because the locations
+     in the AST are based on the absolute position in the whole source
+     file. *)
+  let source = Doc_source.of_source source in
+  let c = {fmt_code; conf; source} in
+  vbox 0 (list_block_elem c docs (fmt_block_element c))
 
-let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
+let fmt_parsed (conf : Conf.t) ~fmt_code ~source ~input ~offset parsed =
   let open Fmt in
   let begin_space = String.starts_with_whitespace input in
+  (* The offset is used to adjust the margin when formatting code blocks. *)
   let offset = offset + if begin_space then 1 else 0 in
   let fmt_code conf ~offset:offset' input =
     fmt_code conf ~offset:(offset + offset') input
   in
   let fmt_parsed parsed =
     fmt_if begin_space " "
-    $ fmt_ast conf ~fmt_code parsed
+    $ fmt_ast ~source conf ~fmt_code parsed
     $ fmt_if
         (String.length input > 1 && String.ends_with_whitespace input)
         " "
