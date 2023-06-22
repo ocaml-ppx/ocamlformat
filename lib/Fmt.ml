@@ -114,7 +114,9 @@ let sequence l =
   in
   go l (List.length l)
 
-let fmt f = with_pp (fun fs -> Box_debug.fmt fs f ; Format_.fprintf fs f)
+let fmt f =
+  with_pp (fun fs ->
+      if Box_debug.fmt fs f then () else Format_.fprintf fs f )
 
 (** Primitive types -----------------------------------------------------*)
 

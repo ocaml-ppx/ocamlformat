@@ -136,11 +136,14 @@ let rec _format_string :
     | End_of_format -> ()
     | _ -> pp_keyword fs "??"
 
-and fmt fs f =
+(** Returns a boolean to signal the caller not to render the format string
+    again. *)
+let fmt fs f =
   let open CamlinternalFormatBasics in
-  if !debug then
+  if !debug then (
     let (Format (fmt, _)) = f in
-    _format_string fs fmt
+    _format_string fs fmt ; true )
+  else false
 
 let cbreak fs ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
   if !debug then
