@@ -591,21 +591,14 @@ module Doc = struct
       $ epi )
 end
 
-let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let open Fmt in
-  let break =
-    fmt_if_k
-      (Poly.(pos = After) && String.contains (Cmt.txt cmt) '\n')
-      (break_unless_newline 1000 0)
-  in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
   let pro = str "(*" $ str decoded.prefix
   and epi = str decoded.suffix $ str "*)" in
-  break
-  $
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
   | Doc txt ->
@@ -623,7 +616,14 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] -> fmt_cmt conf cmt ~fmt_code pos
+         | [cmt] ->
+             let break =
+               fmt_if_k
+                 ( Poly.(pos = Cmt.After)
+                 && String.contains (Cmt.txt cmt) '\n' )
+                 (break_unless_newline 1000 0)
+             in
+             break $ fmt_cmt conf cmt ~fmt_code
          | group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
