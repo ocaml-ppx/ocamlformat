@@ -1,5 +1,4 @@
 {0 Parent/Child Specification}
-
 This parent/child specification allows more flexible output support, e.g.,
 per library documentation. See
 {{:https://v3.ocaml.org/packages} v3.ocaml.org/packages}.
@@ -102,7 +101,6 @@ The output of the [odoc link] command is an [.odocl] file, by default, in the
 same path as the original [.odoc] file.
 
 {2 Generating HTML}
-
 {v
 $ odoc html-generate --indent -o html page-john.odocl
   && odoc html-generate --indent -o html page-doe.odocl

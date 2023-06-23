@@ -76,32 +76,52 @@ val k : k
 (** this is a comment
 
     @author foo
+
     @author Foooooooooooooooooooooooooooooooooooo Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+
     @version foo
+
     @version Foooooooooooooooooooooooooooooooooooo Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+
     @see <foo> foo
+
     @see <https://slash-create.js.org/#/docs/main/latest/class/SlashCreator?scrollTo=registerCommandsIn>
       this url is very long
+
     @since foo
+
     @since Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+
     @before foo [foo]
+
     @before Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
       Foo bar
+
     @deprecated [foo]
+
     @deprecated
       Foooooooooooooooooooooooooooooooooooo
       Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
+
     @param foo [foo]
+
     @param Foooooooooooooo_Baaaaaaaaaaaaar
       Fooooooooooo foooooooooooo fooooooooooo baaaaaaaaar
+
     @param Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
       Foo bar
+
     @raise foo [foo]
+
     @raise Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
       Foo bar
+
     @return [foo]
+
     @inline
+
     @canonical foo
+
     @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar *)
 
 val x : x
@@ -293,7 +313,6 @@ a
       ]} *)
 
 (** Code block
-
     {[
       Single line
     ]}
@@ -349,8 +368,11 @@ end
     {!field:f} {!field:t.f} {!field:M.t.f} *)
 
 (** {!modules:Foo}
+
     {!modules:Foo Bar.Baz}
+
     @canonical Foo
+
     @canonical Foo.Bar *)
 
 (** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
@@ -400,6 +422,7 @@ end
 (** {[
       let this = is_short
     ]}
+
     {[
         does not parse: verbatim
       +/+/+ /+/+/ +/+//+/+/+/+/+/+/+/
@@ -407,6 +430,7 @@ end
       +/+/+ /+/+/ +/+//+/+/+/+/+/+/+/
       +/+/+ /+/+/ +/+//+/+
     ]}
+
     {[
       [@@@ocamlformat "break-separators = after"]
 
@@ -415,6 +439,7 @@ end
           foooooooooooooooooooooooooooooooo;
           foooooooooooooooooooooooooooooooo ]
     ]}
+
     {[
       let fooooooooooooooooo =
         [ foooooooooooooooooooooooooooooooo
@@ -423,20 +448,20 @@ end
     ]} *)
 
 (** This is a comment with code inside
-
     {[
       (** This is a comment with code inside [ let code inside = f inside ] *)
       let code inside (* comment *) = f inside
     ]}
 
     Code block with metadata:
-
     {@ocaml[
       code
     ]}
+
     {@ocaml kind=toplevel[
       code
     ]}
+
     {@ocaml kind=toplevel env=e1[
       (** This is a comment with code inside [ let code inside = f inside ] *)
       let code inside (* comment *) = f inside
@@ -596,8 +621,11 @@ type x =
     Block math:
 
     {math \infty}
+
     {math \infty}
+
     {math \pi}
+
     {math
       \infty
 
@@ -607,9 +635,11 @@ type x =
 
       \pi
     }
+
     {math
       {m \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi}
     }
+
     {math
       % \f is defined as #1f(#2) using the macro
       \f\relax{x} = \int_{-\infty}^\infty
@@ -626,7 +656,6 @@ type x =
     ]} *)
 
 (** ISO-Latin1 characters in identifiers
-
     {[
       ω
     ]}*)
