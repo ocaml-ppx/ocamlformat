@@ -85,16 +85,19 @@ let set_max_indent x = with_pp (fun _ -> max_indent := x)
 
 (** Debug of formatting -------------------------------------------------*)
 
-let pp_color_k color_code k fs =
-  let c = Format_.sprintf "\x1B[%dm" in
-  Format_.fprintf fs "@<0>%s%t@<0>%s" (c color_code) k (c 0)
+let with_box_debug k = with_pp (Box_debug.with_box (fun fs -> eval fs k))
 
 (** Break hints and format strings --------------------------------------*)
 
-let break n o = with_pp (fun fs -> Format_.pp_print_break fs n o)
+let break n o =
+  with_pp (fun fs ->
+      Box_debug.break fs n o ;
+      Format_.pp_print_break fs n o )
 
 let cbreak ~fits ~breaks =
-  with_pp (fun fs -> Format_.pp_print_custom_break fs ~fits ~breaks)
+  with_pp (fun fs ->
+      Box_debug.cbreak fs ~fits ~breaks ;
+      Format_.pp_print_custom_break fs ~fits ~breaks )
 
 let noop = with_pp (fun _ -> ())
 
@@ -111,7 +114,9 @@ let sequence l =
   in
   go l (List.length l)
 
-let fmt f = with_pp (fun fs -> Format_.fprintf fs f)
+let fmt f =
+  with_pp (fun fs ->
+      if Box_debug.fmt fs f then () else Format_.fprintf fs f )
 
 (** Primitive types -----------------------------------------------------*)
 
@@ -176,10 +181,14 @@ let fmt_opt o = Option.value o ~default:noop
 (** Conditional on immediately following a line break -------------------*)
 
 let if_newline s =
-  with_pp (fun fs -> Format_.pp_print_string_if_newline fs s)
+  with_pp (fun fs ->
+      Box_debug.if_newline fs s ;
+      Format_.pp_print_string_if_newline fs s )
 
 let break_unless_newline n o =
-  with_pp (fun fs -> Format_.pp_print_or_newline fs n o "" "")
+  with_pp (fun fs ->
+      Box_debug.break_unless_newline fs n o ;
+      Format_.pp_print_or_newline fs n o "" "" )
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
@@ -187,6 +196,7 @@ type behavior = Fit | Break
 
 let fits_or_breaks ~level fits nspaces offset breaks =
   with_pp (fun fs ->
+      Box_debug.fits_or_breaks fs fits nspaces offset breaks ;
       Format_.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks )
 
 let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
@@ -231,75 +241,35 @@ let wrap_fits_breaks ?(space = true) conf x =
 
 (** Boxes ---------------------------------------------------------------*)
 
-let box_debug_enabled = ref false
-
-let with_box_debug k =
-  let g = !box_debug_enabled in
-  with_pp (fun _ -> box_debug_enabled := true)
-  $ k
-  $ with_pp (fun _ -> box_debug_enabled := g)
-
-let box_depth = ref 0
-
-(* Numeric part of the ANSI escape sequence for colors *)
-let box_depth_colors = [|32; 33; 94; 31; 35; 36|]
-
-let box_depth_color () =
-  box_depth_colors.(!box_depth % Array.length box_depth_colors)
-
-let debug_box_open ?name box_kind n fs =
-  if !box_debug_enabled then (
-    let name =
-      match name with
-      | Some s -> Format_.sprintf "%s:%s" box_kind s
-      | None -> box_kind
-    in
-    let openning = if n = 0 then name else Format_.sprintf "%s<%d" name n in
-    pp_color_k (box_depth_color ())
-      (fun fs -> Format_.fprintf fs "@<0>[@<0>%s@<0>>" openning)
-      fs ;
-    Int.incr box_depth )
-
-let debug_box_close fs =
-  if !box_debug_enabled then
-    if !box_depth = 0 then
-      (* mismatched close, red background *)
-      pp_color_k 41 (fun fs -> Format_.fprintf fs "@<0>]") fs
-    else (
-      Int.decr box_depth ;
-      pp_color_k (box_depth_color ())
-        (fun fs -> Format_.fprintf fs "@<0>]")
-        fs )
-
 let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n
 
 let open_box ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "b" n fs ;
+      Box_debug.box_open ?name "b" n fs ;
       Format_.pp_open_box fs n )
 
 and open_vbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "v" n fs ;
+      Box_debug.box_open ?name "v" n fs ;
       Format_.pp_open_vbox fs n )
 
 and open_hvbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "hv" n fs ;
+      Box_debug.box_open ?name "hv" n fs ;
       Format_.pp_open_hvbox fs n )
 
 and open_hovbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "hov" n fs ;
+      Box_debug.box_open ?name "hov" n fs ;
       Format_.pp_open_hovbox fs n )
 
 and close_box =
   with_pp (fun fs ->
-      debug_box_close fs ;
+      Box_debug.box_close fs ;
       Format_.pp_close_box fs () )
 
 (** Wrapping boxes ------------------------------------------------------*)

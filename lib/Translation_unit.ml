@@ -153,8 +153,8 @@ let dump_ast ~input_name ?output_file ~suffix fmt =
   with_file input_name output_file suffix ext (fun oc ->
       fmt (Format.formatter_of_out_channel oc) )
 
-let dump_formatted ~input_name ?output_file ~suffix fmted =
-  let ext = Filename.extension input_name in
+let dump_formatted ~input_name ?output_file
+    ?(ext = Filename.extension input_name) ~suffix fmted =
   with_file input_name output_file suffix ext (fun oc ->
       Out_channel.output_string oc fmted )
 
@@ -235,9 +235,9 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
              Std_ast.Printast.ast fg fmt ast ) )
     else None
   in
-  let dump_formatted ~suffix fmted =
+  let dump_formatted ?ext ~suffix fmted =
     if conf.opr_opts.debug.v then
-      Some (dump_formatted ~input_name ?output_file ~suffix fmted)
+      Some (dump_formatted ?ext ~input_name ?output_file ~suffix fmted)
     else None
   in
   Location.input_name := input_name ;
@@ -264,7 +264,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     in
     ( if conf.opr_opts.debug.v then
         format ~box_debug:true |> fst
-        |> dump_formatted ~suffix:".boxes"
+        |> dump_formatted ~suffix:"_boxes" ~ext:".html"
         |> function
         | Some file ->
             if i = 1 then Format.eprintf "[DEBUG] Box structure: %s\n" file

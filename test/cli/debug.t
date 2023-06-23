@@ -7,7 +7,7 @@
   >     A.x
   > EOF
 
-  $ (ocamlformat --debug a.ml) 2>&1 | sed -e 's/\([^ ]*\.boxes\.ml$\)/<file>.boxes.ml/g' -e 's/\([^ ]*\.ast$\)/<file>.ast/g'
+  $ (ocamlformat --debug a.ml) 2>&1 | sed -e 's/\([^ ]*\.html$\)/<file>.html/g' -e 's/\([^ ]*\.ast$\)/<file>.ast/g'
   AST:
   Ptop_def
     [
@@ -35,7 +35,7 @@
         ]
     ]
   
-  [DEBUG] Box structure: <file>.boxes.ml
+  [DEBUG] Box structure: <file>.html
   AST:
   Ptop_def
     [
@@ -131,7 +131,7 @@
   > (* after let-binding *)
   > EOF
 
-  $ (ocamlformat --debug a.ml) 2>&1 | sed -e 's/\([^ ]*\.boxes\.ml$\)/<file>.boxes.ml/g' -e 's/\([^ ]*\.ast$\)/<file>.ast/g'
+  $ (ocamlformat --debug a.ml) 2>&1 | sed -e 's/\([^ ]*\.html$\)/<file>.html/g' -e 's/\([^ ]*\.ast$\)/<file>.ast/g'
   AST:
   Ptop_def
     [
@@ -184,7 +184,7 @@
         ]
     ]
   
-  [DEBUG] Box structure: <file>.boxes.ml
+  [DEBUG] Box structure: <file>.html
   AST:
   Ptop_def
     [
