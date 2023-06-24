@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://ocaml.github.io/ocamlformat/">
+  <a href="https://ocaml.org/p/ocamlformat/latest">
     ocamlformat
   </a>
 </h1>
