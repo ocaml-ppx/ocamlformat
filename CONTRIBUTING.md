@@ -1,71 +1,73 @@
-# Contributing to OCamlFormat
+# OCamlFormat Contribution Guide
+
+Welcome and thank you for your interest in contributing to OCamlFormat. This contribution guide will help you through the contribution process.
 
 ## Reporting Issues
 
-If you encounter a problem when using OCamlFormat or if you have any questions, please open a [GitHub issue](https://github.com/ocaml-ppx/ocamlformat/issues/).
+If you encounter an issue with OCamlFormat, or if you have inquiries, we encourage you to open a [GitHub issue](https://github.com/ocaml-ppx/ocamlformat/issues/). Please follow the steps below:
 
-1. Check first if your issue has already been [reported](https://github.com/ocaml-ppx/ocamlformat/issues/).
-2. Include the version of OCamlFormat you are using (`ocamlformat --version`).
-3. Include a (preferably short) source file which demonstrates the issue.
-4. Describe the expected and actual behavior.
-5. Do not unsubscribe from the issue until it is closed, the maintainers may ask for your feedback.
+1. First, verify if your issue hasn't already been [reported](https://github.com/ocaml-ppx/ocamlformat/issues/).
+2. Specify the OCamlFormat version you're using (`ocamlformat --version`).
+3. Include a (preferably short) source file that replicates the issue.
+4. Clearly define the expected and actual behavior.
+5. Remain engaged with the issue until closure as your feedback might be needed.
 
-When acknowledged, the project maintainers will add [labels](#ocamlformat-labels) to your issue throughout its lifespan.
+Once your issue is acknowledged, our maintainers will apply relevant [labels](#ocamlformat-labels) to track its status.
 
 ## Pull Requests
 
-We actively welcome pull requests.
+We heartily welcome pull requests. To ensure an effective contribution, please adhere to the steps below:
 
-1. Prior to investing a large amount of time into significant or invasive changes, or those that affect the output, it is likely more efficient to first open an issue for discussion and planning.
-2. If you are not familiar with the project, focus first on the [Good first issues](https://github.com/ocaml-ppx/ocamlformat/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good-first-issue+%3A%2B1%3A%22).
+1. For significant, invasive, or output-affecting changes, consider opening an issue for discussion before committing substantial time and effort.
+2. If you're new to the project, starting with the [Good first issues](https://github.com/ocaml-ppx/ocamlformat/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good-first-issue+%3A%2B1%3A%22) can be beneficial.
 3. Fork the repository and create your branch from `main`.
-4. If you have added code that should be tested, add tests (they should be located in the `tests/passing` directory).
-'.
-5. Ensure the test suite passes (see [Running the tests](#running-the-tests)).
+4. If you've added code that should be tested, supplement it with tests located in the `tests/passing` directory.
+5. Ensure that the test suite passes (see [Running the tests](#running-the-tests) for instructions).
 
-When acknowledged, the project maintainers will add [labels](#ocamlformat-labels) to your pull request throughout its lifespan.
+After acknowledgment, maintainers will tag your pull request with appropriate [labels](#ocamlformat-labels).
 
+### Running the Tests
 
-### Running the tests
+After building OCamlFormat, execute `make test` to check for any regressions. Here's what happens during `make test`:
 
-Once OCamlFormat has been built, run `make test` to check for regressions.
+1. The command checks that running OCamlFormat on its own source code yields an identical result. Run `make fixpoint` for this check only. If OCamlFormat is not integrated with your editor, use `make fmt` to reformat all OCamlFormat source files.
+2. The command ensures the test suite passes. No unexpected diffs should appear. If any, accept all diffs at once with `make regtests-promote`.
 
-The first step of `make test` is to ensure that invoking OCamlFormat on its own source code produces the same source code (you can run `make fixpoint` to only check this). If OCamlFormat is not integrated with the editor you use, you should run `make fmt` to reformat all OCamlFormat source files.
+Once `make test` passes, test your pull requests on code in external repositories by executing `tools/test_branch.sh <rev>`, where `<rev>` is the git revision/branch with your changes. If your pull request modifies an option, also run `OCAMLFORMAT=<option>=<value> tools/test_branch.sh <rev>` to test with the option enabled.
 
-The second part of `make test` is to ensure the test suite passes. You should not see any unexpected diff. One can accept all diffs at once with `make regtests-promote`.
+The `tools/test_branch.sh` script compares two `ocamlformat` versions (the specified branch or `HEAD` if omitted, and its main merge base) on the test code and reports any formatting differences. Any formatting errors are shown on the terminal and must be fixed before merging a pull request. Inspect any differences to confirm they are intentional. Pull requests modifying code formatting should generally introduce an option for the alternate style (if uncertain, open an issue for discussion). Differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
 
-Once `make test` passes, pull requests should be tested on the code in a set of external repositories. This can be done by executing `tools/test_branch.sh <rev>` where `<rev>` is the git revision/branch containing the pull request's changes. If a pull request affects an option, `OCAMLFORMAT=<option>=<value> tools/test_branch.sh <rev>` should also be run to test with the option enabled.
+For bash shell users, add the following line to your `~/.bashrc` file for git branch name autocompletion in the `
 
-The `tools/test_branch.sh` script runs two versions of `ocamlformat` (the specified branch, or `HEAD` if omitted, and its merge base with main) on the test code and reports the differences in the formatted code. Formatting failures may also be reported on the terminal, these will need to be fixed before a pull request can be merged. The differences should be inspected to ensure they are as intended. Pull requests changing the format of code should generally introduce an option to enable the alternate style (if in doubt, open an issue for discussion). Any differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
-
-To benefit from the autocompletion of git branch names in the `tools/test_branch.sh` script, if you use the `bash` shell, add the following line to your `~/.bashrc` file:
+tools/test_branch.sh` script:
 ```
 source <path-to-ocamlformat>/tools/ocamlformat_test_branch
 ```
-
-If you use the `zsh` shell, add the following lines to your `~/.zshrc` file:
+For zsh shell users, add these lines to your `~/.zshrc` file:
 ```
 autoload bashcompinit
 bashcompinit
 source <path-to-ocamlformat>/tools/ocamlformat_test_branch
 ```
 
-## License
+## Licensing
 
-By contributing to OCamlFormat, you agree that your contributions will be licensed under the LICENSE file in the root directory of this source tree.
+By contributing to OCamlFormat, you accept that your contributions will fall under the LICENSE located in the root directory of this source tree.
 
 ## OCamlFormat Labels
 
-### Issue specific
+To better manage issues and pull requests, we use the following labels:
 
-- [Good-first-issue](https://github.com/ocaml-ppx/ocamlformat/labels/Good-first-issue%20%3A%2B1%3A): This issue is a good entry point in the project for new contributors
+### Issue-Specific Labels
 
-### Kind
+- [Good-first-issue](https://github.com/ocaml-ppx/ocamlformat/labels/Good-first-issue%20%3A%2B1%3A): Suitable for newcomers to the project
 
-- [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug%20%3Ax%3A): This issue describes a problem or this contribution addresses a problem (erroneous/unintended behavior)
-- [Kind/Docs](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FDocs): This is related to a documentation change (user documentation or source code documentation)
-- [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FFeature-request): This issue or contribution proposes a new feature
-- [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FStyle%20suggestion): This issue or contribution proposes a style modification for the formatted output
-- [Kind/To-discuss](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FTo-discuss): Discussion needed to converge to a solution
+### Kind Labels
 
-Feel free to contribute on the [Help wanted](https://github.com/ocaml-ppx/ocamlformat/labels/Help%20wanted%20%3Afire%3A) issues and pull requests.
+- [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug%20%3Ax%3A): Represents a problem or solution to an erroneous/unintended behavior
+- [Kind/Docs](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FDocs): Pertains to changes in user or source code documentation
+- [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FFeature-request): Proposes a new feature
+- [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FStyle%20suggestion): Suggests a modification for the formatted output
+- [Kind/To-discuss](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FTo-discuss): Invites discussion to converge on a solution
+
+You're welcome to contribute to issues and pull requests marked as ["Help wanted"](https://github.com/ocaml-ppx/ocamlformat/labels/Help%20wanted%20%3Afire%3A).
