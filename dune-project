@@ -19,16 +19,24 @@
 
 (generate_opam_files true)
 
-(authors "Josh Berdine <jjb@fb.com>")
+(authors
+ "Josh Berdine <jjb@fb.com>"
+ "Hugo Heuzard <hugo.heuzard@gmail.com>"
+ "Etienne Millon <etienne@tarides.com>"
+ "Guillaume Petiot <guillaume@tarides.com>"
+ "Jules Aguillon <jules@tarides.com>")
 
-(maintainers "OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>")
+(maintainers
+ "Guillaume Petiot <guillaume@tarides.com>"
+ "Jules Aguillon <jules@tarides.com>"
+ "Emile Trotignon <emile@tarides.com>")
 
 (source
  (github ocaml-ppx/ocamlformat))
 
 (package
  (name ocamlformat-lib)
- (synopsis "Auto-formatter for OCaml code")
+ (synopsis "OCaml Code Formatter")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
