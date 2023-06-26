@@ -20,7 +20,7 @@ jobs:
           - windows-latest
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
-          - 4.13.x
+          - 4.14.x
 
     runs-on: ${{ matrix.os }}
 
