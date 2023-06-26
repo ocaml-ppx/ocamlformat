@@ -1,4 +1,4 @@
-name: Build
+name: Test OCamlformat on other projects
 
 on:
   push:
@@ -8,49 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        ocaml-compiler:
-          # Don't include every versions. OCaml-CI already covers that
-          - 4.13.x
-
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
-
-    steps:
-      # Clone the project
-      - uses: actions/checkout@v2
-
-      # Setup
-      - name: Setup OCaml ${{ matrix.ocaml-version }}
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
-
-      - name: Opam dependencies
-        run: opam install --deps-only -t .
-
-      - name: Runtest
-        run: opam exec -- dune runtest
-
-      - name: Check manpages
-        run: opam exec -- dune build @gen_manpage --auto-promote
-
-      - name: Upload binary
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
-          path: _build/install/default/bin/ocamlformat
-
   test-branch:
-    needs: build
+    needs: build-linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,7 +37,7 @@ jobs:
       - name: Fetch main build of ocamlformat
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: build-linux.yml
           workflow_conclusion: ""
           check_artifacts: true
           branch: main

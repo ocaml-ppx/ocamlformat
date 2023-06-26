@@ -1,0 +1,46 @@
+name: Build on Linux
+
+# Build and run tests on ubuntu-latest.
+# The built binary is uploaded for later use in test-branch.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    strategy:
+      matrix:
+        ocaml-compiler:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.13.x
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v2
+
+      # Setup
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Opam dependencies
+        run: opam install --deps-only -t .
+
+      - name: Runtest
+        run: opam exec -- dune runtest
+
+      - name: Check manpages
+        run: opam exec -- dune build @gen_manpage --auto-promote
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
+          path: _build/install/default/bin/ocamlformat
