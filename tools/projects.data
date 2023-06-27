@@ -7,6 +7,5 @@ github,ocaml,odoc
 github,tarides,dune-release
 github,ocaml-ppx,ppxlib
 github,ocsigen,js_of_ocaml
-github,owlbarn,owl
 github,realworldocaml,mdx
 gitlab,tezos,tezos
