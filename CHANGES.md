@@ -27,8 +27,7 @@
 
 ### Changes
 
-- Preserve empty lines in doc-comments (#2379, @Julow)
-- Escape less in doc-comments when possible (#2376, #2377, @Julow)
+- Improve formatting of doc-comments (#2376, #2377, #2379, #2378, @Julow)
 - Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
