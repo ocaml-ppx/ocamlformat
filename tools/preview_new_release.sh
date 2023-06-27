@@ -119,6 +119,7 @@ while IFS=, read git_platform namespace project; do
   comment_version $version .ocamlformat
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
+  git diff --shortstat
   git commit --quiet --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
 
 The aim of this commit is to gather feedback.
