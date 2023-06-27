@@ -1,4 +1,7 @@
-name: Build
+name: Build on Linux
+
+# Build and run tests on ubuntu-latest.
+# The built binary is uploaded for later use in test-branch.
 
 on:
   push:
@@ -8,20 +11,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-linux:
     strategy:
-      fail-fast: false
       matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
-          - 4.13.x
+          - 4.14.x
 
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
 
     steps:
       # Clone the project
@@ -43,14 +40,13 @@ jobs:
         run: opam exec -- dune build @gen_manpage --auto-promote
 
       - name: Upload binary
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: _build/install/default/bin/ocamlformat
 
   test-branch:
-    needs: build
+    needs: build-linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,7 +74,7 @@ jobs:
       - name: Fetch main build of ocamlformat
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: build-linux.yml
           workflow_conclusion: ""
           check_artifacts: true
           branch: main
