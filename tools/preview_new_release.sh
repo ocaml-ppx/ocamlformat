@@ -68,11 +68,13 @@ preview_dir=$prefix/$preview_branch
 log_dir=$preview_dir/logs
 bin_dir=$preview_dir/bin
 
+echo "Using directory $preview_dir"
 rm -rf "$preview_dir" &> /dev/null || true
 mkdir -p "$log_dir" "$bin_dir"
 
 # Build the currently checked out version of OCamlformat and copy the binary in
 # a directory that will not change
+echo "Building OCamlformat"
 dune build @install
 cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat"
 PATH=$bin_dir:$PATH
@@ -96,8 +98,9 @@ while IFS=, read git_platform namespace project; do
 
   echo "=> Checking $namespace/$project"
 
+  echo "Cloning from $upstream"
   clone_dir="$preview_dir/$project"
-  git clone --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules "$upstream" "$clone_dir"
+  git clone --quiet --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules "$upstream" "$clone_dir"
   cd "$clone_dir"
   git checkout -b "$preview_branch" --quiet
 
@@ -116,10 +119,12 @@ while IFS=, read git_platform namespace project; do
   comment_version $version .ocamlformat
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
-  git commit --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
+  git commit --quiet --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
 
 The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
-  git push -fu "$fork" "$preview_branch"
+
+  echo "Pushing to $fork"
+  git push --quiet -fu "$fork" "$preview_branch"
 done < "$project_list_file"
