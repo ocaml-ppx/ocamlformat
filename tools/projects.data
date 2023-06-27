@@ -5,7 +5,7 @@ github,mirage,mirage
 github,ocaml,dune
 github,ocaml,ocaml-lsp
 github,ocaml,odoc
-github,ocamllabs,dune-release
+github,tarides,dune-release
 github,ocaml-ppx,ppxlib
 github,ocsigen,js_of_ocaml
 github,owlbarn,owl
