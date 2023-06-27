@@ -19,7 +19,7 @@ JS_DIRS= \
 # By default, test projects used as regression tests
 DIRS= \
 	code/ocamlformat code/infer code/js_of_ocaml code/dune code/owl \
-	code/irmin code/index code/dune-release code/mirage $(JS_DIRS)
+	code/irmin code/index code/dune-release code/mirage code/ppxlib $(JS_DIRS)
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
@@ -51,6 +51,7 @@ code/index: URI = https://github.com/mirage/index
 code/mirage: URI = https://github.com/mirage/mirage
 code/dune-release: URI = https://github.com/ocamllabs/dune-release
 code/owl: URI = https://github.com/owlbarn/owl
+code/ppxlib: URI = https://github.com/ocaml-ppx/ppxlib
 
 code/base: URI = https://github.com/janestreet/base.git
 code/base_bigstring: URI = https://github.com/janestreet/base_bigstring.git
