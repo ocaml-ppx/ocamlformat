@@ -100,14 +100,16 @@ while IFS=, read git_platform namespace project; do
 
   echo "Cloning from $upstream"
   clone_dir="$preview_dir/$project"
-  git clone --quiet --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules "$upstream" "$clone_dir"
+  git clone --quiet --single-branch --filter=blob:none --recurse-submodules "$upstream" "$clone_dir"
   cd "$clone_dir"
   git checkout -b "$preview_branch" --quiet
 
   dune=dune
+  comment_version $version .ocamlformat
 
   case "$namespace/$project" in
     "tezos/tezos")
+      git commit --quiet --all -m "Update .ocamlformat"
       bash scripts/lint.sh --update-ocamlformat
       ;;
     "ocaml/dune")
@@ -116,7 +118,6 @@ while IFS=, read git_platform namespace project; do
       ;;
   esac
 
-  comment_version $version .ocamlformat
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
   git diff --shortstat
