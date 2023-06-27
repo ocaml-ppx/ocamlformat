@@ -61,6 +61,7 @@ if [[ "$github_prefix_set" -eq 0 ]] ||
   exit 1
 fi;
 
+project_list_file=`realpath tools/projects.data`
 preview_branch=preview-ocamlformat-$version
 
 preview_dir=$prefix/$preview_branch
@@ -69,19 +70,16 @@ log_dir=$preview_dir/logs
 rm -rf "$preview_dir" &> /dev/null || true
 mkdir -p "$log_dir"
 
-dirname=`dirname $0`
-
-while IFS=, read git_platform namespace dir; do
-  cd $preview_dir;
+while IFS=, read git_platform namespace project; do
 
   case "$git_platform" in
     "github")
-      fork="$github_prefix/$dir"
-      upstream="https://github.com/$namespace/$dir"
+      fork="$github_prefix/$project"
+      upstream="https://github.com/$namespace/$project"
       ;;
     "gitlab")
-      fork="$gitlab_prefix/$dir.git"
-      upstream="https://gitlab.com/$namespace/$dir.git"
+      fork="$gitlab_prefix/$project.git"
+      upstream="https://gitlab.com/$namespace/$project.git"
       ;;
     *)
       echo "Unknown git platform: $git_platform"
@@ -89,16 +87,16 @@ while IFS=, read git_platform namespace dir; do
       ;;
   esac;
 
-  echo "=> Checking $namespace/$dir"
+  echo "=> Checking $namespace/$project"
 
-  git clone --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules "$upstream" "$dir"
-  cd "$dir"
+  clone_dir="$preview_dir/$project"
+  git clone --single-branch --depth=1 --filter=blob:none --no-checkout --recurse-submodules "$upstream" "$clone_dir"
+  cd "$clone_dir"
   git checkout -b "$preview_branch" --quiet
 
-  comment_version $version .ocamlformat
   dune=dune
 
-  case "$namespace/$dir" in
+  case "$namespace/$project" in
     "tezos/tezos")
       bash scripts/lint.sh --update-ocamlformat
       ;;
@@ -108,7 +106,8 @@ while IFS=, read git_platform namespace dir; do
       ;;
   esac
 
-  $dune build @fmt --auto-promote &> "$log_dir/$dir.log" || true;
+  comment_version $version .ocamlformat
+  $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
   git commit --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
 
@@ -116,4 +115,4 @@ The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
   git push -fu "$fork" "$preview_branch"
-done < "$dirname/projects.data"
+done < "$project_list_file"
