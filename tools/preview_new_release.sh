@@ -66,9 +66,16 @@ preview_branch=preview-ocamlformat-$version
 
 preview_dir=$prefix/$preview_branch
 log_dir=$preview_dir/logs
+bin_dir=$preview_dir/bin
 
 rm -rf "$preview_dir" &> /dev/null || true
-mkdir -p "$log_dir"
+mkdir -p "$log_dir" "$bin_dir"
+
+# Build the currently checked out version of OCamlformat and copy the binary in
+# a directory that will not change
+dune build @install
+cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat"
+PATH=$bin_dir:$PATH
 
 while IFS=, read git_platform namespace project; do
 
