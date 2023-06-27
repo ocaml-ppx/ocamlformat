@@ -110,6 +110,10 @@ while IFS=, read git_platform namespace dir; do
 
   $dune build @fmt --auto-promote &> "$log_dir/$dir.log" || true;
   uncomment_version "$version" .ocamlformat
-  git commit --all -m "Preview: upgrade to ocamlformat $version (unreleased)"
-  git push -u "$fork" "$preview_branch"
+  git commit --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
+
+The aim of this commit is to gather feedback.
+
+Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
+  git push -fu "$fork" "$preview_branch"
 done < "$dirname/projects.data"
