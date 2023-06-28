@@ -66,7 +66,7 @@ To better manage issues and pull requests, we use the following labels:
 
 - [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug%20%3Ax%3A): Represents a problem or solution to an erroneous/unintended behavior
 - [Kind/Docs](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FDocs): Pertains to changes in user or source code documentation
-- [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FFeature-request): Proposes a new feature
+- [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2Ffeature-request): Proposes a new feature
 - [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2Fstyle-suggestion): Suggests a modification for the formatted output
 - [Kind/To-discuss](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2Fto-discuss): Invites discussion to converge on a solution
 
