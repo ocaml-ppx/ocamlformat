@@ -19,7 +19,7 @@ Once your issue is acknowledged, our maintainers will apply relevant [labels](#o
 We heartily welcome pull requests. To ensure an effective contribution, please adhere to the steps below:
 
 1. For significant, invasive, or output-affecting changes, consider opening an issue for discussion before committing substantial time and effort.
-2. If you're new to the project, starting with the [Good first issues](https://github.com/ocaml-ppx/ocamlformat/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good-first-issue+%3A%2B1%3A%22) can be beneficial.
+2. If you're new to the project, starting with the [Good first issues](https://github.com/ocaml-ppx/ocamlformat/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good-first-issue+%3Agreen_heart%3A%22) can be beneficial.
 3. Fork the repository and create your branch from `main`.
 4. If you've added code that should be tested, supplement it with tests located in the `tests/passing` directory.
 5. Ensure that the test suite passes (see [Running the tests](#running-the-tests) for instructions).
