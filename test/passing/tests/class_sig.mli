@@ -17,3 +17,8 @@ class c : int -> object end
 class c (* a *) : (* b *) int (* c *) -> (* d *) object (* e *) end (* f *)
 
 class c : object end
+
+class c : object
+  
+(** Standalone doc-string. *)
+end
