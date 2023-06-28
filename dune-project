@@ -94,7 +94,7 @@
 - **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.
 - **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.
 - **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.
-- **RPC:** ocamlformat provides an RPC server that can bed used by other tools to easily format OCaml Code.")
+- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
  (depends
   (ocaml
    (>= 4.08))
