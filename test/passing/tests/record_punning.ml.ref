@@ -1,12 +1,29 @@
-let a = { x = x }
-let b = { x : a = x }
-let c = { x : a :> b = x }
-let d = { x = x[@foo] }
-let e = { x = y }
+[%sexp {x: int; y: string}]
 
-let { x = x } = f
+let _ = fun {x: int; y: string} -> ()
 
-let deep = { x = x ; y = { x = x }}
+let _ = {A.b= A.b}
+
+let {A.b} = x
+
+let _ =
+  object
+    method x = {<x = A.x>}
+  end
+
+let a = {x}
+
+let b = {x: a}
+
+let c = {x: a :> b}
+
+let d = {x= x [@foo]}
+
+let e = {x= y}
+
+let {x} = f
+
+let deep = {x; y= {x}}
 
 let x = {(*test*) aaa: aa; bbb: bb}
 
@@ -58,18 +75,22 @@ let x = function {a= (_ : string); _} -> ()
 
 let x = function {a: string = _; _} -> ()
 
-let { x (*b*) : z } = e
+let {x (*b*): z} = e
 
-let { (* a *) x (*b*) : (* c *) z (* d *) } = e
+let {(* a *) x (*b*): (* c *) z (* d *)} = e
 
-let _ = { (*a*)x(*b*) : (*c*)t(*d*) :> (*e*)t(*f*) = (*g*)e(*h*) }
+let _ = {(*a*) x (*b*): (*c*) t (*d*) :> (*e*) t (*f*) = (*g*) e (*h*)}
 
-type t = C of (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*)
+type t = C of (*a*) {(*b*) x (*c*): (*d*) t (*e*)} (*f*)
 
-type t = C : (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*) -> t
+type t = C : (*a*) {(*b*) x (*c*): (*d*) t (*e*)} (*f*) -> t
 
-let _ = { x = (x : t) }
-let _ = { x :> t = (x : t) }
-let _ = { x = (x :> t) }
-let _ = { x = (x : t :> t) }
-let _ = { x : t = (x :> t) }
+let _ = {x: t}
+
+let _ = {x: t :> t}
+
+let _ = {x:> t}
+
+let _ = {x: t :> t}
+
+let _ = {x: t :> t}

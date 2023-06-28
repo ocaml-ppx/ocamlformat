@@ -4517,19 +4517,19 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to record_identity.ml.stdout
-   (with-stderr-to record_identity.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iter=4 %{dep:tests/record_identity.ml})))))
+  (with-stdout-to record_punning-js.ml.stdout
+   (with-stderr-to record_punning-js.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iter=4 %{dep:tests/record_punning.ml})))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_identity.ml.ref record_identity.ml.stdout)))
+ (action (diff tests/record_punning-js.ml.ref record_punning-js.ml.stdout)))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_identity.ml.err record_identity.ml.stderr)))
+ (action (diff tests/record_punning-js.ml.err record_punning-js.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -4542,7 +4542,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_punning.ml record_punning.ml.stdout)))
+ (action (diff tests/record_punning.ml.ref record_punning.ml.stdout)))
 
 (rule
  (alias runtest)
