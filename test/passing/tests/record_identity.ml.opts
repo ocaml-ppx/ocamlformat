@@ -1,1 +1,1 @@
---profile=janestreet
+--profile=janestreet --max-iter=4

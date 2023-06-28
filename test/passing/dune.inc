@@ -4445,6 +4445,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to record-402.ml.stdout
+   (with-stderr-to record-402.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocaml-version=4.02 %{dep:tests/record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-402.ml.ref record-402.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-402.ml.err record-402.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to record-loose.ml.stdout
    (with-stderr-to record-loose.ml.stderr
      (run %{bin:ocamlformat} --margin-check --field-space=loose %{dep:tests/record.ml})))))
@@ -4501,7 +4519,7 @@
  (action
   (with-stdout-to record_identity.ml.stdout
    (with-stderr-to record_identity.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet %{dep:tests/record_identity.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iter=4 %{dep:tests/record_identity.ml})))))
 
 (rule
  (alias runtest)

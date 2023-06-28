@@ -292,13 +292,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      let preserve_beginend =
-        Poly.(conf.fmt_opts.exp_grouping.v = `Preserve)
-      in
-      let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
       let+ t_new =
         match
-          parse parse_ast ~disable_w50:true fg conf ~input_name ~source:fmted
+          parse (parse_ast conf) ~disable_w50:true fg conf ~input_name
+            ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
@@ -385,11 +382,10 @@ let parse_result ?disable_w50 f fragment conf ~source ~input_name =
 let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
-  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
   let line_endings = conf.fmt_opts.line_endings.v in
-  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let+ parsed =
-    parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
+    parse_result (parse_ast conf) ~disable_w50:true fg conf ~source
+      ~input_name
   in
   let+ std_parsed =
     parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
