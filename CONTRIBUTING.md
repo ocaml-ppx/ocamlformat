@@ -70,4 +70,4 @@ To better manage issues and pull requests, we use the following labels:
 - [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FStyle%20suggestion): Suggests a modification for the formatted output
 - [Kind/To-discuss](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FTo-discuss): Invites discussion to converge on a solution
 
-You're welcome to contribute to issues and pull requests marked as ["Help wanted"](https://github.com/ocaml-ppx/ocamlformat/labels/Help%20wanted%20%3Afire%3A).
+You're welcome to contribute to issues and pull requests marked as ["Help wanted"](https://github.com/ocaml-ppx/ocamlformat/labels/Help-wanted%20%3Awarning%3A), or any other issues.
