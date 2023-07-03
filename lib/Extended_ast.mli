@@ -33,7 +33,12 @@ val of_syntax : Syntax.t -> any_t
 
 module Parse : sig
   val ast :
-    'a t -> preserve_beginend:bool -> input_name:string -> string -> 'a
+       'a t
+    -> ocaml_version:Ocaml_version.t
+    -> preserve_beginend:bool
+    -> input_name:string
+    -> string
+    -> 'a
 end
 
 val equal_core_type : core_type -> core_type -> bool

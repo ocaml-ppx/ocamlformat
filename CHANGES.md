@@ -31,7 +31,7 @@
 - Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
-- Restore short form formatting of record field aliases (#2282, @gpetiot)
+- Restore short form formatting of record field aliases (#2282, #2388, @gpetiot, @Julow)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, #2363, @gpetiot, @Julow)
 - Improve formatting of class signatures (#2301, #2387, @gpetiot, @Julow)
 - JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, @gpetiot, @Julow)
