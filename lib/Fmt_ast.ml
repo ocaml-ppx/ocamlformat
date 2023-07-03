@@ -2730,11 +2730,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     $ fmt_extension_suffix c ext
     $ self_ $ fmt "@ "
     $ hvbox 0
-        ( ( match fields with
-          | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
-              str "\n"
-          | _ -> noop )
-        $ fmt_if_k (List.is_empty fields)
+        ( fmt_if_k (List.is_empty fields)
             (Cmts.fmt_within ~pro:noop c (Ast.location ctx))
         $ fmt_item_list c ctx update_config ast fmt_item fields )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
