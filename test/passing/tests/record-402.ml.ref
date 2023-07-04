@@ -38,8 +38,7 @@ let f ~l:{f; g} = e
 
 let f ?l:({f; g}) = e
 
-(* TODO: let _ = {a; b = ((match b with `A -> A | `B -> B | `C -> C) : c);
-   c} *)
+let _ = {a; b= (match b with `A -> A | `B -> B | `C -> C : c); c}
 
 let a () = A {A.a= (a : t)}
 
