@@ -9,5 +9,5 @@ val ends_with_whitespace : string -> bool
     whitespace character. *)
 
 val indent_of_line : string -> int option
-(** [indent_of_line s] is the number of whitespace at the beginning of [s].
-    Returns [None] if the string is only whitespaces or is empty. *)
+(** [indent_of_line s] is the indentation at the beginning of [s].
+    Returns [None] if the first line of the string is only whitespaces or is empty. *)

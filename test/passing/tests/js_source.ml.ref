@@ -10043,7 +10043,7 @@ let _ =
 (*
     *)
 
-(**    xxx *)
+(** xxx *)
 include S1
 (** @inline *)
 
