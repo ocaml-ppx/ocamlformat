@@ -2865,8 +2865,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(* val comp_subst :
-   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(*  val comp_subst :
+    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -2961,7 +2961,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-(* val subst' : 'a ealist -> 'a term -> 'a term *)
+(*  val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -10043,7 +10043,7 @@ let _ =
 (*
 *)
 
-(** xxx *)
+(**    xxx *)
 include S1
 (** @inline *)
 
@@ -10190,3 +10190,11 @@ let _ =
 
 (** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
     xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
+
+(*    Hand-aligned comment
+      .
+      . *)
+
+(*    First line is indented more
+      .
+      . *)
