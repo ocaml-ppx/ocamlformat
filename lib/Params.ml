@@ -110,6 +110,9 @@ module Mty = struct
     match rhs.pmty_desc with
     | Pmty_signature _ | Pmty_with _ -> true
     | _ -> false
+
+  let dock_typeof _c ~rhs =
+    match rhs.pmod_desc with Pmod_structure _ -> true | _ -> false
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)

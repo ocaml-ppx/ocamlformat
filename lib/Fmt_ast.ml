@@ -3476,9 +3476,12 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
         ( fmt_module_type c ~pro mt $ list_fl wcs fmt_cstrs
         $ epi ~attr:false (* Handled by [Sugar.mod_with]. *) )
   | Pmty_typeof me ->
-      let pro = pro $ fmt "module type of@ " in
+      let break =
+        if Params.Mty.dock_typeof c.conf ~rhs:me then str " " else break 1 2
+      in
+      let pro = pro $ fmt "module type of" $ break in
       let me_blk = fmt_module_expr c (sub_mod ~ctx me) in
-      hvbox_if box 2 (compose_module ~pro me_blk ~f:Fn.id $ epi ~attr:true)
+      hvbox_if box 0 (compose_module ~pro me_blk ~f:Fn.id $ epi ~attr:true)
   | Pmty_extension ext -> pro $ fmt_extension c ctx ext $ epi ~attr:true
   | Pmty_alias lid -> pro $ fmt_longident_loc c lid $ epi ~attr:true
 

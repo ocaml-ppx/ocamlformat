@@ -52,6 +52,9 @@ module Mty : sig
   val dock_functor_rhs : Conf.t -> rhs:module_type -> bool
   (** Whether functor types should be docked on the same line or break after
       the [->]. *)
+
+  val dock_typeof : Conf.t -> rhs:module_expr -> bool
+  (** Whether to dock the RHS of a [module type of]. *)
 end
 
 val get_or_pattern_sep :

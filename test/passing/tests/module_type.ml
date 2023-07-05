@@ -74,13 +74,13 @@ module M : sig
   include (* foo *) module type of K
 
   include module type of
-    Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
-      (Fooooooooooooo)
+      Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
+        (Fooooooooooooo)
 
   include (* fooooooooo *)
     module type of
-    Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
-      (Fooooooooooooo)
+      Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo)
+        (Fooooooooooooo)
 end = struct end
 
 let foo (type foooo fooo_ooooo)
