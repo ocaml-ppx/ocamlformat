@@ -22,7 +22,6 @@ clean:
 
 .PHONY: fmt
 fmt:
-	tmp=$(mktemp -t 'dune-format'); dune format-dune-file dune-project > tmp; mv -f tmp dune-project
 	dune build @fmt
 
 .PHONY: test regtests regtests-promote
@@ -39,10 +38,6 @@ coverage:
 	bisect-ppx-report html
 	echo "Coverage report generated in _coverage/"
 	echo " => open _coverage/index.html"
-
-headers:
-	tools/update_headers.sh
-	dune build @fmt --auto-promote
 
 .PHONY: bench
 bench:

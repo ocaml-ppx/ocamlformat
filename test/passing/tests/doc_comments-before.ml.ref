@@ -125,7 +125,7 @@ module Comment_placement : sig
       (Foo : BAR)
       (Foo : BAR)
       (Foo : BAR) :
-      sig end
+  sig end
 
   (** Doc comment still goes after *)
   module Make (Config : sig

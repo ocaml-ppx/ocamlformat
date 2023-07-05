@@ -38,74 +38,9 @@ let f ~l:{f; g} = e
 
 let f ?l:({f; g}) = e
 
-let Mmmmmm.
-      { xxxx
-      ; xxxxxxxxx
-      ; xxxxxxxxxxxxxxxxxx
-      ; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx } =
-  ()
+let _ = {a; b = ((match b with `A -> A | `B -> B | `C -> C) : c); c}
 
-let Mmmmmm.
-      { xxxx
-      ; xxxxxxxxx
-      ; xxxxxxxxxxxxxxxxxx
-      ; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (* foooooooooooo *) }
-    (* fooooooooo *) =
-  ()
-
-let _ = {a; b: c = (match b with `A -> A | `B -> B | `C -> C); c}
-
-let a () = A {A.a: t}
-
-let x = {(*test*) aaa: aa; bbb: bb}
-
-let x = {aaa: aa (* A *); bbb: bb}
-
-let x = {aaa: aa; (* A *) bbb: bb}
-
-let x = {(*test*) aaa: aa = aa; bbb: bb}
-
-let x = {aaa: aa (* A *) = aa; bbb: bb}
-
-let x = {aaa: aa = (* A *) aa; bbb: bb}
-
-let x = {aaa: aa; (* A *) bbb: bb}
-
-let {(*a*) a: a} = e
-
-let {a (*a*): a} = e
-
-let {a: (*a*) a} = e
-
-let {a: a (*a*)} = e
-
-let _ =
-  (* comment here *)
-  { (* comment here *)
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
-  ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
-
-let { (* comment here *)
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
-    ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb } =
-  e
-
-type t =
-  { (* comment here *)
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaaaaaaaaaa
-  ; bbbbbbbbbbbb: bbbbbbbbbbb }
-
-let _ = x {a= (a' : string); b= (b' : string)}
-
-let _ = x {a: string = a'; b: string = b'}
-
-let _ = x {a= (a' : string); b: string = b'}
-
-let _ = x {a: string = a'; b= (b' : string)}
-
-let x = function {a= (_ : string); _} -> ()
-
-let x = function {a: string = _; _} -> ()
+let a () = A {A.a = (a : t)}
 
 let x =
   { aaaaaaaaaa
@@ -121,21 +56,5 @@ type t = { a : (module S); b : (module S) }
 let _ = { a = (module M : S); b = (module M : S) }
 
 let to_string {x; _ (* we should print y *)} = string_of_int x
-
-let { x (*b*) : z } = e
-
-let { (* a *) x (*b*) : (* c *) z (* d *) } = e
-
-let _ = { (*a*)x(*b*) : (*c*)t(*d*) :> (*e*)t(*f*) = (*g*)e(*h*) }
-
-type t = C of (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*)
-
-type t = C : (*a*) { (*b*) x (*c*) : (*d*) t (*e*)} (*f*) -> t
-
-let _ = { x = (x : t) }
-let _ = { x :> t = (x : t) }
-let _ = { x = (x :> t) }
-let _ = { x = (x : t :> t) }
-let _ = { x : t = (x :> t) }
 
 let { x = (x : t) } = x

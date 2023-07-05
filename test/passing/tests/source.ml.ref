@@ -6915,7 +6915,7 @@ type 'a tree = E | N of 'a tree * 'a * 'a tree
 module Bootstrap2
     (MakeDiet : functor (X : ORD) -> SET
        with type t = X.t tree and type elt = X.t) :
-    SET with type elt = int = struct
+SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7339,7 +7339,7 @@ end
 module Bootstrap
     (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
     (Element : ORDERED) :
-    HEAP with module Elem = Element = struct
+HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig

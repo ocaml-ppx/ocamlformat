@@ -38,15 +38,39 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   stash len ;
   Buffer.contents dst
 
-let escape_brackets s =
-  let escapeworthy = function '[' | ']' -> true | _ -> false in
-  ensure_escape ~escapeworthy s
+(** Insert [ins] into [s] at every indexes in [ats]. *)
+let insert_ats s ins ats =
+  let len = String.length s in
+  let b = Buffer.create (len + (String.length ins * List.length ats)) in
+  let stash pos until = Buffer.add_substring b s ~pos ~len:(until - pos) in
+  let rec loop last_ins = function
+    | [] -> stash last_ins len
+    | i :: tl -> stash last_ins i ; Buffer.add_string b ins ; loop i tl
+  in
+  loop 0 (List.sort ~compare:Int.compare ats) ;
+  Buffer.contents b
+
+let escape_balanced_brackets s =
+  (* Do not escape paired brackets. Opening and closing that couldn't be
+     paired will be escaped. *)
+  let rec brackets_to_escape opens closes i =
+    if i >= String.length s then opens @ closes
+    else
+      let opens, closes =
+        match s.[i] with
+        | '[' -> (i :: opens, closes)
+        | ']' -> (
+          match opens with
+          | [] -> (opens, i :: closes)
+          | _ :: tl -> (tl, closes) )
+        | _ -> (opens, closes)
+      in
+      brackets_to_escape opens closes (i + 1)
+  in
+  insert_ats s "\\" (brackets_to_escape [] [] 0)
 
 let escape_all s =
-  let escapeworthy = function
-    | '@' | '{' | '}' | '[' | ']' -> true
-    | _ -> false
-  in
+  let escapeworthy = function '{' | '}' | '[' | ']' -> true | _ -> false in
   ensure_escape ~escapeworthy s
 
 let split_on_whitespaces =
@@ -109,7 +133,7 @@ let fmt_code_block c s1 s2 =
         fmt_code original )
   | Some _ -> fmt_code original
 
-let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
+let fmt_code_span s = wrap "[" "]" (str (escape_balanced_brackets s))
 
 let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
 
@@ -139,27 +163,32 @@ let list_should_use_heavy_syntax items =
   in
   List.exists items ~f:heavy_nestable_block_elements
 
-(* Decide if should break between two elements *)
-let block_element_should_break elem next =
+(* Decide if a blank line should be added between two elements *)
+let block_element_should_blank elem next =
   match (elem, next) with
-  (* Mandatory breaks *)
-  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
-  (* Arbitrary breaks *)
-  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
+  | `Tag _, `Tag _ -> false
+  (* Mandatory blanks lines. *)
+  | (`List _ | `Tag _), _ | `Paragraph _, `Paragraph _ -> true
   | _, _ -> false
 
+let should_preserve_blank _c (a : Loc.span) (b : Loc.span) =
+  (* Whether there were already an empty line *)
+  b.start.line - a.end_.line > 1
+
 (* Format a list of block_elements separated by newlines Inserts blank line
-   depending on [block_element_should_break] *)
-let list_block_elem elems f =
+   depending on [block_element_should_blank] *)
+let list_block_elem c elems f =
   list_pn elems (fun ~prev:_ elem ~next ->
       let break =
         match next with
-        | Some {Loc.value= n; _}
-          when block_element_should_break
-                 (elem.value :> block_element)
-                 (n :> block_element) ->
-            fmt "\n@\n"
-        | Some _ -> fmt "@\n"
+        | Some n ->
+            if
+              block_element_should_blank
+                (elem.Loc.value :> block_element)
+                (n.value :> block_element)
+              || should_preserve_blank c elem.location n.location
+            then fmt "\n@\n"
+            else fmt "@\n"
         | None -> noop
       in
       f elem $ break )
@@ -177,22 +206,19 @@ let rec fmt_inline_elements c elements =
   in
   let rec aux = function
     | [] -> noop
-    | `Space sp :: `Word w :: t ->
-        (* Escape lines starting with '+' or '-' *)
-        let escape =
-          if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then
-            "\\"
-          else ""
-        in
+    | `Space sp :: `Word (("-" | "+") as w) :: t ->
+        (* Escape lines starting with '+' or '-'. *)
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v
-          (cbreak ~fits:("", 1, "") ~breaks:("", 0, escape))
+          (cbreak ~fits:("", 1, "") ~breaks:("", 0, "\\"))
           (non_wrap_space sp)
-        $ str_normalized c w $ aux t
+        $ str w $ aux t
     | `Space sp :: t ->
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (fmt "@ ")
           (non_wrap_space sp)
         $ aux t
-    | `Word w :: t -> str_normalized c w $ aux t
+    | `Word w :: t ->
+        fmt_if (String.is_prefix ~prefix:"@" w) "\\"
+        $ str_normalized c w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
@@ -259,7 +285,7 @@ and fmt_list_light c kind items =
   vbox 0 (list items "@," fmt_item)
 
 and fmt_nestable_block_elements c elems =
-  list_block_elem elems (fmt_nestable_block_element c)
+  list_block_elem c elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
@@ -311,11 +337,12 @@ let fmt_block_element c elm =
 
 let fmt_ast conf ~fmt_code (docs : t) =
   let c = {fmt_code; conf} in
-  vbox 0 (list_block_elem docs (fmt_block_element c))
+  vbox 0 (list_block_elem c docs (fmt_block_element c))
 
 let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
   let begin_space = String.starts_with_whitespace input in
+  (* The offset is used to adjust the margin when formatting code blocks. *)
   let offset = offset + if begin_space then 1 else 0 in
   let fmt_code conf ~offset:offset' input =
     fmt_code conf ~offset:(offset + offset') input

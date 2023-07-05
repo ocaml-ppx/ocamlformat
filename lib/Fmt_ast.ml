@@ -114,8 +114,8 @@ let collection_last_cmt ?pro c (loc : Location.t) locs =
       with
       | [] -> noop
       | (_, semicolon_loc) :: _ ->
-          Cmts.fmt_after ?pro c last ~filter:(fun Cmt.{loc; _} ->
-              Location.compare loc semicolon_loc >= 0 ) )
+          Cmts.fmt_after ?pro c last ~filter:(fun cmt ->
+              Location.compare (Cmt.loc cmt) semicolon_loc >= 0 ) )
 
 let fmt_elements_collection ?pro ?(first_sep = true) ?(last_sep = true) c
     (p : Params.elements_collection) f loc fmt_x xs =
@@ -488,9 +488,10 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   | `Preserve_one ->
       let rec loop prev_pos = function
         | cmt :: tl ->
+            let loc = Cmt.loc cmt in
             (* Check empty line before each comment *)
-            Source.empty_line_between c.source prev_pos cmt.Cmt.loc.loc_start
-            || loop cmt.Cmt.loc.loc_end tl
+            Source.empty_line_between c.source prev_pos loc.loc_start
+            || loop loc.loc_end tl
         | [] ->
             (* Check empty line after all comments *)
             Source.empty_line_between c.source prev_pos l2.loc_start
@@ -2729,11 +2730,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     $ fmt_extension_suffix c ext
     $ self_ $ fmt "@ "
     $ hvbox 0
-        ( ( match fields with
-          | {pctf_desc= Pctf_attribute a; _} :: _ when Attr.is_doc a ->
-              str "\n"
-          | _ -> noop )
-        $ fmt_if_k (List.is_empty fields)
+        ( fmt_if_k (List.is_empty fields)
             (Cmts.fmt_within ~pro:noop c (Ast.location ctx))
         $ fmt_item_list c ctx update_config ast fmt_item fields )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
@@ -3453,6 +3450,12 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
       else
         let pro = intro $ fmt "@ " in
         hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
+  | Pmty_gen (gen_loc, mt) ->
+      let pro =
+        pro $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
+            $ fmt "@;<1 2>-> "
+      in
+      fmt_module_type c ~box ~pro (sub_mty ~ctx mt) $ epi ~attr:true
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
@@ -3627,10 +3630,11 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     let pro_inner, pro_outer = if docked then (pro, noop) else (noop, pro) in
     let intro = pro_inner $ fmt_str_loc_opt c name $ str " : "
     and epi = str ")" in
+    let bdy_indent = if args_p.align then 1 else 0 in
     pro_outer
     $ hvbox_if
         ((not docked) && args_p.align)
-        0
+        bdy_indent
         (fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
     $ Cmts.fmt_after c loc
   in
@@ -4406,7 +4410,10 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d -> Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
+  | Documentation, d ->
+      (* TODO: [source] and [cmts] should have never been computed when
+         formatting doc. *)
+      Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in
@@ -4427,7 +4434,10 @@ let fmt_code ~debug =
     in
     let warn = fmt_opts.parse_toplevel_phrases.v in
     let input_name = !Location.input_name in
-    match Parse_with_comments.parse_toplevel conf ~input_name ~source:s with
+    match
+      Parse_with_comments.parse_toplevel ~disable_deprecated:true conf
+        ~input_name ~source:s
+    with
     | Either.First {ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Use_file ast source comments ~fmt_code
     | Second {ast; comments; source; prefix= _} ->

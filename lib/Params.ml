@@ -93,15 +93,15 @@ module Mod = struct
     | _ -> false
 
   let get_args (c : Conf.t) args =
+    let indent, psp_indent = if ocp c then (2, 2) else (0, 4) in
     let dock =
       (* ocp-indent-compat: Dock only one argument to avoid alignment of
          subsequent arguments. *)
       if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
       else List.for_all ~f:arg_is_sig args
     in
-    let arg_psp = if dock then str " " else break 1 0 in
-    let indent = if dock then 0 else 4 in
-    let align = ocp c && not dock in
+    let arg_psp = if dock then str " " else break 1 psp_indent in
+    let align = ocp c in
     {dock; arg_psp; indent; align}
 end
 
@@ -433,15 +433,15 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
     else if parens_bch then wrap "(" ")" (wrap_breaks k)
     else k
   in
-  let get_parens_breaks ~opn_hint:(oh_space, oh_other)
-      ~cls_hint:(ch_sp, ch_sl) =
+  let get_parens_breaks ~opn_hint_indent ~cls_hint:(ch_sp, ch_sl) =
     let brk hint = fits_breaks "" ~hint "" in
+    let oh_other = ((if beginend then 1 else 0), opn_hint_indent) in
     if beginend then
       let _, offset = ch_sl in
       wrap_k (brk oh_other) (break 1000 offset)
     else
       match imd with
-      | `Space -> wrap_k (brk oh_space) (brk ch_sp)
+      | `Space -> wrap_k (brk (1, opn_hint_indent)) (brk ch_sp)
       | `No -> wrap_k (brk oh_other) noop
       | `Closing_on_separate_line -> wrap_k (brk oh_other) (brk ch_sl)
   in
@@ -467,8 +467,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
-              (get_parens_breaks
-                 ~opn_hint:((1, 0), (0, 0))
+              (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
       ; box_expr= Some false
       ; expr_pro= None
@@ -499,8 +498,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
-              (get_parens_breaks
-                 ~opn_hint:((1, 2), (0, 2))
+              (get_parens_breaks ~opn_hint_indent:2
                  ~cls_hint:((1, 0), (1000, 0)) )
       ; box_expr= Some false
       ; expr_pro=
@@ -523,8 +521,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
-              (get_parens_breaks
-                 ~opn_hint:((1, 2), (0, 2))
+              (get_parens_breaks ~opn_hint_indent:2
                  ~cls_hint:((1, 0), (1000, 0)) )
       ; box_expr= None
       ; expr_pro= Some (break_unless_newline 1000 2)
@@ -553,8 +550,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
-              (get_parens_breaks
-                 ~opn_hint:((1, 0), (0, 0))
+              (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
       ; box_expr= Some false
       ; expr_pro= None

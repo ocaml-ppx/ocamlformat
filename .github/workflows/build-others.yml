@@ -1,0 +1,44 @@
+name: Build on other platforms
+
+# Build and run tests on platforms others than Linux, doing less tests and
+# running asynchronously from other jobs.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-others:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+        ocaml-compiler:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.14.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v2
+
+      # Setup
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-repositories: |
+            opam-repository-mingw: https://github.com/ocaml-opam/opam-repository-mingw.git#sunset
+            default: https://github.com/ocaml/opam-repository.git
+
+      - name: Opam dependencies
+        run: opam install --deps-only -t .
+
+      - name: Runtest
+        run: opam exec -- dune runtest

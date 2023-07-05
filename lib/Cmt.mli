@@ -11,9 +11,13 @@
 
 open Migrate_ast
 
-type t = private {txt: string; loc: Location.t}
+type t
 
-val create : string -> Location.t -> t
+val create_comment : string -> Location.t -> t
+
+val create_docstring : string -> Location.t -> t
+
+val is_docstring : t -> bool
 
 val loc : t -> Location.t
 

@@ -40,7 +40,7 @@ let f ?l:({f; g}) = e
 
 let _ = {a; b= (match b with `A -> A | `B -> B | `C -> C : c); c}
 
-let a () = A {A.a: t}
+let a () = A {A.a= (a : t)}
 
 let x = {aaaaaaaaaa (* b *); b}
 
@@ -52,4 +52,4 @@ let _ = {a= (module M : S); b= (module M : S)}
 
 let to_string {x; _ (* we should print y *)} = string_of_int x
 
-let {x: t} = x
+let {x= (x : t)} = x

@@ -2607,12 +2607,12 @@ type (_, _) t =
   | B : string -> ('a, 'b) t
 
 module M
-  (A : sig
-     module type T
-   end)
-  (B : sig
-     module type T
-   end) =
+    (A : sig
+       module type T
+     end)
+    (B : sig
+       module type T
+     end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function
     | B s -> s
@@ -4745,11 +4745,11 @@ let f (module M : S with type t = int) = { M.a = 0 }
 let flag = ref false
 
 module F
-  (S : sig
-     module type T
-   end)
-  (A : S.T)
-  (B : S.T) =
+    (S : sig
+       module type T
+     end)
+    (A : S.T)
+    (B : S.T) =
 struct
   module X = (val if !flag then (module A) else (module B) : S.T)
 end
@@ -4959,8 +4959,8 @@ module type S = sig
 end
 
 module Foo
-  (Bar : S with type a = private [> `A ])
-  (Baz : S with type b = private < b : Bar.b ; .. >) =
+    (Bar : S with type a = private [> `A ])
+    (Baz : S with type b = private < b : Bar.b ; .. >) =
 struct end
 
 module A = struct
@@ -4993,13 +4993,13 @@ let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo
-  (Bar : sig
-     type a = private [> `A ]
-   end)
-  (Baz : module type of
-     struct
-       include Bar
-     end) =
+    (Bar : sig
+       type a = private [> `A ]
+     end)
+    (Baz : module type of
+       struct
+         include Bar
+       end) =
 struct end
 
 module Bazoinks = struct
@@ -5598,12 +5598,12 @@ module M = struct
 end
 
 module F
-  (Y : sig
-     type t
-   end)
-  (M : sig
-     type t = Y.t
-   end) =
+    (Y : sig
+       type t
+     end)
+    (M : sig
+       type t = Y.t
+     end) =
 struct end
 
 module G = F (M.Y)
@@ -7140,7 +7140,7 @@ type 'a tree =
   | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2
-  (MakeDiet : functor (X : ORD) -> SET with type t = X.t tree and type elt = X.t) :
+    (MakeDiet : functor (X : ORD) -> SET with type t = X.t tree and type elt = X.t) :
   SET with type elt = int = struct
   type elt = int
 
@@ -7573,8 +7573,8 @@ module type HEAP = sig
 end
 
 module Bootstrap
-  (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
-  (Element : ORDERED) :
+    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+    (Element : ORDERED) :
   HEAP with module Elem = Element = struct
   module Elem = Element
 
@@ -9698,7 +9698,6 @@ type t =
 type t =
   { field : ty
       (* Here is some verbatim formatted text:
-
          {v
        starting at column 7
          v}*)
@@ -9707,7 +9706,6 @@ type t =
 module Intro_sort = struct
   let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
     (* Fooooooooooooooooooooooooooo:
-
        {v
           1--o-----o-----o--------------1
              |     |     |
@@ -10188,3 +10186,8 @@ let _ =
     | Some _ -> foo
     | None -> baz)
 ;;
+
+(* *)
+
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
+    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)

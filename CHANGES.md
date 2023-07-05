@@ -8,6 +8,8 @@
 
 ### Bug fixes
 
+- Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
+- Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
 - Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
@@ -25,17 +27,20 @@
 
 ### Changes
 
+- Improve formatting of doc-comments (#2376, #2377, #2379, #2378, @Julow)
+- Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)
 - Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
-- Restore short form formatting of record field aliases (#2282, @gpetiot)
+- Restore short form formatting of record field aliases (#2282, #2388, @gpetiot, @Julow)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, #2363, @gpetiot, @Julow)
-- Improve formatting of class signatures (#2301, @gpetiot, @Julow)
-- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, @gpetiot, @Julow)
+- Improve formatting of class signatures (#2301, #2387, @gpetiot, @Julow)
+- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, @gpetiot, @Julow)
 - Don't indent attributes after a let/val/external (#2317, @Julow)
 - Adjust indentation of class-expr function body (#2328, @gpetiot)
 
 ### New features
 
+- Handle short syntax for generative functor types (#2348, @gpetiot)
 - Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
 
 ## 0.25.1 (2023-03-06)

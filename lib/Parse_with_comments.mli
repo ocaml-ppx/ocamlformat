@@ -28,6 +28,7 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
      ?disable_w50:bool
+  -> ?disable_deprecated:bool
   -> ('b -> input_name:string -> string -> 'a)
   -> 'b
   -> Conf.t
@@ -38,6 +39,7 @@ val parse :
 
 val parse_toplevel :
      ?disable_w50:bool
+  -> ?disable_deprecated:bool
   -> Conf.t
   -> input_name:string
   -> source:string
@@ -46,3 +48,7 @@ val parse_toplevel :
      Either.t
 (** Variant of {!parse} that uses {!Extended_ast.Parse.toplevel}. This
     function handles [conf.parse_toplevel_phrases]. *)
+
+val parse_ast :
+  Conf.t -> 'a Extended_ast.t -> input_name:string -> string -> 'a
+(** Argument to {!parse}. *)

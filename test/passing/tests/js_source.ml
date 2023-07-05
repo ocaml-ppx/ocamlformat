@@ -7951,3 +7951,8 @@ let _ =
     | Some _ -> foo
     | None -> baz)
 ;;
+
+(* *)
+
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
+    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
