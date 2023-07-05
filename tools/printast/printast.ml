@@ -16,7 +16,9 @@ let () =
   let (E.Any kind) = E.of_syntax syntax in
   Printf.printf "Reading %S\n" inputf ;
   let content = In_channel.read_all inputf in
+  let ocaml_version = Ocaml_version.sys_version in
   let ast =
-    E.Parse.ast kind ~preserve_beginend:true ~input_name:inputf content
+    E.Parse.ast kind ~ocaml_version ~preserve_beginend:true
+      ~input_name:inputf content
   in
   E.Printast.ast kind Format.std_formatter ast
