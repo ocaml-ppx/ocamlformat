@@ -3427,14 +3427,16 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
       let empty = List.is_empty s && not (Cmts.has_within c.cmts pmty_loc) in
       (* Side effect before [epi ~attr] is important. *)
       let cmts_within = Cmts.fmt_within ~pro:noop c pmty_loc in
+      let has_attrs = not (List.is_empty pmty_attributes) in
       hvbox_if box 2
         ( pro $ str "sig"
         $ (if empty then str " " else break 1000 0)
         $ cmts_within $ fmt_signature c ctx s
         $ (if empty then noop else break 1000 ~-2)
-        $ str "end"
-        $ fmt_attributes_and_docstrings c pmty_attributes
-        $ epi ~attr:false )
+        $ hvbox_if has_attrs 0
+            ( str "end"
+            $ fmt_attributes_and_docstrings c pmty_attributes
+            $ epi ~attr:false ) )
   | Pmty_functor (args, mt) ->
       let intro =
         hvbox 2
@@ -3452,8 +3454,9 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
         hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
   | Pmty_gen (gen_loc, mt) ->
       let pro =
-        pro $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
-            $ fmt "@;<1 2>-> "
+        pro
+        $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
+        $ fmt "@;<1 2>-> "
       in
       fmt_module_type c ~box ~pro (sub_mty ~ctx mt) $ epi ~attr:true
   | Pmty_with _ ->
