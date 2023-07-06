@@ -3676,30 +3676,26 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     fmt_docstring_around_item c ~force_before:(not single_line) ~fit:true
       attributes
   in
-  let fmt_mty =
+  let fmt_mty ~epi =
     let args ~epi =
-      hvbox args_p.indent
+      hvbox ~name:"args" args_p.indent
         ( ( if args_p.dock then fmt_args_docked ~pro:intro xargs
             else intro $ fmt_args_wrapped xargs )
         $ epi )
     in
+    let epi = fmt_if (Option.is_some xbody) " =" $ epi in
     match xmty with
     | Some xmty ->
         let break = if args_p.dock then str " " else fmt "@ " in
         let pro = args ~epi:(str " " $ str eqty $ break) in
-        fmt_module_type ~pro c xmty
-    | None -> args ~epi:noop
+        hovbox 0 (fmt_module_type ~pro c xmty $ epi)
+    | None -> hvbox 0 (args ~epi:noop $ epi)
   in
   hvbox
     (if compact then 0 else 2)
     ( doc_before
     $ blk_box blk_b
-        (* Avod break after [=] if there was a module type. *)
-        ( (if Option.is_some xmty then hovbox else hvbox)
-            0
-            ( fmt_mty
-            $ fmt_if (Option.is_some xbody) " ="
-            $ fmt_if_k compact fmt_pro )
+        ( fmt_mty ~epi:(fmt_if_k compact fmt_pro)
         $ fmt_if_k (not compact) fmt_pro
         $ blk_b.psp
         $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "

@@ -93,16 +93,15 @@ module Mod = struct
     | _ -> false
 
   let get_args (c : Conf.t) args =
-    let indent, psp_indent = if ocp c then (2, 2) else (0, 4) in
     let dock =
       (* ocp-indent-compat: Dock only one argument to avoid alignment of
          subsequent arguments. *)
       if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
       else List.for_all ~f:arg_is_sig args
     in
-    let arg_psp = if dock then str " " else break 1 psp_indent in
+    let arg_psp = if dock then str " " else break 1 2 in
     let align = ocp c in
-    {dock; arg_psp; indent; align}
+    {dock; arg_psp; indent= 2; align}
 end
 
 module Mty = struct
@@ -116,8 +115,8 @@ module Mty = struct
 
   let box_with _c ~box ~lhs =
     match lhs.pmty_desc with
-    | Pmty_signature _ -> hvbox_if box 0
-    | _ -> hovbox_if box 2
+    | Pmty_signature _ -> hvbox_if ~name:"with" box 0
+    | _ -> hovbox_if ~name:"with" box 2
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
