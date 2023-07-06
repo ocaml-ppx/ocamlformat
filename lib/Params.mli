@@ -53,6 +53,11 @@ module Mty : sig
   (** Whether functor types should be docked on the same line or break after
       the [->]. *)
 
+  val dock_module_sig : Conf.t -> args_are_docked:bool -> module_type -> bool
+  (** Whether the signature of a module decl should be docked after the [:].
+      [~args_are_docked] expects the [dock] field returned by
+      {!Mod.get_args}. *)
+
   val dock_typeof : Conf.t -> rhs:module_expr -> bool
   (** Whether to dock the RHS of a [module type of]. *)
 

@@ -3686,7 +3686,13 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     let epi = fmt_if (Option.is_some xbody) " =" $ epi in
     match xmty with
     | Some xmty ->
-        let break = if args_p.dock then str " " else fmt "@ " in
+        let break =
+          if
+            Params.Mty.dock_module_sig c.conf ~args_are_docked:args_p.dock
+              xmty.ast
+          then str " "
+          else fmt "@ "
+        in
         let pro = args ~epi:(str " " $ str eqty $ break) in
         hovbox 0 (fmt_module_type ~pro c xmty $ epi)
     | None -> hvbox 0 (args ~epi:noop $ epi)

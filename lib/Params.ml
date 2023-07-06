@@ -110,6 +110,14 @@ module Mty = struct
     | Pmty_signature _ | Pmty_with _ -> true
     | _ -> false
 
+  let dock_module_sig (_c : Conf.t) ~args_are_docked mty =
+    match mty.pmty_desc with
+    | Pmty_signature _ -> true
+    | Pmty_ident _
+     |Pmty_with ({pmty_desc= Pmty_signature _ | Pmty_ident _; _}, _) ->
+        args_are_docked
+    | _ -> false
+
   let dock_typeof _c ~rhs =
     match rhs.pmod_desc with Pmod_structure _ -> true | _ -> false
 
