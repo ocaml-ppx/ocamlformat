@@ -3941,12 +3941,14 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
         fmt_functor_params c ~ctx ~pro args
       in
       { empty with
-        bdy=
+        opn= Some (open_hvbox 2)
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ hvbox 0
+            $ hvbox 2
                 (wrap_if parens "(" ")"
-                   ( fmt_args $ fmt " ->@;<1 2>"
+                   ( fmt_args $ fmt " ->@ "
                    $ compose_module
                        (fmt_module_expr c (sub_mod ~ctx me))
                        ~f:(hvbox 0) ) ) ) }
