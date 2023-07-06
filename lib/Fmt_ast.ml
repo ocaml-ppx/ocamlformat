@@ -3396,16 +3396,41 @@ and fmt_extension_constructor c ctx ec =
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
        $ fmt_attributes_and_docstrings c pext_attributes )
 
-and fmt_functor_param c ctx {loc; txt= arg} =
-  match arg with
-  | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
-  | Named (name, mt) ->
-      let xmt = sub_mty ~ctx mt in
-      Cmts.fmt c loc
-        (wrap "(" ")"
-           (hovbox 0
-              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ fmt_module_type c xmt ) ) )
+and fmt_functor_params c ~ctx ?(pro = noop) ?(epi = noop) args =
+  let args_p = Params.Mod.get_args c.conf args in
+  let box_arg =
+    let indent = if args_p.align then 1 else 0 in
+    hvbox_if ((not args_p.dock) && args_p.align) indent
+  in
+  let fmt_name_and_mt ~pro ~loc name mt =
+    let pro = pro $ Cmts.fmt_before c loc $ str "(" in
+    let pro_inner, pro_outer =
+      if args_p.dock then (pro, noop) else (noop, pro)
+    in
+    let intro = pro_inner $ fmt_str_loc_opt c name $ str " : "
+    and epi = str ")" in
+    pro_outer
+    $ box_arg (fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
+    $ Cmts.fmt_after c loc
+  in
+  let fmt_arg ~pro {loc; txt= arg} =
+    let pro = pro $ args_p.arg_psp in
+    match arg with
+    | Unit -> pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
+    | Named (name, mt) -> fmt_name_and_mt ~pro ~loc name mt
+  in
+  let rec fmt_args_docked ~pro = function
+    | [] -> pro
+    | hd :: tl -> fmt_args_docked ~pro:(fmt_arg ~pro hd) tl
+  in
+  let rec fmt_args_wrapped = function
+    | [] -> noop
+    | hd :: tl -> fmt_arg ~pro:noop hd $ fmt_args_wrapped tl
+  in
+  hvbox ~name:"args" args_p.indent
+    ( ( if args_p.dock then fmt_args_docked ~pro args
+        else pro $ fmt_args_wrapped args )
+    $ epi )
 
 and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
     =
@@ -3438,19 +3463,17 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
             $ fmt_attributes_and_docstrings c pmty_attributes
             $ epi ~attr:false ) )
   | Pmty_functor (args, mt) ->
-      let intro =
-        hvbox 2
-          ( pro $ str "functor"
-          $ fmt_attributes c ~pre:Blank pmty_attributes
-          $ fmt "@ "
-          $ list args "@ " (fmt_functor_param c ctx)
-          $ fmt " ->" )
+      let fmt_args =
+        let pro =
+          pro $ str "functor" $ fmt_attributes c ~pre:Blank pmty_attributes
+        and epi = str " ->" in
+        fmt_functor_params c ~ctx ~pro ~epi args
       and epi = epi ~attr:false in
       if Params.Mty.dock_functor_rhs c.conf ~rhs:mt then
-        let pro = intro $ str " " in
+        let pro = fmt_args $ str " " in
         fmt_module_type c ~box ~pro ~epi (sub_mty ~ctx mt)
       else
-        let pro = intro $ fmt "@ " in
+        let pro = fmt_args $ fmt "@ " in
         hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
   | Pmty_gen (gen_loc, mt) ->
       let pro =
@@ -3631,33 +3654,6 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty attributes ~rec_flag =
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let args_p = Params.Mod.get_args c.conf xargs in
-  let fmt_name_and_mt ~pro ~docked ~loc name mt =
-    let pro = pro $ Cmts.fmt_before c loc $ str "(" in
-    let pro_inner, pro_outer = if docked then (pro, noop) else (noop, pro) in
-    let intro = pro_inner $ fmt_str_loc_opt c name $ str " : "
-    and epi = str ")" in
-    let bdy_indent = if args_p.align then 1 else 0 in
-    pro_outer
-    $ hvbox_if
-        ((not docked) && args_p.align)
-        bdy_indent
-        (fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
-    $ Cmts.fmt_after c loc
-  in
-  let fmt_arg ~pro ~docked {loc; txt} =
-    let pro = pro $ args_p.arg_psp in
-    match txt with
-    | Unit -> pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
-    | Named (name, mt) -> fmt_name_and_mt ~pro ~docked ~loc name mt
-  in
-  let rec fmt_args_docked ~pro = function
-    | [] -> pro
-    | hd :: tl -> fmt_args_docked ~pro:(fmt_arg ~pro ~docked:true hd) tl
-  in
-  let rec fmt_args_wrapped = function
-    | [] -> noop
-    | hd :: tl -> fmt_arg ~pro:noop ~docked:false hd $ fmt_args_wrapped tl
-  in
   let intro =
     str keyword
     $ fmt_extension_suffix c ext
@@ -3677,12 +3673,7 @@ and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       attributes
   in
   let fmt_mty ~epi =
-    let args ~epi =
-      hvbox ~name:"args" args_p.indent
-        ( ( if args_p.dock then fmt_args_docked ~pro:intro xargs
-            else intro $ fmt_args_wrapped xargs )
-        $ epi )
-    in
+    let args ~epi = fmt_functor_params c ~ctx ~pro:intro ~epi xargs in
     let epi = fmt_if (Option.is_some xbody) " =" $ epi in
     match xmty with
     | Some xmty ->
@@ -3945,17 +3936,17 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_functor (args, me) ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let fmt_args =
+        let pro = str "functor" $ fmt_attributes c ~pre:Blank atrs in
+        fmt_functor_params c ~ctx ~pro args
+      in
       { empty with
         bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
             $ hvbox 0
                 (wrap_if parens "(" ")"
-                   ( str "functor"
-                   $ fmt_attributes c ~pre:Blank atrs
-                   $ fmt "@;<1 2>"
-                   $ list args "@;<1 2>" (fmt_functor_param c ctx)
-                   $ fmt "@;<1 2>->@;<1 2>"
+                   ( fmt_args $ fmt " ->@;<1 2>"
                    $ compose_module
                        (fmt_module_expr c (sub_mod ~ctx me))
                        ~f:(hvbox 0) ) ) ) }

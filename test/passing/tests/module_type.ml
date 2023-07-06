@@ -61,12 +61,11 @@ module type S = sig
 end
 
 module type S' = functor
-  (A : A)
-  (B : sig
-         type t
-       end)
-  (Cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-   : sig
+    (A : A)
+    (B : sig
+       type t
+     end)
+    (Cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc : sig
        type t
      end) -> S with type t = B.t
 

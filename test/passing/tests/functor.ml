@@ -13,8 +13,8 @@ module type M = functor (S : S) (T : T) -> U
 module type M = functor (S : S) () -> sig end
 
 module type M = functor
-  (SSSSS : SSSSSSSSSSSSSS)
-  (TTTTT : TTTTTTTTTTTTTTTT) -> sig
+    (SSSSS : SSSSSSSSSSSSSS)
+    (TTTTT : TTTTTTTTTTTTTTTT) -> sig
   val t1 : a
 
   val t2 : b
@@ -39,10 +39,7 @@ module type S = sig
 end
 
 module M =
-  (functor
-    (SSSSS : sssssSSSSSSSSSSSSSS)
-    (TTTTT : TTTTTTTTTTTTTTTTTTTTT)
-    ->
+  (functor (SSSSS : sssssSSSSSSSSSSSSSS) (TTTTT : TTTTTTTTTTTTTTTTTTTTT) ->
     struct
       let x = 2
 

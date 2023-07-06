@@ -202,17 +202,13 @@ open struct
 end
 
 open
-  functor
-    (A : S)
-    ->
+  functor (A : S) ->
     struct
       type t
     end
 
 open
-  functor
-    (_ : S)
-    ->
+  functor (_ : S) ->
     struct
       type t
     end
@@ -232,16 +228,12 @@ let _ =
     type t
   end in
   let open
-    functor
-      (A : S)
-      ->
+    functor (A : S) ->
       struct
         type t
       end in
   let open
-    functor
-      (_ : S)
-      ->
+    functor (_ : S) ->
       struct
         type t
       end in
@@ -259,17 +251,13 @@ open struct
 end [@@attr]
 
 open
-  functor
-    (A : S)
-    ->
+  functor (A : S) ->
     struct
       type t
     end [@@attr]
 
 open
-  functor
-    (_ : S)
-    ->
+  functor (_ : S) ->
     struct
       type t
     end [@@attr]
