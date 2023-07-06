@@ -3472,7 +3472,7 @@ and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
                ( list_fl wcs_and fmt_cstr
                $ fmt_attributes c ~pre:(Break (1, -1)) attr ) )
       in
-      hovbox_if box 2
+      Params.Mty.box_with c.conf ~box ~lhs:mt.ast
         ( fmt_module_type c ~pro mt $ list_fl wcs fmt_cstrs
         $ epi ~attr:false (* Handled by [Sugar.mod_with]. *) )
   | Pmty_typeof me ->

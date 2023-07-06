@@ -55,6 +55,9 @@ module Mty : sig
 
   val dock_typeof : Conf.t -> rhs:module_expr -> bool
   (** Whether to dock the RHS of a [module type of]. *)
+
+  val box_with : Conf.t -> box:bool -> lhs:module_type -> Fmt.t -> Fmt.t
+  (** The box around a [Pmty_with]. *)
 end
 
 val get_or_pattern_sep :

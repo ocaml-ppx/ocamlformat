@@ -8047,7 +8047,8 @@ module type S = sig
   module M : sig
     type t
   end
-end with module M = M
+end
+with module M = M
 
 module type Printable = sig
   type t
@@ -8126,7 +8127,8 @@ module type S' = S with module T := M
 
 module type S = sig
   type 'a t
-end with type 'a t := unit
+end
+with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =

@@ -113,6 +113,11 @@ module Mty = struct
 
   let dock_typeof _c ~rhs =
     match rhs.pmod_desc with Pmod_structure _ -> true | _ -> false
+
+  let box_with _c ~box ~lhs =
+    match lhs.pmty_desc with
+    | Pmty_signature _ -> hvbox_if box 0
+    | _ -> hovbox_if box 2
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)

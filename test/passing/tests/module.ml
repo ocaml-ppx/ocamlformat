@@ -31,13 +31,15 @@ end
 
 module O : sig
   type t
-end with type t := t = struct
+end
+with type t := t = struct
   let () = ()
 end
 
 module O : sig
   type t
-end with type t := t and type s := s = struct
+end
+with type t := t and type s := s = struct
   let () = ()
 end
 
@@ -55,7 +57,8 @@ let x = (module struct end : S)
 
 module rec A : sig
   type t
-end with type t = int = struct
+end
+with type t = int = struct
   type t = int
 end
 
