@@ -86,9 +86,8 @@ let () =
 
 let _ =
   a
-  |>
-  let a = b in
-  c
+  |> let a = b in
+     c
 
 let _ =
   (let a = b in
@@ -107,9 +106,8 @@ let _ =
 
 let _ =
   a
-  +
-  let a = b in
-  c
+  + let a = b in
+    c
 
 let _ =
   (let a = b in
@@ -192,9 +190,8 @@ let _ =
 
 let _ =
   a
-  ::
-  (let a = b in
-   c )
+  :: (let a = b in
+      c )
 
 let _ =
   [ (let a = b in
