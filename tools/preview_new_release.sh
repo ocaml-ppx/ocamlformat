@@ -14,18 +14,18 @@ function usage()
   echo "Url prefix is of the form 'git@github.com:my_user'."
 }
 
+# Comment the 'version' option and strip the part after the '='.
+# Spaces around the '=' are conserved.
 function comment_version()
 {
-  version=$1
-  file=$2
-  sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" $file
+  sed -i --follow-symlinks -e "s/^\(version *= *\)[^ ].*/#\1/" $1
 }
 
+# Uncomment the 'version' option and update its value.
 function uncomment_version()
 {
-  version=$1
-  file=$2
-  sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" $file
+  local version=$1 file=$2
+  sed -i --follow-symlinks -e "s/^#\(version.*\)$/\1$version/" $file
 }
 
 while getopts ":u:y:v:p:" opt; do
@@ -105,7 +105,7 @@ while IFS=, read git_platform namespace project; do
   git checkout -b "$preview_branch" --quiet
 
   dune=dune
-  comment_version $version .ocamlformat
+  comment_version .ocamlformat
 
   case "$namespace/$project" in
     "tezos/tezos")
