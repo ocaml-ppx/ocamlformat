@@ -14,7 +14,7 @@
 - Fix invalid formatting of `(::)` (#2347, @Julow)
 - Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
 - Improve formatting of module arguments (#2322, @Julow)
-- Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
+- Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
 - Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
