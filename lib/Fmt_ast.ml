@@ -1540,13 +1540,13 @@ and fmt_infix_op_args c ~parens xexp op_args =
   in
   let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
-    | Pexp_let _ | Pexp_letop _ | Pexp_letexception _ | Pexp_letmodule _ ->
+    | Pexp_letop _ | Pexp_letexception _ | Pexp_letmodule _ ->
         (* In 0.25.1 and before, these used to not break and were aligned at
            the end of the operator. Preserve the break to avoid introducing
            large diffs while allowing consistent formatting. *)
         Source.begins_line c.source exp.pexp_loc
-    | Pexp_ifthenelse _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
-     |Pexp_try _ | Pexp_letopen _ ->
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_match _ | Pexp_newtype _
+     |Pexp_sequence _ | Pexp_try _ | Pexp_letopen _ ->
         true
     | _ -> false
   in
