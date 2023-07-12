@@ -127,6 +127,12 @@ The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
 
+  # Update .git-blame-ignore-revs
+  ( echo "# Upgrade to OCamlformat $version"
+    git rev-parse HEAD ) >> .git-blame-ignore-revs
+  git add .git-blame-ignore-revs
+  git commit --quiet -m "Update .git-blame-ignore-revs"
+
   echo "Pushing to $fork"
   git push --quiet -fu "$fork" "$preview_branch"
 done < "$project_list_file"
