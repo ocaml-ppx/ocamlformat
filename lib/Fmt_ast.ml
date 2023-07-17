@@ -1357,6 +1357,7 @@ and fmt_fun ?force_closing_paren
     if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
     else (":", fmt "@ ")
   in
+  let break_arrow = if has_label then fmt "@ " else fmt "@;<1 -2>" in
   hovbox_if box 2
     ( wrap_intro
         (hvbox_if has_cmts_outer 0
@@ -1366,8 +1367,8 @@ and fmt_fun ?force_closing_paren
                $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
-                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
-               ) ) )
+                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ break_arrow
+                   $ fmt "->" ) ) ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
