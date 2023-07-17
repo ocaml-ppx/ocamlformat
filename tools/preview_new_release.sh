@@ -79,7 +79,9 @@ dune build @install
 cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat"
 PATH=$bin_dir:$PATH
 
-while IFS=, read git_platform namespace project; do
+# Options in 'opts' are enclosed in '<>' to allow safe checks that don't
+# require complex parsing.
+while IFS=, read git_platform namespace project opts; do
 
   case "$git_platform" in
     "github")
@@ -127,11 +129,13 @@ The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
 
-  # Update .git-blame-ignore-revs
-  ( echo "# Upgrade to OCamlformat $version"
-    git rev-parse HEAD ) >> .git-blame-ignore-revs
-  git add .git-blame-ignore-revs
-  git commit --quiet -m "Update .git-blame-ignore-revs"
+  if ! [[ $opts = *"<no-ignore-revs>"* ]]; then
+    # Update .git-blame-ignore-revs
+    ( echo "# Upgrade to OCamlformat $version"
+      git rev-parse HEAD ) >> .git-blame-ignore-revs
+    git add .git-blame-ignore-revs
+    git commit --quiet -m "Update .git-blame-ignore-revs"
+  fi
 
   echo "Pushing to $fork"
   git push --quiet -fu "$fork" "$preview_branch"
