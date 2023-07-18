@@ -1352,10 +1352,11 @@ and fmt_fun ?force_closing_paren
     else noop
   in
   let (label_sep : s), break_fun =
-    (* Break between the label and the fun to avoid ocp-indent's
-       alignment. *)
+    (* Break between the label and the fun to avoid ocp-indent's alignment.
+       If a label is present, arguments should be indented more than the
+       arrow and the eventually breaking [fun] keyword. *)
     if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
-    else (":", fmt "@ ")
+    else (":", if has_label then fmt "@;<1 2>" else fmt "@ ")
   in
   hovbox_if box 2
     ( wrap_intro
@@ -1366,8 +1367,8 @@ and fmt_fun ?force_closing_paren
                $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
-                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
-               ) ) )
+                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                   $ fmt "@;<1 -2>->" ) ) ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
@@ -1540,9 +1541,13 @@ and fmt_infix_op_args c ~parens xexp op_args =
   in
   let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
-    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-     |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
-     |Pexp_try _ | Pexp_letopen _ ->
+    | Pexp_letop _ | Pexp_letexception _ | Pexp_letmodule _ ->
+        (* In 0.25.1 and before, these used to not break and were aligned at
+           the end of the operator. Preserve the break to avoid introducing
+           large diffs while allowing consistent formatting. *)
+        Source.begins_line c.source exp.pexp_loc
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_match _ | Pexp_newtype _
+     |Pexp_sequence _ | Pexp_try _ | Pexp_letopen _ ->
         true
     | _ -> false
   in
@@ -4168,7 +4173,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
-    {lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
+    {lb_op; lb_pat; lb_args; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let lb_pun =
@@ -4178,7 +4183,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   in
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let xargs, fmt_cstr =
+  let fmt_cstr =
     let fmt_sep x =
       match c.conf.fmt_opts.break_colon.v with
       | `Before -> fmt "@ " $ str x $ char ' '
@@ -4186,22 +4191,16 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     in
     match lb_typ with
     | `Polynewtype (pvars, xtyp) ->
-        let fmt_cstr =
-          fmt_sep ":"
-          $ hvbox 0
-              ( str "type "
-              $ list pvars " " (fmt_str_loc c)
-              $ fmt ".@ " $ fmt_core_type c xtyp )
-        in
-        ([], fmt_cstr)
+        fmt_sep ":"
+        $ hvbox 0
+            ( str "type "
+            $ list pvars " " (fmt_str_loc c)
+            $ fmt ".@ " $ fmt_core_type c xtyp )
     | `Coerce (xtyp1, xtyp2) ->
-        let fmt_cstr =
-          opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
-          $ fmt_sep ":>" $ fmt_core_type c xtyp2
-        in
-        ([], fmt_cstr)
-    | `Other (xargs, xtyp) -> (xargs, fmt_type_cstr c xtyp)
-    | `None xargs -> (xargs, noop)
+        opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
+        $ fmt_sep ":>" $ fmt_core_type c xtyp2
+    | `Other xtyp -> fmt_type_cstr c xtyp
+    | `None -> noop
   in
   let indent =
     match lb_exp.ast.pexp_desc with
@@ -4254,10 +4253,10 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
                                   $ fmt_or pat_has_cmt "@ " " "
                                   $ fmt_pattern c lb_pat )
                               $ fmt_if_k
-                                  (not (List.is_empty xargs))
+                                  (not (List.is_empty lb_args))
                                   ( fmt "@ "
                                   $ wrap_fun_decl_args c
-                                      (fmt_fun_args c xargs) ) )
+                                      (fmt_fun_args c lb_args) ) )
                           $ fmt_cstr )
                       $ fmt_if_k (not lb_pun)
                           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v

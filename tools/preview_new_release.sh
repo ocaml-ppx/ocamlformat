@@ -14,18 +14,18 @@ function usage()
   echo "Url prefix is of the form 'git@github.com:my_user'."
 }
 
+# Comment the 'version' option and strip the part after the '='.
+# Spaces around the '=' are conserved.
 function comment_version()
 {
-  version=$1
-  file=$2
-  sed -i --follow-symlinks -e "s/^version\(.*\)/#version = $version/" $file
+  sed -i --follow-symlinks -e "s/^\(version *= *\)[^ ].*/#\1/" $1
 }
 
+# Uncomment the 'version' option and update its value.
 function uncomment_version()
 {
-  version=$1
-  file=$2
-  sed -i --follow-symlinks -e "s/^#version\(.*\)/version = $version/" $file
+  local version=$1 file=$2
+  sed -i --follow-symlinks -e "s/^#\(version.*\)$/\1$version/" $file
 }
 
 while getopts ":u:y:v:p:" opt; do
@@ -79,7 +79,9 @@ dune build @install
 cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat"
 PATH=$bin_dir:$PATH
 
-while IFS=, read git_platform namespace project; do
+# Options in 'opts' are enclosed in '<>' to allow safe checks that don't
+# require complex parsing.
+while IFS=, read git_platform namespace project opts; do
 
   case "$git_platform" in
     "github")
@@ -105,7 +107,7 @@ while IFS=, read git_platform namespace project; do
   git checkout -b "$preview_branch" --quiet
 
   dune=dune
-  comment_version $version .ocamlformat
+  comment_version .ocamlformat
 
   case "$namespace/$project" in
     "tezos/tezos")
@@ -121,11 +123,19 @@ while IFS=, read git_platform namespace project; do
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
   git diff --shortstat
-  git commit --quiet --all -m "Preview: Upgrade to ocamlformat $version (unreleased)
+  git commit --quiet --all -m "Preview: Upgrade to OCamlformat $version (unreleased)
 
 The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
+
+  if ! [[ $opts = *"<no-ignore-revs>"* ]]; then
+    # Update .git-blame-ignore-revs
+    ( echo "# Upgrade to OCamlformat $version"
+      git rev-parse HEAD ) >> .git-blame-ignore-revs
+    git add .git-blame-ignore-revs
+    git commit --quiet -m "Update .git-blame-ignore-revs"
+  fi
 
   echo "Pushing to $fork"
   git push --quiet -fu "$fork" "$preview_branch"

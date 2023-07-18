@@ -339,16 +339,27 @@ let fmt_ast conf ~fmt_code (docs : t) =
   let c = {fmt_code; conf} in
   vbox 0 (list_block_elem c docs (fmt_block_element c))
 
+let beginning_offset (conf : Conf.t) input =
+  let whitespace_count =
+    match String.indent_of_line input with Some c -> c | None -> 1
+  in
+  if conf.fmt_opts.ocp_indent_compat.v && not conf.fmt_opts.wrap_docstrings.v
+  then
+    (* Preserve offset of the first line and indent the whole comment based
+       on that. *)
+    whitespace_count
+  else min whitespace_count 1
+
 let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
-  let begin_space = String.starts_with_whitespace input in
+  let begin_offset = beginning_offset conf input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
-  let offset = offset + if begin_space then 1 else 0 in
+  let offset = offset + begin_offset in
   let fmt_code conf ~offset:offset' input =
     fmt_code conf ~offset:(offset + offset') input
   in
   let fmt_parsed parsed =
-    fmt_if begin_space " "
+    str (String.make begin_offset ' ')
     $ fmt_ast conf ~fmt_code parsed
     $ fmt_if
         (String.length input > 1 && String.ends_with_whitespace input)
