@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- Fix crash due to `let f (type a) :> a M.u = ..` (#2399, @Julow)
 - Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
