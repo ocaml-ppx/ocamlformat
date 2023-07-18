@@ -71,6 +71,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/cache@v3
+        with:
+          path: test-extra/code
+          key: test-extra-code
+
       - name: Fetch main build of ocamlformat
         uses: dawidd6/action-download-artifact@v2
         with:
