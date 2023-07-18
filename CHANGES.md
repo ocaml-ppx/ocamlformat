@@ -14,7 +14,6 @@
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
 - Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
-- Improve formatting of module arguments (#2322, @Julow)
 - Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
@@ -28,6 +27,7 @@
 
 ### Changes
 
+- More consistent formatting of module types (#2322, #2395, @Julow)
 - Improve formatting of doc-comments (#2376, #2377, #2379, #2378, @Julow)
 - Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
 - Improve indentation of `as`-patterns (#2359, @Julow)

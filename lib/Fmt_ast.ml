@@ -3401,131 +3401,117 @@ and fmt_extension_constructor c ctx ec =
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
        $ fmt_attributes_and_docstrings c pext_attributes )
 
-and fmt_functor_param c ctx {loc; txt= arg} =
-  match arg with
-  | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
-  | Named (name, mt) ->
-      let xmt = sub_mty ~ctx mt in
-      Cmts.fmt c loc
-        (wrap "(" ")"
-           (hovbox 0
-              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) )
+and fmt_functor_params c ~ctx ?(pro = noop) ?(epi = noop) args =
+  let args_p = Params.Mod.get_args c.conf ~ctx args in
+  let box_arg =
+    let indent = if args_p.align then 1 else 0 in
+    hvbox_if ((not args_p.dock) && args_p.align) indent
+  in
+  let fmt_name_and_mt ~pro ~loc name mt =
+    let pro = pro $ Cmts.fmt_before c loc $ str "(" in
+    let pro_inner, pro_outer =
+      if args_p.dock then (pro, noop) else (noop, pro)
+    in
+    let intro = pro_inner $ fmt_str_loc_opt c name $ str " : "
+    and epi = str ")" in
+    pro_outer
+    $ box_arg (fmt_module_type ~pro:intro ~epi c (sub_mty ~ctx mt))
+    $ Cmts.fmt_after c loc
+  in
+  let fmt_arg ~pro {loc; txt= arg} =
+    let pro = pro $ args_p.arg_psp in
+    match arg with
+    | Unit -> pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
+    | Named (name, mt) -> fmt_name_and_mt ~pro ~loc name mt
+  in
+  let rec fmt_args_docked ~pro = function
+    | [] -> pro
+    | hd :: tl -> fmt_args_docked ~pro:(fmt_arg ~pro hd) tl
+  in
+  let rec fmt_args_wrapped = function
+    | [] -> noop
+    | hd :: tl -> fmt_arg ~pro:noop hd $ fmt_args_wrapped tl
+  in
+  hvbox ~name:"args" args_p.indent
+    ( ( if args_p.dock then fmt_args_docked ~pro args
+        else pro $ fmt_args_wrapped args )
+    $ epi )
 
-and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
+and fmt_module_type c ?(box = true) ?pro ?epi ({ast= mty; _} as xmty) : Fmt.t
+    =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
-  update_config_maybe_disabled_block c pmty_loc pmty_attributes
+  update_config_maybe_disabled c pmty_loc pmty_attributes
   @@ fun c ->
-  let parens =
-    parenze_mty xmty
-    || match pmty_desc with Pmty_with _ when rec_ -> true | _ -> false
+  let parens = parenze_mty xmty in
+  let pro = fmt_opt pro $ fmt_if parens "(" $ Cmts.fmt_before c pmty_loc
+  and epi ~attr =
+    Cmts.fmt_after ~pro:(str " ") c pmty_loc
+    $ fmt_if parens ")"
+    $ fmt_if_k attr (fmt_attributes c pmty_attributes ~pre:(Break (1, 0)))
+    $ fmt_opt epi
   in
   match pmty_desc with
-  | Pmty_ident lid ->
-      { empty with
-        bdy= fmt_longident_loc c lid
-      ; epi= Some (fmt_attributes c pmty_attributes ~pre:(Break (1, 0))) }
+  | Pmty_ident lid -> pro $ fmt_longident_loc c lid $ epi ~attr:true
   | Pmty_signature s ->
       let empty = List.is_empty s && not (Cmts.has_within c.cmts pmty_loc) in
-      let before = Cmts.fmt_before c pmty_loc in
-      let within = Cmts.fmt_within c ~pro:noop pmty_loc in
-      let after = Cmts.fmt_after c pmty_loc in
-      { opn= None
-      ; pro= Some (before $ str "sig" $ fmt_if empty " ")
-      ; psp= fmt_if (not empty) "@;<1000 2>"
-      ; bdy= within $ fmt_signature c ctx s
-      ; cls= noop
-      ; esp= fmt_if (not empty) "@;<1000 0>"
-      ; epi=
-          Some
-            ( str "end" $ after
-            $ fmt_attributes_and_docstrings c pmty_attributes ) }
+      (* Side effect before [epi ~attr] is important. *)
+      let cmts_within = Cmts.fmt_within ~pro:noop c pmty_loc in
+      let has_attrs = not (List.is_empty pmty_attributes) in
+      hvbox_if box 2
+        ( pro $ str "sig"
+        $ (if empty then str " " else break 1000 0)
+        $ cmts_within $ fmt_signature c ctx s
+        $ (if empty then noop else break 1000 ~-2)
+        $ hvbox_if has_attrs 0
+            ( str "end"
+            $ fmt_attributes_and_docstrings c pmty_attributes
+            $ epi ~attr:false ) )
   | Pmty_functor (args, mt) ->
-      let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      { blk with
-        pro=
-          Some
-            ( Cmts.fmt_before c pmty_loc
-            $ str "functor"
-            $ fmt_attributes c ~pre:Blank pmty_attributes
-            $ fmt "@;<1 2>"
-            $ list args "@;<1 2>" (fmt_functor_param c ctx)
-            $ fmt "@;<1 2>->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or_k (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
+      let fmt_args =
+        let pro =
+          pro $ str "functor" $ fmt_attributes c ~pre:Blank pmty_attributes
+        and epi = str " ->" in
+        fmt_functor_params c ~ctx ~pro ~epi args
+      and epi = epi ~attr:false in
+      if Params.Mty.dock_functor_rhs c.conf ~rhs:mt then
+        let pro = fmt_args $ str " " in
+        fmt_module_type c ~box ~pro ~epi (sub_mty ~ctx mt)
+      else
+        let pro = fmt_args $ fmt "@ " in
+        hovbox_if box 2 (pro $ fmt_module_type c (sub_mty ~ctx mt) $ epi)
   | Pmty_gen (gen_loc, mt) ->
-      let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      { blk with
-        pro=
-          Some
-            ( Cmts.fmt_before c pmty_loc
-            $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
-            $ fmt "@;<1 2>->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or_k (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
+      let pro =
+        pro
+        $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
+        $ fmt "@;<1 2>-> "
+      in
+      fmt_module_type c ~box ~pro (sub_mty ~ctx mt) $ epi ~attr:true
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
         let pre = if first then "with" else " and" in
-        fmt_or first "@ " "@," $ fmt_with_constraint c ctx ~pre wc
+        fmt_if (not first) "@," $ fmt_with_constraint c ctx ~pre wc
       in
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
-        Cmts.fmt c loc
-          ( list_fl wcs_and fmt_cstr
-          $ fmt_attributes c ~pre:(Break (1, -1)) attr )
+        fmt "@ "
+        $ hvbox 0
+            (Cmts.fmt c loc
+               ( list_fl wcs_and fmt_cstr
+               $ fmt_attributes c ~pre:(Break (1, -1)) attr ) )
       in
-      let {pro; psp; bdy; esp; epi; opn= _; cls= _} = fmt_module_type c mt in
-      { empty with
-        pro=
-          Option.map pro ~f:(fun pro ->
-              open_hvbox 0 $ fmt_if parens "(" $ pro )
-      ; psp
-      ; bdy=
-          fmt_if_k (Option.is_none pro) (open_hvbox 2 $ fmt_if parens "(")
-          $ hvbox 0 bdy
-          $ fmt_if_k (Option.is_some epi) esp
-          $ fmt_opt epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
-          $ close_box
-      ; esp= fmt_if_k (Option.is_none epi) esp
-      ; epi= Some (Cmts.fmt_after c pmty_loc) }
-  | Pmty_typeof me -> (
-      let blk = fmt_module_expr c (sub_mod ~ctx me) in
-      let epi =
-        fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc $ fmt_if parens ")"
-        $ fmt_attributes c pmty_attributes ~pre:(Break (1, 0))
+      Params.Mty.box_with c.conf ~box ~lhs:mt.ast
+        ( fmt_module_type c ~pro mt $ list_fl wcs fmt_cstrs
+        $ epi ~attr:false (* Handled by [Sugar.mod_with]. *) )
+  | Pmty_typeof me ->
+      let break =
+        if Params.Mty.dock_typeof c.conf ~rhs:me then str " " else break 1 2
       in
-      match blk.pro with
-      | Some pro ->
-          { blk with
-            pro=
-              Some
-                ( Cmts.fmt_before c pmty_loc
-                $ fmt_if parens "(" $ str "module type of " $ pro )
-          ; epi= Some epi }
-      | _ ->
-          { blk with
-            bdy=
-              Cmts.fmt c pmty_loc
-              @@ hvbox 2
-                   (fmt_if parens "(" $ fmt "module type of@ " $ blk.bdy)
-          ; epi= Some epi } )
-  | Pmty_extension ext ->
-      { empty with
-        bdy= fmt_extension c ctx ext
-      ; epi= Some (fmt_attributes c pmty_attributes ~pre:(Break (1, 0))) }
-  | Pmty_alias lid ->
-      { empty with
-        bdy= fmt_longident_loc c lid
-      ; epi= Some (fmt_attributes c pmty_attributes ~pre:(Break (1, 0))) }
+      let pro = pro $ fmt "module type of" $ break in
+      let me_blk = fmt_module_expr c (sub_mod ~ctx me) in
+      hvbox_if box 0 (compose_module ~pro me_blk ~f:Fn.id $ epi ~attr:true)
+  | Pmty_extension ext -> pro $ fmt_extension c ctx ext $ epi ~attr:true
+  | Pmty_alias lid -> pro $ fmt_longident_loc c lid $ epi ~attr:true
 
 and fmt_signature c ctx itms =
   let update_config c i =
@@ -3571,25 +3557,11 @@ and fmt_signature_item c ?ext {ast= si; _} =
         let force_before = not (Mty.is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
-      let keyword, ({pro; psp; bdy; esp; epi; _} as blk) =
-        let kwd = str "include" $ fmt_extension_suffix c ext in
-        match pincl_mod with
-        | {pmty_desc= Pmty_typeof me; pmty_loc; pmty_attributes= _} ->
-            ( kwd
-              $ Cmts.fmt c ~pro:(str " ") ~epi:noop pmty_loc
-                  (fmt "@ module type of")
-            , fmt_module_expr c (sub_mod ~ctx me) )
-        | _ -> (kwd, fmt_module_type c (sub_mty ~ctx pincl_mod))
-      in
-      let box = blk_box blk in
+      let pro = str "include" $ fmt_extension_suffix c ext $ str " " in
       hvbox 0
         ( doc_before
         $ hvbox 0
-            ( box
-                ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
-                $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
-                $ bdy )
-            $ esp $ fmt_opt epi
+            ( fmt_module_type ~pro c (sub_mty ~ctx pincl_mod)
             $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
@@ -3604,7 +3576,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds
         (fmt_module_declaration ?ext)
-        (fun x -> Md x)
+        (fun x -> Md (x, true))
         sub_md
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
@@ -3683,49 +3655,10 @@ and fmt_class_exprs ?ext c ctx cls =
          $ hovbox 0
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
 
-and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
-    ?(eqty = "=") name xargs xbody xmty attributes ~rec_flag =
-  let blk_t =
-    Option.value_map xmty ~default:empty ~f:(fun xmty ->
-        let blk = fmt_module_type ?rec_ c xmty in
-        { blk with
-          pro=
-            Some (str " " $ str eqty $ opt blk.pro (fun pro -> str " " $ pro))
-        ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
-  in
+and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
+    name xargs xbody xmty attributes ~rec_flag =
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let fmt_name_and_mt ~pro ~loc name mt =
-    let xmt = sub_mty ~ctx mt in
-    let blk = fmt_module_type c ?rec_ xmt in
-    let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_str_loc_opt c name
-      $ str " : "
-    and epi = str ")" $ Cmts.fmt_after c loc in
-    compose_module' ~box:false ~pro ~epi blk
-  in
-  let args_p = Params.Mod.get_args c.conf xargs in
-  (* Carry the [epi] to be placed in the next argument's box. *)
-  let fmt_arg ~pro {loc; txt} =
-    let pro = pro $ args_p.arg_psp in
-    match txt with
-    | Unit ->
-        (pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc)), noop)
-    | Named (name, mt) ->
-        if args_p.dock then
-          (* All signatures, put the [epi] into the box of the next arg and
-             don't break. *)
-          fmt_name_and_mt ~pro ~loc name mt
-        else
-          let bdy, epi = fmt_name_and_mt ~pro:noop ~loc name mt in
-          let bdy_indent = if args_p.align then 1 else 0 in
-          (pro $ hvbox bdy_indent bdy $ epi, noop)
-  in
-  let rec fmt_args ~pro = function
-    | [] -> pro
-    | hd :: tl ->
-        let bdy, epi = fmt_arg ~pro hd in
-        bdy $ fmt_args ~pro:epi tl
-  in
+  let args_p = Params.Mod.get_args c.conf ~ctx xargs in
   let intro =
     str keyword
     $ fmt_extension_suffix c ext
@@ -3744,19 +3677,27 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
     fmt_docstring_around_item c ~force_before:(not single_line) ~fit:true
       attributes
   in
+  let fmt_mty ~epi =
+    let args ~epi = fmt_functor_params c ~ctx ~pro:intro ~epi xargs in
+    let epi = fmt_if (Option.is_some xbody) " =" $ epi in
+    match xmty with
+    | Some xmty ->
+        let break =
+          if
+            Params.Mty.dock_module_sig c.conf ~args_are_docked:args_p.dock
+              xmty.ast
+          then str " "
+          else fmt "@ "
+        in
+        let pro = args ~epi:(str " " $ str eqty $ break) in
+        hovbox 0 (fmt_module_type ~pro c xmty $ epi)
+    | None -> hvbox 0 (args ~epi:noop $ epi)
+  in
   hvbox
     (if compact then 0 else 2)
     ( doc_before
     $ blk_box blk_b
-        ( (if Option.is_some blk_t.epi then hovbox else hvbox)
-            0
-            ( blk_box blk_t
-                ( hvbox args_p.indent
-                    (fmt_args ~pro:intro xargs $ fmt_opt blk_t.pro)
-                $ blk_t.psp $ blk_t.bdy )
-            $ blk_t.esp $ fmt_opt blk_t.epi
-            $ fmt_if (Option.is_some xbody) " ="
-            $ fmt_if_k compact fmt_pro )
+        ( fmt_mty ~epi:(fmt_if_k compact fmt_pro)
         $ fmt_if_k (not compact) fmt_pro
         $ blk_b.psp
         $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
@@ -3774,12 +3715,12 @@ and fmt_module c ctx ?rec_ ?ext ?epi ?(can_sparse = false) keyword
           $ epi ) )
 
 and fmt_module_declaration ?ext c ~rec_flag ~first {ast= pmd; _} =
-  protect c (Md pmd)
+  let ctx = Md (pmd, rec_flag) in
+  protect c ctx
   @@
   let {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
-  let ctx = Md pmd in
   let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
   let xmty = sub_mty ~ctx pmd_type in
@@ -3787,8 +3728,8 @@ and fmt_module_declaration ?ext c ~rec_flag ~first {ast= pmd; _} =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module ~rec_:rec_flag ?ext c ctx keyword pmd_name pmd_args None
-       ?eqty (Some xmty) ~rec_flag:(rec_flag && first) pmd_attributes )
+    (fmt_module ?ext c ctx keyword pmd_name pmd_args None ?eqty (Some xmty)
+       ~rec_flag:(rec_flag && first) pmd_attributes )
 
 and fmt_module_substitution ?ext c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
@@ -3980,22 +3921,19 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
         (`Block (blk_a, Mod.is_simple me_a))
   | Pmod_constraint (me, mt) ->
       let blk_e = fmt_module_expr c (sub_mod ~ctx me) in
-      let blk_t = fmt_module_type c (sub_mty ~ctx mt) in
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
-      { opn= Some (fmt_opt blk_t.opn $ fmt_opt blk_e.opn $ open_hovbox 2)
+      { opn= Some (fmt_opt blk_e.opn $ open_hovbox 2)
       ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
       ; psp= fmt "@,"
       ; bdy=
           hvbox 0
             ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
             $ fmt_opt blk_e.epi $ fmt " :@;<1 2>"
-            $ hvbox 0
-                ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
-                $ fmt_opt blk_t.epi ) )
+            $ hvbox 0 (fmt_module_type c (sub_mty ~ctx mt)) )
           $ closing_paren c ~offset:(-2)
-      ; cls= close_box $ blk_e.cls $ blk_t.cls
+      ; cls= close_box $ blk_e.cls
       ; esp= noop
       ; epi=
           Option.some_if has_epi
@@ -4003,17 +3941,19 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_functor (args, me) ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let fmt_args =
+        let pro = str "functor" $ fmt_attributes c ~pre:Blank atrs in
+        fmt_functor_params c ~ctx ~pro args
+      in
       { empty with
-        bdy=
+        opn= Some (open_hvbox 2)
+      ; cls= close_box
+      ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
-            $ hvbox 0
+            $ hvbox 2
                 (wrap_if parens "(" ")"
-                   ( str "functor"
-                   $ fmt_attributes c ~pre:Blank atrs
-                   $ fmt "@;<1 2>"
-                   $ list args "@;<1 2>" (fmt_functor_param c ctx)
-                   $ fmt "@;<1 2>->@;<1 2>"
+                   ( fmt_args $ fmt " ->@ "
                    $ compose_module
                        (fmt_module_expr c (sub_mod ~ctx me))
                        ~f:(hvbox 0) ) ) ) }
@@ -4349,9 +4289,8 @@ and fmt_module_binding ?ext c ~rec_flag ~first {ast= pmb; _} =
     | _ -> (xbody, None)
   in
   Cmts.fmt c pmb.pmb_loc
-    (fmt_module ~rec_:rec_flag ?ext c ctx keyword
-       ~rec_flag:(rec_flag && first) ~eqty:":" pmb.pmb_name pmb.pmb_args
-       (Some xbody) xmty pmb.pmb_attributes )
+    (fmt_module ?ext c ctx keyword ~rec_flag:(rec_flag && first) ~eqty:":"
+       pmb.pmb_name pmb.pmb_args (Some xbody) xmty pmb.pmb_attributes )
 
 let fmt_toplevel_directive c ~semisemi dir =
   let fmt_dir_arg = function
@@ -4467,9 +4406,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   | Signature, l -> Chunk.split_and_fmt Signature c ctx l
   | Use_file, l -> Chunk.split_and_fmt Use_file c ctx l
   | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
-  | Module_type, mty ->
-      compose_module ~f:Fn.id
-        (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
+  | Module_type, mty -> fmt_module_type c (sub_mty ~ctx:(Mty mty) mty)
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
   | Repl_file, l -> fmt_repl_file c ctx l

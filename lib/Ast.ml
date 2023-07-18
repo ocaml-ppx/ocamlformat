@@ -625,7 +625,7 @@ module T = struct
     | Exp of expression
     | Lb of let_binding
     | Mb of module_binding
-    | Md of module_declaration
+    | Md of module_declaration * bool  (** Recursive *)
     | Cl of class_expr
     | Mty of module_type
     | Mod of module_expr
@@ -645,7 +645,7 @@ module T = struct
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.let_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
-    | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
+    | Md (m, _) -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
     | Mty mt -> Format.fprintf fs "Mty:@\n%a" Printast.module_type mt
     | Cty cty -> Format.fprintf fs "Cty:@\n%a" Printast.class_type cty
@@ -675,7 +675,7 @@ let attributes = function
   | Exp x -> x.pexp_attributes
   | Lb x -> x.lb_attributes
   | Mb x -> x.pmb_attributes
-  | Md x -> x.pmd_attributes
+  | Md (x, _) -> x.pmd_attributes
   | Cl x -> x.pcl_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
@@ -696,7 +696,7 @@ let location = function
   | Exp x -> x.pexp_loc
   | Lb x -> x.lb_loc
   | Mb x -> x.pmb_loc
-  | Md x -> x.pmd_loc
+  | Md (x, _) -> x.pmd_loc
   | Cl x -> x.pcl_loc
   | Mty x -> x.pmty_loc
   | Mod x -> x.pmod_loc
@@ -725,7 +725,7 @@ let break_between s cc (i1, c1) (i2, c2) =
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
   | Lb i1, Lb i2 -> Lb.break_between s cc (i1, c1) (i2, c2)
   | Mb i1, Mb i2 -> Mb.break_between s cc (i1, c1) (i2, c2)
-  | Md i1, Md i2 -> Md.break_between s cc (i1, c1) (i2, c2)
+  | Md (i1, _), Md (i2, _) -> Md.break_between s cc (i1, c1) (i2, c2)
   | Mty _, Mty _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Mod _, Mod _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Tli (`Item i1), Tli (`Item i2) ->
@@ -1781,7 +1781,16 @@ end = struct
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mty {ctx= _; ast= mty} = Mty.has_trailing_attributes mty
+  let parenze_mty {ctx; ast= mty} =
+    match (ctx, mty.pmty_desc) with
+    | _, (Pmty_ident _ | Pmty_extension _ | Pmty_signature _) -> false
+    (* Currently, attributes on a [Pmty_functor] are always in short form. *)
+    | _, Pmty_functor _ -> false
+    (* [Pmty_with] must be parenthesed when on the RHS of a module decl
+       followed by an [and]. This is an over-approximation. *)
+    | Md (_, true), Pmty_with _ -> true
+    | (Str _ | Sig _), _ -> false
+    | _ -> Mty.has_trailing_attributes mty
 
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be
       parenthesized in context [ctx]. *)

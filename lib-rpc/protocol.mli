@@ -37,23 +37,18 @@ module Make (IO : IO.S) : sig
   end
 
   (** Version used to set the protocol version *)
-  module Init :
-    Command_S with type t = [`Halt | `Unknown | `Version of string]
+  module Init : Command_S
+    with type t = [`Halt | `Unknown | `Version of string]
 
-  module V1 :
-    Command_S
-      with type t =
-        [ `Halt
-        | `Unknown
-        | `Error of string
-        | `Config of (string * string) list
-        | `Format of string ]
+  module V1 : Command_S
+    with type t =
+      [ `Halt
+      | `Unknown
+      | `Error of string
+      | `Config of (string * string) list
+      | `Format of string ]
 
-  module V2 :
-    Command_S
-      with type t =
-        [ `Halt
-        | `Unknown
-        | `Error of string
-        | `Format of string * format_args ]
+  module V2 : Command_S
+    with type t =
+      [`Halt | `Unknown | `Error of string | `Format of string * format_args]
 end

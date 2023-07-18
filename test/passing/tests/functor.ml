@@ -13,9 +13,8 @@ module type M = functor (S : S) (T : T) -> U
 module type M = functor (S : S) () -> sig end
 
 module type M = functor
-  (SSSSS : SSSSSSSSSSSSSS)
-  (TTTTT : TTTTTTTTTTTTTTTT)
-  -> sig
+    (SSSSS : SSSSSSSSSSSSSS)
+    (TTTTT : TTTTTTTTTTTTTTTT) -> sig
   val t1 : a
 
   val t2 : b
@@ -40,10 +39,7 @@ module type S = sig
 end
 
 module M =
-  (functor
-    (SSSSS : sssssSSSSSSSSSSSSSS)
-    (TTTTT : TTTTTTTTTTTTTTTTTTTTT)
-    ->
+  (functor (SSSSS : sssssSSSSSSSSSSSSSS) (TTTTT : TTTTTTTTTTTTTTTTTTTTT) ->
     struct
       let x = 2
 
@@ -60,24 +56,23 @@ module type Module_type_fail = sig
   include S
 end
 
-module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
-  S
-    with type key = string list
-     and type step = string
-     and type contents = C.t
-     and type branch = string
-     and module Git = G
+module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) -> S
+  with type key = string list
+   and type step = string
+   and type contents = C.t
+   and type branch = string
+   and module Git = G
 
 module Make
     (TT : TableFormat.TABLES)
     (IT : InspectionTableFormat.TABLES with type 'a lr1state = int)
     (ET : EngineTypes.TABLE
-            with type terminal = int
-             and type nonterminal = int
-             and type semantic_value = Obj.t)
+       with type terminal = int
+        and type nonterminal = int
+        and type semantic_value = Obj.t)
     (E : sig
-      type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
-    end) =
+       type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
+     end) =
 struct
   type t = t
 end

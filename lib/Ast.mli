@@ -112,7 +112,7 @@ type t =
   | Exp of expression
   | Lb of let_binding
   | Mb of module_binding
-  | Md of module_declaration
+  | Md of module_declaration * bool  (** Recursive *)
   | Cl of class_expr
   | Mty of module_type
   | Mod of module_expr

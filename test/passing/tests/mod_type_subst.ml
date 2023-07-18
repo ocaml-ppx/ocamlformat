@@ -13,19 +13,17 @@ module type t' = t with module type x = x
 
 module type t'' = t with module type x := x
 
-module type t3 =
-  t
-    with
-      module type x = sig
-        type t
-      end
+module type t3 = t
+  with
+    module type x = sig
+      type t
+    end
 
-module type t4 =
-  t
-    with
-      module type x := sig
-        type t
-      end
+module type t4 = t
+  with
+    module type x := sig
+      type t
+    end
 
 (** nested *)
 
@@ -83,11 +81,11 @@ module type u = sig
   module M : t
 end
 
-module type r =
-  u with type x = int and type y = float and module type t = base
+module type r = u
+  with type x = int and type y = float and module type t = base
 
-module type r =
-  u with type x = int and type y = float and module type t := base
+module type r = u
+  with type x = int and type y = float and module type t := base
 
 (** First class module types require an identity *)
 

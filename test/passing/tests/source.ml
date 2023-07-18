@@ -7423,3 +7423,6 @@ let () =
      | _ -> ())
   | _ -> ()
 ;;
+
+(* Long-form attribute on a functor module type expr. *)
+module type S = functor (A : B) -> (functor (C : D) -> S') [@foo]

@@ -14,7 +14,7 @@ end [@foo]
 [@@foo]
 
 module type S = sig
-  include ((module type of M [@foo]) [@foo] with type t := M.t [@foo]) [@@foo]
+  include (module type of M [@foo]) [@foo] with type t := M.t [@foo] [@@foo]
 
   [@@@foo]
 end [@foo]
@@ -153,8 +153,8 @@ type t = [%foo: ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo] (M : S) -> functor (_ : (module type of M) [@foo]) -> sig end
-                                                                                     [@foo]
+module type S = functor [@foo] (M : S) ->
+  functor (_ : (module type of M) [@foo]) -> sig end [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
 module type S = functor (_ : functor (_ : S) -> S) -> S
@@ -3023,11 +3023,10 @@ let magic : 'a 'b. 'a -> 'b =
     (functor
       (T : sig
          type 'a t
-       end)
-      ->
-      struct
-        let f (Refl : (a T.t, b T.t) eq) = (x :> b)
-      end)
+       end) ->
+    struct
+      let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+    end)
       (struct
         type 'a t = unit
       end)
@@ -4796,8 +4795,8 @@ module type PR6513 = sig
     type uri
   end
 
-  module Make : functor (Html5 : T with type 'a wrap = 'a) ->
-    S with type u = < foo : Html5.uri >
+  module Make : functor (Html5 : T with type 'a wrap = 'a) -> S
+    with type u = < foo : Html5.uri >
 end
 
 (* Requires -package tyxml
@@ -7064,8 +7063,8 @@ module PR_4261 = struct
     type t = D.t
   end
 
-  module rec U : (T with module D = U') = U
-  and U' : (S with type t = U'.t) = U
+  module rec U : T with module D = U' = U
+  and U' : S with type t = U'.t = U
 end
 
 (* Bad - PR 4512 *)
@@ -7073,7 +7072,7 @@ module type S' = sig
   type t = int
 end
 
-module rec M : (S' with type t = M.t) = struct
+module rec M : S' with type t = M.t = struct
   type t = M.t
 end
 
@@ -7165,7 +7164,7 @@ module Bootstrap2
     ;;
   end
 
-  and Diet : (SET with type t = Elt.t tree and type elt = Elt.t) = MakeDiet (Elt)
+  and Diet : SET with type t = Elt.t tree and type elt = Elt.t = MakeDiet (Elt)
 
   type t = Diet.t
 
@@ -7248,7 +7247,7 @@ module PR_4557 = struct
       let compare x y = 0
     end
 
-    and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
+    and ModSet : Set.S with type elt = Mod.t = Set.Make (Mod)
   end
 end
 
@@ -7278,7 +7277,7 @@ module F (X : Set.OrderedType) = struct
     let compare x y = 0
   end
 
-  and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
+  and ModSet : Set.S with type elt = Mod.t = Set.Make (Mod)
 end
 (* Tests for recursive modules *)
 
@@ -7311,7 +7310,7 @@ end = struct
   ;;
 end
 
-and ASet : (Set.S with type elt = A.t) = Set.Make (A)
+and ASet : Set.S with type elt = A.t = Set.Make (A)
 
 let _ =
   let x = A.Node (ASet.add (A.Leaf 3) (ASet.singleton (A.Leaf 2))) in
@@ -7572,7 +7571,8 @@ end
 
 module Bootstrap
     (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
-    (Element : ORDERED) : HEAP with module Elem = Element = struct
+    (Element : ORDERED) :
+  HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
@@ -7613,7 +7613,7 @@ module Bootstrap
     ;;
   end
 
-  and PrimH : (HEAP with type Elem.t = BE.t) = MakeH (BE)
+  and PrimH : HEAP with type Elem.t = BE.t = MakeH (BE)
 
   type heap = BE.t
 
@@ -8273,8 +8273,8 @@ module type BARECODE = sig
 end
 
 module USERCODE (X : TYPEVIEW) = struct
-  module type F = functor (C : CORE with type V.usert = X.combined) ->
-    BARECODE with type state := C.V.state
+  module type F = functor (C : CORE with type V.usert = X.combined) -> BARECODE
+    with type state := C.V.state
 end
 
 module Weapon = struct

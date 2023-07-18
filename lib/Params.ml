@@ -92,17 +92,43 @@ module Mod = struct
         true
     | _ -> false
 
-  let get_args (c : Conf.t) args =
-    let indent, psp_indent = if ocp c then (2, 2) else (0, 4) in
+  let get_args (c : Conf.t) ~ctx args =
     let dock =
       (* ocp-indent-compat: Dock only one argument to avoid alignment of
-         subsequent arguments. *)
-      if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
+         subsequent arguments. Avoid docking for module exprs and module type
+         exprs to also avoid alignment. *)
+      if ocp c then
+        match ctx, args with
+        | Ast.Mb _, [arg] -> arg_is_sig arg
+        | _ -> false
       else List.for_all ~f:arg_is_sig args
     in
-    let arg_psp = if dock then str " " else break 1 psp_indent in
+    let arg_psp = if dock then str " " else break 1 2 in
     let align = ocp c in
-    {dock; arg_psp; indent; align}
+    {dock; arg_psp; indent= 2; align}
+end
+
+module Mty = struct
+  let dock_functor_rhs (_c : Conf.t) ~rhs =
+    match rhs.pmty_desc with
+    | Pmty_signature _ | Pmty_with _ -> true
+    | _ -> false
+
+  let dock_module_sig (_c : Conf.t) ~args_are_docked mty =
+    match mty.pmty_desc with
+    | Pmty_signature _ -> true
+    | Pmty_ident _
+     |Pmty_with ({pmty_desc= Pmty_signature _ | Pmty_ident _; _}, _) ->
+        args_are_docked
+    | _ -> false
+
+  let dock_typeof _c ~rhs =
+    match rhs.pmod_desc with Pmod_structure _ -> true | _ -> false
+
+  let box_with _c ~box ~lhs =
+    match lhs.pmty_desc with
+    | Pmty_signature _ -> hvbox_if ~name:"with" box 0
+    | _ -> hovbox_if ~name:"with" box 2
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)

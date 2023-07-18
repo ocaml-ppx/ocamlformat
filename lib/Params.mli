@@ -45,7 +45,25 @@ module Mod : sig
     ; align: bool
           (** Whether to align argument types inside their parenthesis. *) }
 
-  val get_args : Conf.t -> functor_parameter loc list -> args
+  (** Can be called from [Pmty_functor], [Pmod_functor] or [Pstr_module]. *)
+  val get_args : Conf.t -> ctx:Ast.t -> functor_parameter loc list -> args
+end
+
+module Mty : sig
+  val dock_functor_rhs : Conf.t -> rhs:module_type -> bool
+  (** Whether functor types should be docked on the same line or break after
+      the [->]. *)
+
+  val dock_module_sig : Conf.t -> args_are_docked:bool -> module_type -> bool
+  (** Whether the signature of a module decl should be docked after the [:].
+      [~args_are_docked] expects the [dock] field returned by
+      {!Mod.get_args}. *)
+
+  val dock_typeof : Conf.t -> rhs:module_expr -> bool
+  (** Whether to dock the RHS of a [module type of]. *)
+
+  val box_with : Conf.t -> box:bool -> lhs:module_type -> Fmt.t -> Fmt.t
+  (** The box around a [Pmty_with]. *)
 end
 
 val get_or_pattern_sep :
