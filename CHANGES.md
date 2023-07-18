@@ -13,31 +13,31 @@
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
-- Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
-- Improve formatting of module arguments (#2322, @Julow)
-- Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
-- Remove double parenthesis around tuple in a match (#2308, @Julow)
-- Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
-- Improve indentation of `~label:(fun` (#2271, #2291, #2293, #2298, #2398, @Julow)
-- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
-- Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
-- Fix indentation of trailing double-semicolons (#2295, @gpetiot)
-- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
 - Fix identation of module-expr extensions (#2323, @gpetiot)
-- Don't print warnings related to odoc code-blocks when '--quiet' is set (#2336, @gpetiot)
+- Remove double parenthesis around tuple in a match (#2308, @Julow)
+- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
+- Fix indentation of trailing double-semicolons (#2295, @gpetiot)
+- Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
 
 ### Changes
 
-- Improve formatting of doc-comments (#2376, #2377, #2379, #2378, @Julow)
-- Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
-- Improve indentation of `as`-patterns (#2359, @Julow)
-- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
-- Restore short form formatting of record field aliases (#2282, #2388, @gpetiot, @Julow)
-- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, #2363, @gpetiot, @Julow)
-- Improve formatting of class signatures (#2301, #2387, @gpetiot, @Julow)
-- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, #2392, @gpetiot, @Julow)
+- Improve formatting of doc-comments (#2338, #2349, #2376, #2377, #2379, #2378, @Julow)
+  Unecessary escaping is removed and blank lines are preserved.
+- Indent `as`-patterns that have parentheses (#2359, @Julow)
+- Don't print warnings related to odoc code-blocks when '--quiet' is set (#2336, #2373, @gpetiot, @Julow)
+- Improve formatting of module arguments (#2322, @Julow)
 - Don't indent attributes after a let/val/external (#2317, @Julow)
-- Adjust indentation of class-expr function body (#2328, @gpetiot)
+- Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
+  It was formatted differently from `@@ let x = ...`.
+- Improve formatting of class expressions and signatures (#2301, #2328, #2387, @gpetiot, @Julow)
+- Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
+- Restore short form formatting of record field aliases (#2282, #2388, @gpetiot, @Julow)
+- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
+- Improve indentation of `~label:(fun ...` (#2271, #2291, #2293, #2298, #2398, @Julow)
+  The `fun` keyword is docked when possible and the arguments are indented to avoid confusion with the body.
+- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, #2392, @gpetiot, @Julow)
+- Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, #2363, @gpetiot, @Julow)
 
 ### New features
 
