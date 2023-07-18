@@ -45,7 +45,8 @@ module Mod : sig
     ; align: bool
           (** Whether to align argument types inside their parenthesis. *) }
 
-  val get_args : Conf.t -> functor_parameter loc list -> args
+  (** Can be called from [Pmty_functor], [Pmod_functor] or [Pstr_module]. *)
+  val get_args : Conf.t -> ctx:Ast.t -> functor_parameter loc list -> args
 end
 
 module Mty : sig

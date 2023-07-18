@@ -3020,9 +3020,10 @@ type (_, _) eq = Refl : ('a, 'a) eq
 let magic : 'a 'b. 'a -> 'b =
   fun (type a b) (x : a) ->
   let module M =
-    (functor (T : sig
-       type 'a t
-     end) ->
+    (functor
+         (T : sig
+            type 'a t
+          end) ->
       struct
         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
       end)

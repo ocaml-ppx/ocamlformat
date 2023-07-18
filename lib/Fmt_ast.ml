@@ -3397,7 +3397,7 @@ and fmt_extension_constructor c ctx ec =
        $ fmt_attributes_and_docstrings c pext_attributes )
 
 and fmt_functor_params c ~ctx ?(pro = noop) ?(epi = noop) args =
-  let args_p = Params.Mod.get_args c.conf args in
+  let args_p = Params.Mod.get_args c.conf ~ctx args in
   let box_arg =
     let indent = if args_p.align then 1 else 0 in
     hvbox_if ((not args_p.dock) && args_p.align) indent
@@ -3653,7 +3653,7 @@ and fmt_class_exprs ?ext c ctx cls =
 and fmt_module c ctx ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty attributes ~rec_flag =
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let args_p = Params.Mod.get_args c.conf xargs in
+  let args_p = Params.Mod.get_args c.conf ~ctx xargs in
   let intro =
     str keyword
     $ fmt_extension_suffix c ext

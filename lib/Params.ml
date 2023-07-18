@@ -92,11 +92,15 @@ module Mod = struct
         true
     | _ -> false
 
-  let get_args (c : Conf.t) args =
+  let get_args (c : Conf.t) ~ctx args =
     let dock =
       (* ocp-indent-compat: Dock only one argument to avoid alignment of
-         subsequent arguments. *)
-      if ocp c then match args with [arg] -> arg_is_sig arg | _ -> false
+         subsequent arguments. Avoid docking for module exprs and module type
+         exprs to also avoid alignment. *)
+      if ocp c then
+        match ctx, args with
+        | Ast.Mb _, [arg] -> arg_is_sig arg
+        | _ -> false
       else List.for_all ~f:arg_is_sig args
     in
     let arg_psp = if dock then str " " else break 1 2 in
