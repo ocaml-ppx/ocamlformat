@@ -18,7 +18,7 @@
 - Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
 - Remove double parenthesis around tuple in a match (#2308, @Julow)
 - Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
-- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
+- Improve indentation of `~label:(fun` (#2271, #2291, #2293, #2298, #2398, @Julow)
 - Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
 - Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)

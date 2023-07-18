@@ -1352,10 +1352,11 @@ and fmt_fun ?force_closing_paren
     else noop
   in
   let (label_sep : s), break_fun =
-    (* Break between the label and the fun to avoid ocp-indent's
-       alignment. *)
+    (* Break between the label and the fun to avoid ocp-indent's alignment.
+       If a label is present, arguments should be indented more than the
+       arrow and the eventually breaking [fun] keyword. *)
     if c.conf.fmt_opts.ocp_indent_compat.v then (":@,", fmt "@;<1 2>")
-    else (":", fmt "@ ")
+    else (":", if has_label then fmt "@;<1 2>" else fmt "@ ")
   in
   hovbox_if box 2
     ( wrap_intro
@@ -1366,8 +1367,8 @@ and fmt_fun ?force_closing_paren
                $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
-                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->" )
-               ) ) )
+                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                   $ fmt "@;<1 -2>->" ) ) ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
