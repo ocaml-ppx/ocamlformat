@@ -42,9 +42,7 @@ Git is used to manage the script's state:
   =git push --tags=
 
 - Release in automatic mode
-  =dune-release -p ocamlformat,ocamlformat-rpc-lib=
-  Until dune-release.1.5.0 is released the =main= branch of dune-release
-  should be used.
+  =dune-release -p ocamlformat-lib,ocamlformat,ocamlformat-rpc-lib=
 
 - Close release milestone.
 
