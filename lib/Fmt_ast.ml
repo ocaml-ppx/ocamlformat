@@ -4165,7 +4165,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value {lbs_rec= rec_flag; lbs_bindings= bindings; lbs_extension} ->
-      let update_config c i = update_config ~quiet:true c i.lb_attributes in
+      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in

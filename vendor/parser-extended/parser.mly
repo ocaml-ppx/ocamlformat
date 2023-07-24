@@ -428,14 +428,31 @@ let extra_rhs_core_type ct ~pos =
   let docs = rhs_info pos in
   { ct with ptyp_attributes = add_info_attrs docs ct.ptyp_attributes }
 
-let mklb first ~loc (p, e, is_pun) attrs =
-  let docs = symbol_docs loc in
-  let text = if first then empty_text else symbol_text (fst loc) in
+type let_binding =
+  { lb_pattern: pattern;
+    lb_expression: expression;
+    lb_constraint: value_constraint option;
+    lb_is_pun: bool;
+    lb_attributes: attributes;
+    lb_docs: docs Lazy.t;
+    lb_text: text Lazy.t;
+    lb_loc: Location.t; }
+
+type let_bindings' =
+  { lbs_bindings: let_binding list;
+    lbs_rec: rec_flag;
+    lbs_extension: string Asttypes.loc option }
+
+let mklb first ~loc (p, e, typ, is_pun) attrs =
   {
     lb_pattern = p;
     lb_expression = e;
+    lb_constraint=typ;
     lb_is_pun = is_pun;
-    lb_attributes = add_text_attrs text (add_docs_attrs docs attrs);
+    lb_attributes = attrs;
+    lb_docs = symbol_docs_lazy loc;
+    lb_text = (if first then empty_text_lazy
+               else symbol_text_lazy (fst loc));
     lb_loc = make_loc loc;
   }
 
@@ -451,17 +468,29 @@ let mklbs ext rf lb =
   } in
   addlb lbs lb
 
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+  let lbs_bindings =
+    List.rev_map
+      (fun lb ->
+         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
+           ~docs:(Lazy.force lb.lb_docs)
+           ~text:(Lazy.force lb.lb_text)
+           ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
+           lb.lb_pattern lb.lb_expression)
+      lbs_bindings
+  in
+  { Parsetree.lbs_bindings; lbs_rec; lbs_extension }
+
 let val_of_let_bindings ~loc lbs =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkstr ~loc (Pstr_value lbs)
+  mkstr ~loc (Pstr_value (mk_let_bindings lbs))
 
 let expr_of_let_bindings ~loc lbs body =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkexp ~loc (Pexp_let (lbs, body))
+  mkexp_attrs ~loc (Pexp_let (mk_let_bindings lbs, body)) (None, [])
 
 let class_of_let_bindings ~loc lbs body =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkclass ~loc (Pcl_let (lbs, body))
+  (* Our use of let_bindings(no_ext) guarantees the following: *)
+  assert (lbs.lbs_extension = None);
+  mkclass ~loc (Pcl_let (mk_let_bindings lbs, body))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
@@ -1154,6 +1183,8 @@ parse_any_longident:
 
 (* Functor arguments appear in module expressions and module types. *)
 
+(* Compared to upstream, [functor_args] can be empty and is not in reverse
+   order. *)
 %inline functor_args:
   llist(functor_arg)
     { $1 }
@@ -1368,6 +1399,11 @@ module_binding_body:
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
+(*
+    | arg_and_pos = functor_arg body = module_binding_body
+        { let (_, arg) = arg_and_pos in
+          Pmod_functor(arg, body) }
+*)
   ) { $1 }
 ;
 
@@ -1616,7 +1652,7 @@ signature_item:
   }
 ;
 
-(*
+(* Module arguments are attached to declarations
 (* The body (right-hand side) of a module declaration. *)
 module_declaration_body:
     COLON mty = module_type
@@ -2446,42 +2482,39 @@ labeled_simple_expr:
 ;
 let_binding_body_no_punning:
     let_ident strict_binding
-      { ($1, $2) }
+      { ($1, $2, None) }
   | let_ident type_constraint EQUAL seq_expr
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
-            Some t, None -> t
-          | _, Some t -> t
+            Some t, None ->
+             Pvc_constraint { locally_abstract_univars = []; typ=t }
+          | ground, Some coercion -> Pvc_coercion { ground; coercion}
           | _ -> assert false
         in
-        let loc = Location.(t.ptyp_loc.loc_start, t.ptyp_loc.loc_end) in
-        let typ = ghtyp ~loc (Ptyp_poly([],t)) in
-        let patloc = ($startpos($1), $endpos($2)) in
-        (ghpat ~loc:patloc (Ppat_constraint(v, typ)),
-         mkexp_constraint ~loc:$sloc $4 $2) }
+        (v, $4, Some t)
+        }
   | let_ident COLON poly(core_type) EQUAL seq_expr
-      { let patloc = ($startpos($1), $endpos($3)) in
-        (ghpat ~loc:patloc
-           (Ppat_constraint($1, ghtyp ~loc:($loc($3)) $3)),
-         $5) }
+    {
+      let t = ghtyp ~loc:($loc($3)) $3 in
+      ($1, $5, Some (Pvc_constraint { locally_abstract_univars = []; typ=t }))
+    }
   | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
-      { let exp, poly =
-          wrap_type_annotation ~loc:$sloc $4 $6 $8 in
-        let loc = ($startpos($1), $endpos($6)) in
-        (ghpat ~loc (Ppat_constraint($1, poly)), exp) }
+    { let constraint' =
+        Pvc_constraint { locally_abstract_univars=$4; typ = $6}
+      in
+      ($1, $8, Some constraint') }
   | pattern_no_exn EQUAL seq_expr
-      { ($1, $3) }
+      { ($1, $3, None) }
   | simple_pattern_not_ident COLON core_type EQUAL seq_expr
-      { let loc = ($startpos($1), $endpos($3)) in
-        (ghpat ~loc (Ppat_constraint($1, $3)), $5) }
+      { ($1, $5, Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 })) }
 ;
 let_binding_body:
   | let_binding_body_no_punning
-      { let p,e = $1 in (p,e,false) }
+      { let p,e,c = $1 in (p,e,c,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, None, true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the

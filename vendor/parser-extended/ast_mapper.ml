@@ -53,7 +53,6 @@ type mapper = {
   include_declaration: mapper -> include_declaration -> include_declaration;
   include_description: mapper -> include_description -> include_description;
   label_declaration: mapper -> label_declaration -> label_declaration;
-  let_binding: mapper -> let_binding -> let_binding;
   let_bindings: mapper -> let_bindings -> let_bindings;
   location: mapper -> Location.t -> Location.t;
   module_binding: mapper -> module_binding -> module_binding;
@@ -76,6 +75,7 @@ type mapper = {
   type_extension: mapper -> type_extension -> type_extension;
   type_exception: mapper -> type_exception -> type_exception;
   type_kind: mapper -> type_kind -> type_kind;
+  value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
   directive_argument: mapper -> directive_argument -> directive_argument;
@@ -598,15 +598,8 @@ module E = struct
 end
 
 module LB = struct
-  let map_let_binding sub { lb_pattern; lb_expression; lb_is_pun; lb_attributes; lb_loc } =
-    let lb_pattern = sub.pat sub lb_pattern in
-    let lb_expression = sub.expr sub lb_expression in
-    let lb_attributes = sub.attributes sub lb_attributes in
-    let lb_loc = sub.location sub lb_loc in
-    { lb_pattern; lb_expression; lb_is_pun; lb_attributes; lb_loc }
-
   let map_let_bindings sub { lbs_bindings; lbs_rec; lbs_extension } =
-    let lbs_bindings = List.map (sub.let_binding sub) lbs_bindings in
+    let lbs_bindings = List.map (sub.value_binding sub) lbs_bindings in
     let lbs_extension = map_opt (map_loc sub) lbs_extension in
     { lbs_bindings; lbs_rec; lbs_extension }
 end
@@ -777,7 +770,6 @@ let default_mapper =
     expr = E.map;
     binding_op = E.map_binding_op;
 
-    let_binding = LB.map_let_binding;
     let_bindings = LB.map_let_bindings;
 
     module_declaration =
@@ -847,6 +839,30 @@ let default_mapper =
            ~loc:(this.location this pincl_loc)
            ~attrs:(this.attributes this pincl_attributes)
       );
+
+    value_binding =
+      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
+         let map_ct (ct:Parsetree.value_constraint) = match ct with
+           | Pvc_constraint {locally_abstract_univars=vars; typ} ->
+               Pvc_constraint
+                 { locally_abstract_univars = List.map (map_loc this) vars;
+                   typ = this.typ this typ
+                 }
+           | Pvc_coercion { ground; coercion } ->
+               Pvc_coercion {
+                 ground = Option.map (this.typ this) ground;
+                 coercion = this.typ this coercion
+               }
+         in
+         Vb.mk
+           (this.pat this pvb_pat)
+           (this.expr this pvb_expr)
+           ?value_constraint:(Option.map map_ct pvb_constraint)
+           ~is_pun:pvb_is_pun
+           ~loc:(this.location this pvb_loc)
+           ~attrs:(this.attributes this pvb_attributes)
+      );
+
 
     constructor_declaration =
       (fun this {pcd_name; pcd_vars; pcd_args;

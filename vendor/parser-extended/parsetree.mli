@@ -1063,18 +1063,35 @@ and structure_item_desc =
   | Pstr_attribute of attribute  (** [[\@\@\@id]] *)
   | Pstr_extension of extension * attributes  (** [[%%id]] *)
 
-and let_binding =
+and value_constraint =
+  | Pvc_constraint of {
+      locally_abstract_univars:string loc list;
+      typ:core_type;
+    }
+  | Pvc_coercion of {ground:core_type option; coercion:core_type }
+  (**
+     - [Pvc_constraint { locally_abstract_univars=[]; typ}]
+         is a simple type constraint on a value binding: [ let x : typ]
+     - More generally, in [Pvc_constraint { locally_abstract_univars; typ}]
+       [locally_abstract_univars] is the list of locally abstract type
+       variables in [ let x: type a ... . typ ]
+     - [Pvc_coercion { ground=None; coercion }] represents [let x :> typ]
+     - [Pvc_coercion { ground=Some g; coercion }] represents [let x : g :> typ]
+  *)
+
+and value_binding =
   {
-    lb_pattern: pattern;
-    lb_expression: expression;
-    lb_is_pun: bool;
-    lb_attributes: attributes;
-    lb_loc: Location.t;
-  }
+    pvb_pat: pattern;
+    pvb_expr: expression;
+    pvb_constraint: value_constraint option;
+    pvb_is_pun: bool;
+    pvb_attributes: attributes;
+    pvb_loc: Location.t;
+  }(** [let pat : type_constraint = exp] *)
 
 and let_bindings =
   {
-    lbs_bindings: let_binding list;
+    lbs_bindings: value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: string loc option
   }

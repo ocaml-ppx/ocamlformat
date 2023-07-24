@@ -1052,6 +1052,27 @@ and case i ppf {pc_lhs; pc_guard; pc_rhs} =
   end;
   expression (i+1) ppf pc_rhs;
 
+and value_binding i ppf x =
+  line i ppf "<def>\n";
+  attributes (i+1) ppf x.pvb_attributes;
+  pattern (i+1) ppf x.pvb_pat;
+  Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
+  expression (i+1) ppf x.pvb_expr
+
+and value_constraint i ppf x =
+  let pp_sep ppf () = Format.fprintf ppf "@ "; in
+  let pp_newtypes = Format.pp_print_list fmt_string_loc ~pp_sep in
+  match x with
+  | Pvc_constraint { locally_abstract_univars = []; typ } ->
+      core_type i ppf typ
+  | Pvc_constraint { locally_abstract_univars=newtypes; typ} ->
+      line i ppf "<type> %a.\n" pp_newtypes newtypes;
+      core_type i ppf  typ
+  | Pvc_coercion { ground; coercion} ->
+      line i ppf "<coercion>\n";
+      option i core_type ppf ground;
+      core_type i ppf coercion;
+
 and open_description i ppf x =
   line i ppf "open_description %a %a\n" fmt_override_flag x.popen_override
     fmt_location x.popen_loc;
@@ -1077,14 +1098,8 @@ and include_declaration i ppf x =
   let i = i+1 in
   module_expr i ppf x.pincl_mod
 
-and let_binding i ppf x =
-  line i ppf "<def> %a\n" fmt_location x.lb_loc;
-  attributes (i+1) ppf x.lb_attributes;
-  pattern (i+1) ppf x.lb_pattern;
-  expression (i+1) ppf x.lb_expression
-
 and let_bindings i ppf x =
-  list i let_binding ppf x.lbs_bindings
+  list i value_binding ppf x.lbs_bindings
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"
@@ -1168,7 +1183,7 @@ let pattern ppf x = pattern 0 ppf x
 
 let type_declaration ppf x = type_declaration 0 ppf x
 
-let let_binding ppf x = let_binding 0 ppf x
+let value_binding ppf x = value_binding 0 ppf x
 
 let module_binding ppf x = module_binding 0 ppf x
 

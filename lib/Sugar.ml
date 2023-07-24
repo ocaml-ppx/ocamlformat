@@ -308,18 +308,37 @@ module Let_binding = struct
               , sub_exp ~ctx exp )
           | _ -> (xpat, xargs, `None, xbody) )
 
-  let of_let_binding cmts ~ctx ~first lb =
-    let lb_pat, lb_args, lb_typ, lb_exp =
-      type_cstr cmts ~ctx lb.lb_pattern lb.lb_expression
+  let typ_of_pvb_constraint ~ctx =
+    function
+    | Some (Pvc_constraint { locally_abstract_univars = []; typ }) ->
+        `Other (sub_typ ~ctx typ)
+    | Some (Pvc_constraint { locally_abstract_univars; typ }) ->
+        `Polynewtype (locally_abstract_univars, sub_typ ~ctx typ)
+    | Some (Pvc_coercion { ground; coercion }) ->
+        `Coerce (Option.map ground ~f:(sub_typ ~ctx), sub_typ ~ctx coercion)
+    | None -> `None
+
+  let should_desugar_args pat typ =
+    match pat, typ with
+    | {ppat_desc= Ppat_var _; ppat_attributes= []; _}, `None -> true
+    | _ -> false
+
+  let of_let_binding cmts ~ctx ~first { pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc } =
+    let lb_exp = sub_exp ~ctx pvb_expr in
+    let lb_typ = typ_of_pvb_constraint ~ctx pvb_constraint in
+    let lb_args, lb_exp =
+      if should_desugar_args pvb_pat lb_typ then
+        fun_ cmts ~will_keep_first_ast_node:false lb_exp
+      else [], lb_exp
     in
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
-    ; lb_pat
+    ; lb_pat = sub_pat ~ctx pvb_pat
     ; lb_args
     ; lb_typ
     ; lb_exp
-    ; lb_pun= false
-    ; lb_attrs= lb.lb_attributes
-    ; lb_loc= lb.lb_loc }
+    ; lb_pun= pvb_is_pun
+    ; lb_attrs= pvb_attributes
+    ; lb_loc= pvb_loc }
 
   let of_let_bindings cmts ~ctx =
     List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
