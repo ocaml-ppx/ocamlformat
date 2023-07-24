@@ -65,6 +65,7 @@ let test_parse_and_format_module_type =
       ~expected:
         (Error
            {|test_unit: ignoring "<test>" (syntax error)
+
 File "<test>", line 1, characters 3-3:
 Error: Syntax error: 'end' expected
 File "<test>", line 1, characters 0-3:

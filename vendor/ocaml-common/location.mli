@@ -88,10 +88,11 @@ val input_phrase_buffer: Buffer.t option ref
 (** {1 Toplevel-specific functions} *)
 
 val echo_eof: unit -> unit
+val separate_new_message: formatter -> unit
 val reset: unit -> unit
 
 
-(** {1 Printing locations} *)
+(** {1 Rewriting path } *)
 
 val rewrite_absolute_path: string -> string
     (** rewrite absolute path to honor the BUILD_PATH_PREFIX_MAP
@@ -99,6 +100,13 @@ val rewrite_absolute_path: string -> string
         if it is set. *)
 
 val absolute_path: string -> string
+ (** [absolute_path path] first makes an absolute path, [s] from [path],
+     prepending the current working directory if [path] was relative.
+     Then [s] is rewritten using [rewrite_absolute_path].
+     Finally the result is normalized by eliminating instances of
+     ['.'] or ['..']. *)
+
+(** {1 Printing locations} *)
 
 val show_filename: string -> string
     (** In -absname mode, return the absolute path for this filename.
@@ -243,6 +251,13 @@ val deprecated: ?def:t -> ?use:t -> t -> string -> unit
 val alert: ?def:t -> ?use:t -> kind:string -> t -> string -> unit
 (** Prints an arbitrary alert. *)
 
+val auto_include_alert: string -> unit
+(** Prints an alert that -I +lib has been automatically added to the load
+    path *)
+
+val deprecated_script_alert: string -> unit
+(** [deprecated_script_alert command] prints an alert that [command foo] has
+    been deprecated in favour of [command ./foo] *)
 
 (** {1 Reporting errors} *)
 
