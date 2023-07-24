@@ -930,8 +930,8 @@ and module_expr i ppf x =
       expression i ppf e;
       option i package_type ppf ty1;
       option i package_type ppf ty2
-  | Pmod_gen_apply (x, loc) ->
-      line i ppf "Pmod_gen_apply\n";
+  | Pmod_apply_unit (x, loc) ->
+      line i ppf "Pmod_apply_unit\n";
       module_expr i ppf x;
       line (i+1) ppf "() %a" fmt_location loc
   | Pmod_extension (s, arg) ->

@@ -1142,8 +1142,9 @@ module_expr:
     | (* In a functor application, the actual argument must be parenthesized. *)
       me1 = module_expr me2 = paren_module_expr
         { Pmod_apply(me1, me2) }
-    | me = module_expr LPAREN RPAREN
-        { Pmod_gen_apply (me, make_loc ($startpos($2), $endpos($3))) }
+    | (* Functor applied to unit. *)
+      me = module_expr LPAREN RPAREN
+        { Pmod_apply_unit (me, make_loc ($startpos($2), $endpos($3))) }
     | (* An extension. *)
       ex = extension
         { Pmod_extension ex }

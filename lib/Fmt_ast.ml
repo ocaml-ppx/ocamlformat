@@ -2255,7 +2255,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let can_sparse =
         match xbody.ast.pmod_desc with
-        | Pmod_apply _ | Pmod_gen_apply _ -> true
+        | Pmod_apply _ | Pmod_apply_unit _ -> true
         | _ -> false
       in
       hvbox 0
@@ -3962,7 +3962,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
   @@ fun c ->
   let parens = parenze_mod xmod in
   match pmod_desc with
-  | Pmod_gen_apply (me, loc) ->
+  | Pmod_apply_unit (me, loc) ->
       let arg =
         Cmts.fmt c loc @@ hvbox 0 @@ wrap "(" ")" @@ Cmts.fmt_within c loc
       in

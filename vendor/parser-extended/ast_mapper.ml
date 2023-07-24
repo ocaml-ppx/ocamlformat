@@ -424,6 +424,8 @@ module M = struct
           (sub.module_expr sub body)
     | Pmod_apply (m1, m2) ->
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
+    | Pmod_apply_unit (me, lc) ->
+        apply_unit ~loc ~attrs (sub.module_expr sub me) (sub.location sub lc)
     | Pmod_constraint (m, mty) ->
         constraint_ ~loc ~attrs (sub.module_expr sub m)
                     (sub.module_type sub mty)
@@ -432,8 +434,6 @@ module M = struct
           (sub.expr sub e)
           (map_opt (map_package_type sub) ty1)
           (map_opt (map_package_type sub) ty2)
-    | Pmod_gen_apply (me, lc) ->
-        gen_apply ~loc ~attrs (sub.module_expr sub me) (sub.location sub lc)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pmod_hole -> hole ~loc ~attrs ()
 
