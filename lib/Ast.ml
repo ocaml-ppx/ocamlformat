@@ -889,8 +889,8 @@ end = struct
     in
     let check_pvb pvb =
       match pvb.pvb_constraint with
-      | Some (Pvc_constraint { typ = typ'; _ }) -> typ' == typ
-      | Some (Pvc_coercion { ground; coercion }) ->
+      | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
+      | Some (Pvc_coercion {ground; coercion}) ->
           coercion == typ || Option.exists ground ~f:(fun x -> x == typ)
       | None -> false
     in
@@ -1014,12 +1014,13 @@ end = struct
       | Pstr_class_type l -> assert (check_class_type l)
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
-      | Pstr_value { lbs_bindings; _ } ->
+      | Pstr_value {lbs_bindings; _} ->
           let check_pvb pvb =
             match pvb.pvb_constraint with
-            | Some (Pvc_constraint { typ = typ'; _ }) -> typ' == typ
-            | Some (Pvc_coercion { ground; coercion }) ->
-                coercion == typ || Option.exists ground ~f:(fun x -> x == typ)
+            | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
+            | Some (Pvc_coercion {ground; coercion}) ->
+                coercion == typ
+                || Option.exists ground ~f:(fun x -> x == typ)
             | None -> false
           in
           assert (List.exists lbs_bindings ~f:check_pvb)
@@ -1810,7 +1811,8 @@ end = struct
     (* The RHS of an application is always parenthesized already. *)
     | Mod {pmod_desc= Pmod_apply (_, x); _}, Pmod_functor _ when m == x ->
         false
-    | Mod {pmod_desc= Pmod_apply _ | Pmod_apply_unit _; _}, Pmod_functor _ -> true
+    | Mod {pmod_desc= Pmod_apply _ | Pmod_apply_unit _; _}, Pmod_functor _ ->
+        true
     | _ -> false
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
@@ -1830,12 +1832,12 @@ end = struct
       | _ -> true )
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
-    | ( ( Exp {pexp_desc= Pexp_letop _; _})
+    | ( Exp {pexp_desc= Pexp_letop _; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_cons _
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _
-        | Ppat_constraint ({ppat_desc= Ppat_any; _}, _)) ) ->
+        | Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ) ->
         true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
@@ -1878,13 +1880,23 @@ end = struct
         | Ppat_variant _ ) ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
-    | ( Exp {pexp_desc= Pexp_let ({ lbs_bindings; _ }, _); _}
-        | Str {pstr_desc= Pstr_value { lbs_bindings; _ }; _}), pat_desc ->
-        let pvb = List.find_exn lbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat) in
-        Option.is_some pvb.pvb_constraint || not (List.is_empty pat.ppat_attributes) ||
-        (match pat_desc with
-         | Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _) | Ppat_alias _ | Ppat_constraint _ -> true
-         | _ -> false)
+    | ( ( Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}
+        | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _} )
+      , pat_desc ) -> (
+        let pvb =
+          List.find_exn lbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
+        in
+        Option.is_some pvb.pvb_constraint
+        || (not (List.is_empty pat.ppat_attributes))
+        ||
+        match pat_desc with
+        (* Add parentheses in cases it's not necessary to disambiguate. *)
+        | Ppat_construct (_, Some _)
+         |Ppat_cons _
+         |Ppat_variant (_, Some _)
+         |Ppat_alias _ | Ppat_constraint _ | Ppat_lazy _ ->
+            true
+        | _ -> false )
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
