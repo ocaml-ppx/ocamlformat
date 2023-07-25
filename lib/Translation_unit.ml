@@ -396,17 +396,7 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
   in
   Ok (Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted)
 
-let std_of_extended (type a) : a Extended_ast.t -> Std_ast.any_t = function
-  | Extended_ast.Structure -> Std_ast.Any Std_ast.Structure
-  | Signature -> Any Signature
-  | Use_file -> Any Use_file
-  | Core_type -> Any Core_type
-  | Module_type -> Any Module_type
-  | Expression -> Any Expression
-  | Repl_file -> Any Repl_file
-  | Documentation -> Any Documentation
-
 let parse_and_format syntax =
   let (Extended_ast.Any ext) = Extended_ast.of_syntax syntax in
-  let (Std_ast.Any std) = std_of_extended ext in
+  let (Std_ast.Any std) = Std_ast.of_syntax syntax in
   parse_and_format ext std
