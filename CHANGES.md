@@ -4,6 +4,17 @@ Items marked with an asterisk (`*`) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## unreleased
+
+### New features
+
+- Compatible with OCaml 5.1.0-beta1 (#2412, @Julow)
+  The syntax of let-bindings changed sligthly in this version.
+
+### Bug fixes
+
+### Changes
+
 ## 0.26.0 (2023-07-18)
 
 ### Removed
