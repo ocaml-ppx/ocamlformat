@@ -4099,16 +4099,14 @@ end = struct
   let _ = fun (_ : ('a, 'perms) t) -> ()
 
   let t_of_sexp :
-        'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
-      =
+      'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
     fun _of_a _of_perms t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
   let sexp_of_t :
-        'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
-      =
+      'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t
