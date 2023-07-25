@@ -4262,6 +4262,11 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | `Other xtyp -> fmt_type_cstr c xtyp
     | `None -> noop
   in
+  let cstr_indent =
+    match lb_typ with
+    | `Other { ast = { ptyp_desc = Ptyp_poly _; _ }; _} -> 6
+    | _ -> 4
+  in
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ ->
@@ -4303,7 +4308,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
           ( hvbox_if toplevel 0
               ( hvbox_if toplevel indent
                   ( hovbox 2
-                      ( hovbox 4
+                      ( hovbox cstr_indent
                           ( box_fun_decl_args c 4
                               ( hovbox 4
                                   ( fmt_str_loc c lb_op
