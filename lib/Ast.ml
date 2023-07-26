@@ -1847,6 +1847,9 @@ end = struct
         | Ppat_or _ | Ppat_alias _
         | Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ) ->
         true
+    | ( Exp {pexp_desc= Pexp_letop _; _}
+      , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
+        false
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -1887,6 +1890,11 @@ end = struct
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
         | Ppat_variant _ ) ) ->
         true
+    | (Str _ | Exp _), Ppat_lazy _ -> true
+    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
+      , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
+      ) ->
+        true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
     | ( ( Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}
         | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _} )
@@ -1905,11 +1913,6 @@ end = struct
           in
           Option.is_some pvb.pvb_constraint
       | _ -> false )
-    | (Str _ | Exp _), Ppat_lazy _ -> true
-    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
-      , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
-      ) ->
-        true
     | _ -> false
 
   let marked_parenzed_inner_nested_match =
