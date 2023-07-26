@@ -1815,6 +1815,14 @@ end = struct
         true
     | _ -> false
 
+  (* Whether a pattern should be parenthesed if followed by a [:]. *)
+  let exposed_right_colon pat =
+    match pat.ppat_desc with
+    (* Some patterns that are always parenthesed are not mentionned here:
+       Ppat_constraint, Ppat_unpack *)
+    | Ppat_tuple _ -> true
+    | _ -> false
+
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
@@ -1883,20 +1891,20 @@ end = struct
     | ( ( Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}
         | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _} )
       , pat_desc ) -> (
-        let pvb =
-          List.find_exn lbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
-        in
-        Option.is_some pvb.pvb_constraint
-        || (not (List.is_empty pat.ppat_attributes))
-        ||
-        match pat_desc with
-        (* Add parentheses in cases it's not necessary to disambiguate. *)
-        | Ppat_construct (_, Some _)
-         |Ppat_cons _
-         |Ppat_variant (_, Some _)
-         |Ppat_alias _ | Ppat_constraint _ | Ppat_lazy _ ->
-            true
-        | _ -> false )
+      match pat_desc with
+      | Ppat_construct (_, Some _)
+       |Ppat_variant (_, Some _)
+       |Ppat_cons _ | Ppat_alias _ | Ppat_constraint _ | Ppat_lazy _
+       |Ppat_or _ ->
+          (* Add disambiguation parentheses that are not necessary. *)
+          true
+      | _ when exposed_right_colon pat ->
+          (* Some patterns must be parenthesed when followed by a colon. *)
+          let pvb =
+            List.find_exn lbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
+          in
+          Option.is_some pvb.pvb_constraint
+      | _ -> false )
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))

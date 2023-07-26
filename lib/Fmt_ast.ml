@@ -4264,7 +4264,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   in
   let cstr_indent =
     match lb_typ with
-    | `Other { ast = { ptyp_desc = Ptyp_poly _; _ }; _} -> 6
+    | `Other {ast= {ptyp_desc= Ptyp_poly _; _}; _} -> 6
     | _ -> 4
   in
   let indent =
