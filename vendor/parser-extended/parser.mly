@@ -469,7 +469,7 @@ let mklbs ext rf lb =
   addlb lbs lb
 
 let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
-  let lbs_bindings =
+  let pvbs_bindings =
     List.rev_map
       (fun lb ->
          Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
@@ -479,7 +479,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
            lb.lb_pattern lb.lb_expression)
       lbs_bindings
   in
-  { Parsetree.lbs_bindings; lbs_rec; lbs_extension }
+  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))

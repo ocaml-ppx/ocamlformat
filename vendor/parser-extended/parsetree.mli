@@ -307,7 +307,7 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of let_bindings * expression
+  | Pexp_let of value_bindings * expression
       (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -773,7 +773,7 @@ and class_expr_desc =
 
             Invariant: [n > 0]
         *)
-  | Pcl_let of let_bindings * class_expr
+  | Pcl_let of value_bindings * class_expr
       (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE)] represents:
             - [let P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -1034,7 +1034,7 @@ and structure_item =
 
 and structure_item_desc =
   | Pstr_eval of expression * attributes  (** [E] *)
-  | Pstr_value of let_bindings
+  | Pstr_value of value_bindings
       (** [Pstr_value(rec, [(P1, E1 ; ... ; (Pn, En))])] represents:
             - [let P1 = E1 and ... and Pn = EN]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -1089,11 +1089,11 @@ and value_binding =
     pvb_loc: Location.t;
   }(** [let pat : type_constraint = exp] *)
 
-and let_bindings =
+and value_bindings =
   {
-    lbs_bindings: value_binding list;
-    lbs_rec: rec_flag;
-    lbs_extension: string loc option
+    pvbs_bindings: value_binding list;
+    pvbs_rec: rec_flag;
+    pvbs_extension: string loc option
   }
 
 and module_binding =

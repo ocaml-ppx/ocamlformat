@@ -319,7 +319,7 @@ module Structure_item = struct
     match itm.pstr_desc with
     | Pstr_attribute atr -> Attr.is_doc atr
     | Pstr_eval (_, atrs)
-     |Pstr_value {lbs_bindings= {pvb_attributes= atrs; _} :: _; _}
+     |Pstr_value {pvbs_bindings= {pvb_attributes= atrs; _} :: _; _}
      |Pstr_primitive {pval_attributes= atrs; _}
      |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
@@ -339,7 +339,7 @@ module Structure_item = struct
      |Pstr_module
         {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2; _}; _} ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Pstr_value {lbs_bindings= []; _}
+    | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
      |Pstr_recmodule []
      |Pstr_class_type []
@@ -894,7 +894,9 @@ end = struct
           coercion == typ || Option.exists ground ~f:(fun x -> x == typ)
       | None -> false
     in
-    let check_let_bindings lbs = List.exists lbs.lbs_bindings ~f:check_pvb in
+    let check_let_bindings lbs =
+      List.exists lbs.pvbs_bindings ~f:check_pvb
+    in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
@@ -1014,7 +1016,7 @@ end = struct
       | Pstr_class_type l -> assert (check_class_type l)
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
-      | Pstr_value {lbs_bindings; _} ->
+      | Pstr_value {pvbs_bindings; _} ->
           let check_pvb pvb =
             match pvb.pvb_constraint with
             | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
@@ -1023,7 +1025,7 @@ end = struct
                 || Option.exists ground ~f:(fun x -> x == typ)
             | None -> false
           in
-          assert (List.exists lbs_bindings ~f:check_pvb)
+          assert (List.exists pvbs_bindings ~f:check_pvb)
       | _ -> assert false )
     | Clf {pcf_desc; _} ->
         assert (
@@ -1255,8 +1257,8 @@ end = struct
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
           assert (Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self)
-      | Pexp_let ({lbs_bindings; _}, _) ->
-          assert (check_bindings lbs_bindings)
+      | Pexp_let ({pvbs_bindings; _}, _) ->
+          assert (check_bindings pvbs_bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
           assert (f let_ || List.exists ~f ands)
@@ -1278,7 +1280,7 @@ end = struct
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
           | Pcl_apply _ -> false
-          | Pcl_let ({lbs_bindings; _}, _) -> check_bindings lbs_bindings
+          | Pcl_let ({pvbs_bindings; _}, _) -> check_bindings pvbs_bindings
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1286,7 +1288,7 @@ end = struct
     | Mty _ | Mod _ | Sig _ -> assert false
     | Str str -> (
       match str.pstr_desc with
-      | Pstr_value {lbs_bindings; _} -> assert (check_bindings lbs_bindings)
+      | Pstr_value {pvbs_bindings; _} -> assert (check_bindings pvbs_bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
     | Clf {pcf_desc; _} ->
@@ -1325,9 +1327,9 @@ end = struct
          |Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object _ -> assert false
-        | Pexp_let ({lbs_bindings; _}, e) ->
+        | Pexp_let ({pvbs_bindings; _}, e) ->
             assert (
-              List.exists lbs_bindings ~f:(fun {pvb_expr; _} ->
+              List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
               || e == exp )
         | Pexp_letop {let_; ands; body} ->
@@ -1397,9 +1399,9 @@ end = struct
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
-      | Pstr_value {lbs_bindings; _} ->
+      | Pstr_value {pvbs_bindings; _} ->
           assert (
-            List.exists lbs_bindings ~f:(fun {pvb_expr; _} ->
+            List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                 pvb_expr == exp ) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
@@ -1416,8 +1418,8 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
-          | Pcl_let ({lbs_bindings; _}, _) ->
-              List.exists lbs_bindings ~f:(fun {pvb_expr; _} ->
+          | Pcl_let ({pvbs_bindings; _}, _) ->
+              List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
           | Pcl_constraint _ -> false
           | Pcl_extension _ -> false
@@ -1896,8 +1898,8 @@ end = struct
       ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
-    | ( ( Exp {pexp_desc= Pexp_let ({lbs_bindings; _}, _); _}
-        | Str {pstr_desc= Pstr_value {lbs_bindings; _}; _} )
+    | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _); _}
+        | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
       , pat_desc ) -> (
       match pat_desc with
       | Ppat_construct (_, Some _)
@@ -1909,7 +1911,7 @@ end = struct
       | _ when exposed_right_colon pat ->
           (* Some patterns must be parenthesed when followed by a colon. *)
           let pvb =
-            List.find_exn lbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
+            List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
           in
           Option.is_some pvb.pvb_constraint
       | _ -> false )
@@ -2120,8 +2122,8 @@ end = struct
     | ( Str
           { pstr_desc=
               Pstr_value
-                { lbs_rec= Nonrecursive
-                ; lbs_bindings= [{pvb_pat= {ppat_desc= Ppat_any; _}; _}]
+                { pvbs_rec= Nonrecursive
+                ; pvbs_bindings= [{pvb_pat= {ppat_desc= Ppat_any; _}; _}]
                 ; _ }
           ; _ }
       , _ ) ->

@@ -339,8 +339,8 @@ and expression i ppf x =
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
   | Pexp_let (l, e) ->
-      line i ppf "Pexp_let %a\n" fmt_rec_flag l.lbs_rec;
-      let_bindings i ppf l;
+      line i ppf "Pexp_let %a\n" fmt_rec_flag l.pvbs_rec;
+      value_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->
       line i ppf "Pexp_function\n";
@@ -710,8 +710,8 @@ and class_expr i ppf x =
       class_expr i ppf ce;
       list i label_x_expression ppf l;
   | Pcl_let (lbs, ce) ->
-      line i ppf "Pcl_let %a\n" fmt_rec_flag lbs.lbs_rec;
-      let_bindings i ppf lbs;
+      line i ppf "Pcl_let %a\n" fmt_rec_flag lbs.pvbs_rec;
+      value_bindings i ppf lbs;
       class_expr i ppf ce;
   | Pcl_constraint (ce, ct) ->
       line i ppf "Pcl_constraint\n";
@@ -951,8 +951,8 @@ and structure_item i ppf x =
       attributes i ppf attrs;
       expression i ppf e;
   | Pstr_value l ->
-      line i ppf "Pstr_value %a\n" fmt_rec_flag l.lbs_rec;
-      let_bindings i ppf l
+      line i ppf "Pstr_value %a\n" fmt_rec_flag l.pvbs_rec;
+      value_bindings i ppf l
   | Pstr_primitive vd ->
       line i ppf "Pstr_primitive\n";
       value_description i ppf vd;
@@ -1098,8 +1098,8 @@ and include_declaration i ppf x =
   let i = i+1 in
   module_expr i ppf x.pincl_mod
 
-and let_bindings i ppf x =
-  list i value_binding ppf x.lbs_bindings
+and value_bindings i ppf x =
+  list i value_binding ppf x.pvbs_bindings
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"

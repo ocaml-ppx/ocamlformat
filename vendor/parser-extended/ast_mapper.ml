@@ -53,7 +53,6 @@ type mapper = {
   include_declaration: mapper -> include_declaration -> include_declaration;
   include_description: mapper -> include_description -> include_description;
   label_declaration: mapper -> label_declaration -> label_declaration;
-  let_bindings: mapper -> let_bindings -> let_bindings;
   location: mapper -> Location.t -> Location.t;
   module_binding: mapper -> module_binding -> module_binding;
   module_declaration: mapper -> module_declaration -> module_declaration;
@@ -76,6 +75,7 @@ type mapper = {
   type_exception: mapper -> type_exception -> type_exception;
   type_kind: mapper -> type_kind -> type_kind;
   value_binding: mapper -> value_binding -> value_binding;
+  value_bindings: mapper -> value_bindings -> value_bindings;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
   directive_argument: mapper -> directive_argument -> directive_argument;
@@ -444,7 +444,7 @@ module M = struct
     | Pstr_eval (x, attrs) ->
         let attrs = sub.attributes sub attrs in
         eval ~loc ~attrs (sub.expr sub x)
-    | Pstr_value lbs -> value ~loc (sub.let_bindings sub lbs)
+    | Pstr_value lbs -> value ~loc (sub.value_bindings sub lbs)
     | Pstr_primitive vd -> primitive ~loc (sub.value_description sub vd)
     | Pstr_type (rf, l) -> type_ ~loc rf (List.map (sub.type_declaration sub) l)
     | Pstr_typext te -> type_extension ~loc (sub.type_extension sub te)
@@ -480,7 +480,7 @@ module E = struct
     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
     | Pexp_let (lbs, e) ->
-        let_ ~loc ~attrs (sub.let_bindings sub lbs)
+        let_ ~loc ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
     | Pexp_fun (lab, def, p, e) ->
         fun_ ~loc ~attrs
@@ -597,11 +597,11 @@ module E = struct
 
 end
 
-module LB = struct
-  let map_let_bindings sub { lbs_bindings; lbs_rec; lbs_extension } =
-    let lbs_bindings = List.map (sub.value_binding sub) lbs_bindings in
-    let lbs_extension = map_opt (map_loc sub) lbs_extension in
-    { lbs_bindings; lbs_rec; lbs_extension }
+module PVB = struct
+  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension } =
+    let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
+    let pvbs_extension = map_opt (map_loc sub) pvbs_extension in
+    { pvbs_bindings; pvbs_rec; pvbs_extension }
 end
 
 module P = struct
@@ -673,7 +673,7 @@ module CE = struct
         apply ~loc ~attrs (sub.class_expr sub ce)
           (List.map (map_tuple (sub.arg_label sub) (sub.expr sub)) l)
     | Pcl_let (lbs, ce) ->
-        let_ ~loc ~attrs (sub.let_bindings sub lbs)
+        let_ ~loc ~attrs (sub.value_bindings sub lbs)
           (sub.class_expr sub ce)
     | Pcl_constraint (ce, ct) ->
         constraint_ ~loc ~attrs (sub.class_expr sub ce) (sub.class_type sub ct)
@@ -770,8 +770,6 @@ let default_mapper =
     expr = E.map;
     binding_op = E.map_binding_op;
 
-    let_bindings = LB.map_let_bindings;
-
     module_declaration =
       (fun this {pmd_name; pmd_args; pmd_type; pmd_attributes; pmd_loc} ->
          Md.mk
@@ -862,7 +860,7 @@ let default_mapper =
            ~loc:(this.location this pvb_loc)
            ~attrs:(this.attributes this pvb_attributes)
       );
-
+    value_bindings = PVB.map_value_bindings;
 
     constructor_declaration =
       (fun this {pcd_name; pcd_vars; pcd_args;
