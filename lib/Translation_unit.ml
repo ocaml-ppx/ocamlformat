@@ -62,6 +62,8 @@ module Error = struct
   let print_internal_error ~debug ~quiet fmt e =
     let s =
       match e with
+      | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+          "generating invalid comment attachment"
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
       | `Comment _ -> "comment changed"
@@ -72,6 +74,12 @@ module Error = struct
     | `Comment x when not quiet -> Cmt.pp_error fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
+    | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+        (* Printing the warning is not useful because it doesn't reference
+           the right filename *)
+        ()
+    | `Cannot_parse exn ->
+        if debug then Format.fprintf fmt "%s" (Stdlib.Printexc.to_string exn)
     | `Warning50 (l, w) -> if debug then Warning.print_warning l w
     | _ -> ()
 
