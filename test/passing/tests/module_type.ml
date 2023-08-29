@@ -109,6 +109,8 @@ let foo (type foooo fooo_ooooo)
     (Fooo.Fooo.T (foo, bar)) xxxx =
   ()
 
+module N : S with module type T = (U with module M = M) = struct end
+
 module type Grammar = functor
   (Nonterm : Nonterminal)
   (* Set of nonterminals *)

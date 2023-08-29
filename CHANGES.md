@@ -4,6 +4,12 @@ Items marked with an asterisk (`*`) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## unreleased
+
+### Bug fixes
+
+- Fix crash caused by module types with nested `with module` (#2419, @Julow)
+
 ## 0.26.0 (2023-07-18)
 
 ### Removed
