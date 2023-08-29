@@ -108,3 +108,5 @@ let foo (type foooo fooo_ooooo)
          Fooooo_ooooooo_oooooo.Foooo_fooooooooo_fooooo.t )
     (Fooo.Fooo.T (foo, bar)) xxxx =
   ()
+
+module N : S with module type T = (U with module M = M) = struct end
