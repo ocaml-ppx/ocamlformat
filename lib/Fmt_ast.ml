@@ -3398,11 +3398,12 @@ and fmt_functor_param c ctx {loc; txt= arg} =
   | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
   | Named (name, mt) ->
       let xmt = sub_mty ~ctx mt in
-      Cmts.fmt c loc
-        (wrap "(" ")"
-           (hovbox 0
-              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) )
+      hvbox 0
+        (Cmts.fmt c loc
+           (wrap "(" ")"
+              (hovbox 0
+                 ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
+                 $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) ) )
 
 and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
   let ctx = Mty mty in

@@ -106,28 +106,28 @@ while IFS=, read git_platform namespace project opts; do
   cd "$clone_dir"
   git checkout -b "$preview_branch" --quiet
 
-  dune=dune
-  comment_version .ocamlformat
-
   case "$namespace/$project" in
-    "tezos/tezos")
-      git commit --quiet --all -m "Update .ocamlformat"
-      bash scripts/lint.sh --update-ocamlformat
-      ;;
     "ocaml/dune")
       make release
       dune=_build/default/bin/dune.exe
       ;;
+    *) dune=dune ;;
   esac
 
+  comment_version .ocamlformat
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
+
   git diff --shortstat
   git commit --quiet --all -m "Preview: Upgrade to OCamlformat $version (unreleased)
 
 The aim of this commit is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
+
+  case "$namespace/$project" in
+    "tezos/tezos") bash scripts/lint.sh --update-ocamlformat ;;
+  esac
 
   if ! [[ $opts = *"<no-ignore-revs>"* ]]; then
     # Update .git-blame-ignore-revs
