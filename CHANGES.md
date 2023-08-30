@@ -8,6 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Bug fixes
 
+- Fix dropped attributes on a begin-end in a match case (#2421, @Julow)
 - Fix non-stabilizing comments before a functor type argument (#2420, @Julow)
 - Fix crash caused by module types with nested `with module` (#2419, @Julow)
 

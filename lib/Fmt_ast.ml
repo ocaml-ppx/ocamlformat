@@ -2641,14 +2641,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           when List.exists eN ~f:(fun x ->
                    Base.phys_equal xexp.ast x.if_body ) ->
             Fn.id
-        (* begin-end keywords are handled when printing pattern-matching
-           cases *)
-        | Exp
-            { pexp_desc=
-                Pexp_function xs | Pexp_match (_, xs) | Pexp_try (_, xs)
-            ; _ }
-          when List.exists xs ~f:(fun x -> Poly.(x.pc_rhs = exp)) ->
-            Fn.id
         | _ ->
             fun k ->
               let opn = str "begin" $ fmt_extension_suffix c ext
@@ -3058,7 +3050,7 @@ and fmt_case c ctx ~first ~last case =
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:p.expr_parens xrhs
+          ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
           $ p.close_paren_branch ) )
 
 and fmt_value_description ?ext c ctx vd =
