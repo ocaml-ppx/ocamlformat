@@ -24,14 +24,13 @@ We heartily welcome pull requests. To ensure an effective contribution, please a
 
 ### Running the Tests
 
-After building OCamlFormat, execute `make test` to check for any regressions. Here's what happens during `make test`:
+After building OCamlFormat, execute `dune runtest` to check for any regressions. There should be no unexpected diffs. If there are, promote all the diffs with `dune promote`.
 
-1. The command checks that running OCamlFormat on its own source code yields an identical result. Run `make fixpoint` for this check only. If OCamlFormat is not integrated with your editor, use `make fmt` to reformat all OCamlFormat source files.
-2. The command ensures the test suite passes. No unexpected diffs should appear. If any, accept all diffs at once with `make regtests-promote`.
+Once the test suite passes, test your pull requests against code in external repositories by executing `tools/test_branch.sh`. If your pull request modifies an option, also run `tools/test_branch.sh "<option>=<value>"` to test with the option enabled.
 
-Once `make test` passes, test your pull requests on code in external repositories by executing `tools/test_branch.sh <rev>`, where `<rev>` is the git revision/branch with your changes. If your pull request modifies an option, also run `OCAMLFORMAT=<option>=<value> tools/test_branch.sh <rev>` to test with the option enabled.
+The `tools/test_branch.sh` script compares two `ocamlformat` versions (the specified branch or `HEAD` if omitted, and its main merge base) on other project code and reports any formatting differences. Inspect any differences to make sure they are intentional. Differences in the formatted code with the option disabled should be summarised and explained in the pull request discussion.
 
-The `tools/test_branch.sh` script compares two `ocamlformat` versions (the specified branch or `HEAD` if omitted, and its main merge base) on the test code and reports any formatting differences. Any formatting errors are shown on the terminal and must be fixed before merging a pull request. Inspect any differences to confirm they are intentional. Pull requests modifying code formatting should generally introduce an option for the alternate style (if uncertain, open an issue for discussion). Differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
+OCamlformat's own code must be formatted with the development version and not with the latest release. This can be done with `dune build @fmt`.
 
 For bash shell users, add the following line to your `~/.bashrc` file for git branch name autocompletion in the `
 
