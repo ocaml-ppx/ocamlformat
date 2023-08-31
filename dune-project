@@ -24,11 +24,11 @@
  "Hugo Heuzard <hugo.heuzard@gmail.com>"
  "Etienne Millon <etienne@tarides.com>"
  "Guillaume Petiot <guillaume@tarides.com>"
- "Jules Aguillon <jules@tarides.com>")
+ "Jules Aguillon <jules@j3s.fr>")
 
 (maintainers
  "Guillaume Petiot <guillaume@tarides.com>"
- "Jules Aguillon <jules@tarides.com>"
+ "Jules Aguillon <jules@j3s.fr>"
  "Emile Trotignon <emile@tarides.com>")
 
 (source

@@ -10,7 +10,7 @@ description: """
 - **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code."""
 maintainer: [
   "Guillaume Petiot <guillaume@tarides.com>"
-  "Jules Aguillon <jules@tarides.com>"
+  "Jules Aguillon <jules@j3s.fr>"
   "Emile Trotignon <emile@tarides.com>"
 ]
 authors: [
@@ -18,7 +18,7 @@ authors: [
   "Hugo Heuzard <hugo.heuzard@gmail.com>"
   "Etienne Millon <etienne@tarides.com>"
   "Guillaume Petiot <guillaume@tarides.com>"
-  "Jules Aguillon <jules@tarides.com>"
+  "Jules Aguillon <jules@j3s.fr>"
 ]
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
