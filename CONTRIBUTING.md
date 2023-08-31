@@ -12,8 +12,6 @@ If you encounter an issue with OCamlFormat, or if you have inquiries, we encoura
 4. Clearly define the expected and actual behavior.
 5. Remain engaged with the issue until closure as your feedback might be needed.
 
-Once your issue is acknowledged, our maintainers will apply relevant [labels](#ocamlformat-labels) to track its status.
-
 ## Pull Requests
 
 We heartily welcome pull requests. To ensure an effective contribution, please adhere to the steps below:
@@ -23,8 +21,6 @@ We heartily welcome pull requests. To ensure an effective contribution, please a
 3. Fork the repository and create your branch from `main`.
 4. If you've added code that should be tested, supplement it with tests located in the `test/` directory.
 5. Ensure that the test suite passes (see [Running the tests](#running-the-tests) for instructions).
-
-After acknowledgment, maintainers will tag your pull request with appropriate [labels](#ocamlformat-labels).
 
 ### Running the Tests
 
