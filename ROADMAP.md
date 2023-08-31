@@ -8,6 +8,6 @@ Based on these design principles for ocamlformat and the user feedback we've rec
 
 - **Versioning:** Ocamlformat 1.1 should be backward compatible and allow users to format code as they did with 1.0 if the version is specified in the configuration file.
 - **Customization:** Continue to support and add formatting options ocamlformat users care about.
-- **Concrete Syntax:** We'll migrate ocamlformat from an AST to a CST that contains location information to improve the formatting of comments.
+- **Concrete Syntax:** We'll migrate ocamlformat from an AST to a CST that contains more information about the syntax used such as `begin end`, syntax sugars, and more.
 - **Unopiniated default:** We'd like to move to a default profile that is based on objective heuristics. We will release a `diff-friendly` profile and iterate on it to make it the `default` profile if community feedback is positive.
 - **Dune integration:** Improve the integration in Dune to remove the need for a configuration file and allow users to configure formatting in their `dune-project`.
