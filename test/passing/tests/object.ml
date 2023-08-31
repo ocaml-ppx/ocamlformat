@@ -182,14 +182,13 @@ class a = object end
 and b = object end
 
 class type x = object
-  
-(** floatting1 *)
+  (** floatting1 *)
 
-   (** floatting2 *)
+  (** floatting2 *)
 
-   method x : int
+  method x : int
 
-   (** floatting3 *)
+  (** floatting3 *)
 end
 
 class x =

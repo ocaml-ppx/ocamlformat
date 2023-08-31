@@ -16,13 +16,13 @@ Follow these steps for the release procedure:
 1. Ensure the release milestone is achieved.
 2. Review the impact of the release on real source code: In `test-extra/Makefile`, uncomment the extended list of projects to test and run `tools/test_branch.sh -a "previous_release"`. Any diffs should be discussed with the maintainers of these projects to gather feedback before continuing the release.
 3. If a supported OCaml version lacks CI support, run the test suite locally.
-4. In `CHANGES.md`, replace `(unreleased)` with the current version (`a.b.c`) and date. In `README.md`, `doc/faq.mld`, and `doc/getting_started.mld`, update the recommended version to use in `.ocamlformat` files. Commit these changes.
+4. In `CHANGES.md`, replace `unreleased` with the current version (`a.b.c`) and date. In `README.md`, `doc/faq.mld`, and `doc/getting_started.mld`, update the recommended version to use in `.ocamlformat` files. Commit these changes.
 5. Tag using `dune-release tag`.
 6. Verify that the release binary has a release version number with: `dune build @install && dune install --prefix _install && ./_install/bin/ocamlformat --version && rm -rf _install`. It should output just `a.b.c`.
 7. Lint using `dune-release lint`.
 8. Amend the release commit if necessary and update the tag using `dune-release tag --force`.
 9. Push the changes with `git push --tags`.
-10. Release in automatic mode using `dune-release -p ocamlformat,ocamlformat-rpc-lib`. Use the `main` branch of dune-release until dune-release.1.5.0 is released.
+10. Release in automatic mode using `dune-release -p ocamlformat-lib,ocamlformat,ocamlformat-rpc-lib`.
 11. Close the release milestone.
 12. Each release should be announced on <https://discuss.ocaml.org/>.
 13. Create a Windows asset:

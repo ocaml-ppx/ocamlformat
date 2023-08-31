@@ -1,22 +1,38 @@
 open! Stdio
 open Ocamlformat_lib
-module E = Extended_ast
+
+let ocaml_version = Ocaml_version.sys_version
+
+let extended_ast ppf syntax ~input_name content =
+  let open Extended_ast in
+  let (Any kind) = of_syntax syntax in
+  Parse.ast kind ~ocaml_version ~preserve_beginend:true ~input_name content
+  |> Printast.ast kind ppf
+
+let std_ast ppf syntax ~input_name content =
+  let open Std_ast in
+  let (Any kind) = of_syntax syntax in
+  Parse.ast kind ~input_name content |> Printast.ast kind ppf
 
 let get_arg () =
-  if Array.length Sys.argv < 2 then (
-    Printf.eprintf "Not enough argument\n" ;
-    exit 2 )
-  else Sys.argv.(1)
+  let std = ref false and input = ref None in
+  let opts = [("-std", Arg.Set std, "Use the standard parser")] in
+  let usage = "printast [-std] <file>" in
+  Arg.parse opts (fun inp -> input := Some inp) usage ;
+  let input =
+    match !input with
+    | Some inp -> inp
+    | None ->
+        Printf.eprintf "Not enough argument\n" ;
+        exit 2
+  and parse_and_print = if !std then std_ast else extended_ast in
+  (parse_and_print, input)
 
 let () =
-  let inputf = get_arg () in
+  let parse_and_print, inputf = get_arg () in
   let syntax =
     Option.value ~default:Syntax.Use_file (Syntax.of_fname inputf)
   in
-  let (E.Any kind) = E.of_syntax syntax in
   Printf.printf "Reading %S\n" inputf ;
   let content = In_channel.read_all inputf in
-  let ast =
-    E.Parse.ast kind ~preserve_beginend:true ~input_name:inputf content
-  in
-  E.Printast.ast kind Format.std_formatter ast
+  parse_and_print Format.std_formatter syntax ~input_name:inputf content

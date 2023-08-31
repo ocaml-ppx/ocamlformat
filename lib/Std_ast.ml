@@ -25,7 +25,17 @@ type 'a t =
   | Repl_file : unit t
   | Documentation : unit t
 
-type any_t = Any : 'a t -> any_t
+type any_t = Any : 'a t -> any_t [@@unboxed]
+
+let of_syntax = function
+  | Syntax.Structure -> Any Structure
+  | Signature -> Any Signature
+  | Use_file -> Any Use_file
+  | Core_type -> Any Core_type
+  | Module_type -> Any Module_type
+  | Expression -> Any Expression
+  | Repl_file -> Any Repl_file
+  | Documentation -> Any Documentation
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 

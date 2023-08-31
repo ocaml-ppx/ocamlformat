@@ -90,18 +90,17 @@ let _ =
 
 let term =
   Term.ret
-  @@
-  let+ config = Common.config_term
-  and+ mode =
-    Arg.(
-      value
-      & pos 0 (some (enum modes)) None
-      & info [] ~docv:"ACTION"
-          ~doc:
-            (Printf.sprintf "The cache-daemon action to perform (%s)"
-               (Arg.doc_alts_enum modes) ) )
-  in
-  (config, mode)
+  @@ let+ config = Common.config_term
+     and+ mode =
+       Arg.(
+         value
+         & pos 0 (some (enum modes)) None
+         & info [] ~docv:"ACTION"
+             ~doc:
+               (Printf.sprintf "The cache-daemon action to perform (%s)"
+                  (Arg.doc_alts_enum modes) ) )
+     in
+     (config, mode)
 
 let term =
   Term.ret

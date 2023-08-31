@@ -100,18 +100,16 @@ end
 type pos = Before | Within | After
 
 let unindent_lines ~offset first_line tl_lines =
-  let indent_of_line s =
-    (* index of first non-whitespace is indentation, None means white line *)
-    String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
-  in
   (* The indentation of the first line must account for the location of the
      comment opening *)
-  let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
+  let fl_spaces =
+    Option.value ~default:0 (String.indent_of_line first_line)
+  in
   let fl_indent = fl_spaces + offset in
   let min_indent =
     List.fold_left ~init:fl_indent
       ~f:(fun acc s ->
-        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
+        Option.value_map ~default:acc ~f:(min acc) (String.indent_of_line s) )
       tl_lines
   in
   (* Completely trim the first line *)
