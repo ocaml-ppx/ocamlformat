@@ -32,19 +32,6 @@ The `tools/test_branch.sh` script compares two `ocamlformat` versions (the speci
 
 OCamlformat's own code must be formatted with the development version and not with the latest release. This can be done with `dune build @fmt`.
 
-For bash shell users, add the following line to your `~/.bashrc` file for git branch name autocompletion in the `
-
-tools/test_branch.sh` script:
-```
-source <path-to-ocamlformat>/tools/ocamlformat_test_branch
-```
-For zsh shell users, add these lines to your `~/.zshrc` file:
-```
-autoload bashcompinit
-bashcompinit
-source <path-to-ocamlformat>/tools/ocamlformat_test_branch
-```
-
 ## Licensing
 
 By contributing to OCamlFormat, you accept that your contributions will fall under the LICENSE located in the root directory of this source tree.
