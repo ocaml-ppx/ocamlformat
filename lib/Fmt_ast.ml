@@ -715,6 +715,33 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   in
   hvbox 0 (Cmts.fmt_before c locI $ arg)
 
+(** Format [Ptyp_arrow]. [separator_len] is the length of prologue that might
+    be aligned to. [parent_has_parens] is used to align arrows to
+    parentheses. *)
+and fmt_arrow_type c ~ctx ?separator_len ~parens ~parent_has_parens args
+    ret_typ =
+  let indent =
+    match separator_len with
+    | Some separator_len when c.conf.fmt_opts.ocp_indent_compat.v ->
+        let indent =
+          if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2
+          else 0
+        in
+        fits_breaks "" (String.make (Int.max 1 (indent - separator_len)) ' ')
+    | _ ->
+        fmt_if_k
+          Poly.(c.conf.fmt_opts.break_separators.v = `Before)
+          (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
+             (fits_breaks "" "   ") )
+  in
+  indent
+  $ wrap_if parens "(" ")"
+      ( list args
+          (arrow_sep c ~parens:parent_has_parens)
+          (fmt_arrow_param c ctx)
+      $ fmt (arrow_sep c ~parens:parent_has_parens)
+      $ fmt_core_type c (sub_typ ~ctx ret_typ) )
+
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
@@ -756,36 +783,23 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   let ctx = Typ typ in
   let parenze_constraint_ctx =
     match constraint_ctx with
-    | Some `Fun when not parens -> wrap "(" ")"
-    | _ -> Fn.id
+    | Some `Fun when not parens -> true
+    | _ -> false
   in
   match ptyp_desc with
   | Ptyp_alias (typ, str) ->
       hvbox 0
-        (parenze_constraint_ctx
+        (wrap_if parenze_constraint_ctx "(" ")"
            ( fmt_core_type c (sub_typ ~ctx typ)
            $ fmt "@ as@ "
            $ Cmts.fmt c str.loc @@ fmt_type_var str.txt ) )
   | Ptyp_any -> str "_"
-  | Ptyp_arrow (ctl, ct2) ->
+  | Ptyp_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
-        ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.ptyp_loc ;
-      let ct2 = {pap_label= Nolabel; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
-      let xt1N = List.rev (ct2 :: List.rev ctl) in
-      let indent =
-        if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2 else 0
-      in
-      ( match pro with
-      | Some pro when c.conf.fmt_opts.ocp_indent_compat.v ->
-          fits_breaks ""
-            (String.make (Int.max 1 (indent - String.length pro)) ' ')
-      | _ ->
-          fmt_if_k
-            Poly.(c.conf.fmt_opts.break_separators.v = `Before)
-            (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
-               (fits_breaks "" "   ") ) )
-      $ parenze_constraint_ctx
-          (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
+        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.ptyp_loc ;
+      let separator_len = Option.map ~f:String.length pro in
+      fmt_arrow_type c ~ctx ?separator_len ~parens:parenze_constraint_ctx
+        ~parent_has_parens:parens args ret_typ
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -809,7 +823,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
-        (parenze_constraint_ctx
+        (wrap_if parenze_constraint_ctx "(" ")"
            (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
               (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)) ) )
   | Ptyp_var s -> fmt_type_var s
