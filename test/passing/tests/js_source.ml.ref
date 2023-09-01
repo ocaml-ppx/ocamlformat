@@ -9481,8 +9481,8 @@ class c =
 class type ct =
   let open M in
   object
-  method f : t
-end
+    method f : t
+  end
 
 (* M.(::) notation *)
 module Exotic_list = struct

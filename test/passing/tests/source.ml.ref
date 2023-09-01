@@ -5942,7 +5942,7 @@ class type ['a] cursor = object
   method is_last : bool
 end
 
-class type ['a] storage = object ('self )
+class type ['a] storage = object ('self)
   method first : 'a cursor
 
   method len : int
@@ -6209,7 +6209,7 @@ and argument (func, ty) =
 
 let f (x : #M.foo) = 0
 
-class type ['e] t = object ('s )
+class type ['e] t = object ('s)
   method update : 'e -> 's
 end
 
@@ -9093,8 +9093,8 @@ class c =
 class type ct =
   let open M in
   object
-  method f : t
-end
+    method f : t
+  end
 
 (* M.(::) notation *)
 module Exotic_list = struct
