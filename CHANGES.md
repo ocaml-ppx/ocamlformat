@@ -1,6 +1,6 @@
 # Changelog
 
-Items marked with an asterisk (`*`) are changes that are likely to format
+Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
@@ -16,6 +16,10 @@ Tags:
 -->
 
 ## unreleased
+
+### Changed
+
+- \* Consistent formatting of arrows in class types (#2422, @Julow)
 
 ### Fixed
 
