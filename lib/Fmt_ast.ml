@@ -715,20 +715,15 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   in
   hvbox 0 (Cmts.fmt_before c locI $ arg)
 
-(** Format [Ptyp_arrow]. [separator_len] is the length of prologue that might
-    be aligned to. [parent_has_parens] is used to align arrows to
-    parentheses. *)
-and fmt_arrow_type c ~ctx ?separator_len ~parens ~parent_has_parens args
-    fmt_ret_typ =
+(** Format [Ptyp_arrow]. [indent] can be used to override the indentation
+    added for the break-separators option. [parent_has_parens] is used to
+    align arrows to parentheses. *)
+and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
+    =
   let indent =
-    match separator_len with
-    | Some separator_len when c.conf.fmt_opts.ocp_indent_compat.v ->
-        let indent =
-          if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2
-          else 0
-        in
-        fits_breaks "" (String.make (Int.max 1 (indent - separator_len)) ' ')
-    | _ ->
+    match indent with
+    | Some k -> k
+    | None ->
         fmt_if_k
           Poly.(c.conf.fmt_opts.break_separators.v = `Before)
           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
@@ -797,9 +792,20 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
         ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.ptyp_loc ;
-      let separator_len = Option.map ~f:String.length pro in
+      let indent =
+        match pro with
+        | Some pro when c.conf.fmt_opts.ocp_indent_compat.v ->
+            let indent =
+              if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2
+              else 0
+            in
+            Some
+              (fits_breaks ""
+                 (String.make (Int.max 1 (indent - String.length pro)) ' ') )
+        | _ -> None
+      in
       let fmt_ret_typ = fmt_core_type c (sub_typ ~ctx ret_typ) in
-      fmt_arrow_type c ~ctx ?separator_len ~parens:parenze_constraint_ctx
+      fmt_arrow_type c ~ctx ?indent ~parens:parenze_constraint_ctx
         ~parent_has_parens:parens args fmt_ret_typ
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
