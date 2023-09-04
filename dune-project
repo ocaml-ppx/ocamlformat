@@ -89,12 +89,7 @@
  (name ocamlformat)
  (synopsis "Auto-formatter for OCaml code")
  (description
-  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.
-
-- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.
-- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.
-- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.
-- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
+  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
  (depends
   (ocaml
    (>= 4.08))
