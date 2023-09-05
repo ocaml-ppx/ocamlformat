@@ -9092,7 +9092,7 @@ class c =
 
 class type ct =
   let open M in
-  object
+object
   method f : t
 end
 

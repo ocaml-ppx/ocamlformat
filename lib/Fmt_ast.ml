@@ -728,14 +728,17 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
           Poly.(c.conf.fmt_opts.break_separators.v = `Before)
           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
              (fits_breaks "" "   ") )
+  and ret_typ =
+    match fmt_ret_typ with
+    | Some k -> fmt (arrow_sep c ~parens:parent_has_parens) $ k
+    | None -> noop
   in
   indent
   $ wrap_if parens "(" ")"
       ( list args
           (arrow_sep c ~parens:parent_has_parens)
           (fmt_arrow_param c ctx)
-      $ fmt (arrow_sep c ~parens:parent_has_parens)
-      $ fmt_ret_typ )
+      $ ret_typ )
 
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
@@ -806,7 +809,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       in
       let fmt_ret_typ = fmt_core_type c (sub_typ ~ctx ret_typ) in
       fmt_arrow_type c ~ctx ?indent ~parens:parenze_constraint_ctx
-        ~parent_has_parens:parens args fmt_ret_typ
+        ~parent_has_parens:parens args (Some fmt_ret_typ)
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -2782,17 +2785,17 @@ and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
       fmt_class_signature c ~ctx ~parens ~loc:pcty_loc ~pro pcsig_self
         pcsig_fields
       $ fmt_attributes c atrs
-  | Pcty_arrow (args, ret_typ) ->
+  | Pcty_arrow (args, rhs) ->
       Cmts.relocate c.cmts ~src:pcty_loc
-        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.pcty_loc ;
+        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:rhs.pcty_loc ;
       let pro =
-        pro
-        $ ( fmt_if parens "("
-          $ Cmts.fmt_before c pcty_loc
-          $ fmt_arrow_type c ~ctx ~parens:false ~parent_has_parens:parens
-              args noop )
+        pro $ fmt_if parens "("
+        $ Cmts.fmt_before c pcty_loc
+        $ fmt_arrow_type c ~ctx ~parens:false ~parent_has_parens:parens args
+            None
+        $ Params.Pcty.arrow c.conf ~rhs
       in
-      fmt_class_type c ~pro (sub_cty ~ctx ret_typ)
+      fmt_class_type c ~pro (sub_cty ~ctx rhs)
       $ fmt_attributes c atrs $ Cmts.fmt_after c pcty_loc $ fmt_if parens ")"
   | Pcty_extension ext ->
       hvbox 2
@@ -2802,15 +2805,16 @@ and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
                (fmt_extension c ctx ext $ fmt_attributes c atrs) )
   | Pcty_open (popen, cl) ->
       let pro =
-        hvbox 2
-          ( pro
-          $ Cmts.fmt c pcty_loc
-            @@ Params.parens_if parens c.conf
-            @@ ( fmt_open_description c ~keyword:"let open"
-                   ~kw_attributes:atrs popen
-               $ fmt " in@;<1000 0>" ) )
+        pro
+        $ Cmts.fmt_before c pcty_loc
+        $ fmt_if parens "("
+        $ fmt_open_description c ~keyword:"let open" ~kw_attributes:atrs
+            popen
+        $ str " in"
+        $ Params.Pcty.break_let_open c.conf ~rhs:cl
       in
       fmt_class_type c ~pro (sub_cty ~ctx cl)
+      $ fmt_if parens ")"
       $ fmt_docstring c ~pro:(fmt "@ ") doc
 
 and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
