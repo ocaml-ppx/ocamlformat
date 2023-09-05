@@ -23,21 +23,21 @@ class c : object
 end
 
 class unix_mockup :
-     foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> bar
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  bar
 
 class unix_mockup :
-     foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> object
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  foooo:string ->
+  object
   method foo : string
 end
