@@ -102,6 +102,9 @@ let mkcf ~loc ?attrs ?docs d =
   Cf.mk ~loc:(make_loc loc) ?attrs ?docs d
 
 let mkrhs rhs loc = mkloc rhs (make_loc loc)
+(*
+let ghrhs rhs loc = mkloc rhs (ghost_loc loc)
+*)
 
 let mk_optional lbl loc = Optional (mkrhs lbl loc)
 let mk_labelled lbl loc = Labelled (mkrhs lbl loc)
@@ -150,6 +153,9 @@ let mkpatvar ~loc name =
 let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
 let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
 let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
+(*
+let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
+*)
 let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
 let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 
@@ -182,6 +188,43 @@ let mkuplus ~oploc name arg =
    and locations-as-Location.t; it should be clear when we move from
    one world to the other *)
 
+(*
+let mkexp_cons_desc consloc args =
+  Pexp_construct(mkrhs (Lident "::") consloc, Some args)
+let mkexp_cons ~loc consloc args =
+  mkexp ~loc (mkexp_cons_desc consloc args)
+
+let mkpat_cons_desc consloc args =
+  Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
+let mkpat_cons ~loc consloc args =
+  mkpat ~loc (mkpat_cons_desc consloc args)
+
+let ghexp_cons_desc consloc args =
+  Pexp_construct(ghrhs (Lident "::") consloc, Some args)
+let ghpat_cons_desc consloc args =
+  Ppat_construct(ghrhs (Lident "::") consloc, Some ([], args))
+
+let rec mktailexp nilloc = let open Location in function
+    [] ->
+      let nil = ghloc ~loc:nilloc (Lident "[]") in
+      Pexp_construct (nil, None), nilloc
+  | e1 :: el ->
+      let exp_el, el_loc = mktailexp nilloc el in
+      let loc = (e1.pexp_loc.loc_start, snd el_loc) in
+      let arg = ghexp ~loc (Pexp_tuple [e1; ghexp ~loc:el_loc exp_el]) in
+      ghexp_cons_desc loc arg, loc
+
+let rec mktailpat nilloc = let open Location in function
+    [] ->
+      let nil = ghloc ~loc:nilloc (Lident "[]") in
+      Ppat_construct (nil, None), nilloc
+  | p1 :: pl ->
+      let pat_pl, el_loc = mktailpat nilloc pl in
+      let loc = (p1.ppat_loc.loc_start, snd el_loc) in
+      let arg = ghpat ~loc (Ppat_tuple [p1; ghpat ~loc:el_loc pat_pl]) in
+      ghpat_cons_desc loc arg, loc
+*)
+
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -190,6 +233,16 @@ let mkexp_constraint ~loc e (t1, t2) =
   | Some t, None -> mkexp ~loc (Pexp_constraint(e, t))
   | _, Some t -> mkexp ~loc (Pexp_coerce(e, t1, t))
   | None, None -> assert false
+
+(*
+let mkexp_opt_constraint ~loc e = function
+  | None -> e
+  | Some constraint_ -> mkexp_constraint ~loc e constraint_
+
+let mkpat_opt_constraint ~loc p = function
+  | None -> p
+  | Some typ -> mkpat ~loc (Ppat_constraint(p, typ))
+*)
 
 let syntax_error () =
   raise Syntaxerr.Escape_error
@@ -200,6 +253,11 @@ let unclosed opening_name opening_loc closing_name closing_loc =
 
 let expecting loc nonterm =
     raise Syntaxerr.(Error(Expecting(make_loc loc, nonterm)))
+
+(* Continues to parse removed syntax
+let removed_string_set loc =
+  raise(Syntaxerr.Error(Syntaxerr.Removed_string_set(make_loc loc)))
+*)
 
 (* Using the function [not_expecting] in a semantic action means that this
    syntactic form is recognized by the parser but is in fact incorrect. This
@@ -254,8 +312,19 @@ let loc_last (id : Longident.t Location.loc) : string Location.loc =
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
   loc_map (fun x -> Lident x) id
 
+(*
+let exp_of_longident lid =
+  let lid = loc_map (fun id -> Lident (Longident.last id)) lid in
+  Exp.mk ~loc:lid.loc (Pexp_ident lid)
+*)
+
 let exp_of_label lbl =
   Exp.mk ~loc:lbl.loc (Pexp_ident (loc_lident lbl))
+
+(*
+let pat_of_label lbl =
+  Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
+*)
 
 let mk_newtypes ~loc newtypes exp =
   let mkexp = mkexp ~loc in
@@ -299,6 +368,12 @@ let mkpat_attrs ~loc d attrs =
 
 let wrap_class_attrs ~loc:_ body attrs =
   {body with pcl_attributes = attrs @ body.pcl_attributes}
+(*
+let wrap_mod_attrs ~loc:_ attrs body =
+  {body with pmod_attributes = attrs @ body.pmod_attributes}
+let wrap_mty_attrs ~loc:_ attrs body =
+  {body with pmty_attributes = attrs @ body.pmty_attributes}
+*)
 
 let wrap_str_ext ~loc body ext =
   match ext with
@@ -1079,6 +1154,8 @@ parse_any_longident:
 
 (* Functor arguments appear in module expressions and module types. *)
 
+(* Compared to upstream, [functor_args] can be empty and is not in reverse
+   order. *)
 %inline functor_args:
   llist(functor_arg)
     { $1 }
@@ -1292,6 +1369,11 @@ module_binding_body:
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
+(*
+    | arg_and_pos = functor_arg body = module_binding_body
+        { let (_, arg) = arg_and_pos in
+          Pmod_functor(arg, body) }
+*)
   ) { $1 }
 ;
 
@@ -2124,7 +2206,7 @@ expr:
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
-  (*
+  (* Allowed in exprs. Commented-out to reduce diffs with upstream.
   | UNDERSCORE
      { not_expecting $loc($1) "wildcard \"_\"" }
   *)
@@ -3486,6 +3568,7 @@ label_longident:
 ;
 type_longident:
     mk_longident(mod_ext_longident, LIDENT)  { $1 }
+  (* Allow identifiers like [t/42]. *)
   | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 mod_longident:

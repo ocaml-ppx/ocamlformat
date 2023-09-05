@@ -49,4 +49,14 @@ module Clflags = struct
   let color = ref None                    (* -color *)
   let error_style = ref None              (* -error-style *)
   let unboxed_types = ref false
+  let no_std_include = ref false
+end
+
+module Load_path = struct
+  type dir
+  type auto_include_callback =
+    (dir -> string -> string option) -> string -> string
+  let init ~auto_include:_ _ = ()
+  let get_paths () = []
+  let auto_include_otherlibs _ _ s = s
 end

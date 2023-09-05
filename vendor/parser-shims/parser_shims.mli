@@ -49,4 +49,14 @@ module Clflags : sig
   val color : Misc.Color.setting option ref
   val error_style : Misc.Error_style.setting option ref
   val unboxed_types : bool ref
+  val no_std_include : bool ref
+end
+
+module Load_path : sig
+  type dir
+  type auto_include_callback =
+    (dir -> string -> string option) -> string -> string
+  val init : auto_include:auto_include_callback -> string list -> unit
+  val get_paths : unit -> string list
+  val auto_include_otherlibs : (string -> unit) -> auto_include_callback
 end
