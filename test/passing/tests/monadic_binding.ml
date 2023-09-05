@@ -27,3 +27,9 @@ let _ = ( let+ ) [@attr]
 let _ = f (( let+ ) [@attr]) ;;
 
 ( let+ ) [@attr]
+
+let _ =
+  let* (args, _) : bar = () in
+  let* (arg : bar) = () in
+  let* (_ : foo) = () in
+  ()

@@ -19,6 +19,8 @@ Tags:
 
 ### Changed
 
+- Compatible with OCaml 5.1.0 (#2412, @Julow)
+  The syntax of let-bindings changed sligthly in this version.
 - \* Consistent formatting of arrows in class types (#2422, @Julow)
 
 ### Fixed

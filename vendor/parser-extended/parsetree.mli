@@ -307,7 +307,7 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of let_bindings * expression
+  | Pexp_let of value_bindings * expression
       (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -773,7 +773,7 @@ and class_expr_desc =
 
             Invariant: [n > 0]
         *)
-  | Pcl_let of let_bindings * class_expr
+  | Pcl_let of value_bindings * class_expr
       (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE)] represents:
             - [let P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -1016,10 +1016,11 @@ and module_expr_desc =
   | Pmod_functor of functor_parameter loc list * module_expr
       (** [functor (X1 : MT1) ... (Xn : MTn) -> ME] *)
   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
+  | Pmod_apply_unit of module_expr * Location.t
+      (** [ME1()]. The location argument correspond to the [()]. *)
   | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
   | Pmod_unpack of expression * package_type option * package_type option
       (** [(val E : M1 :> M2)] *)
-  | Pmod_gen_apply of module_expr * Location.t  (** [ME()] *)
   | Pmod_extension of extension  (** [[%id]] *)
   | Pmod_hole  (** [_] *)
 
@@ -1033,7 +1034,7 @@ and structure_item =
 
 and structure_item_desc =
   | Pstr_eval of expression * attributes  (** [E] *)
-  | Pstr_value of let_bindings
+  | Pstr_value of value_bindings
       (** [Pstr_value(rec, [(P1, E1 ; ... ; (Pn, En))])] represents:
             - [let P1 = E1 and ... and Pn = EN]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
@@ -1062,20 +1063,37 @@ and structure_item_desc =
   | Pstr_attribute of attribute  (** [[\@\@\@id]] *)
   | Pstr_extension of extension * attributes  (** [[%%id]] *)
 
-and let_binding =
-  {
-    lb_pattern: pattern;
-    lb_expression: expression;
-    lb_is_pun: bool;
-    lb_attributes: attributes;
-    lb_loc: Location.t;
-  }
+and value_constraint =
+  | Pvc_constraint of {
+      locally_abstract_univars:string loc list;
+      typ:core_type;
+    }
+  | Pvc_coercion of {ground:core_type option; coercion:core_type }
+  (**
+     - [Pvc_constraint { locally_abstract_univars=[]; typ}]
+         is a simple type constraint on a value binding: [ let x : typ]
+     - More generally, in [Pvc_constraint { locally_abstract_univars; typ}]
+       [locally_abstract_univars] is the list of locally abstract type
+       variables in [ let x: type a ... . typ ]
+     - [Pvc_coercion { ground=None; coercion }] represents [let x :> typ]
+     - [Pvc_coercion { ground=Some g; coercion }] represents [let x : g :> typ]
+  *)
 
-and let_bindings =
+and value_binding =
   {
-    lbs_bindings: let_binding list;
-    lbs_rec: rec_flag;
-    lbs_extension: string loc option
+    pvb_pat: pattern;
+    pvb_expr: expression;
+    pvb_constraint: value_constraint option;
+    pvb_is_pun: bool;
+    pvb_attributes: attributes;
+    pvb_loc: Location.t;
+  }(** [let pat : type_constraint = exp] *)
+
+and value_bindings =
+  {
+    pvbs_bindings: value_binding list;
+    pvbs_rec: rec_flag;
+    pvbs_extension: string loc option
   }
 
 and module_binding =

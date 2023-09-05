@@ -35,7 +35,7 @@ val core_type: formatter -> core_type -> unit
 val module_type: formatter -> module_type -> unit
 val pattern: formatter -> pattern -> unit
 val type_declaration: formatter -> type_declaration -> unit
-val let_binding: formatter -> let_binding -> unit
+val value_binding: formatter -> value_binding -> unit
 val module_binding: formatter -> module_binding -> unit
 val module_declaration: formatter -> module_declaration -> unit
 val class_expr: formatter -> class_expr -> unit
