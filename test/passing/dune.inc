@@ -915,6 +915,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to class_sig-after.mli.stdout
+   (with-stderr-to class_sig-after.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separators=after %{dep:tests/class_sig.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig-after.mli.ref class_sig-after.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig-after.mli.err class_sig-after.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to class_sig.mli.stdout
    (with-stderr-to class_sig.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/class_sig.mli})))))
@@ -922,7 +940,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/class_sig.mli class_sig.mli.stdout)))
+ (action (diff tests/class_sig.mli.ref class_sig.mli.stdout)))
 
 (rule
  (alias runtest)

@@ -22,22 +22,10 @@ class c : object
   (** Standalone doc-string. *)
 end
 
-class unix_mockup :
-     foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> bar
+class unix_mockup : foooo:string -> foooo:string -> foooo:string ->
+  foooo:string -> foooo:string -> foooo:string -> bar
 
-class unix_mockup :
-     foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> foooo:string
-  -> object
+class unix_mockup : foooo:string -> foooo:string -> foooo:string ->
+  foooo:string -> foooo:string -> foooo:string -> object
   method foo : string
 end
