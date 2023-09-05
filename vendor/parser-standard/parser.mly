@@ -2305,7 +2305,7 @@ expr:
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
-  (*
+  (* Allowed in exprs. Commented-out to reduce diffs with upstream.
   | UNDERSCORE
      { not_expecting $loc($1) "wildcard \"_\"" }
   *)
@@ -3643,6 +3643,7 @@ label_longident:
 ;
 type_longident:
     mk_longident(mod_ext_longident, LIDENT)  { $1 }
+  (* Allow identifiers like [t/42]. *)
   | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 mod_longident:
