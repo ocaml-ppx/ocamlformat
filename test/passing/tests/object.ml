@@ -118,20 +118,20 @@ end
 class type mapper =
   let open Modl1 in
   object
-    method expression : Javascript.expression -> Javascript.expression
+  method expression : Javascript.expression -> Javascript.expression
 
-    method expression_o :
-      Javascript.expression option -> Javascript.expression option
+  method expression_o :
+    Javascript.expression option -> Javascript.expression option
 
-    method switch_case :
-         Javascript.expression
-      -> Javascript.expression
-      -> a
-      -> b
-      -> ccccccccccc
-      -> d
-      -> e
-  end
+  method switch_case :
+       Javascript.expression
+    -> Javascript.expression
+    -> a
+    -> b
+    -> ccccccccccc
+    -> d
+    -> e
+end
 
 class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =

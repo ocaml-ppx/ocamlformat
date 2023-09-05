@@ -2801,14 +2801,16 @@ and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
           @@ Params.parens_if parens c.conf
                (fmt_extension c ctx ext $ fmt_attributes c atrs) )
   | Pcty_open (popen, cl) ->
-      hvbox 2
-        ( pro
-        $ Cmts.fmt c pcty_loc
-          @@ Params.parens_if parens c.conf
-          @@ ( fmt_open_description c ~keyword:"let open" ~kw_attributes:atrs
-                 popen
-             $ fmt " in@;<1000 0>"
-             $ fmt_class_type c (sub_cty ~ctx cl) ) )
+      let pro =
+        hvbox 2
+          ( pro
+          $ Cmts.fmt c pcty_loc
+            @@ Params.parens_if parens c.conf
+            @@ ( fmt_open_description c ~keyword:"let open"
+                   ~kw_attributes:atrs popen
+               $ fmt " in@;<1000 0>" ) )
+      in
+      fmt_class_type c ~pro (sub_cty ~ctx cl)
       $ fmt_docstring c ~pro:(fmt "@ ") doc
 
 and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
