@@ -91,7 +91,9 @@ module type A = sig
     method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
   end
 
-  class tttttttttttt : aaaaaaaaaaaaaaaaaa:int -> bbbbbbbbbbbbbbbbbbbbb:float
+  class tttttttttttt :
+       aaaaaaaaaaaaaaaaaa:int
+    -> bbbbbbbbbbbbbbbbbbbbb:float
     -> cccccccccccccccccccc
 
   class c : object

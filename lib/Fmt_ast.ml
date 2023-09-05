@@ -715,6 +715,28 @@ and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   in
   hvbox 0 (Cmts.fmt_before c locI $ arg)
 
+(** Format [Ptyp_arrow]. [indent] can be used to override the indentation
+    added for the break-separators option. [parent_has_parens] is used to
+    align arrows to parentheses. *)
+and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
+    =
+  let indent =
+    match indent with
+    | Some k -> k
+    | None ->
+        fmt_if_k
+          Poly.(c.conf.fmt_opts.break_separators.v = `Before)
+          (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
+             (fits_breaks "" "   ") )
+  in
+  indent
+  $ wrap_if parens "(" ")"
+      ( list args
+          (arrow_sep c ~parens:parent_has_parens)
+          (fmt_arrow_param c ctx)
+      $ fmt (arrow_sep c ~parens:parent_has_parens)
+      $ fmt_ret_typ )
+
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
@@ -756,36 +778,35 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   let ctx = Typ typ in
   let parenze_constraint_ctx =
     match constraint_ctx with
-    | Some `Fun when not parens -> wrap "(" ")"
-    | _ -> Fn.id
+    | Some `Fun when not parens -> true
+    | _ -> false
   in
   match ptyp_desc with
   | Ptyp_alias (typ, str) ->
       hvbox 0
-        (parenze_constraint_ctx
+        (wrap_if parenze_constraint_ctx "(" ")"
            ( fmt_core_type c (sub_typ ~ctx typ)
            $ fmt "@ as@ "
            $ Cmts.fmt c str.loc @@ fmt_type_var str.txt ) )
   | Ptyp_any -> str "_"
-  | Ptyp_arrow (ctl, ct2) ->
+  | Ptyp_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
-        ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.ptyp_loc ;
-      let ct2 = {pap_label= Nolabel; pap_loc= ct2.ptyp_loc; pap_type= ct2} in
-      let xt1N = List.rev (ct2 :: List.rev ctl) in
+        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.ptyp_loc ;
       let indent =
-        if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2 else 0
+        match pro with
+        | Some pro when c.conf.fmt_opts.ocp_indent_compat.v ->
+            let indent =
+              if Poly.(c.conf.fmt_opts.break_separators.v = `Before) then 2
+              else 0
+            in
+            Some
+              (fits_breaks ""
+                 (String.make (Int.max 1 (indent - String.length pro)) ' ') )
+        | _ -> None
       in
-      ( match pro with
-      | Some pro when c.conf.fmt_opts.ocp_indent_compat.v ->
-          fits_breaks ""
-            (String.make (Int.max 1 (indent - String.length pro)) ' ')
-      | _ ->
-          fmt_if_k
-            Poly.(c.conf.fmt_opts.break_separators.v = `Before)
-            (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
-               (fits_breaks "" "   ") ) )
-      $ parenze_constraint_ctx
-          (list xt1N (arrow_sep c ~parens) (fmt_arrow_param c ctx))
+      let fmt_ret_typ = fmt_core_type c (sub_typ ~ctx ret_typ) in
+      fmt_arrow_type c ~ctx ?indent ~parens:parenze_constraint_ctx
+        ~parent_has_parens:parens args fmt_ret_typ
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -809,7 +830,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
-        (parenze_constraint_ctx
+        (wrap_if parenze_constraint_ctx "(" ")"
            (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
               (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)) ) )
   | Ptyp_var s -> fmt_type_var s
@@ -2641,14 +2662,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           when List.exists eN ~f:(fun x ->
                    Base.phys_equal xexp.ast x.if_body ) ->
             Fn.id
-        (* begin-end keywords are handled when printing pattern-matching
-           cases *)
-        | Exp
-            { pexp_desc=
-                Pexp_function xs | Pexp_match (_, xs) | Pexp_try (_, xs)
-            ; _ }
-          when List.exists xs ~f:(fun x -> Poly.(x.pc_rhs = exp)) ->
-            Fn.id
         | _ ->
             fun k ->
               let opn = str "begin" $ fmt_extension_suffix c ext
@@ -2713,7 +2726,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
 
-and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
+and fmt_class_signature c ~ctx ~parens ~loc ?(pro = noop) ?ext self_ fields =
   let update_config c i =
     match i.pctf_desc with
     | Pctf_attribute atr -> update_config c [atr]
@@ -2730,53 +2743,75 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     fmt_class_type_field c (sub_ctf ~ctx i)
   in
   let ast x = Ctf x in
-  Params.parens_if parens c.conf
-    ( str "object"
-    $ fmt_extension_suffix c ext
-    $ self_ $ fmt "@ "
-    $ hvbox 0
-        ( fmt_if_k (List.is_empty fields)
-            (Cmts.fmt_within ~pro:noop c (Ast.location ctx))
-        $ fmt_item_list c ctx update_config ast fmt_item fields )
+  let cmts_within =
+    if List.is_empty fields then
+      (* Side effect order is important. *)
+      Cmts.fmt_within ~pro:noop c (Ast.location ctx)
+    else noop
+  in
+  hvbox 2
+    ( hvbox 2
+        ( pro
+        $ ( fmt_if parens "(" $ Cmts.fmt_before c loc $ str "object"
+          $ fmt_extension_suffix c ext
+          $ self_ ) )
+    $ fmt "@ " $ cmts_within
+    $ fmt_item_list c ctx update_config ast fmt_item fields
     $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
-    $ str "end" )
+    $ hvbox 0 (str "end" $ Cmts.fmt_after c loc $ fmt_if parens ")") )
 
-and fmt_class_type c ({ast= typ; _} as xtyp) =
+and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
   update_config_maybe_disabled c pcty_loc pcty_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pcty_attributes in
-  Cmts.fmt c pcty_loc
-  @@
   let parens = parenze_cty xtyp in
-  ( Params.parens_if parens c.conf
-  @@
   let ctx = Cty typ in
   match pcty_desc with
   | Pcty_constr (name, params) ->
       let params = List.map params ~f:(fun x -> (x, [])) in
-      fmt_class_params c ctx params
-      $ fmt_longident_loc c name $ fmt_attributes c atrs
+      hvbox 2
+        ( pro
+        $ hovbox 0
+            (wrap_if parens "(" ")"
+               ( Cmts.fmt c pcty_loc @@ fmt_class_params c ctx params
+               $ fmt_longident_loc c name $ fmt_attributes c atrs ) ) )
   | Pcty_signature {pcsig_self; pcsig_fields} ->
-      fmt_class_signature c ~ctx ~parens pcsig_self pcsig_fields
+      fmt_class_signature c ~ctx ~parens ~loc:pcty_loc ~pro pcsig_self
+        pcsig_fields
       $ fmt_attributes c atrs
-  | Pcty_arrow (ctl, ct2) ->
+  | Pcty_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:pcty_loc
-        ~before:(List.hd_exn ctl).pap_type.ptyp_loc ~after:ct2.pcty_loc ;
-      let xct2 = sub_cty ~ctx ct2 in
-      list ctl (arrow_sep c ~parens) (fmt_arrow_param c ctx)
-      $ fmt (arrow_sep c ~parens)
-      $ (Cmts.fmt_before c ct2.pcty_loc $ fmt_class_type c xct2)
-      $ fmt_attributes c atrs
-  | Pcty_extension ext -> fmt_extension c ctx ext $ fmt_attributes c atrs
+        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.pcty_loc ;
+      let pro =
+        pro
+        $ ( fmt_if parens "("
+          $ Cmts.fmt_before c pcty_loc
+          $ fmt_arrow_type c ~ctx ~parens:false ~parent_has_parens:parens
+              args noop )
+      in
+      fmt_class_type c ~pro (sub_cty ~ctx ret_typ)
+      $ fmt_attributes c atrs $ Cmts.fmt_after c pcty_loc $ fmt_if parens ")"
+  | Pcty_extension ext ->
+      hvbox 2
+        ( pro
+        $ Cmts.fmt c pcty_loc
+          @@ Params.parens_if parens c.conf
+               (fmt_extension c ctx ext $ fmt_attributes c atrs) )
   | Pcty_open (popen, cl) ->
-      hvbox 0
-        ( fmt_open_description c ~keyword:"let open" ~kw_attributes:atrs popen
-        $ fmt " in@;<1000 0>"
-        $ fmt_class_type c (sub_cty ~ctx cl) ) )
-  $ fmt_docstring c ~pro:(fmt "@ ") doc
+      let pro =
+        hvbox 2
+          ( pro
+          $ Cmts.fmt c pcty_loc
+            @@ Params.parens_if parens c.conf
+            @@ ( fmt_open_description c ~keyword:"let open"
+                   ~kw_attributes:atrs popen
+               $ fmt " in@;<1000 0>" ) )
+      in
+      fmt_class_type c ~pro (sub_cty ~ctx cl)
+      $ fmt_docstring c ~pro:(fmt "@ ") doc
 
 and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Cl exp)
@@ -2841,7 +2876,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
            ( fmt_class_expr c (sub_cl ~ctx e)
-           $ fmt "@ : "
+           $ fmt " :@ "
            $ fmt_class_type c (sub_cty ~ctx t) ) )
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx ext $ fmt_atrs
@@ -3058,7 +3093,7 @@ and fmt_case c ctx ~first ~last case =
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:p.expr_parens xrhs
+          ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
           $ p.close_paren_branch ) )
 
 and fmt_value_description ?ext c ctx vd =
@@ -3406,11 +3441,12 @@ and fmt_functor_param c ctx {loc; txt= arg} =
   | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
   | Named (name, mt) ->
       let xmt = sub_mty ~ctx mt in
-      Cmts.fmt c loc
-        (wrap "(" ")"
-           (hovbox 0
-              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) )
+      hvbox 0
+        (Cmts.fmt c loc
+           (wrap "(" ")"
+              (hovbox 0
+                 ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
+                 $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) ) )
 
 and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3623,16 +3659,18 @@ and fmt_class_types ?ext c ctx ~pre ~sep cls =
         fmt_docstring_around_item ~force_before c cl.pci_attributes
       in
       let class_types =
+        let pro =
+          hovbox 2
+            ( str (if first then pre else "and")
+            $ fmt_if_k first (fmt_extension_suffix c ext)
+            $ fmt_virtual_flag c cl.pci_virt
+            $ fmt "@ "
+            $ fmt_class_params c ctx cl.pci_params
+            $ fmt_str_loc c cl.pci_name $ fmt " " $ str sep )
+          $ fmt "@ "
+        in
         hovbox 2
-          ( hvbox 2
-              ( str (if first then pre else "and")
-              $ fmt_if_k first (fmt_extension_suffix c ext)
-              $ fmt_virtual_flag c cl.pci_virt
-              $ fmt "@ "
-              $ fmt_class_params c ctx cl.pci_params
-              $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
-          $ fmt "@;"
-          $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
+          ( fmt_class_type c ~pro (sub_cty ~ctx cl.pci_expr)
           $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
       in
       fmt_if (not first) "\n@;<1000 0>"
@@ -3661,22 +3699,27 @@ and fmt_class_exprs ?ext c ctx cls =
            fmt_docstring_around_item ~force_before c cl.pci_attributes
          in
          let class_exprs =
+           let pro =
+             box_fun_decl_args c 2
+               ( hovbox 2
+                   ( str (if first then "class" else "and")
+                   $ fmt_if_k first (fmt_extension_suffix c ext)
+                   $ fmt_virtual_flag c cl.pci_virt
+                   $ fmt "@ "
+                   $ fmt_class_params c ctx cl.pci_params
+                   $ fmt_str_loc c cl.pci_name )
+               $ fmt_if (not (List.is_empty xargs)) "@ "
+               $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
+           in
+           let intro =
+             match ty with
+             | Some ty ->
+                 let pro = pro $ fmt " :@ " in
+                 fmt_class_type c ~pro (sub_cty ~ctx ty)
+             | None -> pro
+           in
            hovbox 2
-             ( hovbox 2
-                 ( box_fun_decl_args c 2
-                     ( hovbox 2
-                         ( str (if first then "class" else "and")
-                         $ fmt_if_k first (fmt_extension_suffix c ext)
-                         $ fmt_virtual_flag c cl.pci_virt
-                         $ fmt "@ "
-                         $ fmt_class_params c ctx cl.pci_params
-                         $ fmt_str_loc c cl.pci_name )
-                     $ fmt_if (not (List.is_empty xargs)) "@ "
-                     $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
-                 $ opt ty (fun t ->
-                       fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
-                 $ fmt "@ =" )
-             $ fmt "@;" $ fmt_class_expr c e )
+             (hovbox 2 (intro $ fmt "@ =") $ fmt "@;" $ fmt_class_expr c e)
            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
          in
          fmt_if (not first) "\n@;<1000 0>"
