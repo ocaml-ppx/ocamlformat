@@ -1,0 +1,3 @@
+(cram
+ (package ocamlformat-mlx)
+ (deps %{bin:ocamlformat-mlx}))

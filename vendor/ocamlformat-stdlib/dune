@@ -1,6 +1,6 @@
 (library
  (name ocamlformat_stdlib)
- (public_name ocamlformat-lib.ocamlformat_stdlib)
+ (public_name ocamlformat-mlx-lib.ocamlformat_stdlib)
  (flags
   (:standard -open Ocamlformat_ocaml_common))
  (libraries base cmdliner ocamlformat_ocaml_common fpath stdio))

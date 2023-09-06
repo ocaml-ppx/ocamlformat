@@ -497,6 +497,12 @@ let delim_ext = (lowercase | uppercase | utf8)*
 
 let symbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
+let symbolchar_no_prefix =
+  ['$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
+let symbolchar_no_greater =
+  ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '?' '@' '^' '|' '~']
+let symbolchar_no_less =
+  ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '=' '>' '?' '@' '^' '|' '~']
 let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|']
 let symbolchar_or_hash =
@@ -567,6 +573,10 @@ rule token = parse
       }
   | lowercase identchar * as name
       { find_keyword lexbuf name }
+  | "<" (lowercase identchar * as name)
+      { JSX_LIDENT name }
+  | "<" "/" (lowercase identchar * as name)
+      { JSX_LIDENT_E name }
   | uppercase identchar * as name
       { UIDENT name } (* No capitalized keywords *)
   | (raw_ident_escape? as escape) (ident_ext as raw_name)
@@ -580,6 +590,10 @@ rule token = parse
         end else
           LIDENT name
       } (* No non-ascii keywords *)
+  | "<" (uppercase identchar * as name)
+      { JSX_UIDENT name }
+  | "<" "/" (uppercase identchar * as name)
+      { JSX_UIDENT_E name }
   | int_literal as lit { INT (lit, None) }
   | (int_literal as lit) (literal_modifier as modif)
       { INT (lit, Some modif) }
@@ -704,6 +718,7 @@ rule token = parse
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
   | "<"  { LESS }
+  | "</" { LESSSLASH }
   | "<-" { LESSMINUS }
   | "="  { EQUAL }
   | "["  { LBRACKET }
@@ -717,6 +732,7 @@ rule token = parse
   | "||" { BARBAR }
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
+  | "/>" { SLASHGREATER }
   | ">]" { GREATERRBRACKET }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
@@ -737,7 +753,11 @@ rule token = parse
             { PREFIXOP op }
   | ['~' '?'] symbolchar_or_hash + as op
             { PREFIXOP op }
-  | ['=' '<' '>' '|' '&' '$'] symbolchar * as op
+  | ['<' '|' '&' '$'] symbolchar * as op
+            { INFIXOP0 op }
+  | '=' symbolchar_no_prefix * as op
+            { INFIXOP0 op }
+  | ">" symbolchar_no_less * as op
             { INFIXOP0 op }
   | ['@' '^'] symbolchar * as op
             { INFIXOP1 op }
@@ -747,7 +767,9 @@ rule token = parse
             { INFIXOP4 op }
   | '%'     { PERCENT }
   | '/'     { SLASH }
-  | ['*' '/' '%'] symbolchar * as op
+  | ['*' '%'] symbolchar * as op
+            { INFIXOP3 op }
+  | "/" symbolchar_no_greater * as op
             { INFIXOP3 op }
   | '#' symbolchar_or_hash + as op
             { HASHOP op }

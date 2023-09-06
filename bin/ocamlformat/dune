@@ -11,21 +11,21 @@
 
 (executable
  (name main)
- (public_name ocamlformat)
- (package ocamlformat)
+ (public_name ocamlformat-mlx)
+ (package ocamlformat-mlx)
  (modules main)
  (flags
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat-lib bin_conf))
+ (libraries ocamlformat-mlx-lib bin_conf))
 
 (rule
  (with-stdout-to
   ocamlformat.1
   (run ./main.exe --help=groff)))
 
-(install
- (section man)
- (files ocamlformat.1)
- (package ocamlformat))
+; (install
+;  (section man)
+;  (files ocamlformat.1)
+;  (package ocamlformat))

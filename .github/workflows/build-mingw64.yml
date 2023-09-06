@@ -43,21 +43,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          opam pin add -yn ocamlformat-lib.dev .
-          opam pin add -yn ocamlformat.dev .
-          opam install -y --deps-only ocamlformat
+          opam pin add -yn ocamlformat-mlx-lib.dev .
+          opam pin add -yn ocamlformat-mlx.dev .
+          opam install -y --deps-only ocamlformat-mlx
 
       - name: Build
         run: |
           opam exec -- dune subst
-          opam exec -- dune build -p ocamlformat-lib,ocamlformat @install
-          opam exec -- dune install --prefix=install ocamlformat
-          Copy-Item ${{ github.workspace }}\\install\\bin\\ocamlformat.exe -Destination .\${{ env.artifact_name }}
+          opam exec -- dune build -p ocamlformat-mlx-lib,ocamlformat-mlx @install
+          opam exec -- dune install --prefix=install ocamlformat-mlx
+          Copy-Item ${{ github.workspace }}\\install\\bin\\ocamlformat-mlx.exe -Destination .\${{ env.artifact_name }}
 
       - name: Version check
         run: |
           echo "Version check:"
-          install/bin/ocamlformat.exe --version
+          install/bin/ocamlformat-mlx.exe --version
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

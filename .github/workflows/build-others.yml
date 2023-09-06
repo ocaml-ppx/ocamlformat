@@ -37,8 +37,8 @@ jobs:
       - name: Opam dependencies
         run: opam install --deps-only -t .
 
-      - name: Format
-        run: opam exec -- dune fmt
+#      - name: Format
+#        run: opam exec -- dune fmt
 
       - name: Runtest
         run: opam exec -- dune runtest

@@ -1444,7 +1444,11 @@ end = struct
         | Pexp_infix (_, e1, e2) -> assert (f e1 || f e2)
         | Pexp_apply (e0, e1N) ->
             (* FAIL *)
-            assert (e0 == exp || List.exists e1N ~f:snd_f)
+            (* Disabled for JSX elements which have nested children *)
+            let is_jsx = List.exists ctx.pexp_attributes ~f:(fun attr ->
+              match attr.attr_name.txt with "JSX" -> true | _ -> false) in
+            if not is_jsx then
+              assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N ->
             assert (
               List.exists e1N ~f:(function

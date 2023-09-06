@@ -1,6 +1,6 @@
 (library
  (name ocamlformat_format)
- (public_name ocamlformat-lib.format_)
+ (public_name ocamlformat-mlx-lib.format_)
  (flags
   (:standard -open Ocamlformat_parser_shims))
  (libraries either ocamlformat_parser_shims))

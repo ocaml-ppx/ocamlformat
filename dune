@@ -14,7 +14,7 @@
   (flags
    (:standard -noassert))))
 
-(data_only_dirs test-extra)
+(data_only_dirs test-extra mlx lib-rpc lib-rpc-server emacs doc bench tools)
 
 (rule
  (with-stdout-to

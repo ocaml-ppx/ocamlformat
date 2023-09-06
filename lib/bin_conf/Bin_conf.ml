@@ -102,7 +102,7 @@ let info =
         "Unless mentioned otherwise non-formatting options cannot be set in \
          attributes or $(b,.ocamlformat) files." ]
   in
-  Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
+  Cmd.info "ocamlformat-mlx" ~version:Version.current ~doc ~man
 
 let kind = Decl.Operational
 

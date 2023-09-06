@@ -1,6 +1,6 @@
 (library
  (name ocamlformat_parser_standard)
- (public_name ocamlformat-lib.parser_standard)
+ (public_name ocamlformat-mlx-lib.parser_standard)
  (flags
   (:standard
    -w

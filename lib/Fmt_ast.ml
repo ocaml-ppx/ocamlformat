@@ -2271,6 +2271,70 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ fmt_expression c ~box (sub_exp ~ctx e)
              $ fmt_atrs ) )
   | Pexp_apply (e0, e1N1) -> (
+      match pexp_attributes with
+      | [{attr_name={txt="JSX";loc=_}; attr_payload=PStr []; _}] ->
+        let children = ref None in
+        let props = List.filter_map e1N1 ~f:(function
+          | Labelled {txt="children";_}, {pexp_desc=Pexp_list es;pexp_loc;_} ->
+            children := Some (pexp_loc, es);
+            None
+          | Nolabel, {pexp_desc=Pexp_construct ({txt=Lident "()";_}, _); _} -> None
+          | arg -> Some arg)
+        in
+        let start_tag, end_tag =
+          let name, name_loc, id =
+            match e0.pexp_desc with
+            | Pexp_ident {txt=Lident name;loc} -> name, loc, None
+            | Pexp_ident {txt=Ldot (id, name);loc=_} -> name.txt, e0.pexp_loc, Some id
+            | _ -> failwith "JSX element tag is not Longident.t"
+          in
+          let make tag =
+            (fun () ->
+              str (Printf.sprintf "<%s" tag) $ Cmts.fmt_after c name_loc),
+            (fun () -> str (Printf.sprintf "</%s>" tag))
+          in
+          match id with
+          | None -> make name
+          | Some id ->
+            let path = Ocamlformat_ocaml_common.Longident.flatten id.txt in
+            match name with
+            | "createElement" -> make (String.concat ~sep:"." path)
+            | name -> make (Printf.sprintf "%s.%s" (String.concat ~sep:"." path) name)
+        in
+        let props =
+          match props with
+          | [] -> str ""
+          | props ->
+            let fmt_labelled ?(prefix="") label e =
+              let flabel = str (Printf.sprintf "%s%s" prefix label.txt) in
+              match e.pexp_desc with
+              | Pexp_ident {txt=Lident id; loc=_} when String.equal id label.txt ->
+                flabel
+              | _ ->
+                flabel $ str "=" $ fmt_expression c (sub_exp ~ctx e)
+            in
+            let fmt_prop = function
+              | Nolabel, e -> fmt_expression c (sub_exp ~ctx e)
+              | Labelled label, e -> fmt_labelled label e
+              | Optional label, e -> fmt_labelled ~prefix:"?" label e
+            in
+            space_break $ hvbox 0 (list props (break 1 0) fmt_prop)
+        in
+        begin match !children with
+        | None -> hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
+        | Some (children_loc, []) when not (Cmts.has_after c.cmts children_loc) ->
+          hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
+        | Some (children_loc, children) ->
+          let head = hvbox 2 (start_tag () $ props $ str ">") in
+          let children =
+            hvbox 0 (
+              list children (break 1 0)
+              (fun e -> fmt_expression c (sub_exp ~ctx e))
+              $ Cmts.fmt_after c children_loc)
+          in
+          hvbox 2 (head $ break 0 0 $ children $ break 0 (-2) $ end_tag ())
+        end
+      | _ ->
       let wrap =
         if c.conf.fmt_opts.wrap_fun_args.v then hovbox 2 else hvbox 2
       in
