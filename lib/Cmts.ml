@@ -449,19 +449,23 @@ let find_cmts ?(filter = Fn.const true) t pos loc =
       picked )
 
 let break_comment_group source margin a b =
-  let a = Cmt.loc a and b = Cmt.loc b in
+  let loc_a = Cmt.loc a and loc_b = Cmt.loc b in
   let vertical_align =
-    Location.line_difference a b = 1 && Location.compare_start_col a b = 0
+    Location.line_difference loc_a loc_b = 1
+    && Location.compare_start_col loc_a loc_b = 0
   in
   let horizontal_align =
-    Location.line_difference a b = 0
+    Location.line_difference loc_a loc_b = 0
     && List.is_empty
-         (Source.tokens_between source a.loc_end b.loc_start
+         (Source.tokens_between source loc_a.loc_end loc_b.loc_start
               ~filter:(function _ -> true) )
   in
-  not
-    ( (Location.is_single_line a margin && Location.is_single_line b margin)
-    && (vertical_align || horizontal_align) )
+  Option.is_some (Cmt.is_line_directive a)
+  || Option.is_some (Cmt.is_line_directive b)
+  || not
+       ( ( Location.is_single_line loc_a margin
+         && Location.is_single_line loc_b margin )
+       && (vertical_align || horizontal_align) )
 
 module Asterisk_prefixed = struct
   let split txt {Location.loc_start; _} =
@@ -633,6 +637,13 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
   | `Unwrapped (x, _) -> Unwrapped.fmt ~opn ~offset x
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt ~opn x
 
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
+  match Cmt.is_line_directive cmt with
+  | Some (line, filename) ->
+      let open Fmt in
+      str (Format.sprintf "#%i %S" line filename)
+  | None -> fmt_cmt conf cmt ~fmt_code pos
+
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
   let groups =
@@ -670,7 +681,11 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
         fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
       in
-      fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
+      ( match List.hd cmts with
+      | Some cmt when Option.is_some @@ Cmt.is_line_directive cmt -> fmt "\n"
+      | _ -> fmt_opt pro )
+      $ fmt_cmts_aux t conf cmts ~fmt_code pos
+      $ epi
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
   fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc

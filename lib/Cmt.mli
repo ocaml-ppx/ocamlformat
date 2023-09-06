@@ -19,6 +19,8 @@ val create_docstring : string -> Location.t -> t
 
 val is_docstring : t -> bool
 
+val is_line_directive : t -> (int * string) option
+
 val loc : t -> Location.t
 
 val txt : t -> string

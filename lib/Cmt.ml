@@ -26,6 +26,20 @@ module T = struct
 
   let is_docstring = function Comment _ -> false | Docstring _ -> true
 
+  let is_line_directive = function
+    | Docstring _ -> None
+    | Comment {txt; _} -> (
+      try
+        let pattern = "<LINE_DIRECTIVE:([0-9]+)>(.*)" in
+        let regex = Re.Posix.compile_pat pattern in
+        match Re.exec_opt regex txt with
+        | Some groups ->
+            let line_number = Int.of_string (Re.Group.get groups 1) in
+            let name = Re.Group.get groups 2 in
+            Some (line_number, name)
+        | None -> None
+      with _ -> None )
+
   let compare = Poly.compare
 
   let sexp_of_t cmt =

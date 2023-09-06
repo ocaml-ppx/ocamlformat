@@ -616,13 +616,14 @@ rule token = parse
       { error lexbuf (Illegal_character illegal_char) }
 
 and directive = parse
-  | ([' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*
-        ("\"" ([^ '\010' '\013' '\"' ] * as _name) "\"") as directive)
+  | ([' ' '\t']* (['0'-'9']+ as line) [' ' '\t']*
+        ("\"" ([^ '\010' '\013' '\"' ] * as name) "\""))
         [^ '\010' '\013'] *
       {
-        (* Line directives are not preserved by the lexer so we error out. *)
-        let explanation = "line directives are not supported" in
-        error lexbuf (Invalid_directive ("#" ^ directive, Some explanation))
+        let loc = Location.curr lexbuf in
+        let line = int_of_string line in
+        let s = Format.sprintf "<LINE_DIRECTIVE:%i>%s" line name in
+        COMMENT (s, loc)
       }
 and comment = parse
     "(*"

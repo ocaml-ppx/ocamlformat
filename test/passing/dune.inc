@@ -3506,8 +3506,7 @@
  (action
   (with-stdout-to line_directives.ml.stdout
    (with-stderr-to line_directives.ml.stderr
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} --margin-check %{dep:tests/line_directives.ml}))))))
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/line_directives.ml})))))
 
 (rule
  (alias runtest)
