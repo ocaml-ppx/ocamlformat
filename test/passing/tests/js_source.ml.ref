@@ -10213,13 +10213,13 @@ module type For_let_syntax_local =
 
 type fooooooooooooooooooooooooooooooo =
   ( fooooooooooooooooooooooooooooooo
-  , fooooooooooooooooooooooooooooooo )
-  fooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooo )
+    fooooooooooooooooooooooooooooooo
 
 val fooooooooooooooooooooooooooooooo
   : ( fooooooooooooooooooooooooooooooo
-    , fooooooooooooooooooooooooooooooo )
-    fooooooooooooooooooooooooooooooo
+      , fooooooooooooooooooooooooooooooo )
+      fooooooooooooooooooooooooooooooo
 
 (*
     *)
@@ -10265,10 +10265,10 @@ let _ =
 type t =
   { xxxxxx :
       t
-      (* _________________________________________________________________________
-         ____________________________________________________________________
-         ___________ *)
-      XXXXXXX.t
+        (* _________________________________________________________________________
+           ____________________________________________________________________
+           ___________ *)
+        XXXXXXX.t
   }
 
 module Test_gen
@@ -10423,3 +10423,9 @@ let _ =
 (*    First line is indented more
       .
       . *)
+
+module type M = sig
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+        Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
+end

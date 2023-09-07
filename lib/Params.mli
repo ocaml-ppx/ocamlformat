@@ -201,4 +201,8 @@ module Indent : sig
   (** Module types *)
 
   val mty_with : Conf.t -> int
+
+  (** Types *)
+
+  val type_constr : Conf.t -> int
 end

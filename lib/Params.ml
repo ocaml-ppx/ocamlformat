@@ -692,4 +692,6 @@ module Indent = struct
     else 2
 
   let mty_with c = if ocp c then 0 else 2
+
+  let type_constr c = if ocp c then 2 else 0
 end

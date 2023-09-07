@@ -809,12 +809,17 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         ~parent_has_parens:parens args fmt_ret_typ
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
-      fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
+      hvbox
+        (Params.Indent.type_constr c.conf)
+        ( fmt_core_type c (sub_typ ~ctx t1)
+        $ fmt "@ " $ fmt_longident_loc c lid )
   | Ptyp_constr (lid, t1N) ->
-      wrap_fits_breaks c.conf "(" ")"
-        (list t1N (Params.comma_sep c.conf)
-           (sub_typ ~ctx >> fmt_core_type c) )
-      $ fmt "@ " $ fmt_longident_loc c lid
+      hvbox
+        (Params.Indent.type_constr c.conf)
+        ( wrap_fits_breaks c.conf "(" ")"
+            (list t1N (Params.comma_sep c.conf)
+               (sub_typ ~ctx >> fmt_core_type c) )
+        $ fmt "@ " $ fmt_longident_loc c lid )
   | Ptyp_extension ext ->
       hvbox c.conf.fmt_opts.extension_indent.v (fmt_extension c ctx ext)
   | Ptyp_package (id, cnstrs) ->
