@@ -1060,8 +1060,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       Cmts.fmt c ppat_loc
         (hvbox 0 (fmt_pat_cons c ~parens (List.map lp ~f:(sub_pat ~ctx))))
   | Ppat_construct (lid, Some (exists, pat)) ->
-      cbox 2
-        (Params.parens_if parens c.conf
+      Params.parens_if parens c.conf
+        (cbox 2
            ( fmt_longident_loc c lid $ fmt "@ "
            $ ( match exists with
              | [] -> noop
@@ -1073,8 +1073,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl
   | Ppat_variant (lbl, Some pat) ->
-      cbox 2
-        (Params.parens_if parens c.conf
+      Params.parens_if parens c.conf
+        (cbox 2
            (variant_var c lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
   | Ppat_record (flds, closed_flag) ->
       let fmt_field (lid, typ1, pat) =
@@ -2178,8 +2178,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ fmt_atrs )
   | Pexp_variant (s, arg) ->
       pro
-      $ hvbox 2
-          (Params.parens_if parens c.conf
+      $ Params.parens_if parens c.conf
+          (hvbox 2
              ( variant_var c s
              $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))
              $ fmt_atrs ) )
