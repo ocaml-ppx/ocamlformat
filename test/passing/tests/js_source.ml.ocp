@@ -9699,7 +9699,7 @@ type t =
   (* Here is some verbatim formatted text:
      {v
        starting at column 7
-         v}*)
+     v}*)
   }
 
 module Intro_sort = struct

@@ -670,4 +670,11 @@ module Indent = struct
       in
       if Source.begins_line ~ignore_spaces:true source loc then if_breaks
       else 0
+
+  let record_docstring (c : Conf.t) =
+    if ocp c then
+      match c.fmt_opts.break_separators.v with `Before -> -2 | `After -> 0
+    else 4
+
+  let constructor_docstring c = if ocp c then 0 else 4
 end

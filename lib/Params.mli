@@ -184,4 +184,8 @@ module Indent : sig
     Conf.t -> parens:bool -> lbl:arg_label -> int
 
   val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
+
+  val record_docstring : Conf.t -> int
+
+  val constructor_docstring : Conf.t -> int
 end

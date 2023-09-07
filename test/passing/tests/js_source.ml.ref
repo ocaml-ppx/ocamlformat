@@ -9696,10 +9696,10 @@ type t =
 
 type t =
   { field : ty
-      (* Here is some verbatim formatted text:
-         {v
+  (* Here is some verbatim formatted text:
+     {v
        starting at column 7
-         v}*)
+     v}*)
   }
 
 module Intro_sort = struct
@@ -10052,11 +10052,11 @@ let _ =
 
 type action =
   | In_out of [ `Impl | `Intf ] input * string option
-      (** Format input file (or [-] for stdin) of given kind to output file,
-          or stdout if None. *)
+  (** Format input file (or [-] for stdin) of given kind to output file,
+      or stdout if None. *)
   (* foo *)
   | Inplace of [ `Impl | `Intf ] input list
-      (** Format in-place, overwriting input file(s). *)
+  (** Format in-place, overwriting input file(s). *)
 
 let%test_module "semantics" =
   (module (

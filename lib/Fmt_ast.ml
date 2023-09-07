@@ -3273,7 +3273,8 @@ and fmt_label_declaration c ctx ?(last = false) decl =
   in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
-    $ hvbox 4
+    $ hvbox
+        (Params.Indent.record_docstring c.conf)
         ( hvbox 3
             ( hvbox 4
                 ( hvbox 2
@@ -3307,11 +3308,12 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
-  $ fmt_or_k first (if_newline "| ") (str "| ")
-  $ hvbox ~name:"constructor_decl" 0
-      ( hovbox 2
-          ( hvbox 2
-              ( hovbox ~name:"constructor_decl_name" 0
+  $ hvbox ~name:"constructor_decl" 2
+      ( hvbox
+          (Params.Indent.constructor_docstring c.conf)
+          ( fmt_or_k first (if_newline "| ") (str "| ")
+          $ hvbox 2
+              ( hovbox ~name:"constructor_decl_name" 2
                   (Cmts.fmt c loc
                      (wrap_if
                         (Std_longident.String_id.is_symbol txt)
