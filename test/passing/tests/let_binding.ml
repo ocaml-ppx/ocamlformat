@@ -231,3 +231,21 @@ module A = struct
     match (l, r) with A, B -> "f A B"
  ;;
 end
+
+let (A (a, _, b) | B (b, a)) = A (1, 2, 3)
+
+let copy from ~into : unit =
+  let ({
+     pulse_captured_vars_length_contradictions;
+     pulse_summaries_count;
+     topl_reachable_calls;
+     timeouts;
+     timings;
+   } [@warning "+9"]) = () in
+  ()
+
+let { x; y } : foo = bar
+let ({ x; y } : foo) = bar
+
+let a, b = (raise Exit : int * int)
+let (a, b) = (raise Exit : int * int)

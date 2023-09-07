@@ -19,16 +19,24 @@
 
 (generate_opam_files true)
 
-(authors "Josh Berdine <jjb@fb.com>")
+(authors
+ "Josh Berdine <jjb@fb.com>"
+ "Hugo Heuzard <hugo.heuzard@gmail.com>"
+ "Etienne Millon <etienne@tarides.com>"
+ "Guillaume Petiot <guillaume@tarides.com>"
+ "Jules Aguillon <jules@j3s.fr>")
 
-(maintainers "OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>")
+(maintainers
+ "Guillaume Petiot <guillaume@tarides.com>"
+ "Jules Aguillon <jules@j3s.fr>"
+ "Emile Trotignon <emile@tarides.com>")
 
 (source
  (github ocaml-ppx/ocamlformat))
 
 (package
  (name ocamlformat-lib)
- (synopsis "Auto-formatter for OCaml code")
+ (synopsis "OCaml Code Formatter")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
@@ -81,7 +89,7 @@
  (name ocamlformat)
  (synopsis "Auto-formatter for OCaml code")
  (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
  (depends
   (ocaml
    (>= 4.08))

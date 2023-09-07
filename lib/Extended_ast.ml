@@ -54,9 +54,12 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let normalize_mapper ~preserve_beginend =
+  let normalize_mapper ~ocaml_version ~preserve_beginend =
     let open Asttypes in
     let open Ast_mapper in
+    let enable_short_field_annot =
+      Ocaml_version.compare ocaml_version Ocaml_version.Releases.v4_03_0 >= 0
+    in
     let record_field m (f, t, v) =
       match (t, v) with
       (* [{ x = x }] -> [{ x }] *)
@@ -77,7 +80,8 @@ module Parse = struct
                   , t1 )
             ; pexp_attributes= []
             ; _ } )
-        when Std_longident.field_alias ~field:f.txt v_txt ->
+        when enable_short_field_annot
+             && Std_longident.field_alias ~field:f.txt v_txt ->
           (f, (Some t1, t2), None)
       (* [{ x = (x :> t) }] -> [{ x :> t }] *)
       (* [{ x = (x : t :> t) }] -> [{ x : t :> t }] *)
@@ -92,7 +96,8 @@ module Parse = struct
                   , t2 )
             ; pexp_attributes= []
             ; _ } )
-        when Std_longident.field_alias ~field:f.txt v_txt ->
+        when enable_short_field_annot
+             && Std_longident.field_alias ~field:f.txt v_txt ->
           (f, (t1, Some t2), None)
       (* [{ x : t = (x :> t) }] -> [{ x : t :> t }] *)
       | ( (Some t1, None)
@@ -106,7 +111,8 @@ module Parse = struct
                   , t2 )
             ; pexp_attributes= []
             ; _ } )
-        when Std_longident.field_alias ~field:f.txt v_txt ->
+        when enable_short_field_annot
+             && Std_longident.field_alias ~field:f.txt v_txt ->
           (f, (Some t1, Some t2), None)
       | _ -> (f, t, Option.map ~f:(m.expr m) v)
     in
@@ -127,7 +133,8 @@ module Parse = struct
                   , t )
             ; ppat_attributes= []
             ; _ } )
-        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+        when enable_short_field_annot
+             && Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
           (f, Some t, None)
       | _ -> (f, t, Option.map ~f:(m.pat m) v)
     in
@@ -217,8 +224,9 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
 
-  let ast (type a) (fg : a t) ~preserve_beginend ~input_name str : a =
-    map fg (normalize_mapper ~preserve_beginend)
+  let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend ~input_name
+      str : a =
+    map fg (normalize_mapper ~ocaml_version ~preserve_beginend)
     @@
     let lexbuf = Lexing.from_string str in
     Location.init lexbuf input_name ;

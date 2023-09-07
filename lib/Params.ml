@@ -148,6 +148,7 @@ type cases =
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
+  ; branch_expr: expression Ast.xt
   ; close_paren_branch: Fmt.t }
 
 let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
@@ -178,24 +179,25 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
     else (parenze_exp xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
-  let beginend =
-    match ast with {pexp_desc= Pexp_beginend _; _} -> true | _ -> false
-  in
-  let open_paren_branch =
-    if beginend then fmt "@;<1 0>begin" else fmt_if parens_branch " ("
-  in
-  let close_paren_branch =
-    if beginend then
-      let offset =
-        match c.fmt_opts.break_cases.v with `Nested -> 0 | _ -> -2
-      in
-      fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
-    else
-      fmt_if_k parens_branch
-        ( match c.fmt_opts.indicate_multiline_delimiters.v with
-        | `Space -> fmt "@ )"
-        | `No -> fmt "@,)"
-        | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
+  let open_paren_branch, close_paren_branch, branch_expr =
+    match ast with
+    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
+        let close_paren =
+          let offset =
+            match c.fmt_opts.break_cases.v with `Nested -> 0 | _ -> -2
+          in
+          fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
+        in
+        (fmt "@;<1 0>begin", close_paren, sub_exp ~ctx:(Exp ast) nested_exp)
+    | _ ->
+        let close_paren =
+          fmt_if_k parens_branch
+            ( match c.fmt_opts.indicate_multiline_delimiters.v with
+            | `Space -> fmt "@ )"
+            | `No -> fmt "@,)"
+            | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
+        in
+        (fmt_if parens_branch " (", close_paren, xast)
   in
   match c.fmt_opts.break_cases.v with
   | `Fit ->
@@ -208,6 +210,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
+      ; branch_expr
       ; close_paren_branch }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
@@ -219,6 +222,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
       ; expr_parens
+      ; branch_expr
       ; close_paren_branch }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
@@ -230,6 +234,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
+      ; branch_expr
       ; close_paren_branch }
   | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
@@ -241,6 +246,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
+      ; branch_expr
       ; close_paren_branch }
   | `Vertical ->
       { leading_space= break_unless_newline 1000 0
@@ -252,6 +258,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= break 1000 0
       ; expr_parens
+      ; branch_expr
       ; close_paren_branch }
 
 let wrap_collec c ~space_around opn cls =

@@ -8163,3 +8163,14 @@ let _ =
   (* 
      *)
   *)
+
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
+    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
+
+(*    Hand-aligned comment
+        .
+      . *)
+
+(*    First line is indented more
+    .
+      . *)

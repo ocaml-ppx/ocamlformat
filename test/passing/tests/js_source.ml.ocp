@@ -1,6 +1,6 @@
 [@@@foo]
 
-let ((x [@foo]) : (unit[@foo])) = (() [@foo]) [@@foo]
+let (x [@foo]) : (unit[@foo]) = (() [@foo]) [@@foo]
 
 type t = Foo of (t[@foo]) [@foo] [@@foo]
 
@@ -36,27 +36,27 @@ type var =
   let x = 1 in
   x]
 
-let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
+let [%foo 2 + 1] : [%foo bar.baz] = [%foo "foo"]
 
 [%%foo module M = [%bar]]
 
-let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
+let [%foo let () = ()] : [%foo type t = t] = [%foo class c = object end]
 
 [%%foo: 'a list]
 
-let ([%foo: [ `Foo ]] : [%foo: t -> t]) = [%foo: < foo : t > ]
+let [%foo: [ `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ]
 
 [%%foo? _]
 [%%foo? Some y when y > 0]
 
-let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
+let [%foo? Bar x | Baz x] : [%foo? #bar] = [%foo? { x }]
 
 [%%foo: module M : [%baz]]
 
-let ([%foo: include S with type t = t] :
-       [%foo:
-         val x : t
-         val y : t])
+let [%foo: include S with type t = t]
+: [%foo:
+  val x : t
+  val y : t]
   =
   [%foo: type t = t]
 ;;
@@ -2870,8 +2870,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(* val comp_subst :
-   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(*  val comp_subst :
+    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -2966,7 +2966,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-(* val subst' : 'a ealist -> 'a term -> 'a term *)
+(*  val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -9422,7 +9422,7 @@ class ['a] c () =
 let f : type a'. a' = assert false
 let foo : type a' b'. a' -> b' = fun a -> assert false
 let foo : type t'. t' = fun (type t') : t' -> assert false
-let foo : type t. t = assert false
+let foo : 't. 't = fun (type t) : t -> assert false
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
 let f x =
@@ -10421,3 +10421,14 @@ let _ =
 (* *)
 
 (*$ (* *) *)
+
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
+    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
+
+(*    Hand-aligned comment
+      .
+      . *)
+
+(*    First line is indented more
+      .
+      . *)
