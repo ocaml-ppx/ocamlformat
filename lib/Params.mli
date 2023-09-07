@@ -143,12 +143,6 @@ val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
-(** [function_indent c ~ctx ~default] returns the indentation used for the
-    function in context [ctx], depending on the `function-indent-nested`
-    option, or using the [default] indentation (0 if not provided) if the
-    option does not apply. *)
-
 val comma_sep : Conf.t -> Fmt.s
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
@@ -162,4 +156,32 @@ module Align : sig
 
   val function_ :
     Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
+end
+
+module Indent : sig
+  (** Indentation of various nodes. *)
+
+  (** Expressions *)
+
+  val function_ :
+    ?default:int -> Conf.t -> parens:bool -> expression Ast.xt -> int
+  (** Check the [function-indent-nested] option, or return [default] (0 if
+      not provided) if the option does not apply. *)
+
+  val fun_ : ?eol:Fmt.t -> Conf.t -> int
+  (** Handle [function-indent-nested]. *)
+
+  val fun_args : Conf.t -> int
+
+  val fun_type_annot : Conf.t -> int
+
+  val docked_fun :
+    Conf.t -> source:Source.t -> loc:Location.t -> lbl:arg_label -> int
+
+  val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int
+
+  val docked_function_after_fun :
+    Conf.t -> parens:bool -> lbl:arg_label -> int
+
+  val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
 end
