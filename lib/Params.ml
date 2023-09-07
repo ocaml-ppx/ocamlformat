@@ -118,6 +118,13 @@ module Mod = struct
     let arg_psp = if dock then str " " else break 1 psp_indent in
     let align = ocp c in
     {dock; arg_psp; indent; align}
+
+  let break_constraint c ~rhs =
+    if ocp c then
+      match rhs.pmty_desc with
+      | Pmty_signature _ when ocp c -> break 1 0
+      | _ -> break 1 2
+    else break 1 2
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
@@ -679,4 +686,8 @@ module Indent = struct
   let constructor_docstring c = if ocp c then 0 else 4
 
   let exp_constraint c = if ocp c then 1 else 2
+
+  let mod_constraint c ~lhs =
+    if ocp c then match lhs.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
+    else 2
 end

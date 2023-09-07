@@ -4023,13 +4023,17 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty pmod_attributes)
       in
-      { opn= Some (fmt_opt blk_t.opn $ fmt_opt blk_e.opn $ open_hovbox 2)
+      { opn=
+          Some
+            ( fmt_opt blk_t.opn $ fmt_opt blk_e.opn
+            $ open_hovbox (Params.Indent.mod_constraint c.conf ~lhs:me) )
       ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
       ; psp= fmt "@,"
       ; bdy=
           hvbox 0
             ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-            $ fmt_opt blk_e.epi $ fmt " :@;<1 2>"
+            $ fmt_opt blk_e.epi $ fmt " :"
+            $ Params.Mod.break_constraint c.conf ~rhs:mt
             $ hvbox 0
                 ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
                 $ fmt_opt blk_t.epi ) )

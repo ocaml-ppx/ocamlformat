@@ -46,6 +46,9 @@ module Mod : sig
           (** Whether to align argument types inside their parenthesis. *) }
 
   val get_args : Conf.t -> functor_parameter loc list -> args
+
+  val break_constraint : Conf.t -> rhs:module_type -> Fmt.t
+  (** The break after [:] in a [Pmod_constraint]. *)
 end
 
 val get_or_pattern_sep :
@@ -190,4 +193,6 @@ module Indent : sig
   val constructor_docstring : Conf.t -> int
 
   val exp_constraint : Conf.t -> int
+
+  val mod_constraint : Conf.t -> lhs:module_expr -> int
 end
