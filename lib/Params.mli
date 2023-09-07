@@ -188,4 +188,6 @@ module Indent : sig
   val record_docstring : Conf.t -> int
 
   val constructor_docstring : Conf.t -> int
+
+  val exp_constraint : Conf.t -> int
 end

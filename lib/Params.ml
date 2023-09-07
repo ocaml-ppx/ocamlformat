@@ -677,4 +677,6 @@ module Indent = struct
     else 4
 
   let constructor_docstring c = if ocp c then 0 else 4
+
+  let exp_constraint c = if ocp c then 1 else 2
 end

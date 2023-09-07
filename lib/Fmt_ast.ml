@@ -2087,7 +2087,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         c.conf
         (fmt_constant c ?epi const $ fmt_atrs)
   | Pexp_constraint (e, t) ->
-      hvbox 2
+      hvbox
+        (Params.Indent.exp_constraint c.conf)
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
             ( fmt_expression c (sub_exp ~ctx e)
             $ fmt "@ : "
