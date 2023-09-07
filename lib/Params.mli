@@ -194,5 +194,11 @@ module Indent : sig
 
   val exp_constraint : Conf.t -> int
 
+  (** Module expressions *)
+
   val mod_constraint : Conf.t -> lhs:module_expr -> int
+
+  (** Module types *)
+
+  val mty_with : Conf.t -> int
 end

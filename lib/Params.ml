@@ -690,4 +690,6 @@ module Indent = struct
   let mod_constraint c ~lhs =
     if ocp c then match lhs.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
+
+  let mty_with c = if ocp c then 0 else 2
 end
