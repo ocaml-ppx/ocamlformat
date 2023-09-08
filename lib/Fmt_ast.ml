@@ -3315,7 +3315,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
   $ hvbox ~name:"constructor_decl" 2
-      ( hvbox
+      ( hovbox
           (Params.Indent.constructor_docstring c.conf)
           ( hvbox 2
               ( fmt_or_k first (if_newline "| ") (str "| ")
