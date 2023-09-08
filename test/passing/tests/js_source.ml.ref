@@ -10092,7 +10092,7 @@ let _ =
   let module M = struct
     include
       (val foooooooooooooooooooooooooooooooooooooooo
-          : fooooooooooooooooooooooooooooooooooooooooo)
+        : fooooooooooooooooooooooooooooooooooooooooo)
   end
   in
   ()

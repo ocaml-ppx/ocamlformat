@@ -200,6 +200,8 @@ module Indent : sig
 
   val mod_constraint : Conf.t -> lhs:module_expr -> int
 
+  val mod_unpack_annot : Conf.t -> int
+
   (** Module types *)
 
   val mty_with : Conf.t -> int

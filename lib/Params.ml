@@ -693,6 +693,8 @@ module Indent = struct
     if ocp c then match lhs.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
     else 2
 
+  let mod_unpack_annot c = if ocp c then 0 else 2
+
   let mty_with c = if ocp c then 0 else 2
 
   let type_constr c = if ocp c then 2 else 0

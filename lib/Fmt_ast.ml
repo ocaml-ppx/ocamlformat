@@ -4104,9 +4104,10 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ after ) }
   | Pmod_unpack (e, ty1, ty2) ->
       let package_type sep (lid, cstrs) =
-        hvbox 0
-          ( hovbox 0 (str sep $ fmt_longident_loc c lid)
-          $ fmt_package_type c ctx cstrs )
+        break 1 (Params.Indent.mod_unpack_annot c.conf)
+        $ hvbox 0
+            ( hovbox 0 (str sep $ fmt_longident_loc c lid)
+            $ fmt_package_type c ctx cstrs )
       in
       { empty with
         opn= Some (open_hvbox 2)
@@ -4117,8 +4118,8 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                 (wrap_fits_breaks ~space:false c.conf "(" ")"
                    ( str "val "
                    $ fmt_expression c (sub_exp ~ctx e)
-                   $ opt ty1 (fun x -> break 1 2 $ package_type ": " x)
-                   $ opt ty2 (fun x -> break 1 2 $ package_type ":> " x) ) )
+                   $ opt ty1 (package_type ": ")
+                   $ opt ty2 (package_type ":> ") ) )
             $ fmt_attributes_and_docstrings c pmod_attributes ) }
   | Pmod_extension x1 ->
       { empty with
