@@ -729,14 +729,17 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
           Poly.(c.conf.fmt_opts.break_separators.v = `Before)
           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v (fits_breaks "" "")
              (fits_breaks "" "   ") )
+  and ret_typ =
+    match fmt_ret_typ with
+    | Some k -> fmt (arrow_sep c ~parens:parent_has_parens) $ k
+    | None -> noop
   in
   indent
   $ wrap_if parens "(" ")"
       ( list args
           (arrow_sep c ~parens:parent_has_parens)
           (fmt_arrow_param c ctx)
-      $ fmt (arrow_sep c ~parens:parent_has_parens)
-      $ fmt_ret_typ )
+      $ ret_typ )
 
 (* The context of [xtyp] refers to the RHS of the expression (namely
    Pexp_constraint) and does not give a relevant information as to whether
@@ -807,7 +810,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       in
       let fmt_ret_typ = fmt_core_type c (sub_typ ~ctx ret_typ) in
       fmt_arrow_type c ~ctx ?indent ~parens:parenze_constraint_ctx
-        ~parent_has_parens:parens args fmt_ret_typ
+        ~parent_has_parens:parens args (Some fmt_ret_typ)
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       hvbox
@@ -2728,7 +2731,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
 
-and fmt_class_signature c ~ctx ~parens ~loc ?(pro = noop) ?ext self_ fields =
+(** [epi] is a function to ensure ordered access to comments. *)
+and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   let update_config c i =
     match i.pctf_desc with
     | Pctf_attribute atr -> update_config c [atr]
@@ -2752,15 +2756,11 @@ and fmt_class_signature c ~ctx ~parens ~loc ?(pro = noop) ?ext self_ fields =
     else noop
   in
   hvbox 2
-    ( hvbox 2
-        ( pro
-        $ ( fmt_if parens "(" $ Cmts.fmt_before c loc $ str "object"
-          $ fmt_extension_suffix c ext
-          $ self_ ) )
+    ( hvbox 2 (pro $ str "object" $ fmt_extension_suffix c ext $ self_)
     $ fmt "@ " $ cmts_within
     $ fmt_item_list c ctx update_config ast fmt_item fields
     $ fmt_if (not (List.is_empty fields)) "@;<1000 -2>"
-    $ hvbox 0 (str "end" $ Cmts.fmt_after c loc $ fmt_if parens ")") )
+    $ hvbox 0 (str "end" $ epi ()) )
 
 and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
@@ -2771,49 +2771,50 @@ and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
   let doc, atrs = doc_atrs pcty_attributes in
   let parens = parenze_cty xtyp in
   let ctx = Cty typ in
+  let pro ~cmt =
+    pro
+    $ (if cmt then Cmts.fmt_before c pcty_loc else noop)
+    $ fmt_if parens "("
+  and epi ~attrs =
+    fmt_if parens ")"
+    $ (if attrs then fmt_attributes c atrs else noop)
+    $ Cmts.fmt_after c pcty_loc
+    $ fmt_docstring c ~pro:(fmt "@ ") doc
+  in
   match pcty_desc with
   | Pcty_constr (name, params) ->
       let params = List.map params ~f:(fun x -> (x, [])) in
       hvbox 2
-        ( pro
+        ( pro ~cmt:false
+        $ Cmts.fmt_before c pcty_loc
         $ hovbox 0
-            (wrap_if parens "(" ")"
-               ( Cmts.fmt c pcty_loc @@ fmt_class_params c ctx params
-               $ fmt_longident_loc c name $ fmt_attributes c atrs ) ) )
+            ( fmt_class_params c ctx params
+            $ fmt_longident_loc c name $ epi ~attrs:true ) )
   | Pcty_signature {pcsig_self; pcsig_fields} ->
-      fmt_class_signature c ~ctx ~parens ~loc:pcty_loc ~pro pcsig_self
-        pcsig_fields
-      $ fmt_attributes c atrs
-  | Pcty_arrow (args, ret_typ) ->
+      let pro = pro ~cmt:true in
+      let epi () = epi ~attrs:true in
+      fmt_class_signature c ~ctx ~pro ~epi pcsig_self pcsig_fields
+  | Pcty_arrow (args, rhs) ->
       Cmts.relocate c.cmts ~src:pcty_loc
-        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.pcty_loc ;
+        ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:rhs.pcty_loc ;
       let pro =
-        pro
-        $ ( fmt_if parens "("
-          $ Cmts.fmt_before c pcty_loc
-          $ fmt_arrow_type c ~ctx ~parens:false ~parent_has_parens:parens
-              args noop )
+        pro ~cmt:true
+        $ fmt_arrow_type c ~ctx ~parens:false ~parent_has_parens:parens args
+            None
+        $ Params.Pcty.arrow c.conf ~rhs
       in
-      fmt_class_type c ~pro (sub_cty ~ctx ret_typ)
-      $ fmt_attributes c atrs $ Cmts.fmt_after c pcty_loc $ fmt_if parens ")"
+      fmt_class_type c ~pro (sub_cty ~ctx rhs) $ epi ~attrs:true
   | Pcty_extension ext ->
-      hvbox 2
-        ( pro
-        $ Cmts.fmt c pcty_loc
-          @@ Params.parens_if parens c.conf
-               (fmt_extension c ctx ext $ fmt_attributes c atrs) )
+      hvbox 2 (pro ~cmt:true $ fmt_extension c ctx ext $ epi ~attrs:true)
   | Pcty_open (popen, cl) ->
       let pro =
-        hvbox 2
-          ( pro
-          $ Cmts.fmt c pcty_loc
-            @@ Params.parens_if parens c.conf
-            @@ ( fmt_open_description c ~keyword:"let open"
-                   ~kw_attributes:atrs popen
-               $ fmt " in@;<1000 0>" ) )
+        pro ~cmt:true
+        $ fmt_open_description c ~keyword:"let open" ~kw_attributes:atrs
+            popen
+        $ str " in"
+        $ Params.Pcty.break_let_open c.conf ~rhs:cl
       in
-      fmt_class_type c ~pro (sub_cty ~ctx cl)
-      $ fmt_docstring c ~pro:(fmt "@ ") doc
+      fmt_class_type c ~pro (sub_cty ~ctx cl) $ epi ~attrs:false
 
 and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Cl exp)

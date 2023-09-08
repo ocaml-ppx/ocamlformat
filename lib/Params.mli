@@ -61,6 +61,12 @@ module Mod : sig
   (** The break after [:] in a [Pmod_constraint]. *)
 end
 
+module Pcty : sig
+  val arrow : Conf.t -> rhs:class_type -> Fmt.t
+
+  val break_let_open : Conf.t -> rhs:class_type -> Fmt.t
+end
+
 val get_or_pattern_sep :
   ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
 

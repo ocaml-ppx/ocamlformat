@@ -134,6 +134,22 @@ module Mod = struct
     else break 1 2
 end
 
+module Pcty = struct
+  let is_sig rhs =
+    match rhs.pcty_desc with Pcty_signature _ -> true | _ -> false
+
+  let arrow (c : Conf.t) ~rhs =
+    let pre, post =
+      match c.fmt_opts.break_separators.v with
+      | `Before -> (fmt "@ ", str " ")
+      | `After -> (str " ", fmt "@ ")
+    in
+    let post = if is_sig rhs then break 1 ~-2 else post in
+    pre $ str "->" $ post
+
+  let break_let_open _conf ~rhs = break 1000 (if is_sig rhs then ~-2 else 0)
+end
+
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
   let nspaces = if cmts_before then 1000 else 1 in
