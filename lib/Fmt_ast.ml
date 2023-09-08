@@ -2237,12 +2237,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_let (lbs, body) ->
       let bindings =
-        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      let ext = lbs.lbs_extension in
+      let ext = lbs.pvbs_extension in
       fmt_let_bindings c ~ctx ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-        lbs.lbs_rec bindings body
+        lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
@@ -2279,7 +2279,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let can_sparse =
         match xbody.ast.pmod_desc with
-        | Pmod_apply _ | Pmod_gen_apply _ -> true
+        | Pmod_apply _ | Pmod_apply_unit _ -> true
         | _ -> false
       in
       hvbox 0
@@ -2867,11 +2867,11 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         | _ -> c.conf.fmt_opts.indent_after_in.v
       in
       let bindings =
-        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.lbs_bindings
+        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ctx ~ext:None ~rec_flag:lbs.lbs_rec ~bindings ~parens
+      fmt_let c ctx ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens
         ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
@@ -4006,7 +4006,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
   @@ fun c ->
   let parens = parenze_mod xmod in
   match pmod_desc with
-  | Pmod_gen_apply (me, loc) ->
+  | Pmod_apply_unit (me, loc) ->
       let arg =
         Cmts.fmt c loc @@ hvbox 0 @@ wrap "(" ")" @@ Cmts.fmt_within c loc
       in
@@ -4208,8 +4208,9 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
         sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value {lbs_rec= rec_flag; lbs_bindings= bindings; lbs_extension} ->
-      let update_config c i = update_config ~quiet:true c i.lb_attributes in
+  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension}
+    ->
+      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in
@@ -4225,7 +4226,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
                 (fits_breaks "" ~hint:(1000, 0) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
-        let ext = if first then lbs_extension else None in
+        let ext = if first then pvbs_extension else None in
         fmt_value_binding c ~rec_flag ?ext ctx ?epi b
       in
       fmt_item_list c ctx update_config ast fmt_item bindings
@@ -4306,6 +4307,11 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | `Other xtyp -> fmt_type_cstr c xtyp
     | `None -> noop
   in
+  let cstr_indent =
+    match lb_typ with
+    | `Other {ast= {ptyp_desc= Ptyp_poly _; _}; _} -> 6
+    | _ -> 4
+  in
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ ->
@@ -4347,7 +4353,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
           ( hvbox_if toplevel 0
               ( hvbox_if toplevel indent
                   ( hovbox 2
-                      ( hovbox 4
+                      ( hovbox cstr_indent
                           ( box_fun_decl_args c 4
                               ( hovbox 4
                                   ( fmt_str_loc c lb_op
