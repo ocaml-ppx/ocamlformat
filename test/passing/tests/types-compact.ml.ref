@@ -215,5 +215,4 @@ type t = {a: ' a'. ' a' t'}
 type t =
   | Foo
   | (* Redirect (None, lib) looks up lib in the same database *)
-    Redirect of
-      db option * (Loc.t * Lib_name.t)
+    Redirect of db option * (Loc.t * Lib_name.t)
