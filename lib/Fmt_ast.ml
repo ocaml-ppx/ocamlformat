@@ -3318,14 +3318,16 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   $ fmt_or_k first (if_newline "| ") (str "| ")
   $ hvbox ~name:"constructor_decl" 0
       ( hovbox 2
-          ( hvbox 2
-              ( hovbox ~name:"constructor_decl_name" 0
-                  (Cmts.fmt c loc
-                     (wrap_if
-                        (Std_longident.String_id.is_symbol txt)
-                        "( " " )" (str txt) ) )
-              $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
-                  pcd_res )
+          ( hvbox 0
+              ( Cmts.fmt_before c loc
+              $ hvbox 2
+                  ( hovbox ~name:"constructor_decl_name" 0
+                      ( wrap_if
+                          (Std_longident.String_id.is_symbol txt)
+                          "( " " )" (str txt)
+                      $ Cmts.fmt_after c loc )
+                  $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
+                      pcd_res ) )
           $ fmt_attributes_and_docstrings c pcd_attributes )
       $ Cmts.fmt_after c pcd_loc )
 
