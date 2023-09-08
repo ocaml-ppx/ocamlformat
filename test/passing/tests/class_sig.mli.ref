@@ -38,6 +38,7 @@ class unix_mockup :
   -> foooo:string
   -> foooo:string
   -> foooo:string
-  -> object
+  ->
+object
   method foo : string
 end
