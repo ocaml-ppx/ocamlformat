@@ -35,6 +35,16 @@ module Exp : sig
     -> parens:bool
     -> Fmt.t
     -> Fmt.t
+
+  val box_fun_decl_args :
+       Conf.t
+    -> parens:bool
+    -> kw:Fmt.t
+    -> args:Fmt.t
+    -> annot:Fmt.t option
+    -> Fmt.t
+  (** Box and assemble the parts [kw] (up to the arguments), [args] and
+      [annot]. *)
 end
 
 module Mod : sig

@@ -2154,20 +2154,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           Params.Indent.function_ ~default:default_indent c.conf ~parens xexp
         else Params.Indent.fun_ ?eol c.conf
       in
+      let intro =
+        let kw =
+          str "fun"
+          $ fmt_extension_suffix c ext
+          $ str " "
+          $ fmt_attributes c pexp_attributes ~suf:" "
+        and args = fmt_fun_args c xargs in
+        Params.Exp.box_fun_decl_args c.conf ~parens ~kw ~args ~annot:fmt_cstr
+      in
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
            ~offset_closing_paren:(-2)
-           ( hovbox 2
-               ( hovbox 4
-                   ( str "fun"
-                   $ fmt_extension_suffix c ext
-                   $ str " "
-                   $ fmt_attributes c pexp_attributes ~suf:" "
-                   $ hvbox_if
-                       (not c.conf.fmt_opts.wrap_fun_args.v)
-                       0 (fmt_fun_args c xargs)
-                   $ fmt_opt fmt_cstr $ fmt "@ " )
-               $ str "->" $ pre_body )
+           ( hovbox 2 (intro $ fmt "@ " $ str "->" $ pre_body)
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in

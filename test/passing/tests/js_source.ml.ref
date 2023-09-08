@@ -10198,11 +10198,11 @@ let _ =
 let _ =
   let x = x in
   fun foooooooooooooooooo
-      foooooooooooooooooo
-      foooooooooooooooooo
-      foooooooooooooooooo
-      foooooooooooooooooo
-      foooooooooooooooooo ->
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo ->
     ()
 ;;
 
@@ -10257,8 +10257,8 @@ module M =
 let _ =
   Some
     (fun fooooooooooooooooooooooooooooooo
-         fooooooooooooooooooooooooooooooo
-         fooooooooooooooooooooooooooooooo ->
+      fooooooooooooooooooooooooooooooo
+      fooooooooooooooooooooooooooooooo ->
       foo)
 ;;
 
