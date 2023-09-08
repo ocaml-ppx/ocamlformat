@@ -194,6 +194,8 @@ module Indent : sig
 
   val exp_constraint : Conf.t -> int
 
+  val assignment_operator_bol : Conf.t -> int
+
   (** Module expressions *)
 
   val mod_constraint : Conf.t -> lhs:module_expr -> int

@@ -472,7 +472,8 @@ let is_arrow_or_poly = function
 
 let fmt_assign_arrow c =
   match c.conf.fmt_opts.assignment_operator.v with
-  | `Begin_line -> fmt "@;<1 2><- "
+  | `Begin_line ->
+      break 1 (Params.Indent.assignment_operator_bol c.conf) $ fmt "<- "
   | `End_line -> fmt " <-@;<1 2>"
 
 let arrow_sep c ~parens : Fmt.s =
@@ -1752,13 +1753,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   $ fmt "@ " $ fmt_expression c xbody ) ) ) )
   | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
+      let bol_indent = Params.Indent.assignment_operator_bol c.conf in
       let cmts_before =
-        let adj =
-          fmt_if
-            Poly.(c.conf.fmt_opts.assignment_operator.v = `End_line)
-            "@,"
+        let indent, adj =
+          (* Use the same break for comment and operator. Comments are placed
+             according to indentation. *)
+          match c.conf.fmt_opts.assignment_operator.v with
+          | `Begin_line -> (bol_indent, noop)
+          | `End_line -> (2, fmt "@,")
         in
-        Cmts.fmt_before c loc ~pro:(break 1 2) ~epi:adj ~adj
+        Cmts.fmt_before c loc ~pro:(break 1 indent) ~epi:adj ~adj
       in
       let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
       Params.parens_if parens c.conf
@@ -1766,7 +1770,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( match c.conf.fmt_opts.assignment_operator.v with
            | `Begin_line ->
                hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
-               $ fmt "@;<1 2>:= " $ cmts_after
+               $ break 1 bol_indent $ fmt ":= " $ cmts_after
                $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
            | `End_line ->
                hvbox 0
