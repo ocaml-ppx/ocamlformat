@@ -7692,6 +7692,41 @@ let _ =
     ~h
 ;;
 
+type t
+[@@deriving
+  some_deriver_name
+, another_deriver_name
+, another_deriver_name
+, another_deriver_name
+, yet_another_such_name
+, such_that_they_line_wrap]
+
+type t
+[@@deriving
+  some_deriver_name another_deriver_name another_deriver_name
+    another_deriver_name yet_another_such_name such_that_they_line_wrap]
+
+let pat =
+  String.Search_pattern.create
+    (String.init len ~f:(function
+        | 0 -> '\n'
+        | n when n < len - 1 -> ' '
+        | _ -> '*'))
+;;
+
+type t =
+  { break_separators: [`Before | `After]
+  ; break_sequences: bool
+  ; break_string_literals: [`Auto | `Never]
+        (** How to potentially break string literals into new lines. *)
+  ; break_struct: bool
+  ; cases_exp_indent: int
+  ; cases_matching_exp_indent: [`Normal | `Compact] }
+
+let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
+    ~enables ~files =
+  match segs with [] | [""] -> (ignores, enables, files, None)
+
 let _ =
   fooooooooooooooooooooooooooooooooooooooo
     fooooooooooooooooooooooooooooooooooooooo
@@ -7798,6 +7833,130 @@ let _ =
   | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
   | _ -> false
 
+let _ =
+  let module M = struct
+    include ( val foooooooooooooooooooooooooooooooooooooooo
+                : fooooooooooooooooooooooooooooooooooooooooo )
+  end in
+  ()
+
+type action =
+  | In_out of [ `Impl | `Intf ] input * string option
+  (** Format input file (or [-] for stdin) of given kind to output file,
+      or stdout if None. *)
+  (* foo *)
+  | Inplace of [ `Impl | `Intf ] input list
+  (** Format in-place, overwriting input file(s). *)
+
+let%test_module "semantics" =
+  (module (
+   struct
+     open Core
+     open Appendable_list
+     module Stable = Stable
+   end :
+     S))
+;;
+
+let _ =
+  Error
+    (`Foooooooooooooooooo
+       (name, Format.sprintf "expecting %S but got %S" Version.version value))
+;;
+
+let _ =
+  Error
+    (Foooooooooooooooooo
+       (name, Format.sprintf "expecting %S but got %S" Version.version value))
+;;
+
+let _ =
+  `Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let _ =
+  Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let _ =
+  Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let (`Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+    =
+  x
+
+let (Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+    =
+  x
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       function
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      function
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       match foo with
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      match foo with
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  let x = x in
+  fun foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo
+      foooooooooooooooooo foooooooooooooooooo ->
+    ()
+;;
+
+module type For_let_syntax_local =
+  For_let_syntax_gen
+    with type ('a, 'b) fn := ('a[@local]) -> 'b
+     and type ('a, 'b) f_labeled_fn := f:('a[@local]) -> 'b
+
+type fooooooooooooooooooooooooooooooo =
+  ( fooooooooooooooooooooooooooooooo
+  , fooooooooooooooooooooooooooooooo )
+    fooooooooooooooooooooooooooooooo
+
+val fooooooooooooooooooooooooooooooo
+  : ( fooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooo )
+      fooooooooooooooooooooooooooooooo
+
 (*
    *)
 
@@ -7824,6 +7983,50 @@ class x =
       object
         method x = y
       end
+
+module M =
+  [%demo
+    module Foo = Bar
+
+    type t]
+;;
+
+let _ =
+  Some
+    (fun fooooooooooooooooooooooooooooooo
+        fooooooooooooooooooooooooooooooo
+        fooooooooooooooooooooooooooooooo ->
+        foo)
+;;
+
+type t =
+  { xxxxxx :
+      t
+        (* _________________________________________________________________________
+           ____________________________________________________________________
+           ___________ *)
+        XXXXXXX.t
+  }
+
+module Test_gen
+  (For_tests : For_tests_gen)
+  (Tested : S_gen
+            with type 'a src := 'a For_tests.Src.t
+            with type 'a dst := 'a For_tests.Dst.t)
+  (Tested : S_gen
+            with type 'a src := 'a For_tests.Src.t
+            with type 'a dst := 'a For_tests.Dst.t
+            and type 'a dst := 'a For_tests.Dst.t
+            and type 'a dst := 'a For_tests.Dst.t) =
+struct
+  open Tested
+  open For_tests
+end
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : YYYYYYYYYYYYYYYYYYYYY.t
+    (* ____________________________________ *)
+  }
 
 (*{v
 
@@ -7964,3 +8167,10 @@ let _ =
 (*    First line is indented more
     .
       . *)
+
+
+module type M = sig
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+        Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
+end

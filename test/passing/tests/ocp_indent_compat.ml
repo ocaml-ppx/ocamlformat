@@ -25,7 +25,7 @@ module type M = sig
 
   val imported_sets_of_closures_table
     : Simple_value_approx.function_declarations option
-      Set_of_closures_id.Tbl.t
+        Set_of_closures_id.Tbl.t
 
   type 'a option_decl =
     names:string list

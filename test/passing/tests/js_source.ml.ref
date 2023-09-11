@@ -1210,7 +1210,7 @@ let rec variantize : type a e. e ty_env -> (a, e) ty -> a -> variant =
       ( tag
       , may_map
           (function
-           | Tdyn (ty, arg) -> variantize e ty arg)
+            | Tdyn (ty, arg) -> variantize e ty arg)
           arg )
 ;;
 
@@ -1302,8 +1302,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj =
            (function
-            | `Nil -> "Nil", None
-            | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
+             | `Nil -> "Nil", None
+             | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) : ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
@@ -1338,9 +1338,9 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-       | `A n -> "A", Some (Tdyn (Int, n))
-       | `B s -> "B", Some (Tdyn (String, s))
-       | `C -> "C", None)
+        | `A n -> "A", Some (Tdyn (Int, n))
+        | `B s -> "B", Some (Tdyn (String, s))
+        | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -1355,8 +1355,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-          | `Nil -> "Nil", None
-          | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
@@ -3554,7 +3554,7 @@ let ssmap =
    end
    in
    (module S)
-    : (module MapT with type key = string and type data = string and type map = SSMap.map))
+   : (module MapT with type key = string and type data = string and type map = SSMap.map))
 ;;
 
 let ssmap = (module SSMap : MapT with type key = _ and type data = _ and type map = _)
@@ -5462,13 +5462,13 @@ module M2 : sig
   end
 end = (
   M :
-    sig
-      module N : sig
-        val x : int
-      end
+  sig
+    module N : sig
+      val x : int
+    end
 
-      module N' = N
-    end)
+    module N' = N
+  end)
 ;;
 
 M2.N'.x
@@ -5501,13 +5501,13 @@ module M2 : sig
   end
 end = (
   M :
-    sig
-      module C : sig
-        val chr : int -> char
-      end
+  sig
+    module C : sig
+      val chr : int -> char
+    end
 
-      module C' = C
-    end)
+    module C' = C
+  end)
 ;;
 
 M2.C'.chr 66;;
@@ -9422,8 +9422,8 @@ let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
 let f x =
   x.contents
-    <- (print_string "coucou";
-        x.contents)
+  <- (print_string "coucou";
+      x.contents)
 ;;
 
 let ( ~$ ) x = Some x
@@ -9642,8 +9642,8 @@ let _ =
 
 let _ =
   aaaaaaa
-    (* __________________________________________________________________________________ *)
-    := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  (* __________________________________________________________________________________ *)
+  := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ;;
 
 let g =
@@ -9696,10 +9696,10 @@ type t =
 
 type t =
   { field : ty
-      (* Here is some verbatim formatted text:
-         {v
+  (* Here is some verbatim formatted text:
+     {v
        starting at column 7
-         v}*)
+     v}*)
   }
 
 module Intro_sort = struct
@@ -9826,9 +9826,9 @@ let x =
   some_fun________________________________
     some_arg______________________________
     (fun param ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+       do_something ();
+       do_something_else ();
+       return_this_value)
 ;;
 
 let x =
@@ -9888,14 +9888,14 @@ let () =
 
 let () =
   ((one_mississippi, two_mississippi, three_mississippi, four_mississippi)
-    : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
+   : Mississippi.t * Mississippi.t * Mississippi.t * Mississippi.t)
 ;;
 
 let _ =
   ((match foo with
     | Bar -> bar
     | Baz -> baz)
-    : string)
+   : string)
 ;;
 
 let _ =
@@ -9911,6 +9911,54 @@ let _ =
       (fun
         (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee) -> FFFFFFFFF gg)
     ~h
+;;
+
+type t
+[@@deriving
+  some_deriver_name
+  , another_deriver_name
+  , another_deriver_name
+  , another_deriver_name
+  , yet_another_such_name
+  , such_that_they_line_wrap]
+
+type t
+[@@deriving
+  some_deriver_name
+    another_deriver_name
+    another_deriver_name
+    another_deriver_name
+    yet_another_such_name
+    such_that_they_line_wrap]
+
+let pat =
+  String.Search_pattern.create
+    (String.init len ~f:(function
+      | 0 -> '\n'
+      | n when n < len - 1 -> ' '
+      | _ -> '*'))
+;;
+
+type t =
+  { break_separators : [ `Before | `After ]
+  ; break_sequences : bool
+  ; break_string_literals : [ `Auto | `Never ]
+  (** How to potentially break string literals into new lines. *)
+  ; break_struct : bool
+  ; cases_exp_indent : int
+  ; cases_matching_exp_indent : [ `Normal | `Compact ]
+  }
+
+let rec collect_files
+  ~enable_outside_detected_project
+  ~root
+  ~segs
+  ~ignores
+  ~enables
+  ~files
+  =
+  match segs with
+  | [] | [ "" ] -> ignores, enables, files, None
 ;;
 
 let _ =
@@ -10040,6 +10088,139 @@ let _ =
   | _ -> false
 ;;
 
+let _ =
+  let module M = struct
+    include
+      (val foooooooooooooooooooooooooooooooooooooooo
+        : fooooooooooooooooooooooooooooooooooooooooo)
+  end
+  in
+  ()
+;;
+
+type action =
+  | In_out of [ `Impl | `Intf ] input * string option
+  (** Format input file (or [-] for stdin) of given kind to output file,
+      or stdout if None. *)
+  (* foo *)
+  | Inplace of [ `Impl | `Intf ] input list
+  (** Format in-place, overwriting input file(s). *)
+
+let%test_module "semantics" =
+  (module (
+  struct
+    open Core
+    open Appendable_list
+    module Stable = Stable
+  end :
+    S))
+;;
+
+let _ =
+  Error
+    (`Foooooooooooooooooo
+      (name, Format.sprintf "expecting %S but got %S" Version.version value))
+;;
+
+let _ =
+  Error
+    (Foooooooooooooooooo
+       (name, Format.sprintf "expecting %S but got %S" Version.version value))
+;;
+
+let _ =
+  `Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let _ =
+  Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let _ =
+  Foooooooooooooooooo
+    (name, Format.sprintf "expecting %S but got %S" Version.version value)
+;;
+
+let (`Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
+  =
+  x
+;;
+
+let (Foooooooooooooooooo
+      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
+  =
+  x
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       function
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      function
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    (fun x ->
+       match foo with
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  Foooooooooooooooooooo.foooooooooooooooooooo
+    foooooooooooooooooooo
+    foooooooooooooooooooo
+    ~x:(fun x ->
+      match foo with
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+;;
+
+let _ =
+  let x = x in
+  fun foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo ->
+    ()
+;;
+
+module type For_let_syntax_local =
+  For_let_syntax_gen
+  with type ('a, 'b) fn := ('a[@local]) -> 'b
+   and type ('a, 'b) f_labeled_fn := f:('a[@local]) -> 'b
+
+type fooooooooooooooooooooooooooooooo =
+  ( fooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooo )
+    fooooooooooooooooooooooooooooooo
+
+val fooooooooooooooooooooooooooooooo
+  : ( fooooooooooooooooooooooooooooooo
+      , fooooooooooooooooooooooooooooooo )
+      fooooooooooooooooooooooooooooooo
+
 (*
     *)
 
@@ -10066,6 +10247,50 @@ class x =
   object
     method x = y
   end
+
+module M =
+  [%demo
+  module Foo = Bar
+
+  type t]
+
+let _ =
+  Some
+    (fun fooooooooooooooooooooooooooooooo
+      fooooooooooooooooooooooooooooooo
+      fooooooooooooooooooooooooooooooo ->
+      foo)
+;;
+
+type t =
+  { xxxxxx :
+      t
+        (* _________________________________________________________________________
+           ____________________________________________________________________
+           ___________ *)
+        XXXXXXX.t
+  }
+
+module Test_gen
+    (For_tests : For_tests_gen)
+    (Tested : S_gen
+              with type 'a src := 'a For_tests.Src.t
+              with type 'a dst := 'a For_tests.Dst.t)
+    (Tested : S_gen
+              with type 'a src := 'a For_tests.Src.t
+              with type 'a dst := 'a For_tests.Dst.t
+               and type 'a dst := 'a For_tests.Dst.t
+               and type 'a dst := 'a For_tests.Dst.t) =
+struct
+  open Tested
+  open For_tests
+end
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :
+      YYYYYYYYYYYYYYYYYYYYY.t
+  (* ____________________________________ *)
+  }
 
 (*{v
       foo
@@ -10160,18 +10385,18 @@ let _ =
        ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo
        (fun foo ->
-         match bar with
-         | Some _ -> foo
-         | None -> baz)
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooofoooooooooo
        (fun foo ->
-         match bar with
-         | Some _ -> foo
-         | None -> baz)
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
 ;;
 
 let _ =
@@ -10198,3 +10423,9 @@ let _ =
 (*    First line is indented more
       .
       . *)
+
+module type M = sig
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+        Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
+end

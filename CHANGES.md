@@ -21,6 +21,7 @@ Tags:
 
 - Compatible with OCaml 5.1.0 (#2412, @Julow)
   The syntax of let-bindings changed sligthly in this version.
+- Improved ocp-indent compatibility (#2428, @Julow)
 - \* Removed extra break in constructor declaration with comment (#2429, @Julow)
 - \* De-indent the `object` keyword in class types (#2425, @Julow)
 - \* Consistent formatting of arrows in class types (#2422, @Julow)
