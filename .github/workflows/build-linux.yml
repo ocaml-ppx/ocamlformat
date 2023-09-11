@@ -33,6 +33,11 @@ jobs:
       - name: Opam dependencies
         run: opam install --deps-only -t .
 
+      - name: Build
+        run: |
+          opam exec -- dune subst
+          opam exec -- dune build -p ocamlformat-lib,ocamlformat
+
       - name: Runtest
         run: opam exec -- dune runtest
 
