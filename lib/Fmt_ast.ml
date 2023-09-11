@@ -2169,7 +2169,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
            ~offset_closing_paren:(-2)
-           ( hovbox 2 (intro $ fmt "@ " $ str "->" $ pre_body)
+           ( hovbox 2 (intro $ str " ->" $ pre_body)
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
