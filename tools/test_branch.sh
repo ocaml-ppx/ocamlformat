@@ -69,6 +69,7 @@ build_version ()
   echo "Building $rev in $tmp"
   git worktree add --detach "$tmp" "$rev"
   ( cd "$tmp"
+    dune subst
     dune build @install
     dune install --prefix=dist ocamlformat &>/dev/null )
   cp "$tmp/dist/bin/ocamlformat" "$dest"
@@ -106,6 +107,10 @@ else
   exe_a=`realpath $arg_a`
   exe_b=`realpath $arg_b`
 fi
+
+echo "Running test_branch with versions:"
+echo "  a: $("$exe_a" --version)"
+echo "  b: $("$exe_b" --version)"
 
 run () { make -C test-extra "$@"; }
 
