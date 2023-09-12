@@ -211,3 +211,13 @@ type ' a' t = ' a' option
 type ' a' t = int as ' a'
 
 type t = {a: ' a'. ' a' t'}
+
+type t =
+  | Foo
+  | (* Redirect (None, lib) looks up lib in the same database *)
+    Redirect of db option * (Loc.t * Lib_name.t)
+
+type t =
+  | Foo
+  | Store of {exp1: Exp.t; typ: Typ.t option; exp2: Exp.t; loc: Location.t}
+      (** *exp1 <- exp2 with exp2:typ *)

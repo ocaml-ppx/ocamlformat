@@ -15,6 +15,9 @@ open Asttypes
 open Fmt
 open Ast
 
+(** Shorthand for a commonly used option. *)
+let ocp c = c.Conf.fmt_opts.ocp_indent_compat.v
+
 (** Whether [exp] occurs in [args] as a labelled argument. *)
 let is_labelled_arg args exp =
   List.exists
@@ -23,12 +26,11 @@ let is_labelled_arg args exp =
       | Labelled _, x | Optional _, x -> phys_equal x exp )
     args
 
+(** Like [is_labelled_arg] but look at an expression's context. *)
 let is_labelled_arg' xexp =
   match xexp.Ast.ctx with
   | Exp {pexp_desc= Pexp_apply (_, args); _} -> is_labelled_arg args xexp.ast
   | _ -> false
-
-let ocp c = c.Conf.fmt_opts.ocp_indent_compat.v
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
@@ -90,6 +92,13 @@ module Exp = struct
           Fmt.fits_breaks "(" "(" $ k
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap "(" ")" k
+
+  let box_fun_decl_args c ~parens ~kw ~args ~annot =
+    let box_decl, should_box_args =
+      if ocp c then (hvbox (if parens then 1 else 2), false)
+      else (hovbox 4, not c.fmt_opts.wrap_fun_args.v)
+    in
+    box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 end
 
 module Mod = struct
@@ -116,6 +125,29 @@ module Mod = struct
     let arg_psp = if dock then str " " else break 1 psp_indent in
     let arg_align = (not dock) && ocp c in
     {dock; arg_psp; indent; arg_align}
+
+  let break_constraint c ~rhs =
+    if ocp c then
+      match rhs.pmty_desc with
+      | Pmty_signature _ when ocp c -> break 1 0
+      | _ -> break 1 2
+    else break 1 2
+end
+
+module Pcty = struct
+  let is_sig rhs =
+    match rhs.pcty_desc with Pcty_signature _ -> true | _ -> false
+
+  let arrow (c : Conf.t) ~rhs =
+    let pre, post =
+      match c.fmt_opts.break_separators.v with
+      | `Before -> (fmt "@ ", str " ")
+      | `After -> (str " ", fmt "@ ")
+    in
+    let post = if is_sig rhs then break 1 ~-2 else post in
+    pre $ str "->" $ post
+
+  let break_let_open _conf ~rhs = break 1000 (if is_sig rhs then ~-2 else 0)
 end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
@@ -584,23 +616,6 @@ let match_indent ?(default = 0) (c : Conf.t) ~parens ~(ctx : Ast.t) =
       2 (* Match is docked *)
   | _ -> default
 
-let function_indent ?(default = 0) (c : Conf.t) ~parens ~xexp =
-  match c.fmt_opts.function_indent_nested.v with
-  | `Always -> c.fmt_opts.function_indent.v
-  | _
-    when c.fmt_opts.ocp_indent_compat.v && parens
-         && not (is_labelled_arg' xexp) ->
-      default + 1
-  | _ -> default
-
-let fun_indent ?eol (c : Conf.t) =
-  match c.fmt_opts.function_indent_nested.v with
-  | `Always -> c.fmt_opts.function_indent.v
-  | _ ->
-      if Option.is_none eol then 2
-      else if c.fmt_opts.let_binding_deindent_fun.v then 1
-      else 0
-
 let comma_sep (c : Conf.t) : Fmt.s =
   match c.fmt_opts.break_separators.v with
   | `Before -> "@,, "
@@ -648,4 +663,78 @@ module Align = struct
       match me.pmod_desc with
       | Pmod_structure _ | Pmod_ident _ -> false
       | _ -> true
+end
+
+module Indent = struct
+  let function_ ?(default = 0) (c : Conf.t) ~parens xexp =
+    match c.fmt_opts.function_indent_nested.v with
+    | `Always -> c.fmt_opts.function_indent.v
+    | _ when ocp c && parens && not (is_labelled_arg' xexp) -> default + 1
+    | _ -> default
+
+  let fun_ ?eol (c : Conf.t) =
+    match c.fmt_opts.function_indent_nested.v with
+    | `Always -> c.fmt_opts.function_indent.v
+    | _ ->
+        if Option.is_none eol then 2
+        else if c.fmt_opts.let_binding_deindent_fun.v then 1
+        else 0
+
+  let fun_type_annot c = if ocp c then 2 else 4
+
+  let fun_args c = if ocp c then 6 else 4
+
+  let docked_function (c : Conf.t) ~parens xexp =
+    if ocp c then if parens then 3 else 2
+    else
+      let default = if c.fmt_opts.wrap_fun_args.v then 2 else 4 in
+      function_ ~default c ~parens:false xexp
+
+  let docked_function_after_fun (c : Conf.t) ~parens ~lbl =
+    if ocp c then if parens && Poly.equal lbl Nolabel then 3 else 2 else 0
+
+  let fun_args_group (c : Conf.t) ~lbl exp =
+    if not (ocp c) then 2
+    else
+      match exp.pexp_desc with
+      | Pexp_function _ -> 2
+      | _ -> ( match lbl with Nolabel -> 3 | _ -> 2 )
+
+  let docked_fun (c : Conf.t) ~source ~loc ~lbl =
+    if not (ocp c) then 2
+    else
+      let loc, if_breaks =
+        match lbl with
+        | Nolabel -> (loc, 3)
+        | Optional x | Labelled x -> (x.loc, 2)
+      in
+      if Source.begins_line ~ignore_spaces:true source loc then if_breaks
+      else 0
+
+  let record_docstring (c : Conf.t) =
+    if ocp c then
+      match c.fmt_opts.break_separators.v with `Before -> -2 | `After -> 0
+    else 4
+
+  let constructor_docstring c = if ocp c then 0 else 4
+
+  let exp_constraint c = if ocp c then 1 else 2
+
+  let assignment_operator_bol c = if ocp c then 0 else 2
+
+  let mod_constraint c ~lhs =
+    if ocp c then match lhs.pmod_desc with Pmod_structure _ -> 0 | _ -> 2
+    else 2
+
+  let mod_unpack_annot c = if ocp c then 0 else 2
+
+  let mty c = if ocp c then 2 else 3
+
+  let mty_with c = if ocp c then 0 else 2
+
+  let type_constr c = if ocp c then 2 else 0
+
+  let variant c ~parens = if ocp c && parens then 3 else 2
+
+  let variant_type_arg c = if ocp c then 2 else 0
 end

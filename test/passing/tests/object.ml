@@ -117,7 +117,7 @@ end
 
 class type mapper =
   let open Modl1 in
-  object
+object
   method expression : Javascript.expression -> Javascript.expression
 
   method expression_o :

@@ -10208,11 +10208,13 @@ module type For_let_syntax_local =
    and type ('a, 'b) f_labeled_fn := f:('a[@local]) -> 'b
 
 type fooooooooooooooooooooooooooooooo =
-  (fooooooooooooooooooooooooooooooo, fooooooooooooooooooooooooooooooo)
+  ( fooooooooooooooooooooooooooooooo
+  , fooooooooooooooooooooooooooooooo )
     fooooooooooooooooooooooooooooooo
 
 val fooooooooooooooooooooooooooooooo
-  : (fooooooooooooooooooooooooooooooo, fooooooooooooooooooooooooooooooo)
+  : ( fooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooo )
       fooooooooooooooooooooooooooooooo
 
 (* *)
@@ -10432,3 +10434,9 @@ let _ =
 (*    First line is indented more
       .
       . *)
+
+module type M = sig
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+        Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
+end

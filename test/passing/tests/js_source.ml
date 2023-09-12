@@ -8174,3 +8174,10 @@ let _ =
 (*    First line is indented more
     .
       . *)
+
+
+module type M = sig
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+        Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
+end

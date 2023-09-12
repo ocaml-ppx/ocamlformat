@@ -35,6 +35,16 @@ module Exp : sig
     -> parens:bool
     -> Fmt.t
     -> Fmt.t
+
+  val box_fun_decl_args :
+       Conf.t
+    -> parens:bool
+    -> kw:Fmt.t
+    -> args:Fmt.t
+    -> annot:Fmt.t option
+    -> Fmt.t
+  (** Box and assemble the parts [kw] (up to the arguments), [args] and
+      [annot]. *)
 end
 
 module Mod : sig
@@ -47,6 +57,15 @@ module Mod : sig
     }
 
   val get_args : Conf.t -> functor_parameter loc list -> args
+
+  val break_constraint : Conf.t -> rhs:module_type -> Fmt.t
+  (** The break after [:] in a [Pmod_constraint]. *)
+end
+
+module Pcty : sig
+  val arrow : Conf.t -> rhs:class_type -> Fmt.t
+
+  val break_let_open : Conf.t -> rhs:class_type -> Fmt.t
 end
 
 val get_or_pattern_sep :
@@ -146,17 +165,6 @@ val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val function_indent :
-  ?default:int -> Conf.t -> parens:bool -> xexp:expression Ast.xt -> int
-(** [function_indent c ~ctx ~default] returns the indentation used for the
-    function in context [ctx], depending on the `function-indent-nested`
-    option, or using the [default] indentation (0 if not provided) if the
-    option does not apply. *)
-
-val fun_indent : ?eol:Fmt.t -> Conf.t -> int
-(** [fun_undent ?eol c] returns the indentation used for the function,
-    depending on the `function-indent-nested` option. *)
-
 val comma_sep : Conf.t -> Fmt.s
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
@@ -175,4 +183,60 @@ module Align : sig
 
   val module_pack : Conf.t -> me:module_expr -> bool
   (** Not implemented as a wrapper to work with the blk system. *)
+end
+
+module Indent : sig
+  (** Indentation of various nodes. *)
+
+  (** Expressions *)
+
+  val function_ :
+    ?default:int -> Conf.t -> parens:bool -> expression Ast.xt -> int
+  (** Check the [function-indent-nested] option, or return [default] (0 if
+      not provided) if the option does not apply. *)
+
+  val fun_ : ?eol:Fmt.t -> Conf.t -> int
+  (** Handle [function-indent-nested]. *)
+
+  val fun_args : Conf.t -> int
+
+  val fun_type_annot : Conf.t -> int
+
+  val docked_fun :
+    Conf.t -> source:Source.t -> loc:Location.t -> lbl:arg_label -> int
+
+  val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int
+
+  val docked_function_after_fun :
+    Conf.t -> parens:bool -> lbl:arg_label -> int
+
+  val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
+
+  val record_docstring : Conf.t -> int
+
+  val constructor_docstring : Conf.t -> int
+
+  val exp_constraint : Conf.t -> int
+
+  val assignment_operator_bol : Conf.t -> int
+
+  (** Module expressions *)
+
+  val mod_constraint : Conf.t -> lhs:module_expr -> int
+
+  val mod_unpack_annot : Conf.t -> int
+
+  (** Module types *)
+
+  val mty : Conf.t -> int
+
+  val mty_with : Conf.t -> int
+
+  (** Types *)
+
+  val type_constr : Conf.t -> int
+
+  val variant : Conf.t -> parens:bool -> int
+
+  val variant_type_arg : Conf.t -> int
 end
