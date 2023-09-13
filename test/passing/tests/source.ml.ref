@@ -9132,7 +9132,7 @@ end
 
 type t = | ;;
 
-M.(Some x) [@foo]
+M.(Some x) [@foo] ;;
 
 [@@@foo:]
 

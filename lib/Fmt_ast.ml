@@ -4448,7 +4448,11 @@ let fmt_toplevel ?(force_semisemi = false) c ctx itms =
     let last = Option.is_none next in
     let semisemi =
       match (itm, next) with
+      | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
       | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
+      | ( `Item {pstr_desc= Pstr_eval _; _}
+        , Some (`Item {pstr_desc= Pstr_attribute _; _}, _) ) ->
+          true
       | `Item _, Some (`Directive _, _) -> true
       | _ -> force_semisemi && last
     in
