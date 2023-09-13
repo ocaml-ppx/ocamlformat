@@ -31,7 +31,7 @@ Tags:
 - Fix dropped attributes on a begin-end in a match case (#2421, @Julow)
 - Fix non-stabilizing comments before a functor type argument (#2420, @Julow)
 - Fix crash caused by module types with nested `with module` (#2419, @Julow)
-- Fix ';;' formatting between  doc-comments and toplevel directives (#<PR_NUMBER>, @gpetiot)
+- Fix ';;' formatting between  doc-comments and toplevel directives (#2432, @gpetiot)
 
 ## 0.26.0 (2023-07-18)
 
