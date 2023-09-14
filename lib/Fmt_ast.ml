@@ -4353,29 +4353,32 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
   in
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let fmt_cstr =
+  let fmt_newtypes, fmt_cstr =
     let fmt_sep x =
       match c.conf.fmt_opts.break_colon.v with
       | `Before -> fmt "@ " $ str x $ char ' '
       | `After -> char ' ' $ str x $ fmt "@ "
     in
     match lb_typ with
-    | `Polynewtype (pvars, xtyp) ->
-        fmt_sep ":"
-        $ hvbox 0
-            ( str "type "
-            $ list pvars " " (fmt_str_loc c)
-            $ fmt ".@ " $ fmt_core_type c xtyp )
+    | `Polynewtype (pvars, xtyp) -> (
+      match c.conf.fmt_opts.break_colon.v with
+      | `Before ->
+          ( noop
+          , fmt_sep ":"
+            $ hvbox 0
+                ( str "type "
+                $ list pvars " " (fmt_str_loc c)
+                $ fmt ".@ " $ fmt_core_type c xtyp ) )
+      | `After ->
+          ( fmt_sep ":"
+            $ hvbox 0 (str "type " $ list pvars " " (fmt_str_loc c) $ str ".")
+          , fmt "@ " $ fmt_core_type c xtyp ) )
     | `Coerce (xtyp1, xtyp2) ->
-        opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
-        $ fmt_sep ":>" $ fmt_core_type c xtyp2
-    | `Other xtyp -> fmt_type_cstr c xtyp
-    | `None -> noop
-  in
-  let cstr_indent =
-    match lb_typ with
-    | `Other {ast= {ptyp_desc= Ptyp_poly _; _}; _} -> 6
-    | _ -> 4
+        ( noop
+        , opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
+          $ fmt_sep ":>" $ fmt_core_type c xtyp2 )
+    | `Other xtyp -> (noop, fmt_type_cstr c xtyp)
+    | `None -> (noop, noop)
   in
   let indent =
     match lb_exp.ast.pexp_desc with
@@ -4416,7 +4419,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
           ( hvbox_if toplevel 0
               ( hvbox_if toplevel indent
                   ( hovbox 2
-                      ( hovbox cstr_indent
+                      ( hovbox 4
                           ( box_fun_decl_args c 4
                               ( hovbox 4
                                   ( fmt_str_loc c lb_op
@@ -4429,7 +4432,8 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                                   (not (List.is_empty lb_args))
                                   ( fmt "@ "
                                   $ wrap_fun_decl_args c
-                                      (fmt_fun_args c lb_args) ) )
+                                      (fmt_fun_args c lb_args) )
+                              $ fmt_newtypes )
                           $ fmt_cstr )
                       $ fmt_if_k (not lb_pun)
                           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v

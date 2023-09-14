@@ -76,8 +76,8 @@ let ssmap :
     -> unit =
   ()
 
-let long_function_name :
-    type a. a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit =
+let long_function_name : type a.
+    a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit =
  fun () -> ()
 
 let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n (a : 'a array)
