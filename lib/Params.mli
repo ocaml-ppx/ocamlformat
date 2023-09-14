@@ -139,6 +139,7 @@ type if_then_else =
   ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
+  ; branch_expr: expression Ast.xt
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 

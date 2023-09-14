@@ -267,3 +267,8 @@ let x =
       | pd -> pd
   in
   ()
+
+let _ =
+  if something_changed then begin[@attr]
+    loop
+  end

@@ -462,16 +462,19 @@ type if_then_else =
   ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
+  ; branch_expr: expression Ast.xt
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
     ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
-  let beginend =
-    match xbch.Ast.ast with
-    | {pexp_desc= Pexp_beginend _; _} -> true
-    | _ -> false
+  let beginend, branch_expr =
+    let ast = xbch.Ast.ast in
+    match ast with
+    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
+        (true, sub_exp ~ctx:(Exp ast) nested_exp)
+    | _ -> (false, xbch)
   in
   let wrap_parens ~wrap_breaks k =
     if beginend then wrap "begin" "end" (wrap_breaks k)
@@ -517,6 +520,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= None
+      ; branch_expr
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
   | `K_R ->
@@ -528,6 +532,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
+      ; branch_expr
       ; break_end_branch=
           fmt_if_k (parens_bch || beginend || not last) (break 1000 0)
       ; space_between_branches= fmt_if (beginend || parens_bch) " " }
@@ -552,6 +557,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
                (not (Location.is_single_line expr_loc c.fmt_opts.margin.v))
                (break_unless_newline 1000 2) )
       ; expr_eol= Some (fmt "@;<1 2>")
+      ; branch_expr
       ; break_end_branch= noop
       ; space_between_branches=
           fmt
@@ -571,6 +577,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_expr= None
       ; expr_pro= Some (break_unless_newline 1000 2)
       ; expr_eol= None
+      ; branch_expr
       ; break_end_branch= noop
       ; space_between_branches=
           fmt
@@ -600,6 +607,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= None
+      ; branch_expr
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
 
