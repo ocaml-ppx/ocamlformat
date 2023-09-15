@@ -1590,6 +1590,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to docstrings_toplevel_directives.mlt.stdout
+   (with-stderr-to docstrings_toplevel_directives.mlt.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/docstrings_toplevel_directives.mlt})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt docstrings_toplevel_directives.mlt.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt.err docstrings_toplevel_directives.mlt.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to eliom_ext.eliom.stdout
    (with-stderr-to eliom_ext.eliom.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/eliom_ext.eliom})))))
