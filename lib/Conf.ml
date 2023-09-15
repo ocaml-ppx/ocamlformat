@@ -277,14 +277,6 @@ module V = struct
   let v0_22 = Version.make ~major:0 ~minor:22 ~patch:None
 end
 
-let disable_outside_detected_project =
-  let msg =
-    "OCamlFormat is disabled outside of a detected project by default, to \
-     enable the opposite behavior use `enable-outside-detected-project`."
-  in
-  let names = ["disable-outside-detected-project"] in
-  Decl.removed_option ~names ~since:V.v0_22 ~msg
-
 let profile =
   let doc =
     "Select a preset profile which sets $(i,all) options, overriding lower \
@@ -349,7 +341,7 @@ let profile =
       {conf with profile= elt; fmt_opts= p} )
     (fun conf -> conf.profile)
 
-let options = Store.[elt disable_outside_detected_project; elt profile]
+let options = Store.[elt profile]
 
 (** Options affecting formatting *)
 module Formatting = struct

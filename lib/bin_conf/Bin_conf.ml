@@ -83,6 +83,10 @@ let info =
          $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined) is \
          used."
     ; `P
+        "$(b,Warning:) in the next release, OcamlFormat will be enabled by \
+         default, the presence of a project root will not be checked unless \
+         [--disable-outside-detected-project] is used."
+    ; `P
         "If the $(b,disable) option is not set, an $(b,.ocamlformat-ignore) \
          file specifies files that OCamlFormat should ignore. Each line in \
          an $(b,.ocamlformat-ignore) file specifies a filename relative to \
@@ -116,31 +120,44 @@ let enable_outside_detected_project =
       (List.map File_system.project_root_witness ~f:(fun name ->
            Format.sprintf "$(b,%s)" name ) )
   in
-  let doc =
-    Format.sprintf
-      "Read $(b,.ocamlformat) config files outside the current project when \
-       no project root has been detected for the input file. The project \
-       root of an input file is taken to be the nearest ancestor directory \
-       that contains a %s file. If $(b,.ocamlformat) config files are \
-       located in the same directory or parents they are applied, if no \
-       $(b,.ocamlformat) file is found then the global configuration \
-       defined in $(b,\\$XDG_CONFIG_HOME/.ocamlformat) (or in \
-       $(b,\\$HOME/.config/.ocamlformat) if $(b,\\$XDG_CONFIG_HOME) is \
-       undefined) is applied."
-      witness
+  let enable =
+    let doc_enable =
+      Format.sprintf
+        "Read $(b,.ocamlformat) config files outside the current project \
+         when no project root has been detected for the input file. The \
+         project root of an input file is taken to be the nearest ancestor \
+         directory that contains a %s file. If $(b,.ocamlformat) config \
+         files are located in the same directory or parents they are \
+         applied, if no $(b,.ocamlformat) file is found then the global \
+         configuration defined in $(b,\\$XDG_CONFIG_HOME/.ocamlformat) (or \
+         in $(b,\\$HOME/.config/.ocamlformat) if $(b,\\$XDG_CONFIG_HOME) is \
+         undefined) is applied."
+        witness
+    in
+    Arg.info ["enable-outside-detected-project"] ~doc:doc_enable ~docs
+  in
+  let disable =
+    let doc_disable =
+      "If no $(b,.ocamlformat) config files have been detected, disable the \
+       formatting. OCamlFormat is disabled outside of a detected project by \
+       default, to enable the opposite behavior use \
+       $(b,--enable-outside-detected-project).\n\
+       $(b,Warning:) in the next release, OCamlFormat will be enabled by \
+       default, the presence of a project root will not be checked unless \
+       $(b,--disable-outside-detected-project) is used."
+    in
+    Arg.info ["disable-outside-detected-project"] ~doc:doc_disable ~docs
   in
   Term.(
     const (fun enable_outside_detected_project conf ->
         {conf with enable_outside_detected_project} )
-    $ Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs) )
+    $ Arg.(value & vflag false [(true, enable); (false, disable)]) )
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   declare_option
     ~set:(fun inplace conf -> {conf with inplace})
     Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
-
-(* Other Flags *)
 
 let check =
   let doc =
@@ -578,7 +595,9 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
      in
      warn ~loc:(Location.in_file file)
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
-        not set and %s"
+        not set and %s. In the next release, OcamlFormat will be enabled by \
+        default, the presence of a project root will not be checked unless \
+        [--disable-outside-detected-project] is used."
        why ) ;
     Operational.update conf ~f:(fun f ->
         {f with disable= {f.disable with v= true}} ) )

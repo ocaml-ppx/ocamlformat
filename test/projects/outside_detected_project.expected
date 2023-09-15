@@ -1,5 +1,5 @@
 File "main.ml", line 1:
-Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../outside_detected_project)
+Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../outside_detected_project). In the next release, OcamlFormat will be enabled by default, the presence of a project root will not be checked unless [--disable-outside-detected-project] is used.
 (* The following code should not be formatted *)
 type t = {
   foooooo : string;
