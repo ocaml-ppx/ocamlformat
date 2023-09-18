@@ -3463,7 +3463,7 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       { opn= None
       ; pro= Some (before $ str "sig" $ fmt_if empty " ")
       ; psp= fmt_if (not empty) "@;<1000 2>"
-      ; bdy= within $ fmt_signature c ctx s
+      ; bdy= within $ (if empty then noop else fmt_signature c ctx s)
       ; cls= noop
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
