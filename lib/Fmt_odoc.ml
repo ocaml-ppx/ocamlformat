@@ -13,7 +13,8 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type fmt_code = Conf.t -> offset:int -> string -> string or_error
+type fmt_code =
+  Conf.t -> offset:int -> string -> (string, Rresult.R.msg) Result.t
 
 type c = {fmt_code: fmt_code; conf: Conf.t}
 

@@ -615,6 +615,10 @@ type action =
   | Check of input list
   | Print_config of Conf.t
 
+let ( let* ) = Rresult.( >>= )
+
+let ( let+ ) = Rresult.( >>| )
+
 let make_action ~enable_outside_detected_project ~root action inputs =
   let make_file ?name kind file =
     let name = Option.value ~default:file name in
@@ -622,14 +626,14 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       build_config ~enable_outside_detected_project ~root ~file:name
         ~is_stdin:false
     in
-    Ok {kind; name; file= File file; conf}
+    {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
     let+ conf =
       build_config ~enable_outside_detected_project ~root ~file:name
         ~is_stdin:false
     in
-    Ok {kind; name; file= Stdin; conf}
+    {kind; name; file= Stdin; conf}
   in
   let make_input = function
     | `Single_file (kind, name, f) -> make_file ?name kind f
@@ -638,15 +642,15 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   let make_inputs = function
     | (`Single_file _ | `Stdin _) as inp ->
         let+ inp = make_input inp in
-        Ok [inp]
+        [inp]
     | `Several_files files ->
         let+ inputs =
           List.fold_left files ~init:(Ok []) ~f:(fun acc (kind, file) ->
-              let+ acc = acc in
+              let* acc = acc in
               let+ file = make_file kind file in
-              Ok (file :: acc) )
+              file :: acc )
         in
-        Ok (List.rev inputs)
+        List.rev inputs
   in
   match (action, inputs) with
   | `Print_config, inputs ->
@@ -661,7 +665,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       let+ conf =
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin
       in
-      Ok (Print_config conf)
+      Print_config conf
   | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
   | (`No_action | `Output _), `Several_files _ ->
@@ -671,16 +675,16 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Error "Cannot specify stdin together with --inplace"
   | `No_action, ((`Single_file _ | `Stdin _) as inp) ->
       let+ inp = make_input inp in
-      Ok (In_out (inp, None))
+      In_out (inp, None)
   | `Output output, ((`Single_file _ | `Stdin _) as inp) ->
       let+ inp = make_input inp in
-      Ok (In_out (inp, Some output))
+      In_out (inp, Some output)
   | `Inplace, ((`Single_file _ | `Several_files _) as inputs) ->
       let+ inputs = make_inputs inputs in
-      Ok (Inplace inputs)
+      Inplace inputs
   | `Check, ((`Single_file _ | `Several_files _ | `Stdin _) as inputs) ->
       let+ inputs = make_inputs inputs in
-      Ok (Check inputs)
+      Check inputs
 
 let validate_inputs () =
   match (!global_conf.inputs, !global_conf.kind, !global_conf.name) with
@@ -742,8 +746,8 @@ let validate () =
     !global_conf.enable_outside_detected_project && Option.is_none root
   in
   match
-    let+ action = validate_action () in
-    let+ inputs = validate_inputs () in
+    let* action = validate_action () in
+    let* inputs = validate_inputs () in
     make_action ~enable_outside_detected_project ~root action inputs
   with
   | Error e -> `Error (false, e)
