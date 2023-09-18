@@ -19,7 +19,7 @@
 (rule
  (with-stdout-to
   dune-project.formatted
-  (run dune format-dune-file dune-project)))
+  (run dune format-dune-file %{dep:dune-project})))
 
 (rule
  (alias fmt)
