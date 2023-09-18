@@ -177,7 +177,8 @@ type cases =
   ; box_pattern_arrow: Fmt.t -> Fmt.t
   ; break_before_arrow: Fmt.t
   ; break_after_arrow: Fmt.t
-  ; open_paren_branch: Fmt.t
+  ; open_paren_branch_eol: Fmt.t
+  ; open_paren_branch_bol: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
   ; branch_expr: expression Ast.xt
@@ -211,7 +212,10 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
     else (parenze_exp xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
-  let open_paren_branch, close_paren_branch, branch_expr =
+  let ( open_paren_branch_eol
+      , open_paren_branch_bol
+      , close_paren_branch
+      , branch_expr ) =
     match ast with
     | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
         let close_paren =
@@ -220,7 +224,10 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
           in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
-        (fmt "@;<1 0>begin", close_paren, sub_exp ~ctx:(Exp ast) nested_exp)
+        ( noop
+        , open_hvbox 2 $ fmt "begin@;"
+        , close_paren $ close_box
+        , sub_exp ~ctx:(Exp ast) nested_exp )
     | _ ->
         let close_paren =
           fmt_if_k parens_branch
@@ -229,7 +236,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
             | `No -> fmt "@,)"
             | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
         in
-        (fmt_if parens_branch " (", close_paren, xast)
+        (fmt_if parens_branch " (", noop, close_paren, xast)
   in
   match c.fmt_opts.break_cases.v with
   | `Fit ->
@@ -239,7 +246,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; box_pattern_arrow= hovbox 2
       ; break_before_arrow= fmt "@;<1 0>"
       ; break_after_arrow= noop
-      ; open_paren_branch
+      ; open_paren_branch_eol
+      ; open_paren_branch_bol
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
       ; branch_expr
@@ -251,7 +259,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
-      ; open_paren_branch
+      ; open_paren_branch_eol
+      ; open_paren_branch_bol
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
       ; expr_parens
       ; branch_expr
@@ -263,7 +272,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
-      ; open_paren_branch
+      ; open_paren_branch_eol
+      ; open_paren_branch_bol
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
       ; branch_expr
@@ -275,7 +285,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
-      ; open_paren_branch
+      ; open_paren_branch_eol
+      ; open_paren_branch_bol
       ; break_after_opening_paren= fmt "@ "
       ; expr_parens
       ; branch_expr
@@ -287,7 +298,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
       ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
-      ; open_paren_branch
+      ; open_paren_branch_eol
+      ; open_paren_branch_bol
       ; break_after_opening_paren= break 1000 0
       ; expr_parens
       ; branch_expr

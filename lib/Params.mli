@@ -77,7 +77,8 @@ type cases =
   ; box_pattern_arrow: Fmt.t -> Fmt.t
   ; break_before_arrow: Fmt.t
   ; break_after_arrow: Fmt.t
-  ; open_paren_branch: Fmt.t
+  ; open_paren_branch_eol: Fmt.t
+  ; open_paren_branch_bol: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
   ; branch_expr: expression Ast.xt  (** Expression on the RHS of the [->]. *)

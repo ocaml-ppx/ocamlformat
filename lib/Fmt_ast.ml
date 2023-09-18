@@ -3079,10 +3079,11 @@ and fmt_case c ctx ~first ~last case =
                     fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g) )
               )
           $ p.break_before_arrow $ str "->" $ p.break_after_arrow
-          $ p.open_paren_branch )
+          $ p.open_paren_branch_eol )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
+          ( p.open_paren_branch_bol
+          $ fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
           $ p.close_paren_branch ) )
 
 and fmt_value_description ?ext c ctx vd =
