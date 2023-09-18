@@ -219,10 +219,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
     match ast with
     | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
         let close_paren =
-          let offset =
-            match c.fmt_opts.break_cases.v with `Nested -> 0 | _ -> -2
-          in
-          fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
+          fits_breaks " end" ~level:1 ~hint:(1000, -2) "end"
         in
         ( noop
         , open_hvbox 2 $ fmt "begin@;"

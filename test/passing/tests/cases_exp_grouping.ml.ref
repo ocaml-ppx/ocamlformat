@@ -29,7 +29,7 @@ let _ =
           fooooooooooooo
       | D ->
           fooooooooooooo
-      end
+    end
 [@@ocamlformat "break-cases=nested"]
 
 let _ =
