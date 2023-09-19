@@ -1404,8 +1404,7 @@ and fmt_fun ?force_closing_paren
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
-and fmt_label_arg ?(box = true) ?break_expr ?eol c
-    (lbl, ({ast= arg; _} as xarg)) =
+and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
@@ -1423,18 +1422,13 @@ and fmt_label_arg ?(box = true) ?break_expr ?eol c
         | Optional _ -> str "?"
         | Nolabel -> noop
       in
-      lbl $ fmt_expression c ~box ?pro:break_expr xarg
+      lbl $ fmt_expression c ~box xarg
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
-      let break_expr =
-        match break_expr with Some br -> br | None -> fmt "@;<0 2>"
-      in
       hvbox_if box 2
         ( hvbox_if box 0
-            (fmt_expression c
-               ~pro:(fmt_label lbl ":" $ break_expr)
-               ~box xarg )
+            (fmt_expression c ~pro:(fmt_label lbl ":@;<0 2>") ~box xarg)
         $ cmts_after )
   | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
       fmt_fun ~box ~label:lbl ~parens:true c xarg
@@ -1442,7 +1436,7 @@ and fmt_label_arg ?(box = true) ?break_expr ?eol c
       let label_sep : s =
         if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
       in
-      fmt_label lbl label_sep $ fmt_expression c ~box ?pro:break_expr xarg
+      fmt_label lbl label_sep $ fmt_expression c ~box xarg
 
 and expression_width c xe =
   String.length
@@ -1458,14 +1452,6 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       | Pexp_fun _ | Pexp_function _ -> Some false
       | _ -> None
     in
-    let break_expr =
-      match ast.pexp_desc with
-      | (Pexp_match _ | Pexp_apply _) when not last ->
-          let indent = match lbl with Nolabel -> -1 | _ -> -3 in
-          (* Some (break 1000 indent) *)
-          Some (fits_breaks "" ~hint:(1000, indent) "")
-      | _ -> None
-    in
     let epi =
       match ast.pexp_desc with
       | Pexp_constant _ when not last -> fits_breaks "" ~hint:(1000, -2) ""
@@ -1473,7 +1459,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     in
     hovbox
       (Params.Indent.fun_args_group c.conf ~lbl ast)
-      (fmt_label_arg c ?box ?break_expr (lbl, xarg) $ epi)
+      (fmt_label_arg c ?box (lbl, xarg) $ epi)
     $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =
