@@ -82,7 +82,6 @@
    (>= 1.4.0))
   ; for vendored odoc-parser
   astring
-  rresult
   camlp-streams))
 
 (package

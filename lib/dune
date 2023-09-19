@@ -27,7 +27,6 @@
  (instrumentation
   (backend bisect_ppx))
  (libraries
-  rresult
   format_
   ocaml_common
   parser_standard

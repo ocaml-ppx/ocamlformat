@@ -14,9 +14,9 @@
 module Location = Migrate_ast.Location
 open Parse_with_comments
 
-let ( let* ) = Rresult.( >>= )
+let ( let* ) = Result.( >>= )
 
-let ( let+ ) = Rresult.( >>| )
+let ( let+ ) = Result.( >>| )
 
 exception
   Internal_error of
