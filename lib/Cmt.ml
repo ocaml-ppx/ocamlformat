@@ -98,14 +98,10 @@ type decoded = {prefix: string; suffix: string; kind: decoded_kind}
     indentation to trim. *)
 let unindent_lines ?(max_indent = Stdlib.max_int) ~content_offset first_line
     tl_lines =
-  let indent_of_line s =
-    (* index of first non-whitespace is indentation, None means white line *)
-    String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
-  in
   (* The indentation of the first line must account for the location of the
      comment opening. Don't account for the first line if it's empty. *)
   let fl_spaces, fl_indent =
-    match indent_of_line first_line with
+    match String.indent_of_line first_line with
     | Some i -> (i, i + content_offset - 1)
     | None -> (String.length first_line, Stdlib.max_int)
   in
@@ -113,7 +109,7 @@ let unindent_lines ?(max_indent = Stdlib.max_int) ~content_offset first_line
   let min_indent =
     List.fold_left ~init:fl_indent
       ~f:(fun acc s ->
-        match indent_of_line s with Some i -> min acc i | None -> acc )
+        Option.value_map ~default:acc ~f:(min acc) (String.indent_of_line s) )
       tl_lines
   in
   (* Completely trim the first line *)

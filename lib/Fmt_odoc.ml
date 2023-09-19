@@ -133,8 +133,7 @@ let fmt_code_block c s1 s2 =
         fmt_code original )
   | Some _ -> fmt_code original
 
-let fmt_code_span s =
-  hovbox 0 (wrap "[" "]" (str (escape_balanced_brackets s)))
+let fmt_code_span s = wrap "[" "]" (str (escape_balanced_brackets s))
 
 let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
 
@@ -164,27 +163,32 @@ let list_should_use_heavy_syntax items =
   in
   List.exists items ~f:heavy_nestable_block_elements
 
-(* Decide if should break between two elements *)
-let block_element_should_break elem next =
+(* Decide if a blank line should be added between two elements *)
+let block_element_should_blank elem next =
   match (elem, next) with
-  (* Mandatory breaks *)
-  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
-  (* Arbitrary breaks *)
-  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
+  | `Tag _, `Tag _ -> false
+  (* Mandatory blanks lines. *)
+  | (`List _ | `Tag _), _ | `Paragraph _, `Paragraph _ -> true
   | _, _ -> false
 
+let should_preserve_blank _c (a : Loc.span) (b : Loc.span) =
+  (* Whether there were already an empty line *)
+  b.start.line - a.end_.line > 1
+
 (* Format a list of block_elements separated by newlines Inserts blank line
-   depending on [block_element_should_break] *)
-let list_block_elem elems f =
+   depending on [block_element_should_blank] *)
+let list_block_elem c elems f =
   list_pn elems (fun ~prev:_ elem ~next ->
       let break =
         match next with
-        | Some {Loc.value= n; _}
-          when block_element_should_break
-                 (elem.value :> block_element)
-                 (n :> block_element) ->
-            fmt "\n@\n"
-        | Some _ -> fmt "@\n"
+        | Some n ->
+            if
+              block_element_should_blank
+                (elem.Loc.value :> block_element)
+                (n.value :> block_element)
+              || should_preserve_blank c elem.location n.location
+            then fmt "\n@\n"
+            else fmt "@\n"
         | None -> noop
       in
       f elem $ break )
@@ -281,7 +285,7 @@ and fmt_list_light c kind items =
   vbox 0 (list items "@," fmt_item)
 
 and fmt_nestable_block_elements c elems =
-  list_block_elem elems (fmt_nestable_block_element c)
+  list_block_elem c elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
@@ -333,17 +337,29 @@ let fmt_block_element c elm =
 
 let fmt_ast conf ~fmt_code (docs : t) =
   let c = {fmt_code; conf} in
-  vbox 0 (list_block_elem docs (fmt_block_element c))
+  vbox 0 (list_block_elem c docs (fmt_block_element c))
+
+let beginning_offset (conf : Conf.t) input =
+  let whitespace_count =
+    match String.indent_of_line input with Some c -> c | None -> 1
+  in
+  if conf.fmt_opts.ocp_indent_compat.v && not conf.fmt_opts.wrap_docstrings.v
+  then
+    (* Preserve offset of the first line and indent the whole comment based
+       on that. *)
+    whitespace_count
+  else min whitespace_count 1
 
 let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
-  let begin_space = String.starts_with_whitespace input in
-  let offset = offset + if begin_space then 1 else 0 in
+  let begin_offset = beginning_offset conf input in
+  (* The offset is used to adjust the margin when formatting code blocks. *)
+  let offset = offset + begin_offset in
   let fmt_code conf ~offset:offset' input =
     fmt_code conf ~offset:(offset + offset') input
   in
   let fmt_parsed parsed =
-    fmt_if begin_space " "
+    str (String.make begin_offset ' ')
     $ fmt_ast conf ~fmt_code parsed
     $ fmt_if
         (String.length input > 1 && String.ends_with_whitespace input)

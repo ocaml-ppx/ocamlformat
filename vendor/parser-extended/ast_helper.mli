@@ -128,7 +128,7 @@ module Exp:
 
     val ident: ?loc:loc -> ?attrs:attrs -> lid -> expression
     val constant: ?loc:loc -> ?attrs:attrs -> constant -> expression
-    val let_: ?loc:loc -> ?attrs:attrs -> let_bindings -> expression -> expression
+    val let_: ?loc:loc -> ?attrs:attrs -> value_bindings -> expression -> expression
     val fun_: ?loc:loc -> ?attrs:attrs -> arg_label -> expression option
               -> pattern -> expression -> expression
     val function_: ?loc:loc -> ?attrs:attrs -> case list -> expression
@@ -284,7 +284,7 @@ module Mod:
       module_expr
     val unpack: ?loc:loc -> ?attrs:attrs -> expression -> package_type option
       -> package_type option -> module_expr
-    val gen_apply: ?loc:loc -> ?attrs:attrs -> module_expr -> loc -> module_expr
+    val apply_unit: ?loc:loc -> ?attrs:attrs -> module_expr -> loc -> module_expr
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> module_expr
     val hole: ?loc:loc -> ?attrs:attrs -> unit -> module_expr
   end
@@ -319,7 +319,7 @@ module Str:
     val mk: ?loc:loc -> structure_item_desc -> structure_item
 
     val eval: ?loc:loc -> ?attrs:attributes -> expression -> structure_item
-    val value: ?loc:loc -> let_bindings -> structure_item
+    val value: ?loc:loc -> value_bindings -> structure_item
     val primitive: ?loc:loc -> value_description -> structure_item
     val type_: ?loc:loc -> rec_flag -> type_declaration list -> structure_item
     val type_extension: ?loc:loc -> type_extension -> structure_item
@@ -377,6 +377,14 @@ module Incl:
     val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> 'a -> 'a include_infos
   end
 
+(** Value bindings *)
+module Vb:
+  sig
+    val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
+      ?value_constraint:value_constraint -> is_pun:bool -> pattern ->
+      expression -> value_binding
+  end
+
 
 (** {1 Class language} *)
 
@@ -426,7 +434,7 @@ module Cl:
       pattern -> class_expr -> class_expr
     val apply: ?loc:loc -> ?attrs:attrs -> class_expr ->
       (arg_label * expression) list -> class_expr
-    val let_: ?loc:loc -> ?attrs:attrs -> let_bindings -> class_expr -> class_expr
+    val let_: ?loc:loc -> ?attrs:attrs -> value_bindings -> class_expr -> class_expr
     val constraint_: ?loc:loc -> ?attrs:attrs -> class_expr -> class_type ->
       class_expr
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr

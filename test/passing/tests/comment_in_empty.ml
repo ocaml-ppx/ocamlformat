@@ -6,7 +6,7 @@ module type M = sig
   (* this module type is empty *)
 end
 
-class type m = object (* this class type is empty *) end
+class type m = object end (* this class type is empty *)
 
 let x = object (* this object is empty *) end
 
