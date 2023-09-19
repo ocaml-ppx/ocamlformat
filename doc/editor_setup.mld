@@ -3,6 +3,7 @@
 {1 Enable formatting outside project}
 
 OCamlFormat detects your current project if there is a [.git], a [.hg] or a [dune-project] file in one of the ancestry directories.
+For more details, read about {{!page-configuration}how OCamlFormat finds its root project and computes its configuration}.
 
 By default, when the option [--enable-outside-detected-project] is not set, [.ocamlformat] files outside of the current project (including the one in [XDG_CONFIG_HOME]) are not read. If no configuration file is found, then the formatting is disabled.
 
