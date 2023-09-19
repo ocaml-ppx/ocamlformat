@@ -9,6 +9,7 @@ profile. This started with version 0.26.0.
 ### Fixed
 
 - Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+- Fix invalid syntax with `ocp-indent-compat` (#2445, @Julow)
 
 ## 0.26.1 (2023-09-15)
 
