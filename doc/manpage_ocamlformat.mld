@@ -394,7 +394,7 @@ OPTIONS (CODE FORMATTING STYLE)
            multi-line-only.
 
        --parse-docstrings
-           Parse and format docstrings. The flag is unset by default.
+           Parse and format docstrings. The flag is set by default.
 
        --parse-toplevel-phrases
            Parse and format toplevel phrases and their output. The flag is
