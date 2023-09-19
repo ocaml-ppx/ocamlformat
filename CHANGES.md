@@ -4,6 +4,12 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## unreleased
+
+### Fixed
+
+- Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+
 ## 0.26.1 (2023-09-15)
 
 ### Changed

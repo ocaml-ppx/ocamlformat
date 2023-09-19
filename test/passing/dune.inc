@@ -3901,6 +3901,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to module_type.mli.stdout
+   (with-stderr-to module_type.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/module_type.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.ref module_type.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.err module_type.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to monadic_binding.ml.stdout
    (with-stderr-to monadic_binding.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/monadic_binding.ml})))))
