@@ -62,19 +62,21 @@ module Let_binding : sig
   type t =
     { lb_op: string loc
     ; lb_pat: pattern Ast.xt
+    ; lb_args: arg_kind list
     ; lb_typ:
         [ `Polynewtype of label loc list * core_type Ast.xt
         | `Coerce of core_type Ast.xt option * core_type Ast.xt
-        | `Other of arg_kind list * core_type Ast.xt
-        | `None of arg_kind list ]
+        | `Other of core_type Ast.xt
+        | `None ]
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
-  val of_let_binding : Cmts.t -> ctx:Ast.t -> first:bool -> let_binding -> t
+  val of_let_binding :
+    Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t
 
-  val of_let_bindings : Cmts.t -> ctx:Ast.t -> let_binding list -> t list
+  val of_let_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
   val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end

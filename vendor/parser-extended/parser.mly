@@ -102,6 +102,9 @@ let mkcf ~loc ?attrs ?docs d =
   Cf.mk ~loc:(make_loc loc) ?attrs ?docs d
 
 let mkrhs rhs loc = mkloc rhs (make_loc loc)
+(*
+let ghrhs rhs loc = mkloc rhs (ghost_loc loc)
+*)
 
 let mk_optional lbl loc = Optional (mkrhs lbl loc)
 let mk_labelled lbl loc = Labelled (mkrhs lbl loc)
@@ -150,6 +153,9 @@ let mkpatvar ~loc name =
 let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
 let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
 let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
+(*
+let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
+*)
 let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
 let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 
@@ -182,6 +188,43 @@ let mkuplus ~oploc name arg =
    and locations-as-Location.t; it should be clear when we move from
    one world to the other *)
 
+(*
+let mkexp_cons_desc consloc args =
+  Pexp_construct(mkrhs (Lident "::") consloc, Some args)
+let mkexp_cons ~loc consloc args =
+  mkexp ~loc (mkexp_cons_desc consloc args)
+
+let mkpat_cons_desc consloc args =
+  Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
+let mkpat_cons ~loc consloc args =
+  mkpat ~loc (mkpat_cons_desc consloc args)
+
+let ghexp_cons_desc consloc args =
+  Pexp_construct(ghrhs (Lident "::") consloc, Some args)
+let ghpat_cons_desc consloc args =
+  Ppat_construct(ghrhs (Lident "::") consloc, Some ([], args))
+
+let rec mktailexp nilloc = let open Location in function
+    [] ->
+      let nil = ghloc ~loc:nilloc (Lident "[]") in
+      Pexp_construct (nil, None), nilloc
+  | e1 :: el ->
+      let exp_el, el_loc = mktailexp nilloc el in
+      let loc = (e1.pexp_loc.loc_start, snd el_loc) in
+      let arg = ghexp ~loc (Pexp_tuple [e1; ghexp ~loc:el_loc exp_el]) in
+      ghexp_cons_desc loc arg, loc
+
+let rec mktailpat nilloc = let open Location in function
+    [] ->
+      let nil = ghloc ~loc:nilloc (Lident "[]") in
+      Ppat_construct (nil, None), nilloc
+  | p1 :: pl ->
+      let pat_pl, el_loc = mktailpat nilloc pl in
+      let loc = (p1.ppat_loc.loc_start, snd el_loc) in
+      let arg = ghpat ~loc (Ppat_tuple [p1; ghpat ~loc:el_loc pat_pl]) in
+      ghpat_cons_desc loc arg, loc
+*)
+
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -190,6 +233,16 @@ let mkexp_constraint ~loc e (t1, t2) =
   | Some t, None -> mkexp ~loc (Pexp_constraint(e, t))
   | _, Some t -> mkexp ~loc (Pexp_coerce(e, t1, t))
   | None, None -> assert false
+
+(*
+let mkexp_opt_constraint ~loc e = function
+  | None -> e
+  | Some constraint_ -> mkexp_constraint ~loc e constraint_
+
+let mkpat_opt_constraint ~loc p = function
+  | None -> p
+  | Some typ -> mkpat ~loc (Ppat_constraint(p, typ))
+*)
 
 let syntax_error () =
   raise Syntaxerr.Escape_error
@@ -200,6 +253,11 @@ let unclosed opening_name opening_loc closing_name closing_loc =
 
 let expecting loc nonterm =
     raise Syntaxerr.(Error(Expecting(make_loc loc, nonterm)))
+
+(* Continues to parse removed syntax
+let removed_string_set loc =
+  raise(Syntaxerr.Error(Syntaxerr.Removed_string_set(make_loc loc)))
+*)
 
 (* Using the function [not_expecting] in a semantic action means that this
    syntactic form is recognized by the parser but is in fact incorrect. This
@@ -254,8 +312,19 @@ let loc_last (id : Longident.t Location.loc) : string Location.loc =
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
   loc_map (fun x -> Lident x) id
 
+(*
+let exp_of_longident lid =
+  let lid = loc_map (fun id -> Lident (Longident.last id)) lid in
+  Exp.mk ~loc:lid.loc (Pexp_ident lid)
+*)
+
 let exp_of_label lbl =
   Exp.mk ~loc:lbl.loc (Pexp_ident (loc_lident lbl))
+
+(*
+let pat_of_label lbl =
+  Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
+*)
 
 let mk_newtypes ~loc newtypes exp =
   let mkexp = mkexp ~loc in
@@ -299,6 +368,12 @@ let mkpat_attrs ~loc d attrs =
 
 let wrap_class_attrs ~loc:_ body attrs =
   {body with pcl_attributes = attrs @ body.pcl_attributes}
+(*
+let wrap_mod_attrs ~loc:_ attrs body =
+  {body with pmod_attributes = attrs @ body.pmod_attributes}
+let wrap_mty_attrs ~loc:_ attrs body =
+  {body with pmty_attributes = attrs @ body.pmty_attributes}
+*)
 
 let wrap_str_ext ~loc body ext =
   match ext with
@@ -353,14 +428,31 @@ let extra_rhs_core_type ct ~pos =
   let docs = rhs_info pos in
   { ct with ptyp_attributes = add_info_attrs docs ct.ptyp_attributes }
 
-let mklb first ~loc (p, e, is_pun) attrs =
-  let docs = symbol_docs loc in
-  let text = if first then empty_text else symbol_text (fst loc) in
+type let_binding =
+  { lb_pattern: pattern;
+    lb_expression: expression;
+    lb_constraint: value_constraint option;
+    lb_is_pun: bool;
+    lb_attributes: attributes;
+    lb_docs: docs Lazy.t;
+    lb_text: text Lazy.t;
+    lb_loc: Location.t; }
+
+type let_bindings' =
+  { lbs_bindings: let_binding list;
+    lbs_rec: rec_flag;
+    lbs_extension: string Asttypes.loc option }
+
+let mklb first ~loc (p, e, typ, is_pun) attrs =
   {
     lb_pattern = p;
     lb_expression = e;
+    lb_constraint=typ;
     lb_is_pun = is_pun;
-    lb_attributes = add_text_attrs text (add_docs_attrs docs attrs);
+    lb_attributes = attrs;
+    lb_docs = symbol_docs_lazy loc;
+    lb_text = (if first then empty_text_lazy
+               else symbol_text_lazy (fst loc));
     lb_loc = make_loc loc;
   }
 
@@ -376,17 +468,29 @@ let mklbs ext rf lb =
   } in
   addlb lbs lb
 
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+  let pvbs_bindings =
+    List.rev_map
+      (fun lb ->
+         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
+           ~docs:(Lazy.force lb.lb_docs)
+           ~text:(Lazy.force lb.lb_text)
+           ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
+           lb.lb_pattern lb.lb_expression)
+      lbs_bindings
+  in
+  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
+
 let val_of_let_bindings ~loc lbs =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkstr ~loc (Pstr_value lbs)
+  mkstr ~loc (Pstr_value (mk_let_bindings lbs))
 
 let expr_of_let_bindings ~loc lbs body =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkexp ~loc (Pexp_let (lbs, body))
+  mkexp_attrs ~loc (Pexp_let (mk_let_bindings lbs, body)) (None, [])
 
 let class_of_let_bindings ~loc lbs body =
-  let lbs = { lbs with lbs_bindings= List.rev lbs.lbs_bindings } in
-  mkclass ~loc (Pcl_let (lbs, body))
+  (* Our use of let_bindings(no_ext) guarantees the following: *)
+  assert (lbs.lbs_extension = None);
+  mkclass ~loc (Pcl_let (mk_let_bindings lbs, body))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
@@ -1079,6 +1183,8 @@ parse_any_longident:
 
 (* Functor arguments appear in module expressions and module types. *)
 
+(* Compared to upstream, [functor_args] can be empty and is not in reverse
+   order. *)
 %inline functor_args:
   llist(functor_arg)
     { $1 }
@@ -1142,8 +1248,9 @@ module_expr:
     | (* In a functor application, the actual argument must be parenthesized. *)
       me1 = module_expr me2 = paren_module_expr
         { Pmod_apply(me1, me2) }
-    | me = module_expr LPAREN RPAREN
-        { Pmod_gen_apply (me, make_loc ($startpos($2), $endpos($3))) }
+    | (* Functor applied to unit. *)
+      me = module_expr LPAREN RPAREN
+        { Pmod_apply_unit (me, make_loc ($startpos($2), $endpos($3))) }
     | (* An extension. *)
       ex = extension
         { Pmod_extension ex }
@@ -1292,6 +1399,11 @@ module_binding_body:
   | mkmod(
       COLON mty = module_type EQUAL me = module_expr
         { Pmod_constraint(me, mty) }
+(*
+    | arg_and_pos = functor_arg body = module_binding_body
+        { let (_, arg) = arg_and_pos in
+          Pmod_functor(arg, body) }
+*)
   ) { $1 }
 ;
 
@@ -1539,6 +1651,22 @@ signature_item:
     Md.mk name args body ~attrs ~loc ~docs, ext
   }
 ;
+
+(* Module arguments are attached to declarations
+(* The body (right-hand side) of a module declaration. *)
+module_declaration_body:
+    COLON mty = module_type
+      { mty }
+  | EQUAL error
+      { expecting $loc($1) ":" }
+  | mkmty(
+      arg_and_pos = functor_arg body = module_declaration_body
+        { let (_, arg) = arg_and_pos in
+          Pmty_functor(arg, body) }
+    )
+    { $1 }
+;
+*)
 
 (* A module alias declaration (in a signature). *)
 %inline module_alias:
@@ -2124,7 +2252,7 @@ expr:
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
-  (*
+  (* Allowed in exprs. Commented-out to reduce diffs with upstream.
   | UNDERSCORE
      { not_expecting $loc($1) "wildcard \"_\"" }
   *)
@@ -2354,42 +2482,39 @@ labeled_simple_expr:
 ;
 let_binding_body_no_punning:
     let_ident strict_binding
-      { ($1, $2) }
+      { ($1, $2, None) }
   | let_ident type_constraint EQUAL seq_expr
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
-            Some t, None -> t
-          | _, Some t -> t
+            Some t, None ->
+             Pvc_constraint { locally_abstract_univars = []; typ=t }
+          | ground, Some coercion -> Pvc_coercion { ground; coercion}
           | _ -> assert false
         in
-        let loc = Location.(t.ptyp_loc.loc_start, t.ptyp_loc.loc_end) in
-        let typ = ghtyp ~loc (Ptyp_poly([],t)) in
-        let patloc = ($startpos($1), $endpos($2)) in
-        (ghpat ~loc:patloc (Ppat_constraint(v, typ)),
-         mkexp_constraint ~loc:$sloc $4 $2) }
+        (v, $4, Some t)
+        }
   | let_ident COLON poly(core_type) EQUAL seq_expr
-      { let patloc = ($startpos($1), $endpos($3)) in
-        (ghpat ~loc:patloc
-           (Ppat_constraint($1, ghtyp ~loc:($loc($3)) $3)),
-         $5) }
+    {
+      let t = ghtyp ~loc:($loc($3)) $3 in
+      ($1, $5, Some (Pvc_constraint { locally_abstract_univars = []; typ=t }))
+    }
   | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
-      { let exp, poly =
-          wrap_type_annotation ~loc:$sloc $4 $6 $8 in
-        let loc = ($startpos($1), $endpos($6)) in
-        (ghpat ~loc (Ppat_constraint($1, poly)), exp) }
+    { let constraint' =
+        Pvc_constraint { locally_abstract_univars=$4; typ = $6}
+      in
+      ($1, $8, Some constraint') }
   | pattern_no_exn EQUAL seq_expr
-      { ($1, $3) }
+      { ($1, $3, None) }
   | simple_pattern_not_ident COLON core_type EQUAL seq_expr
-      { let loc = ($startpos($1), $endpos($3)) in
-        (ghpat ~loc (Ppat_constraint($1, $3)), $5) }
+      { ($1, $5, Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 })) }
 ;
 let_binding_body:
   | let_binding_body_no_punning
-      { let p,e = $1 in (p,e,false) }
+      { let p,e,c = $1 in (p,e,c,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, None, true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the
@@ -3486,6 +3611,7 @@ label_longident:
 ;
 type_longident:
     mk_longident(mod_ext_longident, LIDENT)  { $1 }
+  (* Allow identifiers like [t/42]. *)
   | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 mod_longident:

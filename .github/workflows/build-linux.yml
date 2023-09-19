@@ -23,6 +23,9 @@ jobs:
     steps:
       # Clone the project
       - uses: actions/checkout@v2
+        with:
+          # Don't checkout the implicit merge commit to avoid wrong substitution
+          ref: ${{ github.event.pull_request.head.sha }}
 
       # Setup
       - name: Setup OCaml ${{ matrix.ocaml-version }}
@@ -32,6 +35,11 @@ jobs:
 
       - name: Opam dependencies
         run: opam install --deps-only -t .
+
+      - name: Build
+        run: |
+          opam exec -- dune subst
+          opam exec -- dune build -p ocamlformat-lib,ocamlformat
 
       - name: Runtest
         run: opam exec -- dune runtest
@@ -70,6 +78,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - uses: actions/cache@v3
+        with:
+          path: test-extra/code
+          key: test-extra-code
 
       - name: Fetch main build of ocamlformat
         uses: dawidd6/action-download-artifact@v2

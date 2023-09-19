@@ -91,7 +91,9 @@ module type A = sig
     method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
   end
 
-  class tttttttttttt : aaaaaaaaaaaaaaaaaa:int -> bbbbbbbbbbbbbbbbbbbbb:float
+  class tttttttttttt :
+       aaaaaaaaaaaaaaaaaa:int
+    -> bbbbbbbbbbbbbbbbbbbbb:float
     -> cccccccccccccccccccc
 
   class c : object
@@ -115,7 +117,7 @@ end
 
 class type mapper =
   let open Modl1 in
-  object
+object
   method expression : Javascript.expression -> Javascript.expression
 
   method expression_o :
@@ -182,14 +184,13 @@ class a = object end
 and b = object end
 
 class type x = object
-  
-(** floatting1 *)
+  (** floatting1 *)
 
-   (** floatting2 *)
+  (** floatting2 *)
 
-   method x : int
+  method x : int
 
-   (** floatting3 *)
+  (** floatting3 *)
 end
 
 class x =

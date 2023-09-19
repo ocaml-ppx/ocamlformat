@@ -1,0 +1,11 @@
+(** Header *)
+
+#use "something"
+
+let two = 2
+
+[@@@warning "-labels-omitted"] ;;
+
+Clflags.strict_sequence := false
+
+let f () = x

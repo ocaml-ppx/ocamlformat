@@ -353,6 +353,8 @@ module M = struct
           (sub.module_expr sub body)
     | Pmod_apply (m1, m2) ->
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
+    | Pmod_apply_unit m1 ->
+        apply_unit ~loc ~attrs (sub.module_expr sub m1)
     | Pmod_constraint (m, mty) ->
         constraint_ ~loc ~attrs (sub.module_expr sub m)
                     (sub.module_type sub mty)
@@ -696,10 +698,23 @@ let default_mapper =
 
 
     value_binding =
-      (fun this {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} ->
+      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_attributes; pvb_loc} ->
+         let map_ct (ct:Parsetree.value_constraint) = match ct with
+           | Pvc_constraint {locally_abstract_univars=vars; typ} ->
+               Pvc_constraint
+                 { locally_abstract_univars = List.map (map_loc this) vars;
+                   typ = this.typ this typ
+                 }
+           | Pvc_coercion { ground; coercion } ->
+               Pvc_coercion {
+                 ground = Option.map (this.typ this) ground;
+                 coercion = this.typ this coercion
+               }
+         in
          Vb.mk
            (this.pat this pvb_pat)
            (this.expr this pvb_expr)
+           ?value_constraint:(Option.map map_ct pvb_constraint)
            ~loc:(this.location this pvb_loc)
            ~attrs:(this.attributes this pvb_attributes)
       );
@@ -924,7 +939,16 @@ module PpxContext = struct
       | "include_dirs" ->
           Clflags.include_dirs := get_list get_string payload
       | "load_path" ->
-          ()
+          (* Duplicates Compmisc.auto_include, since we can't reference Compmisc
+             from this module. *)
+          let auto_include find_in_dir fn =
+            if !Clflags.no_std_include then
+              raise Not_found
+            else
+              let alert = Location.auto_include_alert in
+              Load_path.auto_include_otherlibs alert find_in_dir fn
+          in
+          Load_path.init ~auto_include (get_list get_string payload)
       | "open_modules" ->
           Clflags.open_modules := get_list get_string payload
       | "for_package" ->

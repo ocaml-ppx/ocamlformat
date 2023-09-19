@@ -915,6 +915,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to class_sig-after.mli.stdout
+   (with-stderr-to class_sig-after.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separators=after %{dep:tests/class_sig.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig-after.mli.ref class_sig-after.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/class_sig-after.mli.err class_sig-after.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to class_sig.mli.stdout
    (with-stderr-to class_sig.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/class_sig.mli})))))
@@ -922,7 +940,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/class_sig.mli class_sig.mli.stdout)))
+ (action (diff tests/class_sig.mli.ref class_sig.mli.stdout)))
 
 (rule
  (alias runtest)
@@ -1567,6 +1585,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/doc_repl.mld.err doc_repl.mld.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to docstrings_toplevel_directives.mlt.stdout
+   (with-stderr-to docstrings_toplevel_directives.mlt.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/docstrings_toplevel_directives.mlt})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt docstrings_toplevel_directives.mlt.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt.err docstrings_toplevel_directives.mlt.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -3865,6 +3901,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to module_type.mli.stdout
+   (with-stderr-to module_type.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/module_type.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.ref module_type.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.err module_type.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to monadic_binding.ml.stdout
    (with-stderr-to monadic_binding.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/monadic_binding.ml})))))
@@ -4445,6 +4499,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to record-402.ml.stdout
+   (with-stderr-to record-402.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocaml-version=4.02 %{dep:tests/record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-402.ml.ref record-402.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-402.ml.err record-402.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to record-loose.ml.stdout
    (with-stderr-to record-loose.ml.stderr
      (run %{bin:ocamlformat} --margin-check --field-space=loose %{dep:tests/record.ml})))))
@@ -4499,19 +4571,19 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to record_identity.ml.stdout
-   (with-stderr-to record_identity.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --profile=janestreet %{dep:tests/record_identity.ml})))))
+  (with-stdout-to record_punning-js.ml.stdout
+   (with-stderr-to record_punning-js.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iter=4 %{dep:tests/record_punning.ml})))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_identity.ml.ref record_identity.ml.stdout)))
+ (action (diff tests/record_punning-js.ml.ref record_punning-js.ml.stdout)))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_identity.ml.err record_identity.ml.stderr)))
+ (action (diff tests/record_punning-js.ml.err record_punning-js.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -4524,7 +4596,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/record_punning.ml record_punning.ml.stdout)))
+ (action (diff tests/record_punning.ml.ref record_punning.ml.stdout)))
 
 (rule
  (alias runtest)

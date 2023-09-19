@@ -62,6 +62,8 @@ module Error = struct
   let print_internal_error ~debug ~quiet fmt e =
     let s =
       match e with
+      | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+          "generating invalid comment attachment"
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
       | `Comment _ -> "comment changed"
@@ -72,6 +74,12 @@ module Error = struct
     | `Comment x when not quiet -> Cmt.pp_error fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
+    | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+        (* Printing the warning is not useful because it doesn't reference
+           the right filename *)
+        ()
+    | `Cannot_parse exn ->
+        if debug then Format.fprintf fmt "%s" (Stdlib.Printexc.to_string exn)
     | `Warning50 (l, w) -> if debug then Warning.print_warning l w
     | _ -> ()
 
@@ -292,13 +300,10 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      let preserve_beginend =
-        Poly.(conf.fmt_opts.exp_grouping.v = `Preserve)
-      in
-      let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
       let+ t_new =
         match
-          parse parse_ast ~disable_w50:true fg conf ~input_name ~source:fmted
+          parse (parse_ast conf) ~disable_w50:true fg conf ~input_name
+            ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
@@ -385,11 +390,10 @@ let parse_result ?disable_w50 f fragment conf ~source ~input_name =
 let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
-  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
   let line_endings = conf.fmt_opts.line_endings.v in
-  let parse_ast = Extended_ast.Parse.ast ~preserve_beginend in
   let+ parsed =
-    parse_result parse_ast ~disable_w50:true fg conf ~source ~input_name
+    parse_result (parse_ast conf) ~disable_w50:true fg conf ~source
+      ~input_name
   in
   let+ std_parsed =
     parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
@@ -400,17 +404,7 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
   in
   Ok (Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted)
 
-let std_of_extended (type a) : a Extended_ast.t -> Std_ast.any_t = function
-  | Extended_ast.Structure -> Std_ast.Any Std_ast.Structure
-  | Signature -> Any Signature
-  | Use_file -> Any Use_file
-  | Core_type -> Any Core_type
-  | Module_type -> Any Module_type
-  | Expression -> Any Expression
-  | Repl_file -> Any Repl_file
-  | Documentation -> Any Documentation
-
 let parse_and_format syntax =
   let (Extended_ast.Any ext) = Extended_ast.of_syntax syntax in
-  let (Std_ast.Any std) = std_of_extended ext in
+  let (Std_ast.Any std) = Std_ast.of_syntax syntax in
   parse_and_format ext std

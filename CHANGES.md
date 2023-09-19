@@ -1,4 +1,35 @@
+# Changelog
+
+Items marked with an asterisk (\*) are changes that are likely to format
+existing code differently from the previous release when using the default
+profile. This started with version 0.26.0.
+
 ## unreleased
+
+### Fixed
+
+- Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+
+## 0.26.1 (2023-09-15)
+
+### Changed
+
+- Compatible with OCaml 5.1.0 (#2412, @Julow)
+  The syntax of let-bindings changed sligthly in this version.
+- Improved ocp-indent compatibility (#2428, @Julow)
+- \* Removed extra break in constructor declaration with comment (#2429, @Julow)
+- \* De-indent the `object` keyword in class types (#2425, @Julow)
+- \* Consistent formatting of arrows in class types (#2422, @Julow)
+
+### Fixed
+
+- Fix dropped attributes on a begin-end in a match case (#2421, @Julow)
+- Fix dropped attributes on begin-end in an if-then-else branch (#2436, @gpetiot)
+- Fix non-stabilizing comments before a functor type argument (#2420, @Julow)
+- Fix crash caused by module types with nested `with module` (#2419, @Julow)
+- Fix ';;' formatting between doc-comments and toplevel directives (#2432, @gpetiot)
+
+## 0.26.0 (2023-07-18)
 
 ### Removed
 
@@ -6,56 +37,57 @@
 
 ### Deprecated
 
-### Bug fixes
+### Fixed
 
-- Fix crash due to `module T = (val (x : (module S)))` (#2370, @Julow)
+- Fix crash caused by `let f (type a) :> a M.u = ..` (#2399, @Julow)
+- Fix crash caused by `module T = (val (x : (module S)))` (#2370, @Julow)
 - Fix invalid formatting of `then begin end` (#2369, @Julow)
 - Protect match after `fun _ : _ ->` (#2352, @Julow)
 - Fix invalid formatting of `(::)` (#2347, @Julow)
-- Fix formatting of string literals in code blocks (#2338, #2349, @Julow)
-- Improve formatting of module arguments (#2322, @Julow)
-- Consistent indentation of `@@ let+ x = ...` (#2315, @Julow)
-- Remove double parenthesis around tuple in a match (#2308, @Julow)
-- Consistent indentation of `fun (type a) ->` that follow `fun x ->` (#2294, @Julow)
-- Avoid adding breaks inside `~label:(fun` and base the indentation on the label. (#2271, #2291, #2293, #2298, @Julow)
-- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
-- Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
+- Fix indentation of module-expr extensions (#2323, @gpetiot)
+- \* Remove double parentheses around tuples in a match (#2308, @Julow)
+- \* Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
 - Fix indentation of trailing double-semicolons (#2295, @gpetiot)
-- Remove extra parentheses around module packs (#2305, @Julow, @gpetiot)
-- Fix identation of module-expr extensions (#2323, @gpetiot)
-- Don't print warnings related to odoc code-blocks when '--quiet' is set (#2336, @gpetiot)
+- Fix formatting of comments in "disable" chunks (#2279, @gpetiot)
+- Fix non-stabilizing comments attached to private/virtual/mutable keywords (#2272, #2307, @gpetiot, @Julow)
 
-### Changes
+### Changed
 
-- Improve formatting of doc-comments (#2376, #2377, #2379, #2378, @Julow)
-- Disable reporting of deprecated alerts while formatting code blocks (#2373, @Julow)
-- Improve indentation of `as`-patterns (#2359, @Julow)
-- Restore short form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
-- Restore short form formatting of record field aliases (#2282, @gpetiot)
+- Improve formatting of doc-comments (#2338, #2349, #2376, #2377, #2379, #2378, @Julow)
+  Remove unnecessary escaping and preserve empty lines.
+- \* Indent `as`-patterns that have parentheses (#2359, @Julow)
+- Don't print warnings related to odoc code-blocks when '--quiet' is set (#2336, #2373, @gpetiot, @Julow)
+- \* Improve formatting of module arguments (#2322, @Julow)
+- \* Don't indent attributes after a let/val/external (#2317, @Julow)
+- Consistent indentation of `@@ let+ x = ...` (#2315, #2396, @Julow)
+  It was formatted differently than `@@ let x = ...`.
+- \* Improve formatting of class expressions and signatures (#2301, #2328, #2387, @gpetiot, @Julow)
+- \* Consistent indentation of `fun (type a) ->` following `fun x ->` (#2294, @Julow)
+- \* Restore short-form formatting of record field aliases (#2282, #2388, @gpetiot, @Julow)
+- \* Restore short-form for first-class modules: `((module M) : (module S))` is formatted as `(module M : S)`) (#2280, #2300, @gpetiot, @Julow)
+- \* Improve indentation of `~label:(fun ...` (#2271, #2291, #2293, #2298, #2398, @Julow)
+  The `fun` keyword is docked where possible and the arguments are indented to avoid confusion with the body.
+- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, #2392, @gpetiot, @Julow)
 - Tweaks the JaneStreet profile to be more consistent with ocp-indent (#2214, #2281, #2284, #2289, #2299, #2302, #2309, #2310, #2311, #2313, #2316, #2362, #2363, @gpetiot, @Julow)
-- Improve formatting of class signatures (#2301, @gpetiot, @Julow)
-- JaneStreet profile: treat comments as doc-comments (#2261, #2344, #2354, #2365, @gpetiot, @Julow)
-- Don't indent attributes after a let/val/external (#2317, @Julow)
-- Adjust indentation of class-expr function body (#2328, @gpetiot)
 
-### New features
+### Added
 
 - Handle short syntax for generative functor types (#2348, @gpetiot)
 - Improved error reporting for unstable or dropped comments (#2292, @gpetiot)
 
 ## 0.25.1 (2023-03-06)
 
-### Bug fixes
+### Fixed
 
 - Janestreet: Fix indentation of functions passed as labelled argument (#2259, @Julow)
 
 ## 0.25.0 (2023-02-24)
 
-### Library
+### Internal
 
 - The declaration of options is a regular module instead of a functor. (#2193, @EmileTrotignon)
 
-### Bug fixes
+### Fixed
 
 - Fix indentation when ocamlformat is disabled on an expression (#2129, @gpetiot)
 - Reset max-indent when the `max-indent` option is not set (#2131, @hhugo, @gpetiot)
@@ -80,7 +112,7 @@
 - Preserve position of comments around module pack expressions (#2234, @EmileTrotignon, @gpetiot)
 - Correctly parenthesize array literals with attributes in argument positions (#2250, @ccasin)
 
-### Changes
+### Changed
 
 - Indent 2 columns after `initializer` keyword (#2145, @gpetiot)
 - Preserve syntax of generative modules (`(struct end)` vs `()`) (#2135, #2146, @trefis, @gpetiot)
@@ -97,7 +129,7 @@
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
 - The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, @gpetiot)
 
-### New features
+### Added
 
 - Add a `break-colon` option to decide whether to break before or after the `:` symbol in value binding declarations and type constraints. This behavior is no longer ensured by `ocp-indent-compat`. (#2149, @gpetiot)
 - Format `.mld` files as odoc documentation files (#2008, @gpetiot)
@@ -107,7 +139,7 @@
 
 ## 0.24.1 (2022-07-18)
 
-### New features
+### Added
 
 - Support `odoc-parser.2.0.0` (#2123, @gpetiot)
   * Breaking change: incompatible with earlier versions of `odoc-parser`
@@ -120,14 +152,14 @@
 
 - `bench` binary is not distributed anymore to avoid name collisions (#2104, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - Preserve comments around object open/close flag (#2097, @trefis, @gpetiot)
 - Preserve comments around private/mutable/virtual keywords (#2098, @trefis, @gpetiot)
 - Closing parentheses of local open now comply with `indicate-multiline-delimiters` (#2116, @gpetiot)
 - emacs: fix byte-compile warnings (#2119, @syohex)
 
-### Changes
+### Changed
 
 - Use the API of ocp-indent to parse the `.ocp-indent` files (#2103, @gpetiot)
 - JaneStreet profile: set `max-indent = 2` (#2099, @gpetiot)
@@ -145,12 +177,12 @@
 
 - Cancel the deprecations of options that are not set by the preset profiles (#2074, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - emacs: Remove temp files in the event of an error (#2003, @gpetiot)
 - Fix unstable comment formatting around prefix op (#2046, @gpetiot)
 
-### Changes
+### Changed
 
 - Qtest comments are not re-formatted (#2034, @gpetiot)
 - ocamlformat-rpc is now distributed through the ocamlformat package (#2035, @Julow)
@@ -160,7 +192,7 @@
 - Set `ocaml-version` to a fixed version (4.04.0) by default to avoid reproducibility issues and surprising behaviours (#2064, @kit-ty-kate)
 - Split option `--numeric=X-Y` into `--range=X-Y` and `--numeric` (flag). For now `--range` can only be used with `--numeric`. (#2073, #2082, @gpetiot)
 
-### New features
+### Added
 
 - New syntax `(*= ... *)` for verbatim comments (#2028, @gpetiot)
 - Preserve the begin-end construction in the AST (#1785, @hhugo, @gpetiot)
@@ -169,7 +201,7 @@
 
 ## 0.21.0 (2022-02-25)
 
-### Bug fixes
+### Fixed
 
 - Add missing parentheses around variant class arguments (#1967, @gpetiot)
 - Fix indentation of module binding RHS (#1969, @gpetiot)
@@ -183,7 +215,7 @@
 - Handle cases where an attribute is added to a bind expression, e.g. `(x >>= (fun () -> ())) [@a]` (#2013, @emillon)
 - Fix indentation of constraints of a package type pattern (#2025, @gpetiot)
 
-### Changes
+### Changed
 
 - More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
   + Variants with no argument (#1968, @gpetiot)
@@ -192,7 +224,7 @@
 - Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#1983, @gpetiot)
 - Apply 'sequence-style' to add a space before ';;' between toplevel items, consistently with the formatting of ';' in sequences (#2004, @gpetiot)
 
-### New features
+### Added
 
 - Format toplevel phrases and their output (#1941, @Julow, @gpetiot).
   This feature is enabled with the flag `--parse-toplevel-phrases`.
@@ -209,7 +241,7 @@
 
 ## 0.20.1 (2021-12-13)
 
-### New features
+### Added
 
 - Update to odoc-parser 1.0.0 (#1843, @Julow).
   New syntax: code blocks can carry metadata, e.g.:
@@ -247,7 +279,7 @@
   + `stritem-extension-indent` (#1910, @gpetiot)
   + `type-decl-indent` (#1911, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - Fix normalization of sequences of expressions (#1731, @gpetiot)
 - Type constrained patterns are now always parenthesized, parentheses were missing in a class context (#1734, @gpetiot)
@@ -276,14 +308,14 @@
 - Make the formatting of attributes and docstrings more consistent (#1929, @gpetiot)
 - Fix stabilization of comments inside attributes (#1942, @gpetiot)
 
-### Changes
+### Changed
 
 - Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
 - Preserve bracketed lists in the Parsetree (#1694, #1876, #1914, @gpetiot)
 - Line directives now cause OCamlFormat to emit an error, they were previously silently ignored (#1845, @gpetiot)
 - Apply option 'module-item-spacing' on mutually recursive type declarations for more consistency (#1854, @gpetiot)
 
-### New features
+### Added
 
 - Handle merlin typed holes (#1698, @gpetiot)
 - Handle punned labelled arguments with type constraint in function applications.
@@ -299,7 +331,7 @@
 
 ## 0.19.0 (2021-07-16)
 
-### Bug fixes
+### Fixed
 
 - Fix formatting of odoc tags: the argument should be on the same line, indent description that wraps (#1634, #1635, @gpetiot)
 - Consistently format let bindings and monadic let bindings, do not drop comments before monadic bindings (#1636, @gpetiot)
@@ -321,7 +353,7 @@
 - Fix formatting of multiline non-wrapping comments (#1723, @gpetiot)
 - Fix position of comments following a record field (#1945, @gpetiot)
 
-### Changes
+### Changed
 
 - Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
 - Use UTF8 length of strings, not only in wrapped comments (#1673, @jberdine)
@@ -330,7 +362,7 @@
   The parser from odoc has been split from the main odoc package and put into its own package, `odoc-parser`.
 - Revert infix-form list formatting to pre-0.17.0 (#1717, @gpetiot)
 
-### New features
+### Added
 
 - Implement OCaml 4.13 features (#1680, @gpetiot)
   + Named existentials in pattern-matching (ocaml#9584)
@@ -350,17 +382,17 @@
 
 ## 0.18.0 (2021-03-30)
 
-### Bug fixes
+### Fixed
 
 - Fix extraneous parenthesis after `let open` with `closing-on-separate-line` (#1612, @Julow)
 - Add missing break between polytype quantification and arrow-type body (#1615, @gpetiot)
 
-### Changes
+### Changed
 
 - Use dune instrumentation backend for `bisect_ppx` (#1550, @tmattio)
 - Format objects and classes consistently with structure and signature items (#1569, @bikallem)
 
-### New features
+### Added
 
 - Expose a RPC interface through a new binary `ocamlformat-rpc` and a new library `ocamlformat-rpc-lib` (#1586, @gpetiot, @voodoos)
 
@@ -372,7 +404,7 @@
 - Remove support for OCaml 4.06 and 4.07, minimal version requirement bumped to OCaml 4.08 (#1549, @gpetiot)
 - Remove the 'extension-sugar' option, deprecated since 0.14.0 (#1588, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
 - Preserve the syntax of infix set/get operators (#1528, @gpetiot).
@@ -387,13 +419,13 @@
 - Preserve spacing of toplevel comments (#1554, @gpetiot)
 - Support more sugared extension points (#1587, @gpetiot)
 
-### Changes
+### Changed
 
 - Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)
 - Improve comment position in pattern collection (#1576, @gpetiot)
 - Consistent positioning of lambda return type annotations when no-break-infix-before-func and pre/post extensions (#1581, @gpetiot)
 
-### New features
+### Added
 
 - Support injectivity type annotations (OCaml 4.12 feature) (#1523, @gpetiot)
 
@@ -406,7 +438,7 @@
 - Remove the 'doc-comments-val' option, deprecated since 0.14.2 (#1461, @gpetiot)
 - Removed options are now listed in the commandline manual (new REMOVED OPTIONS section) (#1469, @Julow)
 
-### Changes
+### Changed
 
 - Set 'indicate-multiline-delimiters=no' on default profile (#1452, @gpetiot)
 - Option 'let-open' is now deprecated, concrete syntax will always be preserved starting from OCamlFormat v0.17.0, corresponding to the current 'let-open=preserve' behavior. (#1467, @gpetiot)
@@ -414,7 +446,7 @@
 - Remove extension from executable name in error messages. On Windows, this means that messages now start with "ocamlformat: ..." instead of "ocamlformat.exe: ..." (#1531, @emillon)
 - Using tokens instead of string manipulation when inspecting the original source (#1526, #1533, #1541 @hhugo) (#1532, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - Allow a break after `if%ext` with `if-then-else=keyword-first` (#1419, #1543, @gpetiot)
 - Fix parentheses around infix applications having attributes (#1464, @gpetiot)
@@ -440,7 +472,7 @@
 - Fix comments position in extensions (#1525, @gpetiot)
 - Fix formatting of field override with constraint (#1544, @gpetiot)
 
-### New features
+### Added
 
 ## 0.15.1 (2020-11-02)
 
@@ -452,13 +484,13 @@
 
 ## 0.15.0 (2020-08-06)
 
-### Changes
+### Changed
 
 - Do not break inline elements such as `{i blah}` in docstrings (#1346, @jberdine)
 - Distinguish hash-getter from hash-comparison infix operators. Operators of the form `#**#` or `#**.` where `**` can be 0 or more operator chars are considered getter operators and are not surrounded by spaces, as opposed to regular infix operators (#1376, @gpetiot)
 - Type constraint on return type of functions is now always printed before the function body (#1381, #1397, @gpetiot)
 
-### Bug fixes
+### Fixed
 
 - Restore previous functionality for pre-post extension points (#1342, @jberdine)
 - Fix extra break before `function` body of a `fun` (#1343, @jberdine)
@@ -479,14 +511,14 @@
 - Add missing parens around type annotation in anonymous function (#1433, @gpetiot)
 - Fix alignment of 'then' keyword in parenthesised expression (#1421, @gpetiot)
 
-### New features
+### Added
 
 - Support quoted extensions (added in ocaml 4.11) (#1405, @gpetiot)
 - Recognise eliom file extensions (#1430, @jrochel)
 
 ## 0.14.3 (2020-07-22)
 
-### Changes
+### Changed
 
 - No functional changes from 0.14.2. The goal of this release is to be
   compatible with base and stdio v0.14.0.
@@ -497,7 +529,7 @@
 
 ## 0.14.2 (2020-05-11)
 
-### Changes
+### Changed
 
 - Merge `doc-comments-val` option with `doc-comments`. The placement of documentation comments on `val` and `external` items is now controled by `doc-comments`.
   + `doc-comments=after` becomes `doc-comments=after-when-possible` to take into account the technical limitations of ocamlformat;
@@ -513,7 +545,7 @@
 
 ## 0.14.1 (2020-04-14)
 
-### Changes
+### Changed
 
 - The default for `doc-comments` is changed to `after` (#1335, @Julow).
   This reverts a change introduced in 0.14.0 (#1012).
@@ -522,7 +554,7 @@
 
 ## 0.14.0 (2020-04-02)
 
-### New features
+### Added
 
 - Add an option `--format-invalid-files` to print unparsable parts of the input as verbatim text. This feature is still experimental. (#1026, @gpetiot)
 - Support multi-indices extended indexing operators (#1279, #1277, @Julow, @gpetiot).
@@ -531,7 +563,7 @@
 - Preserve functor syntax for consistency (#1312, @gpetiot).
   Previously both functor syntax: `module M = functor (K : S) -> struct end` and `module M (K : S) = struct end` would be formatted as the latter, the original syntax is now preserved.
 
-### Changes
+### Changed
 
 - Add the option `doc-comments-val=before|after` (#1012, @Julow).
   This option set the placement of documentation comment on `val` and `external` only.
@@ -548,7 +580,7 @@
 - Add space between `row_field` attributes and the label or arguments, to be
   consistent with the non-polymorphic case. (#1299, @CraigFe)
 
-### Bug fixes
+### Fixed
 
 - Fix missing parentheses around `let open` (#1229, @Julow).
   eg. `M.f (M.(x) [@attr])` would be formatted to `M.f M.(x) [@attr]`, which would crash OCamlformat
@@ -595,7 +627,7 @@
 
 ## 0.13.0 (2020-01-28)
 
-### New features
+### Added
 
 - Add an option `--margin-check` to emit a warning if the formatted output exceeds the margin (#1110, @gpetiot)
 - Preserve comment indentation when `wrap-comments` is unset (#1138, #1159, @Julow)
@@ -615,7 +647,7 @@
 
 - Work with base v0.13.0 (#1163, @Julow)
 
-### Bug fixes
+### Fixed
 
 - Fix placement of comments just before a '|' (#1203, @Julow)
 - Fix build version detection when building in the absence of a git root (#1198, @avsm)
@@ -642,7 +674,7 @@
 
 ## 0.12 (2019-11-04)
 
-### Changes
+### Changed
 
 - Set "conventional" as the default profile (#1060, @gpetiot).
   This new profile is made to better match the most used style and is encouraged.
@@ -658,7 +690,7 @@
 - Preserve `begin` and `end` keywords in if-then-else (#978, @Julow).
   Previously, `begin`/`end` keywords around if-then-else branches were turned into parentheses.
 
-#### New features
+#### Added
 
 - Give a hint when warning 50 is raised (#1111, @gpetiot)
 - Add a message when a config value is removed (#1089, @emillon).
@@ -677,7 +709,7 @@
   Formatting of documentation comments is more robust and support newer Odoc syntaxes.
   Internally, Odoc replaces Octavius as the documentation parser.
 
-#### Bug fixes
+#### Fixed
 
 - Fix unstabilizing comments on assignments (#1093, @gpetiot)
 - Fix the default value documentation for `max-indent` (#1105, @gpetiot)
@@ -1274,7 +1306,7 @@
 - Add: alternative format for if-then-else construct (#155, @hhugo)
 - Add: option to customize position of doc comments (#153, @hhugo)
 
-### Bug fixes
+### Fixed
 
 - Fix: dropped item attributes on module expressions
 - Fix: toplevel let%ext (#167, @hhugo)
@@ -1312,7 +1344,7 @@
 - Add: support for Ptyp_object (#104, @smondet)
 - Use original filename when given in error messages. (#96, @mbarbin)
 
-### Bug fixes
+### Fixed
 
 - Fix: allow extensions in types (#143, @hhugo)
 - Fix: parens on symbol type constructor
@@ -1404,7 +1436,7 @@
 - Improve newtype constraints in let-bindings
 - Improve placement of exception docstrings
 
-### Bug fixes
+### Fixed
 
 - Fix missing break hint before comment on sugared `[]`
 - Fix formatting of [%ext e1]; e2 (#75, @hcarty)
@@ -1421,7 +1453,7 @@
 
 - Output to stdout if output file omitted
 
-### Bug fixes
+### Fixed
 
 - Fix Ppat_any value bindings
 - Fix missing parens around variant patterns in fun arg
@@ -1467,7 +1499,7 @@
 - Mention object language not implemented
 - Update documentation of --output
 
-### Bug fixes
+### Fixed
 
 - Colon instead of arrow before type for GADT constructors with no arguments (@mbouaziz)
 - Fix some dropped comments attached to idents

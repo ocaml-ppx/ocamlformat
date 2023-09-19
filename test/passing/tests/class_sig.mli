@@ -17,3 +17,27 @@ class c : int -> object end
 class c (* a *) : (* b *) int (* c *) -> (* d *) object (* e *) end (* f *)
 
 class c : object end
+
+class c : object
+  (** Standalone doc-string. *)
+end
+
+class unix_mockup :
+     foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> bar
+
+class unix_mockup :
+     foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> foooo:string
+  -> object
+  method foo : string
+end

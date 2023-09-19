@@ -23,3 +23,7 @@ class c =
   let a = (v : x :> y) in
   let a : x :> y = (v : x :> y) in
   object end
+
+let f (type a) :> a M.u = function z -> z
+
+let f x (type a) :> a M.u = function z -> z

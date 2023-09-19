@@ -102,6 +102,11 @@ let parse ?(disable_w50 = false) ?(disable_deprecated = false) parse fragment
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
 
+let parse_ast (conf : Conf.t) fg ~input_name s =
+  let ocaml_version = conf.opr_opts.ocaml_version.v
+  and preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
+  Extended_ast.Parse.ast fg ~ocaml_version ~preserve_beginend ~input_name s
+
 (** [is_repl_block x] returns whether [x] is a list of REPL phrases and
     outputs of the form:
 
@@ -114,16 +119,11 @@ let is_repl_block x =
 
 let parse_toplevel ?disable_w50 ?disable_deprecated (conf : Conf.t)
     ~input_name ~source =
-  let open Extended_ast in
-  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
-  let parse_ast fg ~input_name s =
-    Parse.ast fg ~preserve_beginend ~input_name s
-  in
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
     Either.Second
-      (parse ?disable_w50 ?disable_deprecated parse_ast Repl_file conf
-         ~input_name ~source )
+      (parse ?disable_w50 ?disable_deprecated (parse_ast conf)
+         Extended_ast.Repl_file conf ~input_name ~source )
   else
     First
-      (parse ?disable_w50 ?disable_deprecated parse_ast Use_file conf
-         ~input_name ~source )
+      (parse ?disable_w50 ?disable_deprecated (parse_ast conf)
+         Extended_ast.Use_file conf ~input_name ~source )

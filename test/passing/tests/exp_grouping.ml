@@ -249,3 +249,26 @@ let () =
   if a then begin b
     (* asd *)
   end
+
+let x =
+  let get_path_and_distance pv1 pv2 =
+    if is_loop pv1 pv2 then Some ([],0) else
+      match Tbl.find dist_tbl (pv1, pv2) with
+      | None ->
+        (* FIXME: temporary hack to avoid Jane Street's annoying warnings. *)
+        begin[@warning "-3"] try
+          let path', dist = Dijkstra.shortest_path pgraph pv1 pv2 in
+          let path = unwrap_path path' in
+          Tbl.set dist_tbl ~key:(pv1, pv2) ~data:(path, dist);
+          Some (path, dist)
+        with Not_found | Not_found_s _ ->
+          None
+        end
+      | pd -> pd
+  in
+  ()
+
+let _ =
+  if something_changed then begin[@attr]
+    loop
+  end
