@@ -7,4 +7,4 @@
   (backend bisect_ppx))
  (flags
   (:standard -w -50))
- (libraries astring result camlp-streams))
+ (libraries astring camlp-streams))

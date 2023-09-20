@@ -37,7 +37,6 @@ depends: [
   "uutf" {>= "1.0.1"}
   "csexp" {>= "1.4.0"}
   "astring"
-  "result"
   "camlp-streams"
   "odoc" {with-doc}
 ]
