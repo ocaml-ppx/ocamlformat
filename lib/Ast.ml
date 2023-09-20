@@ -148,7 +148,9 @@ module Exp = struct
 
   let rec is_trivial exp =
     match exp.pexp_desc with
-    | Pexp_constant {pconst_desc= Pconst_string (_, _, None); _} -> true
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
+    | Pexp_constant {pconst_desc= Pconst_string (_, loc, None); _} ->
+        Location.height loc = 1
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
     | Pexp_prefix (_, e) -> is_trivial e
