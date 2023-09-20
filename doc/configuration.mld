@@ -10,7 +10,7 @@ Ocamlformat fetches the following files on the FS:
 
 (1.) files are used to determine the {b project root}, which can be overriden by the [--root] option, they are looked up from the path of the file to format, and upwards following parent directories, until the first one is found.
 
-(2.) (3.) and (4.) are looked up from the path of the file to format, and following up the parents up to the project root.
+(2.) and (3.) are looked up from the path of the file to format, and following up the parents up to the project root.
 
 (2.) are the {b configuration files}, they  contain the options used to configure ocamlformat.
 
