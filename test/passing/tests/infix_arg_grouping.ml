@@ -5,8 +5,8 @@ vbox 1
 ;;
 
 user_error
-  ( "version mismatch: .ocamlformat requested " ^ value ^ " but version is "
-  ^ Version.version )
+  ( "version mismatch: .ocamlformat requested "
+  ^ value ^ " but version is " ^ Version.version )
 ;;
 
 hvbox 1
@@ -57,10 +57,11 @@ hvbox 0
   $ wrap "(" ")"
       ( str txt
       $ opt mt (fun _ ->
-            fmt "@ : " $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>" $ bdy_t
-            $ esp_t $ Option.call ~f:epi_t ) )
-  $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
-  $ Option.call ~f:epi_e )
+            fmt "@ : " $ Option.call ~f:pro_t $ psp_t
+            $ fmt "@;<1 2>"
+            $ bdy_t $ esp_t $ Option.call ~f:epi_t ) )
+  $ fmt " ->@ "
+  $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e $ Option.call ~f:epi_e )
 
 let to_json {integers; floats; strings} =
   `Assoc

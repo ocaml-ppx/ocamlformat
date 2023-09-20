@@ -98,7 +98,10 @@ let close_client () =
   | Errored -> ()
 
 let config c =
-  get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.config c cl
+  get_client ()
+  >>= fun cl ->
+  log "[ocf] Config\n%!" ;
+  Ocf.config c cl
 
 let format x =
   get_client ()

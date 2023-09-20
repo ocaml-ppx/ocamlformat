@@ -409,7 +409,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
             else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= noop
       ; sep_after_non_final=
-          fmt_or_k dock (fmt ";@;<1 0>")
+          fmt_or_k dock
+            (fmt ";@;<1 0>")
             (char ';' $ break 1 (String.length opn + 1))
       ; sep_after_final= fmt_if_k dock (fits_breaks ~level:1 "" ";") }
 

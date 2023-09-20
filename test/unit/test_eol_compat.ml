@@ -34,22 +34,26 @@ let _ =
       "\nlet _ = \"aaa\\n\n         e\"\n"
       ~lf:"\nlet _ = \"aaa\\n\n         e\"\n"
       ~crlf:"\r\nlet _ = \"aaa\\n\r\n         e\"\r\n"
-  ; test "lf in string with exclude_locs (lf)"
+  ; test
+      "lf in string with exclude_locs (lf)"
       ~exclude_locs:[(9, 26)]
       "\nlet _ = \"aaa\\n\n         e\"\n"
       ~lf:"\nlet _ = \"aaa\\n\n         e\"\n"
       ~crlf:"\r\nlet _ = \"aaa\\n\n         e\"\r\n"
-  ; test "crlf in string with exclude_locs (lf)"
+  ; test
+      "crlf in string with exclude_locs (lf)"
       ~exclude_locs:[(9, 27)]
       "\nlet _ = \"aaa\\n\r\n         e\"\n"
       ~lf:"\nlet _ = \"aaa\\n\r\n         e\"\n"
       ~crlf:"\r\nlet _ = \"aaa\\n\r\n         e\"\r\n"
-  ; test "lf in string with exclude_locs (crlf)"
+  ; test
+      "lf in string with exclude_locs (crlf)"
       ~exclude_locs:[(10, 27)]
       "\r\nlet _ = \"aaa\\n\n         e\"\r\n"
       ~lf:"\nlet _ = \"aaa\\n\n         e\"\n"
       ~crlf:"\r\nlet _ = \"aaa\\n\n         e\"\r\n"
-  ; test "crlf in string with exclude_locs (crlf)"
+  ; test
+      "crlf in string with exclude_locs (crlf)"
       ~exclude_locs:[(10, 28)]
       "\r\nlet _ = \"aaa\\n\r\n         e\"\r\n"
       ~lf:"\nlet _ = \"aaa\\n\r\n         e\"\n"

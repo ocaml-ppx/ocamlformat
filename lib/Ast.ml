@@ -146,11 +146,21 @@ module Exp = struct
         false
     | _ -> List.exists pexp_attributes ~f:(Fn.non Attr.is_doc)
 
+  let is_string_const_trivial str =
+    let is_char_trivial = function
+      | ' ' | '\t' | '\n' | '\x00' .. '\x1f' | '\x7f' .. '\xff' -> false
+      | _ -> true
+    in
+    let len = String.length str in
+    len < 5 || (len < 20 && String.for_all ~f:is_char_trivial str)
+
   let rec is_trivial exp =
     match exp.pexp_desc with
+    (* String literals using the heavy syntax are not trivial. *)
     | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
-    | Pexp_constant {pconst_desc= Pconst_string (_, loc, None); _} ->
-        Location.height loc = 1
+    (* Some short strings are trivial. *)
+    | Pexp_constant {pconst_desc= Pconst_string (str, _, None); _} ->
+        is_string_const_trivial str
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
     | Pexp_prefix (_, e) -> is_trivial e
@@ -1516,7 +1526,12 @@ end = struct
   let rec is_simple (c : Conf.t) width ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_constant _ -> Exp.is_trivial exp
+    (* String literals using the heavy syntax are not simple. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
+    (* Only strings fitting on the line are simple. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, loc, None); _} ->
+        Location.height loc = 1 && fit_margin c (width xexp)
+    | Pexp_constant _ -> true
     | Pexp_field _ | Pexp_ident _ | Pexp_send _
      |Pexp_construct (_, None)
      |Pexp_variant (_, None) ->

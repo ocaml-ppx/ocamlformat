@@ -105,7 +105,8 @@ let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
     {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
 
 let string_literal t mode loc =
-  Option.value_exn ~message:"Parse error while reading string literal"
+  Option.value_exn
+    ~message:"Parse error while reading string literal"
     (Literal_lexer.string mode (string_at t loc))
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =

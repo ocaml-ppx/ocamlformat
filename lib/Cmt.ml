@@ -60,7 +60,8 @@ let pp_error fs {kind; cmt_kind} =
   in
   match kind with
   | `Added x ->
-      Format.fprintf fs "%!@{<loc>%a@}:@,@{<error>Error@}: %s %a added.\n%!"
+      Format.fprintf fs
+        "%!@{<loc>%a@}:@,@{<error>Error@}: %s %a added.\n%!"
         Location.print_loc (loc x) s_kind pp_cmt x
   | `Dropped x ->
       Format.fprintf fs

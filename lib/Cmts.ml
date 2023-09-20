@@ -303,8 +303,9 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
   if t.debug then
-    Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
-      Location.fmt before Location.fmt after ;
+    Format.eprintf
+      "relocate %a to %a and %a@\n%!"
+      Location.fmt src Location.fmt before Location.fmt after ;
   let merge_and_sort x y =
     List.rev_append x y
     |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
