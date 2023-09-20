@@ -1516,18 +1516,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       (list_fl args (fmt_arg c) $ fmt_if_k last global_epi)
     $ fmt_if_k (not last) (break 1 0)
   in
-  let is_simple (lbl, x) =
+  let is_simple (_lbl, x) =
     let xexp = sub_exp ~ctx x in
-    let output =
-      Cmts.preserve
-        ~cache_key:(Arg (lbl, x))
-        (fun () ->
-          let cmts = Cmts.drop_before c.cmts x.pexp_loc in
-          fmt_arg ~first:false ~last:false {c with cmts} (lbl, x) )
-        c.cmts
-    in
-    let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
-    is_simple c.conf (expression_width c) xexp && not breaks
+    is_simple c.conf (expression_width c) xexp
   in
   let break x y =
     Cmts.has_after c.cmts (snd x).pexp_loc || not (is_simple x && is_simple y)
