@@ -1453,8 +1453,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       | _ -> None
     in
     let epi =
-      match ast.pexp_desc, c.conf.fmt_opts.break_string_literals.v with
-      | Pexp_constant _, `Auto when not last -> fits_breaks "" ~hint:(1000, -2) ""
+      match (ast.pexp_desc, c.conf.fmt_opts.break_string_literals.v) with
+      | Pexp_constant _, `Auto when not last ->
+          fits_breaks "" ~hint:(1000, -2) ""
       | _ -> noop
     in
     hovbox
