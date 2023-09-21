@@ -47,6 +47,7 @@ let [%foo let () = ()] : [%foo type t = t] = [%foo class c = object end]
 let [%foo: [ `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ]
 
 [%%foo? _]
+
 [%%foo? Some y when y > 0]
 
 let [%foo? Bar x | Baz x] : [%foo? #bar] = [%foo? { x }]
@@ -176,16 +177,22 @@ type%foo t = int [@@foo]
 and t = int [@@foo]
 
 type%foo t += T [@@foo]
+
 class%foo x = x [@@foo]
+
 class type%foo x = x [@@foo]
+
 external%foo x : _ = "" [@@foo]
+
 exception%foo X [@foo]
+
 module%foo M = M [@@foo]
 
 module%foo rec M : S = M [@@foo]
 and M : S = M [@@foo]
 
 module type%foo S = S [@@foo]
+
 include%foo M [@@foo]
 open%foo M [@@foo]
 
