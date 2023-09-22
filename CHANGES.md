@@ -14,6 +14,7 @@ profile. This started with version 0.26.0.
 ### Fixed
 
 - Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+- Fix extension-point spacing in structures (#2450, @Julow)
 
 ## 0.26.1 (2023-09-15)
 
