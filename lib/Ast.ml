@@ -388,6 +388,7 @@ module Structure_item = struct
       | ( Pstr_extension ((_, PStr [n1]), _attrs1)
         , Pstr_extension ((_, PStr [n2]), _attrs2) ) ->
           allow_adjacent (n1, cI) (n2, cJ)
+      | Pstr_extension _, Pstr_extension _ -> true
       | _ -> false )
     | _ -> true
 

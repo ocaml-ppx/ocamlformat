@@ -47,7 +47,6 @@ let [%foo let () = ()] : [%foo type t = t] = [%foo class c = object end]
 let [%foo: [ `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ]
 
 [%%foo? _]
-
 [%%foo? Some y when y > 0]
 
 let [%foo? Bar x | Baz x] : [%foo? #bar] = [%foo? { x }]
