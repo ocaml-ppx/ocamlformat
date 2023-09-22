@@ -33,8 +33,7 @@ let test_parse_and_format_core_type =
   [ make_test "string" ~input:"string" ~expected:(Ok "string\n")
   ; make_test "int" ~input:"int" ~expected:(Ok "int\n")
   ; make_test "arrow" ~input:"int -> int" ~expected:(Ok "int -> int\n")
-  ; make_test "arrow2"
-      ~input:"  int    (* foo *) \n\n ->     int  (* bar *)"
+  ; make_test "arrow2" ~input:"  int    (* foo *) \n\n ->     int  (* bar *)"
       ~expected:(Ok "int (* foo *) -> int (* bar *)\n")
   ; make_test ";;" ~input:";;"
       ~expected:
@@ -116,8 +115,7 @@ File "<test>", line 1, characters 0-3:
 
 let test_parse_and_format_expression =
   let make_test = test_parse_and_format "expression" ~fg:Expression in
-  [ make_test "List.map"
-      ~input:"List.map (fun x->\nx*x) [(1 + 9); 2;3] "
+  [ make_test "List.map" ~input:"List.map (fun x->\nx*x) [(1 + 9); 2;3] "
       ~expected:(Ok "List.map (fun x -> x * x) [ 1 + 9; 2; 3 ]\n") ]
 
 let tests =

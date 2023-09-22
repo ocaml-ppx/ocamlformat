@@ -1520,8 +1520,18 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let xexp = sub_exp ~ctx x in
     is_simple c.conf (expression_width c) xexp
   in
+  let should_break_after x = not (is_simple x)
+  and should_break_before ((_lbl, exp) as y) =
+    match exp.pexp_desc with
+    (* Heavy syntax strings are not grouped. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> true
+    (* Non-simple strings are grouped but end a group. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, None); _} -> false
+    | _ -> not (is_simple y)
+  in
   let break x y =
-    Cmts.has_after c.cmts (snd x).pexp_loc || not (is_simple x && is_simple y)
+    Cmts.has_after c.cmts (snd x).pexp_loc
+    || should_break_after x || should_break_before y
   in
   let groups =
     if c.conf.fmt_opts.wrap_fun_args.v then List.group args ~break

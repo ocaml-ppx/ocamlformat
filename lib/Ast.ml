@@ -1530,7 +1530,8 @@ end = struct
     | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
     (* Only strings fitting on the line are simple. *)
     | Pexp_constant {pconst_desc= Pconst_string (_, loc, None); _} ->
-        Exp.is_trivial exp || (Location.height loc = 1 && fit_margin c (width xexp))
+        Exp.is_trivial exp
+        || (Location.height loc = 1 && fit_margin c (width xexp))
     | Pexp_constant _ -> true
     | Pexp_field _ | Pexp_ident _ | Pexp_send _
      |Pexp_construct (_, None)

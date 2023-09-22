@@ -26,8 +26,7 @@ let parse_file location text =
   Odoc_parser.ast (Odoc_parser.parse_comment ~location ~text)
 
 let warn fmt warning =
-  Format.fprintf fmt
-    "Warning: Invalid documentation comment:@,%s\n%!"
+  Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"
     (Odoc_parser.Warning.to_string warning)
 
 let is_tag_only =

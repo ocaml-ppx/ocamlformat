@@ -163,13 +163,11 @@ let in_attributes cond = function
 let maybe_empty = function "" -> "" | x -> " " ^ x
 
 let pp_deprecated ppf {dmsg; dversion= v} =
-  Format.fprintf ppf
-    "This option is deprecated since version %a.%s"
+  Format.fprintf ppf "This option is deprecated since version %a.%s"
     Version.pp v (maybe_empty dmsg)
 
 let pp_removed ppf {rmsg; rversion= v} =
-  Format.fprintf ppf
-    "This option has been removed in version %a.%s"
+  Format.fprintf ppf "This option has been removed in version %a.%s"
     Version.pp v (maybe_empty rmsg)
 
 let pp_from_src fs = function
@@ -189,8 +187,7 @@ let rec pp_from fs = function
   | `Profile (s, p) -> Format.fprintf fs " (profile %s%a)" s pp_from_src p
   | `Updated (x, None) -> pp_from_src fs x
   | `Updated (x, Some r) ->
-      Format.fprintf fs
-        "%a -- Warning (redundant): %a"
+      Format.fprintf fs "%a -- Warning (redundant): %a"
         pp_from_src x pp_from r
 
 let loc_udapted_from = function
@@ -211,8 +208,7 @@ let status_doc ppf = function
 
 let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
   let default = if default then "set" else "unset" in
-  Format.asprintf
-    "%s The flag is $(b,%s) by default.%s%a"
+  Format.asprintf "%s The flag is $(b,%s) by default.%s%a"
     doc default
     (in_attributes allow_inline kind)
     status_doc status
@@ -222,8 +218,7 @@ let generated_doc conv ~allow_inline ~doc ~kind ~default ~status =
   let default =
     if String.is_empty default_doc then "none" else default_doc
   in
-  Format.asprintf
-    "%s The default value is $(b,%s).%s%a"
+  Format.asprintf "%s The default value is $(b,%s).%s%a"
     doc default
     (in_attributes allow_inline kind)
     status_doc status
@@ -332,8 +327,7 @@ module Value = struct
     | Some x -> (name, value, doc, `Deprecated x)
 
   let pp_deprecated s ppf {dmsg= msg; dversion= v} =
-    Format.fprintf ppf
-      "Value `%s` is deprecated since version %a. %s"
+    Format.fprintf ppf "Value `%s` is deprecated since version %a. %s"
       s Version.pp v msg
 
   let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =

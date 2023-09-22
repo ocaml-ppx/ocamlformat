@@ -39,8 +39,7 @@ let warn ~loc fmt =
   Format.kasprintf
     (fun s ->
       warn_raw
-        (Format.asprintf
-           "%!@{<loc>%a@}:@,@{<warning>Warning@}: %s\n%!"
+        (Format.asprintf "%!@{<loc>%a@}:@,@{<warning>Warning@}: %s\n%!"
            Location.print_loc loc s ) )
     fmt
 
@@ -867,8 +866,7 @@ module Formatting = struct
       ; Decl.Value.make ~name:"space" `Space
           "$(b,space) prints a space inside the delimiter to indicate the \
            matching one is on a different line."
-      ; Decl.Value.make
-          ~name:"closing-on-separate-line"
+      ; Decl.Value.make ~name:"closing-on-separate-line"
           `Closing_on_separate_line
           "$(b, closing-on-separate-line) makes sure that the closing \
            delimiter is on its own line." ]

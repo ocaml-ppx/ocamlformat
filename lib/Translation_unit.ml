@@ -59,8 +59,7 @@ module Error = struct
     Out_channel.write_all n ~data:next ;
     ignore
       (Stdlib.Sys.command
-         (Printf.sprintf
-            "git diff --no-index -u %S %S | sed '1,4d' 1>&2"
+         (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2"
             p n ) ) ;
     Stdlib.Sys.remove p ;
     Stdlib.Sys.remove n
