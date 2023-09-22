@@ -3657,9 +3657,7 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
             pro=
               Some
                 ( Cmts.fmt_before c pmty_loc
-                $ fmt_if parens "("
-                $ str "module type of "
-                $ pro )
+                $ fmt_if parens "(" $ str "module type of " $ pro )
           ; epi= Some epi }
       | _ ->
           { blk with
@@ -4014,17 +4012,14 @@ and fmt_with_constraint c ctx ~pre = function
   | Pwith_type (lid, td) ->
       fmt_type_declaration ~pre:(pre ^ " type") c ~name:lid (sub_td ~ctx td)
   | Pwith_module (m1, m2) ->
-      str pre
-      $ str " module "
-      $ fmt_longident_loc c m1 $ str " = " $ fmt_longident_loc c m2
+      str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
+      $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration
-        ~pre:(pre ^ " type")
-        c ~eq:":=" ~name:lid (sub_td ~ctx td)
+      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ~name:lid
+        (sub_td ~ctx td)
   | Pwith_modsubst (m1, m2) ->
-      str pre
-      $ str " module "
-      $ fmt_longident_loc c m1 $ str " := " $ fmt_longident_loc c m2
+      str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
+      $ fmt_longident_loc c m2
   | Pwith_modtype (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in

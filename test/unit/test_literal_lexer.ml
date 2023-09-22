@@ -25,9 +25,8 @@ let tests_string =
   in
   let test name s ~expected_preserve ~expected_normalize =
     [ test_one (name ^ " (preserve)") s `Preserve ~expected:expected_preserve
-    ; test_one
-        (name ^ " (normalize)")
-        s `Normalize ~expected:expected_normalize ]
+    ; test_one (name ^ " (normalize)") s `Normalize
+        ~expected:expected_normalize ]
   in
   List.concat
     [ [test_opt "string: not a string" {|hello|} `Preserve ~expected:None]

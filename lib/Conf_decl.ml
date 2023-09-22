@@ -187,8 +187,8 @@ let rec pp_from fs = function
   | `Profile (s, p) -> Format.fprintf fs " (profile %s%a)" s pp_from_src p
   | `Updated (x, None) -> pp_from_src fs x
   | `Updated (x, Some r) ->
-      Format.fprintf fs "%a -- Warning (redundant): %a"
-        pp_from_src x pp_from r
+      Format.fprintf fs "%a -- Warning (redundant): %a" pp_from_src x pp_from
+        r
 
 let loc_udapted_from = function
   | `Commandline -> Location.in_file "<command-line>"
