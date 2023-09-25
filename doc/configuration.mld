@@ -12,7 +12,7 @@ Ocamlformat fetches the following files on the file system:
 
 (2.) and (3.) are looked up from the path of the file to format, and following up the parents up to the project root.
 
-(2.) are the {b configuration files}, they  contain the options used to configure ocamlformat. A global [.ocamlformat] file can also be used: [$XDG_CONFIG_HOME/ocamlformat] (if defined).
+(2.) are the {b configuration files}, they contain the options used to configure ocamlformat. A global [.ocamlformat] file can also be used: [$XDG_CONFIG_HOME/ocamlformat] (if defined).
 
 
 {1 How the configuration is built}
