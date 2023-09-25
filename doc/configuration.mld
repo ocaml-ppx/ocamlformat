@@ -39,7 +39,8 @@ y [@@ocamlformat "option=value,option=value"];;
 
 All "formatting options" (listed in the {{!page-manpage_ocamlformat}manpage}) can be set in attributes, among the non-formatting options only [enable]/[disable] can be set in floatting attributes.
 
-When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project (including the one in [XDG_CONFIG_HOME]) are read.
+When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project are read, if no [.ocamlformat] file has been found then then apply the global configuration [$XDG_CONFIG_HOME/ocamlformat] (if defined). The global configuration file is ignore in any other case.
+
 When this option is not set, [.ocamlformat] files outside of the project are ignored.
 
 If no configuration file is found, the formatting is disabled.
