@@ -14,10 +14,6 @@ Ocamlformat fetches the following files on the FS:
 
 (2.) are the {b configuration files}, they  contain the options used to configure ocamlformat.
 
-(3.) contain a list of files to exclude from the formatting, if the formatting is enabled ([disable = false]).
-
-(4.) contain a list of files to include in the formatting, if the formatting is disabled ([disable = true]).
-
 {1 How the configuration is built}
 
 + The initial configuration is equal to the [default] (or [conventional]) profile
