@@ -16,8 +16,10 @@ Ocamlformat fetches the following files on the FS:
 
 {1 How the configuration is built}
 
-+ The initial configuration is equal to the [default] (or [conventional]) profile
-+ The options passed through the configuration files are applied. The configuration files are considered in sequence, starting from the root of the project, and down to the directory of the file to format, overriding one or many options at each application.
+The configuration files are considered in sequence, starting from the root of the project, and down to the directory of the file to format, overriding one or many options at each application.
+
++ The initial configuration is equal to the [default] (or [conventional]) profile.
++ The options passed through the configuration files are applied.
 + The options passed through the [OCAMLFORMAT] environment variable are applied, overriding one or many options at a time.
 + The options passed through the command line are applied, overriding one or many options at a time.
 
