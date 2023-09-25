@@ -24,6 +24,14 @@ The configuration files are considered in sequence, starting from the root of th
 + The options passed through the [OCAMLFORMAT] environment variable are applied, overriding one or many options at a time.
 + The options passed through the command line are applied, overriding one or many options at a time.
 
+When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project are read, if no [.ocamlformat] file has been found then then apply the global configuration [$XDG_CONFIG_HOME/ocamlformat] (if defined). The global configuration file is ignore in any other case.
+
+When this option is not set, [.ocamlformat] files outside of the project are ignored.
+
+If no configuration file is found, the formatting is disabled.
+
+{1 Overriding the configuration in the source}
+
 Note that some options can be overriden directly in the source, with attributes like:
 
 {@ocaml[
@@ -37,10 +45,6 @@ y [@@ocamlformat "option=value,option=value"];;
 [@@@ocamlformat "option=value,option=value"]
 ]}
 
-All "formatting options" (listed in the {{!page-manpage_ocamlformat}manpage}) can be set in attributes, among the non-formatting options only [enable]/[disable] can be set in floatting attributes.
+All "formatting options" (listed in the {{!page-manpage_ocamlformat}manpage}) can be set in attributes.
 
-When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project are read, if no [.ocamlformat] file has been found then then apply the global configuration [$XDG_CONFIG_HOME/ocamlformat] (if defined). The global configuration file is ignore in any other case.
-
-When this option is not set, [.ocamlformat] files outside of the project are ignored.
-
-If no configuration file is found, the formatting is disabled.
+Among the non-formatting options only [enable]/[disable] can be set in floatting attributes.
