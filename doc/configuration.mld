@@ -2,7 +2,7 @@
 
 {1 Configuration files}
 
-Ocamlformat fetches the following files on the FS:
+Ocamlformat fetches the following files on the file system:
 
 1. [.git], [.hg] or [dune-project]
 2. [.ocamlformat] and [.ocp-indent]
