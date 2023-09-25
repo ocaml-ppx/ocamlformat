@@ -378,8 +378,6 @@ module Md = struct
      pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
-
-let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
 end
 
 module Ms = struct
@@ -391,8 +389,6 @@ module Ms = struct
      pms_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pms_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text 
 end
 
 module Mtd = struct
@@ -404,8 +400,6 @@ module Mtd = struct
      pmtd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmtd_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs ~typ = mk ~loc ~attrs ~docs ?text ?typ
 end
 
 module Mb = struct
@@ -418,8 +412,6 @@ module Mb = struct
      pmb_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmb_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
 end
 
 module Opn = struct
