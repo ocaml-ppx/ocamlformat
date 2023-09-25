@@ -26,7 +26,12 @@ The configuration files are considered in sequence, starting from the root of th
 Note that some options can be overriden directly in the source, with attributes like:
 
 {@ocaml[
-[@ocamlformat "option=value,option=value"]
-]}
+(* attributes attached to algebraic constructs *)
+x [@ocamlformat "option=value,option=value"];;
 
-But this is not part of the external configuration.
+(* item attributes, attached to "blocks" *)
+y [@@ocamlformat "option=value,option=value"];;
+
+(* floating attributes, standalone *)
+[@@@ocamlformat "option=value,option=value"]
+]}
