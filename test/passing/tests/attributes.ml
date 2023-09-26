@@ -65,6 +65,7 @@ module type M = sig
 
   module T : [%ext] [@test7]
 
+  module T = T [@@test8]
   module [@test8] T = T
 end
 
