@@ -1344,7 +1344,7 @@ structure_item:
     | floating_attribute
         { Pstr_attribute $1 }
     | module_binding
-        { Pstr_module $1 }
+        { $1 }
     | rec_module_bindings
         { Pstr_recmodule $1 }
     | module_type_declaration
