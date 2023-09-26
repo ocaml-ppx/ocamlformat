@@ -105,6 +105,12 @@ module Ext = struct
   end
 end
 
+module Ext_attrs = struct
+  let has_doc ea =
+    List.exists ~f:Attr.is_doc ea.attrs_before
+    || List.exists ~f:Attr.is_doc ea.attrs_after
+end
+
 module Exp = struct
   let location x = x.pexp_loc
 
@@ -526,9 +532,7 @@ end
 
 module Mb = struct
   let has_doc itm =
-    List.exists ~f:Attr.is_doc
-      (itm.pmb_ext_attrs.attrs_before @ itm.pmb_ext_attrs.attrs_after)
-
+    Ext_attrs.has_doc itm.pmb_ext_attrs
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
     && Location.is_single_line i.pmb_loc c.fmt_opts.margin.v
@@ -542,8 +546,7 @@ end
 
 module Md = struct
   let has_doc itm =
-    List.exists ~f:Attr.is_doc
-      (itm.pmd_ext_attrs.attrs_before @ itm.pmd_ext_attrs.attrs_after)
+    Ext_attrs.has_doc itm.pmd_ext_attrs
 
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
@@ -688,6 +691,9 @@ include T
 
 let is_top = function Top -> true | _ -> false
 
+let attrs_of_ext_attrs ea = 
+  ea.attrs_before @ ea.attrs_after
+
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
@@ -696,8 +702,8 @@ let attributes = function
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Lb x -> x.pvb_attributes
-  | Mb x -> x.pmb_ext_attrs.attrs_before @ x.pmb_ext_attrs.attrs_after
-  | Md x -> x.pmd_ext_attrs.attrs_before @ x.pmd_ext_attrs.attrs_after
+  | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
+  | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
