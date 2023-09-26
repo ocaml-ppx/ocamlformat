@@ -26,14 +26,14 @@ module Space_around = struct
      [--space-around-*] options are sufficient. *)
 
   module Records = struct
-    type t = {foo: < .. > }
+    type t = { foo: < .. > }
 
-    type t = A of {foo: < .. > }
+    type t = A of { foo: < .. > }
   end
   [@@ocamlformat "space-around-records = true"]
 
   module Variants = struct
-    type t = [`Foo of < .. > ]
+    type t = [ `Foo of < .. > ]
   end
   [@@ocamlformat "space-around-variants"]
 end

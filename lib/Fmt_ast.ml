@@ -180,7 +180,7 @@ let update_config_maybe_disabled c loc l f =
 
 let update_config_maybe_disabled_attrs c loc attrs f =
   let l = attrs.attrs_before @ attrs.attrs_after in
-  maybe_disabled c loc l f
+  update_config_maybe_disabled c loc l f
 
 let update_config_maybe_disabled_block c loc l f =
   let fmt bdy = {empty with opn= Some (open_vbox 2); bdy; cls= close_box} in
