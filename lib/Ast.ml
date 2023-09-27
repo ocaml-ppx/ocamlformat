@@ -380,7 +380,7 @@ module Structure_item = struct
           longident_is_simple c i.txt
       | _ -> false )
 
-  let allow_adjacent (itmI, cI) (itmJ, cJ) =
+  let rec allow_adjacent (itmI, cI) (itmJ, cJ) =
     match
       Conf.
         (cI.fmt_opts.module_item_spacing.v, cJ.fmt_opts.module_item_spacing.v)
@@ -397,9 +397,12 @@ module Structure_item = struct
        |Pstr_modtype _, Pstr_modtype _
        |Pstr_class _, Pstr_class _
        |Pstr_class_type _, Pstr_class_type _
-       |Pstr_attribute _, Pstr_attribute _
-       |Pstr_extension _, Pstr_extension _ ->
+       |Pstr_attribute _, Pstr_attribute _ ->
           true
+      | ( Pstr_extension ((_, PStr [n1]), _attrs1)
+        , Pstr_extension ((_, PStr [n2]), _attrs2) ) ->
+          allow_adjacent (n1, cI) (n2, cJ)
+      | Pstr_extension _, Pstr_extension _ -> true
       | _ -> false )
     | _ -> true
 

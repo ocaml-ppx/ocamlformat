@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: OCaml Community Forum
+    url: https://discuss.ocaml.org/
+    about: Please ask and answer questions here.
+  - name: OCaml Community Discord
+    url: https://discord.gg/cCYQbqN
+    about: Please ask and answer questions here.
