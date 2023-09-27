@@ -3640,9 +3640,9 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_modtypesubst mtd -> fmt_module_type_declaration ~eqty:":=" c ctx mtd
   | Psig_module md ->
-      hvbox 0 
-        (fmt_module_declaration c ~rec_flag:false ~first:true 
-          (sub_md ~ctx md) )
+      hvbox 0
+        (fmt_module_declaration c ~rec_flag:false ~first:true
+           (sub_md ~ctx md) )
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
   | Psig_open od -> fmt_open_description ?ext c ~kw_attributes:[] od
   | Psig_recmodule mds ->
@@ -3731,8 +3731,8 @@ and fmt_class_exprs ?ext c ctx cls =
          $ hovbox 0
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
 
-and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
-    xargs xbody xmty ~attrs ~rec_flag =
+and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
+    name xargs xbody xmty ~attrs ~rec_flag =
   let ext = attrs.attrs_extension in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
@@ -3786,14 +3786,14 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
   in
   let intro =
     str keyword
-    $ fmt_extension_suffix c ext $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
+    $ fmt_extension_suffix c ext
+    $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
     $ fmt_if rec_flag " rec" $ str " " $ fmt_str_loc_opt c name
   in
   let compact =
     Poly.(c.conf.fmt_opts.let_module.v = `Compact) || not can_sparse
   in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
-
   hvbox
     (if compact then 0 else 2)
     ( doc_before
@@ -3836,8 +3836,8 @@ and fmt_module_declaration c ~rec_flag ~first {ast= pmd; _} =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module ~rec_:rec_flag c ctx keyword pmd_name pmd_args None ?eqty (Some xmty)
-       ~rec_flag:(rec_flag && first) ~attrs )
+    (fmt_module ~rec_:rec_flag c ctx keyword pmd_name pmd_args None ?eqty
+       (Some xmty) ~rec_flag:(rec_flag && first) ~attrs )
 
 and fmt_module_substitution c ctx pms =
   let {pms_name; pms_manifest; pms_ext_attrs= attrs; pms_loc} = pms in
@@ -4407,8 +4407,8 @@ and fmt_module_binding c ~rec_flag ~first {ast= pmb; _} =
     | _ -> (xbody, None)
   in
   Cmts.fmt c pmb.pmb_loc
-    (fmt_module ~rec_:rec_flag c ctx keyword ~rec_flag:(rec_flag && first) ~eqty:":"
-       pmb_name pmb.pmb_args (Some xbody) xmty ~attrs )
+    (fmt_module ~rec_:rec_flag c ctx keyword ~rec_flag:(rec_flag && first)
+       ~eqty:":" pmb_name pmb.pmb_args (Some xbody) xmty ~attrs )
 
 let fmt_toplevel_directive c ~semisemi dir =
   let fmt_dir_arg = function

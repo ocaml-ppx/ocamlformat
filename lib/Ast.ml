@@ -531,8 +531,8 @@ module Lb = struct
 end
 
 module Mb = struct
-  let has_doc itm =
-    Ext_attrs.has_doc itm.pmb_ext_attrs
+  let has_doc itm = Ext_attrs.has_doc itm.pmb_ext_attrs
+
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
     && Location.is_single_line i.pmb_loc c.fmt_opts.margin.v
@@ -545,8 +545,7 @@ module Mb = struct
 end
 
 module Md = struct
-  let has_doc itm =
-    Ext_attrs.has_doc itm.pmd_ext_attrs
+  let has_doc itm = Ext_attrs.has_doc itm.pmd_ext_attrs
 
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
@@ -691,8 +690,7 @@ include T
 
 let is_top = function Top -> true | _ -> false
 
-let attrs_of_ext_attrs ea = 
-  ea.attrs_before @ ea.attrs_after
+let attrs_of_ext_attrs ea = ea.attrs_before @ ea.attrs_after
 
 let attributes = function
   | Pld _ -> []
