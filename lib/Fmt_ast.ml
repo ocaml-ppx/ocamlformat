@@ -400,23 +400,20 @@ let docstring_epi ~standalone ~next ~epi ~floating =
       str "\n" $ epi
   | _ -> epi
 
-let fmt_docstring' c ?(standalone = false) ?pro ?epi doc =
-  list_pn doc (fun ~prev:_ ({txt; loc}, floating) ~next ->
+let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
+  list_pn (Option.value ~default:[] doc)
+    (fun ~prev:_ ({txt; loc}, floating) ~next ->
       let epi = docstring_epi ~standalone ~next ~epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (Docstring.parse ~loc txt) )
 
-let fmt_docstring c ?standalone ?pro ?epi doc =
-  fmt_docstring' c ?standalone ?pro ?epi (Option.value ~default:[] doc)
-
-(** Accept up to two docstrings, in reverse order of appearance. *)
 let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
-    ?(fit = false) c docs =
-  match docs with
-  | doc2 :: doc1 :: _ ->
-      ( fmt_docstring' c ~epi:(fmt "@\n") doc1
-      , fmt_docstring' c ~pro:(fmt "@\n") doc2 )
-  | [] -> (noop, noop)
-  | [doc] -> (
+    ?(fit = false) c doc1 doc2 =
+  match (doc1, doc2) with
+  | Some _, Some _ ->
+      ( fmt_docstring c ~epi:(fmt "@\n") doc1
+      , fmt_docstring c ~pro:(fmt "@\n") doc2 )
+  | None, None -> (noop, noop)
+  | None, Some doc | Some doc, None -> (
       let is_tag_only =
         List.for_all ~f:(function
           | Ok es, _ -> Docstring.is_tag_only es
@@ -459,37 +456,25 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
           , fmt_doc ~pro:(break c.conf.fmt_opts.doc_comments_padding.v 0) doc
           ) )
 
-(** There can be up to two doc comments. *)
-let extract_doc_attrs acc attrs =
-  let extract_once acc attrs =
-    if List.length acc >= 2 then (acc, attrs)
-    else
-      let doc, attrs = doc_atrs attrs in
-      let acc = match doc with Some doc -> doc :: acc | None -> acc in
-      (acc, attrs)
-  in
-  let acc, attrs = extract_once acc attrs in
-  extract_once acc attrs
-
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
 let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
-  let docs, attrs = extract_doc_attrs [] attrs in
+  let doc1, attrs = doc_atrs attrs in
+  let doc2, attrs = doc_atrs attrs in
   let doc_before, doc_after =
-    fmt_docstring_around_item' ?is_val ?force_before ?fit c docs
+    fmt_docstring_around_item' ?is_val ?force_before ?fit c doc1 doc2
   in
   (doc_before, doc_after, attrs)
 
-(** There can be upto 2 doc comments attached to an item but whether they are
-    in [attrs_before] or [attrs_after] is undefined. *)
+(** Returns the documentation before and after the item as well as the
+    [ext_attrs] before and after attributes, modified.
+    It is assumed that docstrings can only occurs in [attrs_after]. *)
 let fmt_docstring_around_item_attrs ?is_val ?force_before ?fit c attrs =
-  let docs, attrs_before = extract_doc_attrs [] attrs.attrs_before in
-  let docs, attrs_after = extract_doc_attrs docs attrs.attrs_after in
-  let doc_before, doc_after =
-    fmt_docstring_around_item' ?is_val ?force_before ?fit c docs
+  let doc_before, doc_after, attrs_after =
+    fmt_docstring_around_item ?is_val ?force_before ?fit c attrs.attrs_after
   in
-  (doc_before, doc_after, attrs_before, attrs_after)
+  (doc_before, doc_after, attrs.attrs_before, attrs_after)
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -3418,19 +3403,20 @@ and fmt_type_extension ?ext c ctx
        $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
 
 and fmt_type_exception ~pre c ctx
-    {ptyexn_attributes= item_attrs; ptyexn_constructor; ptyexn_loc} =
-  let {pext_attributes= cons_attrs; _} = ptyexn_constructor in
-  let docs, item_attrs = extract_doc_attrs [] item_attrs in
-  let docs, cons_attrs = extract_doc_attrs docs cons_attrs in
-  let doc_before, doc_after = fmt_docstring_around_item' c docs in
-  let ptyexn_constructor =
-    {ptyexn_constructor with pext_attributes= cons_attrs}
-  in
+    {ptyexn_attributes; ptyexn_constructor; ptyexn_loc} =
+  let doc1, atrs = doc_atrs ptyexn_attributes in
+  let doc1 = Option.value ~default:[] doc1 in
+  let {pext_attributes; _} = ptyexn_constructor in
+  (* On 4.08 the doc is attached to the constructor *)
+  let doc1, pext_attributes = doc_atrs ~acc:doc1 pext_attributes in
+  let doc2, pext_attributes = doc_atrs pext_attributes in
+  let doc_before, doc_after = fmt_docstring_around_item' c doc1 doc2 in
+  let ptyexn_constructor = {ptyexn_constructor with pext_attributes} in
   Cmts.fmt c ptyexn_loc
     (hvbox 0
        ( doc_before
        $ hvbox 2 (pre $ fmt_extension_constructor c ctx ptyexn_constructor)
-       $ fmt_item_attributes c ~pre:(Break (1, 0)) item_attrs
+       $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
        $ doc_after ) )
 
 and fmt_extension_constructor c ctx ec =
