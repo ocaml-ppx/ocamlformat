@@ -118,6 +118,11 @@ let add_docs_attrs docs attrs =
   in
   attrs
 
+(** {!add_docs_attrs} but operate on [ext_attrs]. *)
+let add_docs_attrs' docs attrs' =
+  let open Parsetree in
+  { attrs' with attrs_after = add_docs_attrs docs attrs'.attrs_after }
+
 (* Docstrings attached to constructors or fields *)
 
 type info = docstring option
@@ -161,6 +166,12 @@ let text_attr ds =
 let add_text_attrs dsl attrs =
   let fdsl = List.filter (function {ds_body=""} -> false| _ ->true) dsl in
   (List.map text_attr fdsl) @ attrs
+
+
+(** {!add_text_attrs} but operate on [ext_attrs]. *)
+let add_text_attrs' text attrs' =
+  let open Parsetree in
+  { attrs' with attrs_before = add_text_attrs text attrs'.attrs_before }
 
 (* Find the first non-info docstring in a list, attach it and return it *)
 let get_docstring ~info dsl =

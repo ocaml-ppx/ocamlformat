@@ -134,6 +134,7 @@ profile. This started with version 0.26.0.
 - JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
 - The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, @gpetiot)
+- The position of module and module type attributes is now preserved. (#2451, @emiletrotignon)
 
 ### Added
 
