@@ -336,23 +336,18 @@ module Structure_item = struct
      |Pstr_class_type ({pci_attributes= atrs; _} :: _)
      |Pstr_class ({pci_attributes= atrs; _} :: _) ->
         List.exists ~f:Attr.is_doc atrs
-    (* two attribute lists *)
     | Pstr_exception
         { ptyexn_attributes= atrs1
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
         ; _ }
-     |Pstr_modtype
-        {pmtd_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
      |Pstr_include
         {pincl_mod= {pmod_attributes= atrs1; _}; pincl_attributes= atrs2; _}
       ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    (* three attribute lists *)
-    | Pstr_module
-        { pmb_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}
-        ; pmb_expr= {pmod_attributes= atrs3; _}
-        ; _ } ->
-        List.exists ~f:(List.exists ~f:Attr.is_doc) [atrs1; atrs2; atrs3]
+    | Pstr_modtype {pmtd_ext_attrs; _} -> Ext_attrs.has_doc pmtd_ext_attrs
+    | Pstr_module {pmb_ext_attrs; pmb_expr= {pmod_attributes; _}; _} ->
+        Ext_attrs.has_doc pmb_ext_attrs
+        || List.exists ~f:Attr.is_doc pmod_attributes
     | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
      |Pstr_recmodule []
@@ -437,13 +432,11 @@ module Signature_item = struct
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
         List.exists ~f:Attr.is_doc atrs
     (* two attribute list *)
-    | Psig_modtype
-        {pmtd_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
-     |Psig_modtypesubst
-        {pmtd_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
-     |Psig_modsubst
-        {pms_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}; _}
-     |Psig_include
+    | Psig_modtype {pmtd_ext_attrs= ea; _}
+     |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
+     |Psig_modsubst {pms_ext_attrs= ea; _} ->
+        Ext_attrs.has_doc ea
+    | Psig_include
         {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
      |Psig_exception
         { ptyexn_attributes= atrs1
@@ -451,15 +444,10 @@ module Signature_item = struct
         ; _ } ->
         List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
     | Psig_recmodule
-        ( { pmd_type= {pmty_attributes= atrs1; _}
-          ; pmd_ext_attrs= {attrs_before= atrs2; attrs_after= atrs3; _}
-          ; _ }
-        :: _ )
-     |Psig_module
-        { pmd_ext_attrs= {attrs_before= atrs1; attrs_after= atrs2; _}
-        ; pmd_type= {pmty_attributes= atrs3; _}
-        ; _ } ->
-        List.exists ~f:(List.exists ~f:Attr.is_doc) [atrs1; atrs2; atrs3]
+        ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
+     |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
+      ->
+        Ext_attrs.has_doc ea || (List.exists ~f:Attr.is_doc) atrs
     | Psig_type (_, [])
      |Psig_typesubst []
      |Psig_recmodule []
