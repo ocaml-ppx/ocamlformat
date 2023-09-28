@@ -70,14 +70,39 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
+(* These are not needed because extension are put directly in the AST
+let pstr_typext (te, ext) =
+  (Pstr_typext te, ext)
+let pstr_primitive (vd, ext) =
+  (Pstr_primitive vd, ext)
+*)
 let pstr_type (nr, tys) =
-   Pstr_type (nr, tys)
+  Pstr_type (nr, tys)
+
+(* These are not needed because extension are put directly in the AST
+let pstr_exception (te, ext) =
+  (Pstr_exception te, ext)
+let pstr_include (body, ext) =
+  (Pstr_include body, ext)
+
+let psig_typext (te, ext) =
+  (Psig_typext te, ext)
+let psig_value (vd, ext) =
+  (Psig_value vd, ext)
+*)
 
 let psig_type (nr, tys) =
   Psig_type (nr, tys)
 let psig_typesubst (nr, tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
   Psig_typesubst tys
+
+(* These are not needed because extension are put directly in the AST
+let psig_exception (te, ext) =
+  (Psig_exception te, ext)
+let psig_include (body, ext) =
+  (Psig_include body, ext)
+*)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -1315,61 +1340,27 @@ structure_item:
         { Pstr_recmodule $1 }
     | module_type_declaration
         { Pstr_modtype $1 }
-    | include_statement(module_expr)
-        { Pstr_include $1 }
+    | primitive_declaration
+        { Pstr_primitive $1 }
+    | value_description
+        { Pstr_primitive $1 }
+    | type_declarations
+        { pstr_type $1 }
+    | str_type_extension
+        { Pstr_typext $1 }
+    | str_exception_declaration
+        { Pstr_exception $1 }
     | open_declaration
         { Pstr_open $1 }
     | class_declarations
         { Pstr_class $1 }
     | class_type_declarations
         { Pstr_class_type $1 }
-    | value_description
-        { Pstr_primitive $1 }
-    | primitive_declaration
-        { Pstr_primitive $1 }
-    | str_type_extension
-        { Pstr_typext $1 }
-    | type_declarations
-        { pstr_type $1 }
-    | str_exception_declaration
-        { Pstr_exception $1 }
+    | include_statement(module_expr)
+        { Pstr_include $1 }
     )
     { $1 }
 ;
-
-%inline ext_attrs(kw, body):
-  kw
-  ext = ext
-  before = attributes
-  body = body
-  after = post_item_attributes
-  { let loc = make_loc $sloc in
-    let docs = symbol_docs $sloc in
-    let attrs = Attr.ext_attrs ?ext ~before ~after () in
-    body ~loc ~attrs ~docs ~text:None }
-
-%inline ext_attrs_no_text(kw, body):
-  kw
-  ext = ext
-  before = attributes
-  body = body
-  after = post_item_attributes
-  { let loc = make_loc $sloc in
-    let docs = symbol_docs $sloc in
-    let attrs = Attr.ext_attrs ?ext ~before ~after () in
-    body ~loc ~attrs ~docs }
-
-
-%inline ext_attrs_no_ext(kw, body):
-  kw
-  before = attributes
-  body = body
-  after = post_item_attributes
-  { let loc = make_loc $sloc in
-    let docs = symbol_docs $sloc in
-     let text = Some (symbol_text $symbolstartpos) in
-    let attrs = Attr.ext_attrs ~before ~after () in
-    body ~loc ~attrs ~docs ~text }
 
 (* A single module binding. *)
 %inline module_binding:
@@ -1451,12 +1442,18 @@ module_binding_body:
 (* An [include] statement can appear in a structure or in a signature,
    which is why this definition is parameterized. *)
 %inline include_statement(thing):
-  ext_attrs_no_text (
-    INCLUDE,
-    thing = thing
-    { Incl.mk_exh thing } )
-  { $1 }
-  ;
+  INCLUDE
+  ext = ext
+  attrs1 = attributes
+  thing = thing
+  attrs2 = post_item_attributes
+  {
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+    let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    Incl.mk thing ~attrs ~loc ~docs
+  }
+;
 
 (* A module type declaration. *)
 module_type_declaration:
@@ -1613,7 +1610,7 @@ signature_item:
         { psig_typesubst $1 }
     | open_description
         { Psig_open $1 }
-    | str_exception_declaration 
+    | str_exception_declaration
         { Psig_exception $1 }
     )
     { $1 }
@@ -1751,26 +1748,36 @@ module_type_subst:
     { $1 :: $2 }
 ;
 %inline class_declaration:
-  ext_attrs (
-    CLASS,
-    virt = virtual_flag
-    params = formal_class_parameters
-    id = mkrhs(LIDENT)
-    body = class_fun_binding
-    { Ci.mk_exh id body ~virt ~params }
-  )
-  { $1 }
+  CLASS
+  ext = ext
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  body = class_fun_binding
+  attrs2 = post_item_attributes
+  {
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+    let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~docs
+  }
 ;
 %inline and_class_declaration:
-  ext_attrs_no_ext (
-    AND,
-    virt = virtual_flag
-    params = formal_class_parameters
-    id = mkrhs(LIDENT)
-    body = class_fun_binding
-    { Ci.mk_exh id body ~virt ~params }
-  )
-  { $1 }
+  AND
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  body = class_fun_binding
+  attrs2 = post_item_attributes
+  {
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
+    let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    let text = symbol_text $symbolstartpos in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs
+  }
 ;
 
 class_fun_binding:
@@ -2032,56 +2039,76 @@ constrain_field:
     { $1 :: $2 }
 ;
 %inline class_description:
-  ext_attrs (
-    CLASS,
-    virt = virtual_flag
-    params = formal_class_parameters
-    id = mkrhs(LIDENT)
-    COLON
-    cty = class_type
-    { Ci.mk_exh id cty ~virt ~params }
-  )
-  { $1 }
+  CLASS
+  ext = ext
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  COLON
+  cty = class_type
+  attrs2 = post_item_attributes
+    {
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      Ci.mk id cty ~virt ~params ~attrs ~loc ~docs
+    }
 ;
 %inline and_class_description:
-  ext_attrs_no_ext (
-    AND,
-    virt = virtual_flag
-    params = formal_class_parameters
-    id = mkrhs(LIDENT)
-    COLON
-    cty = class_type
-    { Ci.mk_exh id cty ~virt ~params }
-  )
-  { $1 }
+  AND
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  COLON
+  cty = class_type
+  attrs2 = post_item_attributes
+    {
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      let text = symbol_text $symbolstartpos in
+      Ci.mk id cty ~virt ~params ~attrs ~loc ~text ~docs
+    }
 ;
 class_type_declarations:
   class_type_declaration list(and_class_type_declaration)
     { $1 :: $2 }
 ;
 %inline class_type_declaration:
-  ext_attrs (
-    CLASS TYPE {},
-    virt = virtual_flag
-    params = formal_class_parameters
-    id = mkrhs(LIDENT)
-    EQUAL
-    csig = class_signature
-    { Ci.mk_exh id csig ~virt ~params }
-  )
-  { $1 }
+  CLASS TYPE
+  ext = ext
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  EQUAL
+  csig = class_signature
+  attrs2 = post_item_attributes
+    {
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      Ci.mk id csig ~virt ~params ~attrs ~loc ~docs
+    }
 ;
 %inline and_class_type_declaration:
-  ext_attrs_no_ext (
-      AND,
-      virt = virtual_flag
-      params = formal_class_parameters
-      id = mkrhs(LIDENT)
-      EQUAL
-      csig = class_signature
-      { Ci.mk_exh id csig ~virt ~params }
-    )
-    { $1 }
+  AND
+  attrs1 = attributes
+  virt = virtual_flag
+  params = formal_class_parameters
+  id = mkrhs(LIDENT)
+  EQUAL
+  csig = class_signature
+  attrs2 = post_item_attributes
+    {
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      let text = symbol_text $symbolstartpos in
+      Ci.mk id csig ~virt ~params ~attrs ~loc ~text ~docs
+    }
 ;
 
 /* Core expressions */
@@ -2820,29 +2847,37 @@ pattern_comma_list(self):
 /* Value descriptions */
 
 value_description:
-  ext_attrs_no_text (
-    VAL,
-    id = mkrhs(val_ident)
-    COLON
-    ty = possibly_poly(core_type)
-    { Val.mk_exh id ty }
-  )
-  { $1 }
+  VAL
+  ext = ext
+  attrs1 = attributes
+  id = mkrhs(val_ident)
+  COLON
+  ty = possibly_poly(core_type)
+  attrs2 = post_item_attributes
+    { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      Val.mk id ty ~attrs ~loc ~docs
+    }
 ;
 
 /* Primitive declarations */
 
 primitive_declaration:
-  ext_attrs_no_text (
-    EXTERNAL,
-    id = mkrhs(val_ident)
-    COLON
-    ty = possibly_poly(core_type)
-    EQUAL
-    prim = mkrhs(raw_string)+
-    { Val.mk_exh id ty ~prim }
-  )
-  { $1 }
+  EXTERNAL
+  ext = ext
+  attrs1 = attributes
+  id = mkrhs(val_ident)
+  COLON
+  ty = possibly_poly(core_type)
+  EQUAL
+  prim = mkrhs(raw_string)+
+  attrs2 = post_item_attributes
+    { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      let loc = make_loc $sloc in
+      let docs = symbol_docs $sloc in
+      Val.mk id ty ~prim ~attrs ~loc ~docs
+    }
 ;
 
 (* Type declarations and type substitutions. *)
