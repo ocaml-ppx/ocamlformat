@@ -423,23 +423,20 @@ let docstring_epi ~standalone ~next ~epi ~floating =
       str "\n" $ epi
   | _ -> epi
 
-let fmt_docstring' c ?(standalone = false) ?pro ?epi doc =
-  list_pn doc (fun ~prev:_ ({txt; loc}, floating) ~next ->
+let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
+  list_pn (Option.value ~default:[] doc)
+    (fun ~prev:_ ({txt; loc}, floating) ~next ->
       let epi = docstring_epi ~standalone ~next ~epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (Docstring.parse ~loc txt) )
 
-let fmt_docstring c ?standalone ?pro ?epi doc =
-  fmt_docstring' c ?standalone ?pro ?epi (Option.value ~default:[] doc)
-
-(** Accept up to two docstrings, in reverse order of appearance. *)
 let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
-    ?(fit = false) c docs =
-  match docs with
-  | doc2 :: doc1 :: _ ->
-      ( fmt_docstring' c ~epi:force_newline doc1
-      , fmt_docstring' c ~pro:force_newline doc2 )
-  | [] -> (noop, noop)
-  | [doc] -> (
+    ?(fit = false) c doc1 doc2 =
+  match (doc1, doc2) with
+  | Some _, Some _ ->
+      ( fmt_docstring c ~epi:force_newline doc1
+      , fmt_docstring c ~pro:force_newline doc2 )
+  | None, None -> (noop, noop)
+  | None, Some doc | Some doc, None -> (
       let is_tag_only =
         List.for_all ~f:(function
           | Ok es, _ -> Docstring.is_tag_only es
@@ -830,8 +827,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:space_break doc)
   @@ ( if List.is_empty atrs then Fn.id
-     else fun k ->
-       hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs)) )
+       else fun k ->
+         hvbox 0 (Params.parens c.conf (k $ fmt_attributes c ~pre:Cut atrs))
+     )
   @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
@@ -2386,13 +2384,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         Sugar.Let_binding.of_let_bindings ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let_bindings c ~parens ~fmt_atrs ~fmt_expr ~has_attr
-        lbs.pvbs_rec bindings body
-  | Pexp_letop {let_; ands; body; let_in} ->
+      fmt_let_bindings c ~parens ~fmt_atrs ~fmt_expr ~has_attr lbs.pvbs_rec
+        bindings body
+  | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let_bindings c ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
-        Nonrecursive bd body
+      fmt_let_bindings c ~parens ~fmt_atrs ~fmt_expr ~has_attr Nonrecursive
+        bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ space_break
@@ -2620,7 +2618,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           [ { pstr_desc=
                 Pstr_eval
                   ( ( {pexp_desc= Pexp_sequence _; pexp_attributes= []; _} as
-                      e1 )
+                    e1 )
                   , _ )
             ; pstr_loc= _ } ] )
     when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
@@ -2713,7 +2711,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           [ ( { pstr_desc=
                   Pstr_eval
                     ( ( {pexp_desc= Pexp_infix _; pexp_attributes= []; _} as
-                        e1 )
+                      e1 )
                     , _ )
               ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
@@ -3049,8 +3047,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
-        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~has_attr ~fmt_atrs
+        ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3348,8 +3346,7 @@ and fmt_class_params c ctx params =
        ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
-and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
-    =
+and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
   protect c (Td decl)
   @@
   let { ptype_name= {txt; loc}
@@ -4525,8 +4522,8 @@ and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ ( if blank_line_after_in then str "\n" $ cut_break
-         else break 1000 indent_after_in )
+       $ ( if blank_line_after_in then  str "\n" $ cut_break
+           else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
