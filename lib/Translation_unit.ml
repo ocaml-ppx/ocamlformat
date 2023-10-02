@@ -59,8 +59,7 @@ module Error = struct
     Out_channel.write_all n ~data:next ;
     ignore
       (Stdlib.Sys.command
-         (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2"
-            p n ) ) ;
+         (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2" p n) ) ;
     Stdlib.Sys.remove p ;
     Stdlib.Sys.remove n
 
@@ -118,8 +117,8 @@ module Error = struct
         if debug then print_diff input_name ~prev ~next ;
         if iteration <= 1 then
           Format.fprintf fmt
-            "%s: %S was not already formatted. ([max-iters = 1])\n%!"
-            exe input_name
+            "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
+            input_name
         else (
           Format.fprintf fmt
             "%s: Cannot process %S.\n\
@@ -184,8 +183,7 @@ let check_margin (conf : Conf.t) ~filename ~fmted =
   List.iteri (String.split_lines fmted) ~f:(fun i line ->
       if String.length line > conf.fmt_opts.margin.v then
         Format.fprintf Format.err_formatter
-          "Warning: %s:%i exceeds the margin\n%!"
-          filename i )
+          "Warning: %s:%i exceeds the margin\n%!" filename i )
 
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k

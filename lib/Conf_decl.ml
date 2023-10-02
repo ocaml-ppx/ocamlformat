@@ -208,8 +208,7 @@ let status_doc ppf = function
 
 let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
   let default = if default then "set" else "unset" in
-  Format.asprintf "%s The flag is $(b,%s) by default.%s%a"
-    doc default
+  Format.asprintf "%s The flag is $(b,%s) by default.%s%a" doc default
     (in_attributes allow_inline kind)
     status_doc status
 
@@ -218,8 +217,7 @@ let generated_doc conv ~allow_inline ~doc ~kind ~default ~status =
   let default =
     if String.is_empty default_doc then "none" else default_doc
   in
-  Format.asprintf "%s The default value is $(b,%s).%s%a"
-    doc default
+  Format.asprintf "%s The default value is $(b,%s).%s%a" doc default
     (in_attributes allow_inline kind)
     status_doc status
 
@@ -327,13 +325,13 @@ module Value = struct
     | Some x -> (name, value, doc, `Deprecated x)
 
   let pp_deprecated s ppf {dmsg= msg; dversion= v} =
-    Format.fprintf ppf "Value `%s` is deprecated since version %a. %s"
-      s Version.pp v msg
+    Format.fprintf ppf "Value `%s` is deprecated since version %a. %s" s
+      Version.pp v msg
 
   let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
     Format.fprintf ppf
-      "option `%s`: value `%s` is deprecated since version %a. %s"
-      opt val_ Version.pp v msg
+      "option `%s`: value `%s` is deprecated since version %a. %s" opt val_
+      Version.pp v msg
 
   let status_doc s ppf = function
     | `Valid -> ()
@@ -362,8 +360,8 @@ module Value_removed = struct
       | Some {name; version; msg} ->
           Format.kasprintf
             (fun s -> Error (`Msg s))
-            "value `%s` has been removed in version %a.%s"
-            name Version.pp version (maybe_empty msg)
+            "value `%s` has been removed in version %a.%s" name Version.pp
+            version (maybe_empty msg)
       | None -> Arg.conv_parser conv s
     in
     Arg.conv (parse, Arg.conv_printer conv)

@@ -101,8 +101,7 @@ let break fs n o =
   if !debug then
     fprintf fs
       "<div class=\"break\">(%i,%i)<span class=\"tooltiptext\">break %i \
-       %i</span></div>"
-      n o n o
+       %i</span></div>" n o n o
 
 let pp_keyword fs s = fprintf fs "<span class=\"keyword\">%s</span>" s
 

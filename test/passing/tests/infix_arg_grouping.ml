@@ -5,8 +5,8 @@ vbox 1
 ;;
 
 user_error
-  ( "version mismatch: .ocamlformat requested "
-  ^ value ^ " but version is " ^ Version.version )
+  ( "version mismatch: .ocamlformat requested " ^ value ^ " but version is "
+  ^ Version.version )
 ;;
 
 hvbox 1
