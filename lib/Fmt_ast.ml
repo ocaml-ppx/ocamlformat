@@ -1467,15 +1467,15 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       | Pexp_fun _ | Pexp_function _ -> Some false
       | _ -> None
     in
-    let epi =
-      match (lbl, last) with
-      | _, true -> None
-      | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
-      | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
+    let break_after =
+      match (ast.pexp_desc, c.conf.fmt_opts.break_string_literals.v) with
+      | Pexp_constant _, `Auto when not last ->
+          fits_breaks "" ~hint:(1000, -2) ""
+      | _ -> noop
     in
     hovbox
       (Params.Indent.fun_args_group c.conf ~lbl ast)
-      (fmt_label_arg c ?box ?epi (lbl, xarg))
+      (fmt_label_arg c ?box (lbl, xarg) $ break_after)
     $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =
