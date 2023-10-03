@@ -152,7 +152,7 @@ module Exp = struct
     | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
     (* Short strings are trivial. *)
     | Pexp_constant {pconst_desc= Pconst_string (str, _, None); _} ->
-        String.length str < 80
+        String.length str < 30
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
     | Pexp_prefix (_, e) -> is_trivial e
@@ -1518,7 +1518,13 @@ end = struct
   let rec is_simple (c : Conf.t) width ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_constant _ -> Exp.is_trivial exp
+    (* String literals using the heavy syntax are not simple. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> false
+    (* Only strings fitting on the line are simple. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, loc, None); _} ->
+        Exp.is_trivial exp
+        || (Location.height loc = 1 && fit_margin c (width xexp))
+    | Pexp_constant _ -> true
     | Pexp_field _ | Pexp_ident _ | Pexp_send _
      |Pexp_construct (_, None)
      |Pexp_variant (_, None) ->
