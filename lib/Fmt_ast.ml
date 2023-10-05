@@ -187,8 +187,7 @@ let update_config_maybe_disabled_k c loc l ~if_disabled enabled =
 
 let update_config_maybe_disabled_attrs c loc attrs f =
   let l = attrs.attrs_before @ attrs.attrs_after in
-  let c = update_config c l in
-  maybe_disabled c loc l f
+  update_config_maybe_disabled c loc l f
 
 let update_config_maybe_disabled_block c loc l f =
   let fmt bdy = {empty with opn= Some (open_vbox 2); bdy; cls= close_box} in
@@ -495,9 +494,10 @@ let extract_doc_attrs acc attrs =
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
 let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
-  let docs, attrs = extract_doc_attrs [] attrs in
+  let doc1, attrs = doc_atrs attrs in
+  let doc2, attrs = doc_atrs attrs in
   let doc_before, doc_after =
-    fmt_docstring_around_item' ?is_val ?force_before ?fit c docs
+    fmt_docstring_around_item' ?is_val ?force_before ?fit c doc1 doc2
   in
   (doc_before, doc_after, attrs)
 
@@ -3613,7 +3613,14 @@ and fmt_type_exception ~pre c ctx
   let docs, attrs_before = extract_doc_attrs [] item_attrs.attrs_before in
   let docs, attrs_after = extract_doc_attrs docs item_attrs.attrs_after in
   let docs, cons_attrs = extract_doc_attrs docs cons_attrs in
-  let doc_before, doc_after = fmt_docstring_around_item' c docs in
+  let doc1, doc2 =
+    match docs with
+    | [] -> (None, None)
+    | [elt] -> (Some elt, None)
+    | [doc1; doc2] -> (Some doc1, Some doc2)
+    | _ -> assert false
+  in
+  let doc_before, doc_after = fmt_docstring_around_item' c doc1 doc2 in
   let ptyexn_constructor =
     {ptyexn_constructor with pext_attributes= cons_attrs}
   in
