@@ -4118,9 +4118,27 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to ocp_indent_compat-break_colon_after.ml.stdout
+   (with-stderr-to ocp_indent_compat-break_colon_after.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocp-indent-compat --break-colon=after %{dep:tests/ocp_indent_compat.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ocp_indent_compat-break_colon_after.ml.ref ocp_indent_compat-break_colon_after.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ocp_indent_compat-break_colon_after.ml.err ocp_indent_compat-break_colon_after.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to ocp_indent_compat.ml.stdout
    (with-stderr-to ocp_indent_compat.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/ocp_indent_compat.ml})))))
+     (run %{bin:ocamlformat} --margin-check --ocp-indent-compat --break-colon=before %{dep:tests/ocp_indent_compat.ml})))))
 
 (rule
  (alias runtest)
