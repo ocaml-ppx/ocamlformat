@@ -1417,7 +1417,7 @@ and fmt_fun ?force_closing_paren
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
 
-and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
+and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
@@ -1435,15 +1435,13 @@ and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
         | Optional _ -> str "?"
         | Nolabel -> noop
       in
-      lbl $ fmt_expression c ~box ?epi xarg
+      lbl $ fmt_expression c ~box xarg
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
       hvbox_if box 2
         ( hvbox_if box 0
-            (fmt_expression c
-               ~pro:(fmt_label lbl ":@;<0 2>")
-               ~box ?epi xarg )
+            (fmt_expression c ~pro:(fmt_label lbl ":@;<0 2>") ~box xarg)
         $ cmts_after )
   | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
       fmt_fun ~box ~label:lbl ~parens:true c xarg
@@ -1451,7 +1449,7 @@ and fmt_label_arg ?(box = true) ?epi ?eol c (lbl, ({ast= arg; _} as xarg)) =
       let label_sep : s =
         if box || c.conf.fmt_opts.wrap_fun_args.v then ":@," else ":"
       in
-      fmt_label lbl label_sep $ fmt_expression c ~box ?epi xarg
+      fmt_label lbl label_sep $ fmt_expression c ~box xarg
 
 and expression_width c xe =
   String.length
