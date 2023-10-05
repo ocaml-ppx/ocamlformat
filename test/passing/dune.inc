@@ -4481,24 +4481,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to rec_str_item_comment.ml.stdout
-   (with-stderr-to rec_str_item_comment.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/rec_str_item_comment.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/rec_str_item_comment.ml.ref rec_str_item_comment.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/rec_str_item_comment.ml.err rec_str_item_comment.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to recmod.mli.stdout
    (with-stderr-to recmod.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/recmod.mli})))))
