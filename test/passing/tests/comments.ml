@@ -311,3 +311,7 @@ type a = b (* a *) as (* b *) 'c (* c *)
 type t = { (* comment before mutable *) mutable
  (* really long comment that doesn't fit on the same line as other stuff *)
  x : int }
+
+let _ = (x + y) [@attr] + z
+
+let _ = x ^ (y ^ z) [@attr]
