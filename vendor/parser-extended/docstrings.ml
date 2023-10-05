@@ -171,7 +171,7 @@ let add_text_attrs dsl attrs =
 (** {!add_text_attrs} but operate on [ext_attrs]. *)
 let add_text_attrs' text attrs' =
   let open Parsetree in
-  { attrs' with attrs_before = add_text_attrs text attrs'.attrs_before }
+  { attrs' with attrs_after = add_text_attrs text attrs'.attrs_after }
 
 (* Find the first non-info docstring in a list, attach it and return it *)
 let get_docstring ~info dsl =
