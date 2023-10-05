@@ -86,10 +86,9 @@ let long_function_name
  fun () -> ()
 
 let add_edge target dep =
-  if target <> dep
-  then (
+  if target <> dep then (
     Hashtbl.replace edges dep
-      (target :: (try Hashtbl.find edges dep with Not_found -> []));
+      (target :: (try Hashtbl.find edges dep with Not_found -> [])) ;
     Hashtbl.replace edge_count target
-      (1 + try Hashtbl.find edge_count target with Not_found -> 0);
-    if not (Hashtbl.mem edge_count dep) then Hashtbl.add edge_count dep 0)
+      (1 + try Hashtbl.find edge_count target with Not_found -> 0) ;
+    if not (Hashtbl.mem edge_count dep) then Hashtbl.add edge_count dep 0 )
