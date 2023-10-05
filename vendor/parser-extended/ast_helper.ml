@@ -54,6 +54,8 @@ module Attr = struct
     { attr_name = name;
       attr_payload = payload;
       attr_loc = loc }
+  let ext_attrs ?ext ?(before=[]) ?(after=[]) () =
+    {attrs_extension = ext; attrs_before = before; attrs_after = after }
 end
 
 module Typ = struct
@@ -367,51 +369,47 @@ module Val = struct
 end
 
 module Md = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name args typ =
     {
      pmd_name = name;
      pmd_args = args;
      pmd_type = typ;
-     pmd_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
 end
 
 module Ms = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name syn =
     {
      pms_name = name;
      pms_manifest = syn;
-     pms_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pms_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pms_loc = loc;
     }
 end
 
 module Mtd = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) ?typ name =
     {
      pmtd_name = name;
      pmtd_type = typ;
-     pmtd_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmtd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmtd_loc = loc;
     }
 end
 
 module Mb = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name args expr =
     {
      pmb_name = name;
      pmb_args = args;
      pmb_expr = expr;
-     pmb_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmb_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmb_loc = loc;
     }
 end
