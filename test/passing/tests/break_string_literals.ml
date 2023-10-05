@@ -69,3 +69,17 @@ let _ = "abc@,def\n\nghi"
 let _ = "abc@,def\n\n ghi"
 let _ = "abc@,def\n\n"
 let _ = "abc@,def@\n\n"
+
+let _ =
+  Pp.textf
+    "Failed to parse environment variable: %s=%s\n\
+     Permitted values: if-exists always never\n\
+     Default: %s"
+    var v (to_string default)
+
+let _ =
+  Pp.textf
+    "Failed to parse environment variable: %s=%s \
+     Permitted values: if-exists always never \
+     Default: %s"
+    var v (to_string default)
