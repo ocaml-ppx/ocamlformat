@@ -1602,8 +1602,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       || parenze_exp xarg
     in
     if Params.Exp.Infix_op_arg.dock c.conf xarg then
-      (* Indentation of docked fun or function start before the operator.
-         Warning: [fmt_expression] doesn't use the [pro] in every case. *)
+      (* Indentation of docked fun or function start before the operator. *)
       hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
     else
       let expr_box =
