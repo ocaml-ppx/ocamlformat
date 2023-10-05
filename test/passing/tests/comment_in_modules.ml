@@ -25,3 +25,14 @@ module A (A:sig end) (* comment *) (B: sig end) : sig end = struct end
 module A (A:sig end) (* comment *) : sig end = struct end
 
 module (* comment *) A (A : sig end) : sig end = struct end
+
+module rec A : A =
+  struct
+
+  end
+
+(** floatting *)
+
+and B : B = struct end
+(** about b *)
+
