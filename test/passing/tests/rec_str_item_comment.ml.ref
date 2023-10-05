@@ -1,0 +1,6 @@
+module rec A : A = struct end
+
+(** floatting *)
+
+(** about b *)
+and B : B = struct end
