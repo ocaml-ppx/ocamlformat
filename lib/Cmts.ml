@@ -547,16 +547,7 @@ module Cinaps = struct
 
   (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
   let fmt ~cls code =
-    let wrap k = hvbox 2 (fmt "(*$" $ k $ fmt cls) in
-    match String.split_lines code with
-    | [] | [""] -> wrap (str " ")
-    | [line] -> wrap (fmt "@ " $ str line $ fmt "@;<1 -2>")
-    | lines ->
-        let fmt_line = function
-          | "" -> fmt "\n"
-          | line -> fmt "@\n" $ str line
-        in
-        wrap (list lines "" fmt_line $ fmt "@;<1000 -2>")
+    hvbox 0 (fmt "(*$" $ hvbox (-1) (fmt "@;" $ code) $ fmt "@;" $ fmt cls)
 end
 
 module Ocp_indent_compat = struct
@@ -608,12 +599,7 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code pos =
         let len = String.length str - if dollar_suf then 2 else 1 in
         let offset = offset + 1 in
         let source = String.sub ~pos:1 ~len str in
-        let source =
-          String.split_lines source
-          |> Cmt.unindent_lines ~offset
-          |> String.concat ~sep:"\n"
-        in
-        match fmt_code conf ~offset source with
+        match fmt_code conf ~offset ~set_margin:false source with
         | Ok formatted -> `Code (formatted, cls)
         | Error (`Msg _) -> `Unwrapped (str, None) )
     | txt when Char.equal txt.[0] '=' -> `Verbatim txt

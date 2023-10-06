@@ -4593,17 +4593,18 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
          formatting doc. *)
       Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
 
-let fmt_parse_result conf ~debug ast_kind ast source comments ~fmt_code =
+let fmt_parse_result conf ~debug ast_kind ast source comments
+    ~set_margin:set_margin_p ~fmt_code =
   let cmts = Cmts.init ast_kind ~debug source ast comments in
   let ctx = Top in
   let code =
-    set_margin conf.Conf.fmt_opts.margin.v
+    (if set_margin_p then set_margin conf.Conf.fmt_opts.margin.v else noop)
     $ fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code
   in
-  Ok (Format_.asprintf "%a" Fmt.eval code)
+  Ok code
 
 let fmt_code ~debug =
-  let rec fmt_code (conf : Conf.t) ~offset s =
+  let rec fmt_code (conf : Conf.t) ~offset ~set_margin s =
     let {Conf.fmt_opts; _} = conf in
     let conf =
       (* Adjust margin according to [offset]. *)
@@ -4617,9 +4618,11 @@ let fmt_code ~debug =
         ~input_name ~source:s
     with
     | Either.First {ast; comments; source; prefix= _} ->
-        fmt_parse_result conf ~debug Use_file ast source comments ~fmt_code
+        fmt_parse_result conf ~debug Use_file ast source comments ~set_margin
+          ~fmt_code
     | Second {ast; comments; source; prefix= _} ->
-        fmt_parse_result conf ~debug Repl_file ast source comments ~fmt_code
+        fmt_parse_result conf ~debug Repl_file ast source comments
+          ~set_margin ~fmt_code
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
         Error (`Msg (Format.asprintf "expecting: %s" x))
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
