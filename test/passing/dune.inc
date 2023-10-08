@@ -5403,6 +5403,24 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to w50.ml.stdout
+   (with-stderr-to w50.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-comment-check -q --max-iters=3 %{dep:tests/w50.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/w50.ml.ref w50.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/w50.ml.err w50.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
