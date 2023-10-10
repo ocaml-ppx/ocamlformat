@@ -4539,8 +4539,9 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?loc_in ?epi
               $ cmts_after
               $ opt loc_in (Cmts.fmt_before c) )
           $ in_
-          $ opt loc_in (Cmts.fmt_after c) )
-      $ epi )
+           )
+       $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
+       $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ~rec_flag ~first {ast= pmb; _} =
