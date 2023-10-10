@@ -7888,7 +7888,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml *)
+(** Pure type-checking tests: see recmod/*.ml  *)
 type t =
   | A of
       { x : int
@@ -9724,7 +9724,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-       v} *)
+        v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -10231,7 +10231,9 @@ val fooooooooooooooooooooooooooooooo
 (*
 *)
 
-(** xxx *)
+(**
+   xxx
+*)
 include S1
 (** @inline *)
 
@@ -10300,8 +10302,10 @@ type t =
   }
 
 (*{v
+
       foo
-  v}*)
+
+v}*)
 
 let _ =
   match () with

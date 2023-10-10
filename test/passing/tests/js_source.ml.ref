@@ -896,7 +896,7 @@ let fint (type t) (x : t) (tag : t ty) =
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
 
 (** OK: the return value is x > 0 of type bool;
-    This has used the equation t = bool, not visible in the return type **)
+This has used the equation t = bool, not visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) =
   match tag with
@@ -913,7 +913,7 @@ let g (type t) (x : t) (tag : t ty) =
 ;;
 
 (* Error: This expression has type bool but an expression was expected of type
-   t = int *)
+t = int *)
 
 let id x = x
 
@@ -1451,19 +1451,19 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 
 (*
    type (_,_) ty_assoc =
-   | Anil : (unit,'e) ty_assoc
-   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
+  | Anil : (unit,'e) ty_assoc
+  | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
-   and (_,_) ty_pvar =
-   | Pnil : ('a,'e) ty_pvar
-   | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
-   | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
+and (_,_) ty_pvar =
+  | Pnil : ('a,'e) ty_pvar
+  | Pconst : 't * ('b,'e) ty_pvar -> ('t -> 'b, 'e) ty_pvar
+  | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar
 *)
 (*
    An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School:
-   Generic Programming in Omega, by Tim Sheard and Nathan Linger
-   http://web.cecs.pdx.edu/~sheard/
+     Generic Programming in Omega, by Tim Sheard and Nathan Linger
+          http://web.cecs.pdx.edu/~sheard/
 *)
 
 (* Basic types *)
@@ -1652,13 +1652,13 @@ type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
 (*
    let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
-   fun le a b ->
-   match a, b, le with
-   | NZ, m, _ -> Diff (m, PlusZ m)
-   | NS x, NZ, _ -> assert false
-   | NS x, NS y, q ->
-   match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-   ;;
+  fun le a b ->
+  match a, b, le with
+  | NZ, m, _ -> Diff (m, PlusZ m)
+  | NS x, NZ, _ -> assert false
+  | NS x, NS y, q ->
+      match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
+;;
 *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -2845,7 +2845,7 @@ type _ fin =
   | FS : 'a fin -> 'a succ fin
 
 (* We cannot define
-   val empty : zero fin -> 'a
+     val empty : zero fin -> 'a
    because we cannot write an empty pattern matching.
    This might be useful to have *)
 
@@ -4629,20 +4629,20 @@ module M' : module type of Std'.M = Std2.M
 let f3 (x : M'.t) : Std2.M.t = x
 
 (* original report required Core_kernel:
-   module type S = sig
-   open Core_kernel.Std
+module type S = sig
+open Core_kernel.Std
 
-   module Hashtbl1 : module type of Hashtbl
-   module Hashtbl2 : sig
-   include (module type of Hashtbl)
-   end
+module Hashtbl1 : module type of Hashtbl
+module Hashtbl2 : sig
+  include (module type of Hashtbl)
+end
 
-   module Coverage : Core_kernel.Std.Hashable
+module Coverage : Core_kernel.Std.Hashable
 
-   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
-   type doesnt_type = unit
-   constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-   end
+type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
+type doesnt_type = unit
+  constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
+end
 *)
 module type INCLUDING = sig
   include module type of List
@@ -4810,20 +4810,20 @@ module type PR6513 = sig
 end
 
 (* Requires -package tyxml
-   module type PR6513_orig = sig
-   module type S =
-   sig
-   type t
-   type u
-   end
+module type PR6513_orig = sig
+module type S =
+sig
+        type t
+        type u
+end
 
-   module Make: functor (Html5: Html5_sigs.T
-   with type 'a Xml.wrap = 'a and
-   type 'a wrap = 'a and
-   type 'a list_wrap = 'a list)
-   -> S with type t = Html5_types.div Html5.elt and
-   type u = < foo: Html5.uri >
-   end
+module Make: functor (Html5: Html5_sigs.T
+                             with type 'a Xml.wrap = 'a and
+                             type 'a wrap = 'a and
+                             type 'a list_wrap = 'a list)
+                     -> S with type t = Html5_types.div Html5.elt and
+                               type u = < foo: Html5.uri >
+end
 *)
 module type S = sig
   include Set.S
@@ -5030,9 +5030,9 @@ struct
 end
 
 (* This would allow:
-   module FixId = Fix (struct type 'a f = 'a end)
-   let bad : (int, string) eq = FixId.uniq Eq Eq
-   let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+module FixId = Fix (struct type 'a f = 'a end)
+ let bad : (int, string) eq = FixId.uniq Eq Eq
+ let _ = Printf.printf "Oh dear: %s" (cast bad 42)
 *)
 module M = struct
   module type S = sig
@@ -5237,20 +5237,20 @@ module type S' = S with module M := String
 (* with module type *)
 (*
    module type S = sig module type T module F(X:T) : T end;;
-   module type T0 = sig type t end;;
-   module type S1 = S with module type T = T0;;
-   module type S2 = S with module type T := T0;;
-   module type S3 = S with module type T := sig type t = int end;;
-   module H = struct
-   include (Hashtbl : module type of Hashtbl with
-   type statistics := Hashtbl.statistics
-   and module type S := Hashtbl.S
-   and module Make := Hashtbl.Make
-   and module MakeSeeded := Hashtbl.MakeSeeded
-   and module type SeededS := Hashtbl.SeededS
-   and module type HashedType := Hashtbl.HashedType
-   and module type SeededHashedType := Hashtbl.SeededHashedType)
-   end;;
+module type T0 = sig type t end;;
+module type S1 = S with module type T = T0;;
+module type S2 = S with module type T := T0;;
+module type S3 = S with module type T := sig type t = int end;;
+module H = struct
+  include (Hashtbl : module type of Hashtbl with
+           type statistics := Hashtbl.statistics
+           and module type S := Hashtbl.S
+           and module Make := Hashtbl.Make
+           and module MakeSeeded := Hashtbl.MakeSeeded
+           and module type SeededS := Hashtbl.SeededS
+           and module type HashedType := Hashtbl.HashedType
+           and module type SeededHashedType := Hashtbl.SeededHashedType)
+end;;
 *)
 
 (* A subtle problem appearing with -principal *)
@@ -5616,7 +5616,7 @@ struct end
 module G = F (M.Y)
 
 (*module N = G (M);;
-  module N = F (M.Y) (M);;*)
+module N = F (M.Y) (M);;*)
 
 (* PR#6307 *)
 
@@ -5675,16 +5675,16 @@ end
 (* fail *)
 
 (* (* if the above succeeded, one could break invariants *)
-   module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
+module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
 
-   let M2.W eq = W Eq;;
+let M2.W eq = W Eq;;
 
-   let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
-   module SInt2 = Set.Make(Int2);;
-   let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-   let s' : SInt2.t = conv eq s;;
-   SInt2.elements s';;
-   SInt2.mem 2 s';; (* invariants are broken *)
+let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
+module SInt2 = Set.Make(Int2);;
+let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
+let s' : SInt2.t = conv eq s;;
+SInt2.elements s';;
+SInt2.mem 2 s';; (* invariants are broken *)
 *)
 
 (* Check behavior with submodules *)
@@ -5868,14 +5868,14 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-   module C : sig module L : module type of List end = A
+module C : sig module L : module type of List end = A
 *)
 
 include D'
 
 (*
    let () =
-   print_endline (string_of_int D'.M.y)
+  print_endline (string_of_int D'.M.y)
 *)
 open A
 
@@ -5889,7 +5889,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-   module C : sig module L : module type of List end = A
+module C : sig module L : module type of List end = A
 *)
 
 (* No dependency on D *)
@@ -6076,13 +6076,13 @@ let f (x : entity entity_container) = ()
 
 (*
    class world =
-   object
-   val entity_container : entity entity_container = new entity_container
+  object
+    val entity_container : entity entity_container = new entity_container
 
-   method add_entity (s : entity) =
-   entity_container#add_entity (s :> entity)
+    method add_entity (s : entity) =
+      entity_container#add_entity (s :> entity)
 
-   end
+  end
 *)
 (* Two v's in the same class *)
 class c v =
@@ -6498,8 +6498,8 @@ end = struct
 end
 (*
    ocamlc -c pr3918a.mli pr3918b.mli
-   rm -f pr3918a.cmi
-   ocamlc -c pr3918c.ml
+  rm -f pr3918a.cmi
+  ocamlc -c pr3918c.ml
 *)
 
 open Pr3918b
@@ -7380,9 +7380,9 @@ let _ =
 
 (*
    module rec Cyclic
-   : sig val x : int end
-   = struct let x = Cyclic.x + 1 end
-   ;;
+  : sig val x : int end
+  = struct let x = Cyclic.x + 1 end
+;;
 *)
 
 (* Reordering of evaluation based on dependencies *)
@@ -7477,15 +7477,15 @@ end
 
 (*
    module type ASig = sig type a val a:a val print:a -> unit end
-   module type BSig = sig type b val b:b val print:b -> unit end
+module type BSig = sig type b val b:b val print:b -> unit end
 
-   module A = struct type a = int let a = 0 let print = print_int end
-   module B = struct type b = float let b = 0.0 let print = print_float end
+module A = struct type a = int let a = 0 let print = print_int end
+module B = struct type b = float let b = 0.0 let print = print_float end
 
-   module MakeA (Empty:sig end) : ASig = A
-   module MakeB (Empty:sig end) : BSig = B
+module MakeA (Empty:sig end) : ASig = A
+module MakeB (Empty:sig end) : BSig = B
 
-   module
+module
    rec NewA : ASig = MakeA (struct end)
    and NewB : BSig with type b = NewA.a = MakeB (struct end);;
 *)
@@ -7888,7 +7888,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml *)
+(** Pure type-checking tests: see recmod/*.ml  *)
 type t =
   | A of
       { x : int
@@ -9659,7 +9659,7 @@ let g =
   f
     ~x
       (* this is a multiple-line-spanning
-         comment *)
+                comment *)
     ~y
 ;;
 
@@ -9667,7 +9667,7 @@ let f =
   very_long_function_name
     ~x:very_long_variable_name
       (* this is a multiple-line-spanning
-         comment *)
+       comment *)
     ~y
 ;;
 
@@ -9724,7 +9724,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-       v} *)
+        v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -10229,9 +10229,11 @@ val fooooooooooooooooooooooooooooooo
       fooooooooooooooooooooooooooooooo
 
 (*
-    *)
+   *)
 
-(** xxx *)
+(**
+   xxx
+*)
 include S1
 (** @inline *)
 
@@ -10300,8 +10302,10 @@ type t =
   }
 
 (*{v
+
       foo
-  v}*)
+
+v}*)
 
 let _ =
   match () with
@@ -10424,11 +10428,11 @@ let _ =
     xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
 
 (*    Hand-aligned comment
-      .
+        .
       . *)
 
 (*    First line is indented more
-      .
+    .
       . *)
 
 module type M = sig
