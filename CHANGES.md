@@ -19,6 +19,7 @@ profile. This started with version 0.26.0.
 - \* Consistent break after string constant argument (#2453, @Julow)
 - Fix invalid syntax generated with `ocp-indent-compat` (#2445, @Julow)
 - Fixed bug with attributes on sub-expressions of infix operators (#2459, @tdelvecchio-jsc)
+- \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 
 ## 0.26.1 (2023-09-15)
 

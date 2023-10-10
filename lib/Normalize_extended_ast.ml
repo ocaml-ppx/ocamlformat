@@ -11,10 +11,6 @@
 
 open Extended_ast
 
-let start_column loc =
-  let pos = loc.Location.loc_start in
-  pos.pos_cnum - pos.pos_bol
-
 let dedup_cmts fragment ast comments =
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
@@ -53,12 +49,7 @@ let normalize_parse_result ast_kind ast comments =
     (normalize_comments (dedup_cmts ast_kind ast))
     comments
 
-let normalize_code conf (m : Ast_mapper.mapper) ~offset txt =
-  let txt =
-    String.split_lines txt
-    |> Cmt.unindent_lines ~offset
-    |> String.concat ~sep:"\n"
-  in
+let normalize_code conf (m : Ast_mapper.mapper) txt =
   let input_name = "<output>" in
   match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
   | First {ast; comments; _} ->
@@ -97,7 +88,7 @@ let make_mapper conf ~ignore_doc_comments =
       when Ast.Attr.is_doc attr ->
         let normalize_code =
           (* Indentation is already stripped by odoc-parser. *)
-          normalize_code conf m ~offset:0
+          normalize_code conf m
         in
         let doc' = docstring conf ~normalize_code doc in
         Ast_mapper.default_mapper.attribute m
@@ -182,8 +173,7 @@ let diff ~f ~cmt_kind x y =
 let diff_docstrings c x y =
   let mapper = make_mapper c ~ignore_doc_comments:false in
   let docstring cmt =
-    let offset = start_column (Cmt.loc cmt) + 3 in
-    let normalize_code = normalize_code c mapper ~offset in
+    let normalize_code = normalize_code c mapper in
     docstring c ~normalize_code (Cmt.txt cmt)
   in
   let norm z =
@@ -212,8 +202,7 @@ let diff_cmts (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
             let loc = Cmt.loc z in
-            let offset = start_column loc + 3 in
-            Cmt.create_comment (normalize_code ~offset source) loc
+            Cmt.create_comment (normalize_code source) loc
           else norm_non_code z
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)

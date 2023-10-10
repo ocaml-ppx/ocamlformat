@@ -10325,15 +10325,13 @@ let _ =
 
 (*$
   [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  zzzzzzzzzzzzzzzzzzzzzzzzzzzz
-      |}]
+zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    |}]
 *)
 (*$*)
 
-(*$
-  {|
-        f|}
-*)
+(*$ {|
+         f|} *)
 
 let () =
   match () with

@@ -12,7 +12,11 @@
 (** [offset] is the column at which the content of the comment begins. It is
     used to adjust the margin. *)
 type fmt_code =
-  Conf.t -> offset:int -> string -> (string, [`Msg of string]) Result.t
+     Conf.t
+  -> offset:int
+  -> set_margin:bool
+  -> string
+  -> (Fmt.t, [`Msg of string]) Result.t
 
 val fmt_ast : Conf.t -> fmt_code:fmt_code -> Odoc_parser.Ast.t -> Fmt.t
 
