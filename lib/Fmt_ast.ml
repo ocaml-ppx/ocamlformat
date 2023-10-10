@@ -1386,14 +1386,7 @@ and fmt_fun ?force_closing_paren
   let body =
     let box =
       match xbody.ast.pexp_desc with
-      | Pexp_fun _ | Pexp_newtype _ -> Some false
-      | Pexp_function _ -> (
-          let fmt_opts = c.conf.fmt_opts in
-          match
-            (fmt_opts.ocp_indent_compat.v, fmt_opts.fun_function_line_break.v)
-          with
-          | true, `Break -> None
-          | _, _ -> Some false )
+      | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
       | _ -> None
     in
     fmt_expression c ?box xbody

@@ -75,7 +75,6 @@ type fmt_opts =
   ; exp_grouping: [`Parens | `Preserve] elt
   ; extension_indent: int elt
   ; field_space: [`Tight | `Loose | `Tight_decl] elt
-  ; fun_function_line_break: [`Break | `No_break] elt
   ; function_indent: int elt
   ; function_indent_nested: [`Always | `Auto | `Never] elt
   ; if_then_else:
