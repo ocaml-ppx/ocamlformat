@@ -10,6 +10,7 @@ profile. This started with version 0.26.0.
 
 - Documentation comments are now formatted by default (#2390, @Julow)
   Use the option `parse-docstrings = false` to disable.
+- \* Janestreet profile: do not break `fun _ -> function` (#2460, @tdelvecchio-jsc)
 
 ### Fixed
 
