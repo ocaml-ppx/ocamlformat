@@ -4598,7 +4598,7 @@ let fmt_parse_result conf ~debug ast_kind ast source comments
   let cmts = Cmts.init ast_kind ~debug source ast comments in
   let ctx = Top in
   let code =
-    (if set_margin_p then set_margin conf.Conf.fmt_opts.margin.v else noop)
+    fmt_if_k set_margin_p (set_margin conf.Conf.fmt_opts.margin.v)
     $ fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code
   in
   Ok code
