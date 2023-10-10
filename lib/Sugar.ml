@@ -76,9 +76,13 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
-    let rec infix_ ?(relocate = true) xop xexp =
+    let rec infix_ ?(child_expr = true) xop xexp =
       let ctx = Exp xexp.ast in
       match (assoc, xexp.ast) with
+      | _, {pexp_attributes= _ :: _; _} when child_expr ->
+          (* Avoid dropping attributes on child expressions, e.g. [(a + b)
+             [@attr] + c] *)
+          [(xop, xexp)]
       | ( Left
         , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
         )
@@ -90,7 +94,8 @@ module Exp = struct
             | (None, {ast= {pexp_loc; _}; _}) :: _ -> pexp_loc
             | _ -> loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
+          if child_expr then
+            Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
           op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
       | ( Right
         , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
@@ -105,11 +110,11 @@ module Exp = struct
             | Some (_, {ast= {pexp_loc; _}; _}) -> pexp_loc
             | None -> e1.pexp_loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after ;
+          if child_expr then Cmts.relocate cmts ~src ~before ~after ;
           (xop, sub_exp ~ctx e1) :: op_args2
       | _ -> [(xop, xexp)]
     in
-    infix_ None ~relocate:false xexp
+    infix_ None ~child_expr:false xexp
 end
 
 let sequence cmts xexp =
