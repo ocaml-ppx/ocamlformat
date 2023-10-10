@@ -2326,14 +2326,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let ext = lbs.pvbs_extension in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in:lbs.pvbs_loc_in
-          lbs.pvbs_rec bindings body
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+          ~loc_in:lbs.pvbs_loc_in lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in:None
-          Nonrecursive bd body
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+          ~loc_in:None Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2796,8 +2796,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_flag
-    bindings body =
+and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
+    rec_flag bindings body =
   let indent_after_in =
     match body.pexp_desc with
     | Pexp_let _ | Pexp_letmodule _
@@ -2814,8 +2814,8 @@ and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_fl
         0
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
-  fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
-    ~body_loc:body.pexp_loc ~indent_after_in
+  fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
+    ~loc_in ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
@@ -2986,8 +2986,9 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in:None ~has_attr
-        ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens
+        ~loc_in:None ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
+        ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4344,8 +4345,11 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension; pvbs_loc_in= _}
-    ->
+  | Pstr_value
+      { pvbs_rec= rec_flag
+      ; pvbs_bindings= bindings
+      ; pvbs_extension
+      ; pvbs_loc_in= _ } ->
       let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
@@ -4383,8 +4387,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs ?ext c cls
 
-and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in ~body_loc
-    ~has_attr ~indent_after_in =
+and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
+    ~body_loc ~has_attr ~indent_after_in =
   let parens = parens || has_attr in
   let fmt_in indent =
     match c.conf.fmt_opts.break_before_in.v with
@@ -4538,10 +4542,9 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?loc_in ?epi
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after
               $ opt loc_in (Cmts.fmt_before c) )
-          $ in_
-           )
-       $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
-       $ epi )
+          $ in_ )
+      $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
+      $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ~rec_flag ~first {ast= pmb; _} =
