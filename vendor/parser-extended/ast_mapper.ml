@@ -467,6 +467,11 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
+  let map_constraint sub c =
+    match c with
+    | Pconstraint ty -> Pconstraint (sub.typ sub ty)
+    | Pcoerce (ty1, ty2) -> Pcoerce (map_opt (sub.typ sub) ty1, sub.typ sub ty2)
+
   let map_if_branch sub {if_cond; if_body; if_attrs} =
     let if_cond = sub.expr sub if_cond in
     let if_body = sub.expr sub if_body in
@@ -507,7 +512,7 @@ module E = struct
           List.map
             (map_tuple3
                (map_loc sub)
-               (map_tuple (map_opt (sub.typ sub)) (map_opt (sub.typ sub)))
+               (map_opt (map_constraint sub))
                (map_opt (sub.expr sub)))
             l
         in

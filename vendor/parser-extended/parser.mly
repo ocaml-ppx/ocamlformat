@@ -226,11 +226,13 @@ let rec mktailpat nilloc = let open Location in function
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
-let mkexp_constraint ~loc e (t1, t2) =
-  match t1, t2 with
-  | Some t, None -> mkexp ~loc (Pexp_constraint(e, t))
-  | _, Some t -> mkexp ~loc (Pexp_coerce(e, t1, t))
-  | None, None -> assert false
+let mkexp_desc_constraint e t =
+  match t with
+  | Pconstraint t -> Pexp_constraint(e, t)
+  | Pcoerce(t1, t2)  -> Pexp_coerce(e, t1, t2)
+
+let mkexp_constraint ~loc e t =
+  mkexp ~loc (mkexp_desc_constraint e t)
 
 (*
 let mkexp_opt_constraint ~loc e = function
@@ -2484,10 +2486,9 @@ let_binding_body_no_punning:
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
-            Some t, None ->
-             Pvc_constraint { locally_abstract_univars = []; typ=t }
-          | ground, Some coercion -> Pvc_coercion { ground; coercion}
-          | _ -> assert false
+          | Pconstraint typ ->
+             Pvc_constraint { locally_abstract_univars = []; typ }
+          | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion }
         in
         (v, $4, Some t)
         }
@@ -2623,8 +2624,7 @@ record_expr_content:
   | label = mkrhs(label_longident)
     c = type_constraint?
     eo = preceded(EQUAL, expr)?
-      { let c = Option.value ~default:(None, None) c in
-        label, c, eo }
+      { label, c, eo }
 ;
 %inline object_expr_content:
   xs = separated_or_terminated_nonempty_list(SEMI, object_expr_field)
@@ -2648,9 +2648,9 @@ record_expr_content:
     { es }
 ;
 type_constraint:
-    COLON core_type                             { (Some $2, None) }
-  | COLON core_type COLONGREATER core_type      { (Some $2, Some $4) }
-  | COLONGREATER core_type                      { (None, Some $2) }
+  | COLON core_type                             { Pconstraint $2 }
+  | COLON core_type COLONGREATER core_type      { Pcoerce (Some $2, $4) }
+  | COLONGREATER core_type                      { Pcoerce (None, $2) }
   | COLON error                                 { syntax_error() }
   | COLONGREATER error                          { syntax_error() }
 ;

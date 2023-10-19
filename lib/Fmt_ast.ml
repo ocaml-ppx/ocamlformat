@@ -2469,7 +2469,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if outer_parens c.conf
              (compose_module ~pro ~epi blk ~f:fmt_mod $ fmt_atrs) )
   | Pexp_record (flds, default) ->
-      let fmt_field (lid, (typ1, typ2), exp) =
+      let fmt_field (lid, tc, exp) =
+        let typ1, typ2 =
+          match tc with
+          | Some (Pconstraint t1) -> (Some t1, None)
+          | Some (Pcoerce (t1, t2)) -> (t1, Some t2)
+          | None -> (None, None)
+        in
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
         let typ2 = Option.map typ2 ~f:(sub_typ ~ctx) in
         let rhs =
@@ -2478,12 +2484,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         hvbox 0 @@ fmt_record_field c ?typ1 ?typ2 ?rhs lid
       in
       let p1, p2 = Params.get_record_expr c.conf in
-      let last_loc (lid, (t1, t2), e) =
-        match (t1, t2, e) with
-        | _, _, Some e -> e.pexp_loc
-        | _, Some t2, _ -> t2.ptyp_loc
-        | Some t1, _, _ -> t1.ptyp_loc
-        | _ -> lid.loc
+      let last_loc (lid, tc, e) =
+        match (tc, e) with
+        | _, Some e -> e.pexp_loc
+        | Some (Pcoerce (_, t2)), None -> t2.ptyp_loc
+        | Some (Pconstraint t1), None -> t1.ptyp_loc
+        | None, None -> lid.loc
       in
       let fmt_fields =
         fmt_elements_collection c p1 last_loc pexp_loc fmt_field flds
