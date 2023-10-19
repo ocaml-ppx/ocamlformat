@@ -981,8 +981,10 @@ end = struct
       | Pexp_object _ -> assert false
       | Pexp_record (en1, _) ->
           assert (
-            List.exists en1 ~f:(fun (_, (t1, t2), _) ->
-                Option.exists t1 ~f || Option.exists t2 ~f ) )
+            List.exists en1 ~f:(fun (_, c, _) ->
+                Option.exists c ~f:(function
+                  | Pconstraint t -> f t
+                  | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Lb _ -> assert false
@@ -1501,9 +1503,8 @@ end = struct
         List.for_all e1N ~f:Exp.is_trivial && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
         Option.for_all e0 ~f:Exp.is_trivial
-        && List.for_all e1N ~f:(fun (_, (ct1, ct2), eo) ->
-               Option.is_none ct1 && Option.is_none ct2
-               && Option.for_all eo ~f:Exp.is_trivial )
+        && List.for_all e1N ~f:(fun (_, c, eo) ->
+               Option.is_none c && Option.for_all eo ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
     | Pexp_indexop_access {pia_lhs; pia_kind; pia_rhs= None; _} ->
         Exp.is_trivial pia_lhs

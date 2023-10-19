@@ -377,7 +377,7 @@ and expression_desc =
          *)
   | Pexp_record of
       ( Longident.t loc
-        * (core_type option * core_type option)
+        * type_constraint option
         * expression option )
         list
       * expression option
@@ -500,6 +500,10 @@ and binding_op =
     pbop_exp : expression;
     pbop_loc : Location.t;
   }
+
+and type_constraint =
+  | Pconstraint of core_type
+  | Pcoerce of core_type option * core_type
 
 (** {2 Value descriptions} *)
 

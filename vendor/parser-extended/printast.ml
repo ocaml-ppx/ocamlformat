@@ -514,6 +514,16 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_cond;
   expression i ppf if_body
 
+and type_constraint i ppf constraint_ =
+  match constraint_ with
+  | Pconstraint ty ->
+      line i ppf "Pconstraint\n";
+      core_type (i+1) ppf ty
+  | Pcoerce (ty1, ty2) ->
+      line i ppf "Pcoerce\n";
+      option (i+1) core_type ppf ty1;
+      core_type (i+1) ppf ty2
+
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
        x.pval_name fmt_location x.pval_loc;
@@ -1119,10 +1129,9 @@ and string_x_expression i ppf (s, e) =
   line i ppf "<override> %a\n" fmt_string_loc s;
   expression (i+1) ppf e;
 
-and longident_x_expression i ppf (li, (t1, t2), e) =
+and longident_x_expression i ppf (li, c, e) =
   line i ppf "%a\n" fmt_longident_loc li;
-  option (i+1) core_type ppf t1;
-  option (i+1) core_type ppf t2;
+  option (i+1) type_constraint ppf c;
   option (i+1) expression ppf e;
 
 and label_x_expression i ppf (l,e) =
