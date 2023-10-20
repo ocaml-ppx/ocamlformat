@@ -1936,7 +1936,10 @@ end = struct
         | Ppat_variant _ ) ) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
-    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
+    | ( Fp _
+      , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
+        | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
+     |( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true
