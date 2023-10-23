@@ -638,6 +638,7 @@ module T = struct
     | Cty of class_type
     | Pat of pattern
     | Exp of expression
+    | Fp of function_param
     | Lb of value_binding
     | Mb of module_binding
     | Md of module_declaration
@@ -658,6 +659,7 @@ module T = struct
     | Td t -> Format.fprintf fs "Td:@\n%a" Printast.type_declaration t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
+    | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
@@ -690,6 +692,7 @@ let attributes = function
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
+  | Fp _ -> []
   | Lb x -> x.pvb_attributes
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
@@ -711,6 +714,7 @@ let location = function
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
+  | Fp x -> x.pparam_loc
   | Lb x -> x.pvb_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
@@ -987,6 +991,7 @@ end = struct
                   | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
+    | Fp _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1102,6 +1107,7 @@ end = struct
     in
     match (ctx : t) with
     | Exp _ -> assert false
+    | Fp _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1169,6 +1175,7 @@ end = struct
   let check_cl {ctx; ast= cl} =
     match (ctx : t) with
     | Exp _ -> assert false
+    | Fp _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1288,6 +1295,11 @@ end = struct
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
+    | Fp ctx ->
+        assert (
+          match ctx.pparam_desc with
+          | Pparam_val (_, _, p) -> p == pat
+          | Pparam_newtype _ -> false )
     | Lb x -> assert (x.pvb_pat == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1412,6 +1424,11 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
+    | Fp ctx ->
+        assert (
+          match ctx.pparam_desc with
+          | Pparam_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
+          | Pparam_newtype _ -> false )
     | Lb x -> assert (x.pvb_expr == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1662,6 +1679,8 @@ end = struct
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+     |{ctx= Fp _; ast= _}
+     |{ctx= _; ast= Fp _}
      |{ctx= Lb _; ast= _}
      |{ctx= _; ast= Lb _}
      |{ctx= Td _; ast= _}
@@ -1745,6 +1764,7 @@ end = struct
       | Pexp_field _ -> Some Dot
       | Pexp_send _ -> Some Dot
       | _ -> None )
+    | Fp _ -> None
     | Lb _ -> None
     | Cl c -> (
       match c.pcl_desc with
@@ -1916,7 +1936,10 @@ end = struct
         | Ppat_variant _ ) ) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
-    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
+    | ( Fp _
+      , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
+        | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
+     |( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true

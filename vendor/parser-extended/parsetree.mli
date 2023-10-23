@@ -501,6 +501,38 @@ and binding_op =
     pbop_loc : Location.t;
   }
 
+and function_param_desc =
+  | Pparam_val of arg_label * expression option * pattern
+  (** [Pparam_val (lbl, exp0, P)] represents the parameter:
+      - [P]
+        when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
+        and [exp0] is [None]
+      - [~l:P]
+        when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
+        and [exp0] is [None]
+      - [?l:P]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [None]
+      - [?l:(P = E0)]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [Some E0]
+
+      Note: If [E0] is provided, only
+      {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
+  *)
+  | Pparam_newtype of string loc list
+  (** [Pparam_newtype x] represents the parameter [(type x y z)].
+      [x] carries the location of the identifier, whereas the [pparam_loc]
+      on the enclosing [function_param] node is the location of the [(type x y z)]
+      as a whole.
+  *)
+
+and function_param =
+  {
+    pparam_loc : Location.t;
+    pparam_desc : function_param_desc;
+  }
+
 and type_constraint =
   | Pconstraint of core_type
   | Pcoerce of core_type option * core_type

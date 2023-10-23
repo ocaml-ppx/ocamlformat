@@ -514,6 +514,18 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_cond;
   expression i ppf if_body
 
+and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
+  match desc with
+  | Pparam_val (l, eo, p) ->
+      line i ppf "Pparam_val %a\n" fmt_location loc;
+      arg_label (i+1) ppf l;
+      option (i+1) expression ppf eo;
+      pattern (i+1) ppf p
+  | Pparam_newtype ty ->
+      line i ppf "Pparam_newtype %a\n" fmt_location loc;
+      list i (fun i ppf x ->
+        line (i+1) ppf "type %a" fmt_string_loc x ) ppf ty
+
 and type_constraint i ppf constraint_ =
   match constraint_ with
   | Pconstraint ty ->
@@ -1219,3 +1231,5 @@ let module_expr ppf x = module_expr 0 ppf x
 let structure_item ppf x = structure_item 0 ppf x
 
 let signature_item ppf x = signature_item 0 ppf x
+
+let function_param ppf x = function_param 0 ppf x
