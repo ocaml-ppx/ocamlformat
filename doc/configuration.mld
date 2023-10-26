@@ -1,0 +1,50 @@
+{0 How OCamlFormat computes its configuration}
+
+{1 Configuration files}
+
+Ocamlformat fetches the following files on the file system:
+
+1. [.git], [.hg] or [dune-project]
+2. [.ocamlformat] and [.ocp-indent]
+3. [.ocamlformat-ignore] and [.ocamlformat-enable]
+
+(1.) files are used to determine the {b project root}, which can be overriden by the [--root] option, they are looked up from the path of the file to format, and upwards following parent directories, until the first one is found.
+
+(2.) and (3.) are looked up from the path of the file to format, and following up the parents up to the project root.
+
+(2.) are the {b configuration files}, they contain the options used to configure ocamlformat. A global [.ocamlformat] file can also be used: [$XDG_CONFIG_HOME/ocamlformat] (if defined).
+
+
+{1 How the configuration is built}
+
+The configuration files are considered in sequence, starting from the root of the project, and down to the directory of the file to format, overriding one or many options at each application.
+
++ The initial configuration is equal to the [default] (or [conventional]) profile.
++ The options passed through the configuration files are applied.
++ The options passed through the [OCAMLFORMAT] environment variable are applied, overriding one or many options at a time.
++ The options passed through the command line are applied, overriding one or many options at a time.
+
+When the option [--enable-outside-detected-project] is set, [.ocamlformat] files outside of the project are read, if no [.ocamlformat] file has been found then then apply the global configuration [$XDG_CONFIG_HOME/ocamlformat] (if defined). The global configuration file is ignore in any other case.
+
+When this option is not set, [.ocamlformat] files outside of the project are ignored.
+
+If no configuration file is found, the formatting is disabled.
+
+{1 Overriding the configuration in the source}
+
+Note that some options can be overriden directly in the source, with attributes like:
+
+{@ocaml[
+(* attributes attached to algebraic constructs *)
+x [@ocamlformat "option=value,option=value"];;
+
+(* item attributes, attached to "blocks" *)
+y [@@ocamlformat "option=value,option=value"];;
+
+(* floating attributes, standalone *)
+[@@@ocamlformat "option=value,option=value"]
+]}
+
+All "formatting options" (listed in the {{!page-manpage_ocamlformat}manpage}) can be set in attributes.
+
+Among the non-formatting options only [enable]/[disable] can be set in floatting attributes.

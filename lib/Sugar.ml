@@ -14,9 +14,37 @@ open Asttypes
 open Ast
 open Extended_ast
 
-type arg_kind =
-  | Val of arg_label * pattern xt * expression xt option
-  | Newtypes of string loc list
+(* Temporary. Won't be necessary once the type [function_param] is used in
+   [Pexp_fun] and [Pcl_fun]. *)
+let mk_function_param pparam_desc =
+  let pparam_loc =
+    let init, locs =
+      match pparam_desc with
+      | Pparam_val (lbl, e, p) ->
+          let locs =
+            match lbl with
+            | Nolabel -> []
+            | Labelled x -> [x.loc]
+            | Optional x -> [x.loc]
+          in
+          let locs =
+            match e with Some e -> e.pexp_loc :: locs | None -> locs
+          in
+          (p.ppat_loc, locs)
+      | Pparam_newtype types -> (
+        match types with
+        | [] -> failwith "Pparam_newtype always contains at least one type"
+        | hd :: tl ->
+            let locs = List.map tl ~f:(fun x -> x.loc) in
+            (hd.loc, locs) )
+    in
+    let min acc x = if Location.compare_start acc x < 0 then acc else x in
+    let max acc x = if Location.compare_end acc x > 0 then acc else x in
+    let loc_start = (List.fold_left locs ~init ~f:min).loc_start in
+    let loc_end = (List.fold_left locs ~init ~f:max).loc_end in
+    {Location.loc_start; loc_end; loc_ghost= true}
+  in
+  {pparam_desc; pparam_loc}
 
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
@@ -29,11 +57,7 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
             Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
               ~after:body.pexp_loc ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          ( Val
-              ( label
-              , sub_pat ~ctx pattern
-              , Option.map default ~f:(sub_exp ~ctx) )
-            :: xargs
+          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
           , xbody )
       | Pexp_newtype (name, body) ->
           if not will_keep_first_ast_node then
@@ -42,8 +66,9 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           let xargs =
             match xargs with
-            | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
-            | xargs -> Newtypes [name] :: xargs
+            | {pparam_desc= Pparam_newtype names; _} :: xargs ->
+                mk_function_param (Pparam_newtype (name :: names)) :: xargs
+            | xargs -> mk_function_param (Pparam_newtype [name]) :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
@@ -62,11 +87,7 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
             Cmts.relocate cmts ~src:pcl_loc ~before:pattern.ppat_loc
               ~after:body.pcl_loc ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
-          ( Val
-              ( label
-              , sub_pat ~ctx pattern
-              , Option.map default ~f:(sub_exp ~ctx) )
-            :: xargs
+          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
           , xbody )
       | _ -> ([], xexp)
     else ([], xexp)
@@ -76,9 +97,13 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
-    let rec infix_ ?(relocate = true) xop xexp =
+    let rec infix_ ?(child_expr = true) xop xexp =
       let ctx = Exp xexp.ast in
       match (assoc, xexp.ast) with
+      | _, {pexp_attributes= _ :: _; _} when child_expr ->
+          (* Avoid dropping attributes on child expressions, e.g. [(a + b)
+             [@attr] + c] *)
+          [(xop, xexp)]
       | ( Left
         , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
         )
@@ -90,7 +115,8 @@ module Exp = struct
             | (None, {ast= {pexp_loc; _}; _}) :: _ -> pexp_loc
             | _ -> loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
+          if child_expr then
+            Cmts.relocate cmts ~src ~before ~after:e2.pexp_loc ;
           op_args1 @ [(Some {txt= op; loc}, sub_exp ~ctx e2)]
       | ( Right
         , {pexp_desc= Pexp_infix ({txt= op; loc}, e1, e2); pexp_loc= src; _}
@@ -105,11 +131,11 @@ module Exp = struct
             | Some (_, {ast= {pexp_loc; _}; _}) -> pexp_loc
             | None -> e1.pexp_loc
           in
-          if relocate then Cmts.relocate cmts ~src ~before ~after ;
+          if child_expr then Cmts.relocate cmts ~src ~before ~after ;
           (xop, sub_exp ~ctx e1) :: op_args2
       | _ -> [(xop, xexp)]
     in
-    infix_ None ~relocate:false xexp
+    infix_ None ~child_expr:false xexp
 end
 
 let sequence cmts xexp =
@@ -215,7 +241,7 @@ module Let_binding = struct
   type t =
     { lb_op: string loc
     ; lb_pat: pattern xt
-    ; lb_args: arg_kind list
+    ; lb_args: function_param list
     ; lb_typ:
         [ `Polynewtype of label loc list * core_type xt
         | `Coerce of core_type xt option * core_type xt

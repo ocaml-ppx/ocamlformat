@@ -543,25 +543,12 @@ end
 module Cinaps = struct
   open Fmt
 
-  let fmt_code_str code =
-    match String.split_lines code with
-    | [] | [""] -> str " "
-    | [line] -> fmt "@ " $ str line $ fmt "@;<1 -2>"
-    | lines ->
-        let fmt_line = function
-          | "" -> fmt "\n"
-          | line -> fmt "@\n" $ str line
-        in
-        list lines "" fmt_line $ fmt "@;<1000 -2>"
-
   (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
   let fmt ~pro ~epi ~fmt_code conf ~offset code =
-    let code =
-      match fmt_code conf ~offset code with
-      | Ok code -> code
-      | Error _ -> code
-    in
-    hvbox 2 (pro $ fmt_code_str code $ epi)
+    match fmt_code conf ~offset ~set_margin:false code with
+    | Ok formatted ->
+        hvbox 0 (pro $ hvbox (-1) (fmt "@;" $ formatted) $ fmt "@;" $ epi)
+    | Error _ -> Verbatim.fmt ~pro ~epi code
 end
 
 module Doc = struct

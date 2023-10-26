@@ -9,10 +9,19 @@ profile. This started with version 0.26.0.
 ### Changed
 
 - \* Consistent formatting of comments (#2371, @Julow)
+- Documentation comments are now formatted by default (#2390, @Julow)
+  Use the option `parse-docstrings = false` to disable.
+- \* Janestreet profile: do not break `fun _ -> function` (#2460, @tdelvecchio-jsc)
+- \* Reduce the indentation of (polytype) type constraints (#2437, @gpetiot)
 
 ### Fixed
 
 - Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+- Fix extension-point spacing in structures (#2450, @Julow)
+- \* Consistent break after string constant argument (#2453, @Julow)
+- Fix invalid syntax generated with `ocp-indent-compat` (#2445, @Julow)
+- Fixed bug with attributes on sub-expressions of infix operators (#2459, @tdelvecchio-jsc)
+- \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 
 ## 0.26.1 (2023-09-15)
 
@@ -132,6 +141,7 @@ profile. This started with version 0.26.0.
 - JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
 - The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, @gpetiot)
+- The position of module and module type attributes is now preserved. (#2451, #2455, @emiletrotignon)
 
 ### Added
 

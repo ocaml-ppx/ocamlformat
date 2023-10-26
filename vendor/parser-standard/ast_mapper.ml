@@ -1099,6 +1099,7 @@ let add_ppx_context_sig ~tool_name ast =
 let apply ~source ~target mapper =
   apply_lazy ~source ~target (fun () -> mapper)
 
+(*
 let run_main mapper =
   try
     let a = Sys.argv in
@@ -1123,3 +1124,4 @@ let run_main mapper =
 
 let register_function = ref (fun _name f -> run_main f)
 let register name f = !register_function name f
+*)

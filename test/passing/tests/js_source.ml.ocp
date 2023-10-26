@@ -176,16 +176,22 @@ type%foo t = int [@@foo]
 and t = int [@@foo]
 
 type%foo t += T [@@foo]
+
 class%foo x = x [@@foo]
+
 class type%foo x = x [@@foo]
+
 external%foo x : _ = "" [@@foo]
+
 exception%foo X [@foo]
-module%foo M = M [@@foo]
 
-module%foo rec M : S = M [@@foo]
-and M : S = M [@@foo]
+module%foo [@foo] M = M
 
-module type%foo S = S [@@foo]
+module%foo [@foo] rec M : S = M
+and [@foo] M : S = M
+
+module type%foo [@foo] S = S
+
 include%foo M [@@foo]
 open%foo M [@@foo]
 
@@ -199,13 +205,16 @@ module type S = sig
 
   type%foo t += T [@@foo]
   exception%foo X [@foo]
-  module%foo M : S [@@foo]
 
-  module%foo rec M : S [@@foo]
-  and M : S [@@foo]
+  module%foo [@foo] M : S
 
-  module%foo M = M [@@foo]
-  module type%foo S = S [@@foo]
+  module%foo [@foo] rec M : S
+  and [@foo] M : S
+
+  module%foo [@foo] M = M
+
+  module type%foo [@foo] S = S
+
   include%foo M [@@foo]
   open%foo M [@@foo]
   class%foo x : t [@@foo]
@@ -7879,7 +7888,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml *)
+(** Pure type-checking tests: see recmod/*.ml  *)
 type t =
   | A of
       { x : int
@@ -9715,7 +9724,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-       v} *)
+        v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -10159,8 +10168,7 @@ let _ =
   Foooooooooooooooooooo.foooooooooooooooooooo
     foooooooooooooooooooo
     foooooooooooooooooooo
-    (fun x ->
-       function
+    (fun x -> function
        | Foooooooooooooooooooo -> foooooooooooooooooooo
        | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
@@ -10169,8 +10177,7 @@ let _ =
   Foooooooooooooooooooo.foooooooooooooooooooo
     foooooooooooooooooooo
     foooooooooooooooooooo
-    ~x:(fun x ->
-      function
+    ~x:(fun x -> function
       | Foooooooooooooooooooo -> foooooooooooooooooooo
       | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
@@ -10223,7 +10230,9 @@ val fooooooooooooooooooooooooooooooo
 
 (* *)
 
-(** xxx *)
+(**
+   xxx
+*)
 include S1
 (** @inline *)
 
@@ -10292,8 +10301,10 @@ type t =
   }
 
 (*{v
+
       foo
-  v}*)
+
+v}*)
 
 let _ =
   match () with
@@ -10319,10 +10330,8 @@ zzzzzzzzzzzzzzzzzzzzzzzzzzzz
 *)
 (*$*)
 
-(*$
-  {|
-       f|}
-*)
+(*$ {|
+         f|} *)
 
 let () =
   match () with

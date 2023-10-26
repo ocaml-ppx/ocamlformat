@@ -14,6 +14,10 @@
 module Location = Migrate_ast.Location
 open Parse_with_comments
 
+let ( let* ) = Result.( >>= )
+
+let ( let+ ) = Result.( >>| )
+
 exception
   Internal_error of
     [ `Cannot_parse of exn
@@ -217,11 +221,9 @@ let check_remaining_comments cmts =
   | cmts -> Error (List.map cmts ~f:dropped)
 
 let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
-  let open Result in
   if conf.opr_opts.comment_check.v then
     let errors =
-      check_remaining_comments cmts
-      >>= fun () ->
+      let* () = check_remaining_comments cmts in
       Normalize_extended_ast.diff_cmts conf t_old.comments t_new.comments
     in
     match errors with
@@ -295,7 +297,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      let+ t_new =
+      let* t_new =
         match
           parse (parse_ast conf) ~disable_w50:true fg conf ~input_name
             ~source:fmted
@@ -304,7 +306,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
         | t_new -> Ok t_new
       in
-      let+ std_t_new =
+      let* std_t_new =
         match
           parse Std_ast.Parse.ast std_fg conf ~input_name ~source:fmted
         with
@@ -386,18 +388,18 @@ let parse_and_format (type a b) (fg : a Extended_ast.t)
     (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let line_endings = conf.fmt_opts.line_endings.v in
-  let+ parsed =
+  let* parsed =
     parse_result (parse_ast conf) ~disable_w50:true fg conf ~source
       ~input_name
   in
-  let+ std_parsed =
+  let* std_parsed =
     parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   in
   let+ strlocs, formatted =
     format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
       ~std_parsed conf
   in
-  Ok (Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted)
+  Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted
 
 let parse_and_format syntax =
   let (Extended_ast.Any ext) = Extended_ast.of_syntax syntax in

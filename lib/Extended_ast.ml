@@ -69,8 +69,7 @@ module Parse = struct
         when Std_longident.field_alias ~field:f.txt v_txt ->
           (f, t, None)
       (* [{ x = (x : t) }] -> [{ x : t }] *)
-      (* [{ x :> t = (x : t) }] -> [{ x : t :> t }] *)
-      | ( (None, t2)
+      | ( None
         , Some
             { pexp_desc=
                 Pexp_constraint
@@ -82,10 +81,24 @@ module Parse = struct
             ; _ } )
         when enable_short_field_annot
              && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, (Some t1, t2), None)
+          (f, Some (Pconstraint t1), None)
+      (* [{ x :> t = (x : t) }] -> [{ x : t :> t }] *)
+      | ( Some (Pcoerce (None, t2))
+        , Some
+            { pexp_desc=
+                Pexp_constraint
+                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                    ; pexp_attributes= []
+                    ; _ }
+                  , t1 )
+            ; pexp_attributes= []
+            ; _ } )
+        when enable_short_field_annot
+             && Std_longident.field_alias ~field:f.txt v_txt ->
+          (f, Some (Pcoerce (Some t1, t2)), None)
       (* [{ x = (x :> t) }] -> [{ x :> t }] *)
       (* [{ x = (x : t :> t) }] -> [{ x : t :> t }] *)
-      | ( (None, None)
+      | ( None
         , Some
             { pexp_desc=
                 Pexp_coerce
@@ -98,9 +111,9 @@ module Parse = struct
             ; _ } )
         when enable_short_field_annot
              && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, (t1, Some t2), None)
+          (f, Some (Pcoerce (t1, t2)), None)
       (* [{ x : t = (x :> t) }] -> [{ x : t :> t }] *)
-      | ( (Some t1, None)
+      | ( Some (Pconstraint t1)
         , Some
             { pexp_desc=
                 Pexp_coerce
@@ -113,7 +126,7 @@ module Parse = struct
             ; _ } )
         when enable_short_field_annot
              && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, (Some t1, Some t2), None)
+          (f, Some (Pcoerce (Some t1, t2)), None)
       | _ -> (f, t, Option.map ~f:(m.expr m) v)
     in
     let pat_record_field m (f, t, v) =

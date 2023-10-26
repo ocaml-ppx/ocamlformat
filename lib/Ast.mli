@@ -110,6 +110,7 @@ type t =
   | Cty of class_type
   | Pat of pattern
   | Exp of expression
+  | Fp of function_param
   | Lb of value_binding
   | Mb of module_binding
   | Md of module_declaration

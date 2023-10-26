@@ -7,10 +7,11 @@ github_prefix_set=0
 gitlab_prefix_set=0
 version_set=0
 prefix_set=0
+prev_binary_set=0
 
 function usage()
 {
-  echo "usage: $0 -u <GITHUB_URL_PREFIX> -y <GITLAB_URL_PREFIX> -v <RELEASE> -p <PREFIX>"
+  echo "usage: $0 -u <GITHUB_URL_PREFIX> -y <GITLAB_URL_PREFIX> -v <RELEASE> -p <PREFIX> -b <EXE>"
   echo "Url prefix is of the form 'git@github.com:my_user'."
 }
 
@@ -28,7 +29,22 @@ function uncomment_version()
   sed -i --follow-symlinks -e "s/^#\(version.*\)$/\1$version/" $file
 }
 
-while getopts ":u:y:v:p:" opt; do
+# Apply ocamlformat on a project, update the '.ocamlformat' and commit.
+function apply_fmt()
+{
+  local version=$1 commit_msg=$2
+  echo "Applying version $version"
+  comment_version .ocamlformat
+  $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
+  uncomment_version "$version" .ocamlformat
+  if ! git diff --shortstat --exit-code; then
+    git commit --quiet --all -m "$commit_msg"
+    IGNORE_REVS+=("# Upgrade to OCamlformat $version")
+    IGNORE_REVS+=("$(git rev-parse HEAD)")
+  fi
+}
+
+while getopts ":u:y:v:p:b:" opt; do
   case "$opt" in
     u)
       github_prefix=$OPTARG
@@ -45,6 +61,10 @@ while getopts ":u:y:v:p:" opt; do
     p)
       prefix=$OPTARG
       prefix_set=1
+      ;;
+    b)
+      prev_binary=$(realpath $OPTARG)
+      prev_binary_set=1
       ;;
     *)
       usage
@@ -76,7 +96,7 @@ mkdir -p "$log_dir" "$bin_dir"
 # a directory that will not change
 echo "Building OCamlformat"
 dune build @install
-cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat"
+cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat-next"
 PATH=$bin_dir:$PATH
 
 # Options in 'opts' are enclosed in '<>' to allow safe checks that don't
@@ -114,14 +134,20 @@ while IFS=, read git_platform namespace project opts; do
     *) dune=dune ;;
   esac
 
-  comment_version .ocamlformat
-  $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
-  uncomment_version "$version" .ocamlformat
+  # Lines to insert into .git-blame-ignore-revs. Updated by [apply_fmt].
+  IGNORE_REVS=()
 
-  git diff --shortstat
-  git commit --quiet --all -m "Preview: Upgrade to OCamlformat $version (unreleased)
+  # Do a pass with the previous version.
+  if [[ $prev_binary_set -eq 1 ]]; then
+    ln -sf "$prev_binary" "$bin_dir/ocamlformat"
+    prev_version=$(ocamlformat --version)
+    apply_fmt "$prev_version" "Upgrade to OCamlformat $prev_version"
+  fi
 
-The aim of this commit is to gather feedback.
+  ln -sf "ocamlformat-next" "$bin_dir/ocamlformat"
+  apply_fmt "$version" "Preview: Upgrade to OCamlformat $version (unreleased)
+
+The aim of this preview is to gather feedback.
 
 Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
 
@@ -129,10 +155,8 @@ Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/
     "tezos/tezos") bash scripts/lint.sh --update-ocamlformat ;;
   esac
 
-  if ! [[ $opts = *"<no-ignore-revs>"* ]]; then
-    # Update .git-blame-ignore-revs
-    ( echo "# Upgrade to OCamlformat $version"
-      git rev-parse HEAD ) >> .git-blame-ignore-revs
+  if ! [[ $opts = *"<no-ignore-revs>"* ]] && [[ "${#IGNORE_REVS}" -gt 0 ]]; then
+    printf "%s\n" "${IGNORE_REVS[@]}" >> .git-blame-ignore-revs
     git add .git-blame-ignore-revs
     git commit --quiet -m "Update .git-blame-ignore-revs"
   fi

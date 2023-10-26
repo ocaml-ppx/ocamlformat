@@ -81,6 +81,12 @@ and payload =
   | PPat of pattern * expression option
       (** [? P]  or  [? P when E], in an attribute or an extension point *)
 
+and ext_attrs = {
+  attrs_extension : string loc option; (** Short extension syntax, eg. [module%ext Foo ...]. *)
+  attrs_before : attributes; (** eg. [module Foo [@attr] = ...]. *)
+  attrs_after : attributes; (** eg. [module Foo = struct end [@@attr]]. *)
+}
+
 (** {1 Core language} *)
 (** {2 Type expressions} *)
 
@@ -371,7 +377,7 @@ and expression_desc =
          *)
   | Pexp_record of
       ( Longident.t loc
-        * (core_type option * core_type option)
+        * type_constraint option
         * expression option )
         list
       * expression option
@@ -494,6 +500,42 @@ and binding_op =
     pbop_exp : expression;
     pbop_loc : Location.t;
   }
+
+and function_param_desc =
+  | Pparam_val of arg_label * expression option * pattern
+  (** [Pparam_val (lbl, exp0, P)] represents the parameter:
+      - [P]
+        when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
+        and [exp0] is [None]
+      - [~l:P]
+        when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
+        and [exp0] is [None]
+      - [?l:P]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [None]
+      - [?l:(P = E0)]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [Some E0]
+
+      Note: If [E0] is provided, only
+      {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
+  *)
+  | Pparam_newtype of string loc list
+  (** [Pparam_newtype x] represents the parameter [(type x y z)].
+      [x] carries the location of the identifier, whereas the [pparam_loc]
+      on the enclosing [function_param] node is the location of the [(type x y z)]
+      as a whole.
+  *)
+
+and function_param =
+  {
+    pparam_loc : Location.t;
+    pparam_desc : function_param_desc;
+  }
+
+and type_constraint =
+  | Pconstraint of core_type
+  | Pcoerce of core_type option * core_type
 
 (** {2 Value descriptions} *)
 
@@ -918,7 +960,7 @@ and module_declaration =
      pmd_name: string option loc;
      pmd_args: functor_parameter loc list;
      pmd_type: module_type;
-     pmd_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pmd_ext_attrs : ext_attrs;
      pmd_loc: Location.t;
     }
 (** Values of type [module_declaration] represents [S : MT] *)
@@ -927,7 +969,7 @@ and module_substitution =
     {
      pms_name: string loc;
      pms_manifest: Longident.t loc;
-     pms_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pms_ext_attrs : ext_attrs;
      pms_loc: Location.t;
     }
 (** Values of type [module_substitution] represents [S := M] *)
@@ -936,7 +978,7 @@ and module_type_declaration =
     {
      pmtd_name: string loc;
      pmtd_type: module_type option;
-     pmtd_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pmtd_ext_attrs : ext_attrs;
      pmtd_loc: Location.t;
     }
 (** Values of type [module_type_declaration] represents:
@@ -1101,7 +1143,7 @@ and module_binding =
      pmb_name: string option loc;
      pmb_args: functor_parameter loc list;
      pmb_expr: module_expr;
-     pmb_attributes: attributes;
+     pmb_ext_attrs : ext_attrs;
      pmb_loc: Location.t;
     }
 (** Values of type [module_binding] represents [module X = ME] *)

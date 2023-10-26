@@ -129,14 +129,14 @@ module type S = sig
 
   [%%foo: exception X [@@foo]]
 
-  [%%foo: module M : S [@@foo]]
+  [%%foo: module [@foo] M : S]
 
   [%%foo:
-  module rec M : S [@@foo]
+  module [@foo] rec M : S
 
-  and M : S [@@foo]]
+  and [@foo] M : S]
 
-  [%%foo: module M = M [@@foo]]
+  [%%foo: module [@foo] M = M]
 
   [%%foo: module type S = S [@@foo]]
 

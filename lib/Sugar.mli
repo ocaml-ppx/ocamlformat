@@ -13,15 +13,11 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-type arg_kind =
-  | Val of arg_label * pattern Ast.xt * expression Ast.xt option
-  | Newtypes of string loc list
-
 val fun_ :
      Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
-  -> arg_kind list * expression Ast.xt
+  -> function_param list * expression Ast.xt
 (** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
@@ -30,7 +26,7 @@ val cl_fun :
      ?will_keep_first_ast_node:bool
   -> Cmts.t
   -> class_expr Ast.xt
-  -> arg_kind list * class_expr Ast.xt
+  -> function_param list * class_expr Ast.xt
 (** [cl_fun will_keep_first_ast_node cmts exp] returns the list of arguments
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
@@ -62,7 +58,7 @@ module Let_binding : sig
   type t =
     { lb_op: string loc
     ; lb_pat: pattern Ast.xt
-    ; lb_args: arg_kind list
+    ; lb_args: function_param list
     ; lb_typ:
         [ `Polynewtype of label loc list * core_type Ast.xt
         | `Coerce of core_type Ast.xt option * core_type Ast.xt

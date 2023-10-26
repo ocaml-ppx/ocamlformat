@@ -514,6 +514,28 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_cond;
   expression i ppf if_body
 
+and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
+  match desc with
+  | Pparam_val (l, eo, p) ->
+      line i ppf "Pparam_val %a\n" fmt_location loc;
+      arg_label (i+1) ppf l;
+      option (i+1) expression ppf eo;
+      pattern (i+1) ppf p
+  | Pparam_newtype ty ->
+      line i ppf "Pparam_newtype %a\n" fmt_location loc;
+      list i (fun i ppf x ->
+        line (i+1) ppf "type %a" fmt_string_loc x ) ppf ty
+
+and type_constraint i ppf constraint_ =
+  match constraint_ with
+  | Pconstraint ty ->
+      line i ppf "Pconstraint\n";
+      core_type (i+1) ppf ty
+  | Pcoerce (ty1, ty2) ->
+      line i ppf "Pcoerce\n";
+      option (i+1) core_type ppf ty1;
+      core_type (i+1) ppf ty2
+
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
        x.pval_name fmt_location x.pval_loc;
@@ -548,7 +570,15 @@ and attributes i ppf l =
     line i ppf "attribute %a %a\n" fmt_string_loc a.attr_name
       fmt_location a.attr_loc;
     payload (i + 1) ppf a.attr_payload;
-  ) l;
+  ) l
+
+and ext_attrs i ppf attrs =
+  let i = i + 1 in
+  option (i + 1)
+    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext) 
+    ppf attrs.attrs_extension;
+  attributes i ppf attrs.attrs_before;
+  attributes i ppf attrs.attrs_after
 
 and payload i ppf = function
   | PStr x -> structure i ppf x
@@ -846,7 +876,7 @@ and signature_item i ppf x =
         fmt_string_loc pms.pms_name
         fmt_longident_loc pms.pms_manifest;
       fmt_location ppf pms.pms_loc;
-      attributes i ppf pms.pms_attributes;
+      ext_attrs i ppf pms.pms_ext_attrs;
   | Psig_recmodule decls ->
       line i ppf "Psig_recmodule\n";
       list i module_declaration ppf decls;
@@ -996,21 +1026,21 @@ and structure_item i ppf x =
 and module_type_declaration i ppf x =
   line i ppf "module_type_declaration %a %a\n" fmt_string_loc x.pmtd_name
     fmt_location x.pmtd_loc;
-  attributes i ppf x.pmtd_attributes;
+  ext_attrs i ppf x.pmtd_ext_attrs;
   modtype_declaration (i+1) ppf x.pmtd_type
 
 and module_declaration i ppf pmd =
   line i ppf "module_declaration %a %a\n" fmt_str_opt_loc pmd.pmd_name
     fmt_location pmd.pmd_loc;
   list i functor_parameter ppf pmd.pmd_args;
-  attributes i ppf pmd.pmd_attributes;
+  ext_attrs i ppf pmd.pmd_ext_attrs;
   module_type (i+1) ppf pmd.pmd_type;
 
 and module_binding i ppf x =
   line i ppf "module_binding %a %a\n" fmt_str_opt_loc x.pmb_name
     fmt_location x.pmb_loc;
   list i functor_parameter ppf x.pmb_args;
-  attributes i ppf x.pmb_attributes;
+  ext_attrs i ppf x.pmb_ext_attrs;
   module_expr (i+1) ppf x.pmb_expr
 
 and core_type_x_core_type_x_location i ppf (ct1, ct2, l) =
@@ -1111,10 +1141,9 @@ and string_x_expression i ppf (s, e) =
   line i ppf "<override> %a\n" fmt_string_loc s;
   expression (i+1) ppf e;
 
-and longident_x_expression i ppf (li, (t1, t2), e) =
+and longident_x_expression i ppf (li, c, e) =
   line i ppf "%a\n" fmt_longident_loc li;
-  option (i+1) core_type ppf t1;
-  option (i+1) core_type ppf t2;
+  option (i+1) type_constraint ppf c;
   option (i+1) expression ppf e;
 
 and label_x_expression i ppf (l,e) =
@@ -1202,3 +1231,5 @@ let module_expr ppf x = module_expr 0 ppf x
 let structure_item ppf x = structure_item 0 ppf x
 
 let signature_item ppf x = signature_item 0 ppf x
+
+let function_param ppf x = function_param 0 ppf x

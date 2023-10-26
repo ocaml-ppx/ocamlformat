@@ -158,17 +158,12 @@ let decode_comment ~parse_comments_as_doc txt loc =
     match txt.[0] with
     | '$' when not (Char.is_whitespace txt.[1]) -> mk (Verbatim txt)
     | '$' ->
-        let content_offset = opn_offset + 3 (* for opening + [$] *) in
         let dollar_suf = Char.equal txt.[String.length txt - 1] '$' in
         let suffix = if dollar_suf then "$" else "" in
-        let source =
+        let code =
           let len = String.length txt - if dollar_suf then 2 else 1 in
           String.sub ~pos:1 ~len txt
         in
-        let lines = unindent_lines ~content_offset source in
-        let lines = List.map ~f:String.rstrip lines in
-        let lines = List.drop_while ~f:is_all_whitespace lines in
-        let code = String.concat ~sep:"\n" lines in
         mk ~prefix:"$" ~suffix (Code code)
     | '=' -> mk (Verbatim txt)
     | _ when is_all_whitespace txt ->

@@ -13,7 +13,12 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type fmt_code = Conf.t -> offset:int -> string -> string or_error
+type fmt_code =
+     Conf.t
+  -> offset:int
+  -> set_margin:bool
+  -> string
+  -> (Fmt.t, [`Msg of string]) Result.t
 
 type c = {fmt_code: fmt_code; conf: Conf.t}
 
@@ -118,8 +123,8 @@ let fmt_code_block c s1 s2 =
   match s1 with
   | Some ({value= "ocaml"; _}, _) | None -> (
     (* [offset] doesn't take into account code blocks nested into lists. *)
-    match c.fmt_code c.conf ~offset:2 original with
-    | Ok formatted -> fmt_code formatted
+    match c.fmt_code c.conf ~offset:2 ~set_margin:true original with
+    | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval |> fmt_code
     | Error (`Msg message) ->
         ( match message with
         | "" -> ()
@@ -355,8 +360,8 @@ let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let begin_offset = beginning_offset conf input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
   let offset = offset + begin_offset in
-  let fmt_code conf ~offset:offset' input =
-    fmt_code conf ~offset:(offset + offset') input
+  let fmt_code conf ~offset:offset' ~set_margin input =
+    fmt_code conf ~offset:(offset + offset') ~set_margin input
   in
   let fmt_parsed parsed =
     str (String.make begin_offset ' ')

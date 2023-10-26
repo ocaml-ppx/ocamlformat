@@ -79,8 +79,6 @@ let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 let pstr_include (body, ext) =
   (Pstr_include body, ext)
-let pstr_recmodule (ext, bindings) =
-  (Pstr_recmodule bindings, ext)
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
@@ -228,11 +226,13 @@ let rec mktailpat nilloc = let open Location in function
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
-let mkexp_constraint ~loc e (t1, t2) =
-  match t1, t2 with
-  | Some t, None -> mkexp ~loc (Pexp_constraint(e, t))
-  | _, Some t -> mkexp ~loc (Pexp_coerce(e, t1, t))
-  | None, None -> assert false
+let mkexp_desc_constraint e t =
+  match t with
+  | Pconstraint t -> Pexp_constraint(e, t)
+  | Pcoerce(t1, t2)  -> Pexp_coerce(e, t1, t2)
+
+let mkexp_constraint ~loc e t =
+  mkexp ~loc (mkexp_desc_constraint e t)
 
 (*
 let mkexp_opt_constraint ~loc e = function
@@ -1345,6 +1345,12 @@ structure_item:
           Pstr_extension ($1, add_docs_attrs docs $2) }
     | floating_attribute
         { Pstr_attribute $1 }
+    | module_binding
+        { $1 }
+    | rec_module_bindings
+        { Pstr_recmodule $1 }
+    | module_type_declaration
+        { Pstr_modtype $1 }
     )
   | wrap_mkstr_ext(
       primitive_declaration
@@ -1357,12 +1363,6 @@ structure_item:
         { pstr_typext $1 }
     | str_exception_declaration
         { pstr_exception $1 }
-    | module_binding
-        { $1 }
-    | rec_module_bindings
-        { pstr_recmodule $1 }
-    | module_type_declaration
-        { let (body, ext) = $1 in (Pstr_modtype body, ext) }
     | open_declaration
         { let (body, ext) = $1 in (Pstr_open body, ext) }
     | class_declarations
@@ -1385,9 +1385,9 @@ structure_item:
   attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
       let loc = make_loc $sloc in
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let body = Mb.mk name args body ~attrs ~loc ~docs in
-      Pstr_module body, ext }
+      Pstr_module body }
 ;
 
 (* The body (right-hand side) of a module binding. *)
@@ -1409,8 +1409,8 @@ module_binding_body:
 
 (* A group of recursive module bindings. *)
 %inline rec_module_bindings:
-  xlist(rec_module_binding, and_module_binding)
-    { $1 }
+  rec_module_binding list(and_module_binding)
+    { $1 :: $2 }
 ;
 
 (* The first binding in a group of recursive module bindings. *)
@@ -1425,9 +1425,8 @@ module_binding_body:
   attrs2 = post_item_attributes
   {
     let loc = make_loc $sloc in
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let docs = symbol_docs $sloc in
-    ext,
     Mb.mk name args body ~attrs ~loc ~docs
   }
 ;
@@ -1442,7 +1441,7 @@ module_binding_body:
   attrs2 = post_item_attributes
   {
     let loc = make_loc $sloc in
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
     Mb.mk name args body ~attrs ~loc ~text ~docs
@@ -1478,10 +1477,10 @@ module_type_declaration:
   typ = preceded(EQUAL, module_type)?
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Mtd.mk id ?typ ~attrs ~loc ~docs, ext
+    Mtd.mk id ?typ ~attrs ~loc ~docs
   }
 ;
 
@@ -1597,6 +1596,18 @@ signature_item:
   | mksig(
       floating_attribute
         { Psig_attribute $1 }
+    | module_declaration
+        { Psig_module $1 }
+    | module_alias
+        { Psig_module $1 }
+    | module_subst
+        { Psig_modsubst $1 }
+    | rec_module_declarations
+        { Psig_recmodule $1 }
+    | module_type_declaration
+        { Psig_modtype $1 }
+    | module_type_subst
+        { Psig_modtypesubst $1 }
     )
     { $1 }
   | wrap_mksig_ext(
@@ -1612,18 +1623,6 @@ signature_item:
         { psig_typext $1 }
     | sig_exception_declaration
         { psig_exception $1 }
-    | module_declaration
-        { let (body, ext) = $1 in (Psig_module body, ext) }
-    | module_alias
-        { let (body, ext) = $1 in (Psig_module body, ext) }
-    | module_subst
-        { let (body, ext) = $1 in (Psig_modsubst body, ext) }
-    | rec_module_declarations
-        { let (ext, l) = $1 in (Psig_recmodule l, ext) }
-    | module_type_declaration
-        { let (body, ext) = $1 in (Psig_modtype body, ext) }
-    | module_type_subst
-        { let (body, ext) = $1 in (Psig_modtypesubst body, ext) }
     | open_description
         { let (body, ext) = $1 in (Psig_open body, ext) }
     | include_statement(module_type)
@@ -1645,10 +1644,10 @@ signature_item:
   body = module_type
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Md.mk name args body ~attrs ~loc ~docs, ext
+    Md.mk name args body ~attrs ~loc ~docs
   }
 ;
 
@@ -1677,10 +1676,10 @@ module_declaration_body:
   body = module_expr_alias
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Md.mk name [] body ~attrs ~loc ~docs, ext
+    Md.mk name [] body ~attrs ~loc ~docs
   }
 ;
 %inline module_expr_alias:
@@ -1689,17 +1688,17 @@ module_declaration_body:
 ;
 (* A module substitution (in a signature). *)
 module_subst:
-  MODULE
+MODULE
   ext = ext attrs1 = attributes
   uid = mkrhs(UIDENT)
   COLONEQUAL
   body = mkrhs(mod_ext_longident)
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Ms.mk uid body ~attrs ~loc ~docs, ext
+    Ms.mk uid body ~attrs ~loc ~docs
   }
 | MODULE ext attributes mkrhs(UIDENT) COLONEQUAL error
     { expecting $loc($6) "module path" }
@@ -1707,8 +1706,8 @@ module_subst:
 
 (* A group of recursive module declarations. *)
 %inline rec_module_declarations:
-  xlist(rec_module_declaration, and_module_declaration)
-    { $1 }
+  rec_module_declaration list(and_module_declaration)
+    { $1 :: $2 }
 ;
 %inline rec_module_declaration:
   MODULE
@@ -1720,10 +1719,10 @@ module_subst:
   mty = module_type
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    ext, Md.mk name [] mty ~attrs ~loc ~docs
+    Md.mk name [] mty ~attrs ~loc ~docs
   }
 ;
 %inline and_module_declaration:
@@ -1734,7 +1733,7 @@ module_subst:
   mty = module_type
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
     let docs = symbol_docs $sloc in
     let loc = make_loc $sloc in
     let text = symbol_text $symbolstartpos in
@@ -1752,10 +1751,10 @@ module_type_subst:
   typ=module_type
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Mtd.mk id ~typ ~attrs ~loc ~docs, ext
+    Mtd.mk id ~typ ~attrs ~loc ~docs
   }
 
 
@@ -2487,10 +2486,9 @@ let_binding_body_no_punning:
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
-            Some t, None ->
-             Pvc_constraint { locally_abstract_univars = []; typ=t }
-          | ground, Some coercion -> Pvc_coercion { ground; coercion}
-          | _ -> assert false
+          | Pconstraint typ ->
+             Pvc_constraint { locally_abstract_univars = []; typ }
+          | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion }
         in
         (v, $4, Some t)
         }
@@ -2626,8 +2624,7 @@ record_expr_content:
   | label = mkrhs(label_longident)
     c = type_constraint?
     eo = preceded(EQUAL, expr)?
-      { let c = Option.value ~default:(None, None) c in
-        label, c, eo }
+      { label, c, eo }
 ;
 %inline object_expr_content:
   xs = separated_or_terminated_nonempty_list(SEMI, object_expr_field)
@@ -2651,9 +2648,9 @@ record_expr_content:
     { es }
 ;
 type_constraint:
-    COLON core_type                             { (Some $2, None) }
-  | COLON core_type COLONGREATER core_type      { (Some $2, Some $4) }
-  | COLONGREATER core_type                      { (None, Some $2) }
+  | COLON core_type                             { Pconstraint $2 }
+  | COLON core_type COLONGREATER core_type      { Pcoerce (Some $2, $4) }
+  | COLONGREATER core_type                      { Pcoerce (None, $2) }
   | COLON error                                 { syntax_error() }
   | COLONGREATER error                          { syntax_error() }
 ;

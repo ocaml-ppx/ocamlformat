@@ -225,13 +225,13 @@ external%foo x : _ = "" [@@foo]
 
 exception%foo X [@foo]
 
-module%foo M = M [@@foo]
+module%foo [@foo] M = M
 
-module%foo rec M : S = M [@@foo]
+module%foo [@foo] rec M : S = M
 
-and M : S = M [@@foo]
+and [@foo] M : S = M
 
-module type%foo S = S [@@foo]
+module type%foo [@foo] S = S
 
 include%foo M [@@foo]
 
@@ -251,15 +251,15 @@ module type S = sig
 
   exception%foo X [@foo]
 
-  module%foo M : S [@@foo]
+  module%foo [@foo] M : S
 
-  module%foo rec M : S [@@foo]
+  module%foo [@foo] rec M : S
 
-  and M : S [@@foo]
+  and [@foo] M : S
 
-  module%foo M = M [@@foo]
+  module%foo [@foo] M = M
 
-  module type%foo S = S [@@foo]
+  module type%foo [@foo] S = S
 
   include%foo M [@@foo]
 
@@ -1206,8 +1206,8 @@ type _ ty_env =
 (* Comparing selectors *)
 type (_, _) eq = Eq : ('a, 'a) eq
 
-let rec eq_sel :
-    type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
+let rec eq_sel : type a b c.
+    (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
  fun s1 s2 ->
   match (s1, s2) with
   | Thd, Thd -> Some Eq
@@ -1216,8 +1216,7 @@ let rec eq_sel :
   | _ -> None
 
 (* Auxiliary function to get the type of a case from its selector *)
-let rec get_case :
-    type a b e.
+let rec get_case : type a b e.
        (b, a) ty_sel
     -> (string * (e, b) ty_case) list
     -> string * (a, e) ty option =
@@ -1312,8 +1311,7 @@ let ty_abc =
     | `B s -> ("B", Some (Tdyn (String, s)))
     | `C -> ("C", None)
   (* Define inj in advance to be able to write the type annotation easily *)
-  and inj :
-      type c.
+  and inj : type c.
          (int -> string -> noarg -> unit, c) ty_sel * c
       -> [`A of int | `B of string | `C] = function
     | Thd, v -> `A v
@@ -1567,9 +1565,8 @@ type (_, _) tree =
 
 let tree1 = Tfork (Tfork (Ttip, Tnode 4), Tfork (Tnode 4, Tnode 3))
 
-let rec find :
-    type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) path list
-    =
+let rec find : type sh.
+    ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) path list =
  fun eq n t ->
   match t with
   | Ttip -> []
@@ -1630,8 +1627,8 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
 
 (* Extra: associativity of addition *)
 
-let rec plus_func :
-    type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
+let rec plus_func : type a b m n.
+    (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
  fun p1 p2 ->
   match (p1, p2) with
   | PlusZ _, PlusZ _ -> Eq
@@ -1639,8 +1636,7 @@ let rec plus_func :
       let Eq = plus_func p1' p2' in
       Eq
 
-let rec plus_assoc :
-    type a b c ab bc m n.
+let rec plus_assoc : type a b c ab bc m n.
        (a, b, ab) plus
     -> (ab, c, m) plus
     -> (b, c, bc) plus
@@ -1731,8 +1727,7 @@ let rec elem : type h. int -> h avl -> bool =
   | Leaf -> false
   | Node (_, l, y, r) -> x = y || if x < y then elem x l else elem x r
 
-let rec rotr :
-    type n.
+let rec rotr : type n.
        n succ succ avl
     -> int
     -> n avl
@@ -1748,8 +1743,7 @@ let rec rotr :
   | Node (Less, a, x, Node (More, b, z, c)) ->
       Inl (Node (Same, Node (Same, a, x, b), z, Node (Less, c, y, tR)))
 
-let rec rotl :
-    type n.
+let rec rotl : type n.
        n avl
     -> int
     -> n succ succ avl
@@ -2230,8 +2224,7 @@ type closed = rnil
 
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
-let rec rule :
-    type a b.
+let rec rule : type a b.
     (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
  fun v1 v2 ->
   match (v1, v2) with
@@ -4108,16 +4101,14 @@ end = struct
   let _ = fun (_ : ('a, 'perms) t) -> ()
 
   let t_of_sexp :
-        'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
-      =
+      'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
     fun _of_a _of_perms t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
   let sexp_of_t :
-        'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
-      =
+      'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t
@@ -8393,8 +8384,7 @@ type (_, _, _, _) u = U : (int, int, int, int) u
 
 type v = E | F | G
 
-let f :
-    type a b c d e f g.
+let f : type a b c d e f g.
        a t
        * b t
        * c t
