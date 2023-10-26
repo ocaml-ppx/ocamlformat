@@ -201,42 +201,6 @@ let mod_with pmty =
   let l_rev, m = mod_with_ pmty in
   (List.rev l_rev, m)
 
-let rec polynewtype_ cmts pvars body relocs =
-  let ctx = Exp body in
-  match (pvars, body.pexp_desc) with
-  | [], Pexp_constraint (exp, typ) ->
-      let relocs = (body.pexp_loc, exp.pexp_loc) :: relocs in
-      Some (sub_typ ~ctx typ, sub_exp ~ctx exp, relocs)
-  | pvar :: pvars, Pexp_newtype (nvar, exp)
-    when String.equal pvar.txt nvar.txt ->
-      let relocs = (nvar.loc, pvar.loc) :: relocs in
-      polynewtype_ cmts pvars exp relocs
-  | _ -> None
-
-(** [polynewtype cmts pat exp] returns expression of a type-constrained
-    pattern [pat] with body [exp]. e.g.:
-
-    {v
-      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
-    v}
-
-    Can be rewritten as:
-
-    {[
-      let f : type r s. r s t = e
-    ]} *)
-let polynewtype cmts pat body =
-  let ctx = Pat pat in
-  match pat.ppat_desc with
-  | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _); _}) -> (
-    match polynewtype_ cmts pvars body [(pat.ppat_loc, pat2.ppat_loc)] with
-    | Some (typ, exp, relocs) ->
-        List.iter relocs ~f:(fun (src, dst) ->
-            Cmts.relocate cmts ~src ~before:dst ~after:dst ) ;
-        Some (sub_pat ~ctx pat2, pvars, typ, exp)
-    | None -> None )
-  | _ -> None
-
 module Let_binding = struct
   type t =
     { lb_op: string loc
@@ -317,23 +281,19 @@ module Let_binding = struct
     let pat_is_extension {ppat_desc; _} =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
-    let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
+    let xbody = sub_exp ~ctx lb_exp in
     if
       (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
     then (xpat, [], `None, xbody)
     else
-      match polynewtype cmts pat body with
-      | Some (xpat, pvars, xtyp, xbody) ->
-          (xpat, [], `Polynewtype (pvars, xtyp), xbody)
-      | None ->
-          let xpat =
-            match xpat.ast.ppat_desc with
-            | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
-                sub_pat ~ctx:xpat.ctx p
-            | _ -> xpat
-          in
-          let xargs, typ, xbody = split_fun_args cmts xpat xbody in
-          (xpat, xargs, typ, xbody)
+      let xpat =
+        match xpat.ast.ppat_desc with
+        | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
+            sub_pat ~ctx:xpat.ctx p
+        | _ -> xpat
+      in
+      let xargs, typ, xbody = split_fun_args cmts xpat xbody in
+      (xpat, xargs, typ, xbody)
 
   let typ_of_pvb_constraint ~ctx = function
     | Some (Pvc_constraint {locally_abstract_univars= []; typ}) ->
