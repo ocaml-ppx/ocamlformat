@@ -52,13 +52,12 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
     let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
     if will_keep_first_ast_node || List.is_empty pexp_attributes then
       match pexp_desc with
-      | Pexp_fun (label, default, pattern, body) ->
+      | Pexp_fun (p, body) ->
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
+            Cmts.relocate cmts ~src:pexp_loc ~before:p.pparam_loc
               ~after:body.pexp_loc ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
-          , xbody )
+          (p :: xargs, xbody)
       | Pexp_newtype (name, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:body.pexp_loc
@@ -230,7 +229,11 @@ module Let_binding = struct
              won't be necessary once the normalization is moved to
              [Extended_ast]. *)
           let pat = Ast_helper.Pat.any () in
-          Exp (Ast_helper.Exp.fun_ Nolabel None pat exp)
+          let param =
+            { pparam_desc= Pparam_val (Nolabel, None, pat)
+            ; pparam_loc= pat.ppat_loc }
+          in
+          Exp (Ast_helper.Exp.fun_ param exp)
         in
         (xargs, `Other (sub_typ ~ctx:typ_ctx typ), sub_exp ~ctx:exp_ctx exp)
     (* The type constraint is always printed before the declaration for

@@ -2268,9 +2268,8 @@ expr:
         Pexp_letopen(od, $7), $4 }
   | FUNCTION ext_attributes match_cases
       { Pexp_function $3, $2 }
-  | FUN ext_attributes labeled_simple_pattern fun_def
-      { let (l,o,p) = $3 in
-        Pexp_fun(l, o, p, $4), $2 }
+  | FUN ext_attributes fun_param fun_def
+      { Pexp_fun($3, $4), $2 }
   | FUN ext_attributes LPAREN TYPE lident_list RPAREN fun_def
       { (mk_newtypes ~loc:$sloc $5 $7).pexp_desc, $2 }
   | MATCH ext_attributes seq_expr WITH match_cases
@@ -2579,8 +2578,8 @@ fun_binding:
 strict_binding:
     EQUAL seq_expr
       { $2 }
-  | labeled_simple_pattern fun_binding
-      { let (l, o, p) = $1 in ghexp ~loc:$sloc (Pexp_fun(l, o, p, $2)) }
+  | fun_param fun_binding
+      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
   | LPAREN TYPE lident_list RPAREN fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
 ;
@@ -2596,6 +2595,11 @@ match_case:
   | pattern MINUSGREATER DOT
       { Exp.case $1 (Exp.unreachable ~loc:(make_loc $loc($3)) ()) }
 ;
+fun_param:
+  | labeled_simple_pattern
+      { let l, o, p = $1 in
+        { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (l, o, p) } }
+;
 fun_def:
     MINUSGREATER seq_expr
       { $2 }
@@ -2603,11 +2607,8 @@ fun_def:
       { Pexp_constraint ($4, $2) })
       { $1 }
 /* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | labeled_simple_pattern fun_def
-      {
-       let (l,o,p) = $1 in
-       ghexp ~loc:$sloc (Pexp_fun(l, o, p, $2))
-      }
+  | fun_param fun_def
+      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
   | LPAREN TYPE lident_list RPAREN fun_def
       { mk_newtypes ~loc:$sloc $3 $5 }
 ;

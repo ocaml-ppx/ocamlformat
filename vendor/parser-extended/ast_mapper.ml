@@ -502,11 +502,9 @@ module E = struct
     | Pexp_let (lbs, e) ->
         let_ ~loc ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
-    | Pexp_fun (lab, def, p, e) ->
+    | Pexp_fun (p, e) ->
         fun_ ~loc ~attrs
-          (sub.arg_label sub lab)
-          (map_opt (sub.expr sub) def)
-          (sub.pat sub p)
+          (map_function_param sub p)
           (sub.expr sub e)
     | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
     | Pexp_apply (e, l) ->
