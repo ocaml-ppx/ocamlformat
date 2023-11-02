@@ -49,17 +49,17 @@ let normalize_parse_result ast_kind ast comments =
     (normalize_comments (dedup_cmts ast_kind ast))
     comments
 
-let normalize_code conf (m : Ast_mapper.mapper) txt =
+let normalize_code conf (m : Ast_mapper.mapper) normalize_cmt txt =
   let input_name = "<output>" in
   match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
   | First {ast; comments; _} ->
       normalize_parse_result Use_file
         (List.map ~f:(m.toplevel_phrase m) ast)
-        comments
+        (List.map ~f:normalize_cmt comments)
   | Second {ast; comments; _} ->
       normalize_parse_result Repl_file
         (List.map ~f:(m.repl_phrase m) ast)
-        comments
+        (List.map ~f:normalize_cmt comments)
   | exception _ -> txt
 
 let docstring (c : Conf.t) =
@@ -88,7 +88,7 @@ let make_mapper conf ~ignore_doc_comments =
       when Ast.Attr.is_doc attr ->
         let normalize_code =
           (* Indentation is already stripped by odoc-parser. *)
-          normalize_code conf m
+          normalize_code conf m Fn.id
         in
         let doc' = docstring conf ~normalize_code doc in
         Ast_mapper.default_mapper.attribute m
@@ -173,7 +173,7 @@ let diff ~f ~cmt_kind x y =
 let diff_docstrings c x y =
   let mapper = make_mapper c ~ignore_doc_comments:false in
   let docstring cmt =
-    let normalize_code = normalize_code c mapper in
+    let normalize_code = normalize_code c mapper Fn.id in
     docstring c ~normalize_code (Cmt.txt cmt)
   in
   let norm z =
@@ -191,7 +191,7 @@ let diff_cmts (conf : Conf.t) x y =
         (Docstring.normalize_text (Cmt.txt cmt))
         (Cmt.loc cmt)
     in
-    let f z =
+    let rec f z =
       match Cmt.txt z with
       | "" | "$" -> norm_non_code z
       | str ->
@@ -202,7 +202,7 @@ let diff_cmts (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
             let loc = Cmt.loc z in
-            Cmt.create_comment (normalize_code source) loc
+            Cmt.create_comment (normalize_code f source) loc
           else norm_non_code z
     in
     Set.of_list (module Cmt.Comparator_no_loc) (List.map ~f z)
