@@ -15,25 +15,16 @@ open Ast
 open Extended_ast
 
 (* Temporary. Won't be necessary once the type [function_param] is used in
-   [Pexp_fun] and [Pcl_fun]. *)
+   [Pexp_newtype]. *)
 let mk_function_param pparam_desc =
   let pparam_loc =
     let init, locs =
       match pparam_desc with
-      | Pparam_val (lbl, e, p) ->
-          let locs =
-            match lbl with
-            | Nolabel -> []
-            | Labelled x -> [x.loc]
-            | Optional x -> [x.loc]
-          in
-          let locs =
-            match e with Some e -> e.pexp_loc :: locs | None -> locs
-          in
-          (p.ppat_loc, locs)
+      | Pparam_val _ ->
+          impossible "mk_function_param is only called on Pparam_newtype"
       | Pparam_newtype types -> (
         match types with
-        | [] -> failwith "Pparam_newtype always contains at least one type"
+        | [] -> impossible "Pparam_newtype always contains at least one type"
         | hd :: tl ->
             let locs = List.map tl ~f:(fun x -> x.loc) in
             (hd.loc, locs) )
