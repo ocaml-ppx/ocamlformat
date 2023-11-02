@@ -50,7 +50,7 @@ let _ =
 (*
  * foo
    bar
-*)
+ *)
 
 [@@@ocamlformat "wrap-comments=false"]
 
@@ -114,7 +114,7 @@ let _ =
     (* first line
 
      second line
-    *)
+  *)
   ; "d"
     (* first line
 
@@ -124,12 +124,14 @@ let _ =
     (* first line
 
      second line
-    *)
+         *)
   ; "f"
     (* first line
 
      second line
-    *)
+
+
+         *)
   ; "g" ]
 
 let _ =
@@ -148,7 +150,7 @@ let _ =
 let _ =
   (*no space before
     just newline after
-  *)
+*)
   0
 
 let _ =
@@ -181,7 +183,7 @@ let _ =
 (*
  * foo
    bar
-*)
+ *)
 
 let _ =
   (* It is very confusing - same expression has two different types in two contexts:*)

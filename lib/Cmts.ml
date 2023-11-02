@@ -508,26 +508,12 @@ end
 module Unwrapped = struct
   open Fmt
 
-  let has_trailing_empty_lines s =
-    let pos =
-      match String.rfindi s ~f:(fun _ c -> not (Char.is_whitespace c)) with
-      | Some i -> i + 1
-      | None -> 0
-    in
-    String.contains ~pos s '\n'
-
   let fmt_line ~first:_ ~last:_ l =
     (* The last line will be followed by the [epi]. *)
     str "\n" $ str l
 
   (** [txt] contains trailing spaces and leading/trailing empty lines. *)
   let fmt ~pro ~epi txt =
-    let txt, epi =
-      (* Preserve one trailing newline. *)
-      if has_trailing_empty_lines txt then
-        (String.rstrip txt, fmt "@\n" $ epi)
-      else (txt, epi)
-    in
     match String.split ~on:'\n' txt with
     | hd :: tl ->
         vbox 0 ~name:"unwrapped" (pro $ str hd $ list_fl tl fmt_line) $ epi

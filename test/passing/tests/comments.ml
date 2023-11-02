@@ -315,3 +315,18 @@ type t = { (* comment before mutable *) mutable
 let _ = (x + y) [@attr] + z
 
 let _ = x ^ (y ^ z) [@attr]
+
+let _ =
+  ();
+  (* indentation preserved
+  *)
+  ();
+  (* indentation preserved
+   *)
+  ();
+  (* indentation preserved
+     *)
+  ();
+  (* indentation not preserved
+*)
+  ()
