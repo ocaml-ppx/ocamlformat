@@ -14,9 +14,9 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let mk_newtype_param {Location.loc_start; _} {Location.loc_end; _} types =
+let mk_function_param {Location.loc_start; _} {Location.loc_end; _} p =
   let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
-  {pparam_desc= Pparam_newtype types; pparam_loc}
+  {pparam_desc= p; pparam_loc}
 
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
@@ -38,8 +38,11 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           let xargs =
             match xargs with
             | {pparam_desc= Pparam_newtype names; pparam_loc} :: xargs ->
-                mk_newtype_param name.loc pparam_loc (name :: names) :: xargs
-            | xargs -> mk_newtype_param name.loc name.loc [name] :: xargs
+                let param = Pparam_newtype (name :: names) in
+                mk_function_param name.loc pparam_loc param :: xargs
+            | xargs ->
+                let param = Pparam_newtype [name] in
+                mk_function_param name.loc name.loc param :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
@@ -54,12 +57,12 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
     if will_keep_first_ast_node || List.is_empty pcl_attributes then
       match pcl_desc with
       | Pcl_fun (label, default, pattern, body) ->
+          let before = pattern.ppat_loc and after = body.pcl_loc in
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pcl_loc ~before:pattern.ppat_loc
-              ~after:body.pcl_loc ;
+            Cmts.relocate cmts ~src:pcl_loc ~before ~after ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
-          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
-          , xbody )
+          let param = Pparam_val (label, default, pattern) in
+          (mk_function_param before after param :: xargs, xbody)
       | _ -> ([], xexp)
     else ([], xexp)
   in
