@@ -175,10 +175,11 @@ module Exp = struct
      pc_rhs = rhs;
     }
 
-  let binding_op op pat exp pun loc =
+  let binding_op op pat typ exp pun loc =
     {
       pbop_op = op;
       pbop_pat = pat;
+      pbop_typ = typ;
       pbop_exp = exp;
       pbop_is_pun = pun;
       pbop_loc = loc;

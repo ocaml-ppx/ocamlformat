@@ -2305,7 +2305,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
           lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
+      let bd = Sugar.Let_binding.of_binding_ops c.cmts (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
