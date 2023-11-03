@@ -14,28 +14,9 @@ open Asttypes
 open Ast
 open Extended_ast
 
-(* Temporary. Won't be necessary once the type [function_param] is used in
-   [Pexp_newtype]. *)
-let mk_function_param pparam_desc =
-  let pparam_loc =
-    let init, locs =
-      match pparam_desc with
-      | Pparam_val _ ->
-          impossible "mk_function_param is only called on Pparam_newtype"
-      | Pparam_newtype types -> (
-        match types with
-        | [] -> impossible "Pparam_newtype always contains at least one type"
-        | hd :: tl ->
-            let locs = List.map tl ~f:(fun x -> x.loc) in
-            (hd.loc, locs) )
-    in
-    let min acc x = if Location.compare_start acc x < 0 then acc else x in
-    let max acc x = if Location.compare_end acc x > 0 then acc else x in
-    let loc_start = (List.fold_left locs ~init ~f:min).loc_start in
-    let loc_end = (List.fold_left locs ~init ~f:max).loc_end in
-    {Location.loc_start; loc_end; loc_ghost= true}
-  in
-  {pparam_desc; pparam_loc}
+let mk_newtype_param {Location.loc_start; _} {Location.loc_end; _} types =
+  let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
+  {pparam_desc= Pparam_newtype types; pparam_loc}
 
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
@@ -56,9 +37,9 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           let xargs =
             match xargs with
-            | {pparam_desc= Pparam_newtype names; _} :: xargs ->
-                mk_function_param (Pparam_newtype (name :: names)) :: xargs
-            | xargs -> mk_function_param (Pparam_newtype [name]) :: xargs
+            | {pparam_desc= Pparam_newtype names; pparam_loc} :: xargs ->
+                mk_newtype_param name.loc pparam_loc (name :: names) :: xargs
+            | xargs -> mk_newtype_param name.loc name.loc [name] :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
