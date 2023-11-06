@@ -2231,10 +2231,10 @@ expr:
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
-      { let (pbop_pat, pbop_exp, rev_ands) = bindings in
+      { let (pbop_pat, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
+        let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
@@ -2548,26 +2548,26 @@ and_let_binding:
 ;
 letop_binding_body:
     pat = let_ident exp = strict_binding
-      { (pat, exp) }
+      { (pat, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1) }
+      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
       { let loc = ($startpos(pat), $endpos(typ)) in
-        (ghpat ~loc (Ppat_constraint(pat, typ)), exp) }
+        (ghpat ~loc (Ppat_constraint(pat, typ)), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
-      { (pat, exp) }
+      { (pat, exp, false) }
 ;
 letop_bindings:
     body = letop_binding_body
-      { let let_pat, let_exp = body in
-        let_pat, let_exp, [] }
+      { let let_pat, let_exp, let_is_pun = body in
+        let_pat, let_exp, let_is_pun, [] }
   | bindings = letop_bindings pbop_op = mkrhs(ANDOP) body = letop_binding_body
-      { let let_pat, let_exp, rev_ands = bindings in
-        let pbop_pat, pbop_exp = body in
+      { let let_pat, let_exp, let_is_pun, rev_ands = bindings in
+        let pbop_pat, pbop_exp, pbop_is_pun = body in
         let pbop_loc = make_loc $sloc in
-        let and_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
-        let_pat, let_exp, and_ :: rev_ands }
+        let and_ = {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} in
+        let_pat, let_exp, let_is_pun, and_ :: rev_ands }
 ;
 fun_binding:
     strict_binding

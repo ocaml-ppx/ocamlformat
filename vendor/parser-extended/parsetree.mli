@@ -483,6 +483,7 @@ and binding_op =
     pbop_op : string loc;
     pbop_pat : pattern;
     pbop_exp : expression;
+    pbop_is_pun: bool;
     pbop_loc : Location.t;
   }
 
