@@ -9,22 +9,18 @@ type t =
 let _ =
   [ "a"
   ; "b" (* first line second line *)
-  ; "c"
-    (* first line
+  ; "c" (* first line
 
-       second line *)
-  ; "d"
-    (* first line
+           second line *)
+  ; "d" (* first line
 
-       second line *)
-  ; "e"
-    (* first line
+           second line *)
+  ; "e" (* first line
 
-       second line *)
-  ; "f"
-    (* first line
+           second line *)
+  ; "f" (* first line
 
-       second line *)
+           second line *)
   ; "g" ]
 
 let _ =
@@ -47,10 +43,9 @@ let _ =
  * bar
  *)
 
-(*
- * foo
-   bar
- *)
+(* * foo bar *)
+
+let _ = f (* foo *) a
 
 [@@@ocamlformat "wrap-comments=false"]
 
@@ -215,3 +210,6 @@ let _ =
    *                   value doesn't work good anyway. This may need to be revisited later*)
   let x = y in
   z
+
+let _ = f (* foo
+      *) a

@@ -592,7 +592,8 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [cmt] ->
              let break =
                fmt_if_k
-                 ( Poly.(pos = Cmt.After)
+                 ( conf.fmt_opts.ocp_indent_compat.v
+                 && Poly.(pos = Cmt.After)
                  && String.contains (Cmt.txt cmt) '\n' )
                  (break_unless_newline 1000 0)
              in
