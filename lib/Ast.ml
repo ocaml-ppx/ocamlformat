@@ -639,6 +639,7 @@ module T = struct
     | Pat of pattern
     | Exp of expression
     | Fp of function_param
+    | Vc of value_constraint
     | Lb of value_binding
     | Mb of module_binding
     | Md of module_declaration
@@ -660,6 +661,7 @@ module T = struct
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
+    | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
@@ -693,6 +695,7 @@ let attributes = function
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Fp _ -> []
+  | Vc _ -> []
   | Lb x -> x.pvb_attributes
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
@@ -715,6 +718,7 @@ let location = function
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
   | Fp x -> x.pparam_loc
+  | Vc _ -> Location.none
   | Lb x -> x.pvb_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
@@ -908,12 +912,13 @@ end = struct
               List.exists t ~f:(fun x -> x.pap_type == typ)
           | _ -> false )
     in
-    let check_pvb pvb =
-      match pvb.pvb_constraint with
-      | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
-      | Some (Pvc_coercion {ground; coercion}) ->
+    let check_value_constraint = function
+      | Pvc_constraint {typ= typ'; _} -> typ' == typ
+      | Pvc_coercion {ground; coercion} ->
           coercion == typ || Option.exists ground ~f:(fun x -> x == typ)
-      | None -> false
+    in
+    let check_pvb pvb =
+      Option.exists pvb.pvb_constraint ~f:check_value_constraint
     in
     let check_let_bindings lbs =
       List.exists lbs.pvbs_bindings ~f:check_pvb
@@ -992,6 +997,7 @@ end = struct
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fp _ -> assert false
+    | Vc c -> assert (check_value_constraint c)
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1041,14 +1047,6 @@ end = struct
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | Pstr_value {pvbs_bindings; _} ->
-          let check_pvb pvb =
-            match pvb.pvb_constraint with
-            | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
-            | Some (Pvc_coercion {ground; coercion}) ->
-                coercion == typ
-                || Option.exists ground ~f:(fun x -> x == typ)
-            | None -> false
-          in
           assert (List.exists pvbs_bindings ~f:check_pvb)
       | _ -> assert false )
     | Clf {pcf_desc; _} ->
@@ -1108,6 +1106,7 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Fp _ -> assert false
+    | Vc _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1176,6 +1175,7 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Fp _ -> assert false
+    | Vc _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1301,6 +1301,7 @@ end = struct
       | Pexp_for (p, _, _, _, _) -> assert (p == pat)
       | Pexp_fun (p, _) -> assert (check_function_param p) )
     | Fp ctx -> assert (check_function_param ctx)
+    | Vc _ -> assert false
     | Lb x -> assert (x.pvb_pat == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1431,6 +1432,7 @@ end = struct
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
     | Fp ctx -> assert (check_function_param ctx)
+    | Vc _ -> assert false
     | Lb x -> assert (x.pvb_expr == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1683,6 +1685,8 @@ end = struct
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Fp _; ast= _}
      |{ctx= _; ast= Fp _}
+     |{ctx= Vc _; ast= _}
+     |{ctx= _; ast= Vc _}
      |{ctx= Lb _; ast= _}
      |{ctx= _; ast= Lb _}
      |{ctx= Td _; ast= _}
@@ -1767,6 +1771,7 @@ end = struct
       | Pexp_send _ -> Some Dot
       | _ -> None )
     | Fp _ -> None
+    | Vc _ -> None
     | Lb _ -> None
     | Cl c -> (
       match c.pcl_desc with

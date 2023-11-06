@@ -180,11 +180,7 @@ module Let_binding = struct
     { lb_op: string loc
     ; lb_pat: pattern xt
     ; lb_args: function_param list
-    ; lb_typ:
-        [ `Polynewtype of label loc list * core_type xt
-        | `Coerce of core_type xt option * core_type xt
-        | `Other of core_type xt
-        | `None ]
+    ; lb_typ: value_constraint option
     ; lb_exp: expression xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
@@ -197,7 +193,6 @@ module Let_binding = struct
       when Source.type_constraint_is_first typ exp.pexp_loc ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
-        let typ_ctx = ctx in
         let exp_ctx =
           (* The type constraint is moved to the pattern, so we need to
              replace the context from [Pexp_constraint] to [Pexp_fun]. This
@@ -210,20 +205,25 @@ module Let_binding = struct
           in
           Exp (Ast_helper.Exp.fun_ param exp)
         in
-        (xargs, `Other (sub_typ ~ctx:typ_ctx typ), sub_exp ~ctx:exp_ctx exp)
+        ( xargs
+        , Some (Pvc_constraint {locally_abstract_univars= []; typ})
+        , sub_exp ~ctx:exp_ctx exp )
     (* The type constraint is always printed before the declaration for
        functions, for other value bindings we preserve its position. *)
     | Pexp_constraint (exp, typ) when not (List.is_empty xargs) ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
-        (xargs, `Other (sub_typ ~ctx typ), sub_exp ~ctx exp)
+        ( xargs
+        , Some (Pvc_constraint {locally_abstract_univars= []; typ})
+        , sub_exp ~ctx exp )
     | Pexp_coerce (exp, typ1, typ2)
       when Source.type_constraint_is_first typ2 exp.pexp_loc ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
-        let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
-        (xargs, `Coerce (typ1, sub_typ ~ctx typ2), sub_exp ~ctx exp)
-    | _ -> (xargs, `None, xbody)
+        ( xargs
+        , Some (Pvc_coercion {ground= typ1; coercion= typ2})
+        , sub_exp ~ctx exp )
+    | _ -> (xargs, None, xbody)
 
   let split_fun_args cmts xpat xbody =
     let xargs, xbody =
@@ -233,7 +233,7 @@ module Let_binding = struct
       | _ -> ([], xbody)
     in
     match (xbody.ast.pexp_desc, xpat.ast.ppat_desc) with
-    | Pexp_constraint _, Ppat_constraint _ -> (xargs, `None, xbody)
+    | Pexp_constraint _, Ppat_constraint _ -> (xargs, None, xbody)
     | _ -> split_annot cmts xargs xbody
 
   let type_cstr cmts ~ctx lb_pat lb_exp =
@@ -262,7 +262,7 @@ module Let_binding = struct
     let xbody = sub_exp ~ctx lb_exp in
     if
       (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then (xpat, [], `None, xbody)
+    then (xpat, [], None, xbody)
     else
       let xpat =
         match xpat.ast.ppat_desc with
@@ -273,18 +273,9 @@ module Let_binding = struct
       let xargs, typ, xbody = split_fun_args cmts xpat xbody in
       (xpat, xargs, typ, xbody)
 
-  let typ_of_pvb_constraint ~ctx = function
-    | Some (Pvc_constraint {locally_abstract_univars= []; typ}) ->
-        `Other (sub_typ ~ctx typ)
-    | Some (Pvc_constraint {locally_abstract_univars; typ}) ->
-        `Polynewtype (locally_abstract_univars, sub_typ ~ctx typ)
-    | Some (Pvc_coercion {ground; coercion}) ->
-        `Coerce (Option.map ground ~f:(sub_typ ~ctx), sub_typ ~ctx coercion)
-    | None -> `None
-
   let should_desugar_args pat typ =
     match (pat.ast, typ) with
-    | {ppat_desc= Ppat_var _; ppat_attributes= []; _}, `None -> true
+    | {ppat_desc= Ppat_var _; ppat_attributes= []; _}, None -> true
     | _ -> false
 
   let of_let_binding cmts ~ctx ~first
@@ -292,7 +283,7 @@ module Let_binding = struct
       =
     let lb_exp = sub_exp ~ctx pvb_expr
     and lb_pat = sub_pat ~ctx pvb_pat
-    and lb_typ = typ_of_pvb_constraint ~ctx pvb_constraint in
+    and lb_typ = pvb_constraint in
     let lb_args, lb_typ, lb_exp =
       if should_desugar_args lb_pat lb_typ then
         split_fun_args cmts lb_pat lb_exp

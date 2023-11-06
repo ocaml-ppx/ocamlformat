@@ -1231,3 +1231,5 @@ let structure_item ppf x = structure_item 0 ppf x
 let signature_item ppf x = signature_item 0 ppf x
 
 let function_param ppf x = function_param 0 ppf x
+
+let value_constraint ppf x = value_constraint 0 ppf x
