@@ -64,6 +64,12 @@ let _ =
    bar
  *)
 
+let _ =
+  f
+      (* foo
+      *)
+    a
+
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
@@ -233,3 +239,9 @@ let _ =
    *                   doing so would create problems with methods. Passing structs by
    *                   value doesn't work good anyway. This may need to be revisited later*)
   let x = y in z
+
+let _ =
+  f
+      (* foo
+      *)
+    a

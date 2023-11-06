@@ -107,26 +107,21 @@ type foo =
 
 let _ =
   [ "a"
-  ; "b"
-    (* first line
+  ; "b" (* first line
      second line *)
-  ; "c"
-    (* first line
+  ; "c" (* first line
 
      second line
   *)
-  ; "d"
-    (* first line
+  ; "d" (* first line
 
 
      second line *)
-  ; "e"
-    (* first line
+  ; "e" (* first line
 
      second line
          *)
-  ; "f"
-    (* first line
+  ; "f" (* first line
 
      second line
 
