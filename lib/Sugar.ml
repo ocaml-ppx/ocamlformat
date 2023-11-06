@@ -311,11 +311,7 @@ module Let_binding = struct
         ; lb_args
         ; lb_typ
         ; lb_exp
-        ; lb_pun=
-            ( match (lb_pat.ast.ppat_desc, lb_exp.ast.pexp_desc) with
-            | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
-                String.equal v e
-            | _ -> false )
+        ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
 end
