@@ -321,28 +321,13 @@ and expression_desc =
                when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
          *)
   | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_fun of arg_label * expression option * pattern * expression
-      (** [Pexp_fun(lbl, exp0, P, E1)] represents:
-            - [fun P -> E1]
-                      when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
-                       and [exp0] is [None]
-            - [fun ~l:P -> E1]
-                      when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
-                       and [exp0] is [None]
-            - [fun ?l:P -> E1]
-                      when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
-                       and [exp0] is [None]
-            - [fun ?l:(P = E0) -> E1]
-                      when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
-                       and [exp0] is [Some E0]
-
-           Notes:
-           - If [E0] is provided, only
-             {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
-           - [fun P1 P2 .. Pn -> E1] is represented as nested
-             {{!expression_desc.Pexp_fun}[Pexp_fun]}.
-           - [let f P = E] is represented using
-             {{!expression_desc.Pexp_fun}[Pexp_fun]}.
+  | Pexp_fun of function_param * expression
+      (** [Pexp_fun(P, E)] represents:
+            - [fun P -> E]
+            - [fun ~l:P -> E]
+            - [fun ?l:P -> E]
+            - [fun ?l:(P = E0) -> E]
+            - [fun (type t) -> E]
          *)
   | Pexp_apply of expression * (arg_label * expression) list
       (** [Pexp_apply(E0, [(l1, E1) ; ... ; (ln, En)])]
@@ -498,6 +483,7 @@ and binding_op =
     pbop_op : string loc;
     pbop_pat : pattern;
     pbop_exp : expression;
+    pbop_is_pun: bool;
     pbop_loc : Location.t;
   }
 

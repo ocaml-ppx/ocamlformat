@@ -2231,10 +2231,10 @@ expr:
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
-      { let (pbop_pat, pbop_exp, rev_ands) = bindings in
+      { let (pbop_pat, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
+        let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
@@ -2268,9 +2268,8 @@ expr:
         Pexp_letopen(od, $7), $4 }
   | FUNCTION ext_attributes match_cases
       { Pexp_function $3, $2 }
-  | FUN ext_attributes labeled_simple_pattern fun_def
-      { let (l,o,p) = $3 in
-        Pexp_fun(l, o, p, $4), $2 }
+  | FUN ext_attributes fun_param fun_def
+      { Pexp_fun($3, $4), $2 }
   | FUN ext_attributes LPAREN TYPE lident_list RPAREN fun_def
       { (mk_newtypes ~loc:$sloc $5 $7).pexp_desc, $2 }
   | MATCH ext_attributes seq_expr WITH match_cases
@@ -2549,26 +2548,26 @@ and_let_binding:
 ;
 letop_binding_body:
     pat = let_ident exp = strict_binding
-      { (pat, exp) }
+      { (pat, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1) }
+      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
       { let loc = ($startpos(pat), $endpos(typ)) in
-        (ghpat ~loc (Ppat_constraint(pat, typ)), exp) }
+        (ghpat ~loc (Ppat_constraint(pat, typ)), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
-      { (pat, exp) }
+      { (pat, exp, false) }
 ;
 letop_bindings:
     body = letop_binding_body
-      { let let_pat, let_exp = body in
-        let_pat, let_exp, [] }
+      { let let_pat, let_exp, let_is_pun = body in
+        let_pat, let_exp, let_is_pun, [] }
   | bindings = letop_bindings pbop_op = mkrhs(ANDOP) body = letop_binding_body
-      { let let_pat, let_exp, rev_ands = bindings in
-        let pbop_pat, pbop_exp = body in
+      { let let_pat, let_exp, let_is_pun, rev_ands = bindings in
+        let pbop_pat, pbop_exp, pbop_is_pun = body in
         let pbop_loc = make_loc $sloc in
-        let and_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
-        let_pat, let_exp, and_ :: rev_ands }
+        let and_ = {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} in
+        let_pat, let_exp, let_is_pun, and_ :: rev_ands }
 ;
 fun_binding:
     strict_binding
@@ -2579,8 +2578,8 @@ fun_binding:
 strict_binding:
     EQUAL seq_expr
       { $2 }
-  | labeled_simple_pattern fun_binding
-      { let (l, o, p) = $1 in ghexp ~loc:$sloc (Pexp_fun(l, o, p, $2)) }
+  | fun_param fun_binding
+      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
   | LPAREN TYPE lident_list RPAREN fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
 ;
@@ -2596,6 +2595,11 @@ match_case:
   | pattern MINUSGREATER DOT
       { Exp.case $1 (Exp.unreachable ~loc:(make_loc $loc($3)) ()) }
 ;
+fun_param:
+  | labeled_simple_pattern
+      { let l, o, p = $1 in
+        { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (l, o, p) } }
+;
 fun_def:
     MINUSGREATER seq_expr
       { $2 }
@@ -2603,11 +2607,8 @@ fun_def:
       { Pexp_constraint ($4, $2) })
       { $1 }
 /* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | labeled_simple_pattern fun_def
-      {
-       let (l,o,p) = $1 in
-       ghexp ~loc:$sloc (Pexp_fun(l, o, p, $2))
-      }
+  | fun_param fun_def
+      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
   | LPAREN TYPE lident_list RPAREN fun_def
       { mk_newtypes ~loc:$sloc $3 $5 }
 ;

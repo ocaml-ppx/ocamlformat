@@ -177,7 +177,7 @@ module Exp = struct
       , (Non_apply | Sequence | Then | ThenElse) )
      |( { pexp_desc=
             ( Pexp_function _ | Pexp_match _ | Pexp_try _
-            | Pexp_fun (_, _, _, {pexp_desc= Pexp_constraint _; _}) )
+            | Pexp_fun (_, {pexp_desc= Pexp_constraint _; _}) )
         ; _ }
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
@@ -639,6 +639,7 @@ module T = struct
     | Pat of pattern
     | Exp of expression
     | Fp of function_param
+    | Vc of value_constraint
     | Lb of value_binding
     | Mb of module_binding
     | Md of module_declaration
@@ -660,6 +661,7 @@ module T = struct
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
+    | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
@@ -693,6 +695,7 @@ let attributes = function
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Fp _ -> []
+  | Vc _ -> []
   | Lb x -> x.pvb_attributes
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
@@ -715,6 +718,7 @@ let location = function
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
   | Fp x -> x.pparam_loc
+  | Vc _ -> Location.none
   | Lb x -> x.pvb_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
@@ -908,12 +912,13 @@ end = struct
               List.exists t ~f:(fun x -> x.pap_type == typ)
           | _ -> false )
     in
-    let check_pvb pvb =
-      match pvb.pvb_constraint with
-      | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
-      | Some (Pvc_coercion {ground; coercion}) ->
+    let check_value_constraint = function
+      | Pvc_constraint {typ= typ'; _} -> typ' == typ
+      | Pvc_coercion {ground; coercion} ->
           coercion == typ || Option.exists ground ~f:(fun x -> x == typ)
-      | None -> false
+    in
+    let check_pvb pvb =
+      Option.exists pvb.pvb_constraint ~f:check_value_constraint
     in
     let check_let_bindings lbs =
       List.exists lbs.pvbs_bindings ~f:check_pvb
@@ -992,6 +997,7 @@ end = struct
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fp _ -> assert false
+    | Vc c -> assert (check_value_constraint c)
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1041,14 +1047,6 @@ end = struct
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | Pstr_value {pvbs_bindings; _} ->
-          let check_pvb pvb =
-            match pvb.pvb_constraint with
-            | Some (Pvc_constraint {typ= typ'; _}) -> typ' == typ
-            | Some (Pvc_coercion {ground; coercion}) ->
-                coercion == typ
-                || Option.exists ground ~f:(fun x -> x == typ)
-            | None -> false
-          in
           assert (List.exists pvbs_bindings ~f:check_pvb)
       | _ -> assert false )
     | Clf {pcf_desc; _} ->
@@ -1072,7 +1070,7 @@ end = struct
               let rec loop = function
                 | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
                 | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
-                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
+                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
                 | _ -> false
               in
               (match topt with None -> false | Some t -> typ == t)
@@ -1108,6 +1106,7 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Fp _ -> assert false
+    | Vc _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1176,6 +1175,7 @@ end = struct
     match (ctx : t) with
     | Exp _ -> assert false
     | Fp _ -> assert false
+    | Vc _ -> assert false
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1237,6 +1237,11 @@ end = struct
     let check_bindings l =
       List.exists l ~f:(fun {pvb_pat; _} -> check_subpat pvb_pat)
     in
+    let check_function_param param =
+      match param.pparam_desc with
+      | Pparam_val (_, _, p) -> p == pat
+      | Pparam_newtype _ -> false
+    in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
     | Pld _ -> assert false
@@ -1293,13 +1298,10 @@ end = struct
             List.exists cases ~f:(function
               | {pc_lhs; _} when pc_lhs == pat -> true
               | _ -> false ) )
-      | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
-      )
-    | Fp ctx ->
-        assert (
-          match ctx.pparam_desc with
-          | Pparam_val (_, _, p) -> p == pat
-          | Pparam_newtype _ -> false )
+      | Pexp_for (p, _, _, _, _) -> assert (p == pat)
+      | Pexp_fun (p, _) -> assert (check_function_param p) )
+    | Fp ctx -> assert (check_function_param ctx)
+    | Vc _ -> assert false
     | Lb x -> assert (x.pvb_pat == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1346,6 +1348,11 @@ end = struct
       | PStr [{pstr_desc= Pstr_eval (e, _); _}] -> e == exp
       | _ -> false
     in
+    let check_function_param param =
+      match param.pparam_desc with
+      | Pparam_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
+      | Pparam_newtype _ -> false
+    in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -1374,8 +1381,8 @@ end = struct
                 | {pc_guard= Some g; _} when g == exp -> true
                 | {pc_rhs; _} when pc_rhs == exp -> true
                 | _ -> false ) )
-        | Pexp_fun (_, default, _, body) ->
-            assert (Option.value_map default ~default:false ~f || body == exp)
+        | Pexp_fun (param, body) ->
+            assert (check_function_param param || body == exp)
         | Pexp_indexop_access {pia_lhs; pia_kind= Builtin idx; pia_rhs; _} ->
             assert (
               pia_lhs == exp || idx == exp
@@ -1424,11 +1431,8 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
-    | Fp ctx ->
-        assert (
-          match ctx.pparam_desc with
-          | Pparam_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
-          | Pparam_newtype _ -> false )
+    | Fp ctx -> assert (check_function_param ctx)
+    | Vc _ -> assert false
     | Lb x -> assert (x.pvb_expr == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1487,7 +1491,7 @@ end = struct
                 match x with
                 | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
                 | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | {pexp_desc= Pexp_fun (_, _, _, e); _} -> loop e
+                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
                 | _ -> false
               in
               loop e
@@ -1681,6 +1685,8 @@ end = struct
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Fp _; ast= _}
      |{ctx= _; ast= Fp _}
+     |{ctx= Vc _; ast= _}
+     |{ctx= _; ast= Vc _}
      |{ctx= Lb _; ast= _}
      |{ctx= _; ast= Lb _}
      |{ctx= Td _; ast= _}
@@ -1765,6 +1771,7 @@ end = struct
       | Pexp_send _ -> Some Dot
       | _ -> None )
     | Fp _ -> None
+    | Vc _ -> None
     | Lb _ -> None
     | Cl c -> (
       match c.pcl_desc with
@@ -1983,7 +1990,7 @@ end = struct
         match exp.pexp_desc with
         | Pexp_assert e
          |Pexp_construct (_, Some e)
-         |Pexp_fun (_, _, _, e)
+         |Pexp_fun (_, e)
          |Pexp_ifthenelse (_, Some e)
          |Pexp_prefix (_, e)
          |Pexp_infix (_, _, e)
@@ -2066,7 +2073,7 @@ end = struct
        |Pexp_newtype (_, e)
        |Pexp_open (_, e)
        |Pexp_letopen (_, e)
-       |Pexp_fun (_, _, _, e)
+       |Pexp_fun (_, e)
        |Pexp_sequence (_, e)
        |Pexp_setfield (_, _, e)
        |Pexp_setinstvar (_, e)

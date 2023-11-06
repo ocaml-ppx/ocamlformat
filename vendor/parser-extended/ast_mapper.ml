@@ -473,7 +473,7 @@ module E = struct
       match desc with
       | Pparam_val (lab, def, p) ->
           Pparam_val
-            (lab,
+            (sub.arg_label sub lab,
              map_opt (sub.expr sub) def,
              sub.pat sub p)
       | Pparam_newtype ty ->
@@ -502,11 +502,9 @@ module E = struct
     | Pexp_let (lbs, e) ->
         let_ ~loc ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
-    | Pexp_fun (lab, def, p, e) ->
+    | Pexp_fun (p, e) ->
         fun_ ~loc ~attrs
-          (sub.arg_label sub lab)
-          (map_opt (sub.expr sub) def)
-          (sub.pat sub p)
+          (map_function_param sub p)
           (sub.expr sub e)
     | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
     | Pexp_apply (e, l) ->
@@ -607,13 +605,13 @@ module E = struct
     | Pexp_infix (op, e1, e2) ->
         infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
 
-  let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
+  let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
     let op = map_loc sub pbop_op in
     let pat = sub.pat sub pbop_pat in
     let exp = sub.expr sub pbop_exp in
     let loc = sub.location sub pbop_loc in
-    binding_op op pat exp loc
+    binding_op op pat exp pbop_is_pun loc
 
 end
 

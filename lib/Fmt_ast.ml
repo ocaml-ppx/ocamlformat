@@ -708,7 +708,12 @@ and type_constr_and_body c xbody =
         ~after:exp.pexp_loc ;
       let typ_ctx = Exp body in
       let exp_ctx =
-        Exp Ast_helper.(Exp.fun_ Nolabel None (Pat.any ()) exp)
+        let pat = Ast_helper.Pat.any () in
+        let param =
+          { pparam_desc= Pparam_val (Nolabel, None, pat)
+          ; pparam_loc= pat.ppat_loc }
+        in
+        Exp Ast_helper.(Exp.fun_ param exp)
       in
       ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
       , sub_exp ~ctx:exp_ctx exp )
@@ -1236,6 +1241,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
 and fmt_fun_args c args =
   let fmt_fun_arg (a : function_param) =
     let ctx = Fp a in
+    Cmts.fmt c a.pparam_loc
+    @@
     match a.pparam_desc with
     | Pparam_val
         ( ((Labelled l | Optional l) as lbl)
@@ -1963,7 +1970,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         if parens || not dock_fun_arg then (noop, pro) else (pro, noop)
       in
       match last_arg.pexp_desc with
-      | Pexp_fun (_, _, _, eN1_body)
+      | Pexp_fun (_, eN1_body)
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           (* Last argument is a [fun _ ->]. *)
@@ -4353,6 +4360,41 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
+and fmt_value_constraint c vc_opt =
+  let fmt_sep x =
+    match c.conf.fmt_opts.break_colon.v with
+    | `Before -> fmt "@ " $ str x $ char ' '
+    | `After -> char ' ' $ str x $ fmt "@ "
+  in
+  match vc_opt with
+  | Some vc -> (
+      let ctx = Vc vc in
+      match vc with
+      | Pvc_constraint {locally_abstract_univars= []; typ} ->
+          (noop, fmt_type_cstr c (sub_typ ~ctx typ))
+      | Pvc_constraint {locally_abstract_univars= pvars; typ} -> (
+        match c.conf.fmt_opts.break_colon.v with
+        | `Before ->
+            ( noop
+            , fmt_sep ":"
+              $ hvbox 0
+                  ( str "type "
+                  $ list pvars " " (fmt_str_loc c)
+                  $ fmt ".@ "
+                  $ fmt_core_type c (sub_typ ~ctx typ) ) )
+        | `After ->
+            ( fmt_sep ":"
+              $ hvbox 0
+                  (str "type " $ list pvars " " (fmt_str_loc c) $ str ".")
+            , fmt "@ " $ fmt_core_type c (sub_typ ~ctx typ) ) )
+      | Pvc_coercion {ground; coercion} ->
+          ( noop
+          , opt ground (fun ty ->
+                fmt_sep ":" $ fmt_core_type c (sub_typ ~ctx ty) )
+            $ fmt_sep ":>"
+            $ fmt_core_type c (sub_typ ~ctx coercion) ) )
+  | None -> (noop, noop)
+
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
     {lb_op; lb_pat; lb_args; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
   update_config_maybe_disabled c lb_loc lb_attrs
@@ -4364,33 +4406,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
   in
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let fmt_newtypes, fmt_cstr =
-    let fmt_sep x =
-      match c.conf.fmt_opts.break_colon.v with
-      | `Before -> fmt "@ " $ str x $ char ' '
-      | `After -> char ' ' $ str x $ fmt "@ "
-    in
-    match lb_typ with
-    | `Polynewtype (pvars, xtyp) -> (
-      match c.conf.fmt_opts.break_colon.v with
-      | `Before ->
-          ( noop
-          , fmt_sep ":"
-            $ hvbox 0
-                ( str "type "
-                $ list pvars " " (fmt_str_loc c)
-                $ fmt ".@ " $ fmt_core_type c xtyp ) )
-      | `After ->
-          ( fmt_sep ":"
-            $ hvbox 0 (str "type " $ list pvars " " (fmt_str_loc c) $ str ".")
-          , fmt "@ " $ fmt_core_type c xtyp ) )
-    | `Coerce (xtyp1, xtyp2) ->
-        ( noop
-        , opt xtyp1 (fun xtyp1 -> fmt_sep ":" $ fmt_core_type c xtyp1)
-          $ fmt_sep ":>" $ fmt_core_type c xtyp2 )
-    | `Other xtyp -> (noop, fmt_type_cstr c xtyp)
-    | `None -> (noop, noop)
-  in
+  let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ -> c.conf.fmt_opts.function_indent.v

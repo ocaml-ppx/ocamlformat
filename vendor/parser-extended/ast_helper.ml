@@ -122,7 +122,7 @@ module Exp = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
   let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_let (a, b))
-  let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_fun (a, b, c, d))
+  let fun_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_fun (a, b))
   let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
   let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
@@ -175,11 +175,12 @@ module Exp = struct
      pc_rhs = rhs;
     }
 
-  let binding_op op pat exp loc =
+  let binding_op op pat exp pun loc =
     {
       pbop_op = op;
       pbop_pat = pat;
       pbop_exp = exp;
+      pbop_is_pun = pun;
       pbop_loc = loc;
     }
 end
