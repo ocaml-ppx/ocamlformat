@@ -708,7 +708,12 @@ and type_constr_and_body c xbody =
         ~after:exp.pexp_loc ;
       let typ_ctx = Exp body in
       let exp_ctx =
-        Exp Ast_helper.(Exp.fun_ Nolabel None (Pat.any ()) exp)
+        let pat = Ast_helper.Pat.any () in
+        let param =
+          { pparam_desc= Pparam_val (Nolabel, None, pat)
+          ; pparam_loc= pat.ppat_loc }
+        in
+        Exp Ast_helper.(Exp.fun_ param exp)
       in
       ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
       , sub_exp ~ctx:exp_ctx exp )
@@ -1236,6 +1241,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
 and fmt_fun_args c args =
   let fmt_fun_arg (a : function_param) =
     let ctx = Fp a in
+    Cmts.fmt c a.pparam_loc
+    @@
     match a.pparam_desc with
     | Pparam_val
         ( ((Labelled l | Optional l) as lbl)
@@ -1963,7 +1970,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         if parens || not dock_fun_arg then (noop, pro) else (pro, noop)
       in
       match last_arg.pexp_desc with
-      | Pexp_fun (_, _, _, eN1_body)
+      | Pexp_fun (_, eN1_body)
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           (* Last argument is a [fun _ ->]. *)

@@ -14,37 +14,9 @@ open Asttypes
 open Ast
 open Extended_ast
 
-(* Temporary. Won't be necessary once the type [function_param] is used in
-   [Pexp_fun] and [Pcl_fun]. *)
-let mk_function_param pparam_desc =
-  let pparam_loc =
-    let init, locs =
-      match pparam_desc with
-      | Pparam_val (lbl, e, p) ->
-          let locs =
-            match lbl with
-            | Nolabel -> []
-            | Labelled x -> [x.loc]
-            | Optional x -> [x.loc]
-          in
-          let locs =
-            match e with Some e -> e.pexp_loc :: locs | None -> locs
-          in
-          (p.ppat_loc, locs)
-      | Pparam_newtype types -> (
-        match types with
-        | [] -> failwith "Pparam_newtype always contains at least one type"
-        | hd :: tl ->
-            let locs = List.map tl ~f:(fun x -> x.loc) in
-            (hd.loc, locs) )
-    in
-    let min acc x = if Location.compare_start acc x < 0 then acc else x in
-    let max acc x = if Location.compare_end acc x > 0 then acc else x in
-    let loc_start = (List.fold_left locs ~init ~f:min).loc_start in
-    let loc_end = (List.fold_left locs ~init ~f:max).loc_end in
-    {Location.loc_start; loc_end; loc_ghost= true}
-  in
-  {pparam_desc; pparam_loc}
+let mk_function_param {Location.loc_start; _} {Location.loc_end; _} p =
+  let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
+  {pparam_desc= p; pparam_loc}
 
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
@@ -52,13 +24,12 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
     let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
     if will_keep_first_ast_node || List.is_empty pexp_attributes then
       match pexp_desc with
-      | Pexp_fun (label, default, pattern, body) ->
+      | Pexp_fun (p, body) ->
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
+            Cmts.relocate cmts ~src:pexp_loc ~before:p.pparam_loc
               ~after:body.pexp_loc ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
-          , xbody )
+          (p :: xargs, xbody)
       | Pexp_newtype (name, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:body.pexp_loc
@@ -66,9 +37,12 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           let xargs =
             match xargs with
-            | {pparam_desc= Pparam_newtype names; _} :: xargs ->
-                mk_function_param (Pparam_newtype (name :: names)) :: xargs
-            | xargs -> mk_function_param (Pparam_newtype [name]) :: xargs
+            | {pparam_desc= Pparam_newtype names; pparam_loc} :: xargs ->
+                let param = Pparam_newtype (name :: names) in
+                mk_function_param name.loc pparam_loc param :: xargs
+            | xargs ->
+                let param = Pparam_newtype [name] in
+                mk_function_param name.loc name.loc param :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
@@ -83,12 +57,12 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
     if will_keep_first_ast_node || List.is_empty pcl_attributes then
       match pcl_desc with
       | Pcl_fun (label, default, pattern, body) ->
+          let before = pattern.ppat_loc and after = body.pcl_loc in
           if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pcl_loc ~before:pattern.ppat_loc
-              ~after:body.pcl_loc ;
+            Cmts.relocate cmts ~src:pcl_loc ~before ~after ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
-          ( mk_function_param (Pparam_val (label, default, pattern)) :: xargs
-          , xbody )
+          let param = Pparam_val (label, default, pattern) in
+          (mk_function_param before after param :: xargs, xbody)
       | _ -> ([], xexp)
     else ([], xexp)
   in
@@ -230,7 +204,11 @@ module Let_binding = struct
              won't be necessary once the normalization is moved to
              [Extended_ast]. *)
           let pat = Ast_helper.Pat.any () in
-          Exp (Ast_helper.Exp.fun_ Nolabel None pat exp)
+          let param =
+            { pparam_desc= Pparam_val (Nolabel, None, pat)
+            ; pparam_loc= pat.ppat_loc }
+          in
+          Exp (Ast_helper.Exp.fun_ param exp)
         in
         (xargs, `Other (sub_typ ~ctx:typ_ctx typ), sub_exp ~ctx:exp_ctx exp)
     (* The type constraint is always printed before the declaration for
