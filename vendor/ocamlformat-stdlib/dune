@@ -3,4 +3,4 @@
  (public_name ocamlformat-lib.ocamlformat_stdlib)
  (flags
   (:standard -open Ocaml_common))
- (libraries base cmdliner ocaml_common fpath stdio))
+ (libraries base cmdliner ocamlformat-lib._ocaml-common fpath stdio))

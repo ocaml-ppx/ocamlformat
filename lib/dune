@@ -28,7 +28,7 @@
   (backend bisect_ppx))
  (libraries
   format_
-  ocaml_common
+  ocamlformat-lib._ocaml-common
   parser_standard
   parser_extended
   ocamlformat_stdlib
