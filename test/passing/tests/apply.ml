@@ -83,3 +83,7 @@ let _ =
     (loooooooooooong looooooooooooooong loooooooooooooong
        [loooooooooong; loooooooooooong; loooooooooooooooooooooong]
     )
+
+let f (x :: y) = x
+
+let f (* xx *) ((* aa *) x (* bb *) :: (* cc *) y (* dd *)) (* yy *) = x
