@@ -482,16 +482,19 @@ module Wrapped = struct
         ~equal:(fun x y -> String.is_empty x && String.is_empty y)
         (String.split (String.rstrip text) ~on:'\n')
     in
+    let groups =
+      List.group lines ~break:(fun _ y -> is_only_whitespaces y)
+    in
     pro $ str prefix
     $ hovbox 0
-        ( list_pn lines (fun ~prev:_ curr ~next ->
-              fmt_line curr
-              $
-              match next with
-              | Some str when is_only_whitespaces str -> fmt "\n@\n"
-              | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> noop )
-        $ str suffix $ epi )
+        (list_fl groups (fun ~first ~last:last_group group ->
+             let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
+             fmt_if (not first) "\n@\n"
+             $ hovbox 0
+                 (list_fl group (fun ~first ~last x ->
+                      fmt_if (not first) "@ " $ fmt_line x
+                      $ fmt_if_k (last_group && last) (str suffix $ epi) ) ) )
+        )
 end
 
 module Asterisk_prefixed = struct
