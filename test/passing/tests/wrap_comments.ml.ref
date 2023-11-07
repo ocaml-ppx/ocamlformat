@@ -47,6 +47,12 @@ let _ =
 
 let _ = f (* foo *) a
 
+(*   1
+ * + 2
+ * ---
+ *   3
+ *)
+
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
@@ -213,3 +219,9 @@ let _ =
 
 let _ = f (* foo
       *) a
+
+(*   1
+ * + 2
+ * ---
+ *   3
+ *)
