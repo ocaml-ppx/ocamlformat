@@ -1134,6 +1134,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to comments-no-wrap.ml.stdout
+   (with-stderr-to comments-no-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-wrap-comments --max-iter=3 %{dep:tests/comments.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments-no-wrap.ml.ref comments-no-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments-no-wrap.ml.err comments-no-wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comments.ml.stdout
    (with-stderr-to comments.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iter=4 %{dep:tests/comments.ml})))))
@@ -4774,7 +4792,7 @@
  (action
   (with-stdout-to sequence.ml.stdout
    (with-stderr-to sequence.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --sequence-blank-line=compact --max-iter=3 %{dep:tests/sequence.ml})))))
+     (run %{bin:ocamlformat} --margin-check --sequence-blank-line=compact %{dep:tests/sequence.ml})))))
 
 (rule
  (alias runtest)

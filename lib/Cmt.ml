@@ -82,40 +82,118 @@ let pp_error fs {kind; cmt_kind} =
              formatting using the option --no-parse-docstrings.\n\
              %!" )
 
-module T_no_loc = struct
-  include T
-
-  let compare =
-    Comparable.lexicographic [Comparable.lift String.compare ~f:txt]
-end
-
-type loc = t
-
-module Comparator_no_loc = struct
-  type t = loc
-
-  include Comparator.Make (T_no_loc)
-end
-
 type pos = Before | Within | After
 
-let unindent_lines ~offset first_line tl_lines =
-  (* The indentation of the first line must account for the location of the
-     comment opening *)
-  let fl_spaces =
-    Option.value ~default:0 (String.indent_of_line first_line)
-  in
-  let fl_indent = fl_spaces + offset in
-  let min_indent =
-    List.fold_left ~init:fl_indent
+type decoded_kind =
+  | Verbatim of string
+  | Doc of string
+  | Normal of string
+  | Code of string
+  | Asterisk_prefixed of string list
+
+type decoded = {prefix: string; suffix: string; kind: decoded_kind}
+
+(** [~content_offset] indicates at which column the body of the comment
+    starts (1-indexed). [~max_idnent] indicates the maximum amount of
+    indentation to trim. *)
+let unindent_lines ?(max_indent = Stdlib.max_int) ~content_offset first_line
+    tl_lines =
+  let tl_indent =
+    List.fold_left ~init:max_indent
       ~f:(fun acc s ->
         Option.value_map ~default:acc ~f:(min acc) (String.indent_of_line s) )
       tl_lines
   in
-  (* Completely trim the first line *)
-  String.drop_prefix first_line fl_spaces
+  (* The indentation of the first line must account for the location of the
+     comment opening. Don't account for the first line if it's empty.
+     [fl_trim] is the number of characters to remove from the first line. *)
+  let fl_trim, fl_indent =
+    match String.indent_of_line first_line with
+    | Some i ->
+        (max 0 (min i (tl_indent - content_offset)), i + content_offset - 1)
+    | None -> (String.length first_line, max_indent)
+  in
+  let min_indent = min tl_indent fl_indent in
+  let first_line = String.drop_prefix first_line fl_trim in
+  first_line
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
-let unindent_lines ~offset = function
+let unindent_lines ?max_indent ~content_offset txt =
+  match String.split ~on:'\n' txt with
   | [] -> []
-  | hd :: tl -> unindent_lines ~offset hd tl
+  | hd :: tl -> unindent_lines ?max_indent ~content_offset hd tl
+
+let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
+
+let split_asterisk_prefixed =
+  let prefix = "*" in
+  let drop_prefix s = String.drop_prefix s (String.length prefix) in
+  let rec lines_are_asterisk_prefixed = function
+    | [] -> true
+    (* Allow the last line to be empty *)
+    | [last] when is_all_whitespace last -> true
+    | hd :: tl ->
+        String.is_prefix hd ~prefix && lines_are_asterisk_prefixed tl
+  in
+  function
+  (* Check whether the second line is not empty to avoid matching a comment
+     with no asterisks. *)
+  | fst_line :: (snd_line :: _ as tl)
+    when lines_are_asterisk_prefixed tl && not (is_all_whitespace snd_line)
+    ->
+      Some (fst_line :: List.map tl ~f:drop_prefix)
+  | _ -> None
+
+let mk ?(prefix = "") ?(suffix = "") kind = {prefix; suffix; kind}
+
+let decode_comment ~parse_comments_as_doc txt loc =
+  let txt =
+    (* Windows compatibility *)
+    let f = function '\r' -> false | _ -> true in
+    String.filter txt ~f
+  in
+  let opn_offset =
+    let {Lexing.pos_cnum; pos_bol; _} = loc.Location.loc_start in
+    pos_cnum - pos_bol + 1
+  in
+  if String.length txt >= 2 then
+    match txt.[0] with
+    | '$' when not (Char.is_whitespace txt.[1]) -> mk (Verbatim txt)
+    | '$' ->
+        let dollar_suf = Char.equal txt.[String.length txt - 1] '$' in
+        let suffix = if dollar_suf then "$" else "" in
+        let code =
+          let len = String.length txt - if dollar_suf then 2 else 1 in
+          String.sub ~pos:1 ~len txt
+        in
+        mk ~prefix:"$" ~suffix (Code code)
+    | '=' -> mk (Verbatim txt)
+    | _ when is_all_whitespace txt ->
+        mk (Verbatim " ") (* Make sure not to format to [(**)]. *)
+    | _ when parse_comments_as_doc -> mk (Doc txt)
+    | _ -> (
+        let lines =
+          let content_offset = opn_offset + 2 in
+          unindent_lines ~content_offset txt
+        in
+        match split_asterisk_prefixed lines with
+        | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
+        | None -> mk (Normal txt) )
+  else
+    match txt with
+    (* "(**)" is not parsed as a docstring but as a regular comment
+       containing '*' and would be rewritten as "(***)" *)
+    | "*" when Location.width loc = 4 -> mk (Verbatim "")
+    | ("*" | "$") as txt -> mk (Verbatim txt)
+    | "\n" | " " -> mk (Verbatim " ")
+    | _ -> mk (Normal txt)
+
+let decode_docstring _loc = function
+  | "" -> mk (Verbatim "")
+  | ("*" | "$") as txt -> mk (Verbatim txt)
+  | "\n" | " " -> mk (Verbatim " ")
+  | txt -> mk ~prefix:"*" (Doc txt)
+
+let decode ~parse_comments_as_doc = function
+  | Comment {txt; loc} -> decode_comment ~parse_comments_as_doc txt loc
+  | Docstring {txt; loc} -> decode_docstring loc txt

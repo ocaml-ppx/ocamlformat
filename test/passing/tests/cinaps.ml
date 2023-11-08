@@ -15,6 +15,7 @@ let x = 1
     (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
     ["+"; "-"; "*"; "/"]
 *)
+
 (*$*)
 let y = 2
 
@@ -35,6 +36,7 @@ let x = 1
   (* foooooooo *)
   z
 $*)
+
 (*$*)
 
 let foo = foo
@@ -56,4 +58,24 @@ let foo = foo
     (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
     ["+"; "-"; "*"; "/"]
 *)
+
+(*$*)
+
+(*$
+  (*
+     x
+  *)
+*)
+
+(*$*)
+
+(*$
+  let _ =
+    [ x (*
+        *)
+    ; y
+    ]
+  ;;
+*)
+
 (*$*)

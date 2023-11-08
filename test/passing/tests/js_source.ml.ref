@@ -1450,7 +1450,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 ;;
 
 (*
-   type (_,_) ty_assoc =
+type (_,_) ty_assoc =
   | Anil : (unit,'e) ty_assoc
   | Acons : string * ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
@@ -3314,7 +3314,7 @@ Error: Types marked with the immediate attribute must be
 
    New: implicit pack is also supported, and you only need to be able
    to infer the the module type path from the context.
-*)
+ *)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -5236,7 +5236,7 @@ module type S' = S with module M := String
 
 (* with module type *)
 (*
-   module type S = sig module type T module F(X:T) : T end;;
+module type S = sig module type T module F(X:T) : T end;;
 module type T0 = sig type t end;;
 module type S1 = S with module type T = T0;;
 module type S2 = S with module type T := T0;;
@@ -6075,7 +6075,7 @@ class ['entity] entity_container =
 let f (x : entity entity_container) = ()
 
 (*
-   class world =
+class world =
   object
     val entity_container : entity entity_container = new entity_container
 
@@ -10228,8 +10228,7 @@ val fooooooooooooooooooooooooooooooo
       , fooooooooooooooooooooooooooooooo )
       fooooooooooooooooooooooooooooooo
 
-(*
-   *)
+(* *)
 
 (**
    xxx
@@ -10324,7 +10323,8 @@ let _ =
 (*$*)
 
 (*$
-  [%string {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    [%string
+      {| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 zzzzzzzzzzzzzzzzzzzzzzzzzzzz
     |}]
 *)
@@ -10422,6 +10422,8 @@ let _ =
 
 (* *)
 
+(*$ (* *) *)
+
 (** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
     xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
 
@@ -10438,3 +10440,5 @@ module type M = sig
     : Simple_value_approx.function_declarations option
         Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
 end
+
+(*$ let _ = [ x (* *); y ] *)

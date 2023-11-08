@@ -54,6 +54,28 @@ let _ =
   ()
 ;;
 
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+ *)
+
+let _ =
+  f
+      (* foo
+      *)
+    a
+
+(*   1
+ * + 2
+ * ---
+ *   3
+ *)
+
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
@@ -179,3 +201,59 @@ let _ =
   *)
   ()
 ;;
+
+(*
+ * foo
+ * bar
+ *)
+
+(*
+ * foo
+   bar
+ *)
+
+let _ =
+  (* It is very confusing - same expression has two different types in two contexts:*)
+  (* 1. if passed as parameter it's RETURN_TYPE* since we are passing it as rvalue *)
+  (* 2. for return expression it's RETURN_TYPE since backend allows to treat it as lvalue*)
+  (*    of RETURN_TYPE *)
+  (* Implications: *)
+  (* Fields: field_deref_trans relies on it - if exp has RETURN_TYPE then *)
+  (*         it means that it's not lvalue in clang's AST (it'd be reference otherwise) *)
+  (* Methods: method_deref_trans actually wants a pointer to the object, which is*)
+  (*          equivalent of value of ret_param. Since ret_exp has type RETURN_TYPE,*)
+  (*          we optionally add pointer there to avoid backend confusion. *)
+  (*          It works either way *)
+  (* Passing by value: may cause problems - there needs to be extra Sil.Load, but*)
+  (*                   doing so would create problems with methods. Passing structs by*)
+  (*                   value doesn't work good anyway. This may need to be revisited later*)
+  let x = y in z
+
+let _ =
+  (* It is very confusing - same expression has two different types in two contexts:
+   * 1. if passed as parameter it's RETURN_TYPE* since we are passing it as rvalue
+   * 2. for return expression it's RETURN_TYPE since backend allows to treat it as lvalue
+   *    of RETURN_TYPE
+   * Implications:
+   * Fields: field_deref_trans relies on it - if exp has RETURN_TYPE then
+   *         it means that it's not lvalue in clang's AST (it'd be reference otherwise)
+   * Methods: method_deref_trans actually wants a pointer to the object, which is
+   *          equivalent of value of ret_param. Since ret_exp has type RETURN_TYPE,
+   *          we optionally add pointer there to avoid backend confusion.
+   *          It works either way
+   * Passing by value: may cause problems - there needs to be extra Sil.Load, but
+   *                   doing so would create problems with methods. Passing structs by
+   *                   value doesn't work good anyway. This may need to be revisited later*)
+  let x = y in z
+
+let _ =
+  f
+      (* foo
+      *)
+    a
+
+(*   1
+ * + 2
+ * ---
+ *   3
+ *)

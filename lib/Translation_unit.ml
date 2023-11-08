@@ -224,11 +224,7 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
   if conf.opr_opts.comment_check.v then
     let errors =
       let* () = check_remaining_comments cmts in
-      let split_cmts = List.partition_map ~f:(Cmts.is_docstring conf) in
-      let old_docs, old_cmts = split_cmts t_old.comments in
-      let new_docs, new_cmts = split_cmts t_new.comments in
-      let* () = Normalize_extended_ast.diff_cmts conf old_cmts new_cmts in
-      Normalize_extended_ast.diff_docstrings conf old_docs new_docs
+      Normalize_extended_ast.diff_cmts conf t_old.comments t_new.comments
     in
     match errors with
     | Ok () -> ()

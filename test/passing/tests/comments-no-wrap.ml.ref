@@ -184,13 +184,11 @@ let () =
   (* *)
   ()
 
-(* break when unicode sequence length measured in bytes but ¬ in code
-   points *)
+(* break when unicode sequence length measured in bytes but ¬ in code points *)
 
 type t =
   | Aaaaaaaaaa
-    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-       eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
   | Bbbbbbbbbb (* foo *)
 
@@ -383,8 +381,7 @@ let _ =
   || (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo
     fooooooooooooooo
-    #= (* convert from foos to bars blah blah blah blah blah blah blah
-          blah *)
+    #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
     foooooooooooooooooooooooo
     foooooooooooooooo fooooooooooooooo
 
@@ -416,8 +413,7 @@ type a = b (* a *) as (* b *) 'c (* c *)
 type t =
   { (* comment before mutable *)
     mutable
-      (* really long comment that doesn't fit on the same line as other
-         stuff *)
+      (* really long comment that doesn't fit on the same line as other stuff *)
       x:
       int }
 
@@ -427,11 +423,15 @@ let _ = x ^ (y ^ z) [@attr]
 
 let _ =
   () ;
-  (* indentation preserved *)
+  (* indentation preserved
+  *)
   () ;
-  (* indentation preserved *)
+  (* indentation preserved
+   *)
   () ;
-  (* indentation preserved *)
+  (* indentation preserved
+     *)
   () ;
-  (* indentation not preserved *)
+  (* indentation not preserved
+*)
   ()
