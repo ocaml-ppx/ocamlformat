@@ -12,6 +12,8 @@
 open Parser_standard
 open Std_ast
 
+type 'a t = 'a Std_ast.t
+
 let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
   | _ -> false

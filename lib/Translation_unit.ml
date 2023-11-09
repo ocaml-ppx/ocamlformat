@@ -230,9 +230,9 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
     | Ok () -> ()
     | Error e -> internal_error (List.map e ~f:(fun x -> `Comment x)) []
 
-let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
-    ?output_file ~input_name ~prev_source ~parsed ~std_parsed (conf : Conf.t)
-    =
+let format (type ext std) (ext_fg : ext Extended_ast.t)
+    (std_fg : std Std_ast.t) ?output_file ~input_name ~prev_source
+    ~ext_parsed ~std_parsed (conf : Conf.t) =
   let dump_ast fg ~suffix ast =
     if conf.opr_opts.debug.v then
       Some
@@ -247,11 +247,12 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) ~prev_source t std_t =
+  let rec print_check ~i ~(conf : Conf.t) ~prev_source ext_t std_t =
     let format ~box_debug =
       let open Fmt in
       let cmts_t =
-        Cmts.init fg ~debug:conf.opr_opts.debug.v t.source t.ast t.comments
+        Cmts.init ext_fg ~debug:conf.opr_opts.debug.v ext_t.source ext_t.ast
+          ext_t.comments
       in
       let contents =
         with_buffer_formatter
@@ -259,11 +260,11 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           ( set_margin conf.fmt_opts.margin.v
           $ set_max_indent conf.fmt_opts.max_indent.v
           $ fmt_if_k
-              (not (String.is_empty t.prefix))
-              (str t.prefix $ fmt "@.")
+              (not (String.is_empty ext_t.prefix))
+              (str ext_t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (Fmt_ast.fmt_ast fg ~debug:conf.opr_opts.debug.v t.source
-                 cmts_t conf t.ast ) )
+              (Fmt_ast.fmt_ast ext_fg ~debug:conf.opr_opts.debug.v
+                 ext_t.source cmts_t conf ext_t.ast ) )
       in
       (contents, cmts_t)
     in
@@ -289,7 +290,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       if conf.opr_opts.margin_check.v then
         check_margin conf ~fmted
           ~filename:(Option.value output_file ~default:input_name) ;
-      let strlocs = collect_strlocs fg t.ast in
+      let strlocs = collect_strlocs ext_fg ext_t.ast in
       Ok (strlocs, fmted) )
     else
       let exn_args () =
@@ -297,14 +298,14 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      let* t_new =
+      let* ext_t_new =
         match
-          parse (parse_ast conf) ~disable_w50:true fg conf ~input_name
+          parse (parse_ast conf) ~disable_w50:true ext_fg conf ~input_name
             ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
-        | t_new -> Ok t_new
+        | ext_t_new -> Ok ext_t_new
       in
       let* std_t_new =
         match
@@ -324,7 +325,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
              (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
                 ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
           && not
-               (Normalize_extended_ast.equal fg conf t.ast t_new.ast
+               (Normalize_extended_ast.equal ext_fg conf ext_t.ast
+                  ext_t_new.ast
                   ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
           let old_ast =
@@ -364,7 +366,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           | Some file ->
               if i = 1 then Format.eprintf "[DEBUG] AST structure: %s\n" file
           | None -> () ) ;
-      check_comments conf cmts_t ~old:t ~new_:t_new ;
+      check_comments conf cmts_t ~old:ext_t ~new_:ext_t_new ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
         Stdlib.flush_all () ;
@@ -373,9 +375,9 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
           ) )
       else
         (* All good, continue *)
-        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new std_t_new
+        print_check ~i:(i + 1) ~conf ~prev_source:fmted ext_t_new std_t_new
   in
-  try print_check ~i:1 ~conf ~prev_source parsed std_parsed with
+  try print_check ~i:1 ~conf ~prev_source ext_parsed std_parsed with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
@@ -384,20 +386,21 @@ let parse_result ?disable_w50 f fragment conf ~source ~input_name =
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
-let parse_and_format (type a b) (fg : a Extended_ast.t)
-    (std_fg : b Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t) =
+let parse_and_format (type ext std) (ext_fg : ext Extended_ast.t)
+    (std_fg : std Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t)
+    =
   Location.input_name := input_name ;
   let line_endings = conf.fmt_opts.line_endings.v in
-  let* parsed =
-    parse_result (parse_ast conf) ~disable_w50:true fg conf ~source
+  let* ext_parsed =
+    parse_result (parse_ast conf) ~disable_w50:true ext_fg conf ~source
       ~input_name
   in
   let* std_parsed =
     parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   in
   let+ strlocs, formatted =
-    format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
-      ~std_parsed conf
+    format ext_fg std_fg ?output_file ~input_name ~prev_source:source
+      ~ext_parsed ~std_parsed conf
   in
   Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted
 
