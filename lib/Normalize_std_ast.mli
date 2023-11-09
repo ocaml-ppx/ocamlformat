@@ -9,11 +9,12 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val ast : 'a Std_ast.t -> Conf.t -> 'a -> 'a
+type 'a t = 'a Std_ast.t
+
+val ast : 'a t -> Conf.t -> 'a -> 'a
 (** Normalize an AST fragment. *)
 
-val equal :
-  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
+val equal : 'a t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
-val moved_docstrings : 'a Std_ast.t -> Conf.t -> 'a -> 'a -> Cmt.error list
+val moved_docstrings : 'a t -> Conf.t -> 'a -> 'a -> Cmt.error list
