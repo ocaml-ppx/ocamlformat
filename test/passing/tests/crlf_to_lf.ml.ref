@@ -1,4 +1,5 @@
-let _ = {|
+let _ =
+  {|
 foo
 
  bar

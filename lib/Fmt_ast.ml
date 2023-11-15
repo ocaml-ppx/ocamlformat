@@ -261,8 +261,11 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
       str lit $ opt suf char
   | Pconst_char (_, s) -> wrap "'" "'" @@ str s
   | Pconst_string (s, loc', Some delim) ->
-      Cmts.fmt c loc'
-      @@ wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
+      Cmts.fmt c loc' @@ str (Format_.sprintf "{%s|%s|%s}" delim s delim)
+      (* If a multiline string has newlines in it, it should get treated as a
+         "long" box element. To do so, we append a length-1000 empty
+         string. *)
+      $ fmt_if_k (String.mem s '\n') (str_as 1000 "")
   | Pconst_string (_, loc', None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
@@ -513,18 +516,18 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
-let fmt_quoted_string key ext s = function
-  | None ->
-      wrap_k (str (Format_.sprintf "{%s%s|" key ext)) (str "|}") (str s)
-  | Some delim ->
-      let ext_and_delim =
-        if String.is_empty delim then ext
-        else Format_.sprintf "%s %s" ext delim
-      in
-      wrap_k
-        (str (Format_.sprintf "{%s%s|" key ext_and_delim))
-        (str (Format_.sprintf "|%s}" delim))
-        (str s)
+let fmt_quoted_string key ext s maybe_delim =
+  let s_fmt =
+    match maybe_delim with
+    | None -> str (Format_.sprintf "{%s%s|%s|}" key ext s)
+    | Some delim ->
+        let ext_and_delim =
+          if String.is_empty delim then ext
+          else Format_.sprintf "%s %s" ext delim
+        in
+        str (Format_.sprintf "{%s%s|%s|%s}" key ext_and_delim s delim)
+  in
+  s_fmt $ fmt_if_k (String.mem s '\n') (str_as 1000 "")
 
 let fmt_type_var s =
   str "'"

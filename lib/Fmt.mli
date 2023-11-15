@@ -76,6 +76,9 @@ val char : char -> t
 val str : string -> t
 (** Format a string. *)
 
+val str_as : int -> string -> t
+(** [str_as a len] formats a string as if it were of length [len]. *)
+
 (** Primitive containers ------------------------------------------------*)
 
 val opt : 'a option -> ('a -> t) -> t

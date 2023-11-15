@@ -3006,7 +3006,8 @@ module FM_valid = F (struct
   type t = int
 end)
 
-[%%expect {|
+[%%expect
+{|
 module M_valid : S
 module FM_valid : S
 |}]
@@ -3022,7 +3023,8 @@ end = struct
   let x = ref 0
 end
 
-[%%expect {|
+[%%expect
+{|
 module Foo : sig type t val x : t ref end
 |}]
 
@@ -3036,7 +3038,8 @@ end = struct
   let x = ref 0
 end
 
-[%%expect {|
+[%%expect
+{|
 module Bar : sig type t [@@immediate] val x : t ref end
 |}]
 
@@ -3045,7 +3048,8 @@ let test f =
   f () ;
   Sys.time () -. start
 
-[%%expect {|
+[%%expect
+{|
 val test : (unit -> 'a) -> float = <fun>
 |}]
 
@@ -3054,7 +3058,8 @@ let test_foo () =
     Foo.x := !Foo.x
   done
 
-[%%expect {|
+[%%expect
+{|
 val test_foo : unit -> unit = <fun>
 |}]
 
@@ -3063,7 +3068,8 @@ let test_bar () =
     Bar.x := !Bar.x
   done
 
-[%%expect {|
+[%%expect
+{|
 val test_bar : unit -> unit = <fun>
 |}]
 
