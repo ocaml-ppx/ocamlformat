@@ -262,7 +262,15 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   | Pconst_char (_, s) -> wrap "'" "'" @@ str s
   | Pconst_string (s, loc', Some delim) ->
       Cmts.fmt c loc'
-      @@ wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
+      @@ (* If a multiline string has newlines in it, the configuration might
+            specify it should get treated as a "long" box element. To do so,
+            we pretend it is 1000 characters long. *)
+      ( if
+          c.conf.fmt_opts.break_around_multiline_strings.v
+          && String.mem s '\n'
+        then str_as 1000
+        else str )
+        (Format_.sprintf "{%s|%s|%s}" delim s delim)
   | Pconst_string (_, loc', None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
@@ -513,18 +521,19 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
-let fmt_quoted_string key ext s = function
-  | None ->
-      wrap_k (str (Format_.sprintf "{%s%s|" key ext)) (str "|}") (str s)
+let fmt_quoted_string c key ext s maybe_delim =
+  ( if c.conf.fmt_opts.break_around_multiline_strings.v && String.mem s '\n'
+    then str_as 1000
+    else str )
+  @@
+  match maybe_delim with
+  | None -> Format_.sprintf "{%s%s|%s|}" key ext s
   | Some delim ->
       let ext_and_delim =
         if String.is_empty delim then ext
         else Format_.sprintf "%s %s" ext delim
       in
-      wrap_k
-        (str (Format_.sprintf "{%s%s|" key ext_and_delim))
-        (str (Format_.sprintf "|%s}" delim))
-        (str s)
+      Format_.sprintf "{%s%s|%s|%s}" key ext_and_delim s delim
 
 let fmt_type_var s =
   str "'"
@@ -557,7 +566,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
       assert (not (Cmts.has_after c.cmts pexp_loc)) ;
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
       assert (not (Cmts.has_after c.cmts pstr_loc)) ;
-      hvbox 0 (fmt_quoted_string (Ext.Key.to_string key) ext str delim)
+      hvbox 0 (fmt_quoted_string c (Ext.Key.to_string key) ext str delim)
   | _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext ~semisemi:false (sub_str ~ctx si)
