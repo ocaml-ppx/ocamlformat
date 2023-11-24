@@ -54,7 +54,7 @@ and phrase buf = parse
 {
 let repl_file lx =
   let x = token lx in
-  let open Parser_extended.Parsetree in
+  let open Ocamlformat_parser_extended.Parsetree in
   List.fold_left (fun acc -> function
       | `Command (cmd, pos_start) ->
           let cmd_lexbuf = Lexing.from_string cmd in
