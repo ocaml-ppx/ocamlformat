@@ -10,8 +10,8 @@
 (**************************************************************************)
 
 open Fmt
-open Odoc_parser.Ast
-module Loc = Odoc_parser.Loc
+open Ocamlformat_odoc_parser.Ast
+module Loc = Ocamlformat_odoc_parser.Loc
 
 type fmt_code =
      Conf.t
@@ -119,7 +119,7 @@ let fmt_code_block c s1 s2 =
     let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
     box (wrap_code (vbox 0 (list_fl lines fmt_line)))
   in
-  let Odoc_parser.Loc.{location; value= original} = s2 in
+  let {Loc.location; value= original} = s2 in
   match s1 with
   | Some ({value= "ocaml"; _}, _) | None -> (
     (* [offset] doesn't take into account code blocks nested into lists. *)

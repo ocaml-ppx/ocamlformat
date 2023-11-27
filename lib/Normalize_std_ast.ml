@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Parser_standard
+open Ocamlformat_parser_standard
 open Std_ast
 
 type 'a t = 'a Std_ast.t

@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Parser_extended
+open Ocamlformat_parser_extended
 include Parsetree
 
 let equal_core_type : core_type -> core_type -> bool = Poly.equal
@@ -26,7 +26,7 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Repl_file : repl_file t
-  | Documentation : Odoc_parser.Ast.t t
+  | Documentation : Ocamlformat_odoc_parser.Ast.t t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
 

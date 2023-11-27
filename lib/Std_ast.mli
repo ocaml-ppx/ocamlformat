@@ -11,7 +11,7 @@
 
 (** Interface over the AST defined in vendor/ocaml-4.13 *)
 
-open Parser_standard
+open Ocamlformat_parser_standard
 
 include module type of Parsetree
 
