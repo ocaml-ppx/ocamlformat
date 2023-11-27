@@ -1060,22 +1060,25 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       Cmts.fmt c ppat_loc
         (hvbox 0 (fmt_pat_cons c ~parens (List.map lp ~f:(sub_pat ~ctx))))
   | Ppat_construct (lid, Some (exists, pat)) ->
-      Params.parens_if parens c.conf
-        (cbox 2
-           ( fmt_longident_loc c lid $ fmt "@ "
-           $ ( match exists with
-             | [] -> noop
-             | names ->
-                 hvbox 0
-                   (Params.parens c.conf
-                      (str "type " $ list names "@ " (fmt_str_loc c)) )
-                 $ fmt "@ " )
-           $ fmt_pattern c (sub_pat ~ctx pat) ) )
+      cbox 0
+        (Params.parens_if parens c.conf
+           (hvbox 2
+              ( fmt_longident_loc c lid $ fmt "@ "
+              $ ( match exists with
+                | [] -> noop
+                | names ->
+                    hvbox 0
+                      (Params.parens c.conf
+                         (str "type " $ list names "@ " (fmt_str_loc c)) )
+                    $ fmt "@ " )
+              $ fmt_pattern c (sub_pat ~ctx pat) ) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl
   | Ppat_variant (lbl, Some pat) ->
-      Params.parens_if parens c.conf
-        (cbox 2
-           (variant_var c lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+      cbox 0
+        (Params.parens_if parens c.conf
+           (hvbox 2
+              ( variant_var c lbl $ fmt "@ "
+              $ fmt_pattern c (sub_pat ~ctx pat) ) ) )
   | Ppat_record (flds, closed_flag) ->
       let fmt_field (lid, typ1, pat) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
