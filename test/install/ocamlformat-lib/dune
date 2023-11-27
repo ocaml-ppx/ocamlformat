@@ -1,9 +1,0 @@
-(executable
- (name foo)
- (libraries ocamlformat-lib ppxlib))
-
-(rule
- (alias runtest)
- (deps ./foo.exe)
- (action
-  (run %{deps})))
