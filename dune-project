@@ -73,6 +73,7 @@
     (and
      :with-test
      (>= 1.8.1))))
+  (ppxlib :with-test)
   stdio
   (uuseg
    (>= 10.0.0))
