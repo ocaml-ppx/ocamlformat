@@ -70,9 +70,9 @@ let start ?versions () =
   | exception _ ->
       Error
         (`Msg
-          "OCamlFormat-RPC did not respond. Check that a compatible version \
-           of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is \
-           installed." )
+           "OCamlFormat-RPC did not respond. Check that a compatible \
+            version of the OCamlFormat RPC server (ocamlformat-rpc >= \
+            0.18.0) is installed." )
   | x -> x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
          state := Errored ;

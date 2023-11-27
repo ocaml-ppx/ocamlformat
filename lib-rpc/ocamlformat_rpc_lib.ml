@@ -120,9 +120,9 @@ module Make (IO : IO) = struct
               return
                 (Error
                    (`Msg
-                     "OCamlFormat-RPC did not respond. Check that a \
-                      compatible version of the OCamlFormat RPC server \
-                      (ocamlformat-rpc >= 0.18.0) is installed." ) ) )
+                      "OCamlFormat-RPC did not respond. Check that a \
+                       compatible version of the OCamlFormat RPC server \
+                       (ocamlformat-rpc >= 0.18.0) is installed." ) ) )
     in
     aux versions
 

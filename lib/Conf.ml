@@ -1537,8 +1537,8 @@ let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
   | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
       Error
         (`Msg
-          (Format.sprintf "Invalid format: Unknown suffix %S"
-             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+           (Format.sprintf "Invalid format: Unknown suffix %S"
+              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
   | _ -> Error `Ignore
 
 let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =

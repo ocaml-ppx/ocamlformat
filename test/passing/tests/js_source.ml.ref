@@ -10134,7 +10134,7 @@ let%test_module "semantics" =
 let _ =
   Error
     (`Foooooooooooooooooo
-      (name, Format.sprintf "expecting %S but got %S" Version.version value))
+       (name, Format.sprintf "expecting %S but got %S" Version.version value))
 ;;
 
 let _ =
@@ -10159,13 +10159,13 @@ let _ =
 ;;
 
 let (`Foooooooooooooooooo
-      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
   =
   x
 ;;
 
 let (Foooooooooooooooooo
-      (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo))
   =
   x
 ;;
