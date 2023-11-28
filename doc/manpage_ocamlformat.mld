@@ -603,9 +603,6 @@ OPTIONS
        --no-quiet
            Unset quiet.
 
-       --no-rewrite-old-style-jane-street-local-annotations
-           Unset rewrite-old-style-jane-street-local-annotations.
-
        --no-version-check
            Unset version-check.
 
@@ -639,12 +636,6 @@ OPTIONS
 
        --repl-file
            Parse input as toplevel phrases with their output.
-
-       --rewrite-old-style-jane-street-local-annotations
-           Rewrite all Jane Street annotations for use with the local mode,
-           such as "[%local]" or "[@ocaml.global]", into their pretty-printed
-           syntactic form, such as "local_" or "global_". THIS OPTION WILL
-           CHANGE THE RESULTING AST. The flag is unset by default.
 
        --root=DIR
            Root of the project. If specified, only take into account

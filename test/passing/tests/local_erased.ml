@@ -1,3 +1,8 @@
+(* Note that this file cannot contain legacy local annotation syntax. If a
+   file with legacy local annotations wants to have its syntax erased, call
+   ocamlformat once without the --erase-jane-syntax flag to rewrite it into
+   the new syntax and then call ocamlformat a second time to erase the
+   syntax. *)
 let f a b c = 1
 
 let f (local_ a) ~foo:(local_ b) ?foo:(local_ c = 1) ~(local_ d) = ()
@@ -21,7 +26,7 @@ let f () = exclave_
   let local_ r = 1 in
   let local_ f : 'a. 'a -> 'a = fun x -> exclave_ x in
   let local_ g a b c : int = 1 in
-  let () = g (exclave_ fun () -> ()) in
+  let () = g (exclave_ (fun () -> ())) in
   exclave_ "asdfasdfasdfasdfasdfasdfasdf"
 
 type 'a r = {mutable a: 'a; b: 'a; global_ c: 'a}
@@ -51,48 +56,23 @@ let () = local_ r
 let () = exclave_ r
 
 let local_ x : string = "hi"
-
 let (x : string) = local_ "hi"
 
 let (x : string) = exclave_ "hi"
 
-let local_ x = ("hi" : string)
+let x = local_ ("hi" : string)
 
 let x = exclave_ ("hi" : string)
-
-let x : 'a. 'a -> 'a = local_ "hi"
-
-let x : 'a. 'a -> 'a = exclave_ "hi"
-
+let x : 'a . 'a -> 'a = local_ "hi"
+let x : 'a . 'a -> 'a = exclave_ "hi"
 let local_ f : 'a. 'a -> 'a = "hi"
 
 let foo () =
-  if true then (local_ ()) ;
+  if true then (local_ ());
   ()
 
-type loc_long_attrs = local_ string -> local_ string
-
-type loc_short_attrs = local_ string -> local_ string
-
-type global_long_attrs = Foo of {global_ s: string} | Bar of global_ string
-
-type global_short_attrs =
-  | Foo of {global_ s: string}
-  | Bar of global_ string
-
-type global_short_attrs =
-  | Foo of {global_ s: string}
-  | Bar of global_ string
-
-let local_ local_long_ext = ()
-
-let local_ local_short_ext = ()
-
-let exclave_long_ext = exclave_ ()
-
-let exclave_short_ext = exclave_ ()
-
 let[@ocaml.local] upstream_local_attr_long x = x
+module type S = S -> S -> S
 
 let[@ocaml.local never] upstream_local_attr_never_long x = x
 
@@ -108,26 +88,22 @@ let[@local always] upstream_local_attr_always_short x = x
 
 let[@local maybe] upstream_local_attr_maybe_short x = x
 
-let f x =
-  (* a *)
-  local_
+let f x = (* a *) local_
   let y = 1 in
   x + y
 
-let f x =
-  (* a *)
-  exclave_
+let f x = (* a *) exclave_
   let y = 1 in
   x + y
 
-let x =
-  (* a *)
-  local_
+let x = (* a *) local_
   let y = 1 in
   y
 
-let x =
-  (* a *)
-  exclave_
+let x = (* a *) exclave_
   let y = 1 in
   y
+
+module type S = S -> S -> S
+(* this is here to make sure we pass the AST equality checks even when the
+   extended AST is different *)

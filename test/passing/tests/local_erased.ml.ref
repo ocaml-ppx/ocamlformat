@@ -1,3 +1,8 @@
+(* Note that this file cannot contain legacy local annotation syntax. If a
+   file with legacy local annotations wants to have its syntax erased, call
+   ocamlformat once without the --erase-jane-syntax flag to rewrite it into
+   the new syntax and then call ocamlformat a second time to erase the
+   syntax. *)
 let f a b c = 1
 
 let f a ~foo:b ?foo:(c = 1) ~d = ()
@@ -66,31 +71,9 @@ let foo () =
   if true then () ;
   ()
 
-type loc_long_attrs = (string[@ocaml.local]) -> (string[@ocaml.local])
-
-type loc_short_attrs = (string[@local]) -> (string[@local])
-
-type global_long_attrs =
-  | Foo of {s: string [@ocaml.global]}
-  | Bar of (string[@ocaml.global])
-
-type global_short_attrs =
-  | Foo of {s: string [@global]}
-  | Bar of (string[@global])
-
-type global_short_attrs =
-  | Foo of {s: string [@global]}
-  | Bar of (string[@global])
-
-let local_long_ext = [%ocaml.local] ()
-
-let local_short_ext = [%local] ()
-
-let exclave_long_ext = [%ocaml.exclave] ()
-
-let exclave_short_ext = [%exclave] ()
-
 let[@ocaml.local] upstream_local_attr_long x = x
+
+module type S = functor (_ : S) (_ : S) -> S
 
 let[@ocaml.local never] upstream_local_attr_never_long x = x
 
@@ -125,3 +108,7 @@ let x =
   (* a *)
   let y = 1 in
   y
+
+module type S = functor (_ : S) (_ : S) -> S
+(* this is here to make sure we pass the AST equality checks even when the
+   extended AST is different *)

@@ -260,8 +260,7 @@ let default =
       ; ocaml_version= elt Ocaml_version.Releases.v4_04_0
       ; quiet= elt false
       ; disable_conf_attrs= elt false
-      ; version_check= elt true
-      ; rewrite_old_style_jane_street_local_annotations= elt false } }
+      ; version_check= elt true } }
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
@@ -1454,23 +1453,6 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with version_check= elt}))
       (fun conf -> conf.opr_opts.version_check)
 
-  let rewrite_old_style_jane_street_local_annotations =
-    let doc =
-      "Rewrite all Jane Street annotations for use with the local mode, \
-       such as \"[%local]\" or \"[@ocaml.global]\", into their \
-       pretty-printed syntactic form, such as \"local_\" or \"global_\".  \
-       THIS OPTION WILL CHANGE THE RESULTING AST."
-    in
-    Decl.flag ~default
-      ~names:["rewrite-old-style-jane-street-local-annotations"]
-      ~doc ~kind
-      (fun conf elt ->
-        update conf ~f:(fun f ->
-            {f with rewrite_old_style_jane_street_local_annotations= elt} )
-        )
-      (fun conf ->
-        conf.opr_opts.rewrite_old_style_jane_street_local_annotations )
-
   let options : Store.t =
     Store.
       [ elt comment_check
@@ -1481,8 +1463,7 @@ module Operational = struct
       ; elt ocaml_version
       ; elt quiet
       ; elt disable_conf_attrs
-      ; elt version_check
-      ; elt rewrite_old_style_jane_street_local_annotations ]
+      ; elt version_check ]
 end
 
 let options = Operational.options @ Formatting.options @ options
@@ -1590,12 +1571,10 @@ let parse_state_attr attr =
   | Ok ("disable", _) -> Some `Disable
   | _ -> None
 
-let is_jane_street_local_annotation config name ~test =
-  String.equal test ("extension." ^ name)
-  ||
-  if config.opr_opts.rewrite_old_style_jane_street_local_annotations.v then
-    String.equal test name || String.equal test ("ocaml." ^ name)
-  else false
+let is_jane_street_local_annotation name ~test =
+  String.equal test name
+  || String.equal test ("ocaml." ^ name)
+  || String.equal test ("extension." ^ name)
 
 let print_config = Decl.print_config options
 

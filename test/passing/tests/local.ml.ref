@@ -70,31 +70,43 @@ let foo () =
   if true then (local_ ()) ;
   ()
 
-type loc_long_attrs = (string[@ocaml.local]) -> (string[@ocaml.local])
+type loc_long_attrs = local_ string -> local_ string
 
-type loc_short_attrs = (string[@local]) -> (string[@local])
+type loc_short_attrs = local_ string -> local_ string
+
+type loc_short_attrs2 = local_ (string[@aaa] [@bbb] [@ccc]) -> local_ string
 
 type global_long_attrs =
-  | Foo of {s: string [@ocaml.global]}
-  | Bar of (string[@ocaml.global])
+  | Foo of {global_ s: string; b: int}
+  | Bar of global_ string
 
 type global_short_attrs =
-  | Foo of {s: string [@global]}
-  | Bar of (string[@global])
+  | Foo of {global_ s: string}
+  | Bar of global_ string
 
 type global_short_attrs =
-  | Foo of {s: string [@global]}
-  | Bar of (string[@global])
+  | Foo of {global_ s: string}
+  | Bar of global_ string
 
-let local_long_ext = [%ocaml.local] ()
+let local_ local_long_ext = ()
 
-let local_short_ext = [%local] ()
+let local_ local_short_ext = ()
 
-let exclave_long_ext = [%ocaml.exclave] ()
+let exclave_long_ext = exclave_ ()
 
-let exclave_short_ext = [%exclave] ()
+let exclave_short_ext = exclave_ ()
+
+let () =
+  let local_ g a b c = 1 in
+  ()
+
+let local_ g a b c = 1
+
+let g = f (local_ fun a b c -> 1)
 
 let[@ocaml.local] upstream_local_attr_long x = x
+
+module type S = functor (_ : S) (_ : S) -> S
 
 let[@ocaml.local never] upstream_local_attr_never_long x = x
 
@@ -133,3 +145,7 @@ let x =
   exclave_
   let y = 1 in
   y
+
+module type S = functor (_ : S) (_ : S) -> S
+(* this is here to make sure we pass the AST equality checks even when the
+   extended AST is different *)

@@ -3703,45 +3703,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to local-erased.ml.stdout
-   (with-stderr-to local-erased.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax %{dep:tests/local.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/local-erased.ml.ref local-erased.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/local-erased.ml.err local-erased.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to local-rewritten.ml.stdout
-   (with-stderr-to local-rewritten.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --rewrite-old-style-jane-street-local-annotations %{dep:tests/local.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/local-rewritten.ml.ref local-rewritten.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/local-rewritten.ml.err local-rewritten.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to local.ml.stdout
    (with-stderr-to local.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/local.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/local.ml})))))
 
 (rule
  (alias runtest)
@@ -3752,6 +3716,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/local.ml.err local.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to local_erased.ml.stdout
+   (with-stderr-to local_erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/local_erased.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/local_erased.ml.ref local_erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/local_erased.ml.err local_erased.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

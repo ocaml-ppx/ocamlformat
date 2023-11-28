@@ -208,7 +208,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
   let parens_branch, expr_parens =
     if align_nested_match then (false, Some false)
     else if c.fmt_opts.leading_nested_match_parens.v then (false, None)
-    else (parenze_exp c xast && not body_has_parens, Some false)
+    else (parenze_exp xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
   let open_paren_branch, close_paren_branch, branch_expr =
@@ -220,7 +220,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
           in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
-        (fmt "@;<1 0>begin", close_paren, sub_exp c ~ctx:(Exp ast) nested_exp)
+        (fmt "@;<1 0>begin", close_paren, sub_exp ~ctx:(Exp ast) nested_exp)
     | _ ->
         let close_paren =
           fmt_if_k parens_branch
@@ -491,7 +491,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
     let ast = xbch.Ast.ast in
     match ast with
     | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
-        (true, sub_exp c ~ctx:(Exp ast) nested_exp)
+        (true, sub_exp ~ctx:(Exp ast) nested_exp)
     | _ -> (false, xbch)
   in
   let wrap_parens ~wrap_breaks k =

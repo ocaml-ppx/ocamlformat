@@ -31,8 +31,7 @@ type t =
   ; ignore_invalid_options: bool
   ; ocp_indent_config: bool
   ; config: (string * string) list
-  ; erase_jane_syntax: bool
-  ; rewrite_old_style_jane_street_local_annotations: bool }
+  ; erase_jane_syntax: bool }
 
 let default =
   { lib_conf= Conf.default
@@ -49,8 +48,7 @@ let default =
   ; ignore_invalid_options= false
   ; ocp_indent_config= false
   ; config= []
-  ; erase_jane_syntax= false
-  ; rewrite_old_style_jane_street_local_annotations= false }
+  ; erase_jane_syntax= false }
 
 let global_conf = ref default
 
