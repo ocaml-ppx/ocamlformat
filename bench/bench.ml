@@ -13,8 +13,6 @@ open Bechamel
 open Toolkit
 open Ocamlformat_lib
 
-type range = int * int
-
 type input =
   { name: string
   ; input_name: string
