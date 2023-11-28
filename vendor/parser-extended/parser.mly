@@ -408,8 +408,10 @@ let ppat_iarray loc elts =
      ~loc:(make_loc loc)
      (Iapat_immutable_array elts)).ppat_desc
 
-let expecting loc nonterm =
-    raise Syntaxerr.(Error(Expecting(make_loc loc, nonterm)))
+let expecting_loc (loc : Location.t) (nonterm : string) =
+    raise Syntaxerr.(Error(Expecting(loc, nonterm)))
+let expecting (loc : Lexing.position * Lexing.position) nonterm =
+     expecting_loc (make_loc loc) nonterm
 
 (* Continues to parse removed syntax
 let removed_string_set loc =
@@ -457,17 +459,13 @@ let lapply ~loc p1 p2 =
   else raise (Syntaxerr.Error(
                   Syntaxerr.Applicative_path (make_loc loc)))
 
-(* [loc_map] could be [Location.map]. *)
-let loc_map (f : 'a -> 'b) (x : 'a Location.loc) : 'b Location.loc =
-  { x with txt = f x.txt }
-
 let make_ghost x = { x with loc = { x.loc with loc_ghost = true }}
 
 let loc_last (id : Longident.t Location.loc) : string Location.loc =
-  loc_map Longident.last id
+  Location.map Longident.last id
 
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
-  loc_map (fun x -> Lident x) id
+  Location.map (fun x -> Lident x) id
 
 (*
 let exp_of_longident lid =
@@ -698,14 +696,15 @@ let mk_directive ~loc name arg =
       pdir_loc = make_loc loc;
     }
 
-let check_layout loc id =
-  begin
-    match id with
-    | ("any" | "value" | "void" | "immediate64" | "immediate" | "float64") -> ()
-    | _ -> expecting loc "layout"
-  end;
-  let loc = make_loc loc in
-  Attr.mk ~loc (mkloc id loc) (PStr [])
+let check_layout ~loc id : const_layout =
+  match id with
+  | "any" -> Any
+  | "value" -> Value
+  | "void" -> Void
+  | "immediate64" -> Immediate64
+  | "immediate" -> Immediate
+  | "float64" -> Float64
+  | _ -> expecting_loc loc "layout"
 %}
 
 /* Tokens */
@@ -2128,7 +2127,7 @@ method_:
           let loc = ($startpos($6), $endpos($8)) in
           ghexp ~loc (Pexp_poly($8, Some $6)) in
         ($4, pv_of_priv $3, Cfk_concrete ($1, poly_exp)), $2 }
-  | override_flag attributes private_flag mkrhs(label) COLON TYPE lident_list
+  | override_flag attributes private_flag mkrhs(label) COLON TYPE newtypes
     DOT core_type EQUAL seq_expr
       { let poly_exp_loc = ($startpos($7), $endpos($11)) in
         let poly_exp =
@@ -2385,7 +2384,7 @@ label_let_pattern:
         lab,
         mkpat ~loc:$sloc (Ppat_constraint (pat, cty)) }
   | x = label_var COLON
-          cty = mktyp (vars = typevar_list DOT ty = core_type { Ptyp_poly(vars, ty) })
+          cty = mktyp (vars = typevar_list DOT ty = core_type { Ptyp_poly (vars, ty) })
       { let lab, pat = x in
         lab,
         mkpat ~loc:$sloc (Ppat_constraint (pat, cty)) }
@@ -2461,6 +2460,14 @@ expr:
     { mk_builtin_indexop_expr ~loc:$sloc $1 }
   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
     { mk_dotop_indexop_expr ~loc:$sloc $1 }
+  | FUN ext_attributes LPAREN TYPE newtypes RPAREN fun_def
+    { let loc = $sloc in
+      wrap_exp_attrs ~loc (mk_newtypes ~loc $5 $7) $2 }
+  | FUN ext_attributes LPAREN TYPE
+    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    RPAREN fun_def
+    { let loc = $sloc in
+      wrap_exp_attrs ~loc (mk_newtypes ~loc:$sloc [name, Some layout] $9) $2 }
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
@@ -2487,9 +2494,6 @@ expr:
       { Pexp_function $3, $2 }
   | FUN ext_attributes fun_param fun_def
       { Pexp_fun($3, $4), $2 }
-  | FUN ext_attributes LPAREN TYPE lident_list RPAREN fun_def
-      { let ext, attrs = $2 in
-        (mk_newtypes ~loc:$sloc $5 $7).pexp_desc, (ext, attrs) }
   | MATCH ext_attributes seq_expr WITH match_cases
       { Pexp_match($3, $5), $2 }
   | TRY ext_attributes seq_expr WITH match_cases
@@ -2807,7 +2811,7 @@ let_binding_body_no_punning:
       let exp = mkexp_local_if $1 ~loc:$sloc $6 in
       (pat, exp, Some (Pvc_constraint { locally_abstract_univars = []; typ=t }))
     }
-  | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
+  | let_ident COLON TYPE newtypes DOT core_type EQUAL seq_expr
     { let constraint' =
         Pvc_constraint { locally_abstract_univars=$4; typ = $6}
       in
@@ -2893,8 +2897,12 @@ strict_binding:
       { $2 }
   | fun_param fun_binding
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-  | LPAREN TYPE lident_list RPAREN fun_binding
+  | LPAREN TYPE newtypes RPAREN fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
+  | LPAREN TYPE
+    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    RPAREN fun_binding
+      { mk_newtypes ~loc:$sloc [name, Some layout] $7 }
 ;
 local_fun_binding:
     local_strict_binding
@@ -2910,8 +2918,12 @@ local_strict_binding:
         let is_local, l, o, p = $1 in
         let pparam = { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (is_local, l, o, p) } in
         ghexp ~loc:$sloc (Pexp_fun(pparam, $2)) }
-  | LPAREN TYPE lident_list RPAREN local_fun_binding
+  | LPAREN TYPE newtypes RPAREN local_fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
+  | LPAREN TYPE
+    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    RPAREN fun_binding
+      { mk_newtypes ~loc:$sloc [name, Some layout] $7 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
@@ -2939,8 +2951,12 @@ fun_def:
 /* Cf #5939: we used to accept (fun p when e0 -> e) */
   | fun_param fun_def
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-  | LPAREN TYPE lident_list RPAREN fun_def
+  | LPAREN TYPE newtypes RPAREN fun_def
       { mk_newtypes ~loc:$sloc $3 $5 }
+  | LPAREN TYPE
+    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    RPAREN fun_def
+      { mk_newtypes ~loc:$sloc [name, Some layout] $7 }
 ;
 %inline expr_comma_list:
   es = separated_nontrivial_llist(COMMA, expr)
@@ -2985,6 +3001,19 @@ type_constraint:
   | COLON error                                 { syntax_error() }
   | COLONGREATER error                          { syntax_error() }
 ;
+
+(* the thing between the [type] and the [.] in
+   [let : type <<here>>. 'a -> 'a = ...] *)
+newtypes: (* : (string with_loc * layout_annotation option) list *)
+  newtype+
+    { $1 }
+
+newtype: (* : string with_loc * layout_annotation option *)
+    mkrhs(LIDENT {Some $1}) { $1, None }
+  | LPAREN
+    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    RPAREN
+      { name, Some layout }
 
 /* Patterns */
 
@@ -3253,6 +3282,7 @@ generic_type_declaration(flag, kind):
   flag = flag
   params = type_parameters
   id = mkrhs(LIDENT)
+  layout = layout_attr?
   kind_priv_manifest = kind
   cstrs = constraints
   attrs2 = post_item_attributes
@@ -3262,7 +3292,7 @@ generic_type_declaration(flag, kind):
       let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in
       (flag, ext),
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
+      Type.mk id ~params ?layout ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
 %inline generic_and_type_declaration(kind):
@@ -3270,6 +3300,7 @@ generic_type_declaration(flag, kind):
   attrs1 = attributes
   params = type_parameters
   id = mkrhs(LIDENT)
+  layout = layout_attr?
   kind_priv_manifest = kind
   cstrs = constraints
   attrs2 = post_item_attributes
@@ -3279,7 +3310,7 @@ generic_type_declaration(flag, kind):
       let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk id ~params ?layout ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:
@@ -3332,14 +3363,30 @@ type_parameters:
       { ps }
 ;
 
-layout:
-  ident { check_layout $loc($1) $1 }
+layout_annotation: (* : layout_annotation *)
+  ident { let loc = make_loc $sloc in
+          mkloc (check_layout ~loc $1) loc }
+;
+
+layout_attr:
+  COLON
+  layout_annotation
+    { $2 }
+;
+
+%inline type_param_with_layout:
+  name=mkrhs(tyvar_name_or_underscore)
+  attrs=attributes
+  COLON
+  layout=layout_annotation
+  { let descr = Ptyp_var (name, Some layout) in
+    mktyp ~loc:$sloc ~attrs descr }
 ;
 
 parenthesized_type_parameter:
     type_parameter { $1 }
-  | type_variance type_variable COLON layout
-      { {$2 with ptyp_attributes = [$4]}, $1 }
+  | type_variance type_param_with_layout
+    { $2, $1 }
 ;
 
 type_parameter:
@@ -3347,13 +3394,20 @@ type_parameter:
       { {$2 with ptyp_attributes = $3}, $1 }
 ;
 
-type_variable:
+%inline type_variable:
   mktyp(
-    QUOTE tyvar = ident
-      { Ptyp_var tyvar }
+    QUOTE tyvar_name = mkrhs(ident {Some $1})
+      { Ptyp_var (tyvar_name, None) }
   | UNDERSCORE
       { Ptyp_any }
   ) { $1 }
+;
+
+%inline tyvar_name_or_underscore:
+    QUOTE ident
+      { Some $2 }
+  | UNDERSCORE
+      { None }
 ;
 
 type_variance:
@@ -3589,11 +3643,14 @@ with_type_binder:
 
 /* Polymorphic types */
 
-%inline typevar:
-  QUOTE mkrhs(ident)
-    { $2 }
+%inline typevar: (* : string with_loc * layout_annotation option *)
+  QUOTE mkrhs(ident {Some $1})
+    { $2, None }
+  | LPAREN QUOTE mkrhs(ident {Some $1})  COLON layout=layout_annotation RPAREN
+    { $3, Some layout }
 ;
 %inline typevar_list:
+  (* : (string with_loc * layout_annotation option) list *)
   nonempty_llist(typevar)
     { $1 }
 ;
@@ -3645,8 +3702,15 @@ alias_type:
     function_type
       { $1 }
   | mktyp(
-      ty = alias_type AS QUOTE tyvar = mkrhs(ident)
-        { Ptyp_alias(ty, tyvar) }
+      ty = alias_type AS QUOTE tyvar = mkrhs(ident {Some $1})
+        { Ptyp_alias(ty, (tyvar, None)) }
+    | aliased_type = alias_type AS
+      LPAREN
+      name=mkrhs(tyvar_name_or_underscore)
+      COLON
+      layout = layout_annotation
+      RPAREN
+        { Ptyp_alias (aliased_type, (name, Some layout)) }
     )
     { $1 }
 ;
@@ -3761,8 +3825,8 @@ atomic_type:
   | LPAREN MODULE ext_attributes package_core_type RPAREN
       { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
   | mktyp( /* begin mktyp group */
-      QUOTE ident
-        { Ptyp_var $2 }
+      QUOTE mkrhs(ident {Some $1})
+        { Ptyp_var ($2, None) }
     | UNDERSCORE
         { Ptyp_any }
     | tys = actual_type_parameters
@@ -3797,6 +3861,11 @@ atomic_type:
         { Ptyp_variant($3, Closed, Some $5) }
     | extension
         { Ptyp_extension $1 }
+    | LPAREN QUOTE name=mkrhs(ident {Some $1}) COLON layout=layout_annotation RPAREN
+      { Ptyp_var (name, Some layout) }
+    | LPAREN mkrhs(UNDERSCORE {None}) COLON layout=layout_annotation RPAREN
+      { Ptyp_var ($2, Some layout) }
+
   )
   { $1 } /* end mktyp group */
 ;

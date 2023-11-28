@@ -538,12 +538,40 @@ let fmt_quoted_string key ext s = function
         (str (Format_.sprintf "|%s}" delim))
         (str s)
 
-let fmt_type_var s =
-  str "'"
-  (* [' a'] is a valid type variable, the space is required to not lex as a
-     char. https://github.com/ocaml/ocaml/pull/2034 *)
-  $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
-  $ str s
+let type_var_has_layout_annot (_, layout_opt) = Option.is_some layout_opt
+
+let layout_to_string = function
+  | Any -> "any"
+  | Value -> "value"
+  | Void -> "void"
+  | Immediate64 -> "immediate64"
+  | Immediate -> "immediate"
+  | Float64 -> "float64"
+
+let fmt_layout_str ~c ~loc string =
+  fmt "@ :@ " $ Cmts.fmt c loc @@ str string
+
+let fmt_layout c l = fmt_layout_str ~c ~loc:l.loc (layout_to_string l.txt)
+
+let fmt_type_var ~have_tick c s =
+  let {txt= name_opt; loc= name_loc}, layout_opt = s in
+  ( Cmts.fmt c name_loc
+  @@
+  match name_opt with
+  | None -> str "_"
+  | Some var_name ->
+      fmt_if_k have_tick
+        ( str "'"
+        (* [' a'] is a valid type variable, the space is required to not lex
+           as a char. https://github.com/ocaml/ocaml/pull/2034 *)
+        $ fmt_if
+            (String.length var_name > 1 && Char.equal var_name.[1] '\'')
+            " " )
+      $ str var_name )
+  $ Option.value_map layout_opt ~default:noop ~f:(fmt_layout c)
+
+let fmt_type_var_with_parenze ~have_tick c s =
+  wrap_if (type_var_has_layout_annot s) "(" ")" (fmt_type_var ~have_tick c s)
 
 let split_global_flags_from_attrs atrs =
   match
@@ -555,16 +583,6 @@ let split_global_flags_from_attrs atrs =
   with
   | [`Global], atrs -> (true, atrs)
   | _ -> (false, atrs)
-
-let is_layout attr =
-  match attr.attr_name.txt with
-  | "any" -> true
-  | "value" -> true
-  | "void" -> true
-  | "immediate" -> true
-  | "immediate64" -> true
-  | "float64" -> true
-  | _ -> false
 
 let rec fmt_extension_aux c ctx ~key (ext, pld) =
   match (ext.txt, pld, ctx) with
@@ -836,11 +854,6 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( match atrs with
      | [] -> Fn.id
-     | [attr] when is_layout attr ->
-         Fn.id
-         (* CR layouts v1.5: layout annotations on type params are printed by
-            the type parameter printer. Revisit when we have support for
-            pretty layout annotations in more places. *)
      | _ ->
          fun k ->
            hvbox 0
@@ -870,7 +883,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (wrap_if parenze_constraint_ctx "(" ")"
            ( fmt_core_type c (sub_typ ~ctx typ)
            $ fmt "@ as@ "
-           $ Cmts.fmt c str.loc @@ fmt_type_var str.txt ) )
+           $ fmt_type_var_with_parenze ~have_tick:true c str ) )
   | Ptyp_any -> str "_"
   | Ptyp_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
@@ -914,7 +927,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
-        ( list a1N "@ " (fun {txt; _} -> fmt_type_var txt)
+        ( list a1N "@ " (fmt_type_var_with_parenze ~have_tick:true c)
         $ fmt ".@ "
         $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
@@ -922,7 +935,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (wrap_if parenze_constraint_ctx "(" ")"
            (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
               (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)) ) )
-  | Ptyp_var s -> fmt_type_var s
+  | Ptyp_var s -> fmt_type_var ~have_tick:true c s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
         match rfs with
@@ -1449,9 +1462,11 @@ and fmt_fun_args c args =
         impossible "not accepted by parser"
     | Pparam_newtype [] -> impossible "not accepted by parser"
     | Pparam_newtype names ->
-        cbox 0
-          (Params.parens c.conf
-             (str "type " $ list names "@ " (fmt_str_loc c)) )
+        let fmt =
+          if List.length names = 1 then fmt_type_var ~have_tick:false
+          else fmt_type_var_with_parenze ~have_tick:false
+        in
+        cbox 0 (Params.parens c.conf (str "type " $ list names "@ " (fmt c)))
   in
   list args "@;" fmt_fun_arg
 
@@ -3236,20 +3251,20 @@ and fmt_class_field_kind c ctx = function
         match (e, args') with
         | {pexp_desc= Pexp_constraint (e, t); _}, [] ->
             Some (List.rev names, t, e)
-        | ( {pexp_desc= Pexp_newtype (({txt; _} as newtyp), body); _}
-          , {txt= txt'; _} :: args )
-          when String.equal txt txt' ->
+        | ( {pexp_desc= Pexp_newtype ((({txt; _}, _) as newtyp), body); _}
+          , ({txt= txt'; _}, _) :: args )
+          when Option.equal String.equal txt txt' ->
             cleanup (newtyp :: names) body args
         | _ -> None
       in
       match cleanup [] e poly_args with
       | Some (args, t, e) ->
           let before =
-            match args with x :: _ -> x.loc | [] -> e.pexp_loc
+            match args with (x, _) :: _ -> x.loc | [] -> e.pexp_loc
           in
           Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
           ( fmt "@ : type "
-            $ list args "@ " (fmt_str_loc c)
+            $ list args "@ " (fmt_type_var_with_parenze ~have_tick:false c)
             $ fmt_core_type ~pro:"." ~pro_space:false c (sub_typ ~ctx t)
           , noop
           , fmt "@;<1 2>="
@@ -3473,24 +3488,6 @@ and fmt_value_description ?ext c ctx vd =
 
 and fmt_tydcl_param c ctx ty =
   fmt_core_type ~tydecl_param:true c (sub_typ ~ctx ty)
-  $
-  (* CR layouts v1.5: When we added the syntax for layout annotations on type
-     parameters to the parser, we also made it possible for people to put
-     arbitrary attributes on type parameters. Previously, the parser didn't
-     accept attributes at all here, though there has always been a place in
-     the parse tree.
-
-     The parser currently allows you to have either a pretty layout
-     annotation or arbitrary attributes, but not both. A pretty layout
-     annotation only parses if it's the only attribute, so we only print the
-     pretty syntax in that case. Probably we'll change this in v1.5.
-
-     In the case of multiple attributes, which may include layouts, they'll
-     be printed as normal attributes by [fmt_core_type]. So we do nothing
-     here. *)
-  match ty.ptyp_attributes with
-  | [] | _ :: _ :: _ -> noop
-  | [attr] -> fmt_if_k (is_layout attr) (fmt "@ :@ " $ str attr.attr_name.txt)
 
 and fmt_tydcl_params c ctx params =
   let empty, parenize =
@@ -3498,9 +3495,9 @@ and fmt_tydcl_params c ctx params =
     | [] -> (true, false)
     | [(p, _)] ->
         ( false
-        , match p.ptyp_attributes with
-          | [] | _ :: _ :: _ -> false
-          | [attr] -> is_layout attr )
+        , match p.ptyp_desc with
+          | Ptyp_var s -> type_var_has_layout_annot s
+          | _ -> false )
     | _ :: _ :: _ -> (false, true)
   in
   fmt_if_k (not empty)
@@ -3533,7 +3530,8 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
       ; ptype_private= priv
       ; ptype_manifest= m
       ; ptype_attributes
-      ; ptype_loc } =
+      ; ptype_loc
+      ; ptype_layout } =
     decl
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
@@ -3562,7 +3560,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
           0
           ( fmt_tydcl_params c ctx ptype_params
           $ Option.value_map name ~default:(str txt) ~f:(fmt_longident_loc c)
-          )
+          $ fmt_opt (Option.map ~f:(fmt_layout c) ptype_layout) )
       $ k )
   in
   let fmt_manifest_kind =
@@ -3724,16 +3722,24 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
 
 and fmt_constructor_arguments_result c ctx vars args res =
   let pre = fmt_or (Option.is_none res) " of" " :" in
-  let before_type = match args with Pcstr_tuple [] -> ": " | _ -> "-> " in
-  let fmt_type typ =
-    fmt "@ " $ str before_type $ fmt_core_type c (sub_typ ~ctx typ)
-  in
   let fmt_vars =
     match vars with
     | [] -> noop
     | _ ->
-        hvbox 0 (list vars "@ " (fun {txt; _} -> fmt_type_var txt))
+        hvbox 0
+          (list vars "@ " (fmt_type_var_with_parenze ~have_tick:true c))
         $ fmt ".@ "
+  in
+  let has_layout_annotation =
+    List.exists vars ~f:type_var_has_layout_annot
+  in
+  let before_type =
+    match args with
+    | Pcstr_tuple [] -> str ": " $ fmt_if_k has_layout_annotation fmt_vars
+    | _ -> str "-> "
+  in
+  let fmt_type typ =
+    fmt "@ " $ before_type $ fmt_core_type c (sub_typ ~ctx typ)
   in
   fmt_constructor_arguments c ctx ~pre ~vars:fmt_vars args $ opt res fmt_type
 
@@ -4702,13 +4708,17 @@ and fmt_value_constraint c vc_opt =
             , fmt_sep ":"
               $ hvbox 0
                   ( str "type "
-                  $ list pvars " " (fmt_str_loc c)
+                  $ list pvars " "
+                      (fmt_type_var_with_parenze ~have_tick:false c)
                   $ fmt ".@ "
                   $ fmt_core_type c (sub_typ ~ctx typ) ) )
         | `After ->
             ( fmt_sep ":"
               $ hvbox 0
-                  (str "type " $ list pvars " " (fmt_str_loc c) $ str ".")
+                  ( str "type "
+                  $ list pvars " "
+                      (fmt_type_var_with_parenze ~have_tick:false c)
+                  $ str "." )
             , fmt "@ " $ fmt_core_type c (sub_typ ~ctx typ) ) )
       | Pvc_coercion {ground; coercion} ->
           ( noop

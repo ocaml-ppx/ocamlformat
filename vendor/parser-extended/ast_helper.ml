@@ -474,6 +474,7 @@ module Type = struct
   let mk ?(loc = !default_loc) ?(attrs = [])
         ?(docs = empty_docs) ?(text = [])
       ?(params = [])
+      ?layout
       ?(cstrs = [])
       ?(kind = Ptype_abstract)
       ?(priv = Public)
@@ -489,6 +490,7 @@ module Type = struct
      ptype_attributes =
        add_text_attrs text (add_docs_attrs docs attrs);
      ptype_loc = loc;
+     ptype_layout = layout;
     }
 
   let constructor ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)

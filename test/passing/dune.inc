@@ -3396,6 +3396,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to layout_annotation.ml.stdout
+   (with-stderr-to layout_annotation.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/layout_annotation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation.ml layout_annotation.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation.ml.err layout_annotation.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to lazy.ml.stdout
    (with-stderr-to lazy.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/lazy.ml})))))

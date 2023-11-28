@@ -93,6 +93,8 @@ let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
+let map_type_var sub (n, l) = map_loc sub n, map_opt (map_loc sub) l
+
 let variant_var sub x =
   {loc = sub.location sub x.loc; txt= map_loc sub x.txt}
 
@@ -198,7 +200,7 @@ module T = struct
     let attrs = sub.attributes sub attrs in
     match desc with
     | Ptyp_any -> any ~loc ~attrs ()
-    | Ptyp_var s -> var ~loc ~attrs s
+    | Ptyp_var s -> var ~loc ~attrs (map_type_var sub s)
     | Ptyp_arrow (params, t2) ->
         arrow ~loc ~attrs (List.map (map_arrow_param sub) params)
           (sub.typ sub t2)
@@ -210,12 +212,12 @@ module T = struct
           (Flag.map_obj_closed sub o)
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
-    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) (map_loc sub s)
+    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) (map_type_var sub s)
     | Ptyp_variant (rl, b, ll) ->
         variant ~loc ~attrs (List.map (row_field sub) rl) b
           (map_opt (List.map (variant_var sub)) ll)
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
-                             (List.map (map_loc sub) sl) (sub.typ sub t)
+                             (List.map (map_type_var sub) sl) (sub.typ sub t)
     | Ptyp_package pt ->
         let lid, l = map_package_type sub pt in
         package ~loc ~attrs lid l
@@ -232,10 +234,13 @@ module T = struct
        ptype_private;
        ptype_manifest;
        ptype_attributes;
-       ptype_loc} =
+       ptype_loc;
+       ptype_layout;
+      } =
     let loc = sub.location sub ptype_loc in
     let attrs = sub.attributes sub ptype_attributes in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
+      ?layout:(ptype_layout)
       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
       ~priv:(Flag.map_private sub ptype_private)
       ~cstrs:(List.map
@@ -281,7 +286,7 @@ module T = struct
 
   let map_extension_constructor_kind sub = function
       Pext_decl(vars, ctl, cto) ->
-        Pext_decl(List.map (map_loc sub) vars,
+        Pext_decl(List.map (map_type_var sub) vars,
                   map_constructor_arguments sub ctl,
                   map_opt (sub.typ sub) cto)
     | Pext_rebind li ->
@@ -493,7 +498,7 @@ module E = struct
              map_opt (sub.expr sub) def,
              sub.pat sub p)
       | Pparam_newtype ty ->
-          Pparam_newtype (List.map (map_loc sub) ty)
+          Pparam_newtype (List.map (map_type_var sub) ty)
     in
     { pparam_loc = loc; pparam_desc = desc }
 
@@ -599,7 +604,7 @@ module E = struct
         poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
     | Pexp_newtype (s, e) ->
-        newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+        newtype ~loc ~attrs (map_type_var sub s) (sub.expr sub e)
     | Pexp_pack (me, pt) ->
         pack ~loc ~attrs
           (sub.module_expr sub me)
@@ -878,7 +883,7 @@ let default_mapper =
          let map_ct (ct:Parsetree.value_constraint) = match ct with
            | Pvc_constraint {locally_abstract_univars=vars; typ} ->
                Pvc_constraint
-                 { locally_abstract_univars = List.map (map_loc this) vars;
+                 { locally_abstract_univars = List.map (map_type_var this) vars;
                    typ = this.typ this typ
                  }
            | Pvc_coercion { ground; coercion } ->
@@ -902,7 +907,7 @@ let default_mapper =
                  pcd_res; pcd_loc; pcd_attributes} ->
         Type.constructor
           (map_loc this pcd_name)
-          ~vars:(List.map (map_loc this) pcd_vars)
+          ~vars:(List.map (map_type_var this) pcd_vars)
           ~args:(T.map_constructor_arguments this pcd_args)
           ?res:(map_opt (this.typ this) pcd_res)
           ~loc:(this.location this pcd_loc)

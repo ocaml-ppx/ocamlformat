@@ -79,10 +79,10 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
             match xargs with
             | {pparam_desc= Pparam_newtype names; pparam_loc} :: xargs ->
                 let param = Pparam_newtype (name :: names) in
-                mk_function_param name.loc pparam_loc param :: xargs
+                mk_function_param pexp_loc pparam_loc param :: xargs
             | xargs ->
                 let param = Pparam_newtype [name] in
-                mk_function_param name.loc name.loc param :: xargs
+                mk_function_param pexp_loc pexp_loc param :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)

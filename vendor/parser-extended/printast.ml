@@ -200,9 +200,23 @@ let paren_kind i ppf = function
   | Brace -> line i ppf "Brace\n"
   | Bracket -> line i ppf "Bracket\n"
 
+let layout_to_string = function
+  | Any -> "any"
+  | Value -> "value"
+  | Void -> "void"
+  | Immediate64 -> "immediate64"
+  | Immediate -> "immediate"
+  | Float64 -> "float64"
+
+let fmt_layout_opt ppf l = Format.fprintf ppf "%s"
+  (Option.value ~default:"none" (Option.map (fun l -> layout_to_string l.txt) l))
+
+let fmt_ty_var ppf (name, layout) =
+  Format.fprintf ppf "%a:%a" fmt_str_opt_loc name fmt_layout_opt layout
+
 let typevars ppf vs =
   List.iter (fun x ->
-      fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
+      fprintf ppf " %a" fmt_ty_var x) vs
 
 let variant_var i ppf (x : variant_var) =
   line i ppf "variant_var %a\n" fmt_location x.loc;
@@ -214,7 +228,8 @@ let rec core_type i ppf x =
   let i = i+1 in
   match x.ptyp_desc with
   | Ptyp_any -> line i ppf "Ptyp_any\n";
-  | Ptyp_var (s) -> line i ppf "Ptyp_var %s\n" s;
+  | Ptyp_var (s) ->
+    line i ppf "Ptyp_var %a\n" fmt_ty_var s;
   | Ptyp_arrow (params, ct2) ->
       line i ppf "Ptyp_arrow\n";
       list i arrow_param ppf params;
@@ -236,7 +251,7 @@ let rec core_type i ppf x =
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
       list i core_type ppf l
   | Ptyp_alias (ct, s) ->
-      line i ppf "Ptyp_alias \"%a\"\n" fmt_string_loc s;
+      line i ppf "Ptyp_alias \"%a\"\n" fmt_ty_var s;
       core_type i ppf ct;
   | Ptyp_poly (sl, ct) ->
       line i ppf "Ptyp_poly%a\n" typevars sl;
@@ -469,7 +484,7 @@ and expression i ppf x =
       line i ppf "Pexp_object\n";
       class_structure i ppf s
   | Pexp_newtype (s, e) ->
-      line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
+      line i ppf "Pexp_newtype %a\n" fmt_ty_var s;
       expression i ppf e
   | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
@@ -541,7 +556,7 @@ and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   | Pparam_newtype ty ->
       line i ppf "Pparam_newtype %a\n" fmt_location loc;
       list i (fun i ppf x ->
-        line (i+1) ppf "type %a" fmt_string_loc x ) ppf ty
+        line (i+1) ppf "type %a" fmt_ty_var x ) ppf ty
 
 and type_constraint i ppf constraint_ =
   match constraint_ with
@@ -575,7 +590,8 @@ and type_declaration i ppf x =
   type_kind (i+1) ppf x.ptype_kind;
   line i ppf "ptype_private = %a\n" fmt_private_flag x.ptype_private;
   line i ppf "ptype_manifest =\n";
-  option (i+1) core_type ppf x.ptype_manifest
+  option (i+1) core_type ppf x.ptype_manifest;
+  line i ppf "ptype_layout = %a\n" fmt_layout_opt x.ptype_layout
 
 and attribute i ppf k a =
   line i ppf "%s %a %a\n" k fmt_string_loc a.attr_name fmt_location a.attr_loc;
@@ -1112,7 +1128,7 @@ and value_binding i ppf x =
 
 and value_constraint i ppf x =
   let pp_sep ppf () = Format.fprintf ppf "@ "; in
-  let pp_newtypes = Format.pp_print_list fmt_string_loc ~pp_sep in
+  let pp_newtypes = Format.pp_print_list fmt_ty_var ~pp_sep in
   match x with
   | Pvc_constraint { locally_abstract_univars = []; typ } ->
       core_type i ppf typ

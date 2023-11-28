@@ -122,7 +122,7 @@ and arrow_param =
 
 and core_type_desc =
   | Ptyp_any  (** [_] *)
-  | Ptyp_var of string  (** A type variable such as ['a] *)
+  | Ptyp_var of ty_var  (** A type variable such as ['a] *)
   | Ptyp_arrow of arrow_param list * core_type
       (** [Ptyp_arrow(lbl, T1, T2)] represents:
             - [T1 -> T2]    when [lbl] is
@@ -157,7 +157,7 @@ and core_type_desc =
             - [T #tconstr]             when [l=[T]],
             - [(T1, ..., Tn) #tconstr] when [l=[T1 ; ... ; Tn]].
          *)
-  | Ptyp_alias of core_type * string loc  (** [T as 'a]. *)
+  | Ptyp_alias of core_type * ty_var  (** [T as 'a]. *)
   | Ptyp_variant of row_field list * closed_flag * variant_var list option
       (** [Ptyp_variant([`A;`B], flag, labels)] represents:
             - [[ `A|`B ]]
@@ -173,7 +173,7 @@ and core_type_desc =
                       when [flag]   is {{!Asttypes.closed_flag.Closed}[Closed]},
                        and [labels] is [Some ["X";"Y"]].
          *)
-  | Ptyp_poly of string loc list * core_type
+  | Ptyp_poly of ty_var list * core_type
       (** ['a1 ... 'an. T]
 
            Can only appear in the following context:
@@ -435,7 +435,7 @@ and expression_desc =
            {{!class_field_kind.Cfk_concrete}[Cfk_concrete]} for methods (not
            values). *)
   | Pexp_object of class_structure  (** [object ... end] *)
-  | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
+  | Pexp_newtype of ty_var * expression  (** [fun (type t) -> E] *)
   | Pexp_pack of module_expr * package_type option
       (** - [(module M)] is represented as [Pexp_pack(M, None)]
           - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
@@ -525,7 +525,7 @@ and function_param_desc =
       Note: If [E0] is provided, only
       {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
   *)
-  | Pparam_newtype of string loc list
+  | Pparam_newtype of ty_var list
   (** [Pparam_newtype x] represents the parameter [(type x y z)].
       [x] carries the location of the identifier, whereas the [pparam_loc]
       on the enclosing [function_param] node is the location of the [(type x y z)]
@@ -573,6 +573,7 @@ and type_declaration =
      ptype_manifest: core_type option;  (** represents [= T] *)
      ptype_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      ptype_loc: Location.t;
+     ptype_layout: layout_annotation option;
     }
 (**
    Here are type declarations and their representation,
@@ -628,7 +629,7 @@ and label_declaration =
 and constructor_declaration =
     {
      pcd_name: string loc;
-     pcd_vars: string loc list;
+     pcd_vars: ty_var list;
      pcd_args: constructor_arguments;
      pcd_res: core_type option;
      pcd_loc: Location.t;
@@ -683,7 +684,7 @@ and type_exception =
 (** Definition of a new exception ([exception E]). *)
 
 and extension_constructor_kind =
-  | Pext_decl of string loc list * constructor_arguments * core_type option
+  | Pext_decl of ty_var list * constructor_arguments * core_type option
       (** [Pext_decl(existentials, c_args, t_opt)]
           describes a new extension constructor. It can be:
           - [C of T1 * ... * Tn] when:
@@ -1113,7 +1114,7 @@ and structure_item_desc =
 
 and value_constraint =
   | Pvc_constraint of {
-      locally_abstract_univars:string loc list;
+      locally_abstract_univars:ty_var list;
       typ:core_type;
     }
   | Pvc_coercion of {ground:core_type option; coercion:core_type }

@@ -79,6 +79,8 @@ type 'a loc = {
 
 val mknoloc : 'a -> 'a loc
 val mkloc : 'a -> t -> 'a loc
+val map : ('a -> 'b) -> 'a loc -> 'b loc
+val compare_txt : ('a -> 'b -> 'c) -> 'a loc -> 'b loc -> 'c
 
 
 (** {1 Input info} *)
