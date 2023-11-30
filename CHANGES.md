@@ -8,6 +8,8 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
+- Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
+  It was removed in version 0.22.
 - \* Consistent formatting of comments (#2371, @Julow)
 - Documentation comments are now formatted by default (#2390, @Julow)
   Use the option `parse-docstrings = false` to disable.
