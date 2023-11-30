@@ -116,23 +116,35 @@ let enable_outside_detected_project =
       (List.map File_system.project_root_witness ~f:(fun name ->
            Format.sprintf "$(b,%s)" name ) )
   in
-  let doc =
-    Format.sprintf
-      "Read $(b,.ocamlformat) config files outside the current project when \
-       no project root has been detected for the input file. The project \
-       root of an input file is taken to be the nearest ancestor directory \
-       that contains a %s file. If $(b,.ocamlformat) config files are \
-       located in the same directory or parents they are applied, if no \
-       $(b,.ocamlformat) file is found then the global configuration \
-       defined in $(b,\\$XDG_CONFIG_HOME/.ocamlformat) (or in \
-       $(b,\\$HOME/.config/.ocamlformat) if $(b,\\$XDG_CONFIG_HOME) is \
-       undefined) is applied."
-      witness
+  let enable =
+    let doc_enable =
+      Format.sprintf
+        "Read $(b,.ocamlformat) config files outside the current project \
+         when no project root has been detected for the input file. The \
+         project root of an input file is taken to be the nearest ancestor \
+         directory that contains a %s file. If $(b,.ocamlformat) config \
+         files are located in the same directory or parents they are \
+         applied, if no $(b,.ocamlformat) file is found then the global \
+         configuration defined in $(b,\\$XDG_CONFIG_HOME/.ocamlformat) (or \
+         in $(b,\\$HOME/.config/.ocamlformat) if $(b,\\$XDG_CONFIG_HOME) is \
+         undefined) is applied."
+        witness
+    in
+    Arg.info ["enable-outside-detected-project"] ~doc:doc_enable ~docs
+  in
+  let disable =
+    let doc_disable =
+      "If no $(b,.ocamlformat) config files have been detected, disable the \
+       formatting. OCamlFormat is disabled outside of a detected project by \
+       default, to enable the opposite behavior use \
+       $(b,--enable-outside-detected-project)."
+    in
+    Arg.info ["disable-outside-detected-project"] ~doc:doc_disable ~docs
   in
   Term.(
     const (fun enable_outside_detected_project conf ->
         {conf with enable_outside_detected_project} )
-    $ Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs) )
+    $ Arg.(value & vflag false [(true, enable); (false, disable)]) )
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
