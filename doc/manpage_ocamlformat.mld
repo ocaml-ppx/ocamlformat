@@ -32,10 +32,6 @@ OPTIONS (CODE FORMATTING STYLE)
        file defined in $XDG_CONFIG_HOME (or in $HOME/.config if
        $XDG_CONFIG_HOME is undefined) is used.
 
-       Warning: in the next release, OcamlFormat will be enabled by default,
-       the presence of a project root will not be checked unless
-       [--disable-outside-detected-project] is used.
-
        If the disable option is not set, an .ocamlformat-ignore file
        specifies files that OCamlFormat should ignore. Each line in an
        .ocamlformat-ignore file specifies a filename relative to the
@@ -538,10 +534,7 @@ OPTIONS
            If no .ocamlformat config files have been detected, disable the
            formatting. OCamlFormat is disabled outside of a detected project
            by default, to enable the opposite behavior use
-           --enable-outside-detected-project. Warning: in the next release,
-           OCamlFormat will be enabled by default, the presence of a project
-           root will not be checked unless --disable-outside-detected-project
-           is used.
+           --enable-outside-detected-project.
 
        --doc
            Parse input as an odoc documentation.

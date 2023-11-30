@@ -83,10 +83,6 @@ let info =
          $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined) is \
          used."
     ; `P
-        "$(b,Warning:) in the next release, OcamlFormat will be enabled by \
-         default, the presence of a project root will not be checked unless \
-         [--disable-outside-detected-project] is used."
-    ; `P
         "If the $(b,disable) option is not set, an $(b,.ocamlformat-ignore) \
          file specifies files that OCamlFormat should ignore. Each line in \
          an $(b,.ocamlformat-ignore) file specifies a filename relative to \
@@ -141,10 +137,7 @@ let enable_outside_detected_project =
       "If no $(b,.ocamlformat) config files have been detected, disable the \
        formatting. OCamlFormat is disabled outside of a detected project by \
        default, to enable the opposite behavior use \
-       $(b,--enable-outside-detected-project).\n\
-       $(b,Warning:) in the next release, OCamlFormat will be enabled by \
-       default, the presence of a project root will not be checked unless \
-       $(b,--disable-outside-detected-project) is used."
+       $(b,--enable-outside-detected-project)."
     in
     Arg.info ["disable-outside-detected-project"] ~doc:doc_disable ~docs
   in
@@ -158,6 +151,8 @@ let inplace =
   declare_option
     ~set:(fun inplace conf -> {conf with inplace})
     Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
+
+(* Other Flags *)
 
 let check =
   let doc =
@@ -595,9 +590,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
      in
      warn ~loc:(Location.in_file file)
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
-        not set and %s. In the next release, OcamlFormat will be enabled by \
-        default, the presence of a project root will not be checked unless \
-        [--disable-outside-detected-project] is used."
+        not set and %s"
        why ) ;
     Operational.update conf ~f:(fun f ->
         {f with disable= {f.disable with v= true}} ) )
