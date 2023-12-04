@@ -1,9 +1,9 @@
 github,mirage,irmin,
 github,mirage,mirage,
-github,ocaml,dune,<no-ignore-revs>
+github,ocaml,dune,<no-ignore-revs><signoff>
 github,ocaml,ocaml-lsp,
 github,ocaml,odoc,
-github,ocaml-ppx,ppxlib,
+github,ocaml-ppx,ppxlib,<signoff>
 github,ocsigen,js_of_ocaml,
 github,realworldocaml,mdx,
 github,tarides,dune-release,

@@ -30,6 +30,7 @@ function uncomment_version()
 }
 
 # Apply ocamlformat on a project, update the '.ocamlformat' and commit.
+# $signoff_opts must be set.
 function apply_fmt()
 {
   local version=$1 commit_msg=$2
@@ -38,7 +39,7 @@ function apply_fmt()
   $dune build @fmt --auto-promote &> "$log_dir/$project.log" || true
   uncomment_version "$version" .ocamlformat
   if ! git diff --shortstat --exit-code; then
-    git commit --quiet --all -m "$commit_msg"
+    git commit --quiet --all $signoff_opts -m "$commit_msg"
     IGNORE_REVS+=("# Upgrade to OCamlformat $version")
     IGNORE_REVS+=("$(git rev-parse HEAD)")
   fi
@@ -134,6 +135,12 @@ while IFS=, read git_platform namespace project opts; do
     *) dune=dune ;;
   esac
 
+  if [[ $opts = *"<signoff>"* ]]; then
+    signoff_opts=--signoff
+  else
+    signoff_opts=--no-signoff
+  fi
+
   # Lines to insert into .git-blame-ignore-revs. Updated by [apply_fmt].
   IGNORE_REVS=()
 
@@ -158,7 +165,7 @@ Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/
   if ! [[ $opts = *"<no-ignore-revs>"* ]] && [[ "${#IGNORE_REVS}" -gt 0 ]]; then
     printf "%s\n" "${IGNORE_REVS[@]}" >> .git-blame-ignore-revs
     git add .git-blame-ignore-revs
-    git commit --quiet -m "Update .git-blame-ignore-revs"
+    git commit --quiet $signoff_opts -m "Update .git-blame-ignore-revs"
   fi
 
   echo "Pushing to $fork"
