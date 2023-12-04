@@ -2187,7 +2187,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_variant (s, arg) ->
       pro
       $ Params.parens_if parens c.conf
-          (hvbox (Params.Indent.variant c.conf ~parens)
+          (hvbox
+             (Params.Indent.variant c.conf ~parens)
              ( variant_var c s
              $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))
              $ fmt_atrs ) )
@@ -2496,9 +2497,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       outer_pro
       $ hvbox 0
           (Params.parens_if outer_parens c.conf
-           ( fmt_if_k align opn_paren
+             ( fmt_if_k align opn_paren
              $ compose_module ~pro ~epi blk ~f:fmt_mod
-           $ fmt_atrs ) )
+             $ fmt_atrs ) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid, tc, exp) =
         let typ1, typ2 =
@@ -3842,7 +3843,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     let xmt = sub_mty ~ctx mt in
     let blk = fmt_module_type c ?rec_ xmt in
     let align_opn, align_cls =
-      if args_p.arg_align then (open_hvbox 0, close_box) else (noop, noop)
+      if args_p.align then (open_hvbox 0, close_box) else (noop, noop)
     in
     let pro =
       pro $ Cmts.fmt_before c loc $ str "(" $ align_opn
@@ -3865,7 +3866,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
           fmt_name_and_mt ~pro ~loc name mt
         else
           let bdy, epi = fmt_name_and_mt ~pro:noop ~loc name mt in
-          let bdy_indent = if args_p.arg_align then 1 else 0 in
+          let bdy_indent = if args_p.align then 1 else 0 in
           (pro $ hvbox bdy_indent bdy $ epi, noop)
   in
   let rec fmt_args ~pro = function
@@ -4487,9 +4488,9 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
           ( hvbox_if toplevel 0
               ( hvbox_if toplevel indent
                   ( hovbox 2
-                      ( hovbox (Params.Indent.fun_type_annot c.conf)
-                          ( decl_args
-                          $ fmt_cstr )
+                      ( hovbox
+                          (Params.Indent.fun_type_annot c.conf)
+                          (decl_args $ fmt_cstr)
                       $ fmt_if_k (not lb_pun)
                           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v
                              (fits_breaks " =" ~hint:(1000, 0) "=")

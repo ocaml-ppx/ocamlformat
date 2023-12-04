@@ -101,9 +101,7 @@ let unindent_lines ?(max_indent = Stdlib.max_int) ~content_offset first_line
   let tl_indent =
     List.fold_left ~init:max_indent
       ~f:(fun acc s ->
-        match String.indent_of_line s with
-        | Some i -> min acc i
-        | None -> acc )
+        Option.value_map ~default:acc ~f:(min acc) (String.indent_of_line s) )
       tl_lines
   in
   (* The indentation of the first line must account for the location of the
