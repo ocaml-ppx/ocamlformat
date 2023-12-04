@@ -482,16 +482,19 @@ module Wrapped = struct
         ~equal:(fun x y -> String.is_empty x && String.is_empty y)
         (String.split (String.rstrip text) ~on:'\n')
     in
+    let groups =
+      List.group lines ~break:(fun _ y -> is_only_whitespaces y)
+    in
     pro $ str prefix
     $ hovbox 0
-        ( list_pn lines (fun ~prev:_ curr ~next ->
-              fmt_line curr
-              $
-              match next with
-              | Some str when is_only_whitespaces str -> fmt "\n@\n"
-              | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> noop )
-        $ str suffix $ epi )
+        (list_fl groups (fun ~first ~last:last_group group ->
+             let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
+             fmt_if (not first) "\n@\n"
+             $ hovbox 0
+                 (list_fl group (fun ~first ~last x ->
+                      fmt_if (not first) "@ " $ fmt_line x
+                      $ fmt_if_k (last_group && last) (str suffix $ epi) ) ) )
+        )
 end
 
 module Asterisk_prefixed = struct
@@ -508,26 +511,12 @@ end
 module Unwrapped = struct
   open Fmt
 
-  let has_trailing_empty_lines s =
-    let pos =
-      match String.rfindi s ~f:(fun _ c -> not (Char.is_whitespace c)) with
-      | Some i -> i + 1
-      | None -> 0
-    in
-    String.contains ~pos s '\n'
-
   let fmt_line ~first:_ ~last:_ l =
     (* The last line will be followed by the [epi]. *)
     str "\n" $ str l
 
   (** [txt] contains trailing spaces and leading/trailing empty lines. *)
   let fmt ~pro ~epi txt =
-    let txt, epi =
-      (* Preserve one trailing newline. *)
-      if has_trailing_empty_lines txt then
-        (String.rstrip txt, fmt "@\n" $ epi)
-      else (txt, epi)
-    in
     match String.split ~on:'\n' txt with
     | hd :: tl ->
         vbox 0 ~name:"unwrapped" (pro $ str hd $ list_fl tl fmt_line) $ epi
@@ -543,25 +532,12 @@ end
 module Cinaps = struct
   open Fmt
 
-  let fmt_code_str code =
-    match String.split_lines code with
-    | [] | [""] -> str " "
-    | [line] -> fmt "@ " $ str line $ fmt "@;<1 -2>"
-    | lines ->
-        let fmt_line = function
-          | "" -> fmt "\n"
-          | line -> fmt "@\n" $ str line
-        in
-        list lines "" fmt_line $ fmt "@;<1000 -2>"
-
   (** Comments enclosed in [(*$], [$*)] are formatted as code. *)
   let fmt ~pro ~epi ~fmt_code conf ~offset code =
-    let code =
-      match fmt_code conf ~offset code with
-      | Ok code -> code
-      | Error _ -> code
-    in
-    hvbox 2 (pro $ fmt_code_str code $ epi)
+    match fmt_code conf ~offset ~set_margin:false code with
+    | Ok formatted ->
+        hvbox 0 (pro $ hvbox (-1) (fmt "@;" $ formatted) $ fmt "@;" $ epi)
+    | Error _ -> Verbatim.fmt ~pro ~epi code
 end
 
 module Doc = struct
@@ -591,21 +567,14 @@ module Doc = struct
       $ epi )
 end
 
-let fmt_cmt (conf : Conf.t) cmt ~fmt_code (pos : Cmt.pos) =
+let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let open Fmt in
-  let break =
-    fmt_if_k
-      (Poly.(pos = After) && String.contains (Cmt.txt cmt) '\n')
-      (break_unless_newline 1000 0)
-  in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
   let pro = str "(*" $ str decoded.prefix
   and epi = str decoded.suffix $ str "*)" in
-  break
-  $
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
   | Doc txt ->
@@ -623,7 +592,15 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] -> fmt_cmt conf cmt ~fmt_code pos
+         | [cmt] ->
+             let break =
+               fmt_if_k
+                 ( conf.fmt_opts.ocp_indent_compat.v
+                 && Poly.(pos = Cmt.After)
+                 && String.contains (Cmt.txt cmt) '\n' )
+                 (break_unless_newline 1000 0)
+             in
+             break $ fmt_cmt conf cmt ~fmt_code
          | group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )

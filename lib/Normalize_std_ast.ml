@@ -9,8 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Parser_standard
+open Ocamlformat_parser_standard
 open Std_ast
+
+type 'a t = 'a Std_ast.t
 
 let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
@@ -152,10 +154,50 @@ let make_mapper conf ~ignore_doc_comments =
     let typ = {typ with ptyp_loc_stack= []} in
     Ast_mapper.default_mapper.typ m typ
   in
+  let structure =
+    if ignore_doc_comments then fun (m : Ast_mapper.mapper) l ->
+      List.filter l ~f:(function
+        | {pstr_desc= Pstr_attribute a; _} -> not (is_doc a)
+        | _ -> true )
+      |> Ast_mapper.default_mapper.structure m
+    else Ast_mapper.default_mapper.structure
+  in
+  let signature =
+    if ignore_doc_comments then fun (m : Ast_mapper.mapper) l ->
+      List.filter l ~f:(function
+        | {psig_desc= Psig_attribute a; _} -> not (is_doc a)
+        | _ -> true )
+      |> Ast_mapper.default_mapper.signature m
+    else Ast_mapper.default_mapper.signature
+  in
+  let class_structure =
+    if ignore_doc_comments then fun (m : Ast_mapper.mapper) x ->
+      let pcstr_fields =
+        List.filter x.pcstr_fields ~f:(function
+          | {pcf_desc= Pcf_attribute a; _} -> not (is_doc a)
+          | _ -> true )
+      in
+      Ast_mapper.default_mapper.class_structure m {x with pcstr_fields}
+    else Ast_mapper.default_mapper.class_structure
+  in
+  let class_signature =
+    if ignore_doc_comments then fun (m : Ast_mapper.mapper) x ->
+      let pcsig_fields =
+        List.filter x.pcsig_fields ~f:(function
+          | {pctf_desc= Pctf_attribute a; _} -> not (is_doc a)
+          | _ -> true )
+      in
+      Ast_mapper.default_mapper.class_signature m {x with pcsig_fields}
+    else Ast_mapper.default_mapper.class_signature
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
   ; attributes
+  ; structure
+  ; signature
+  ; class_signature
+  ; class_structure
   ; expr
   ; pat
   ; typ }

@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Parser_standard
+open Ocamlformat_parser_standard
 include Parsetree
 
 type use_file = toplevel_phrase list
@@ -43,7 +43,12 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   match x with
   | Structure -> m.structure m
   | Signature -> m.signature m
-  | Use_file -> List.map ~f:(m.toplevel_phrase m)
+  | Use_file ->
+      List.filter_map ~f:(fun x ->
+          match m.toplevel_phrase m x with
+          | Ptop_def [] -> None
+          | Ptop_def _ as x -> Some x
+          | Ptop_dir _ as x -> Some x )
   | Core_type -> m.typ m
   | Module_type -> m.module_type m
   | Expression -> m.expr m

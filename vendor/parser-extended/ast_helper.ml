@@ -54,6 +54,8 @@ module Attr = struct
     { attr_name = name;
       attr_payload = payload;
       attr_loc = loc }
+  let ext_attrs ?ext ?(before=[]) ?(after=[]) () =
+    {attrs_extension = ext; attrs_before = before; attrs_after = after }
 end
 
 module Typ = struct
@@ -120,7 +122,7 @@ module Exp = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
   let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_let (a, b))
-  let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_fun (a, b, c, d))
+  let fun_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_fun (a, b))
   let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
   let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
@@ -173,11 +175,12 @@ module Exp = struct
      pc_rhs = rhs;
     }
 
-  let binding_op op pat exp loc =
+  let binding_op op pat exp pun loc =
     {
       pbop_op = op;
       pbop_pat = pat;
       pbop_exp = exp;
+      pbop_is_pun = pun;
       pbop_loc = loc;
     }
 end
@@ -367,51 +370,47 @@ module Val = struct
 end
 
 module Md = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name args typ =
     {
      pmd_name = name;
      pmd_args = args;
      pmd_type = typ;
-     pmd_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
 end
 
 module Ms = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name syn =
     {
      pms_name = name;
      pms_manifest = syn;
-     pms_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pms_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pms_loc = loc;
     }
 end
 
 module Mtd = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) ?typ name =
     {
      pmtd_name = name;
      pmtd_type = typ;
-     pmtd_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmtd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmtd_loc = loc;
     }
 end
 
 module Mb = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
         ?(docs = empty_docs) ?(text = []) name args expr =
     {
      pmb_name = name;
      pmb_args = args;
      pmb_expr = expr;
-     pmb_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+     pmb_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmb_loc = loc;
     }
 end

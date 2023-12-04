@@ -1152,6 +1152,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to comments-no-wrap.ml.stdout
+   (with-stderr-to comments-no-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-wrap-comments --max-iter=3 %{dep:tests/comments.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments-no-wrap.ml.ref comments-no-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments-no-wrap.ml.err comments-no-wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comments.ml.stdout
    (with-stderr-to comments.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iter=4 %{dep:tests/comments.ml})))))
@@ -1603,6 +1621,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/doc_repl.mld.err doc_repl.mld.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to docstrings_toplevel_directives.mlt.stdout
+   (with-stderr-to docstrings_toplevel_directives.mlt.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/docstrings_toplevel_directives.mlt})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt docstrings_toplevel_directives.mlt.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/docstrings_toplevel_directives.mlt.err docstrings_toplevel_directives.mlt.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -3901,6 +3937,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to module_type.mli.stdout
+   (with-stderr-to module_type.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/module_type.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.ref module_type.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_type.mli.err module_type.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to monadic_binding.ml.stdout
    (with-stderr-to monadic_binding.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/monadic_binding.ml})))))
@@ -4100,9 +4154,27 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to ocp_indent_compat-break_colon_after.ml.stdout
+   (with-stderr-to ocp_indent_compat-break_colon_after.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocp-indent-compat --break-colon=after %{dep:tests/ocp_indent_compat.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ocp_indent_compat-break_colon_after.ml.ref ocp_indent_compat-break_colon_after.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ocp_indent_compat-break_colon_after.ml.err ocp_indent_compat-break_colon_after.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to ocp_indent_compat.ml.stdout
    (with-stderr-to ocp_indent_compat.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/ocp_indent_compat.ml})))))
+     (run %{bin:ocamlformat} --margin-check --ocp-indent-compat --break-colon=before %{dep:tests/ocp_indent_compat.ml})))))
 
 (rule
  (alias runtest)
@@ -5364,6 +5436,24 @@
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/verbose1.ml.err verbose1.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to w50.ml.stdout
+   (with-stderr-to w50.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-comment-check -q --max-iters=3 %{dep:tests/w50.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/w50.ml.ref w50.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/w50.ml.err w50.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

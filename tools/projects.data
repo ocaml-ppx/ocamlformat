@@ -1,4 +1,3 @@
-github,mirage,alcotest,
 github,mirage,irmin,
 github,mirage,mirage,
 github,ocaml,dune,<no-ignore-revs>
@@ -9,4 +8,3 @@ github,ocsigen,js_of_ocaml,
 github,realworldocaml,mdx,
 github,tarides,dune-release,
 github,tarides,ocaml-platform-installer,
-gitlab,tezos,tezos,

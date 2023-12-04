@@ -11,7 +11,8 @@
 
 (** OCamlFormat *)
 
-open Ocamlformat_lib ;;
+open Ocamlformat_lib
+open Ocamlformat_format ;;
 
 Stdlib.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 

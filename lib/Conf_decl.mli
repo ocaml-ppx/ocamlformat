@@ -16,7 +16,7 @@
     - Add a field to one of the records in [Conf_t]
     - Declare the option in [Conf], using functions from this module. *)
 
-type typ = Int | Bool | Range | Ocaml_version | Choice of string list
+type typ = Int | Bool | Ocaml_version | Choice of string list
 
 module UI : sig
   type 'config t =

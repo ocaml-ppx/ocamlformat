@@ -43,6 +43,30 @@
 
 (rule
  (deps
+  disable_outside_detected_project/dune-project
+  disable_outside_detected_project/main.ml)
+ (package ocamlformat)
+ (enabled_if
+  (<> %{os_type} Win32))
+ (action
+  (with-outputs-to
+   disable_outside_detected_project.output
+   (chdir
+    disable_outside_detected_project
+    (run ocamlformat --disable-outside-detected-project main.ml)))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (enabled_if
+  (<> %{os_type} Win32))
+ (action
+  (diff
+   disable_outside_detected_project.expected
+   disable_outside_detected_project.output)))
+
+(rule
+ (deps
   (source_tree outside_detected_project_with_name))
  (package ocamlformat)
  (action

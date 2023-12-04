@@ -50,6 +50,7 @@ let conventional_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt true
   ; assignment_operator= elt `End_line
+  ; break_around_multiline_strings= elt false
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Fit
   ; break_collection_expressions= elt `Fit_or_vertical
@@ -96,7 +97,7 @@ let conventional_profile from =
   ; parens_ite= elt false
   ; parens_tuple= elt `Always
   ; parens_tuple_patterns= elt `Multi_line_only
-  ; parse_docstrings= elt false
+  ; parse_docstrings= elt true
   ; parse_toplevel_phrases= elt false
   ; sequence_blank_line= elt `Preserve_one
   ; sequence_style= elt `Terminator
@@ -118,6 +119,7 @@ let ocamlformat_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt true
   ; assignment_operator= elt `End_line
+  ; break_around_multiline_strings= elt false
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Nested
   ; break_collection_expressions= elt `Fit_or_vertical
@@ -184,6 +186,7 @@ let janestreet_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt false
   ; assignment_operator= elt `Begin_line
+  ; break_around_multiline_strings= elt true
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Fit_or_vertical
   ; break_collection_expressions=
@@ -231,7 +234,7 @@ let janestreet_profile from =
   ; parens_ite= elt true
   ; parens_tuple= elt `Multi_line_only
   ; parens_tuple_patterns= elt `Multi_line_only
-  ; parse_docstrings= elt true
+  ; parse_docstrings= elt false
   ; parse_toplevel_phrases= elt false
   ; sequence_blank_line= elt `Compact
   ; sequence_style= elt `Terminator
@@ -273,14 +276,6 @@ module V = struct
 
   let v0_22 = Version.make ~major:0 ~minor:22 ~patch:None
 end
-
-let disable_outside_detected_project =
-  let msg =
-    "OCamlFormat is disabled outside of a detected project by default, to \
-     enable the opposite behavior use `enable-outside-detected-project`."
-  in
-  let names = ["disable-outside-detected-project"] in
-  Decl.removed_option ~names ~since:V.v0_22 ~msg
 
 let profile =
   let doc =
@@ -346,7 +341,7 @@ let profile =
       {conf with profile= elt; fmt_opts= p} )
     (fun conf -> conf.profile)
 
-let options = Store.[elt disable_outside_detected_project; elt profile]
+let options = Store.[elt profile]
 
 (** Options affecting formatting *)
 module Formatting = struct
@@ -1534,8 +1529,8 @@ let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
   | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
       Error
         (`Msg
-          (Format.sprintf "Invalid format: Unknown suffix %S"
-             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+           (Format.sprintf "Invalid format: Unknown suffix %S"
+              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
   | _ -> Error `Ignore
 
 let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =

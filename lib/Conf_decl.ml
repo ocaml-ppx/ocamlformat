@@ -19,7 +19,7 @@ let ocaml_version_conv =
   in
   (parse, Ocaml_version.pp)
 
-type typ = Int | Bool | Range | Ocaml_version | Choice of string list
+type typ = Int | Bool | Ocaml_version | Choice of string list
 
 module UI = struct
   type 'config t =

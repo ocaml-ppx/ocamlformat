@@ -9,6 +9,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Odoc_parser = Ocamlformat_odoc_parser.Odoc_parser
+
 let parse ~loc text =
   let location = loc.Location.loc_start in
   let location =

@@ -4,18 +4,30 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
-<!--
-The format of this Changelog is based on Keep a Changelog (https://keepachangelog.com/en/1.0.0/).
-
-Tags:
-- Changed
-- Added
-- Fixed
-- Documentation
-- Internal
--->
-
 ## unreleased
+
+### Changed
+
+- Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
+  It was removed in version 0.22.
+- \* Consistent formatting of comments (#2371, @Julow)
+- Documentation comments are now formatted by default (#2390, @Julow)
+  Use the option `parse-docstrings = false` to disable.
+- \* Janestreet profile: do not break `fun _ -> function` (#2460, @tdelvecchio-jsc)
+- \* Reduce the indentation of (polytype) type constraints (#2437, @gpetiot)
+- \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
+
+### Fixed
+
+- Remove trailing space inside a wrapping empty signature (#2443, @Julow)
+- Fix extension-point spacing in structures (#2450, @Julow)
+- \* Consistent break after string constant argument (#2453, @Julow)
+- Fix invalid syntax generated with `ocp-indent-compat` (#2445, @Julow)
+- Fixed bug with attributes on sub-expressions of infix operators (#2459, @tdelvecchio-jsc)
+- \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
+- Fix position of comments around function parameters (#2471, @gpetiot)
+
+## 0.26.1 (2023-09-15)
 
 ### Changed
 
@@ -29,8 +41,10 @@ Tags:
 ### Fixed
 
 - Fix dropped attributes on a begin-end in a match case (#2421, @Julow)
+- Fix dropped attributes on begin-end in an if-then-else branch (#2436, @gpetiot)
 - Fix non-stabilizing comments before a functor type argument (#2420, @Julow)
 - Fix crash caused by module types with nested `with module` (#2419, @Julow)
+- Fix ';;' formatting between doc-comments and toplevel directives (#2432, @gpetiot)
 
 ## 0.26.0 (2023-07-18)
 
@@ -131,6 +145,7 @@ Tags:
 - JaneStreet profile: doesn't align infix ops with open paren (#2204, @gpetiot)
 - Re-use the type let_binding from the parser instead of value_binding, improve the spacing of let-bindings regarding of having extension or comments (#2219, @gpetiot)
 - The `ocamlformat` package now only contains the binary, the library is available through the `ocamlformat-lib` package (#2230, @gpetiot)
+- The position of module and module type attributes is now preserved. (#2451, #2455, @emiletrotignon)
 
 ### Added
 

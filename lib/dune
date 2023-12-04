@@ -19,24 +19,23 @@
  (flags
   (:standard
    -open
-   Ocaml_common
+   Ocamlformat_ocaml_common
    -open
-   Parser_extended
+   Ocamlformat_parser_extended
    -open
    Ocamlformat_stdlib
    -open
-   Ocamlformat_result.Global_scope))
+   Ocamlformat_format))
  (instrumentation
   (backend bisect_ppx))
  (libraries
-  format_
-  ocaml_common
-  parser_standard
-  parser_extended
-  ocamlformat_result
-  ocamlformat_stdlib
+  dune-build-info
   ocaml-version
+  ocamlformat_format
+  ocamlformat_ocaml_common
+  ocamlformat_odoc_parser
+  ocamlformat_parser_extended
+  ocamlformat_parser_standard
+  ocamlformat_stdlib
   ocp-indent.lib
-  odoc_parser
-  uuseg.string
-  dune-build-info))
+  uuseg.string))

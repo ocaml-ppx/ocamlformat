@@ -394,7 +394,7 @@ OPTIONS (CODE FORMATTING STYLE)
            multi-line-only.
 
        --parse-docstrings
-           Parse and format docstrings. The flag is unset by default.
+           Parse and format docstrings. The flag is set by default.
 
        --parse-toplevel-phrases
            Parse and format toplevel phrases and their output. The flag is
@@ -470,11 +470,6 @@ OPTIONS (REMOVED)
        --align-variants-decl=VAL
            This option has been removed in version 0.22.
 
-       --disable-outside-detected-project=VAL
-           This option has been removed in version 0.22. OCamlFormat is
-           disabled outside of a detected project by default, to enable the
-           opposite behavior use `enable-outside-detected-project`.
-
        --doc-comments-val=VAL
            This option has been removed in version 0.16. If you are using
            `doc-comments-val=before` in combination with
@@ -534,6 +529,12 @@ OPTIONS
 
        --disable-conf-files
            Disable .ocamlformat configuration files.
+
+       --disable-outside-detected-project
+           If no .ocamlformat config files have been detected, disable the
+           formatting. OCamlFormat is disabled outside of a detected project
+           by default, to enable the opposite behavior use
+           --enable-outside-detected-project.
 
        --doc
            Parse input as an odoc documentation.

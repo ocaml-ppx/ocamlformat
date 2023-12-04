@@ -98,24 +98,26 @@ type decoded = {prefix: string; suffix: string; kind: decoded_kind}
     indentation to trim. *)
 let unindent_lines ?(max_indent = Stdlib.max_int) ~content_offset first_line
     tl_lines =
-  (* The indentation of the first line must account for the location of the
-     comment opening. Don't account for the first line if it's empty. *)
-  let fl_spaces, fl_indent =
-    match String.indent_of_line first_line with
-    | Some i -> (i, i + content_offset - 1)
-    | None -> (String.length first_line, Stdlib.max_int)
-  in
-  let fl_indent = min max_indent fl_indent in
-  let min_indent =
-    List.fold_left ~init:fl_indent
+  let tl_indent =
+    List.fold_left ~init:max_indent
       ~f:(fun acc s ->
         match String.indent_of_line s with
         | Some i -> min acc i
         | None -> acc )
       tl_lines
   in
-  (* Completely trim the first line *)
-  String.drop_prefix first_line fl_spaces
+  (* The indentation of the first line must account for the location of the
+     comment opening. Don't account for the first line if it's empty.
+     [fl_trim] is the number of characters to remove from the first line. *)
+  let fl_trim, fl_indent =
+    match String.indent_of_line first_line with
+    | Some i ->
+        (max 0 (min i (tl_indent - content_offset)), i + content_offset - 1)
+    | None -> (String.length first_line, max_indent)
+  in
+  let min_indent = min tl_indent fl_indent in
+  let first_line = String.drop_prefix first_line fl_trim in
+  first_line
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
 let unindent_lines ?max_indent ~content_offset txt =
@@ -160,17 +162,12 @@ let decode_comment ~parse_comments_as_doc txt loc =
     match txt.[0] with
     | '$' when not (Char.is_whitespace txt.[1]) -> mk (Verbatim txt)
     | '$' ->
-        let content_offset = opn_offset + 3 (* for opening + [$] *) in
         let dollar_suf = Char.equal txt.[String.length txt - 1] '$' in
         let suffix = if dollar_suf then "$" else "" in
-        let source =
+        let code =
           let len = String.length txt - if dollar_suf then 2 else 1 in
           String.sub ~pos:1 ~len txt
         in
-        let lines = unindent_lines ~content_offset source in
-        let lines = List.map ~f:String.rstrip lines in
-        let lines = List.drop_while ~f:is_all_whitespace lines in
-        let code = String.concat ~sep:"\n" lines in
         mk ~prefix:"$" ~suffix (Code code)
     | '=' -> mk (Verbatim txt)
     | _ when is_all_whitespace txt ->
@@ -181,18 +178,8 @@ let decode_comment ~parse_comments_as_doc txt loc =
           let content_offset = opn_offset + 2 in
           unindent_lines ~content_offset txt
         in
-        (* Don't add a space to the prefix if the first line was only
-           spaces. *)
-        let prefix =
-          if
-            String.starts_with_whitespace txt
-            && not (is_all_whitespace (List.hd_exn lines))
-          then " "
-          else ""
-        in
         match split_asterisk_prefixed lines with
-        | Some deprefixed_lines ->
-            mk ~prefix (Asterisk_prefixed deprefixed_lines)
+        | Some deprefixed_lines -> mk (Asterisk_prefixed deprefixed_lines)
         | None -> mk (Normal txt) )
   else
     match txt with

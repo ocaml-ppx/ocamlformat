@@ -120,8 +120,7 @@ let _pp_format_lit fs =
   | Escaped_percent -> fprintf fs "@@%%"
   | Scan_indic c -> pp_keyword fs ("@" ^ String.make 1 c)
 
-let rec _format_string :
-    type a b c d e f.
+let rec _format_string : type a b c d e f.
     _ -> (a, b, c, d, e, f) CamlinternalFormatBasics.fmt -> unit =
   let open CamlinternalFormatBasics in
   fun fs -> function

@@ -8181,3 +8181,12 @@ module type M = sig
     : Simple_value_approx.function_declarations option
         Set_of_closures_id.Tbl.fooooooooooooooooooooooooo
 end
+
+(*$
+  let _ =
+    [ x (*
+      *)
+    ; y
+    ]
+  ;;
+*)

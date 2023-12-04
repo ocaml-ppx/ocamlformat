@@ -11,6 +11,8 @@
 
 open Extended_ast
 
+type 'a t = 'a Extended_ast.t
+
 let dedup_cmts fragment ast comments =
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in

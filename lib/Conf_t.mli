@@ -51,6 +51,7 @@ type 'a elt = 'a Elt.t
 type fmt_opts =
   { align_symbol_open_paren: bool elt
   ; assignment_operator: [`Begin_line | `End_line] elt
+  ; break_around_multiline_strings: bool elt
   ; break_before_in: [`Fit_or_vertical | `Auto] elt
   ; break_cases:
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `Vertical | `All] elt
