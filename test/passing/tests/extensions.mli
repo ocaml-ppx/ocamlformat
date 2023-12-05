@@ -10,11 +10,16 @@ type t =
     foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
     foooooooooooooooooooooooooooo]
 
-[%%foooooooooo:
-  fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-  foooooooooooooooooooooooooooooooooo
-  foooooooooooooooooooooooooooo
+[%%foooooooooo
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+  foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
   foooooooooooooooooooooooooooo]
+
+[%%foooooooooo:
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo]
 
 [@@@foooooooooo
 fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo

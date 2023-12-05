@@ -577,13 +577,16 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
     when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
       fmt_pattern c ~ext (sub_pat ~ctx pat)
   | _ ->
-      let indent =
-        match pld with
-        | PStr [{pstr_desc= Pstr_eval _; _}] | PTyp _ | PPat _ ->
-            c.conf.fmt_opts.extension_indent.v
-        | PSig _ | PStr _ -> c.conf.fmt_opts.stritem_extension_indent.v
+      let box =
+        if c.conf.fmt_opts.ocp_indent_compat.v then
+          match pld with
+          | PStr [{pstr_desc= Pstr_eval _; _}] | PTyp _ | PPat _ ->
+              hvbox c.conf.fmt_opts.extension_indent.v
+          | PSig _ | PStr _ ->
+              hvbox c.conf.fmt_opts.stritem_extension_indent.v
+        else Fn.id
       in
-      hvbox indent
+      box
         (wrap "[" "]"
            ( str (Ext.Key.to_string key)
            $ fmt_str_loc c ext

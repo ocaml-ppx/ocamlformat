@@ -10,11 +10,16 @@ type t =
        foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
        foooooooooooooooooooooooooooo]
 
-[%%foooooooooo:
-     fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooo
+[%%foooooooooo
+   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+     foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
      foooooooooooooooooooooooooooo]
+
+[%%foooooooooo:
+   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+   foooooooooooooooooooooooooooooooooo
+   foooooooooooooooooooooooooooo
+   foooooooooooooooooooooooooooo]
 
 [@@@foooooooooo
    fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
@@ -22,9 +27,9 @@ type t =
      foooooooooooooooooooooooooooo]
 
 [%%ext
-   val foooooooooooooooooooooo : fooooooooooo
+val foooooooooooooooooooooo : fooooooooooo
 
-   val fooooooooooooooooooooooooooo : fooooo]
+val fooooooooooooooooooooooooooo : fooooo]
 
 exception%ext E
 

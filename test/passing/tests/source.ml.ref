@@ -36,8 +36,8 @@ type obj =
 type var = [`Foo  (** foo *) | `Bar of int * string  (** bar *)]
 
 [%%foo
-  let x = 1 in
-  x]
+let x = 1 in
+x]
 
 let [%foo 2 + 1] : [%foo bar.baz] = [%foo "foo"]
 
@@ -59,9 +59,9 @@ let [%foo? Bar x | Baz x] : [%foo? #bar] = [%foo? {x}]
 
 let [%foo: include S with type t = t] :
     [%foo:
-    val x : t
+      val x : t
 
-    val y : t] =
+      val y : t] =
   [%foo: type t = t]
 
 let int_with_custom_modifier =
@@ -2942,7 +2942,7 @@ end
 module F (M : S) : S = M
 
 [%%expect
-  {|
+{|
 module type S = sig type t [@@immediate] end
 module F : functor (M : S) -> S
 |}]
@@ -2966,7 +2966,7 @@ module A = struct
 end
 
 [%%expect
-  {|
+{|
 module A :
   sig
     type t [@@immediate]
@@ -2991,7 +2991,7 @@ module Z : sig
 end = (Y : X with type t = int )
 
 [%%expect
-  {|
+{|
 module type X = sig type t end
 module Y : sig type t = int end
 module Z : sig type t [@@immediate] end
@@ -3079,7 +3079,7 @@ module B = struct
 end
 
 [%%expect
-  {|
+{|
 Line _, characters 2-31:
 Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
@@ -3093,7 +3093,7 @@ module C = struct
 end
 
 [%%expect
-  {|
+{|
 Line _, characters 2-26:
 Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
@@ -3107,7 +3107,7 @@ end = struct
 end
 
 [%%expect
-  {|
+{|
 Line _, characters 42-70:
 Error: Signature mismatch:
        Modules do not match:
@@ -3131,7 +3131,7 @@ module FM_invalid = F (struct
 end)
 
 [%%expect
-  {|
+{|
 Line _, characters 23-49:
 Error: Signature mismatch:
        Modules do not match: sig type t = string end is not included in S
@@ -3150,7 +3150,7 @@ module E = struct
 end
 
 [%%expect
-  {|
+{|
 Line _, characters 2-26:
 Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
