@@ -34,13 +34,12 @@ type convert_legacy_jane_street_local_annotations_segment_type =
 
     [ ...
     ; "jane.erasable.local"
-    ; "jane.erasable.local._location.GHOST"
     ; "jane.erasable.local.SEGMENT.local" <-- omitted in the special case of [Pattern]
     ; ...]
 
-    where GHOST and SEGMENT are controlled by the function parameters.
+    where SEGMENT is controlled by the function parameter.
    *)
-let convert_legacy_jane_street_local_annotations ~ghost ?segment =
+let convert_legacy_jane_street_local_annotations ?segment =
   let prefix = "jane.erasable.local." in
   let attrs name =
     let segment =
@@ -50,12 +49,7 @@ let convert_legacy_jane_street_local_annotations ~ghost ?segment =
       | Some Constructor_argument -> [prefix ^ "constructor_argument." ^ name]
       | Some Pattern -> []
     in
-    List.map ~f:make_attr_with_name
-      (List.concat
-         [ [ "jane.erasable.local"
-           ; ( "jane.erasable.local._location."
-             ^ if ghost then "_ghost" else "_nonghost" ) ]
-         ; segment ] )
+    List.map ~f:make_attr_with_name ("jane.erasable.local" :: segment)
   in
   List.concat_map ~f:(fun attr ->
       match attr with
@@ -71,8 +65,7 @@ let convert_legacy_jane_street_local_annotations ~ghost ?segment =
           else [attr]
       | _ -> [attr] )
 
-let convert_legacy_jane_street_local_extension_expressions ~is_value_binding
-    exp =
+let convert_legacy_jane_street_local_extension_expressions exp =
   match exp.pexp_desc with
   | Pexp_apply
       ( {pexp_desc= Pexp_extension ({txt= extension_name; _}, PStr []); _}
@@ -80,18 +73,10 @@ let convert_legacy_jane_street_local_extension_expressions ~is_value_binding
     when Conf.is_jane_street_local_annotation "local" ~test:extension_name
          || Conf.is_jane_street_local_annotation "exclave"
               ~test:extension_name ->
-      let is_fun =
-        match sbody.pexp_desc with Pexp_fun _ -> true | _ -> false
-      in
       `Changed
         { sbody with
           pexp_attributes=
             convert_legacy_jane_street_local_annotations
-              ~ghost:(is_fun && is_value_binding)
-                (* This is here to deal with a special case in the shape of
-                   [let g = [%local] (fun a b c -> 1)]. The new syntax for
-                   this is [let local_ g a b c = 1] and has a ghost location
-                   attribute. *)
               (make_attr_with_name extension_name :: sbody.pexp_attributes)
         }
   | _ -> `Same exp
@@ -227,10 +212,7 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
              (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
              exp3 )
     | _ -> (
-      match
-        convert_legacy_jane_street_local_extension_expressions
-          ~is_value_binding:false exp
-      with
+      match convert_legacy_jane_street_local_extension_expressions exp with
       | `Changed exp -> m.expr m exp
       | `Same exp -> Ast_mapper.default_mapper.expr m exp )
   in
@@ -239,8 +221,8 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     let pat =
       { pat with
         ppat_attributes=
-          convert_legacy_jane_street_local_annotations ~ghost:false
-            ~segment:Pattern pat.ppat_attributes }
+          convert_legacy_jane_street_local_annotations ~segment:Pattern
+            pat.ppat_attributes }
     in
     let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
     (* normalize nested or patterns *)
@@ -267,8 +249,8 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     let typ =
       { typ with
         ptyp_attributes=
-          convert_legacy_jane_street_local_annotations ~ghost:false
-            ~segment:Type typ.ptyp_attributes }
+          convert_legacy_jane_street_local_annotations ~segment:Type
+            typ.ptyp_attributes }
     in
     Ast_mapper.default_mapper.typ m typ
   in
@@ -317,7 +299,7 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
         pld_type=
           { ld.pld_type with
             ptyp_attributes=
-              convert_legacy_jane_street_local_annotations ~ghost:false
+              convert_legacy_jane_street_local_annotations
                 ~segment:Constructor_argument
                 (local_attrs @ ld.pld_type.ptyp_attributes) }
       ; pld_attributes= attrs }
@@ -334,24 +316,12 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
                  { typ with
                    ptyp_attributes=
                      convert_legacy_jane_street_local_annotations
-                       ~ghost:false ~segment:Constructor_argument
-                       typ.ptyp_attributes } )
+                       ~segment:Constructor_argument typ.ptyp_attributes } )
                l )
       | a -> a
     in
     Ast_mapper.default_mapper.constructor_declaration m
       {decl with pcd_args= args}
-  in
-  let value_binding (m : Ast_mapper.mapper) vb =
-    let pvb_expr =
-      match
-        convert_legacy_jane_street_local_extension_expressions
-          ~is_value_binding:true vb.pvb_expr
-      with
-      | `Changed expr -> expr
-      | `Same expr -> expr
-    in
-    Ast_mapper.default_mapper.value_binding m {vb with pvb_expr}
   in
   { Ast_mapper.default_mapper with
     location
@@ -365,8 +335,7 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   ; pat
   ; typ
   ; label_declaration
-  ; constructor_declaration
-  ; value_binding }
+  ; constructor_declaration }
 
 let ast fragment ~ignore_doc_comments ~erase_jane_syntax c =
   map fragment (make_mapper c ~ignore_doc_comments ~erase_jane_syntax)
