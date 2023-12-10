@@ -64,7 +64,7 @@ let run_config conf c =
 
 let run_path path =
   match
-    Bin_conf.build_config ~enable_outside_detected_project:false ~root:None
+    Bin_conf.build_config ~enable_outside_detected_project:true ~root:None
       ~file:path ~is_stdin:false
   with
   | Ok _ as ok -> ok
