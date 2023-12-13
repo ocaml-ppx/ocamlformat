@@ -300,10 +300,15 @@ let wrap_collec c ~space_around opn cls =
 let wrap_record (c : Conf.t) =
   wrap_collec c ~space_around:c.fmt_opts.space_around_records.v "{" "}"
 
-let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
-  if parens then wrap_fits_breaks c "(" ")"
-  else if no_parens_if_break then Fn.id
-  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
+let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break k =
+  if parens then wrap_fits_breaks c "(" ")" (hvbox 0 k)
+  else if no_parens_if_break then k
+  else fits_breaks "" "( " $ hvbox 0 k $ fits_breaks "" ~hint:(1, 0) ")"
+
+let tuple_sep (c : Conf.t) =
+  match c.fmt_opts.break_separators.v with
+  | `Before -> fits_breaks ", " ~hint:(1000, -2) ", "
+  | `After -> fmt ",@ "
 
 type record_type =
   { docked_before: Fmt.t

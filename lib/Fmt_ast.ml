@@ -1047,7 +1047,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       in
       hvbox 0
         (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
-           (list pats (Params.comma_sep c.conf)
+           (list_k pats (Params.tuple_sep c.conf)
               (sub_pat ~ctx >> fmt_pattern c) ) )
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
@@ -2584,7 +2584,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ( hvbox 0
                  (Params.wrap_tuple ~parens:inner_wrap ~no_parens_if_break
                     c.conf
-                    (list es (Params.comma_sep c.conf)
+                    (list_k es (Params.tuple_sep c.conf)
                        (sub_exp ~ctx >> fmt_expression c) ) )
              $ fmt_atrs ) )
   | Pexp_lazy e ->

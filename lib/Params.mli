@@ -94,6 +94,8 @@ val get_cases :
 val wrap_tuple :
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
 
+val tuple_sep : Conf.t -> Fmt.t
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
