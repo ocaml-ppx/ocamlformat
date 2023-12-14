@@ -1233,3 +1233,5 @@ let signature_item ppf x = signature_item 0 ppf x
 let function_param ppf x = function_param 0 ppf x
 
 let value_constraint ppf x = value_constraint 0 ppf x
+
+let binding_op ppf x = binding_op 0 ppf x
