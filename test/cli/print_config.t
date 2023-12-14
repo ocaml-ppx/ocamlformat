@@ -4,6 +4,7 @@ No redundant values:
   Entering directory 'empty'
   Success: initialized project component named empty
   Leaving directory 'empty'
+  $ cd empty
   $ touch empty.ml
   $ echo 'profile = conventional' > .ocamlformat
   $ echo 'field-space = tight' >> .ocamlformat
