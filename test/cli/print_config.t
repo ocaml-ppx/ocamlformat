@@ -3,6 +3,7 @@ No redundant values:
   $ touch empty.ml
   $ echo 'profile = conventional' > .ocamlformat
   $ echo 'field-space = tight' >> .ocamlformat
+  $ echo 'version-check = true' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
   comment-check=true
@@ -13,7 +14,7 @@ No redundant values:
   ocaml-version=4.04.0
   quiet=false
   disable-conf-attrs=false
-  version-check=true
+  version-check=true (file .ocamlformat:3)
   assignment-operator=end-line (profile conventional (file .ocamlformat:1))
   break-before-in=fit-or-vertical (profile conventional (file .ocamlformat:1))
   break-cases=fit (profile conventional (file .ocamlformat:1))
@@ -81,6 +82,7 @@ Redundant values from the conventional profile:
   $ echo 'profile = conventional' > .ocamlformat
   $ echo 'if-then-else = compact' >> .ocamlformat
   $ echo 'margin = 80' >> .ocamlformat
+  $ echo 'version-check = true' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
   comment-check=true
@@ -91,7 +93,7 @@ Redundant values from the conventional profile:
   ocaml-version=4.04.0
   quiet=false
   disable-conf-attrs=false
-  version-check=true
+  version-check=true (file .ocamlformat:4)
   assignment-operator=end-line (profile conventional (file .ocamlformat:1))
   break-before-in=fit-or-vertical (profile conventional (file .ocamlformat:1))
   break-cases=fit (profile conventional (file .ocamlformat:1))
@@ -159,6 +161,7 @@ Redundant values from the ocamlformat profile:
   $ echo 'profile = ocamlformat' > .ocamlformat
   $ echo 'if-then-else = compact' >> .ocamlformat
   $ echo 'margin = 80' >> .ocamlformat
+  $ echo 'version-check = true' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
   comment-check=true
@@ -169,7 +172,7 @@ Redundant values from the ocamlformat profile:
   ocaml-version=4.04.0
   quiet=false
   disable-conf-attrs=false
-  version-check=true
+  version-check=true (file .ocamlformat:4)
   assignment-operator=end-line (profile ocamlformat (file .ocamlformat:1))
   break-before-in=fit-or-vertical (profile ocamlformat (file .ocamlformat:1))
   break-cases=nested (profile ocamlformat (file .ocamlformat:1))
