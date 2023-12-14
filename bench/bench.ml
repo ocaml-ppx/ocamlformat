@@ -65,8 +65,6 @@ let benchmark () =
   let results = Analyze.merge ols instances results in
   results
 
-let nothing _ = Ok ()
-
 type 'a result = (string, 'a) Hashtbl.t
 
 type 'a results = (string, 'a result) Hashtbl.t
@@ -89,12 +87,6 @@ let process_results results =
 
 let json_of_ols ols =
   match Bechamel.Analyze.OLS.estimates ols with
-  | Some [x] -> `Float x
-  | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
-  | None -> `List []
-
-let json_of_string_ols ols =
-  match ols with
   | Some [x] -> `Float x
   | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
   | None -> `List []
