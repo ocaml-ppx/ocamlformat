@@ -953,6 +953,14 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with let_binding_indent= elt}) )
       (fun conf -> conf.fmt_opts.let_binding_indent)
 
+  let let_binding_deindent_fun =
+    let doc = "Deindent a line beginning with `fun`." in
+    let names = ["let-binding-deindent-fun"] in
+    Decl.flag ~names ~default ~doc ~kind
+      (fun conf elt ->
+        update conf ~f:(fun f -> {f with let_binding_deindent_fun= elt}) )
+      (fun conf -> conf.fmt_opts.let_binding_deindent_fun)
+
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
@@ -1334,6 +1342,7 @@ module Formatting = struct
       ; elt leading_nested_match_parens
       ; elt let_and
       ; elt let_binding_indent
+      ; elt let_binding_deindent_fun
       ; elt let_binding_spacing
       ; elt let_module
       ; elt line_endings
