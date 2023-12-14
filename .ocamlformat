@@ -3,3 +3,7 @@ break-cases = fit
 margin = 77
 wrap-comments = true
 line-endings = lf
+
+# To make ocaml-ci happy
+version = ignore
+version-check = false
