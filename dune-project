@@ -124,8 +124,6 @@
     (>= 1.3.0)))
   (bechamel
    (>= 0.2.0))
-  (bechamel-js
-   (>= 0.2.0))
   (ocamlformat-lib
    (= :version))
   stdio
