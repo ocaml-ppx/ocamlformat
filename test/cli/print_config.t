@@ -1,9 +1,7 @@
 No redundant values:
 
-  $ dune init proj empty
-  Entering directory 'empty'
+  $ dune init proj empty --no-print-directory
   Success: initialized project component named empty
-  Leaving directory 'empty'
   $ cd empty
   $ touch empty.ml
   $ echo 'profile = conventional' > .ocamlformat

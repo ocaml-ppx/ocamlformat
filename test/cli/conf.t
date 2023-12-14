@@ -1,9 +1,7 @@
 Invalid version:
 
-  $ dune init proj prj
-  Entering directory 'prj'
+  $ dune init proj prj --no-print-directory
   Success: initialized project component named prj
-  Leaving directory 'prj'
   $ cd prj
   $ echo 'version = bad' > .ocamlformat
   $ echo 'let x = "Hello World"' > a.ml
