@@ -1003,7 +1003,7 @@ end = struct
     | Fp _ -> assert false
     | Vc c -> assert (check_value_constraint c)
     | Lb _ -> assert false
-    | Bo ctx -> assert (Option.exists ctx.pbop_typ ~f:check_value_constraint)
+    | Bo _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Cl {pcl_desc; _} ->
