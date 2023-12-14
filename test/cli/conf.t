@@ -1,6 +1,7 @@
 Invalid version:
 
   $ echo 'version = bad' > .ocamlformat
+  $ echo 'version-check = true' >> .ocamlformat
   $ echo 'let x = "Hello World"' > a.ml
 
 Exit code is printed by hand because sed succeeding would hide the error.
