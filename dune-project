@@ -120,6 +120,7 @@
  (synopsis "Auto-formatter for OCaml code")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+ (allow_empty)
  (depends
   (ocaml
    (>= 4.08))
