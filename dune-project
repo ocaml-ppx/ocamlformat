@@ -54,7 +54,8 @@
   dune-build-info
   either
   fix
-  fpath
+  (fpath
+   (>= 0.7.3))
   (menhir
    (>= 20201216))
   (menhirLib
