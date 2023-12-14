@@ -48,6 +48,8 @@
     (>= 1.3.0)))
   (base
    (>= v0.12.0))
+  (cmdliner
+   (>= 1.1.0))
   dune
   dune-build-info
   either
