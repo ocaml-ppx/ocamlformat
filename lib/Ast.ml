@@ -1905,16 +1905,23 @@ end = struct
     | Fp {pparam_desc= Pparam_val (_, _, _); _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
-    | ( (Exp {pexp_desc= Pexp_letop _; _} | Bo {pbop_typ= Some _; _})
+    | ( Exp {pexp_desc= Pexp_letop _; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_cons _
         | Ppat_variant (_, Some _)
-        | Ppat_or _ | Ppat_alias _ | Ppat_tuple _
+        | Ppat_or _ | Ppat_alias _
         | Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ) ->
         true
-    | ( (Exp {pexp_desc= Pexp_letop _; _} | Bo {pbop_typ= Some _; _})
+    | ( Exp {pexp_desc= Pexp_letop _; _}
       , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
         false
+    | ( Bo {pbop_typ= None; _}
+      , ( Ppat_construct (_, Some _)
+        | Ppat_cons _
+        | Ppat_variant (_, Some _)
+        | Ppat_or _ | Ppat_alias _ ) ) ->
+        true
+    | Bo {pbop_typ= Some _; _}, (Ppat_any | Ppat_tuple _) -> true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
