@@ -102,6 +102,8 @@
     (and
      :with-test
      (>= 1.2.0))))
+  (csexp
+   (>= 1.4.0))
   dune
   (ocamlformat-lib
    (= :version))
