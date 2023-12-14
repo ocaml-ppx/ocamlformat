@@ -113,6 +113,7 @@ type t =
   | Fp of function_param
   | Vc of value_constraint
   | Lb of value_binding
+  | Bo of binding_op
   | Mb of module_binding
   | Md of module_declaration
   | Cl of class_expr

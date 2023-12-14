@@ -48,11 +48,14 @@
     (>= 1.3.0)))
   (base
    (>= v0.12.0))
+  (cmdliner
+   (>= 1.1.0))
   dune
   dune-build-info
   either
   fix
-  fpath
+  (fpath
+   (>= 0.7.3))
   (menhir
    (>= 20201216))
   (menhirLib
@@ -100,6 +103,8 @@
     (and
      :with-test
      (>= 1.2.0))))
+  (csexp
+   (>= 1.4.0))
   dune
   (ocamlformat-lib
    (= :version))
@@ -123,8 +128,6 @@
     :with-test
     (>= 1.3.0)))
   (bechamel
-   (>= 0.2.0))
-  (bechamel-js
    (>= 0.2.0))
   (ocamlformat-lib
    (= :version))

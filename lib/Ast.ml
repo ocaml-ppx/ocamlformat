@@ -641,6 +641,7 @@ module T = struct
     | Fp of function_param
     | Vc of value_constraint
     | Lb of value_binding
+    | Bo of binding_op
     | Mb of module_binding
     | Md of module_declaration
     | Cl of class_expr
@@ -663,6 +664,7 @@ module T = struct
     | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
     | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
+    | Bo b -> Format.fprintf fs "Bo:@\n%a" Printast.binding_op b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
@@ -697,6 +699,7 @@ let attributes = function
   | Fp _ -> []
   | Vc _ -> []
   | Lb x -> x.pvb_attributes
+  | Bo _ -> []
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
@@ -720,6 +723,7 @@ let location = function
   | Fp x -> x.pparam_loc
   | Vc _ -> Location.none
   | Lb x -> x.pvb_loc
+  | Bo x -> x.pbop_loc
   | Mb x -> x.pmb_loc
   | Md x -> x.pmd_loc
   | Cl x -> x.pcl_loc
@@ -999,6 +1003,7 @@ end = struct
     | Fp _ -> assert false
     | Vc c -> assert (check_value_constraint c)
     | Lb _ -> assert false
+    | Bo _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Cl {pcl_desc; _} ->
@@ -1108,6 +1113,7 @@ end = struct
     | Fp _ -> assert false
     | Vc _ -> assert false
     | Lb _ -> assert false
+    | Bo _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Pld _ -> assert false
@@ -1177,6 +1183,7 @@ end = struct
     | Fp _ -> assert false
     | Vc _ -> assert false
     | Lb _ -> assert false
+    | Bo _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
     | Pld _ -> assert false
@@ -1303,6 +1310,7 @@ end = struct
     | Fp ctx -> assert (check_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_pat == pat)
+    | Bo x -> assert (x.pbop_pat == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
     | Cl ctx ->
@@ -1434,6 +1442,7 @@ end = struct
     | Fp ctx -> assert (check_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_expr == exp)
+    | Bo x -> assert (x.pbop_exp == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
     | Str str -> (
@@ -1689,6 +1698,8 @@ end = struct
      |{ctx= _; ast= Vc _}
      |{ctx= Lb _; ast= _}
      |{ctx= _; ast= Lb _}
+     |{ctx= Bo _; ast= _}
+     |{ctx= _; ast= Bo _}
      |{ctx= Td _; ast= _}
      |{ctx= _; ast= Td _}
      |{ ctx= Cl _
@@ -1773,6 +1784,7 @@ end = struct
     | Fp _ -> None
     | Vc _ -> None
     | Lb _ -> None
+    | Bo _ -> None
     | Cl c -> (
       match c.pcl_desc with
       | Pcl_apply _ -> Some Apply
@@ -1903,6 +1915,13 @@ end = struct
     | ( Exp {pexp_desc= Pexp_letop _; _}
       , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
         false
+    | ( Bo {pbop_typ= None; _}
+      , ( Ppat_construct (_, Some _)
+        | Ppat_cons _
+        | Ppat_variant (_, Some _)
+        | Ppat_or _ | Ppat_alias _ ) ) ->
+        true
+    | Bo {pbop_typ= Some _; _}, (Ppat_any | Ppat_tuple _) -> true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -1938,7 +1957,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
-     |Exp {pexp_desc= Pexp_letop _; _}, Ppat_exception _
+     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _; _}
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
         | Ppat_variant _ ) ) ->

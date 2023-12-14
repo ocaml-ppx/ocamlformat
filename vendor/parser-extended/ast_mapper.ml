@@ -104,6 +104,16 @@ let map_arg_label sub = function
   | Labelled x -> Labelled (map_loc sub x)
   | Optional x -> Optional (map_loc sub x)
 
+let map_value_constraint sub = function
+  | Pvc_constraint {locally_abstract_univars=vars; typ} ->
+      let locally_abstract_univars = List.map (map_loc sub) vars in
+      let typ = sub.typ sub typ in
+      Pvc_constraint { locally_abstract_univars; typ }
+  | Pvc_coercion { ground; coercion } ->
+      let ground = Option.map (sub.typ sub) ground in
+      let coercion = sub.typ sub coercion in
+      Pvc_coercion { ground; coercion }
+
 module Flag = struct
   open Asttypes
 
@@ -605,13 +615,14 @@ module E = struct
     | Pexp_infix (op, e1, e2) ->
         infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
 
-  let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} =
+  let map_binding_op sub {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
     let op = map_loc sub pbop_op in
     let pat = sub.pat sub pbop_pat in
+    let typ = map_opt (map_value_constraint sub) pbop_typ in
     let exp = sub.expr sub pbop_exp in
     let loc = sub.location sub pbop_loc in
-    binding_op op pat exp pbop_is_pun loc
+    binding_op op pat typ exp pbop_is_pun loc
 
 end
 
@@ -859,22 +870,10 @@ let default_mapper =
 
     value_binding =
       (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
-         let map_ct (ct:Parsetree.value_constraint) = match ct with
-           | Pvc_constraint {locally_abstract_univars=vars; typ} ->
-               Pvc_constraint
-                 { locally_abstract_univars = List.map (map_loc this) vars;
-                   typ = this.typ this typ
-                 }
-           | Pvc_coercion { ground; coercion } ->
-               Pvc_coercion {
-                 ground = Option.map (this.typ this) ground;
-                 coercion = this.typ this coercion
-               }
-         in
          Vb.mk
            (this.pat this pvb_pat)
            (this.expr this pvb_expr)
-           ?value_constraint:(Option.map map_ct pvb_constraint)
+           ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun
            ~loc:(this.location this pvb_loc)
            ~attrs:(this.attributes this pvb_attributes)

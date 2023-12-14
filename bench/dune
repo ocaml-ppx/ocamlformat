@@ -11,7 +11,7 @@
 
 (executable
  (name bench)
- (libraries bechamel bechamel-js ocamlformat-lib stdio yojson))
+ (libraries bechamel ocamlformat-lib stdio yojson))
 
 (rule
  (alias runbench)
