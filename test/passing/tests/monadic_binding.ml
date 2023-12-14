@@ -32,4 +32,6 @@ let _ =
   let* (args, _) : bar = () in
   let* (arg : bar) = () in
   let* (_ : foo) = () in
+  let* _ as t = xxx in
+  let+ Ok x = xxx in
   ()
