@@ -3,6 +3,8 @@ Invalid version:
   $ dune init proj prj --no-print-directory
   Success: initialized project component named prj
   $ cd prj
+  $ ls
+  $ cat dune-project
   $ echo 'version = bad' > .ocamlformat
   $ echo 'let x = "Hello World"' > a.ml
 
