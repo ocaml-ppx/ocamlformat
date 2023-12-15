@@ -14,16 +14,16 @@ let _ = [%ext 1, 2, 3]
 let _ =
   [%ext
     loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
-    , 2
-    , 3]
+  , 2
+  , 3]
 
 type t = int [@@deriving 1, 2, 3]
 
 type t = int
 [@@deriving
   sexp
-  , compare
-  , loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
+, compare
+, loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
 
 let _ =
   ( 1

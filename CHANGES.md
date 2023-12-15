@@ -27,6 +27,7 @@ profile. This started with version 0.26.0.
 - \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 - Fix position of comments around function parameters (#2471, @gpetiot)
 - \* Force a break around comments following an infix operator (fix non-stabilizing comments) (#2478, @gpetiot)
+- \* Fix the indentation of tuples in attributes and extensions (#2488, @Julow)
 
 ## 0.26.1 (2023-09-15)
 

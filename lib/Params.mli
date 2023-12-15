@@ -92,7 +92,8 @@ val get_cases :
   -> cases
 
 val wrap_tuple :
-  Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
+  Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t list -> Fmt.t
+(** Format a tuple given a list of items. *)
 
 type record_type =
   { docked_before: Fmt.t
