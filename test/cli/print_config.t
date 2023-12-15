@@ -1,8 +1,13 @@
 No redundant values:
 
-  $ dune init proj empty --no-print-directory
-  Success: initialized project component named empty
-  $ cd empty
+  $ mkdir prj
+  $ cd prj
+
+  $ cat >dune-project <<EOF
+  > (lang dune 2.8)
+  > (name prj)
+  > EOF
+
   $ touch empty.ml
   $ echo 'profile = conventional' > .ocamlformat
   $ echo 'field-space = tight' >> .ocamlformat
