@@ -8,9 +8,9 @@ Invalid version:
 
 Exit code is printed by hand because sed succeeding would hide the error.
 
-  $ (<a.ml ocamlformat --impl -; echo [$?]) 2>&1 | sed 's/version "[^"]*"/version <1>/g' | sed 's/version is "[^"]*"/version is <2>/g'
+  $ (<a.ml ocamlformat --impl -; echo [$?]) 2>&1 | sed 's/version is "[^"]*"/version is "..."/g'
   ocamlformat: Error while parsing $TESTCASE_ROOT/prj/.ocamlformat:
-               Project should be formatted using ocamlformat version <1>, but the installed version is <2>
+               Project should be formatted using ocamlformat version "bad", but the installed version is "..."
   [1]
 
 Disable version check:
