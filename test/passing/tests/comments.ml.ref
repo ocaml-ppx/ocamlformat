@@ -196,12 +196,14 @@ type t =
 
 let () =
   xxxxxxxxxx
-  || (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
+  ||
+  (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 let () =
   xxxxxxxxxx
-  land (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
+  land
+  (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 let rec fooooooooooo = function
@@ -356,35 +358,47 @@ let a =
 
 let _ =
   1
-  + (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
+  +
+  (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
   fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-  - (* fooooooooooooo foooooooooooooooooooooo foooooooooooooooooooo *)
+  -
+  (* fooooooooooooo foooooooooooooooooooooo foooooooooooooooooooo *)
   foooooooooooooo foooooooooooooo foooooooooooooooooo fooooooooo
-  % (* foooooooooooooooo foooooooooooo foooooooooooooooooo *)
+  %
+  (* foooooooooooooooo foooooooooooo foooooooooooooooooo *)
   fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-  / (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
+  /
+  (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
   barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-  * (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  *
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  $ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  $
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  & (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  &
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  = (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  =
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  > (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  >
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  < (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  <
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
   (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   @ foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  ^ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  ^
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
-  || (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  ||
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo
     fooooooooooooooo
-    #= (* convert from foos to bars blah blah blah blah blah blah blah
-          blah *)
+    #=
+    (* convert from foos to bars blah blah blah blah blah blah blah blah *)
     foooooooooooooooooooooooo
     foooooooooooooooo fooooooooooooooo
 

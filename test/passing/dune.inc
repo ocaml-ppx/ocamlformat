@@ -2395,7 +2395,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/infix_arg_grouping.ml infix_arg_grouping.ml.stdout)))
+ (action (diff tests/infix_arg_grouping.ml.ref infix_arg_grouping.ml.stdout)))
 
 (rule
  (alias runtest)
@@ -2408,7 +2408,7 @@
  (action
   (with-stdout-to infix_bind-break.ml.stdout
    (with-stderr-to infix_bind-break.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-infix=wrap --break-infix-before-func %{dep:tests/infix_bind.ml})))))
+     (run %{bin:ocamlformat} --margin-check --break-infix=wrap --break-infix-before-func --max-iters=3 %{dep:tests/infix_bind.ml})))))
 
 (rule
  (alias runtest)
@@ -2426,7 +2426,7 @@
  (action
   (with-stdout-to infix_bind-fit_or_vertical-break.ml.stdout
    (with-stderr-to infix_bind-fit_or_vertical-break.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-infix=fit-or-vertical --break-infix-before-func %{dep:tests/infix_bind.ml})))))
+     (run %{bin:ocamlformat} --margin-check --break-infix=fit-or-vertical --break-infix-before-func --max-iters=3 %{dep:tests/infix_bind.ml})))))
 
 (rule
  (alias runtest)

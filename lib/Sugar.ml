@@ -236,43 +236,6 @@ module Let_binding = struct
     | Pexp_constraint _, Ppat_constraint _ -> (xargs, None, xbody)
     | _ -> split_annot cmts xargs xbody
 
-  let type_cstr cmts ~ctx lb_pat lb_exp =
-    let ({ast= pat; _} as xpat) =
-      match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
-      (* recognize and undo the pattern of code introduced by
-         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-         https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint
-            ( ({ppat_desc= Ppat_var _; _} as pat)
-            , {ptyp_desc= Ptyp_poly ([], typ1); _} )
-        , Pexp_constraint (_, typ2) )
-        when equal_core_type typ1 typ2 ->
-          Cmts.relocate cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
-          sub_pat ~ctx:(Pat lb_pat) pat
-      | ( Ppat_constraint (_, {ptyp_desc= Ptyp_poly (_, typ1); _})
-        , Pexp_coerce (_, _, typ2) )
-        when equal_core_type typ1 typ2 ->
-          sub_pat ~ctx lb_pat
-      | _ -> sub_pat ~ctx lb_pat
-    in
-    let pat_is_extension {ppat_desc; _} =
-      match ppat_desc with Ppat_extension _ -> true | _ -> false
-    in
-    let xbody = sub_exp ~ctx lb_exp in
-    if
-      (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then (xpat, [], None, xbody)
-    else
-      let xpat =
-        match xpat.ast.ppat_desc with
-        | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
-            sub_pat ~ctx:xpat.ctx p
-        | _ -> xpat
-      in
-      let xargs, typ, xbody = split_fun_args cmts xpat xbody in
-      (xpat, xargs, typ, xbody)
-
   let should_desugar_args pat typ =
     match (pat.ast, typ) with
     | {ppat_desc= Ppat_var _; ppat_attributes= []; _}, None -> true
@@ -301,16 +264,16 @@ module Let_binding = struct
   let of_let_bindings cmts ~ctx =
     List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
 
-  let of_binding_ops cmts ~ctx bos =
+  let of_binding_ops cmts bos =
     List.map bos ~f:(fun bo ->
-        let lb_pat, lb_args, lb_typ, lb_exp =
-          type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp
-        in
+        let ctx = Bo bo in
+        let xbody = sub_exp ~ctx bo.pbop_exp in
+        let xargs, xbody = fun_ cmts ~will_keep_first_ast_node:false xbody in
         { lb_op= bo.pbop_op
-        ; lb_pat
-        ; lb_args
-        ; lb_typ
-        ; lb_exp
+        ; lb_pat= sub_pat ~ctx bo.pbop_pat
+        ; lb_args= xargs
+        ; lb_typ= bo.pbop_typ
+        ; lb_exp= xbody
         ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )

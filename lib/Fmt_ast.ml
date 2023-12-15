@@ -262,9 +262,10 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   | Pconst_char (_, s) -> wrap "'" "'" @@ str s
   | Pconst_string (s, loc', Some delim) ->
       Cmts.fmt c loc'
-      @@ (* If a multiline string has newlines in it, the configuration might
-            specify it should get treated as a "long" box element. To do so,
-            we pretend it is 1000 characters long. *)
+      @@
+      (* If a multiline string has newlines in it, the configuration might
+         specify it should get treated as a "long" box element. To do so, we
+         pretend it is 1000 characters long. *)
       ( if
           c.conf.fmt_opts.break_around_multiline_strings.v
           && String.mem s '\n'
@@ -1053,8 +1054,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       in
       hvbox 0
         (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
-           (list_k pats (Params.tuple_sep c.conf)
-              (sub_pat ~ctx >> fmt_pattern c) ) )
+           (List.map pats ~f:(sub_pat ~ctx >> fmt_pattern c)) )
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
       Cmts.fmt c loc
@@ -1658,7 +1658,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
                else fmt_if (not very_first) " "
              in
              match cmts_after with
-             | Some c -> (noop, op $ break $ c)
+             | Some c -> (noop, hovbox 0 (op $ fmt "@;" $ c))
              | None -> (op $ break, noop)
            in
            fmt_opt cmts_before $ before_arg
@@ -1947,8 +1947,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     || Cmts.has_before c.cmts arg.ast.pexp_loc
                   then
                     Some
-                      ( Cmts.fmt_after c op.loc
-                      $ Cmts.fmt_before ~adj c arg.ast.pexp_loc )
+                      ( Cmts.fmt_after c ~epi:adj op.loc
+                      $ Cmts.fmt_before ~adj ~epi:adj c arg.ast.pexp_loc )
                   else None
                 in
                 let fmt_op = fmt_str_loc c op in
@@ -2313,7 +2313,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
           lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
+      let bd = Sugar.Let_binding.of_binding_ops c.cmts (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
@@ -2595,8 +2595,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ( hvbox 0
                  (Params.wrap_tuple ~parens:inner_wrap ~no_parens_if_break
                     c.conf
-                    (list_k es (Params.tuple_sep c.conf)
-                       (sub_exp ~ctx >> fmt_expression c) ) )
+                    (List.map es ~f:(sub_exp ~ctx >> fmt_expression c)) )
              $ fmt_atrs ) )
   | Pexp_lazy e ->
       pro
