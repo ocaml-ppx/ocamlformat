@@ -3360,6 +3360,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to labeled_tuple_patterns.ml.stdout
+   (with-stderr-to labeled_tuple_patterns.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuple_patterns.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuple_patterns.ml labeled_tuple_patterns.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuple_patterns.ml.err labeled_tuple_patterns.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to labeled_tuples.ml.stdout
+   (with-stderr-to labeled_tuples.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples.ml labeled_tuples.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples.ml.err labeled_tuples.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to labeled_tuples_cmts_attrs.ml.stdout
+   (with-stderr-to labeled_tuples_cmts_attrs.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuples_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_cmts_attrs.ml labeled_tuples_cmts_attrs.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_cmts_attrs.ml.err labeled_tuples_cmts_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to labeled_tuples_cmts_attrs_move.ml.stdout
+   (with-stderr-to labeled_tuples_cmts_attrs_move.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuples_cmts_attrs_move.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_cmts_attrs_move.ml.ref labeled_tuples_cmts_attrs_move.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_cmts_attrs_move.ml.err labeled_tuples_cmts_attrs_move.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to labelled_args-414.ml.stdout
    (with-stderr-to labelled_args-414.ml.stderr
      (run %{bin:ocamlformat} --margin-check --ocaml-version=4.14.0 %{dep:tests/labelled_args.ml})))))

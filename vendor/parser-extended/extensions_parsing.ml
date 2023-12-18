@@ -290,12 +290,24 @@ module Pattern = Make_AST(struct
   let make_extension_node = Ast_helper.Pat.extension
 
   let make_extension_use ~loc ~extension_node pat =
-    Ast_helper.Pat.tuple ~loc [extension_node; pat]
+    Ast_helper.Pat.tuple ~loc [None, extension_node; None, pat] Closed
+
+  exception Found_label
 
   let match_extension_use pat =
     match pat.ppat_desc with
-    | Ppat_tuple({ppat_desc = Ppat_extension ext; _} :: patterns) ->
-        Some (ext, patterns)
+    | Ppat_tuple((None, {ppat_desc = Ppat_extension ext; _}) :: patterns,
+                 Closed) -> begin
+        try
+          let patterns =
+            List.map (function | None, p -> p
+                               | Some _, _ -> raise Found_label)
+              patterns
+          in
+          Some (ext, patterns)
+        with
+        | Found_label -> None
+      end
     | _ ->
        None
 

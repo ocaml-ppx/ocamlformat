@@ -214,6 +214,11 @@ let fmt_layout_opt ppf l = Format.fprintf ppf "%s"
 let fmt_ty_var ppf (name, layout) =
   Format.fprintf ppf "%a:%a" fmt_str_opt_loc name fmt_layout_opt layout
 
+let tuple_component_label i ppf = function
+  | None -> line i ppf "Label: None\n"
+  | Some s -> line i ppf "Label: Some %a\n" fmt_string_loc s
+;;
+
 let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a" fmt_ty_var x) vs
@@ -236,7 +241,7 @@ let rec core_type i ppf x =
       core_type i ppf ct2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
-      list i core_type ppf l;
+      list i labeled_core_type ppf l;
   | Ptyp_constr (li, l) ->
       line i ppf "Ptyp_constr %a\n" fmt_longident_loc li;
       list i core_type ppf l;
@@ -286,6 +291,10 @@ and object_field i ppf x =
       line i ppf "Oinherit\n";
       core_type i ppf ct
 
+and labeled_core_type i ppf (l, t) =
+  tuple_component_label i ppf l;
+  core_type i ppf t
+
 and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
@@ -311,9 +320,10 @@ and pattern i ppf x =
       line i ppf "Ppat_interval\n";
       fmt_constant i ppf c1;
       fmt_constant i ppf c2;
-  | Ppat_tuple (l) ->
+  | Ppat_tuple (l,op) ->
       line i ppf "Ppat_tuple\n";
-      list i pattern ppf l;
+      list i labeled_pattern ppf l;
+      open_closed i ppf op
   | Ppat_construct (li, po) ->
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
@@ -363,6 +373,15 @@ and pattern i ppf x =
       line i ppf "Ppat_cons\n";
       list i pattern ppf l
 
+and labeled_pattern i ppf (label, x) =
+    tuple_component_label i ppf label;
+    pattern i ppf x
+
+and open_closed i ppf =
+  function
+  | Open -> string i ppf "Open"
+  | Closed -> string i ppf "Closed"
+
 and expression i ppf x =
   line i ppf "expression %a\n" fmt_location x.pexp_loc;
   attributes i ppf x.pexp_attributes;
@@ -397,7 +416,7 @@ and expression i ppf x =
       list i case ppf l;
   | Pexp_tuple (l) ->
       line i ppf "Pexp_tuple\n";
-      list i expression ppf l;
+      list i labeled_expression ppf l;
   | Pexp_construct (li, eo) ->
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;
@@ -540,6 +559,11 @@ and expression i ppf x =
       line i ppf "Pexp_infix %a\n" fmt_string_loc op;
       expression i ppf e1;
       expression i ppf e2
+
+and labeled_expression i ppf (l, e) =
+  line i ppf "<tuple component>\n";
+  tuple_component_label i ppf l;
+  expression (i+1) ppf e;
 
 and if_branch i ppf { if_cond; if_body } =
   line i ppf "if_branch\n";

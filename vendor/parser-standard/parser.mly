@@ -178,6 +178,16 @@ let local_if : type ast. ast Local_syntax_category.t -> _ -> _ -> ast -> ast =
   else
     x
 
+let local_if_has_flags flags sloc x =
+  (* Jane Street: This is horrible temporary code until we properly add
+     support for more modes. *)
+  let is_local =
+    match flags with
+    | [] -> false
+    | _ :: _ -> true
+  in
+  local_if Type is_local sloc x
+
 let global_if global_flag sloc carg =
   match global_flag with
   | Global ->
@@ -302,6 +312,30 @@ let expecting (loc : Lexing.position * Lexing.position) nonterm =
 let removed_string_set loc =
   raise(Syntaxerr.Error(Syntaxerr.Removed_string_set(make_loc loc)))
 *)
+
+let ppat_lttuple loc elts closed =
+  Jane_syntax.Labeled_tuples.pat_of
+    ~attrs:[]
+    ~loc:(make_loc loc)
+    (Ltpat_tuple (elts, closed))
+
+let ptyp_lttuple loc tl =
+  Jane_syntax.Labeled_tuples.typ_of
+    ~attrs:[]
+    ~loc:(make_loc loc)
+    (Lttyp_tuple tl)
+
+let mktyp_tuple loc ltys =
+  if List.for_all (fun (lbl, _) -> Option.is_none lbl) ltys then
+    mktyp ~loc (Ptyp_tuple (List.map snd ltys))
+  else
+    ptyp_lttuple loc ltys
+
+let pexp_lttuple loc args =
+  Jane_syntax.Labeled_tuples.expr_of
+    ~attrs:[]
+    ~loc:(make_loc loc)
+    (Ltexp_tuple args)
 
 (* Using the function [not_expecting] in a semantic action means that this
    syntactic form is recognized by the parser but is in fact incorrect. This
@@ -2540,7 +2574,7 @@ expr:
   | expr_attrs
       { let desc, attrs = $1 in
         mkexp_attrs ~loc:$sloc desc attrs }
-  | mkexp(expr_)
+  | expr_
       { $1 }
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc $1 $3 }
@@ -2630,15 +2664,19 @@ expr:
 ;
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
-      { Pexp_apply($1, $2) }
-  | expr_comma_list %prec below_COMMA
-      { Pexp_tuple($1) }
+      { mkexp ~loc:$sloc (Pexp_apply($1, $2)) }
+  | labeled_tuple %prec below_COMMA
+      { if List.for_all (fun (l,_) -> Option.is_none l) $1 then
+          mkexp ~loc:$sloc (Pexp_tuple (List.map snd $1))
+        else
+          pexp_lttuple $sloc $1
+      }
   | mkrhs(constr_longident) simple_expr %prec below_HASH
-      { Pexp_construct($1, Some $2) }
+      { mkexp ~loc:$sloc (Pexp_construct($1, Some $2)) }
   | name_tag simple_expr %prec below_HASH
-      { Pexp_variant($1, Some $2) }
+      { mkexp ~loc:$sloc (Pexp_variant($1, Some $2)) }
   | e1 = expr op = op(infix_operator) e2 = expr
-      { mkinfix e1 op e2 }
+      { mkexp ~loc:$sloc (mkinfix e1 op e2) }
 ;
 
 simple_expr:
@@ -3054,10 +3092,86 @@ fun_def:
   | LPAREN TYPE mkrhs(LIDENT) COLON layout_annotation RPAREN fun_def
       { mk_newtypes ~loc:$sloc [$3, Some $5] $7 }
 ;
-%inline expr_comma_list:
-  es = separated_nontrivial_llist(COMMA, expr)
-    { es }
+
+(* Parsing labeled tuple expressions
+
+   The grammar we want to parse is something like:
+
+     labeled_tuple_element := expr | ~x:expr | ~x | ~(x:ty)
+     labeled_tuple := lt_element [, lt_element]+
+
+   (The last case of [labeled_tuple_element] is a punned label with a type
+   constraint, which is allowed for functions, so we allow it here).
+
+   So you might think [labeled_tuple] could therefore just be:
+
+     labeled_tuple :
+       separated_nontrivial_llist(COMMA, labeled_tuple_element)
+
+   But this doesn't work:
+
+   - If we don't mark [labeled_tuple_element] %inline, this causes many
+     reduce/reduce conflicts (basically just ambiguities) because
+     [labeled_tuple_element] trivially reduces to [expr].
+
+   - If we do mark [labeled_tuple_element] %inline, it is not allowed to have
+     %prec annotations.  Menhir doesn't permit these on %inline non-terminals
+     that are used in non-tail position.
+
+   To get around this, we do mark it inlined, and then because we can only use
+   it in tail position it is _manually_ inlined into the occurrences in
+   [separated_nontrivial_llist] where it doesn't appear in tail position.  This
+   results in [labeled_tuple] and [reversed_labeled_tuple_body] below.  So the
+   latter is just a list of comma-separated labeled tuple elements, with length
+   at least two, where the first element in the base case is inlined (resulting
+   in one base case for each case of [labeled_tuple_element].  *)
+%inline labeled_tuple_element :
+  | expr
+     { None, $1 }
+  | LABEL simple_expr %prec below_HASH
+     { Some $1, $2 }
+  | TILDE label = LIDENT
+     { let loc = $loc(label) in
+       Some label, mkexpvar ~loc label }
+  | TILDE LPAREN label = LIDENT ty = type_constraint RPAREN %prec below_HASH
+      { Some label,
+        mkexp_constraint
+          ~loc:($startpos($2), $endpos) (mkexpvar ~loc:$loc(label) label) ty }
 ;
+reversed_labeled_tuple_body:
+  (* > 2 elements *)
+  xs = reversed_labeled_tuple_body
+  COMMA
+  x = labeled_tuple_element
+    { x :: xs }
+  (* base cases (2 elements) *)
+| x1 = expr
+  COMMA
+  x2 = labeled_tuple_element
+    { [ x2; None, x1 ] }
+| l1 = LABEL x1 = simple_expr
+  COMMA
+  x2 = labeled_tuple_element
+    { [ x2; Some l1, x1 ] }
+| TILDE l1 = LIDENT
+  COMMA
+  x2 = labeled_tuple_element
+  { let loc = $loc(l1) in
+    [ x2; Some l1, mkexpvar ~loc l1] }
+| TILDE LPAREN l1 = LIDENT ty1 = type_constraint RPAREN
+  COMMA
+  x2 = labeled_tuple_element
+  { let x1 =
+      mkexp_constraint
+        ~loc:($startpos($2), $endpos) (mkexpvar ~loc:$loc(l1) l1) ty1
+    in
+    [ x2; Some l1, x1] }
+;
+%inline labeled_tuple:
+  xs = rev(reversed_labeled_tuple_body)
+    { xs }
+;
+
 record_expr_content:
   eo = ioption(terminated(simple_expr, WITH))
   fields = separated_or_terminated_nonempty_list(SEMI, record_expr_field)
@@ -3162,8 +3276,6 @@ pattern_no_exn:
         { Ppat_alias($1, $3) }
     | self AS error
         { expecting $loc($3) "identifier" }
-    | pattern_comma_list(self) %prec below_COMMA
-        { Ppat_tuple(List.rev $1) }
     | self COLONCOLON error
         { expecting $loc($3) "pattern" }
     | self BAR pattern
@@ -3171,7 +3283,70 @@ pattern_no_exn:
     | self BAR error
         { expecting $loc($3) "pattern" }
   ) { $1 }
+  | reversed_labeled_tuple_pattern(self)
+      { let closed, pats = $1 in
+        if    closed = Closed
+           && List.for_all (fun (l,_) -> Option.is_none l) pats
+        then
+          mkpat ~loc:$sloc (Ppat_tuple(List.rev_map snd pats))
+        else
+          ppat_lttuple $sloc (List.rev pats) closed
+      }
 ;
+
+(* Parsing labeled tuple patterns
+
+   Here we play essentially the same game we did for expressions - see the
+   comment beginning "Parsing labeled tuple expressions".
+
+   One difference is that we would need to manually inline the definition of
+   individual elements in two places: Once in the base case for lists 2 or more
+   elements, and once in the special case for open patterns with just one
+   element (e.g., [~x, ..]).  Rather than manually inlining
+   [labeled_tuple_pat_element] twice, we simply define it twice: once with the
+   [%prec] annotations needed for its occurrences in tail position, and once
+   without them suitable for use in other locations.
+*)
+%inline labeled_tuple_pat_element(self):
+  | self { None, $1 }
+  | LABEL simple_pattern %prec COMMA
+      { Some $1, $2 }
+  | TILDE label = LIDENT
+      { let loc = $loc(label) in
+        Some label, mkpatvar ~loc label }
+  | TILDE LPAREN label = LIDENT COLON cty = core_type RPAREN %prec COMMA
+      { let loc = $loc(label) in
+        let pat = mkpatvar ~loc label in
+        Some label, mkpat_opt_constraint ~loc pat (Some cty) }
+
+%inline labeled_tuple_pat_element_noprec(self):
+  | self { None, $1 }
+  | LABEL simple_pattern
+      { Some $1, $2 }
+  | TILDE label = LIDENT
+      { let loc = $loc(label) in
+        Some label, mkpatvar ~loc label }
+  | TILDE LPAREN label = LIDENT COLON cty = core_type RPAREN
+      { let loc = $loc(label) in
+        let pat = mkpatvar ~loc label in
+        Some label, mkpat_opt_constraint ~loc pat (Some cty) }
+
+labeled_tuple_pat_element_list(self):
+  | labeled_tuple_pat_element_list(self) COMMA labeled_tuple_pat_element(self)
+      { $3 :: $1 }
+  | labeled_tuple_pat_element_noprec(self) COMMA labeled_tuple_pat_element(self)
+      { [ $3; $1 ] }
+  | self COMMA error
+      { expecting $loc($3) "pattern" }
+;
+
+reversed_labeled_tuple_pattern(self):
+  | labeled_tuple_pat_element_list(self) %prec below_COMMA
+      { Closed, $1 }
+  | labeled_tuple_pat_element_list(self) COMMA DOTDOT
+      { Open, $1 }
+  | labeled_tuple_pat_element_noprec(self) COMMA DOTDOT
+      { Open, [ $1 ] }
 
 pattern_gen:
     simple_pattern
@@ -3274,11 +3449,6 @@ simple_delimited_pattern:
             $1 }
   ) { $1 }
 
-pattern_comma_list(self):
-    pattern_comma_list(self) COMMA pattern      { $3 :: $1 }
-  | self COMMA pattern                          { [$3; $1] }
-  | self COMMA error                            { expecting $loc($3) "pattern" }
-;
 %inline pattern_semi_list:
   ps = separated_or_terminated_nonempty_list(SEMI, pattern)
     { ps }
@@ -3860,35 +4030,95 @@ function_type:
   | ty = tuple_type
     %prec MINUSGREATER
       { ty }
-  | ty = strict_function_type
+  | ty = strict_function_or_labeled_tuple_type
       { ty }
 ;
 
-strict_function_type:
+strict_function_or_labeled_tuple_type:
   | mktyp(
       label = arg_label
-      local = optional_local
+      unique_local = mode_flags
       domain = extra_rhs(param_type)
       MINUSGREATER
-      codomain = strict_function_type
-        { Ptyp_arrow(label, local_if Type local $loc(local) domain, codomain) }
+      codomain = strict_function_or_labeled_tuple_type
+        { Ptyp_arrow(label,
+                     local_if_has_flags unique_local $loc(unique_local) domain,
+                     codomain) }
     )
     { $1 }
   | mktyp(
       label = arg_label
-      arg_local = optional_local
+      arg_local = mode_flags
       domain = extra_rhs(param_type)
       MINUSGREATER
-      ret_local = optional_local
+      ret_local = mode_flags
       codomain = tuple_type
       %prec MINUSGREATER
         { Ptyp_arrow(label,
-            local_if Type arg_local $loc(arg_local) domain,
-            local_if Type ret_local $loc(ret_local)
+            local_if_has_flags arg_local $loc(arg_local) domain,
+            local_if_has_flags ret_local $loc(ret_local)
               (Jane_syntax.Builtin.mark_curried
                  ~loc:(make_loc $loc(codomain)) codomain)) }
     )
     { $1 }
+  (* These next three cases are for labled tuples - see comment on [tuple_type]
+     below.
+
+     The first two cases are present just to resolve a shift reduce conflict
+     in a module type [S with t := x:t1 * t2 -> ...] which might be the
+     beginning of
+       [S with t := x:t1 * t2 -> S']    or    [S with t := x:t1 * t2 -> t3]
+     They are the same as the previous two cases, but with [arg_label] replaced
+     with the more specific [LIDENT COLON] and [param_type] replaced with the
+     more specific [proper_tuple_type].  Apparently, this is sufficient for
+     menhir to be able to delay a decision about which of the above module type
+     cases we are in.  *)
+  | mktyp(
+      label = LIDENT COLON
+      local = mode_flags
+      tuple = proper_tuple_type
+      MINUSGREATER
+      codomain = strict_function_or_labeled_tuple_type
+         {
+           let ty, ltys = tuple in
+           let label = Labelled label in
+           let domain = mktyp_tuple $loc(tuple) ((None, ty) :: ltys) in
+           let domain = extra_rhs_core_type domain ~pos:$endpos(tuple) in
+           Ptyp_arrow(label, local_if_has_flags local $loc(local) domain , codomain) }
+    )
+    { $1 }
+  | mktyp(
+      label = LIDENT COLON
+      arg_local = mode_flags
+      tuple = proper_tuple_type
+      MINUSGREATER
+      ret_local = mode_flags
+      codomain = tuple_type
+         { let ty, ltys = tuple in
+           let label = Labelled label in
+           let domain = mktyp_tuple $loc(tuple) ((None, ty) :: ltys) in
+           let domain = extra_rhs_core_type domain ~pos:$endpos(tuple) in
+           Ptyp_arrow(label,
+            local_if_has_flags arg_local $loc(arg_local) domain ,
+            local_if_has_flags ret_local $loc(ret_local)
+              (Jane_syntax.Builtin.mark_curried
+                 ~loc:(make_loc $loc(codomain)) codomain)) }
+    )
+    { $1 }
+  | label = LIDENT COLON proper_tuple_type %prec MINUSGREATER
+    { let ty, ltys = $3 in
+      ptyp_lttuple $sloc ((Some label, ty) :: ltys)
+    }
+;
+(* jane street: hackily copied and modified from our parser - to be replaced with the
+   exact version from our parser when ocamlformat is updated for uniqueness. *)
+%inline mode_flag:
+   | LOCAL
+       { $sloc }
+;
+%inline mode_flags:
+   | flags = iloption(mode_flag+)
+       { flags }
 ;
 %inline param_type:
   | mktyp_jane_syntax_ltyp(
@@ -3899,11 +4129,15 @@ strict_function_type:
   | ty = tuple_type
     { ty }
 ;
-%inline arg_label:
+%inline strict_arg_label:
   | label = optlabel
       { Optional label }
   | label = LIDENT COLON
       { Labelled label }
+
+%inline arg_label:
+  | strict_arg_label
+      { $1 }
   | /* empty */
       { Nolabel }
 ;
@@ -3917,17 +4151,35 @@ strict_function_type:
    - atomic types (see below);
    - proper tuple types:                  int * int * int list
    A proper tuple type is a star-separated list of at least two atomic types.
+   Tuple components can also be labeled, as an [int * int list * y:bool].
+
+   However, the special case of labeled tuples where the first element has a
+   label is not parsed as a proper_tuple_type, but rather as a case of
+   strict_function_or_labled_tuple_type above.  This helps in dealing with
+   ambiguities around [x:t1 * t2 -> t3] which must continue to parse as a
+   function with one labeled argument even in the presense of labled tuples.
  *)
 tuple_type:
   | ty = atomic_type
     %prec below_HASH
       { ty }
-  | mktyp(
-      tys = separated_nontrivial_llist(STAR, atomic_type)
-        { Ptyp_tuple tys }
-    )
-    { $1 }
+  | proper_tuple_type %prec below_FUNCTOR
+    { let ty, ltys = $1 in
+      mktyp_tuple $sloc ((None, ty) :: ltys)
+    }
 ;
+
+%inline proper_tuple_type:
+  | ty = atomic_type
+    STAR
+    ltys = separated_nonempty_llist(STAR, labeled_tuple_typ_element)
+      { ty, ltys }
+
+%inline labeled_tuple_typ_element :
+  | atomic_type %prec STAR
+     { None, $1 }
+  | label = LIDENT COLON ty = atomic_type %prec STAR
+     { Some label, ty }
 
 (* Atomic types are the most basic level in the syntax of types.
    Atomic types include:
