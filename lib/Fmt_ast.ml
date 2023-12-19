@@ -578,11 +578,11 @@ let split_global_flags_from_attrs atrs =
     List.partition_map atrs ~f:(fun a ->
         if
           Conf.is_jane_street_local_annotation "global" ~test:a.attr_name.txt
-        then First `Global
+        then First a
         else Second a )
   with
-  | [`Global], atrs -> (true, atrs)
-  | _ -> (false, atrs)
+  | [global_attr], atrs -> (Some global_attr, atrs)
+  | _ -> (None, atrs)
 
 let rec fmt_extension_aux c ctx ~key (ext, pld) =
   match (ext.txt, pld, ctx) with
@@ -3707,7 +3707,12 @@ and fmt_label_declaration c ctx ?(last = false) decl =
              (fits_breaks ~level:5 "" ";") )
           (str ";")
   in
-  let is_global, atrs = split_global_flags_from_attrs atrs in
+  let global_attr_opt, atrs = split_global_flags_from_attrs atrs in
+  ( match global_attr_opt with
+  | Some attr ->
+      Cmts.relocate c.cmts ~src:attr.attr_loc ~before:pld_type.ptyp_loc
+        ~after:pld_type.ptyp_loc
+  | None -> () ) ;
   hovbox 0
     ( Cmts.fmt_before c pld_loc
     $ hvbox
@@ -3718,7 +3723,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
                     ( hovbox 2
                         ( fmt_mutable_flag ~pro:noop ~epi:(fmt "@ ") c
                             pld_mutable
-                        $ fmt_if is_global "global_ "
+                        $ fmt_if (Option.is_some global_attr_opt) "global_ "
                         $ fmt_str_loc c pld_name $ fmt_if field_loose " "
                         $ fmt ":" )
                     $ fmt "@ "
@@ -3765,8 +3770,14 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
 
 and fmt_core_type_gf c ctx typ =
   let {ptyp_attributes; _} = typ in
-  let is_global, _ = split_global_flags_from_attrs ptyp_attributes in
-  fmt_if is_global "global_ " $ fmt_core_type c (sub_typ ~ctx typ)
+  let global_attr_opt, _ = split_global_flags_from_attrs ptyp_attributes in
+  ( match global_attr_opt with
+  | Some attr ->
+      Cmts.relocate c.cmts ~src:attr.attr_loc ~before:typ.ptyp_loc
+        ~after:typ.ptyp_loc
+  | None -> () ) ;
+  fmt_if (Option.is_some global_attr_opt) "global_ "
+  $ fmt_core_type c (sub_typ ~ctx typ)
 
 and fmt_constructor_arguments ?vars c ctx ~pre = function
   | Pcstr_tuple [] -> noop

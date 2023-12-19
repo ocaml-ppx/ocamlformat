@@ -3847,6 +3847,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to local_rewrite_regressions.ml.stdout
+   (with-stderr-to local_rewrite_regressions.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/local_rewrite_regressions.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/local_rewrite_regressions.ml.ref local_rewrite_regressions.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/local_rewrite_regressions.ml.err local_rewrite_regressions.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to locally_abtract_types.ml.stdout
    (with-stderr-to locally_abtract_types.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/locally_abtract_types.ml})))))

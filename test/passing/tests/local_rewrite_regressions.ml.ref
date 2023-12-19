@@ -1,0 +1,6 @@
+module With_length : sig
+  type 'a t = private
+    { global_ tree : 'a (* a *)
+    ; global_ length : int
+    }
+end = struct end
