@@ -779,20 +779,12 @@ and class_expr_desc =
   | Pcl_constr of Longident.t loc * core_type list
       (** [c] and [['a1, ..., 'an] c] *)
   | Pcl_structure of class_structure  (** [object ... end] *)
-  | Pcl_fun of arg_label * expression option * pattern * class_expr
-      (** [Pcl_fun(lbl, exp0, P, CE)] represents:
+  | Pcl_fun of function_param * class_expr
+      (** [Pcl_fun(P, CE)] represents:
             - [fun P -> CE]
-                     when [lbl]  is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
-                      and [exp0] is [None],
             - [fun ~l:P -> CE]
-                     when [lbl]  is {{!Asttypes.arg_label.Labelled}[Labelled l]}
-                      and [exp0] is [None],
             - [fun ?l:P -> CE]
-                     when [lbl]  is {{!Asttypes.arg_label.Optional}[Optional l]}
-                      and [exp0] is [None],
             - [fun ?l:(P = E0) -> CE]
-                     when [lbl]  is {{!Asttypes.arg_label.Optional}[Optional l]}
-                      and [exp0] is [Some E0].
         *)
   | Pcl_apply of class_expr * (arg_label * expression) list
       (** [Pcl_apply(CE, [(l1,E1) ; ... ; (ln,En)])]

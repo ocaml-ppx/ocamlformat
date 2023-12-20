@@ -302,7 +302,7 @@ module Cl = struct
     | Pcl_structure {pcstr_fields= _ :: _; _}
      |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
         false
-    | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> is_simple e
+    | Pcl_apply (e, _) | Pcl_fun (_, e) -> is_simple e
     | Pcl_constraint (e, t) -> is_simple e && Cty.is_simple t
 
   (** [mem_cls cls cl] holds if [cl] is in the named class of expressions
@@ -1125,7 +1125,7 @@ end = struct
             List.exists l ~f:(fun {pci_expr; _} ->
                 let rec loop x =
                   match x.pcl_desc with
-                  | Pcl_fun (_, _, _, x) -> loop x
+                  | Pcl_fun (_, x) -> loop x
                   | Pcl_constraint (_, x) -> x == cty
                   | _ -> false
                 in
@@ -1151,7 +1151,7 @@ end = struct
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
-          | Pcl_fun (_, _, _, _) -> false
+          | Pcl_fun _ -> false
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply _ -> false
@@ -1196,7 +1196,7 @@ end = struct
                   cl == x
                   ||
                   match x.pcl_desc with
-                  | Pcl_fun (_, _, _, x) -> loop x
+                  | Pcl_fun (_, x) -> loop x
                   | Pcl_constraint (x, _) -> loop x
                   | _ -> false
                 in
@@ -1213,7 +1213,7 @@ end = struct
         assert (
           match pcl_desc with
           | Pcl_structure _ -> false
-          | Pcl_fun (_, _, _, x) -> x == cl
+          | Pcl_fun (_, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
           | Pcl_let (_, x) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
@@ -1316,7 +1316,7 @@ end = struct
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
-          | Pcl_fun (_, _, p, _) -> p == pat
+          | Pcl_fun (p, _) -> check_function_param p
           | Pcl_constr _ -> false
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
@@ -1462,8 +1462,7 @@ end = struct
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with
-          | Pcl_fun (_, eopt, _, e) ->
-              Option.exists eopt ~f:(fun e -> e == exp) || loop e
+          | Pcl_fun (param, e) -> check_function_param param || loop e
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
@@ -2068,7 +2067,7 @@ end = struct
             let exp = snd (List.last_exn args) in
             (not (parenze_exp (sub_exp ~ctx:(Cl cl) exp)))
             && exposed_right_exp cls exp
-        | Pcl_fun (_, _, _, e) ->
+        | Pcl_fun (_, e) ->
             (not (parenze_cl (sub_cl ~ctx:(Cl cl) e)))
             && exposed_right_cl cls e
         | _ -> false

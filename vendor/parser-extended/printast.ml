@@ -727,11 +727,9 @@ and class_expr i ppf x =
   | Pcl_structure (cs) ->
       line i ppf "Pcl_structure\n";
       class_structure i ppf cs;
-  | Pcl_fun (l, eo, p, e) ->
+  | Pcl_fun (p, e) ->
       line i ppf "Pcl_fun\n";
-      arg_label i ppf l;
-      option i expression ppf eo;
-      pattern i ppf p;
+      function_param i ppf p;
       class_expr i ppf e;
   | Pcl_apply (ce, l) ->
       line i ppf "Pcl_apply\n";

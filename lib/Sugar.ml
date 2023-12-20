@@ -56,13 +56,12 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
     let {pcl_desc; pcl_loc; pcl_attributes; _} = exp in
     if will_keep_first_ast_node || List.is_empty pcl_attributes then
       match pcl_desc with
-      | Pcl_fun (label, default, pattern, body) ->
-          let before = pattern.ppat_loc and after = body.pcl_loc in
+      | Pcl_fun (p, body) ->
+          let before = p.pparam_loc and after = body.pcl_loc in
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pcl_loc ~before ~after ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
-          let param = Pparam_val (label, default, pattern) in
-          (mk_function_param before after param :: xargs, xbody)
+          (p :: xargs, xbody)
       | _ -> ([], xexp)
     else ([], xexp)
   in

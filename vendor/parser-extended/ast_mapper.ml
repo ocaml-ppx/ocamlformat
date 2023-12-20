@@ -114,6 +114,20 @@ let map_value_constraint sub = function
       let coercion = sub.typ sub coercion in
       Pvc_coercion { ground; coercion }
 
+let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
+  let loc = sub.location sub loc in
+  let desc =
+    match desc with
+    | Pparam_val (lab, def, p) ->
+        Pparam_val
+          (sub.arg_label sub lab,
+          map_opt (sub.expr sub) def,
+          sub.pat sub p)
+    | Pparam_newtype ty ->
+        Pparam_newtype (List.map (map_loc sub) ty)
+  in
+  { pparam_loc = loc; pparam_desc = desc }
+
 module Flag = struct
   open Asttypes
 
@@ -477,20 +491,6 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
-  let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
-    let loc = sub.location sub loc in
-    let desc =
-      match desc with
-      | Pparam_val (lab, def, p) ->
-          Pparam_val
-            (sub.arg_label sub lab,
-             map_opt (sub.expr sub) def,
-             sub.pat sub p)
-      | Pparam_newtype ty ->
-          Pparam_newtype (List.map (map_loc sub) ty)
-    in
-    { pparam_loc = loc; pparam_desc = desc }
-
   let map_constraint sub c =
     match c with
     | Pconstraint ty -> Pconstraint (sub.typ sub ty)
@@ -692,11 +692,9 @@ module CE = struct
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tys)
     | Pcl_structure s ->
         structure ~loc ~attrs (sub.class_structure sub s)
-    | Pcl_fun (lab, e, p, ce) ->
+    | Pcl_fun (p, ce) ->
         fun_ ~loc ~attrs
-          (sub.arg_label sub lab)
-          (map_opt (sub.expr sub) e)
-          (sub.pat sub p)
+          (map_function_param sub p)
           (sub.class_expr sub ce)
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)
