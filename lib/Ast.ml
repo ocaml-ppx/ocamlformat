@@ -1249,6 +1249,7 @@ end = struct
       | Pparam_val (_, _, p) -> p == pat
       | Pparam_newtype _ -> false
     in
+    let check_function_params l = List.exists l ~f:check_function_param in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
     | Pld _ -> assert false
@@ -1316,7 +1317,7 @@ end = struct
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
-          | Pcl_fun (p, _) -> check_function_param p
+          | Pcl_fun (p, _) -> check_function_params p
           | Pcl_constr _ -> false
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
@@ -1361,6 +1362,7 @@ end = struct
       | Pparam_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
       | Pparam_newtype _ -> false
     in
+    let check_function_params l = List.exists l ~f:check_function_param in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -1462,7 +1464,7 @@ end = struct
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with
-          | Pcl_fun (param, e) -> check_function_param param || loop e
+          | Pcl_fun (param, e) -> check_function_params param || loop e
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)

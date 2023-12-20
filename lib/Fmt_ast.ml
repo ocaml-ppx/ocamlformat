@@ -2926,8 +2926,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         (Params.parens_if parens c.conf
            ( fmt_class_structure c ~ctx ?ext:None pcstr_self pcstr_fields
            $ fmt_atrs ) )
-  | Pcl_fun _ ->
-      let xargs, xbody = Sugar.cl_fun c.cmts xexp in
+  | Pcl_fun (xargs, body) ->
       let indent =
         match ctx0 with
         | Cl {pcl_desc= Pcl_fun _; _} -> 0
@@ -2943,7 +2942,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
                    $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" )
-           $ fmt "@ " $ fmt_class_expr c xbody ) )
+           $ fmt "@ "
+           $ fmt_class_expr c (sub_cl ~ctx body) ) )
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
@@ -3771,13 +3771,7 @@ and fmt_class_exprs ?ext c ctx cls =
   @@ list_fl cls (fun ~first ~last:_ cl ->
          update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
          @@ fun c ->
-         let xargs, xbody =
-           match cl.pci_expr.pcl_attributes with
-           | [] ->
-               Sugar.cl_fun c.cmts ~will_keep_first_ast_node:false
-                 (sub_cl ~ctx cl.pci_expr)
-           | _ -> ([], sub_cl ~ctx cl.pci_expr)
-         in
+         let xargs, xbody = Sugar.cl_fun c.cmts (sub_cl ~ctx cl.pci_expr) in
          let ty, e =
            match xbody.ast with
            | {pcl_desc= Pcl_constraint (e, t); _} -> (Some t, sub_cl ~ctx e)
