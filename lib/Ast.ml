@@ -1138,8 +1138,12 @@ end = struct
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
-    | Cd _ -> assert false
-    | Ctd ctx -> assert (ctx.pci_expr == cty)
+    | Cd ctx ->
+        assert (Option.exists ctx.pci_constraint ~f:(fun x -> x == cty))
+    | Ctd ctx ->
+        assert (
+          Option.exists ctx.pci_constraint ~f:(fun x -> x == cty)
+          || ctx.pci_expr == cty )
     | Clf _ -> assert false
     | Ctf {pctf_desc; _} ->
         assert (

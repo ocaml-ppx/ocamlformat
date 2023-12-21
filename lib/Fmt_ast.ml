@@ -3741,6 +3741,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
 
 and fmt_class_types ?ext c ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
+      (* [pci_args] and [pci_constraint] are not used for class types. *)
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
       let ctx = Ctd cl in
@@ -3773,19 +3774,12 @@ and fmt_class_exprs ?ext c cls =
          update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
          @@ fun c ->
          let ctx = Cd cl in
-         let xargs, xbody = Sugar.cl_fun c.cmts (sub_cl ~ctx cl.pci_expr) in
-         let ty, e =
-           match xbody.ast with
-           | {pcl_desc= Pcl_constraint (e, t); _} as ce ->
-               let ctx = Cl ce in
-               (Some (sub_cty ~ctx t), sub_cl ~ctx e)
-           | _ -> (None, xbody)
-         in
+         let xargs = cl.pci_args in
          let doc_before, doc_after, atrs =
            let force_before = not (Cl.is_simple cl.pci_expr) in
            fmt_docstring_around_item ~force_before c cl.pci_attributes
          in
-         let class_exprs =
+         let class_expr =
            let pro =
              box_fun_decl_args c 2
                ( hovbox 2
@@ -3799,19 +3793,20 @@ and fmt_class_exprs ?ext c cls =
                $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
            in
            let intro =
-             match ty with
+             match cl.pci_constraint with
              | Some ty ->
-                 let pro = pro $ fmt " :@ " in
-                 fmt_class_type c ~pro ty
+                 fmt_class_type c ~pro:(pro $ fmt " :@ ") (sub_cty ~ctx ty)
              | None -> pro
            in
            hovbox 2
-             (hovbox 2 (intro $ fmt "@ =") $ fmt "@;" $ fmt_class_expr c e)
+             ( hovbox 2 (intro $ fmt "@ =")
+             $ fmt "@;"
+             $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
          in
          fmt_if (not first) "\n@;<1000 0>"
          $ hovbox 0
-           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
+           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
 
 and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty ~attrs ~rec_flag =
