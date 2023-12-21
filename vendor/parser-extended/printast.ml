@@ -1214,3 +1214,7 @@ let function_param ppf x = function_param 0 ppf x
 let value_constraint ppf x = value_constraint 0 ppf x
 
 let binding_op ppf x = binding_op 0 ppf x
+
+let class_declaration ppf x = class_declaration 0 ppf x
+
+let class_type_declaration ppf x = class_type_declaration 0 ppf x

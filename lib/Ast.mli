@@ -108,6 +108,8 @@ type t =
   | Typ of core_type
   | Td of type_declaration
   | Cty of class_type
+  | Cd of class_declaration
+  | Ctd of class_type_declaration
   | Pat of pattern
   | Exp of expression
   | Fp of function_param
