@@ -750,6 +750,8 @@ and 'a class_infos =
      pci_virt: virtual_flag;
      pci_params: (core_type * variance_and_injectivity) list;
      pci_name: string loc;
+     pci_args: function_param list;
+     pci_constraint: class_type option;
      pci_expr: 'a;
      pci_loc: Location.t;
      pci_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)

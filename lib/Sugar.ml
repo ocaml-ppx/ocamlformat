@@ -50,16 +50,6 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let cl_fun cmts ({ast= exp; _} as xexp) =
-  let ctx = Cl exp in
-  match (exp.pcl_attributes, exp.pcl_desc) with
-  | [], Pcl_fun (p, body) ->
-      let before = (List.hd_exn p).pparam_loc in
-      let after = body.pcl_loc in
-      Cmts.relocate cmts ~src:exp.pcl_loc ~before ~after ;
-      (p, sub_cl ~ctx body)
-  | _ -> ([], xexp)
-
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in

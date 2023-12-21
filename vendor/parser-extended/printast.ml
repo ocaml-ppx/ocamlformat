@@ -703,6 +703,9 @@ and class_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a class_infos -> _ 
   line i ppf "pci_params =\n";
   list (i+1) type_parameter ppf x.pci_params;
   line i ppf "pci_name = %a\n" fmt_string_loc x.pci_name;
+  line i ppf "pci_args =\n";
+  list (i+1) function_param ppf x.pci_args;
+  line i ppf "pci_constraint = %a\n" (fmt_opt (class_type i)) x.pci_constraint;
   line i ppf "pci_expr =\n";
   f (i+1) ppf x.pci_expr
 

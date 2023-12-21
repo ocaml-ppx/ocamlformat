@@ -1773,14 +1773,15 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
+    let (args, constraint_, body) = cfb in
     ext,
-    Ci.mk id body ~virt ~params ~attrs ~loc ~docs
+    Ci.mk id body ~virt ~params ~attrs ~loc ~docs ~args ?constraint_
   }
 ;
 %inline and_class_declaration:
@@ -1789,14 +1790,15 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
-    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs
+    let (args, constraint_, body) = cfb in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs ~args ?constraint_
   }
 ;
 
@@ -1805,18 +1807,7 @@ class_fun_binding:
   ct = ioption(COLON class_type { $2 })
   EQUAL
   ce = class_expr
-  {
-    let ce =
-      match ct with
-      | Some ct ->
-        let loc = ($startpos(ct), $endpos(ce)) in
-        mkclass ~loc (Pcl_constraint (ce, ct))
-      | None -> ce
-    in
-    match params with
-    | [] -> ce
-    | _ :: _ -> mkclass ~loc:$sloc (Pcl_fun (params, ce))
-  }
+    { params, ct, ce }
 ;
 
 formal_class_parameters:
