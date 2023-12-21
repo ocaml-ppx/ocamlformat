@@ -347,7 +347,7 @@ and expression i ppf x =
       list i case ppf l;
   | Pexp_fun (p, e) ->
       line i ppf "Pexp_fun\n";
-      function_param i ppf p;
+      expr_function_param i ppf p;
       expression i ppf e;
   | Pexp_apply (e, l) ->
       line i ppf "Pexp_apply\n";
@@ -512,17 +512,26 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_cond;
   expression i ppf if_body
 
-and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
+and param_val i ppf (l, eo, p) =
+  line i ppf "Pparam_val\n";
+  arg_label (i+1) ppf l;
+  option (i+1) expression ppf eo;
+  pattern (i+1) ppf p
+
+and param_newtype i ppf ty =
+  line i ppf "Pparam_newtype\n";
+  list i (fun i ppf x -> line (i+1) ppf "type %a" fmt_string_loc x) ppf ty
+
+and expr_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
+  line i ppf "function_param %a\n" fmt_location loc;
   match desc with
-  | Pparam_val (l, eo, p) ->
-      line i ppf "Pparam_val %a\n" fmt_location loc;
-      arg_label (i+1) ppf l;
-      option (i+1) expression ppf eo;
-      pattern (i+1) ppf p
-  | Pparam_newtype ty ->
-      line i ppf "Pparam_newtype %a\n" fmt_location loc;
-      list i (fun i ppf x ->
-        line (i+1) ppf "type %a" fmt_string_loc x ) ppf ty
+  | `Param_val x -> param_val i ppf x
+  | `Param_newtype x -> param_newtype i ppf x
+
+and class_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
+  line i ppf "function_param %a\n" fmt_location loc;
+  match desc with
+  | `Param_val x -> param_val i ppf x
 
 and type_constraint i ppf constraint_ =
   match constraint_ with
@@ -704,7 +713,7 @@ and class_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a class_infos -> _ 
   list (i+1) type_parameter ppf x.pci_params;
   line i ppf "pci_name = %a\n" fmt_string_loc x.pci_name;
   line i ppf "pci_args =\n";
-  list (i+1) function_param ppf x.pci_args;
+  list (i+1) class_function_param ppf x.pci_args;
   line i ppf "pci_constraint = %a\n" (fmt_opt (class_type i)) x.pci_constraint;
   line i ppf "pci_expr =\n";
   f (i+1) ppf x.pci_expr
@@ -726,7 +735,7 @@ and class_expr i ppf x =
       class_structure i ppf cs;
   | Pcl_fun (p, e) ->
       line i ppf "Pcl_fun\n";
-      list i function_param ppf p;
+      list i class_function_param ppf p;
       class_expr i ppf e;
   | Pcl_apply (ce, l) ->
       line i ppf "Pcl_apply\n";
@@ -1212,7 +1221,9 @@ let structure_item ppf x = structure_item 0 ppf x
 
 let signature_item ppf x = signature_item 0 ppf x
 
-let function_param ppf x = function_param 0 ppf x
+let expr_function_param ppf x = expr_function_param 0 ppf x
+
+let class_function_param ppf x = class_function_param 0 ppf x
 
 let value_constraint ppf x = value_constraint 0 ppf x
 

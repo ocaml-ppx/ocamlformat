@@ -640,7 +640,8 @@ module T = struct
     | Ctd of class_type_declaration
     | Pat of pattern
     | Exp of expression
-    | Fp of function_param
+    | Fpe of expr_function_param
+    | Fpc of class_function_param
     | Vc of value_constraint
     | Lb of value_binding
     | Bo of binding_op
@@ -663,7 +664,8 @@ module T = struct
     | Td t -> Format.fprintf fs "Td:@\n%a" Printast.type_declaration t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
-    | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
+    | Fpe p -> Format.fprintf fs "Fpe:@\n%a" Printast.expr_function_param p
+    | Fpc p -> Format.fprintf fs "Fpc:@\n%a" Printast.class_function_param p
     | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Bo b -> Format.fprintf fs "Bo:@\n%a" Printast.binding_op b
@@ -701,7 +703,7 @@ let attributes = function
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
-  | Fp _ -> []
+  | Fpe _ | Fpc _ -> []
   | Vc _ -> []
   | Lb x -> x.pvb_attributes
   | Bo _ -> []
@@ -727,7 +729,8 @@ let location = function
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
-  | Fp x -> x.pparam_loc
+  | Fpe x -> x.pparam_loc
+  | Fpc x -> x.pparam_loc
   | Vc _ -> Location.none
   | Lb x -> x.pvb_loc
   | Bo x -> x.pbop_loc
@@ -1014,7 +1017,7 @@ end = struct
                   | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
-    | Fp _ -> assert false
+    | Fpe _ | Fpc _ -> assert false
     | Vc c -> assert (check_value_constraint c)
     | Lb _ -> assert false
     | Bo _ -> assert false
@@ -1106,7 +1109,7 @@ end = struct
   let check_cty {ctx; ast= cty} =
     match (ctx : t) with
     | Exp _ -> assert false
-    | Fp _ -> assert false
+    | Fpe _ | Fpc _ -> assert false
     | Vc _ -> assert false
     | Lb _ -> assert false
     | Bo _ -> assert false
@@ -1165,7 +1168,7 @@ end = struct
   let check_cl {ctx; ast= cl} =
     match (ctx : t) with
     | Exp _ -> assert false
-    | Fp _ -> assert false
+    | Fpe _ | Fpc _ -> assert false
     | Vc _ -> assert false
     | Lb _ -> assert false
     | Bo _ -> assert false
@@ -1219,8 +1222,8 @@ end = struct
     in
     let check_function_param param =
       match param.pparam_desc with
-      | Pparam_val (_, _, p) -> p == pat
-      | Pparam_newtype _ -> false
+      | `Param_val (_, _, p) -> p == pat
+      | `Param_newtype _ -> false
     in
     let check_function_params l = List.exists l ~f:check_function_param in
     match ctx with
@@ -1281,7 +1284,8 @@ end = struct
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) -> assert (p == pat)
       | Pexp_fun (p, _) -> assert (check_function_param p) )
-    | Fp ctx -> assert (check_function_param ctx)
+    | Fpe ctx -> assert (check_function_param ctx)
+    | Fpc ctx -> assert (check_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_pat == pat)
     | Bo x -> assert (x.pbop_pat == pat)
@@ -1334,8 +1338,8 @@ end = struct
     in
     let check_function_param param =
       match param.pparam_desc with
-      | Pparam_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
-      | Pparam_newtype _ -> false
+      | `Param_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
+      | `Param_newtype _ -> false
     in
     let check_function_params l = List.exists l ~f:check_function_param in
     match ctx with
@@ -1416,7 +1420,8 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
-    | Fp ctx -> assert (check_function_param ctx)
+    | Fpe ctx -> assert (check_function_param ctx)
+    | Fpc ctx -> assert (check_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_expr == exp)
     | Bo x -> assert (x.pbop_exp == exp)
@@ -1670,8 +1675,8 @@ end = struct
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
           | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
-     |{ctx= Fp _; ast= _}
-     |{ctx= _; ast= Fp _}
+     |{ctx= Fpe _ | Fpc _; ast= _}
+     |{ctx= _; ast= Fpe _ | Fpc _}
      |{ctx= Vc _; ast= _}
      |{ctx= _; ast= Vc _}
      |{ctx= Lb _; ast= _}
@@ -1763,7 +1768,7 @@ end = struct
       | Pexp_field _ -> Some Dot
       | Pexp_send _ -> Some Dot
       | _ -> None )
-    | Fp _ -> None
+    | Fpe _ | Fpc _ -> None
     | Vc _ -> None
     | Lb _ -> None
     | Bo _ -> None
@@ -1884,7 +1889,8 @@ end = struct
       | Ppat_cons _ -> true
       | Ppat_construct _ | Ppat_record _ | Ppat_variant _ -> false
       | _ -> true )
-    | Fp {pparam_desc= Pparam_val (_, _, _); _}, Ppat_cons _ -> true
+    | Fpe {pparam_desc= `Param_val (_, _, _); _}, Ppat_cons _ -> true
+    | Fpc {pparam_desc= `Param_val (_, _, _); _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
     | ( Exp {pexp_desc= Pexp_letop _; _}
@@ -1945,7 +1951,7 @@ end = struct
         | Ppat_variant _ ) ) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
-    | ( Fp _
+    | ( (Fpe _ | Fpc _)
       , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
         | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
      |( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}

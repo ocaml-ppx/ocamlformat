@@ -17,7 +17,7 @@ val fun_ :
      Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
-  -> function_param list * expression Ast.xt
+  -> expr_function_param list * expression Ast.xt
 (** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
@@ -49,7 +49,7 @@ module Let_binding : sig
   type t =
     { lb_op: string loc
     ; lb_pat: pattern Ast.xt
-    ; lb_args: function_param list
+    ; lb_args: expr_function_param list
     ; lb_typ: value_constraint option
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool

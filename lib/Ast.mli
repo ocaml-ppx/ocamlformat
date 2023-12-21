@@ -112,7 +112,8 @@ type t =
   | Ctd of class_type_declaration
   | Pat of pattern
   | Exp of expression
-  | Fp of function_param
+  | Fpe of expr_function_param
+  | Fpc of class_function_param
   | Vc of value_constraint
   | Lb of value_binding
   | Bo of binding_op
