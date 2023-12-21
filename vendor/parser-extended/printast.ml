@@ -694,8 +694,9 @@ and class_type_field i ppf x =
       line i ppf "Pctf_extension %a\n" fmt_string_loc s;
      payload i ppf arg
 
-and class_description i ppf x =
-  line i ppf "class_description %a\n" fmt_location x.pci_loc;
+and class_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a class_infos -> _ =
+ fun label f i ppf x ->
+  line i ppf "%s %a\n" label fmt_location x.pci_loc;
   attributes i ppf x.pci_attributes;
   let i = i+1 in
   line i ppf "pci_virt = %a\n" fmt_virtual_flag x.pci_virt;
@@ -703,18 +704,11 @@ and class_description i ppf x =
   list (i+1) type_parameter ppf x.pci_params;
   line i ppf "pci_name = %a\n" fmt_string_loc x.pci_name;
   line i ppf "pci_expr =\n";
-  class_type (i+1) ppf x.pci_expr;
+  f (i+1) ppf x.pci_expr
 
-and class_type_declaration i ppf x =
-  line i ppf "class_type_declaration %a\n" fmt_location x.pci_loc;
-  attributes i ppf x.pci_attributes;
-  let i = i+1 in
-  line i ppf "pci_virt = %a\n" fmt_virtual_flag x.pci_virt;
-  line i ppf "pci_params =\n";
-  list (i+1) type_parameter ppf x.pci_params;
-  line i ppf "pci_name = %a\n" fmt_string_loc x.pci_name;
-  line i ppf "pci_expr =\n";
-  class_type (i+1) ppf x.pci_expr;
+and class_description i = class_infos "class_description" class_type i
+
+and class_type_declaration i = class_infos "class_type_declaration" class_type i
 
 and class_expr i ppf x =
   line i ppf "class_expr %a\n" fmt_location x.pcl_loc;
@@ -794,16 +788,7 @@ and class_field_kind i ppf = function
       line i ppf "Virtual\n";
       core_type i ppf t
 
-and class_declaration i ppf x =
-  line i ppf "class_declaration %a\n" fmt_location x.pci_loc;
-  attributes i ppf x.pci_attributes;
-  let i = i+1 in
-  line i ppf "pci_virt = %a\n" fmt_virtual_flag x.pci_virt;
-  line i ppf "pci_params =\n";
-  list (i+1) type_parameter ppf x.pci_params;
-  line i ppf "pci_name = %a\n" fmt_string_loc x.pci_name;
-  line i ppf "pci_expr =\n";
-  class_expr (i+1) ppf x.pci_expr;
+and class_declaration i = class_infos "class_declaration" class_expr i
 
 and functor_parameter i ppf x =
   line i ppf "functor_parameter %a\n" fmt_location x.loc;
@@ -1099,30 +1084,26 @@ and value_constraint i ppf x =
       option i core_type ppf ground;
       core_type i ppf coercion;
 
-and open_description i ppf x =
-  line i ppf "open_description %a %a\n" fmt_override_flag x.popen_override
+and open_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ ->  'a open_infos -> _ =
+ fun label f i ppf x ->
+  line i ppf "%s %a %a\n" label fmt_override_flag x.popen_override
     fmt_location x.popen_loc;
   attributes i ppf x.popen_attributes;
-  fmt_longident_loc ppf x.popen_expr
+  f (i+1) ppf x.popen_expr
 
-and open_declaration i ppf x =
-  line i ppf "open_declaration %a %a\n" fmt_override_flag x.popen_override
-    fmt_location x.popen_loc;
-  attributes i ppf x.popen_attributes;
-  let i = i+1 in
-  module_expr i ppf x.popen_expr
+and open_description i = open_infos "open_description" longident_loc i
 
-and include_description i ppf x =
-  line i ppf "include_description %a\n" fmt_location x.pincl_loc;
+and open_declaration i = open_infos "open_declaration" module_expr i
+
+and include_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a include_infos -> _ =
+ fun label f i ppf x ->
+  line i ppf "%s %a\n" label fmt_location x.pincl_loc;
   attributes i ppf x.pincl_attributes;
-  let i = i+1 in
-  module_type i ppf x.pincl_mod
+  f (i+1) ppf x.pincl_mod
 
-and include_declaration i ppf x =
-  line i ppf "include_declaration %a\n" fmt_location x.pincl_loc;
-  attributes i ppf x.pincl_attributes;
-  let i = i+1 in
-  module_expr i ppf x.pincl_mod
+and include_description i = include_infos "include_description" module_type i
+
+and include_declaration i = include_infos "include_declaration" module_expr i
 
 and value_bindings i ppf x =
   list i value_binding ppf x.pvbs_bindings
