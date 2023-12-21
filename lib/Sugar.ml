@@ -50,22 +50,15 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
-  let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
-    let ctx = Cl exp in
-    let {pcl_desc; pcl_loc; pcl_attributes; _} = exp in
-    if will_keep_first_ast_node || List.is_empty pcl_attributes then
-      match pcl_desc with
-      | Pcl_fun (p, body) ->
-          let before = p.pparam_loc and after = body.pcl_loc in
-          if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pcl_loc ~before ~after ;
-          let xargs, xbody = fun_ (sub_cl ~ctx body) in
-          (p :: xargs, xbody)
-      | _ -> ([], xexp)
-    else ([], xexp)
-  in
-  fun_ ~will_keep_first_ast_node xexp
+let cl_fun cmts ({ast= exp; _} as xexp) =
+  let ctx = Cl exp in
+  match (exp.pcl_attributes, exp.pcl_desc) with
+  | [], Pcl_fun (p, body) ->
+      let before = (List.hd_exn p).pparam_loc in
+      let after = body.pcl_loc in
+      Cmts.relocate cmts ~src:exp.pcl_loc ~before ~after ;
+      (p, sub_cl ~ctx body)
+  | _ -> ([], xexp)
 
 module Exp = struct
   let infix cmts prec xexp =

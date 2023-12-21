@@ -779,7 +779,7 @@ and class_expr_desc =
   | Pcl_constr of Longident.t loc * core_type list
       (** [c] and [['a1, ..., 'an] c] *)
   | Pcl_structure of class_structure  (** [object ... end] *)
-  | Pcl_fun of function_param * class_expr
+  | Pcl_fun of function_param list * class_expr
       (** [Pcl_fun(P, CE)] represents:
             - [fun P -> CE]
             - [fun ~l:P -> CE]

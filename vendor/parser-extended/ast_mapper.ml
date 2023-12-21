@@ -694,7 +694,7 @@ module CE = struct
         structure ~loc ~attrs (sub.class_structure sub s)
     | Pcl_fun (p, ce) ->
         fun_ ~loc ~attrs
-          (map_function_param sub p)
+          (List.map (map_function_param sub) p)
           (sub.class_expr sub ce)
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)

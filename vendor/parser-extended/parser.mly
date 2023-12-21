@@ -1801,14 +1801,22 @@ module_type_subst:
 ;
 
 class_fun_binding:
-    EQUAL class_expr
-      { $2 }
-  | mkclass(
-      COLON class_type EQUAL class_expr
-        { Pcl_constraint($4, $2) }
-    | fun_param class_fun_binding
-      { Pcl_fun($1, $2) }
-    ) { $1 }
+  params = list(fun_param)
+  ct = ioption(COLON class_type { $2 })
+  EQUAL
+  ce = class_expr
+  {
+    let ce =
+      match ct with
+      | Some ct ->
+        let loc = ($startpos(ct), $endpos(ce)) in
+        mkclass ~loc (Pcl_constraint (ce, ct))
+      | None -> ce
+    in
+    match params with
+    | [] -> ce
+    | _ :: _ -> mkclass ~loc:$sloc (Pcl_fun (params, ce))
+  }
 ;
 
 formal_class_parameters:
@@ -1861,8 +1869,7 @@ class_simple_expr:
 
 class_fun_def:
   mkclass(
-    fun_param MINUSGREATER e = class_expr
-  | fun_param e = class_fun_def
+    nonempty_llist(fun_param) MINUSGREATER e = class_expr
       { Pcl_fun($1, e) }
   ) { $1 }
 ;
