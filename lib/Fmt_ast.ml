@@ -3734,15 +3734,16 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
-  | Psig_class cl -> fmt_class_types ?ext c ctx ~pre:"class" ~sep:":" cl
+  | Psig_class cl -> fmt_class_types ?ext c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
-      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
+      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
-and fmt_class_types ?ext c ctx ~pre ~sep cls =
+and fmt_class_types ?ext c ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
+      let ctx = Ctd cl in
       let doc_before, doc_after, atrs =
         let force_before = not (Cty.is_simple cl.pci_expr) in
         fmt_docstring_around_item ~force_before c cl.pci_attributes
@@ -3766,15 +3767,18 @@ and fmt_class_types ?ext c ctx ~pre ~sep cls =
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
-and fmt_class_exprs ?ext c ctx cls =
+and fmt_class_exprs ?ext c cls =
   hvbox 0
   @@ list_fl cls (fun ~first ~last:_ cl ->
          update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
          @@ fun c ->
+         let ctx = Cd cl in
          let xargs, xbody = Sugar.cl_fun c.cmts (sub_cl ~ctx cl.pci_expr) in
          let ty, e =
            match xbody.ast with
-           | {pcl_desc= Pcl_constraint (e, t); _} -> (Some t, sub_cl ~ctx e)
+           | {pcl_desc= Pcl_constraint (e, t); _} as ce ->
+               let ctx = Cl ce in
+               (Some (sub_cty ~ctx t), sub_cl ~ctx e)
            | _ -> (None, xbody)
          in
          let doc_before, doc_after, atrs =
@@ -3798,7 +3802,7 @@ and fmt_class_exprs ?ext c ctx cls =
              match ty with
              | Some ty ->
                  let pro = pro $ fmt " :@ " in
-                 fmt_class_type c ~pro (sub_cty ~ctx ty)
+                 fmt_class_type c ~pro ty
              | None -> pro
            in
            hovbox 2
@@ -4332,8 +4336,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
         $ fmt_item_attributes c ~pre:Space atrs
         $ doc_after )
   | Pstr_class_type cl ->
-      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
-  | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
+      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
+  | Pstr_class cls -> fmt_class_exprs ?ext c cls
 
 and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
     ~has_attr ~indent_after_in =
