@@ -777,6 +777,9 @@ end = struct
         | Immediate64 -> "immediate64"
         | Immediate -> "immediate"
         | Float64 -> "float64"
+        | Word -> "word"
+        | Bits32 -> "bits32"
+        | Bits64 -> "bits64"
 
       (* CR layouts v1.5: revise when moving layout recognition away from parser*)
       let of_string = function
@@ -786,6 +789,9 @@ end = struct
         | "immediate" -> Some Immediate
         | "immediate64" -> Some Immediate64
         | "float64" -> Some Float64
+        | "word" -> Some Word
+        | "bits32" -> Some Bits32
+        | "bits64" -> Some Bits64
         | _ -> None
     end)
   (*******************************************************)

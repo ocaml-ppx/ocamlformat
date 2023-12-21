@@ -207,6 +207,9 @@ let layout_to_string = function
   | Immediate64 -> "immediate64"
   | Immediate -> "immediate"
   | Float64 -> "float64"
+  | Word -> "word"
+  | Bits32 -> "bits32"
+  | Bits64 -> "bits64"
 
 let fmt_layout_opt ppf l = Format.fprintf ppf "%s"
   (Option.value ~default:"none" (Option.map (fun l -> layout_to_string l.txt) l))

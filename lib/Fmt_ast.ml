@@ -547,6 +547,9 @@ let layout_to_string = function
   | Immediate64 -> "immediate64"
   | Immediate -> "immediate"
   | Float64 -> "float64"
+  | Word -> "word"
+  | Bits32 -> "bits32"
+  | Bits64 -> "bits64"
 
 let fmt_layout_str ~c ~loc string =
   fmt "@ :@ " $ Cmts.fmt c loc @@ str string

@@ -26,6 +26,9 @@ let const_layout_to_string = function
   | Immediate64 -> "immediate64"
   | Void -> "void"
   | Float64 -> "float64"
+  | Word -> "word"
+  | Bits32 -> "bits32"
+  | Bits64 -> "bits64"
 
 let fmt_position with_name f l =
   let fname = if with_name then l.pos_fname else "" in

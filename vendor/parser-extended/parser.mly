@@ -712,6 +712,9 @@ let check_layout ~loc id : const_layout =
   | "immediate64" -> Immediate64
   | "immediate" -> Immediate
   | "float64" -> Float64
+  | "word" -> Word
+  | "bits32" -> Bits32
+  | "bits64" -> Bits64
   | _ -> expecting_loc loc "layout"
 %}
 

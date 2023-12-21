@@ -751,6 +751,9 @@ let check_layout ~loc id : const_layout =
   | "immediate64" -> Immediate64
   | "immediate" -> Immediate
   | "float64" -> Float64
+  | "word" -> Word
+  | "bits32" -> Bits32
+  | "bits64" -> Bits64
   | _ -> expecting_loc loc "layout"
 
 (* Unboxed literals *)
@@ -829,13 +832,15 @@ let unboxed_float sloc sign (f, m) =
 
 (* Unboxed float type *)
 
-let assert_unboxed_float_type ~loc =
+let assert_unboxed_type ~loc =
     Language_extension.(
-      Jane_syntax_parsing.assert_extension_enabled ~loc Layouts Alpha)
+      Jane_syntax_parsing.assert_extension_enabled ~loc Layouts Stable)
 
-let unboxed_float_type sloc tys =
-  assert_unboxed_float_type ~loc:(make_loc sloc);
-  Ptyp_constr (mkloc (Lident "float#") (make_loc sloc), tys)
+(* Invariant: [lident] must end with an [Lident] that ends with a ["#"]. *)
+let unboxed_type sloc lident tys =
+  let loc = make_loc sloc in
+  assert_unboxed_type ~loc;
+  Ptyp_constr (mkloc lident loc, tys)
 %}
 
 /* Tokens */
@@ -4200,19 +4205,11 @@ atomic_type:
     | UNDERSCORE
         { Ptyp_any }
     | tys = actual_type_parameters
-      tid = mkrhs(type_longident)
-      HASH_SUFFIX
-        { match tid.txt with
-          | Lident "float" ->
-              let ident_start = fst $loc(tid) in
-              let hash_end = snd $loc($3) in
-              unboxed_float_type (ident_start, hash_end) tys
-          | _ ->
-              not_expecting $sloc "Unboxed type other than float#"
-        }
+      tid = mkrhs(type_unboxed_longident)
+        { unboxed_type $loc(tid) tid.txt tys }
     | tys = actual_type_parameters
       tid = mkrhs(type_longident)
-        { Ptyp_constr(tid, tys) } %prec below_HASH
+        { Ptyp_constr(tid, tys) }
     | LESS meth_list GREATER
         { let (f, c) = $2 in Ptyp_object (f, c) }
     | LESS GREATER
@@ -4461,10 +4458,19 @@ val_longident:
 label_longident:
     mk_longident(mod_longident, LIDENT) { $1 }
 ;
+type_trailing_no_hash:
+  LIDENT  { $1 } %prec below_HASH
+;
+type_trailing_hash:
+  LIDENT HASH_SUFFIX  { $1 ^ "#" }
+;
 type_longident:
-    mk_longident(mod_ext_longident, LIDENT)  { $1 }
+    mk_longident(mod_ext_longident, type_trailing_no_hash)  { $1 }
   (* Allow identifiers like [t/42]. *)
-  | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
+  | type_trailing_no_hash SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
+;
+type_unboxed_longident:
+    mk_longident(mod_ext_longident, type_trailing_hash)  { $1 }
 ;
 
 mod_longident:
