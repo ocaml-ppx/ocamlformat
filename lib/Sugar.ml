@@ -14,36 +14,18 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let mk_function_param {Location.loc_start; _} {Location.loc_end; _} p =
-  let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
-  {pparam_desc= p; pparam_loc}
-
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
     if will_keep_first_ast_node || List.is_empty pexp_attributes then
       match pexp_desc with
-      | Pexp_fun (({pparam_desc= `Param_val _; _} as p), body) ->
+      | Pexp_fun (p, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:p.pparam_loc
               ~after:body.pexp_loc ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           (p :: xargs, xbody)
-      | Pexp_fun
-          (({pparam_desc= `Param_newtype s; pparam_loc= loc1} as p), body) ->
-          if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:body.pexp_loc
-              ~after:body.pexp_loc ;
-          let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          let xargs =
-            match xargs with
-            | {pparam_desc= `Param_newtype s'; pparam_loc= loc2} :: xargs ->
-                let param = `Param_newtype (s @ s') in
-                mk_function_param loc1 loc2 param :: xargs
-            | xargs -> p :: xargs
-          in
-          (xargs, xbody)
       | _ -> ([], xexp)
     else ([], xexp)
   in
