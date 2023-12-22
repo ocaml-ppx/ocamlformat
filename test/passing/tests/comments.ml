@@ -330,3 +330,5 @@ let _ =
   (* indentation not preserved
 *)
   ()
+
+let vexpr (*aa*) (type (*bb*) a) (*cc*) (type (*dd*) b) (*ee*) : _ -> _ = k

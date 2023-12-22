@@ -454,3 +454,9 @@ let _ =
   (* indentation not preserved
 *)
   ()
+
+let vexpr (*aa*)
+    (type (*bb*) a
+    (*cc*)
+    (*dd*) b ) : _ -> _ =
+  (*ee*) k
