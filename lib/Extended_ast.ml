@@ -236,6 +236,7 @@ module Parse = struct
       | { pexp_desc=
             Pexp_fun
               ({pparam_desc= `Param_newtype types1; pparam_loc= loc1}, e1)
+        ; pexp_attributes= []
         ; _ } as e ->
           let e =
             match (expr m e1).pexp_desc with
