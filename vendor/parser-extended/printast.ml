@@ -513,13 +513,13 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_body
 
 and param_val i ppf (l, eo, p) =
-  line i ppf "Pparam_val\n";
+  line i ppf "param_val\n";
   arg_label (i+1) ppf l;
   option (i+1) expression ppf eo;
   pattern (i+1) ppf p
 
 and param_newtype i ppf ty =
-  line i ppf "Pparam_newtype\n";
+  line i ppf "param_newtype\n";
   list i (fun i ppf x -> line (i+1) ppf "type %a" fmt_string_loc x) ppf ty
 
 and expr_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
