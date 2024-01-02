@@ -124,28 +124,85 @@ let[@local maybe] upstream_local_attr_maybe_short x = x
 
 let f x =
   (* a *)
+  (* b *)
   local_
+  (* c *)
+  (* d *)
   let y = 1 in
   x + y
 
 let f x =
   (* a *)
+  (* b *)
   exclave_
+  (* c *)
+  (* d *)
   let y = 1 in
   x + y
 
 let x =
   (* a *)
+  (* b *)
   local_
+  (* c *)
+  (* d *)
   let y = 1 in
   y
 
 let x =
   (* a *)
+  (* b *)
   exclave_
+  (* c *)
+  (* d *)
   let y = 1 in
   y
 
 module type S = functor (_ : S) (_ : S) -> S
 (* this is here to make sure we pass the AST equality checks even when the
    extended AST is different *)
+
+let f
+    (local_ (* a *)
+            (* b *)
+            (* c *)
+            (* d *)
+      a )
+    ~foo:(local_ (* e *)
+                 (* f *)
+                 (* g *)
+                 (* h *)
+      b ) ?foo:(local_ c = 1) ~(local_ d) =
+  ()
+
+type 'a r =
+  { mutable a: 'a
+  ; b: 'a
+  ; (* a *)
+    (* b *)
+    global_ (* c *)
+            (* d *) c:
+      'a }
+
+type 'a r =
+  | Foo of
+      global_ (* a *)
+              (* b *)
+              (* c *)
+              (* d *)
+      'a
+  | Bar of
+      'a
+      * global_ (* e *)
+                (* f *)
+                (* g *)
+                (* h *)
+      'a
+  | Baz of
+      global_ int
+      * string
+      * global_ (* i *)
+                (* j *)
+                (* k *)
+                (* l *)
+      'a

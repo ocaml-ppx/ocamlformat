@@ -891,7 +891,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_arrow (args, ret_typ) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
         ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.ptyp_loc ;
-      let args, ret_typ, ctx = Sugar.decompose_arrow ctx args ret_typ in
+      let args, ret_typ, ctx =
+        Sugar.decompose_arrow c.cmts ctx args ret_typ
+      in
       let indent =
         match pro with
         | Some pro when c.conf.fmt_opts.ocp_indent_compat.v ->
@@ -1397,7 +1399,9 @@ and fmt_pattern_extension ~ext:_ c ~pro:_ ~parens:_ ~box:_ ~ctx0 ~ctx
 
 and fmt_fun_args c args =
   let fmt_fun_arg (a : function_param) =
-    let a = {a with pparam_desc= Sugar.remove_local_attrs a.pparam_desc} in
+    let a =
+      {a with pparam_desc= Sugar.remove_local_attrs c.cmts a.pparam_desc}
+    in
     let ctx = Fp a in
     Cmts.fmt c a.pparam_loc
     @@
@@ -3713,7 +3717,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
   let global_attr_opt, atrs = split_global_flags_from_attrs atrs in
   ( match global_attr_opt with
   | Some attr ->
-      Cmts.relocate c.cmts ~src:attr.attr_loc ~before:pld_type.ptyp_loc
+      Cmts.relocate_all_to_after c.cmts ~src:attr.attr_loc
         ~after:pld_type.ptyp_loc
   | None -> () ) ;
   hovbox 0
@@ -3776,7 +3780,7 @@ and fmt_core_type_gf c ctx typ =
   let global_attr_opt, _ = split_global_flags_from_attrs ptyp_attributes in
   ( match global_attr_opt with
   | Some attr ->
-      Cmts.relocate c.cmts ~src:attr.attr_loc ~before:typ.ptyp_loc
+      Cmts.relocate_all_to_after c.cmts ~src:attr.attr_loc
         ~after:typ.ptyp_loc
   | None -> () ) ;
   fmt_if (Option.is_some global_attr_opt) "global_ "

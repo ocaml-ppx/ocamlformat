@@ -253,15 +253,15 @@ let mktyp_modes modes =
   in
   mktyp_local_if is_local
 
-let exclave_ext_loc loc = mkloc "extension.exclave" loc
+let exclave_ext_loc = mknoloc "extension.exclave"
 
-let exclave_extension loc =
+let exclave_extension =
   Exp.mk ~loc:Location.none
-    (Pexp_extension(exclave_ext_loc loc, PStr []))
+    (Pexp_extension(exclave_ext_loc, PStr []))
 
-let mkexp_exclave ~loc ~kwd_loc exp =
+let mkexp_exclave ~loc exp =
   if Erase_jane_syntax.should_erase () then exp else
-  ghexp ~loc (Pexp_apply(exclave_extension (make_loc kwd_loc), [Nolabel, exp]))
+  ghexp ~loc (Pexp_apply(exclave_extension, [Nolabel, exp]))
 
 let curry_attr =
   Attr.mk ~loc:Location.none (mknoloc "extension.curry") (PStr [])
@@ -280,27 +280,27 @@ let maybe_curry_typ typ =
       else mktyp_curry typ
   | _ -> typ
 
-let global_loc loc = mkloc "extension.global" loc
+let global_loc = mknoloc "extension.global"
 
-let global_attr loc =
-  Attr.mk ~loc:Location.none (global_loc loc) (PStr [])
+let global_attr =
+  Attr.mk ~loc:Location.none (global_loc) (PStr [])
 
-let mkld_global ld loc =
+let mkld_global ld =
   if Erase_jane_syntax.should_erase () then ld else
-  { ld with pld_attributes = global_attr loc :: ld.pld_attributes }
+  { ld with pld_attributes = global_attr :: ld.pld_attributes }
 
-let mkld_global_maybe gbl ld loc =
+let mkld_global_maybe gbl ld =
   match gbl with
-  | Global -> mkld_global ld loc
+  | Global -> mkld_global ld
   | Nothing -> ld
 
-let mkcty_global cty loc =
+let mkcty_global cty =
   if Erase_jane_syntax.should_erase () then cty else
-  { cty with ptyp_attributes = global_attr loc :: cty.ptyp_attributes }
+  { cty with ptyp_attributes = global_attr :: cty.ptyp_attributes }
 
-let mkcty_global_maybe gbl cty loc =
+let mkcty_global_maybe gbl cty =
   match gbl with
-  | Global -> mkcty_global cty loc
+  | Global -> mkcty_global cty
   | Nothing -> cty
 
 (* TODO define an abstraction boundary between locations-as-pairs
@@ -2490,7 +2490,7 @@ expr:
   | LOCAL seq_expr
      { mkexp_stack ~loc:$sloc $2 }
   | EXCLAVE seq_expr
-     { mkexp_exclave ~loc:$sloc ~kwd_loc:($loc($1)) $2 }
+     { mkexp_exclave ~loc:$sloc $2 }
 ;
 %inline expr_attrs:
   | LET MODULE ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
@@ -3665,7 +3665,7 @@ generalized_constructor_arguments:
 
 %inline atomic_type_gbl:
   gbl = global_flag cty = atomic_type {
-  mkcty_global_maybe gbl cty (make_loc $loc(gbl))
+  mkcty_global_maybe gbl cty
 }
 ;
 
@@ -3686,8 +3686,7 @@ label_declaration:
       { let info = symbol_info $endpos in
         let mut, gbl = $1 in
         mkld_global_maybe gbl
-          (Type.field $2 $4 ~mut ~attrs:$5 ~loc:(make_loc $sloc) ~info)
-          (make_loc $loc($1)) }
+          (Type.field $2 $4 ~mut ~attrs:$5 ~loc:(make_loc $sloc) ~info) }
 ;
 label_declaration_semi:
     mutable_or_global_flag mkrhs(label) COLON poly_type_no_attr attributes
@@ -3699,8 +3698,7 @@ label_declaration_semi:
        in
        let mut, gbl = $1 in
        mkld_global_maybe gbl
-         (Type.field $2 $4 ~mut ~attrs:($5 @ $7) ~loc:(make_loc $sloc) ~info)
-         (make_loc $loc($1)) }
+         (Type.field $2 $4 ~mut ~attrs:($5 @ $7) ~loc:(make_loc $sloc) ~info) }
 ;
 
 /* Type Extensions */

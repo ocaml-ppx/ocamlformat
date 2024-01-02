@@ -14,7 +14,8 @@ open Asttypes
 open Extended_ast
 
 val decompose_arrow :
-     Ast.t
+     Cmts.t
+  -> Ast.t
   -> arrow_param list
   -> core_type
   -> (arrow_param * bool) list * (arrow_param * bool) * Ast.t
@@ -42,7 +43,7 @@ val cl_fun :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val remove_local_attrs : function_param_desc -> function_param_desc
+val remove_local_attrs : Cmts.t -> function_param_desc -> function_param_desc
 
 module Exp : sig
   val infix :

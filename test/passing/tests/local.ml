@@ -115,22 +115,30 @@ let[@local always] upstream_local_attr_always_short x = x
 
 let[@local maybe] upstream_local_attr_maybe_short x = x
 
-let f x = (* a *) local_
+let f x = (* a *) (* b *) local_ (* c *) (* d *)
   let y = 1 in
   x + y
 
-let f x = (* a *) exclave_
+let f x = (* a *) (* b *) exclave_ (* c *) (* d *)
   let y = 1 in
   x + y
 
-let x = (* a *) local_
+let x = (* a *) (* b *) local_ (* c *) (* d *)
   let y = 1 in
   y
 
-let x = (* a *) exclave_
+let x = (* a *) (* b *) exclave_ (* c *) (* d *)
   let y = 1 in
   y
 
 module type S = S -> S -> S
 (* this is here to make sure we pass the AST equality checks even when the
    extended AST is different *)
+
+let f ((* a *) (* b *)local_ (* c *) (* d *)a) ~foo:((* e *) (* f *)local_(* g *) (* h *) b) ?foo:(local_ c = 1) ~(local_ d) = ()
+type 'a r = {mutable a: 'a; b: 'a; (* a *) (* b *)global_ (* c *) (* d *)c: 'a}
+
+type 'a r =
+  | Foo of (* a *) (* b *)global_(* c *) (* d *) 'a
+  | Bar of 'a * (* e *) (* f *)global_ (* g *) (* h *)'a
+  | Baz of global_ int * string * (* i *) (* j *) global_ (* k *) (* l *)'a

@@ -18,13 +18,15 @@ let mk_function_param {Location.loc_start; _} {Location.loc_end; _} p =
   let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
   {pparam_desc= p; pparam_loc}
 
-let check_local_attr attrs =
+let check_local_attr_and_reloc_cmts cmts attrs loc =
   match
     List.partition_tf attrs ~f:(fun attr ->
         Conf.is_jane_street_local_annotation "local" ~test:attr.attr_name.txt )
   with
-  | [], _ -> (attrs, false)
-  | _ :: _, rest -> (rest, true)
+  | [local_attr], rest ->
+      Cmts.relocate_all_to_after cmts ~src:local_attr.attr_loc ~after:loc ;
+      (rest, true)
+  | _, _ -> (attrs, false)
 
 (* This function pulls apart an arrow type, pulling out local attributes into
    bools and producing a context without those attributes. This addresses the
@@ -33,16 +35,19 @@ let check_local_attr attrs =
    this to pass some internal ocamlformat sanity checks. It's not the
    cleanest solution in a vacuum, but is perhaps the one that will cause the
    fewest merge conflicts in the future. *)
-let decompose_arrow ctx ctl ct2 =
+let decompose_arrow cmts ctx ctl ct2 =
   let pull_out_local ap =
     let ptyp_attributes, local =
-      check_local_attr ap.pap_type.ptyp_attributes
+      check_local_attr_and_reloc_cmts cmts ap.pap_type.ptyp_attributes
+        ap.pap_type.ptyp_loc
     in
     ({ap with pap_type= {ap.pap_type with ptyp_attributes}}, local)
   in
   let args = List.map ~f:pull_out_local ctl in
   let ((res_ap, _) as res) =
-    let ptyp_attributes, local = check_local_attr ct2.ptyp_attributes in
+    let ptyp_attributes, local =
+      check_local_attr_and_reloc_cmts cmts ct2.ptyp_attributes ct2.ptyp_loc
+    in
     let ap =
       { pap_label= Nolabel
       ; pap_loc= ct2.ptyp_loc
@@ -102,7 +107,10 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
             Cmts.relocate cmts ~src:pcl_loc ~before ~after ;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
           let islocal, pattern =
-            match check_local_attr pattern.ppat_attributes with
+            match
+              check_local_attr_and_reloc_cmts cmts pattern.ppat_attributes
+                pattern.ppat_loc
+            with
             | _, false -> (false, pattern)
             | ppat_attributes, true -> (true, {pattern with ppat_attributes})
           in
@@ -113,12 +121,13 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let remove_local_attrs param =
+let remove_local_attrs cmts param =
   match param with
   | Pparam_newtype _ -> param
   | Pparam_val (_, label, default, pattern) ->
       let ppat_attributes, is_local =
-        check_local_attr pattern.ppat_attributes
+        check_local_attr_and_reloc_cmts cmts pattern.ppat_attributes
+          pattern.ppat_loc
       in
       Pparam_val (is_local, label, default, {pattern with ppat_attributes})
 
@@ -329,7 +338,10 @@ module Let_binding = struct
       *)
   let local_pattern_can_be_sugared pvb_pat pvb_constraint exp_loc cmts =
     (* If the original code was sugared, preserve that always. *)
-    let _, already_sugared = check_local_attr pvb_pat.ppat_attributes in
+    let _, already_sugared =
+      check_local_attr_and_reloc_cmts cmts pvb_pat.ppat_attributes
+        pvb_pat.ppat_loc
+    in
     (* Don't wipe away comments before [local_]. *)
     let comment_before = Cmts.has_before cmts exp_loc in
     already_sugared
@@ -369,11 +381,17 @@ module Let_binding = struct
               local_pattern_can_be_sugared pvb_pat pvb_constraint
                 pvb_expr.pexp_loc cmts
             then
-              let sattrs, _ = check_local_attr sbody.pexp_attributes in
+              let sattrs, _ =
+                check_local_attr_and_reloc_cmts cmts sbody.pexp_attributes
+                  sbody.pexp_loc
+              in
               (true, {sbody with pexp_attributes= sattrs})
             else (false, pvb_expr)
           in
-          let pattrs, _ = check_local_attr pvb_pat.ppat_attributes in
+          let pattrs, _ =
+            check_local_attr_and_reloc_cmts cmts pvb_pat.ppat_attributes
+              pvb_pat.ppat_loc
+          in
           let pat = {pvb_pat with ppat_attributes= pattrs} in
           let fake_ctx =
             Lb

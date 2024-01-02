@@ -81,6 +81,15 @@ let copy
   ; remaining
   ; layout_cache }
 
+(** returns comments that have not been formatted *)
+let remaining_comments t =
+  List.concat_map ~f:Multimap.to_list
+    [t.cmts_before; t.cmts_within; t.cmts_after]
+
+let remaining_before t loc = Map.find_multi t.cmts_before loc
+
+let remaining_locs t = Set.to_list t.remaining
+
 let restore src ~into =
   into.cmts_before <- src.cmts_before ;
   into.cmts_after <- src.cmts_after ;
@@ -320,6 +329,31 @@ let relocate (t : t) ~src ~before ~after =
         let s = Set.remove s src in
         let s = Set.add s after in
         Set.add s before )
+
+let relocate_all_to_after (t : t) ~src ~after =
+  if t.debug then
+    Format.eprintf "relocate %a all to %a@\n%!" Location.fmt src Location.fmt
+      after ;
+  let merge_and_sort x y =
+    List.rev_append x y
+    |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
+  in
+  t.cmts_after <-
+    Map.change t.cmts_after after ~f:(fun r ->
+        let cmts = remaining_before t src in
+        match (r, cmts) with
+        | Some data, _ -> Some (merge_and_sort data cmts)
+        | None, _ :: _ -> Some cmts
+        | None, [] -> None ) ;
+  t.cmts_before <- Map.remove t.cmts_before src ;
+  update_cmts t `After
+    ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+  update_cmts t `Within
+    ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+  if t.debug then
+    update_remaining t ~f:(fun s ->
+        let s = Set.remove s src in
+        Set.add s after )
 
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
@@ -719,12 +753,3 @@ let has_within t loc = pop_if_debug t loc ; Map.mem t.cmts_within loc
 let has_after t loc =
   pop_if_debug t loc ;
   Map.mem t.cmts_within loc || Map.mem t.cmts_after loc
-
-(** returns comments that have not been formatted *)
-let remaining_comments t =
-  List.concat_map ~f:Multimap.to_list
-    [t.cmts_before; t.cmts_within; t.cmts_after]
-
-let remaining_before t loc = Map.find_multi t.cmts_before loc
-
-let remaining_locs t = Set.to_list t.remaining
