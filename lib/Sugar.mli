@@ -22,15 +22,6 @@ val fun_ :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val cl_fun :
-     ?will_keep_first_ast_node:bool
-  -> Cmts.t
-  -> class_expr Ast.xt
-  -> function_param list * class_expr Ast.xt
-(** [cl_fun will_keep_first_ast_node cmts exp] returns the list of arguments
-    and the body of the function [exp]. [will_keep_first_ast_node] is set by
-    default, otherwise the [exp] is returned without modification. *)
-
 module Exp : sig
   val infix :
        Cmts.t

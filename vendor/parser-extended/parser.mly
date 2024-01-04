@@ -1773,14 +1773,15 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
+    let (args, constraint_, body) = cfb in
     ext,
-    Ci.mk id body ~virt ~params ~attrs ~loc ~docs
+    Ci.mk id body ~virt ~params ~attrs ~loc ~docs ~args ?constraint_
   }
 ;
 %inline and_class_declaration:
@@ -1789,26 +1790,24 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
-    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs
+    let (args, constraint_, body) = cfb in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs ~args ?constraint_
   }
 ;
 
 class_fun_binding:
-    EQUAL class_expr
-      { $2 }
-  | mkclass(
-      COLON class_type EQUAL class_expr
-        { Pcl_constraint($4, $2) }
-    | labeled_simple_pattern class_fun_binding
-      { let (l,o,p) = $1 in Pcl_fun(l, o, p, $2) }
-    ) { $1 }
+  params = list(fun_param)
+  ct = ioption(COLON class_type { $2 })
+  EQUAL
+  ce = class_expr
+    { params, ct, ce }
 ;
 
 formal_class_parameters:
@@ -1861,9 +1860,8 @@ class_simple_expr:
 
 class_fun_def:
   mkclass(
-    labeled_simple_pattern MINUSGREATER e = class_expr
-  | labeled_simple_pattern e = class_fun_def
-      { let (l,o,p) = $1 in Pcl_fun(l, o, p, e) }
+    nonempty_llist(fun_param) MINUSGREATER e = class_expr
+      { Pcl_fun($1, e) }
   ) { $1 }
 ;
 %inline class_structure:

@@ -2937,8 +2937,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         (Params.parens_if parens c.conf
            ( fmt_class_structure c ~ctx ?ext:None pcstr_self pcstr_fields
            $ fmt_atrs ) )
-  | Pcl_fun _ ->
-      let xargs, xbody = Sugar.cl_fun c.cmts xexp in
+  | Pcl_fun (xargs, body) ->
       let indent =
         match ctx0 with
         | Cl {pcl_desc= Pcl_fun _; _} -> 0
@@ -2954,7 +2953,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
                    $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" )
-           $ fmt "@ " $ fmt_class_expr c xbody ) )
+           $ fmt "@ "
+           $ fmt_class_expr c (sub_cl ~ctx body) ) )
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
@@ -3747,15 +3747,17 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
-  | Psig_class cl -> fmt_class_types ?ext c ctx ~pre:"class" ~sep:":" cl
+  | Psig_class cl -> fmt_class_types ?ext c ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
-      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
+      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
-and fmt_class_types ?ext c ctx ~pre ~sep cls =
+and fmt_class_types ?ext c ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
+      (* [pci_args] and [pci_constraint] are not used for class types. *)
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
+      let ctx = Ctd cl in
       let doc_before, doc_after, atrs =
         let force_before = not (Cty.is_simple cl.pci_expr) in
         fmt_docstring_around_item ~force_before c cl.pci_attributes
@@ -3779,28 +3781,18 @@ and fmt_class_types ?ext c ctx ~pre ~sep cls =
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
-and fmt_class_exprs ?ext c ctx cls =
+and fmt_class_exprs ?ext c cls =
   hvbox 0
   @@ list_fl cls (fun ~first ~last:_ cl ->
          update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
          @@ fun c ->
-         let xargs, xbody =
-           match cl.pci_expr.pcl_attributes with
-           | [] ->
-               Sugar.cl_fun c.cmts ~will_keep_first_ast_node:false
-                 (sub_cl ~ctx cl.pci_expr)
-           | _ -> ([], sub_cl ~ctx cl.pci_expr)
-         in
-         let ty, e =
-           match xbody.ast with
-           | {pcl_desc= Pcl_constraint (e, t); _} -> (Some t, sub_cl ~ctx e)
-           | _ -> (None, xbody)
-         in
+         let ctx = Cd cl in
+         let xargs = cl.pci_args in
          let doc_before, doc_after, atrs =
            let force_before = not (Cl.is_simple cl.pci_expr) in
            fmt_docstring_around_item ~force_before c cl.pci_attributes
          in
-         let class_exprs =
+         let class_expr =
            let pro =
              box_fun_decl_args c 2
                ( hovbox 2
@@ -3814,19 +3806,20 @@ and fmt_class_exprs ?ext c ctx cls =
                $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
            in
            let intro =
-             match ty with
+             match cl.pci_constraint with
              | Some ty ->
-                 let pro = pro $ fmt " :@ " in
-                 fmt_class_type c ~pro (sub_cty ~ctx ty)
+                 fmt_class_type c ~pro:(pro $ fmt " :@ ") (sub_cty ~ctx ty)
              | None -> pro
            in
            hovbox 2
-             (hovbox 2 (intro $ fmt "@ =") $ fmt "@;" $ fmt_class_expr c e)
+             ( hovbox 2 (intro $ fmt "@ =")
+             $ fmt "@;"
+             $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
          in
          fmt_if (not first) "\n@;<1000 0>"
          $ hovbox 0
-           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
+           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
 
 and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty ~attrs ~rec_flag =
@@ -4356,8 +4349,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
         $ fmt_item_attributes c ~pre:Space atrs
         $ doc_after )
   | Pstr_class_type cl ->
-      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
-  | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
+      fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
+  | Pstr_class cls -> fmt_class_exprs ?ext c cls
 
 and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
     ~has_attr ~indent_after_in =
