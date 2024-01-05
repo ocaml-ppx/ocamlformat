@@ -3379,7 +3379,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
              (fits_breaks ~level:5 "" ";") )
           (str ";")
   in
-  hvbox 0
+  hovbox 0
     ( Cmts.fmt_before c pld_loc
     $ hvbox
         (Params.Indent.record_docstring c.conf)
@@ -3396,8 +3396,8 @@ and fmt_label_declaration c ctx ?(last = false) decl =
                     $ fmt_semicolon )
                 $ cmt_after_type )
             $ fmt_attributes c ~pre:(Break (1, 1)) atrs )
-        $ fmt_docstring_padded c doc )
-    $ Cmts.fmt_after c pld_loc )
+        $ fmt_docstring_padded c doc
+        $ Cmts.fmt_after c pld_loc ) )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let { pcd_name= {txt; loc}

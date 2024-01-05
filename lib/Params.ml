@@ -722,7 +722,7 @@ module Indent = struct
 
   let record_docstring (c : Conf.t) =
     if ocp c then
-      match c.fmt_opts.break_separators.v with `Before -> -2 | `After -> 0
+      match c.fmt_opts.break_separators.v with `Before -> 0 | `After -> 2
     else 4
 
   let constructor_docstring c = if ocp c then 0 else 4

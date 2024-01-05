@@ -57,4 +57,4 @@ let {x : t} = x
 type t =
   { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:
       YYYYYYYYYYYYYYYYYYYYY.t
-    (* ____________________________________ *) }
+        (* ____________________________________ *) }
