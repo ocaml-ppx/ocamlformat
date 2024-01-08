@@ -38,3 +38,7 @@ module F3
       val x : int
     end) =
 struct end
+
+module F (* test *) (M : sig
+  type t
+end) : S = struct end
