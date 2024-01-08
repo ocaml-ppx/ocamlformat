@@ -16,6 +16,7 @@ profile. This started with version 0.26.0.
 - \* Janestreet profile: do not break `fun _ -> function` (#2460, @tdelvecchio-jsc)
 - \* Reduce the indentation of (polytype) type constraints (#2437, @gpetiot)
 - \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
+- \* Don't align breaking module arguments (#2505, @Julow)
 
 ### Fixed
 
