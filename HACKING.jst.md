@@ -17,7 +17,7 @@ of interest in `lib/`:
 
 * `Fmt.ml` has combinators useful for printing. You're likely to use this
   module but not super likely to change it.
-  
+
 * `Ast.ml` has various helpers, mainly for (a) constructing contexts, and (b)
   analyzing whether terms need parentheses. It's common to need to change the
   latter for new syntax.
@@ -25,23 +25,13 @@ of interest in `lib/`:
 * `Cmts.ml` deals with comments (not the `cmt` file format!). Comments are not
   places in the extended AST, but rather maintained in a table that is checked
   at various points using the helpers in this module.
-  
+
 * `Sugar.ml` has various bits of support code for sugaring/desugaring syntax
   (e.g., "multi-argument" functions).
 
-`ocamlformat` also includes *four* copies of the OCaml parser, all in
+`ocamlformat` also includes two copies of the OCaml parser, all in
 `vendor`:
 
-* `parser-upstream` is just a copy of the upstream parser. It does not get
-  built in this repo. Instead, it lives here only so that it can be diffed
-  with `parser-standard`. This diff is automatically produced in
-  `vendor/diff-parsers-upstream-std.patch`. The diff is used to monitor the
-  drift between the standard parser and the upstream parser; the patch file
-  has been mangled (it is produced by `tools/diff-ocaml` which uses `sed` to
-  alter the output of `diff`) and thus cannot be applied by any known tool.
-  
-    You will not have to interact with `parser-upstream`.
-  
 * `parser-standard` is meant to be very similar to the parser used in the
   OCaml compiler. Its role in `ocamlformat` is (only) to provide a safety-check:
   we want to make sure that the formatting does not change the AST as parsed by
@@ -52,18 +42,12 @@ of interest in `lib/`:
   pretty-printer. The *only* reason this is here is to mimic the behavior of the
   OCaml compiler. Accordingly, it should be as close to the OCaml compiler's
   parser as possible.
-  
+
 * `parser-extended` uses an extended parsetree, capable of storing extra
   information useful in preserving the structure of the user's code. It is this
   extended parsetree that gets pretty-printed. The parser here forms part of the
   core implementation of `ocamlformat`.
-  
-* `parser-recovery` is used for partial parsing, so that a bogus input source
-  file does not get mangled. It was an experiment that has been discontinued by
-  upstream and is not used with Jane Street. It uses the same parsetree as
-  `parser-extended`. A patchfile tracking the changes between `parser-extended`
-  and `parser-recovery` is generated. Just accept any changes that accrue there.
-  
+
 The directory `vendor/ocaml-common` contains files that are shared between
 `parser-standard` and `parser-extended`, like `location.ml`.  The `test`
 directory contains tests (see the Testing section below).
@@ -116,19 +100,19 @@ The base branch to work from is called `jane`. Create a branch off of `jane`.
    Apply any changes to the `ocaml/parsing` directory to the files in
    `vendor/parser-standard`. Remember: this "standard" parser should be as
    close as possible to the compiler's.
-   
+
     Note that some files used by both parsers are stored in
    `vendor/ocaml-common` and may need to be updated.  Further, when
    incorporating new support files from the compiler, consider whether than can
    be shared in that directory rather than copied into each of the parser
    directories.  This is typically the case if the support module doesn't depend
    on the parsetree.
-   
+
 2. Get `ocamlformat` compiled and passing the tests. If the patch to
    `flambda-backend` was backward compatible, then this should be
    straightforward. (If your changes affect files in `vendor/ocaml-common`, this
    might not be so easy. That's OK. Just move on to the next step.)
-   
+
 3. Edit the parsetree in `vendor/parser-extended/parsetree.mli` to support your
    new syntax. Copy over any changes to the parser and lexer from the
    `flambda-backend` patch, updating the parser's semantic actions as necessary.
@@ -137,21 +121,13 @@ The base branch to work from is called `jane`. Create a branch off of `jane`.
    This may require changes to other `lib/` modules, such as `Ast.ml` and
    `Sugar.ml`.
 
-5. Make the minimal changes to `parser-recovery` in order to get `ocamlformat`
-   to compile. We do not use this feature within Jane Street (and it will be
-   removed when merging with upstream), and so we're just keeping it on life
-   support. Expend no extra effort here!
-
-6. Add tests. Get them to pass. See the "Testing" section below.
+5. Add tests. Get them to pass. See the "Testing" section below.
 
 Testing
 -------
 
 To just run your built ocamlformat against a file manually, run
 `dune exec ocamlformat -- --enable-outside-detected-project path/to/your/file.ml`.
-
-If you want to see the parsed source ocamlformat produces internally, use
-`dune exec -- tools/printast/printast.exe path/to/your/file.ml`.
 
 Run the tests with `dune test`. There are two kinds of tests:
 
@@ -185,6 +161,22 @@ If you get some cryptic error output with a few lines of the `dune.inc` file, it
 is likely that ocamlformat has crashed (e.g. with a parser error) while looking
 at your test. The cryptic error output will mention the name of the test. Run
 ocamlformat manually on your test file to see the actual error.
+
+Debugging
+---------
+
+- To see the `parser-extended` ast coming out of the parser for a given source
+  file, use `dune exec tools/printast/printast.exe -- path/to/your/file.ml`.
+
+- It can be useful to visualize the _boxes_ the pretty printer creates to align
+  and group code.  To see these, run `ocamlformat` with the `-g` flag.  E.g.,:
+
+  ```
+  dune exec ocamlformat -- -g --enable-outside-detected-project testfile.ml
+  ```
+
+  This will create a file `/tmp/testfile_boxes.html`, which can be opened in a
+  browser to see a visual representation of the boxes.
 
 Validity checking
 -----------------
