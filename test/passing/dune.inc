@@ -3432,6 +3432,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to labeled_tuples_regressions.ml.stdout
+   (with-stderr-to labeled_tuples_regressions.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuples_regressions.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_regressions.ml labeled_tuples_regressions.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/labeled_tuples_regressions.ml.err labeled_tuples_regressions.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to labeled_tuples_regressions.mli.stdout
    (with-stderr-to labeled_tuples_regressions.mli.stderr
      (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iters=3 %{dep:tests/labeled_tuples_regressions.mli})))))

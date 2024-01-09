@@ -222,6 +222,24 @@ module Pat = struct
     | Ppat_cons pl when List.for_all pl ~f:is_any -> true
     | _ -> false
 
+  (* Jane Street: This is meant to be true if the pattern was parsed by the
+     [simple_pattern] production in the parser, which is different than the
+     above [is_simple] function used for something else.
+
+     It's OK if this is conservative (returning false for simple patterns
+     will just result in extra parens) but bad if it returns true for a
+     non-simple pattern. *)
+  let rec is_simple_in_parser {ppat_desc; _} =
+    match ppat_desc with
+    | Ppat_var _ | Ppat_record _ | Ppat_list _ | Ppat_array _ | Ppat_any
+     |Ppat_constant _
+     |Ppat_construct (_, None)
+     |Ppat_variant (_, None)
+     |Ppat_type _ | Ppat_extension _ ->
+        true
+    | Ppat_open (_, p) -> is_simple_in_parser p
+    | _ -> false
+
   let maybe_extension pat f_extension f_normal =
     match Extensions.Pattern.of_ast pat with
     | Some epat -> f_extension epat
@@ -2094,6 +2112,16 @@ end = struct
      |( Exp {pexp_desc= Pexp_fun _; _}
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
         | Ppat_variant _ ) ) ->
+        true
+    (* Jane Street: Labeled tuple pattern elements must be parenthesized more
+       than normal tuple elements. E.g., {[ match foo with | Some x, Some y
+       -> ... ]} is valid but {[ match foo with | Some x, ~l:Some y -> ... ]}
+       is not - parens are needed. *)
+    | Pat {ppat_desc= Ppat_tuple (els, _); _}, _
+      when List.exists els ~f:(function
+             | Some _, pat' -> pat == pat'
+             | _ -> false )
+           && not (Pat.is_simple_in_parser pat) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Fp _
