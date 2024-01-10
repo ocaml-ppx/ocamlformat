@@ -137,3 +137,7 @@ let _ =
     xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
   else fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
     xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+
+let _ = if (* foo *)
+           foo then 0 else if (* bar *)
+                              bar then 1 else 2
