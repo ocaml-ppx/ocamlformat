@@ -2190,6 +2190,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to functor.mli.stdout
+   (with-stderr-to functor.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/functor.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/functor.mli functor.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/functor.mli.err functor.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to funsig.ml.stdout
    (with-stderr-to funsig.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/funsig.ml})))))

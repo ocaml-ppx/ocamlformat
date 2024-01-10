@@ -3841,8 +3841,10 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       if args_p.align then (open_hvbox 0, close_box) else (noop, noop)
     in
     let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ align_opn
-      $ fmt_str_loc_opt c name $ str " :"
+      hovbox 1
+        ( pro
+        $ Cmts.fmt_before c ~epi:(fmt "@ ") loc
+        $ str "(" $ align_opn $ fmt_str_loc_opt c name $ str " :" )
       $ fmt_or_k (Option.is_some blk.pro) (str " ") (break 1 2)
     and epi = str ")" $ Cmts.fmt_after c loc $ align_cls in
     compose_module' ~box:false ~pro ~epi blk
