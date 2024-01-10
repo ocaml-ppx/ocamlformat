@@ -737,8 +737,6 @@ module Indent = struct
 
   let mod_unpack_annot c = if ocp c then 0 else 2
 
-  let mty c = if ocp c then 2 else 3
-
   let mty_with c = if ocp c then 0 else 2
 
   let type_constr c = if ocp c then 2 else 0

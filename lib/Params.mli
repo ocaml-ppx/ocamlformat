@@ -227,8 +227,6 @@ module Indent : sig
 
   (** Module types *)
 
-  val mty : Conf.t -> int
-
   val mty_with : Conf.t -> int
 
   (** Types *)
