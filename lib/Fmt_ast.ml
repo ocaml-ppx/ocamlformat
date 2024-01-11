@@ -3868,10 +3868,11 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       ~fit:true attrs
   in
   let intro =
-    str keyword
-    $ fmt_extension_suffix c ext
-    $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-    $ fmt_if rec_flag " rec" $ str " " $ fmt_str_loc_opt c name
+    hvbox 2
+      ( str keyword
+      $ fmt_extension_suffix c ext
+      $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
+      $ fmt_if rec_flag " rec" $ fmt "@ " $ fmt_str_loc_opt c name )
   in
   let compact =
     Poly.(c.conf.fmt_opts.let_module.v = `Compact) || not can_sparse
