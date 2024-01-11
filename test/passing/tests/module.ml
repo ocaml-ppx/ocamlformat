@@ -111,9 +111,11 @@ let _ =
   let module M =
     ( val (* aa *) m (* bb *)
         : (* cc *)
-        M with type t = t (* dd *)
+        M
+        with type t = t (* dd *)
         :> (* ee *)
-        N with type t = t (* ff *) )
+        N
+        with type t = t (* ff *) )
   in
   ()
 

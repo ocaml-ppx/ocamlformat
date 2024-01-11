@@ -134,10 +134,12 @@ let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
 
 let foo =
   if cmp < 0
-  then (* ast higher precedence than context: no parens *)
+  then
+    (* ast higher precedence than context: no parens *)
     false
   else if cmp > 0
-  then (* context higher prec than ast: add parens *)
+  then
+    (* context higher prec than ast: add parens *)
     true
   else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
   then foo
@@ -160,6 +162,11 @@ let _ =
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
     xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
 
-let _ = if (* foo *)
-           foo then 0 else if (* bar *)
-                              bar then 1 else 2
+let _ =
+  if (* foo *)
+     foo
+  then 0
+  else if (* bar *)
+          bar
+  then 1
+  else 2

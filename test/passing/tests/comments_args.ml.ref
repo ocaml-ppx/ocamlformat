@@ -8,7 +8,8 @@ let emit_wrapper_function =
     false (* is_pair_generator *)
     hoisted true (* no_injection *)
     true (* inout_wrapper *)
-    is_interceptable false (* is_memoize_impl *)
+    is_interceptable false
+    (* is_memoize_impl *)
     Rx.NonRx false
 
 [@@@ocamlformat "wrap-fun-args=false"]

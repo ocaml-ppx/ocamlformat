@@ -615,8 +615,8 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | _ -> noop ) )
 
 (** Format comments for loc. *)
-let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
-    found loc pos =
+let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@;<1000 0>")
+    ?(adj = eol) found loc pos =
   let open Fmt in
   match found with
   | None | Some [] -> noop
