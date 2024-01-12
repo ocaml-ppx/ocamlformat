@@ -31,6 +31,14 @@ module Misc : sig
     val default_setting : setting
     (** @since ocaml-4.09 *)
   end
+
+  module Style : sig
+    val inline_code: Format.formatter -> string -> unit
+    (** @since ocaml-5.2 *)
+
+    val setup : Color.setting option -> unit
+    (** @since ocaml-5.2 *)
+  end
 end
 
 module Clflags : sig
