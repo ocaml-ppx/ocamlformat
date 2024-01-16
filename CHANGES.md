@@ -31,6 +31,7 @@ profile. This started with version 0.26.0.
 - \* Fix the indentation of tuples in attributes and extensions (#2488, @Julow)
 - Fix unstable comment around docked functor argument (#2506, @Julow)
 - \* Fix unwanted alignment after comment (#2507, @Julow)
+- \* Fix unwanted alignment in if-then-else (#2511, @Julow)
 
 ## 0.26.1 (2023-09-15)
 
