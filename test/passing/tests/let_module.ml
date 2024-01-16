@@ -49,6 +49,18 @@ let () =
   foo
 
 let f () =
+  let module (* comment *) M = struct end in
+  ()
+
+let f () =
   let module (* comment *)
+      M = struct end in
+  ()
+
+let f () =
+  let module
+      (* multi-line
+
+         comment *)
       M = struct end in
   ()

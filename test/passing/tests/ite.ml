@@ -146,3 +146,10 @@ let _ =
     foooooooooooooooooooooooooooooooooooooooooo
   then foooooooooooooooooooooooooooooooooooooooooo
   else foooooooooooooooooooooooooooooooooooooooooo
+
+let _ =
+  if (* foo *)
+    foo then 0
+  else if (* bar *)
+    bar then 1
+  else 2

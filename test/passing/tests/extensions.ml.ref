@@ -124,7 +124,10 @@ let _ = try%lwt Lwt.return 2 with _ -> assert false
 
 let _ =
   (* foooooooooooo *)
-  try%lwt (* fooooooooooo *) Lwt.return 2 with _ -> assert false
+  try%lwt
+    (* fooooooooooo *)
+    Lwt.return 2
+  with _ -> assert false
 
 let _ =
   try%lwt

@@ -117,8 +117,10 @@ let () =
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
-    | [%foo? (* Pattern expressions *)
-             ((lazy x) [@foo])] -> ()
+    | [%foo?
+             (* Pattern expressions *)
+             ((lazy x)
+              [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
@@ -1137,7 +1139,8 @@ and ('a, 'e, 'b) ty_sum =
   ; sum_inj : 'c. ('b, 'c) ty_sel * 'c -> 'a
   }
 
-and 'e ty_dyn = (* dynamic type *)
+and 'e ty_dyn =
+  (* dynamic type *)
   | Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
@@ -9609,7 +9612,8 @@ exception Second_exception
 
 module M = struct
   type t
-  [@@immediate] (* ______________________________________ *)
+  [@@immediate]
+  (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
 

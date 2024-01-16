@@ -598,9 +598,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
                 ( fmt_or_k first
                     (str "if" $ fmt_opt fmt_extension_suffix)
                     (str "else if")
-                $ fmt_attributes
-                $ fmt_or (Option.is_some fmt_extension_suffix) "@ " " "
-                $ fmt_cond xcnd )
+                $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
               $ fmt "@ " )
       ; box_keyword_and_expr=
           (fun k -> hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
@@ -610,7 +608,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
-      ; box_expr= Some false
+      ; box_expr= None
       ; expr_pro= None
       ; expr_eol= None
       ; branch_expr

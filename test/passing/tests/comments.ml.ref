@@ -254,8 +254,11 @@ let%map
     _ =
   ()
 
-type t = < (* a *)
-         a: int [@atr] (* b *) ; b: int (* c *) >
+type t =
+  < (* a *)
+  a: int [@atr] (* b *)
+  ; b: int
+  (* c *) >
 
 type t = < a: int (* a *) ; (* b *) .. (* c *) >
 
@@ -279,8 +282,10 @@ let _ =
       | None -> do_something ()
       | Some _ -> () (* do nothing *) )
 
-let _ = try_with (fun () -> (* comment before *)
-                            a ; b (* after b *) )
+let _ =
+  try_with (fun () ->
+      (* comment before *)
+      a ; b (* after b *) )
 
 let _ =
   match x with
@@ -298,8 +303,7 @@ type t =
 
 type t =
   (* | B *)
-  | A
-  (* A *)
+  | A (* A *)
   | C
 
 type t =
