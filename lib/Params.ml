@@ -629,14 +629,6 @@ let comma_sep (c : Conf.t) : Fmt.s =
   | `After -> ",@;<1 2>"
 
 module Align = struct
-  (** Whether [exp] occurs in [args] as a labelled argument. *)
-  let is_labelled_arg args exp =
-    List.exists
-      ~f:(function
-        | Nolabel, _ -> false
-        | Labelled _, x | Optional _, x -> phys_equal x exp )
-      args
-
   let general (c : Conf.t) t =
     hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t
 
@@ -665,6 +657,19 @@ module Align = struct
       | _ -> parens && not c.fmt_opts.align_symbol_open_paren.v
     in
     hvbox_if align 0 t
+
+  let fun_decl (c : Conf.t) ~decl ~pattern ~args =
+    if c.fmt_opts.ocp_indent_compat.v then
+      hovbox 4 (decl $ hvbox 2 (pattern $ args))
+    else hovbox 4 (decl $ pattern) $ args
+
+  let module_pack (c : Conf.t) ~me =
+    if not c.fmt_opts.ocp_indent_compat.v then false
+    else
+      (* Align when the constraint is not desugared. *)
+      match me.pmod_desc with
+      | Pmod_structure _ | Pmod_ident _ -> false
+      | _ -> true
 end
 
 module Indent = struct
@@ -715,7 +720,7 @@ module Indent = struct
 
   let record_docstring (c : Conf.t) =
     if ocp c then
-      match c.fmt_opts.break_separators.v with `Before -> -2 | `After -> 0
+      match c.fmt_opts.break_separators.v with `Before -> 0 | `After -> 2
     else 4
 
   let constructor_docstring c = if ocp c then 0 else 4
@@ -733,4 +738,8 @@ module Indent = struct
   let mty_with c = if ocp c then 0 else 2
 
   let type_constr c = if ocp c then 2 else 0
+
+  let variant c ~parens = if ocp c && parens then 3 else 2
+
+  let variant_type_arg c = if ocp c then 2 else 0
 end

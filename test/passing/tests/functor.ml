@@ -70,7 +70,8 @@ module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
 
 module Make
     (TT : TableFormat.TABLES)
-    (IT : InspectionTableFormat.TABLES with type 'a lr1state = int)
+    (IT :
+      InspectionTableFormat.TABLES__________________________________________)
     (ET :
       EngineTypes.TABLE
         with type terminal = int
@@ -79,6 +80,14 @@ module Make
     (E : sig
       type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
     end) =
+struct
+  type t = t
+end
+
+module Make
+    (TT : TableFormat.TABLES)
+    (IT :
+      InspectionTableFormat.TABLES__________________________________________) =
 struct
   type t = t
 end

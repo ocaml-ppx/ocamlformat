@@ -83,7 +83,8 @@ let () =
   and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ()) [@foo]];
+    ())
+    [@foo]];
   [%foo
     (let open M in
      ()) [@foo]];
@@ -98,24 +99,28 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo
     for x = () to () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo assert true [@foo]];
   [%foo lazy x [@foo]];
   [%foo object end [@foo]];
   [%foo
     begin
       3
-    end [@foo]];
+    end
+    [@foo]];
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
     | [%foo?
         (* Pattern expressions *)
-        ((lazy x) [@foo])] -> ()
+        ((lazy x)
+        [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
@@ -132,7 +137,8 @@ class x =
     method virtual x : t [@@foo]
     method! private x = 3 [@@foo]
     initializer x [@@foo]
-  end [@foo]
+  end
+  [@foo]
 
 (* Class type expressions *)
 class type t = object
@@ -920,8 +926,8 @@ let id x = x
 
 let idb1 =
   (fun id ->
-    let _ = id true in
-    id)
+     let _ = id true in
+     id)
     id
 ;;
 
@@ -1069,8 +1075,8 @@ let rec devariantize : type t. t ty -> variant -> t =
     let builder = create_builder () in
     List.iter2
       (fun (Field { label; field_type; set }) (lab, v) ->
-        if label <> lab then raise VariantMismatch;
-        set builder (devariantize field_type v))
+         if label <> lab then raise VariantMismatch;
+         set builder (devariantize field_type v))
       fields
       fl;
     of_builder builder
@@ -1319,8 +1325,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        ; sum_inj =
            (fun (type c) : ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
               function
-             | Thd, Noarg -> `Nil
-             | Ttl Thd, v -> `Cons v)
+              | Thd, Noarg -> `Nil
+              | Ttl Thd, v -> `Cons v)
            (* One can also write the type annotation directly *)
        })
 ;;
@@ -3333,20 +3339,20 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
 (* No real improvement here? *)
 let make_set (type s) cmp : (module Set.S with type elt = s) =
   (module Set.Make (struct
-      type t = s
+       type t = s
 
-      let compare = cmp
-    end))
+       let compare = cmp
+     end))
 ;;
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
   sort
     (module Set.Make (struct
-        type t = s
+         type t = s
 
-        let compare = cmp
-      end))
+         let compare = cmp
+       end))
 ;;
 
 module type S = sig
@@ -6109,9 +6115,9 @@ class c (v : int) =
 
     inherit
       (fun v ->
-        object
-          method v : string = v
-        end)
+         object
+           method v : string = v
+         end)
         "42"
   end
 ;;
@@ -9481,7 +9487,8 @@ fun contents -> { contents = contents [@foo] };;
 
 ();
 (();
- ()) [@foo]
+ ())
+[@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
@@ -9700,7 +9707,7 @@ let _ =
 
 type t =
   [ `XXXX
-    (* __________________________________________________________________________________ *)
+      (* __________________________________________________________________________________ *)
   | `XXXX (* __________________________________________________________________ *)
   | `XXXX (* _____________________________________________________ *)
   | `XXXX (* ___________________________________________________ *)
@@ -9714,7 +9721,7 @@ type t =
 
 type t =
   { field : ty
-  (* Here is some verbatim formatted text:
+    (* Here is some verbatim formatted text:
      {v
        starting at column 7
      v}*)
@@ -9807,10 +9814,11 @@ let[@a
                          and y = b in
                          x + y]
              | _ -> .) ->
-    y [@attr
-        (* ... *)
-        (* ... *)
-        attr (* ... *)]
+    y
+    [@attr
+      (* ... *)
+      (* ... *)
+      attr (* ... *)]
 ;;
 
 let x =
@@ -9952,28 +9960,28 @@ type t
 let pat =
   String.Search_pattern.create
     (String.init len ~f:(function
-      | 0 -> '\n'
-      | n when n < len - 1 -> ' '
-      | _ -> '*'))
+       | 0 -> '\n'
+       | n when n < len - 1 -> ' '
+       | _ -> '*'))
 ;;
 
 type t =
   { break_separators : [ `Before | `After ]
   ; break_sequences : bool
   ; break_string_literals : [ `Auto | `Never ]
-  (** How to potentially break string literals into new lines. *)
+    (** How to potentially break string literals into new lines. *)
   ; break_struct : bool
   ; cases_exp_indent : int
   ; cases_matching_exp_indent : [ `Normal | `Compact ]
   }
 
 let rec collect_files
-  ~enable_outside_detected_project
-  ~root
-  ~segs
-  ~ignores
-  ~enables
-  ~files
+          ~enable_outside_detected_project
+          ~root
+          ~segs
+          ~ignores
+          ~enables
+          ~files
   =
   match segs with
   | [] | [ "" ] -> ignores, enables, files, None
@@ -10126,33 +10134,22 @@ type action =
 
 let%test_module "semantics" =
   (module (
-  struct
-    open Core
-    open Appendable_list
-    module Stable = Stable
-  end :
-    S))
+   struct
+     open Core
+     open Appendable_list
+     module Stable = Stable
+   end :
+     S))
 ;;
 
 let _ =
   Error
     (`Foooooooooooooooooo
-       (name, Format.sprintf "expecting %S but got %S" Version.version value))
-;;
-
-let _ =
-  Error
-    (Foooooooooooooooooo
-       (name, Format.sprintf "expecting %S but got %S" Version.version value))
+        (name, Format.sprintf "expecting %S but got %S" Version.version value))
 ;;
 
 let _ =
   `Foooooooooooooooooo
-    (name, Format.sprintf "expecting %S but got %S" Version.version value)
-;;
-
-let _ =
-  Foooooooooooooooooo
     (name, Format.sprintf "expecting %S but got %S" Version.version value)
 ;;
 
@@ -10267,9 +10264,9 @@ class x =
 
 module M =
   [%demo
-  module Foo = Bar
+    module Foo = Bar
 
-  type t]
+    type t]
 
 let _ =
   Some
@@ -10306,7 +10303,7 @@ end
 type t =
   { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :
       YYYYYYYYYYYYYYYYYYYYY.t
-  (* ____________________________________ *)
+    (* ____________________________________ *)
   }
 
 (*{v
@@ -10314,6 +10311,19 @@ type t =
       foo
 
 v}*)
+
+(*$
+  {|
+         f|}
+*)
+
+type t =
+  { xxxxxxxxxxxxxxxxxxx : yyy
+        [@zzzzzzzzzzzzzzzzzzz
+          (* ________________________________
+                                ___ *)
+          _______]
+  }
 
 let _ =
   match () with

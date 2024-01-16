@@ -177,6 +177,11 @@ module Align : sig
 
   val function_ :
     Conf.t -> parens:bool -> ctx0:Ast.t -> self:expression -> Fmt.t -> Fmt.t
+
+  val fun_decl : Conf.t -> decl:Fmt.t -> pattern:Fmt.t -> args:Fmt.t -> Fmt.t
+
+  val module_pack : Conf.t -> me:module_expr -> bool
+  (** Not implemented as a wrapper to work with the blk system. *)
 end
 
 module Indent : sig
@@ -227,4 +232,8 @@ module Indent : sig
   (** Types *)
 
   val type_constr : Conf.t -> int
+
+  val variant : Conf.t -> parens:bool -> int
+
+  val variant_type_arg : Conf.t -> int
 end

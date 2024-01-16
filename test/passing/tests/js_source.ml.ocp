@@ -83,7 +83,8 @@ let () =
   and[@foo] y = 4 in
   [%foo
     (let module M = M in
-     ()) [@foo]];
+     ())
+    [@foo]];
   [%foo
     (let open M in
      ()) [@foo]];
@@ -98,24 +99,28 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo
     for x = () to () do
       ()
-    done [@foo]];
+    done
+               [@foo]];
   [%foo assert true [@foo]];
   [%foo lazy x [@foo]];
   [%foo object end [@foo]];
   [%foo
     begin
       3
-    end [@foo]];
+    end
+    [@foo]];
   [%foo new x [@foo]];
   [%foo
     match[@foo] () with
     | [%foo?
              (* Pattern expressions *)
-             ((lazy x) [@foo])] -> ()
+             ((lazy x)
+              [@foo])] -> ()
     | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
@@ -132,7 +137,8 @@ class x =
     method virtual x : t [@@foo]
     method! private x = 3 [@@foo]
     initializer x [@@foo]
-  end [@foo]
+  end
+  [@foo]
 
 (* Class type expressions *)
 class type t = object
@@ -9481,7 +9487,8 @@ fun contents -> { contents = contents [@foo] };;
 
 ();
 (();
- ()) [@foo]
+ ())
+[@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
@@ -9807,7 +9814,8 @@ let[@a
              and y = b in
              x + y]
              | _ -> .) ->
-    y [@attr
+    y
+    [@attr
        (* ... *)
       (* ... *)
       attr (* ... *)]
@@ -10141,18 +10149,7 @@ let _ =
 ;;
 
 let _ =
-  Error
-    (Foooooooooooooooooo
-       (name, Format.sprintf "expecting %S but got %S" Version.version value))
-;;
-
-let _ =
   `Foooooooooooooooooo
-    (name, Format.sprintf "expecting %S but got %S" Version.version value)
-;;
-
-let _ =
-  Foooooooooooooooooo
     (name, Format.sprintf "expecting %S but got %S" Version.version value)
 ;;
 
@@ -10314,6 +10311,19 @@ type t =
       foo
 
 v}*)
+
+(*$
+  {|
+         f|}
+*)
+
+type t =
+  { xxxxxxxxxxxxxxxxxxx : yyy
+                          [@zzzzzzzzzzzzzzzzzzz
+                             (* ________________________________
+                                ___ *)
+                            _______]
+  }
 
 let _ =
   match () with

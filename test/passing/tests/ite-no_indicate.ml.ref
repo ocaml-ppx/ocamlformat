@@ -141,6 +141,13 @@ let _ =
 
 let _ =
   if
+    (* foooooooooooooooooooooooooooooooooooooooooo *)
+    foooooooooooooooooooooooooooooooooooooooooo
+  then foooooooooooooooooooooooooooooooooooooooooo
+  else foooooooooooooooooooooooooooooooooooooooooo
+
+let _ =
+  if
     (* foo *)
     foo
   then 0

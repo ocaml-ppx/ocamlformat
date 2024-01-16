@@ -7865,18 +7865,7 @@ let _ =
 ;;
 
 let _ =
-  Error
-    (Foooooooooooooooooo
-       (name, Format.sprintf "expecting %S but got %S" Version.version value))
-;;
-
-let _ =
   `Foooooooooooooooooo
-    (name, Format.sprintf "expecting %S but got %S" Version.version value)
-;;
-
-let _ =
-  Foooooooooooooooooo
     (name, Format.sprintf "expecting %S but got %S" Version.version value)
 ;;
 
@@ -8033,6 +8022,19 @@ type t =
       foo
 
 v}*)
+
+(*$
+    {|
+         f|}
+*)
+
+type t =
+  { xxxxxxxxxxxxxxxxxxx : yyy
+                          [@zzzzzzzzzzzzzzzzzzz
+                             (* ________________________________
+                                ___ *)
+                            _______]
+  }
 
 let _ =
   match () with

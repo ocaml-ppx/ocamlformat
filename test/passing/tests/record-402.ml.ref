@@ -53,3 +53,8 @@ let _ = {a= (module M : S); b= (module M : S)}
 let to_string {x; _ (* we should print y *)} = string_of_int x
 
 let {x= (x : t)} = x
+
+type t =
+  { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:
+      YYYYYYYYYYYYYYYYYYYYY.t
+        (* ____________________________________ *) }
