@@ -4189,7 +4189,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
   | Pmod_unpack (e, ty1, ty2) ->
       let package_type sep (lid, cstrs) =
         break 1 (Params.Indent.mod_unpack_annot c.conf)
-        $ hvbox 0
+        $ hovbox 0
             ( hovbox 0 (str sep $ fmt_longident_loc c lid)
             $ fmt_package_type c ctx cstrs )
       in
