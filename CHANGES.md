@@ -17,7 +17,7 @@ profile. This started with version 0.26.0.
 - \* Reduce the indentation of (polytype) type constraints (#2437, @gpetiot)
 - \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
 - \* Don't align breaking module arguments (#2505, @Julow)
-- \* Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
+- Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
 
 ### Fixed
 
