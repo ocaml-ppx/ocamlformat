@@ -52,8 +52,9 @@ f
 ;;
 
 f
-  ( if and_ even
-         loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+  ( if
+      and_ even
+        loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
     then ()
     else ()
   )
@@ -173,16 +174,18 @@ let _ =
   if x
   then
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
-    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+      xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
   else
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
-    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+      xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
 
 let _ =
-  if (* foo *)
-     foo
+  if
+    (* foo *)
+    foo
   then 0
-  else if (* bar *)
-          bar
+  else if
+    (* bar *)
+    bar
   then 1
   else 2
