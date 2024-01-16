@@ -158,10 +158,10 @@ let _ =
   if x
   then
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
-    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+      xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
   else
     fun xxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyy zzzzzzzzzzz ->
-    xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
+      xxxxxxxxx yyyyyyyyyy zzzzzzzzzzzz
 
 let _ =
   if

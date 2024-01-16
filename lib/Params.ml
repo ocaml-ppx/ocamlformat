@@ -608,7 +608,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
-      ; box_expr= Some false
+      ; box_expr= None
       ; expr_pro= None
       ; expr_eol= None
       ; branch_expr

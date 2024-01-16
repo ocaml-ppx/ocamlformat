@@ -279,8 +279,8 @@ let _ =
 
 let () =
   if a
-  then begin b
-    (* asd *)
+  then begin
+    b (* asd *)
   end
 
 [@@@ocamlformat "if-then-else=k-r"]
