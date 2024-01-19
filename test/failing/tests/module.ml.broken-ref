@@ -2,8 +2,8 @@ ocamlformat: ignoring "tests/module.ml" (syntax error)
 File "tests/module.ml", line 5, characters 18-22:
 5 |       include Foo with type t := t
                       ^^^^
-Error: Syntax error: 'end' expected
+Error: Syntax error: "end" expected
 File "tests/module.ml", line 3, characters 15-21:
 3 |     module G = struct
                    ^^^^^^
-  This 'struct' might be unmatched
+  This "struct" might be unmatched

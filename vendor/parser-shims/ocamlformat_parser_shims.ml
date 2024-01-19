@@ -180,6 +180,7 @@ end
 
 module Clflags = struct
   let include_dirs = ref ([] : string list)(* -I *)
+  let hidden_include_dirs = ref ([] : string list)
   let debug = ref false                   (* -g *)
   let unsafe = ref false                  (* -unsafe *)
   let absname = ref false                 (* -absname *)
@@ -199,9 +200,23 @@ end
 
 module Load_path = struct
   type dir
+
   type auto_include_callback =
     (dir -> string -> string option) -> string -> string
-  let init ~auto_include:_ _ = ()
-  let get_paths () = []
+
+  type paths = {visible: string list; hidden: string list}
+
+  let get_paths () = {visible= []; hidden= []}
+
+  let init ~auto_include:_ ~visible:_ ~hidden:_ = ()
+
   let auto_include_otherlibs _ _ s = s
+end
+
+module Builtin_attributes = struct
+  type current_phase = Parser | Invariant_check
+
+  let register_attr _ _ = ()
+
+  let mark_payload_attrs_used _ = ()
 end
