@@ -72,7 +72,6 @@ module Typ = struct
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
   let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
-  let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
 
   let force_poly t =
     match t.ptyp_desc with
@@ -103,9 +102,9 @@ module Typ = struct
             Ptyp_object (List.map loop_object_field lst, o)
         | Ptyp_class (longident, lst) ->
             Ptyp_class (longident, List.map loop lst)
-        | Ptyp_alias(core_type, alias) ->
-            check_variable var_names alias.loc alias.txt;
-            Ptyp_alias(loop core_type, alias)
+        | Ptyp_alias(core_type, string) ->
+            check_variable var_names t.ptyp_loc string;
+            Ptyp_alias(loop core_type, string)
         | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
             Ptyp_variant(List.map loop_row_field row_field_list,
                          flag, lbl_lst_option)
@@ -115,8 +114,6 @@ module Typ = struct
             Ptyp_poly(string_lst, loop core_type)
         | Ptyp_package(longident,lst) ->
             Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
-        | Ptyp_open (mod_ident, core_type) ->
-            Ptyp_open (mod_ident, loop core_type)
         | Ptyp_extension (s, arg) ->
             Ptyp_extension (s, arg)
       in
@@ -181,7 +178,8 @@ module Exp = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
   let let_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_let (a, b, c))
-  let function_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_function (a, b, c))
+  let fun_ ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_fun (a, b, c, d))
+  let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
   let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
   let try_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_try (a, b))
@@ -215,9 +213,7 @@ module Exp = struct
     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
-  (* Added *)
-  let hole ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
-  (* *)
+  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
 
   let case lhs ?guard rhs =
     {
@@ -263,9 +259,7 @@ module Mod = struct
   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
-  (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
-  (* *)
 end
 
 module Sig = struct
