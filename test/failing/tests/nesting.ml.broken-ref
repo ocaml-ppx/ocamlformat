@@ -1,7 +1,7 @@
 ocamlformat: ignoring "tests/nesting.ml" (syntax error)
 File "tests/nesting.ml", line 35, characters 0-0:
-Error: Syntax error: 'end' expected
+Error: Syntax error: "end" expected
 File "tests/nesting.ml", line 1, characters 11-17:
 1 | module M = struct
                ^^^^^^
-  This 'struct' might be unmatched
+  This "struct" might be unmatched
