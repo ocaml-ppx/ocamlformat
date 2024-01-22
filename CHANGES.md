@@ -33,6 +33,7 @@ profile. This started with version 0.26.0.
 - Fix unstable comment around docked functor argument (#2506, @Julow)
 - \* Fix unwanted alignment after comment (#2507, @Julow)
 - \* Fix unwanted alignment in if-then-else (#2511, @Julow)
+- Fix position of comments around and within `(type ...)` function arguments (#2503, @gpetiot)
 
 ## 0.26.1 (2023-09-15)
 
