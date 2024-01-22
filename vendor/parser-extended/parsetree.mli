@@ -506,10 +506,13 @@ and 'a function_param =
     pparam_desc : 'a;
   }
 
-and expr_function_param =
-  [ `Param_val of param_val | `Param_newtype of param_newtype ] function_param
+and param_val_or_newtype =
+  | Param_val of param_val
+  | Param_newtype of param_newtype
 
-and class_function_param = [ `Param_val of param_val ] function_param
+and expr_function_param = param_val_or_newtype function_param
+
+and class_function_param = param_val function_param
 
 and type_constraint =
   | Pconstraint of core_type

@@ -235,18 +235,18 @@ module Parse = struct
           {p with pexp_desc= Pexp_pack (name, Some pt)}
       | { pexp_desc=
             Pexp_fun
-              ({pparam_desc= `Param_newtype types1; pparam_loc= loc1}, e1)
+              ({pparam_desc= Param_newtype types1; pparam_loc= loc1}, e1)
         ; pexp_attributes= []
         ; _ } as e ->
           let e =
             match (expr m e1).pexp_desc with
             | Pexp_fun
-                ({pparam_desc= `Param_newtype types2; pparam_loc= loc2}, e2)
+                ({pparam_desc= Param_newtype types2; pparam_loc= loc2}, e2)
               ->
                 { e with
                   pexp_desc=
                     Pexp_fun
-                      ( { pparam_desc= `Param_newtype (types1 @ types2)
+                      ( { pparam_desc= Param_newtype (types1 @ types2)
                         ; pparam_loc= {loc1 with loc_end= loc2.loc_end} }
                       , e2 ) }
             | _ -> e

@@ -525,13 +525,12 @@ and param_newtype i ppf ty =
 and expr_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   line i ppf "function_param %a\n" fmt_location loc;
   match desc with
-  | `Param_val x -> param_val i ppf x
-  | `Param_newtype x -> param_newtype i ppf x
+  | Param_val x -> param_val i ppf x
+  | Param_newtype x -> param_newtype i ppf x
 
 and class_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   line i ppf "function_param %a\n" fmt_location loc;
-  match desc with
-  | `Param_val x -> param_val i ppf x
+  param_val i ppf desc
 
 and type_constraint i ppf constraint_ =
   match constraint_ with

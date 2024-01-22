@@ -726,7 +726,7 @@ and type_constr_and_body c xbody =
       let exp_ctx =
         let pat = Ast_helper.Pat.any () in
         let param =
-          { pparam_desc= `Param_val (Nolabel, None, pat)
+          { pparam_desc= Param_val (Nolabel, None, pat)
           ; pparam_loc= pat.ppat_loc }
         in
         Exp Ast_helper.(Exp.fun_ param exp)
@@ -1342,13 +1342,12 @@ and fmt_expr_fun_arg c fp =
   Cmts.fmt c fp.pparam_loc
   @@
   match fp.pparam_desc with
-  | `Param_val x -> fmt_param_val c ctx x
-  | `Param_newtype x -> fmt_param_newtype c x
+  | Param_val x -> fmt_param_val c ctx x
+  | Param_newtype x -> fmt_param_newtype c x
 
 and fmt_class_fun_arg c fp =
   let ctx = Fpc fp in
-  Cmts.fmt c fp.pparam_loc
-  @@ match fp.pparam_desc with `Param_val x -> fmt_param_val c ctx x
+  Cmts.fmt c fp.pparam_loc @@ fmt_param_val c ctx fp.pparam_desc
 
 and fmt_expr_fun_args c args = list args "@;" (fmt_expr_fun_arg c)
 

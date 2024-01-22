@@ -163,7 +163,7 @@ module Let_binding = struct
              [Extended_ast]. *)
           let pat = Ast_helper.Pat.any () in
           let param =
-            { pparam_desc= `Param_val (Nolabel, None, pat)
+            { pparam_desc= Param_val (Nolabel, None, pat)
             ; pparam_loc= pat.ppat_loc }
           in
           Exp (Ast_helper.Exp.fun_ param exp)

@@ -1220,12 +1220,18 @@ end = struct
     let check_bindings l =
       List.exists l ~f:(fun {pvb_pat; _} -> check_subpat pvb_pat)
     in
-    let check_function_param param =
+    let check_param_val (_, _, p) = p == pat in
+    let check_expr_function_param param =
       match param.pparam_desc with
-      | `Param_val (_, _, p) -> p == pat
-      | `Param_newtype _ -> false
+      | Param_val x -> check_param_val x
+      | Param_newtype _ -> false
     in
-    let check_function_params l = List.exists l ~f:check_function_param in
+    let check_class_function_param param =
+      check_param_val param.pparam_desc
+    in
+    let check_class_function_params =
+      List.exists ~f:check_class_function_param
+    in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
     | Pld _ -> assert false
@@ -1283,9 +1289,9 @@ end = struct
               | {pc_lhs; _} when pc_lhs == pat -> true
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) -> assert (p == pat)
-      | Pexp_fun (p, _) -> assert (check_function_param p) )
-    | Fpe ctx -> assert (check_function_param ctx)
-    | Fpc ctx -> assert (check_function_param ctx)
+      | Pexp_fun (p, _) -> assert (check_expr_function_param p) )
+    | Fpe ctx -> assert (check_expr_function_param ctx)
+    | Fpc ctx -> assert (check_class_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_pat == pat)
     | Bo x -> assert (x.pbop_pat == pat)
@@ -1294,7 +1300,7 @@ end = struct
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
-          | Pcl_fun (p, _) -> check_function_params p
+          | Pcl_fun (p, _) -> check_class_function_params p
           | Pcl_constr _ -> false
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
@@ -1336,12 +1342,18 @@ end = struct
       | PStr [{pstr_desc= Pstr_eval (e, _); _}] -> e == exp
       | _ -> false
     in
-    let check_function_param param =
+    let check_param_val (_, e, _) = Option.exists e ~f:(fun x -> x == exp) in
+    let check_expr_function_param param =
       match param.pparam_desc with
-      | `Param_val (_, e, _) -> Option.exists e ~f:(fun x -> x == exp)
-      | `Param_newtype _ -> false
+      | Param_val x -> check_param_val x
+      | Param_newtype _ -> false
     in
-    let check_function_params l = List.exists l ~f:check_function_param in
+    let check_class_function_param param =
+      check_param_val param.pparam_desc
+    in
+    let check_class_function_params =
+      List.exists ~f:check_class_function_param
+    in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -1371,7 +1383,7 @@ end = struct
                 | {pc_rhs; _} when pc_rhs == exp -> true
                 | _ -> false ) )
         | Pexp_fun (param, body) ->
-            assert (check_function_param param || body == exp)
+            assert (check_expr_function_param param || body == exp)
         | Pexp_indexop_access {pia_lhs; pia_kind= Builtin idx; pia_rhs; _} ->
             assert (
               pia_lhs == exp || idx == exp
@@ -1420,8 +1432,8 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
-    | Fpe ctx -> assert (check_function_param ctx)
-    | Fpc ctx -> assert (check_function_param ctx)
+    | Fpe ctx -> assert (check_expr_function_param ctx)
+    | Fpc ctx -> assert (check_class_function_param ctx)
     | Vc _ -> assert false
     | Lb x -> assert (x.pvb_expr == exp)
     | Bo x -> assert (x.pbop_exp == exp)
@@ -1444,7 +1456,7 @@ end = struct
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with
-          | Pcl_fun (param, e) -> check_function_params param || loop e
+          | Pcl_fun (param, e) -> check_class_function_params param || loop e
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
@@ -1889,8 +1901,8 @@ end = struct
       | Ppat_cons _ -> true
       | Ppat_construct _ | Ppat_record _ | Ppat_variant _ -> false
       | _ -> true )
-    | Fpe {pparam_desc= `Param_val (_, _, _); _}, Ppat_cons _ -> true
-    | Fpc {pparam_desc= `Param_val (_, _, _); _}, Ppat_cons _ -> true
+    | Fpe {pparam_desc= Param_val (_, _, _); _}, Ppat_cons _ -> true
+    | Fpc {pparam_desc= _; _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
     | ( Exp {pexp_desc= Pexp_letop _; _}

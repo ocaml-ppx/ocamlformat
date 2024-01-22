@@ -122,11 +122,10 @@ module FP = struct
     List.map (map_loc sub) ty
 
   let map_expr sub = function
-    | `Param_val x -> `Param_val (map_param_val sub x)
-    | `Param_newtype x -> `Param_newtype (map_param_newtype sub x)
+    | Param_val x -> Param_val (map_param_val sub x)
+    | Param_newtype x -> Param_newtype (map_param_newtype sub x)
 
-  let map_class sub = function
-    | `Param_val x -> `Param_val (map_param_val sub x)
+  let map_class sub x = map_param_val sub x
 
   let map sub f { pparam_loc; pparam_desc } =
     let pparam_loc = sub.location sub pparam_loc in

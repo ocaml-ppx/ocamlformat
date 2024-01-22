@@ -2600,13 +2600,13 @@ param_newtype:
 ;
 expr_fun_param:
   mkfunparam(
-      param_val { `Param_val $1 }
-    | param_newtype { `Param_newtype $1 }
+      param_val { Param_val $1 }
+    | param_newtype { Param_newtype $1 }
   ) { $1 }
 ;
 class_fun_param:
   mkfunparam (
-    param_val { `Param_val $1 }
+    param_val { $1 }
   ) { $1 }
 ;
 fun_def:
