@@ -2,8 +2,8 @@ ocamlformat: ignoring "tests/never_align.ml" (syntax error)
 File "tests/never_align.ml", line 13, characters 4-5:
 13 |     b
          ^
-Error: Syntax error: '}' expected
+Error: Syntax error: "}" expected
 File "tests/never_align.ml", line 11, characters 8-9:
 11 | let _ = {
              ^
-  This '{' might be unmatched
+  This "{" might be unmatched
