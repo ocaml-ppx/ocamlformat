@@ -14,10 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let mk_function_param {Location.loc_start; _} {Location.loc_end; _} p =
-  let pparam_loc = {Location.loc_start; loc_end; loc_ghost= true} in
-  {pparam_desc= p; pparam_loc}
-
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
@@ -30,21 +26,6 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
               ~after:body.pexp_loc ;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           (p :: xargs, xbody)
-      | Pexp_newtype (name, body) ->
-          if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:body.pexp_loc
-              ~after:body.pexp_loc ;
-          let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          let xargs =
-            match xargs with
-            | {pparam_desc= Pparam_newtype names; pparam_loc} :: xargs ->
-                let param = Pparam_newtype (name :: names) in
-                mk_function_param name.loc pparam_loc param :: xargs
-            | xargs ->
-                let param = Pparam_newtype [name] in
-                mk_function_param name.loc name.loc param :: xargs
-          in
-          (xargs, xbody)
       | _ -> ([], xexp)
     else ([], xexp)
   in
@@ -161,7 +142,7 @@ module Let_binding = struct
   type t =
     { lb_op: string loc
     ; lb_pat: pattern xt
-    ; lb_args: function_param list
+    ; lb_args: expr_function_param list
     ; lb_typ: value_constraint option
     ; lb_exp: expression xt
     ; lb_pun: bool
@@ -182,7 +163,7 @@ module Let_binding = struct
              [Extended_ast]. *)
           let pat = Ast_helper.Pat.any () in
           let param =
-            { pparam_desc= Pparam_val (Nolabel, None, pat)
+            { pparam_desc= Param_val (Nolabel, None, pat)
             ; pparam_loc= pat.ppat_loc }
           in
           Exp (Ast_helper.Exp.fun_ param exp)

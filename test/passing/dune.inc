@@ -1136,7 +1136,7 @@
  (action
   (with-stdout-to comments-no-wrap.ml.stdout
    (with-stderr-to comments-no-wrap.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --no-wrap-comments --max-iter=3 %{dep:tests/comments.ml})))))
+     (run %{bin:ocamlformat} --margin-check --no-wrap-comments --max-iter=4 %{dep:tests/comments.ml})))))
 
 (rule
  (alias runtest)

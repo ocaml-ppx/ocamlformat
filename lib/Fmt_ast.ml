@@ -726,7 +726,7 @@ and type_constr_and_body c xbody =
       let exp_ctx =
         let pat = Ast_helper.Pat.any () in
         let param =
-          { pparam_desc= Pparam_val (Nolabel, None, pat)
+          { pparam_desc= Param_val (Nolabel, None, pat)
           ; pparam_loc= pat.ppat_loc }
         in
         Exp Ast_helper.(Exp.fun_ param exp)
@@ -1258,96 +1258,100 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         $ wrap_k (str opn) (str cls)
             (fmt "@;<0 2>" $ fmt_pattern c (sub_pat ~ctx pat)) )
 
-and fmt_fun_args c args =
-  let fmt_fun_arg (a : function_param) =
-    let ctx = Fp a in
-    Cmts.fmt c a.pparam_loc
-    @@
-    match a.pparam_desc with
-    | Pparam_val
-        ( ((Labelled l | Optional l) as lbl)
-        , None
-        , ( { ppat_desc=
-                ( Ppat_var {txt; loc= _}
-                | Ppat_constraint
-                    ( { ppat_desc= Ppat_var {txt; loc= _}
-                      ; ppat_attributes= []
-                      ; _ }
-                    , _ ) )
-            ; ppat_attributes= []
-            ; _ } as pat ) )
-      when String.equal l.txt txt ->
-        let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
-        let xpat = sub_pat ~ctx pat in
-        cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
-    | Pparam_val ((Optional _ as lbl), None, pat) ->
-        let xpat = sub_pat ~ctx pat in
-        let has_attr = not (List.is_empty pat.ppat_attributes) in
-        let outer_parens, inner_parens =
-          match pat.ppat_desc with
-          | Ppat_any | Ppat_var _ -> (false, false)
-          | Ppat_unpack _ -> (not has_attr, true)
-          | Ppat_tuple _ -> (false, true)
-          | Ppat_or _ -> (has_attr, true)
-          | _ -> (not has_attr, false)
-        in
-        cbox 2
-          ( fmt_label lbl ":@,"
-          $ hovbox 0
-            @@ Params.parens_if outer_parens c.conf
-                 (fmt_pattern ~parens:inner_parens c xpat) )
-    | Pparam_val (((Labelled _ | Nolabel) as lbl), None, pat) ->
-        let xpat = sub_pat ~ctx pat in
-        cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
-    | Pparam_val
-        ( Optional l
-        , Some exp
-        , ({ppat_desc= Ppat_var {txt; loc= _}; ppat_attributes= []; _} as pat)
-        )
-      when String.equal l.txt txt ->
-        let xexp = sub_exp ~ctx exp in
-        let xpat = sub_pat ~ctx pat in
-        cbox 0
-          (wrap "?(" ")"
-             ( fmt_pattern c ~box:true xpat
-             $ fmt " =@;<1 2>"
-             $ hovbox 2 (fmt_expression c xexp) ) )
-    | Pparam_val
-        ( Optional l
-        , Some exp
-        , ( { ppat_desc=
-                Ppat_constraint ({ppat_desc= Ppat_var {txt; loc= _}; _}, _)
-            ; ppat_attributes= []
-            ; _ } as pat ) )
-      when String.equal l.txt txt ->
-        let xexp = sub_exp ~ctx exp in
-        let xpat = sub_pat ~ctx pat in
-        cbox 0
-          (wrap "?(" ")"
-             ( fmt_pattern c ~parens:false ~box:true xpat
-             $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
-    | Pparam_val (Optional l, Some exp, pat) ->
-        let xexp = sub_exp ~ctx exp in
-        let xpat = sub_pat ~ctx pat in
-        let parens =
-          match xpat.ast.ppat_desc with
-          | Ppat_unpack _ -> None
-          | _ -> Some false
-        in
-        cbox 2
-          ( str "?" $ str l.txt
-          $ wrap_k (fmt ":@,(") (str ")")
-              ( fmt_pattern c ?parens ~box:true xpat
-              $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
-    | Pparam_val ((Labelled _ | Nolabel), Some _, _) ->
-        impossible "not accepted by parser"
-    | Pparam_newtype [] -> impossible "not accepted by parser"
-    | Pparam_newtype names ->
-        cbox 0
-          (Params.parens c.conf
-             (str "type " $ list names "@ " (fmt_str_loc c)) )
-  in
-  list args "@;" fmt_fun_arg
+and fmt_param_val c ctx : param_val -> _ = function
+  | ( ((Labelled l | Optional l) as lbl)
+    , None
+    , ( { ppat_desc=
+            ( Ppat_var {txt; loc= _}
+            | Ppat_constraint
+                ( {ppat_desc= Ppat_var {txt; loc= _}; ppat_attributes= []; _}
+                , _ ) )
+        ; ppat_attributes= []
+        ; _ } as pat ) )
+    when String.equal l.txt txt ->
+      let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
+      let xpat = sub_pat ~ctx pat in
+      cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
+  | (Optional _ as lbl), None, pat ->
+      let xpat = sub_pat ~ctx pat in
+      let has_attr = not (List.is_empty pat.ppat_attributes) in
+      let outer_parens, inner_parens =
+        match pat.ppat_desc with
+        | Ppat_any | Ppat_var _ -> (false, false)
+        | Ppat_unpack _ -> (not has_attr, true)
+        | Ppat_tuple _ -> (false, true)
+        | Ppat_or _ -> (has_attr, true)
+        | _ -> (not has_attr, false)
+      in
+      cbox 2
+        ( fmt_label lbl ":@,"
+        $ hovbox 0
+          @@ Params.parens_if outer_parens c.conf
+               (fmt_pattern ~parens:inner_parens c xpat) )
+  | ((Labelled _ | Nolabel) as lbl), None, pat ->
+      let xpat = sub_pat ~ctx pat in
+      cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
+  | ( Optional l
+    , Some exp
+    , ({ppat_desc= Ppat_var {txt; loc= _}; ppat_attributes= []; _} as pat) )
+    when String.equal l.txt txt ->
+      let xexp = sub_exp ~ctx exp in
+      let xpat = sub_pat ~ctx pat in
+      cbox 0
+        (wrap "?(" ")"
+           ( fmt_pattern c ~box:true xpat
+           $ fmt " =@;<1 2>"
+           $ hovbox 2 (fmt_expression c xexp) ) )
+  | ( Optional l
+    , Some exp
+    , ( { ppat_desc=
+            Ppat_constraint ({ppat_desc= Ppat_var {txt; loc= _}; _}, _)
+        ; ppat_attributes= []
+        ; _ } as pat ) )
+    when String.equal l.txt txt ->
+      let xexp = sub_exp ~ctx exp in
+      let xpat = sub_pat ~ctx pat in
+      cbox 0
+        (wrap "?(" ")"
+           ( fmt_pattern c ~parens:false ~box:true xpat
+           $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
+  | Optional l, Some exp, pat ->
+      let xexp = sub_exp ~ctx exp in
+      let xpat = sub_pat ~ctx pat in
+      let parens =
+        match xpat.ast.ppat_desc with
+        | Ppat_unpack _ -> None
+        | _ -> Some false
+      in
+      cbox 2
+        ( str "?" $ str l.txt
+        $ wrap_k (fmt ":@,(") (str ")")
+            ( fmt_pattern c ?parens ~box:true xpat
+            $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
+  | (Labelled _ | Nolabel), Some _, _ -> impossible "not accepted by parser"
+
+and fmt_param_newtype c : param_newtype -> _ = function
+  | [] -> impossible "not accepted by parser"
+  | names ->
+      cbox 0
+        (Params.parens c.conf
+           (str "type " $ list names "@ " (fmt_str_loc c)) )
+
+and fmt_expr_fun_arg c fp =
+  let ctx = Fpe fp in
+  Cmts.fmt c fp.pparam_loc
+  @@
+  match fp.pparam_desc with
+  | Param_val x -> fmt_param_val c ctx x
+  | Param_newtype x -> fmt_param_newtype c x
+
+and fmt_class_fun_arg c fp =
+  let ctx = Fpc fp in
+  Cmts.fmt c fp.pparam_loc @@ fmt_param_val c ctx fp.pparam_desc
+
+and fmt_expr_fun_args c args = list args "@;" (fmt_expr_fun_arg c)
+
+and fmt_class_fun_args c args = list args "@;" (fmt_class_fun_arg c)
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
@@ -1442,7 +1446,7 @@ and fmt_fun ?force_closing_paren
                $ fmt "fun" $ break_fun
                $ hvbox 0
                    ( fmt_attributes c ast.pexp_attributes ~suf:" "
-                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                   $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
                    $ fmt "@;<1 -2>->" ) ) ) )
     $ body $ closing
     $ Cmts.fmt_after c ast.pexp_loc )
@@ -1762,7 +1766,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     $ hovbox 2
                         ( fmt_str_loc c name $ str " fun "
                         $ fmt_attributes c ~suf:" " call.pexp_attributes
-                        $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                        $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
                         $ fmt "@ ->" )
                     $ fmt "@ " $ fmt_expression c xbody ) )
              $ fmt "@ ;@ "
@@ -1792,7 +1796,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     $ hovbox 2
                         ( fmt_str_loc c name $ str " fun "
                         $ fmt_attributes c ~suf:" " retn.pexp_attributes
-                        $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                        $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
                         $ fmt "@ ->" )
                     $ fmt "@ " $ fmt_expression c xbody ) ) ) )
   | Pexp_infix ({txt= ":="; loc}, r, v)
@@ -1876,7 +1880,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              $ hvbox_if
                                  (not c.conf.fmt_opts.wrap_fun_args.v)
                                  4
-                                 (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
+                                 ( fmt_expr_fun_args c xargs
+                                 $ fmt_opt fmt_cstr )
                              $ fmt "@ ->" ) )
                      $ pre_body )
                  $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
@@ -2224,7 +2229,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ fmt_extension_suffix c ext
           $ str " "
           $ fmt_attributes c pexp_attributes ~suf:" "
-        and args = fmt_fun_args c xargs in
+        and args = fmt_expr_fun_args c xargs in
         Params.Exp.box_fun_decl_args c.conf ~parens ~kw ~args ~annot:fmt_cstr
       in
       pro
@@ -2950,7 +2955,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
                ( box_fun_decl_args c 0
                    ( str "fun "
                    $ fmt_attributes c pcl_attributes ~suf:" "
-                   $ wrap_fun_decl_args c (fmt_fun_args c xargs)
+                   $ wrap_fun_decl_args c (fmt_class_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" )
            $ fmt "@ "
@@ -3044,7 +3049,7 @@ and fmt_class_field_kind c ctx = function
         ~after:e.ast.pexp_loc ;
       ( noop
       , fmt_if (not (List.is_empty xargs)) "@ "
-        $ wrap_fun_decl_args c (fmt_fun_args c xargs)
+        $ wrap_fun_decl_args c (fmt_expr_fun_args c xargs)
         $ opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
       , fmt "@;<1 2>="
       , fmt "@ " $ fmt_expression c e )
@@ -3803,7 +3808,7 @@ and fmt_class_exprs ?ext c cls =
                    $ fmt_class_params c ctx cl.pci_params
                    $ fmt_str_loc c cl.pci_name )
                $ fmt_if (not (List.is_empty xargs)) "@ "
-               $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
+               $ wrap_fun_decl_args c (fmt_class_fun_args c xargs) )
            in
            let intro =
              match cl.pci_constraint with
@@ -4473,7 +4478,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
     and args =
       fmt_if_k
         (not (List.is_empty lb_args))
-        (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c lb_args))
+        (fmt "@ " $ wrap_fun_decl_args c (fmt_expr_fun_args c lb_args))
       $ fmt_newtypes
     in
     box_fun_decl_args c 4 (Params.Align.fun_decl c.conf ~decl ~pattern ~args)

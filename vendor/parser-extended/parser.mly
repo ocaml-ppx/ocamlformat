@@ -68,6 +68,7 @@ let mkstr ~loc d = Str.mk ~loc:(make_loc loc) d
 let mkclass ~loc ?attrs d = Cl.mk ~loc:(make_loc loc) ?attrs d
 let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
+let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
 let pstr_typext (te, ext) =
   (Pstr_typext te, ext)
@@ -858,6 +859,8 @@ The precedences must be listed from low to high.
     { mkcf ~loc:$sloc $1 }
 %inline mkclass(symb): symb
     { mkclass ~loc:$sloc $1 }
+%inline mkfunparam(symb): symb
+    { mkfunparam ~loc:$sloc $1 }
 
 %inline wrap_mkstr_ext(symb): symb
     { wrap_mkstr_ext ~loc:$sloc $1 }
@@ -1802,7 +1805,7 @@ module_type_subst:
 ;
 
 class_fun_binding:
-  params = list(fun_param)
+  params = list(class_fun_param)
   ct = ioption(COLON class_type { $2 })
   EQUAL
   ce = class_expr
@@ -1859,7 +1862,7 @@ class_simple_expr:
 
 class_fun_def:
   mkclass(
-    nonempty_llist(fun_param) MINUSGREATER e = class_expr
+    nonempty_llist(class_fun_param) MINUSGREATER e = class_expr
       { Pcl_fun($1, e) }
   ) { $1 }
 ;
@@ -2265,10 +2268,8 @@ expr:
         Pexp_letopen(od, $7), $4 }
   | FUNCTION ext_attributes match_cases
       { Pexp_function $3, $2 }
-  | FUN ext_attributes fun_param fun_def
+  | FUN ext_attributes expr_fun_param fun_def
       { Pexp_fun($3, $4), $2 }
-  | FUN ext_attributes LPAREN TYPE lident_list RPAREN fun_def
-      { (mk_newtypes ~loc:$sloc $5 $7).pexp_desc, $2 }
   | MATCH ext_attributes seq_expr WITH match_cases
       { Pexp_match($3, $5), $2 }
   | TRY ext_attributes seq_expr WITH match_cases
@@ -2574,10 +2575,8 @@ fun_binding:
 strict_binding:
     EQUAL seq_expr
       { $2 }
-  | fun_param fun_binding
+  | expr_fun_param fun_binding
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-  | LPAREN TYPE lident_list RPAREN fun_binding
-      { mk_newtypes ~loc:$sloc $3 $5 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
@@ -2591,10 +2590,24 @@ match_case:
   | pattern MINUSGREATER DOT
       { Exp.case $1 (Exp.unreachable ~loc:(make_loc $loc($3)) ()) }
 ;
-fun_param:
+param_val:
   | labeled_simple_pattern
-      { let l, o, p = $1 in
-        { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (l, o, p) } }
+      { $1 }
+;
+param_newtype:
+  | LPAREN TYPE lident_list RPAREN
+      { $3 }
+;
+expr_fun_param:
+  mkfunparam(
+      param_val { Param_val $1 }
+    | param_newtype { Param_newtype $1 }
+  ) { $1 }
+;
+class_fun_param:
+  mkfunparam (
+    param_val { $1 }
+  ) { $1 }
 ;
 fun_def:
     MINUSGREATER seq_expr
@@ -2603,10 +2616,8 @@ fun_def:
       { Pexp_constraint ($4, $2) })
       { $1 }
 /* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | fun_param fun_def
+  | expr_fun_param fun_def
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-  | LPAREN TYPE lident_list RPAREN fun_def
-      { mk_newtypes ~loc:$sloc $3 $5 }
 ;
 %inline expr_comma_list:
   es = separated_nontrivial_llist(COMMA, expr)

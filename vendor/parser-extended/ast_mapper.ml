@@ -114,19 +114,24 @@ let map_value_constraint sub = function
       let coercion = sub.typ sub coercion in
       Pvc_coercion { ground; coercion }
 
-let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
-  let loc = sub.location sub loc in
-  let desc =
-    match desc with
-    | Pparam_val (lab, def, p) ->
-        Pparam_val
-          (sub.arg_label sub lab,
-          map_opt (sub.expr sub) def,
-          sub.pat sub p)
-    | Pparam_newtype ty ->
-        Pparam_newtype (List.map (map_loc sub) ty)
-  in
-  { pparam_loc = loc; pparam_desc = desc }
+module FP = struct
+  let map_param_val sub ((lab, def, p) : param_val) : param_val =
+    (sub.arg_label sub lab, map_opt (sub.expr sub) def, sub.pat sub p)
+
+  let map_param_newtype sub (ty : param_newtype) : param_newtype =
+    List.map (map_loc sub) ty
+
+  let map_expr sub = function
+    | Param_val x -> Param_val (map_param_val sub x)
+    | Param_newtype x -> Param_newtype (map_param_newtype sub x)
+
+  let map_class sub x = map_param_val sub x
+
+  let map sub f { pparam_loc; pparam_desc } =
+    let pparam_loc = sub.location sub pparam_loc in
+    let pparam_desc = f sub pparam_desc in
+    { pparam_loc; pparam_desc }
+end
 
 module Flag = struct
   open Asttypes
@@ -514,7 +519,7 @@ module E = struct
           (sub.expr sub e)
     | Pexp_fun (p, e) ->
         fun_ ~loc ~attrs
-          (map_function_param sub p)
+          (FP.map sub FP.map_expr p)
           (sub.expr sub e)
     | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
     | Pexp_apply (e, l) ->
@@ -694,7 +699,7 @@ module CE = struct
         structure ~loc ~attrs (sub.class_structure sub s)
     | Pcl_fun (p, ce) ->
         fun_ ~loc ~attrs
-          (List.map (map_function_param sub) p)
+          (List.map (FP.map sub FP.map_class) p)
           (sub.class_expr sub ce)
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)
@@ -745,7 +750,7 @@ module CE = struct
     Ci.mk ~loc ~attrs
      ~virt:(Flag.map_virtual sub pci_virt)
      ~params:(List.map (map_fst (sub.typ sub)) pl)
-     ~args:(List.map (map_function_param sub) pci_args)
+     ~args:(List.map (FP.map sub FP.map_class) pci_args)
      ?constraint_:(map_opt (sub.class_type sub) pci_constraint)
       (map_loc sub pci_name)
       (f pci_expr)

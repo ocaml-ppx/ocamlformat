@@ -321,7 +321,7 @@ and expression_desc =
                when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
          *)
   | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_fun of function_param * expression
+  | Pexp_fun of expr_function_param * expression
       (** [Pexp_fun(P, E)] represents:
             - [fun P -> E]
             - [fun ~l:P -> E]
@@ -488,37 +488,31 @@ and binding_op =
     pbop_loc : Location.t;
   }
 
-and function_param_desc =
-  | Pparam_val of arg_label * expression option * pattern
-  (** [Pparam_val (lbl, exp0, P)] represents the parameter:
-      - [P]
-        when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
-        and [exp0] is [None]
-      - [~l:P]
-        when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
-        and [exp0] is [None]
-      - [?l:P]
-        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
-        and [exp0] is [None]
-      - [?l:(P = E0)]
-        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
-        and [exp0] is [Some E0]
+and param_val = arg_label * expression option * pattern
+  (** - [P] when [lbl] is [Nolabel] and [exp0] is [None]
+      - [~l:P] when [lbl] is [Labelled l] and [exp0] is [None]
+      - [?l:P] when [lbl] is [Optional l] and [exp0] is [None]
+      - [?l:(P = E0)] when [lbl] is [Optional l] and [exp0] is [Some E0]
 
-      Note: If [E0] is provided, only
-      {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
-  *)
-  | Pparam_newtype of string loc list
-  (** [Pparam_newtype x] represents the parameter [(type x y z)].
-      [x] carries the location of the identifier, whereas the [pparam_loc]
-      on the enclosing [function_param] node is the location of the [(type x y z)]
-      as a whole.
+      Note: If [E0] is provided, only [Optional] is allowed.
   *)
 
-and function_param =
+and param_newtype = string loc list
+  (** [(type x y z)]. *)
+
+and 'a function_param =
   {
     pparam_loc : Location.t;
-    pparam_desc : function_param_desc;
+    pparam_desc : 'a;
   }
+
+and param_val_or_newtype =
+  | Param_val of param_val
+  | Param_newtype of param_newtype
+
+and expr_function_param = param_val_or_newtype function_param
+
+and class_function_param = param_val function_param
 
 and type_constraint =
   | Pconstraint of core_type
@@ -750,7 +744,7 @@ and 'a class_infos =
      pci_virt: virtual_flag;
      pci_params: (core_type * variance_and_injectivity) list;
      pci_name: string loc;
-     pci_args: function_param list;
+     pci_args: class_function_param list;
      pci_constraint: class_type option;
      pci_expr: 'a;
      pci_loc: Location.t;
@@ -781,7 +775,7 @@ and class_expr_desc =
   | Pcl_constr of Longident.t loc * core_type list
       (** [c] and [['a1, ..., 'an] c] *)
   | Pcl_structure of class_structure  (** [object ... end] *)
-  | Pcl_fun of function_param list * class_expr
+  | Pcl_fun of class_function_param list * class_expr
       (** [Pcl_fun(P, CE)] represents:
             - [fun P -> CE]
             - [fun ~l:P -> CE]

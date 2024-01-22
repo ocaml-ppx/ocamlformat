@@ -183,7 +183,7 @@ module Parse = struct
           {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
-    let expr (m : Ast_mapper.mapper) = function
+    let rec expr (m : Ast_mapper.mapper) = function
       | {pexp_desc= Pexp_cons (_ :: _ :: _ :: _ as l); _} as e
         when match List.last_exn l with
              (* Empty lists are always represented as Lident [] *)
@@ -233,6 +233,25 @@ module Parse = struct
              (module S) = (module M)] - [let _ = ((module M) : (module
              S))] *)
           {p with pexp_desc= Pexp_pack (name, Some pt)}
+      | { pexp_desc=
+            Pexp_fun
+              ({pparam_desc= Param_newtype types1; pparam_loc= loc1}, e1)
+        ; pexp_attributes= []
+        ; _ } as e ->
+          let e =
+            match (expr m e1).pexp_desc with
+            | Pexp_fun
+                ({pparam_desc= Param_newtype types2; pparam_loc= loc2}, e2)
+              ->
+                { e with
+                  pexp_desc=
+                    Pexp_fun
+                      ( { pparam_desc= Param_newtype (types1 @ types2)
+                        ; pparam_loc= {loc1 with loc_end= loc2.loc_end} }
+                      , e2 ) }
+            | _ -> e
+          in
+          Ast_mapper.default_mapper.expr m e
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
