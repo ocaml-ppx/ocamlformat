@@ -2156,11 +2156,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           c.conf
           (fmt_constant c const $ fmt_atrs)
   | Pexp_constraint (e, t) ->
-      let outer_parens = has_attr && parens in
       pro
       $ hvbox
           (Params.Indent.exp_constraint c.conf)
-          (Params.parens_if outer_parens c.conf
+          (Params.parens_if parens c.conf
              ( wrap_fits_breaks ~space:false c.conf "(" ")"
                  ( fmt_expression c (sub_exp ~ctx e)
                  $ fmt "@ : "

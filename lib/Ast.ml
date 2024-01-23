@@ -2337,7 +2337,7 @@ end = struct
           , Some
               ( { pexp_desc=
                     ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
-                    | Pexp_field _ )
+                    | Pexp_constraint _ | Pexp_field _ )
                 ; _ } as e0 ) )
         when e0 == exp ->
           false
