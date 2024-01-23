@@ -34,6 +34,7 @@ profile. This started with version 0.26.0.
 - \* Fix unwanted alignment after comment (#2507, @Julow)
 - \* Fix unwanted alignment in if-then-else (#2511, @Julow)
 - Fix position of comments around and within `(type ...)` function arguments (#2503, @gpetiot)
+- Fix missing parentheses around constraint expressions with attributes (#2513, @alanechang)
 
 ## 0.26.1 (2023-09-15)
 
