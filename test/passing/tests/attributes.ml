@@ -444,3 +444,9 @@ let raise_length_mismatch name n1 n2 =
 external unsafe_memset : t -> pos:int -> len:int -> char -> unit
   = "bigstring_memset_stub"
 [@@noalloc]
+
+let _ = f ((1 : int) [@a])
+
+let _ = f ((1 : int) [@a]) ((1 : int) [@a])
+
+let _ = f (((1 : int) [@a] : (int[@b])) [@a]) ((1 : int) [@a])

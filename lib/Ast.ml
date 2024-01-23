@@ -2616,11 +2616,14 @@ end = struct
             , Some
                 ( { pexp_desc=
                       ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
-                      | Pexp_field _ )
+                      | Pexp_constraint _ | Pexp_field _ )
                   ; _ } as e0 ) )
           when e0 == exp ->
             false
         | Pexp_record (_, Some e0) when e0 == exp -> true
+        | Pexp_override fields
+          when List.exists fields ~f:(fun (_, e0) -> e0 == exp) ->
+            exposed_right_exp Sequence exp
         | Pexp_sequence (lhs, rhs) -> exp_in_sequence lhs rhs exp
         | Pexp_apply (_, args)
           when List.exists args ~f:(fun (_, e0) ->

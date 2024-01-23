@@ -2375,11 +2375,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox
           (Params.Indent.exp_constraint c.conf)
-          ( wrap_fits_breaks ~space:false c.conf "(" ")"
-              ( fmt_expression c (sub_exp ~ctx e)
-              $ fmt "@ : "
-              $ fmt_core_type c (sub_typ ~ctx t) )
-          $ fmt_atrs )
+          (Params.parens_if parens c.conf
+             ( wrap_fits_breaks ~space:false c.conf "(" ")"
+                 ( fmt_expression c (sub_exp ~ctx e)
+                 $ fmt "@ : "
+                 $ fmt_core_type c (sub_typ ~ctx t) )
+             $ fmt_atrs ) )
   | Pexp_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = char txt.[0] and cls = char txt.[1] in
       pro
