@@ -620,14 +620,15 @@ module E = struct
     | Pexp_infix (op, e1, e2) ->
         infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
 
-  let map_binding_op sub {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} =
+  let map_binding_op sub {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
     let op = map_loc sub pbop_op in
     let pat = sub.pat sub pbop_pat in
+    let args = List.map (FP.map sub FP.map_expr) pbop_args in
     let typ = map_opt (map_value_constraint sub) pbop_typ in
     let exp = sub.expr sub pbop_exp in
     let loc = sub.location sub pbop_loc in
-    binding_op op pat typ exp pbop_is_pun loc
+    binding_op op pat args typ exp pbop_is_pun loc
 
 end
 
