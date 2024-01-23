@@ -482,6 +482,7 @@ and binding_op =
   {
     pbop_op : string loc;
     pbop_pat : pattern;
+    pbop_args : expr_function_param list;
     pbop_typ : value_constraint option;
     pbop_exp : expression;
     pbop_is_pun: bool;

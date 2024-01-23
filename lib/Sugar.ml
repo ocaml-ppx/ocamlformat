@@ -226,16 +226,14 @@ module Let_binding = struct
   let of_let_bindings cmts ~ctx =
     List.mapi ~f:(fun i -> of_let_binding cmts ~ctx ~first:(i = 0))
 
-  let of_binding_ops cmts bos =
+  let of_binding_ops bos =
     List.map bos ~f:(fun bo ->
         let ctx = Bo bo in
-        let xbody = sub_exp ~ctx bo.pbop_exp in
-        let xargs, xbody = fun_ cmts ~will_keep_first_ast_node:false xbody in
         { lb_op= bo.pbop_op
         ; lb_pat= sub_pat ~ctx bo.pbop_pat
-        ; lb_args= xargs
+        ; lb_args= bo.pbop_args
         ; lb_typ= bo.pbop_typ
-        ; lb_exp= xbody
+        ; lb_exp= sub_exp ~ctx bo.pbop_exp
         ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )

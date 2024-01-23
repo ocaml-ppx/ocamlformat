@@ -2231,10 +2231,10 @@ expr:
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
-      { let (pbop_pat, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
+      { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
+        let let_ = {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
@@ -2545,26 +2545,27 @@ and_let_binding:
     }
 ;
 letop_binding_body:
-    pat = let_ident exp = strict_binding
-      { (pat, None, exp, false) }
+    pat = let_ident args_typ_strict_binding
+      { let args, tc, exp = $2 in
+        (pat, args, tc, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
-      { (pat, Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
+      { (pat, [], Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
-      { (pat, None, exp, false) }
+      { (pat, [], None, exp, false) }
 ;
 letop_bindings:
     body = letop_binding_body
-      { let let_pat, let_typ, let_exp, let_is_pun = body in
-        let_pat, let_typ, let_exp, let_is_pun, [] }
+      { let let_pat, let_args, let_typ, let_exp, let_is_pun = body in
+        let_pat, let_args, let_typ, let_exp, let_is_pun, [] }
   | bindings = letop_bindings pbop_op = mkrhs(ANDOP) body = letop_binding_body
-      { let let_pat, let_typ, let_exp, let_is_pun, rev_ands = bindings in
-        let pbop_pat, pbop_typ, pbop_exp, pbop_is_pun = body in
+      { let let_pat, let_args, let_typ, let_exp, let_is_pun, rev_ands = bindings in
+        let pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun = body in
         let pbop_loc = make_loc $sloc in
-        let and_ = {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
-        let_pat, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
+        let and_ = {pbop_op; pbop_args; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
+        let_pat, let_args, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
 ;
 fun_binding:
     strict_binding
@@ -2577,6 +2578,21 @@ strict_binding:
       { $2 }
   | expr_fun_param fun_binding
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
+;
+// [args_typ_strict_binding] will replace [strict_binding] when the lists of args are unfolded everywhere
+args_typ_strict_binding:
+    EQUAL seq_expr
+      { [], None, $2 }
+  | nonempty_llist(expr_fun_param) type_constraint? EQUAL seq_expr
+      { let tc =
+          match $2 with
+          | Some (Pconstraint typ) ->
+              Some (Pvc_constraint {locally_abstract_univars= []; typ})
+          | Some (Pcoerce (ground, coercion)) ->
+              Some (Pvc_coercion {ground; coercion} )
+          | None -> None
+        in
+        $1, tc, $4 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
