@@ -2395,7 +2395,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox
           (Params.Indent.exp_constraint c.conf)
-          (Params.parens_if parens c.conf
+          (Params.parens_if (parens && has_attr) c.conf
              ( wrap_fits_breaks ~space:false c.conf "(" ")"
                  ( fmt_expression c (sub_exp ~ctx e)
                  $ fmt "@ : "
