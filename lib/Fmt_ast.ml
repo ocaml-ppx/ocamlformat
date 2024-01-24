@@ -774,7 +774,9 @@ and type_constr_and_body c xbody =
       , sub_exp ~ctx:exp_ctx exp )
   | _ -> (None, xbody)
 
-and fmt_arrow_param c ctx
+(* Jane street: This is used to print both arrow param types and arrow return
+   types. The ~return parameter distinguishes. *)
+and fmt_arrow_param ~return c ctx
     ({pap_label= lI; pap_loc= locI; pap_type= tI}, localI) =
   let arg_label lbl =
     match lbl with
@@ -784,10 +786,28 @@ and fmt_arrow_param c ctx
         Some (str "?" $ str l.txt $ fmt ":@," $ fmt_if localI "local_ ")
   in
   let xtI = sub_typ ~ctx tI in
+  (* Jane Street: as a special case, labeled tuple types in function returns
+     need parens if the return is [local_] AND the first element has a label.
+     We _should_ put this logic in [parenze_typ] or a similar place, but we
+     can't because of the horrible hack where the attribute encoding [local_]
+     is actually removed from the type before printing it.
+
+     Note that when [unique_] and [once_] arrive, similar logic will be
+     needed. *)
+  let labeled_tuple_ret_parens =
+    return && localI
+    &&
+    match tI.ptyp_desc with
+    | Ptyp_tuple ((Some _, _) :: _) -> true
+    | _ -> false
+  in
+  let core_type =
+    Params.parens_if labeled_tuple_ret_parens c.conf (fmt_core_type c xtI)
+  in
   let arg =
     match arg_label lI with
-    | None -> fmt_core_type c xtI
-    | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
+    | None -> core_type
+    | Some f -> hovbox 2 (f $ core_type)
   in
   hvbox 0 (Cmts.fmt_before c locI $ arg)
 
@@ -813,7 +833,7 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
   $ wrap_if parens "(" ")"
       ( list args
           (arrow_sep c ~parens:parent_has_parens)
-          (fmt_arrow_param c ctx)
+          (fmt_arrow_param ~return:false c ctx)
       $ ret_typ )
 
 (* The context of [xtyp] refers to the RHS of the expression (namely
@@ -906,7 +926,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
                  (String.make (Int.max 1 (indent - String.length pro)) ' ') )
         | _ -> None
       in
-      let fmt_ret_typ = fmt_arrow_param c ctx ret_typ in
+      let fmt_ret_typ = fmt_arrow_param ~return:true c ctx ret_typ in
       fmt_arrow_type c ~ctx ?indent ~parens:parenze_constraint_ctx
         ~parent_has_parens:parens args (Some fmt_ret_typ)
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid

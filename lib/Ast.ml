@@ -203,6 +203,38 @@ module Exp = struct
       , (Let_match | Non_apply) ) ->
         true
     | _ -> false
+
+  (* Jane Street: This is meant to be true if the expression can be parsed by
+     the [simple_expr] production in the parser.
+
+     It's OK if this is conservative (returning false for simple exprs will
+     just result in extra parens) but bad if it returns true for a non-simple
+     expr. *)
+  let rec is_simple_in_parser exp =
+    maybe_extension exp is_simple_extension_in_parser
+    @@ fun () ->
+    match exp.pexp_desc with
+    | Pexp_indexop_access {pia_rhs= None; _}
+     |Pexp_new _ | Pexp_object _ | Pexp_ident _ | Pexp_constant _
+     |Pexp_construct (_, None)
+     |Pexp_variant (_, None)
+     |Pexp_override _ | Pexp_open _ | Pexp_extension _ | Pexp_hole
+     |Pexp_record _ | Pexp_array _ | Pexp_list _ ->
+        true
+    | Pexp_prefix (_, e) | Pexp_field (e, _) | Pexp_send (e, _) ->
+        is_simple_in_parser e
+    | Pexp_infix ({txt; _}, e1, e2) ->
+        String.length txt > 0
+        && Char.(String.get txt 0 = '#')
+        && is_simple_in_parser e1 && is_simple_in_parser e2
+    | _ -> false
+
+  and is_simple_extension_in_parser : Extensions.Expression.t -> bool =
+    function
+    | Eexp_immutable_array (Iaexp_immutable_array _)
+     |Eexp_comprehension
+        (Cexp_list_comprehension _ | Cexp_array_comprehension _) ->
+        true
 end
 
 module Pat = struct
@@ -2467,6 +2499,14 @@ end = struct
     | Exp {pexp_desc= Pexp_extension _; _}, {pexp_desc= Pexp_tuple _; _} ->
         false
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
+    (* Jane Street: Labeled tuple elements must be parenthesized more than
+       normal tuple elements. *)
+    | Exp {pexp_desc= Pexp_tuple els; _}, _
+      when List.exists els ~f:(function
+             | Some _, exp' -> exp == exp'
+             | _ -> false )
+           && not (Exp.is_simple_in_parser exp) ->
+        true
     | Cl {pcl_desc= Pcl_apply _; _}, _ -> parenze ()
     | Clf _, _ -> parenze ()
     | Exp {pexp_desc= Pexp_ifthenelse (eN, _); _}, {pexp_desc; _}
