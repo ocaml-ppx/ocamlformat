@@ -1909,6 +1909,12 @@ end = struct
       | Pexp_constant
           {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _} -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
+      | Pexp_constant
+          { pconst_desc=
+              ( Pconst_unboxed_integer (sign, _, _)
+              | Pconst_unboxed_float (sign, _, _) )
+          ; _ } -> (
+        match sign with Negative -> Some UMinus | Positive -> Some Atomic )
       | Pexp_indexop_access {pia_rhs= rhs; _} -> (
         match rhs with Some _ -> Some LessMinus | _ -> Some Dot )
       | Pexp_prefix ({txt= i; loc; _}, _) -> (

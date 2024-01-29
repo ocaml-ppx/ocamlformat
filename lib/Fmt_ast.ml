@@ -1287,6 +1287,12 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _}
           -> (
           match i.[0] with '-' | '+' -> true | _ -> false )
+        | Ppat_constant
+            { pconst_desc=
+                ( Pconst_unboxed_integer (s, _, _)
+                | Pconst_unboxed_float (s, _, _) )
+            ; _ } -> (
+          match s with Negative -> true | Positive -> false )
         | _ -> false
       in
       let break {ast= p1; _} {ast= p2; _} =
