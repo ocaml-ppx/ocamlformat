@@ -17,3 +17,5 @@ type _ t = ..
 type _ t += A : int | B : int -> int
 
 type t = A : (int -> int) -> int
+
+type _ g = MkG : 'a. 'a g
