@@ -6,6 +6,12 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Support OCaml 5.2 syntax (#2519, @Julow)
+  This includes:
+  + Local open in types.
+
 ### Changed
 
 - Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
