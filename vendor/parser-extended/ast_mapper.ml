@@ -242,6 +242,8 @@ module T = struct
     | Ptyp_package pt ->
         let lid, l = map_package_type sub pt in
         package ~loc ~attrs lid l
+    | Ptyp_open (mod_ident, t) ->
+        open_ ~loc ~attrs (map_loc sub mod_ident) (sub.typ sub t)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
   let map_type_declaration sub

@@ -864,6 +864,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       hvbox 2
         ( hovbox 0 (fmt "module@ " $ fmt_longident_loc c id)
         $ fmt_package_type c ctx cnstrs )
+  | Ptyp_open (lid, typ) ->
+      hvbox 2
+        ( hvbox 0 (fmt_longident_loc c lid $ fmt ".(")
+        $ fmt "@;<0 0>"
+        $ fmt_core_type c (sub_typ ~ctx typ)
+        $ fmt ")" )
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->

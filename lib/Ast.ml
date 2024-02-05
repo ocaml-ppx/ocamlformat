@@ -960,6 +960,7 @@ end = struct
             List.exists r1N ~f:(function
               | {prf_desc= Rtag (_, _, t1N); _} -> List.exists t1N ~f
               | {prf_desc= Rinherit t1; _} -> typ == t1 ) )
+      | Ptyp_open (_, t1) -> assert (t1 == typ)
       | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
@@ -1604,7 +1605,8 @@ end = struct
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
-       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
+       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _
+       |Ptyp_open _ ->
           None )
     | {ctx= Cty {pcty_desc; _}; ast= Typ typ; _} -> (
       match pcty_desc with
@@ -1726,7 +1728,8 @@ end = struct
       | Ptyp_tuple _ -> Some InfixOp3
       | Ptyp_alias _ -> Some As
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
-       |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
+       |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _
+       |Ptyp_open _ ->
           None )
     | Td _ -> None
     | Cty {pcty_desc; _} -> (
