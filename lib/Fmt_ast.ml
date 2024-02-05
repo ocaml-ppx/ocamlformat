@@ -3440,10 +3440,17 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
       $ Cmts.fmt_after c pcd_loc )
 
 and fmt_constructor_arguments ?vars c ctx ~pre = function
-  | Pcstr_tuple [] -> noop
   | Pcstr_tuple typs ->
-      pre $ fmt "@ " $ fmt_opt vars
-      $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
+      let vars =
+        match vars with Some vars -> fmt "@ " $ vars | None -> noop
+      and typs =
+        match typs with
+        | [] -> noop
+        | _ :: _ ->
+            fmt "@ "
+            $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
+      in
+      pre $ vars $ typs
   | Pcstr_record (loc, lds) ->
       let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
@@ -3461,19 +3468,24 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
         @@ p.box_record @@ list_fl lds fmt_ld
 
 and fmt_constructor_arguments_result c ctx vars args res =
-  let pre = fmt_or (Option.is_none res) " of" " :" in
-  let before_type = match args with Pcstr_tuple [] -> ": " | _ -> "-> " in
+  let before_type, pre =
+    match (args, res) with
+    | Pcstr_tuple [], Some _ -> (noop, str " :")
+    | Pcstr_tuple [], None -> (noop, noop)
+    | _ -> (str "-> ", fmt_or (Option.is_none res) " of" " :")
+  in
   let fmt_type typ =
-    fmt "@ " $ str before_type $ fmt_core_type c (sub_typ ~ctx typ)
+    fmt "@ " $ before_type $ fmt_core_type c (sub_typ ~ctx typ)
   in
   let fmt_vars =
     match vars with
-    | [] -> noop
+    | [] -> None
     | _ ->
-        hvbox 0 (list vars "@ " (fun {txt; _} -> fmt_type_var txt))
-        $ fmt ".@ "
+        Some
+          ( hvbox 0 (list vars "@ " (fun {txt; _} -> fmt_type_var txt))
+          $ str "." )
   in
-  fmt_constructor_arguments c ctx ~pre ~vars:fmt_vars args $ opt res fmt_type
+  fmt_constructor_arguments c ctx ~pre ?vars:fmt_vars args $ opt res fmt_type
 
 and fmt_type_extension ?ext c ctx
     { ptyext_attributes
