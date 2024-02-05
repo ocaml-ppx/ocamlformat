@@ -344,3 +344,34 @@ let _ =
       (* we have an absoluteURI *)
       Uri.(
         match path uri with "" -> with_path uri "/" | _ -> uri ) )
+
+(* Ptyp_open *)
+
+let _ : M.(foo * M.(bar)) = ()
+
+let _ : M.(foo) * M.(bar) = ()
+
+let _ : M.([`Foo of foo]) = ()
+
+let _ : M.N.(foo) = ()
+
+let _ :
+    M.(
+      foooooooooooooooooooooooooooooooooooooooo
+      * foooooooooooooooooooooooooooooooooooooooo) =
+  ()
+
+let _ :
+    M.(
+      [ `Foo of
+        foooooooooooooooooooooooooooooooooooooooo
+        * foooooooooooooooooooooooooooooooooooooooo ]) =
+  ()
+
+let _ : M.((foo[@attr])) = ()
+
+let _ : (M.(foo)[@attr]) = ()
+
+let _ : M.((foo[@attr] [@attr])) = ()
+
+let _ : (M.((foo[@attr]))[@attr]) = ()
