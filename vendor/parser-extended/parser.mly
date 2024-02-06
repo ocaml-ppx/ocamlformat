@@ -431,6 +431,7 @@ let extra_rhs_core_type ct ~pos =
 
 type let_binding =
   { lb_pattern: pattern;
+    lb_args: expr_function_param list;
     lb_expression: expression;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
@@ -444,9 +445,10 @@ type let_bindings' =
     lbs_rec: rec_flag;
     lbs_extension: string Asttypes.loc option }
 
-let mklb first ~loc (p, e, typ, is_pun) attrs =
+let mklb first ~loc (p, args, typ, e, is_pun) attrs =
   {
     lb_pattern = p;
+    lb_args = args;
     lb_expression = e;
     lb_constraint=typ;
     lb_is_pun = is_pun;
@@ -477,7 +479,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
            ~docs:(Lazy.force lb.lb_docs)
            ~text:(Lazy.force lb.lb_text)
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
-           lb.lb_pattern lb.lb_expression)
+           lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
   { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
@@ -2477,8 +2479,9 @@ labeled_simple_expr:
     val_ident { mkpatvar ~loc:$sloc $1 }
 ;
 let_binding_body_no_punning:
-    let_ident strict_binding
-      { ($1, $2, None) }
+    let_ident args_typ_strict_binding
+      { let args, tc, exp = $2 in
+        ($1, args, tc, exp) }
   | let_ident type_constraint EQUAL seq_expr
       { let v = $1 in (* PR#7344 *)
         let t =
@@ -2487,29 +2490,29 @@ let_binding_body_no_punning:
              Pvc_constraint { locally_abstract_univars = []; typ }
           | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion }
         in
-        (v, $4, Some t)
-        }
+        (v, [], Some t, $4)
+      }
   | let_ident COLON poly(core_type) EQUAL seq_expr
     {
       let t = ghtyp ~loc:($loc($3)) $3 in
-      ($1, $5, Some (Pvc_constraint { locally_abstract_univars = []; typ=t }))
+      ($1, [], Some (Pvc_constraint { locally_abstract_univars = []; typ=t }), $5)
     }
   | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
     { let constraint' =
         Pvc_constraint { locally_abstract_univars=$4; typ = $6}
       in
-      ($1, $8, Some constraint') }
+      ($1, [], Some constraint', $8) }
   | pattern_no_exn EQUAL seq_expr
-      { ($1, $3, None) }
+      { ($1, [], None, $3) }
   | simple_pattern_not_ident COLON core_type EQUAL seq_expr
-      { ($1, $5, Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 })) }
+      { ($1, [], Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 }), $5) }
 ;
 let_binding_body:
   | let_binding_body_no_punning
-      { let p,e,c = $1 in (p,e,c,false) }
+      { let p,args,tc,e = $1 in (p,args,tc,e,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, None, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the

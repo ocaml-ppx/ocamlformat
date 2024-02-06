@@ -2311,7 +2311,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ fmt_atrs )
   | Pexp_let (lbs, body) ->
       let bindings =
-        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.pvbs_bindings
+        Sugar.Let_binding.of_let_bindings ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let ext = lbs.pvbs_extension in
@@ -2971,7 +2971,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         | _ -> c.conf.fmt_opts.indent_after_in.v
       in
       let bindings =
-        Sugar.Let_binding.of_let_bindings c.cmts ~ctx lbs.pvbs_bindings
+        Sugar.Let_binding.of_let_bindings ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
@@ -4340,7 +4340,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in
         let last = Option.is_none next in
-        let b = Sugar.Let_binding.of_let_binding c.cmts ~ctx ~first b in
+        let b = Sugar.Let_binding.of_let_binding ~ctx ~first b in
         let epi =
           match c.conf.fmt_opts.let_binding_spacing.v with
           | `Compact -> None

@@ -114,7 +114,7 @@ end
 
 let f = (* comment *) function x -> x
 
-let foo x : z = (* comment *) y
+let foo x = (* comment *) (y : z)
 
 let _ =
   (*a*)
@@ -454,8 +454,4 @@ let _ =
   (* indentation not preserved *)
   ()
 
-let vexpr (*aa*)
-    (type (*bb*) a
-    (*cc*)
-    (*dd*) b ) : _ -> _ =
-  (*ee*) k
+let vexpr (*aa*) (type (*bb*) a) (*cc*) (type (*dd*) b) (*ee*) : _ -> _ = k

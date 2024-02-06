@@ -1100,6 +1100,7 @@ and value_constraint =
 and value_binding =
   {
     pvb_pat: pattern;
+    pvb_args: expr_function_param list;
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
