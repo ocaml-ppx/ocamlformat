@@ -3814,10 +3814,16 @@ and fmt_core_type_gf c ctx typ =
   $ fmt_core_type c (sub_typ ~ctx typ)
 
 and fmt_constructor_arguments ?vars c ctx ~pre = function
-  | Pcstr_tuple [] -> noop
   | Pcstr_tuple typs ->
-      pre $ fmt "@ " $ fmt_opt vars
-      $ hvbox 0 (list typs "@ * " (fmt_core_type_gf c ctx))
+      let vars =
+        match vars with Some vars -> fmt "@ " $ vars | None -> noop
+      and typs =
+        match typs with
+        | [] -> noop
+        | _ :: _ ->
+            fmt "@ " $ hvbox 0 (list typs "@ * " (fmt_core_type_gf c ctx))
+      in
+      pre $ vars $ typs
   | Pcstr_record (loc, lds) ->
       let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
@@ -3835,27 +3841,25 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
         @@ p.box_record @@ list_fl lds fmt_ld
 
 and fmt_constructor_arguments_result c ctx vars args res =
-  let pre = fmt_or (Option.is_none res) " of" " :" in
-  let fmt_vars =
-    match vars with
-    | [] -> noop
-    | _ ->
-        hvbox 0
-          (list vars "@ " (fmt_type_var_with_parenze ~have_tick:true c))
-        $ fmt ".@ "
-  in
-  let has_layout_annotation =
-    List.exists vars ~f:type_var_has_layout_annot
-  in
-  let before_type =
-    match args with
-    | Pcstr_tuple [] -> str ": " $ fmt_if_k has_layout_annotation fmt_vars
-    | _ -> str "-> "
+  let before_type, pre =
+    match (args, res) with
+    | Pcstr_tuple [], Some _ -> (noop, str " :")
+    | Pcstr_tuple [], None -> (noop, noop)
+    | _ -> (str "-> ", fmt_or (Option.is_none res) " of" " :")
   in
   let fmt_type typ =
     fmt "@ " $ before_type $ fmt_core_type c (sub_typ ~ctx typ)
   in
-  fmt_constructor_arguments c ctx ~pre ~vars:fmt_vars args $ opt res fmt_type
+  let fmt_vars =
+    match vars with
+    | [] -> None
+    | _ ->
+        Some
+          ( hvbox 0
+              (list vars "@ " (fmt_type_var_with_parenze ~have_tick:true c))
+          $ str "." )
+  in
+  fmt_constructor_arguments c ctx ~pre ?vars:fmt_vars args $ opt res fmt_type
 
 and fmt_type_extension ?ext c ctx
     { ptyext_attributes
