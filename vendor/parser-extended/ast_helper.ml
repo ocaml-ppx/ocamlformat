@@ -440,9 +440,10 @@ end
 
 module Vb = struct
   let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
-        ?(text = []) ?value_constraint ~is_pun pat expr =
+        ?(text = []) ?value_constraint ~is_pun pat args expr =
     {
      pvb_pat = pat;
+     pvb_args = args;
      pvb_expr = expr;
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;

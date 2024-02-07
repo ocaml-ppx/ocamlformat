@@ -875,9 +875,10 @@ let default_mapper =
       );
 
     value_binding =
-      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
+      (fun this {pvb_pat; pvb_args; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
          Vb.mk
            (this.pat this pvb_pat)
+           (List.map (FP.map this FP.map_expr) pvb_args)
            (this.expr this pvb_expr)
            ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun
