@@ -8,6 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
+- Added `let-binding-deindent-fun` flag (#2521, @henrytill)
 - Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
   It was removed in version 0.22.
 - \* Consistent formatting of comments (#2371, @Julow)

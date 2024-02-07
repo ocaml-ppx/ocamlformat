@@ -248,6 +248,9 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact.
 
+       --let-binding-deindent-fun
+           Deindent a line beginning with `fun`. The flag is set by default.
+
        --let-binding-indent=COLS
            Indentation of let binding expressions (COLS columns) if they do
            not fit on a single line. The default value is 2. Cannot be set in
@@ -320,6 +323,9 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --no-leading-nested-match-parens
            Unset leading-nested-match-parens.
+
+       --no-let-binding-deindent-fun
+           Unset let-binding-deindent-fun.
 
        --no-ocp-indent-compat
            Unset ocp-indent-compat.
