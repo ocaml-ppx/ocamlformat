@@ -18,6 +18,7 @@ profile. This started with version 0.26.0.
 - \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
 - \* Don't align breaking module arguments (#2505, @Julow)
 - Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
+- \* Undo let-bindings normalizations (#2523, @gpetiot)
 
 ### Fixed
 
