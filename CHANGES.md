@@ -6,8 +6,15 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Support OCaml 5.2 syntax (#2519, @Julow)
+  This includes:
+  + Local open in types.
+
 ### Changed
 
+- Added `let-binding-deindent-fun` flag (#2521, @henrytill)
 - Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
   It was removed in version 0.22.
 - \* Consistent formatting of comments (#2371, @Julow)
@@ -18,6 +25,7 @@ profile. This started with version 0.26.0.
 - \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
 - \* Don't align breaking module arguments (#2505, @Julow)
 - Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
+- \* Undo let-bindings normalizations (#2523, @gpetiot)
 
 ### Fixed
 
@@ -34,6 +42,8 @@ profile. This started with version 0.26.0.
 - \* Fix unwanted alignment after comment (#2507, @Julow)
 - \* Fix unwanted alignment in if-then-else (#2511, @Julow)
 - Fix position of comments around and within `(type ...)` function arguments (#2503, @gpetiot)
+- Fix missing parentheses around constraint expressions with attributes (#2513, @alanechang)
+- Fix formatting of type vars in GADT constructors (#2518, @Julow)
 
 ## 0.26.1 (2023-09-15)
 

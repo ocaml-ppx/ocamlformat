@@ -231,6 +231,9 @@ let rec core_type i ppf x =
   | Ptyp_package pt ->
       line i ppf "Ptyp_package\n";
       package_type i ppf pt
+  | Ptyp_open (mod_ident, t) ->
+      line i ppf "Ptyp_open \"%a\"\n" fmt_longident_loc mod_ident;
+      core_type i ppf t
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg

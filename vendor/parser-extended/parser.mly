@@ -431,6 +431,7 @@ let extra_rhs_core_type ct ~pos =
 
 type let_binding =
   { lb_pattern: pattern;
+    lb_args: expr_function_param list;
     lb_expression: expression;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
@@ -444,9 +445,10 @@ type let_bindings' =
     lbs_rec: rec_flag;
     lbs_extension: string Asttypes.loc option }
 
-let mklb first ~loc (p, e, typ, is_pun) attrs =
+let mklb first ~loc (p, args, typ, e, is_pun) attrs =
   {
     lb_pattern = p;
+    lb_args = args;
     lb_expression = e;
     lb_constraint=typ;
     lb_is_pun = is_pun;
@@ -477,7 +479,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
            ~docs:(Lazy.force lb.lb_docs)
            ~text:(Lazy.force lb.lb_text)
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
-           lb.lb_pattern lb.lb_expression)
+           lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
   { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
@@ -2231,10 +2233,10 @@ expr:
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
-      { let (pbop_pat, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
+      { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
+        let let_ = {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
@@ -2477,8 +2479,9 @@ labeled_simple_expr:
     val_ident { mkpatvar ~loc:$sloc $1 }
 ;
 let_binding_body_no_punning:
-    let_ident strict_binding
-      { ($1, $2, None) }
+    let_ident args_typ_strict_binding
+      { let args, tc, exp = $2 in
+        ($1, args, tc, exp) }
   | let_ident type_constraint EQUAL seq_expr
       { let v = $1 in (* PR#7344 *)
         let t =
@@ -2487,29 +2490,29 @@ let_binding_body_no_punning:
              Pvc_constraint { locally_abstract_univars = []; typ }
           | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion }
         in
-        (v, $4, Some t)
-        }
+        (v, [], Some t, $4)
+      }
   | let_ident COLON poly(core_type) EQUAL seq_expr
     {
       let t = ghtyp ~loc:($loc($3)) $3 in
-      ($1, $5, Some (Pvc_constraint { locally_abstract_univars = []; typ=t }))
+      ($1, [], Some (Pvc_constraint { locally_abstract_univars = []; typ=t }), $5)
     }
   | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
     { let constraint' =
         Pvc_constraint { locally_abstract_univars=$4; typ = $6}
       in
-      ($1, $8, Some constraint') }
+      ($1, [], Some constraint', $8) }
   | pattern_no_exn EQUAL seq_expr
-      { ($1, $3, None) }
+      { ($1, [], None, $3) }
   | simple_pattern_not_ident COLON core_type EQUAL seq_expr
-      { ($1, $5, Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 })) }
+      { ($1, [], Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 }), $5) }
 ;
 let_binding_body:
   | let_binding_body_no_punning
-      { let p,e,c = $1 in (p,e,c,false) }
+      { let p,args,tc,e = $1 in (p,args,tc,e,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, mkexpvar ~loc:$loc $1, None, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the
@@ -2545,26 +2548,27 @@ and_let_binding:
     }
 ;
 letop_binding_body:
-    pat = let_ident exp = strict_binding
-      { (pat, None, exp, false) }
+    pat = let_ident args_typ_strict_binding
+      { let args, tc, exp = $2 in
+        (pat, args, tc, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
-      { (pat, Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
+      { (pat, [], Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
-      { (pat, None, exp, false) }
+      { (pat, [], None, exp, false) }
 ;
 letop_bindings:
     body = letop_binding_body
-      { let let_pat, let_typ, let_exp, let_is_pun = body in
-        let_pat, let_typ, let_exp, let_is_pun, [] }
+      { let let_pat, let_args, let_typ, let_exp, let_is_pun = body in
+        let_pat, let_args, let_typ, let_exp, let_is_pun, [] }
   | bindings = letop_bindings pbop_op = mkrhs(ANDOP) body = letop_binding_body
-      { let let_pat, let_typ, let_exp, let_is_pun, rev_ands = bindings in
-        let pbop_pat, pbop_typ, pbop_exp, pbop_is_pun = body in
+      { let let_pat, let_args, let_typ, let_exp, let_is_pun, rev_ands = bindings in
+        let pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun = body in
         let pbop_loc = make_loc $sloc in
-        let and_ = {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
-        let_pat, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
+        let and_ = {pbop_op; pbop_args; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
+        let_pat, let_args, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
 ;
 fun_binding:
     strict_binding
@@ -2577,6 +2581,21 @@ strict_binding:
       { $2 }
   | expr_fun_param fun_binding
       { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
+;
+// [args_typ_strict_binding] will replace [strict_binding] when the lists of args are unfolded everywhere
+args_typ_strict_binding:
+    EQUAL seq_expr
+      { [], None, $2 }
+  | nonempty_llist(expr_fun_param) type_constraint? EQUAL seq_expr
+      { let tc =
+          match $2 with
+          | Some (Pconstraint typ) ->
+              Some (Pvc_constraint {locally_abstract_univars= []; typ})
+          | Some (Pcoerce (ground, coercion)) ->
+              Some (Pvc_coercion {ground; coercion} )
+          | None -> None
+        in
+        $1, tc, $4 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
@@ -3359,44 +3378,100 @@ tuple_type:
    - applications of type constructors:   int, int list, int option list
    - variant types:                       [`A]
  *)
-atomic_type:
-  | LPAREN core_type RPAREN
-      { $2 }
-  | LPAREN MODULE ext_attributes package_core_type RPAREN
-      { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc $4) $3 }
-  | mktyp( /* begin mktyp group */
-      QUOTE ident
-        { Ptyp_var $2 }
-    | UNDERSCORE
-        { Ptyp_any }
-    | tys = actual_type_parameters
-      tid = mkrhs(type_longident)
-        { Ptyp_constr(tid, tys) }
-    | LESS meth_list GREATER
-        { let (f, c) = $2 in Ptyp_object (f, c) }
+
+
+(*
+  Delimited types:
+    - parenthesised type          (type)
+    - first-class module types    (module S)
+    - object types                < x: t; ... >
+    - variant types               [ `A ]
+    - extension                   [%foo ...]
+
+  We support local opens on the following classes of types:
+    - parenthesised
+    - first-class module types
+    - variant types
+
+  Object types are not support for local opens due to a potential
+  conflict with MetaOCaml syntax:
+    M.< x: t, y: t >
+  and quoted expressions:
+    .< e >.
+
+  Extension types are not support for local opens merely as a precaution.
+*)
+delimited_type_supporting_local_open:
+  | LPAREN type_ = core_type RPAREN
+      { type_ }
+  | LPAREN MODULE attrs = ext_attributes package_type = package_core_type RPAREN
+      { wrap_typ_attrs ~loc:$sloc (reloc_typ ~loc:$sloc package_type) attrs }
+  | mktyp(
+      LBRACKET field = tag_field RBRACKET
+        { Ptyp_variant([ field ], Closed, None) }
+    | LBRACKET BAR fields = row_field_list RBRACKET
+        { Ptyp_variant(fields, Closed, None) }
+    | LBRACKET field = row_field BAR fields = row_field_list RBRACKET
+        { Ptyp_variant(field :: fields, Closed, None) }
+    | LBRACKETGREATER BAR? fields = row_field_list RBRACKET
+        { Ptyp_variant(fields, Open, None) }
+    | LBRACKETGREATER RBRACKET
+        { Ptyp_variant([], Open, None) }
+    | LBRACKETLESS BAR? fields = row_field_list RBRACKET
+        { Ptyp_variant(fields, Closed, Some []) }
+    | LBRACKETLESS BAR? fields = row_field_list
+      GREATER
+      tags = name_tag_list
+      RBRACKET
+        { Ptyp_variant(fields, Closed, Some tags) }
+  )
+  { $1 }
+;
+
+object_type:
+  | mktyp(
+      LESS meth_list = meth_list GREATER
+        { let (f, c) = meth_list in Ptyp_object (f, c) }
     | LESS GREATER
         { Ptyp_object ([], OClosed) }
+  )
+  { $1 }
+;
+
+extension_type:
+  | mktyp (
+      ext = extension
+        { Ptyp_extension ext }
+  )
+  { $1 }
+;
+
+delimited_type:
+  | object_type
+  | extension_type
+  | delimited_type_supporting_local_open
+    { $1 }
+;
+
+atomic_type:
+  | type_ = delimited_type
+      { type_ }
+  | mktyp( /* begin mktyp group */
+      tys = actual_type_parameters
+      tid = mkrhs(type_longident)
+        { Ptyp_constr (tid, tys) }
     | tys = actual_type_parameters
       HASH
       cid = mkrhs(clty_longident)
-        { Ptyp_class(cid, tys) }
-    | LBRACKET tag_field RBRACKET
-        (* not row_field; see CONFLICTS *)
-        { Ptyp_variant([$2], Closed, None) }
-    | LBRACKET BAR row_field_list RBRACKET
-        { Ptyp_variant($3, Closed, None) }
-    | LBRACKET row_field BAR row_field_list RBRACKET
-        { Ptyp_variant($2 :: $4, Closed, None) }
-    | LBRACKETGREATER BAR? row_field_list RBRACKET
-        { Ptyp_variant($3, Open, None) }
-    | LBRACKETGREATER RBRACKET
-        { Ptyp_variant([], Open, None) }
-    | LBRACKETLESS BAR? row_field_list RBRACKET
-        { Ptyp_variant($3, Closed, Some []) }
-    | LBRACKETLESS BAR? row_field_list GREATER name_tag_list RBRACKET
-        { Ptyp_variant($3, Closed, Some $5) }
-    | extension
-        { Ptyp_extension $1 }
+        { Ptyp_class (cid, tys) }
+    | mod_ident = mkrhs(mod_ext_longident)
+      DOT
+      type_ = delimited_type_supporting_local_open
+        { Ptyp_open (mod_ident, type_) }
+    | QUOTE ident = ident
+        { Ptyp_var ident }
+    | UNDERSCORE
+        { Ptyp_any }
   )
   { $1 } /* end mktyp group */
 ;

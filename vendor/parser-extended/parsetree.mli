@@ -187,6 +187,7 @@ and core_type_desc =
            {!value_description}.
          *)
   | Ptyp_package of package_type  (** [(module S)]. *)
+  | Ptyp_open of Longident.t loc * core_type (** [M.(T)] *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
 and package_type = Longident.t loc * (Longident.t loc * core_type) list
@@ -482,6 +483,7 @@ and binding_op =
   {
     pbop_op : string loc;
     pbop_pat : pattern;
+    pbop_args : expr_function_param list;
     pbop_typ : value_constraint option;
     pbop_exp : expression;
     pbop_is_pun: bool;
@@ -1099,6 +1101,7 @@ and value_constraint =
 and value_binding =
   {
     pvb_pat: pattern;
+    pvb_args: expr_function_param list;
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;

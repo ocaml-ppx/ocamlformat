@@ -79,6 +79,7 @@ module Typ = struct
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
   let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
+  let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
 end
 
 module Pat = struct
@@ -175,10 +176,11 @@ module Exp = struct
      pc_rhs = rhs;
     }
 
-  let binding_op op pat typ exp pun loc =
+  let binding_op op pat args typ exp pun loc =
     {
       pbop_op = op;
       pbop_pat = pat;
+      pbop_args = args;
       pbop_typ = typ;
       pbop_exp = exp;
       pbop_is_pun = pun;
@@ -439,9 +441,10 @@ end
 
 module Vb = struct
   let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
-        ?(text = []) ?value_constraint ~is_pun pat expr =
+        ?(text = []) ?value_constraint ~is_pun pat args expr =
     {
      pvb_pat = pat;
+     pvb_args = args;
      pvb_expr = expr;
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;

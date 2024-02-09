@@ -242,6 +242,8 @@ module T = struct
     | Ptyp_package pt ->
         let lid, l = map_package_type sub pt in
         package ~loc ~attrs lid l
+    | Ptyp_open (mod_ident, t) ->
+        open_ ~loc ~attrs (map_loc sub mod_ident) (sub.typ sub t)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
   let map_type_declaration sub
@@ -620,14 +622,15 @@ module E = struct
     | Pexp_infix (op, e1, e2) ->
         infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
 
-  let map_binding_op sub {pbop_op; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} =
+  let map_binding_op sub {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
     let op = map_loc sub pbop_op in
     let pat = sub.pat sub pbop_pat in
+    let args = List.map (FP.map sub FP.map_expr) pbop_args in
     let typ = map_opt (map_value_constraint sub) pbop_typ in
     let exp = sub.expr sub pbop_exp in
     let loc = sub.location sub pbop_loc in
-    binding_op op pat typ exp pbop_is_pun loc
+    binding_op op pat args typ exp pbop_is_pun loc
 
 end
 
@@ -874,9 +877,10 @@ let default_mapper =
       );
 
     value_binding =
-      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
+      (fun this {pvb_pat; pvb_args; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
          Vb.mk
            (this.pat this pvb_pat)
+           (List.map (FP.map this FP.map_expr) pvb_args)
            (this.expr this pvb_expr)
            ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun

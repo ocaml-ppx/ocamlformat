@@ -899,7 +899,7 @@ let int = Int TypEq.refl
 
 let str = String TypEq.refl
 
-let pair (type s1 s2) t1 t2 =
+let pair (type s1) (type s2) t1 t2 =
   let module P = struct
     type t = s1 * s2
 
@@ -2372,7 +2372,7 @@ type (_, _, _) binop =
   | Leq : ('a, 'a, bool) binop
   | Add : (int, int, int) binop
 
-let eval (type a b c) (bop : (a, b, c) binop) (x : a constant)
+let eval (type a) (type b) (type c) (bop : (a, b, c) binop) (x : a constant)
     (y : b constant) : c constant =
   match (bop, x, y) with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
@@ -2571,7 +2571,7 @@ let vexpr (type visit_action) :
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 
-let vexpr (type result visit_action) :
+let vexpr (type result) (type visit_action) :
     (unit, result, visit_action) context -> unit -> visit_action = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
@@ -3345,7 +3345,7 @@ let int = Typ.Int TypEq.refl
 
 let str = Typ.String TypEq.refl
 
-let pair (type s1 s2) t1 t2 =
+let pair (type s1) (type s2) t1 t2 =
   let module P = struct
     type t = s1 * s2
 
@@ -3388,7 +3388,7 @@ end
 type ('k, 'd, 'm) map =
   (module MapT with type key = 'k and type data = 'd and type map = 'm)
 
-let add (type k d m) (m : (k, d, m) map) x y s =
+let add (type k) (type d) (type m) (m : (k, d, m) map) x y s =
   let module M =
     (val m : MapT with type key = k and type data = d and type map = m)
   in
@@ -4311,7 +4311,7 @@ type foo = {y: int; z: int}
 
 type bar = {x: int}
 
-let f (r : bar) : foo = {r with z= 3}
+let f (r : bar) = ({r with z= 3} : foo)
 
 type foo = {x: int}
 
@@ -4362,9 +4362,9 @@ module Hash2 : sig
 end =
   Hash
 
-let f1 (x : (_, _) Hash1.t) : (_, _) Hashtbl.t = x
+let f1 (x : (_, _) Hash1.t) = (x : (_, _) Hashtbl.t)
 
-let f2 (x : (_, _) Hash2.t) : (_, _) Hashtbl.t = x
+let f2 (x : (_, _) Hash2.t) = (x : (_, _) Hashtbl.t)
 
 (* Another case, not using include *)
 
@@ -4378,7 +4378,7 @@ module Std' = Std2
 
 module M' : module type of Std'.M = Std2.M
 
-let f3 (x : M'.t) : Std2.M.t = x
+let f3 (x : M'.t) = (x : Std2.M.t)
 
 (* original report required Core_kernel: module type S = sig open
    Core_kernel.Std
@@ -4778,7 +4778,7 @@ end) =
 struct
   type 'a fix = ('a, 'a F.f) eq
 
-  let uniq (type a b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
+  let uniq (type a) (type b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
 end
 
 (* This would allow: module FixId = Fix (struct type 'a f = 'a end) let bad :
@@ -5314,7 +5314,7 @@ module S = String
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
-let f (x : StringSet.t) : SSet.t = x
+let f (x : StringSet.t) = (x : SSet.t)
 
 (* Also using include (cf. Leo's mail 2013-11-16) *)
 module F (M : sig end) : sig
@@ -5672,7 +5672,7 @@ end
 
 (* ok to convert between structurally equal signatures, and parameters are
    inferred *)
-let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
+let f (x : (module S with type t = 'a and type u = 'b)) = (x : (module S'))
 
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
@@ -5689,10 +5689,10 @@ let g2 x = (x : (module S2 with type t = 'a and type u = 'b) :> (module S'))
 
 let h x = (x : (module S2 with type t = 'a) :> (module S with type t = 'a))
 
-let f2 (x : (module S2 with type t = 'a and type u = 'b)) : (module S') = x
+let f2 (x : (module S2 with type t = 'a and type u = 'b)) = (x : (module S'))
 
 (* fail *)
-let k (x : (module S2 with type t = 'a)) : (module S with type t = 'a) = x
+let k (x : (module S2 with type t = 'a)) = (x : (module S with type t = 'a))
 
 (* fail *)
 
@@ -6272,7 +6272,7 @@ type refer1 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 type refer2 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 
 (* Actually this should succeed ... *)
-let f (x : refer1) : refer2 = x
+let f (x : refer1) = (x : refer2)
 
 module Classdef = struct
   class virtual ['a, 'b, 'c] cl0 =
@@ -6305,7 +6305,7 @@ open Pr3918b
 
 let f x = (x : 'a vlist :> 'b vlist)
 
-let f (x : 'a vlist) : 'b vlist = x
+let f (x : 'a vlist) = (x : 'b vlist)
 
 module type Poly = sig
   type 'a t = 'a constraint 'a = [> ]
@@ -6487,13 +6487,13 @@ module F0 : sig
 end =
   Foobar
 
-let f (x : F0.t) : Foobar.t = x
+let f (x : F0.t) = (x : Foobar.t)
 
 (* fails *)
 
 module F = Foobar
 
-let f (x : F.t) : Foobar.t = x
+let f (x : F.t) = (x : Foobar.t)
 
 module M = struct
   type t = < m: int >
@@ -6561,7 +6561,7 @@ module Bar : sig
 end = struct
   type t = int
 
-  let f (x : int) : t = x
+  let f (x : int) = (x : t)
 end
 
 (* must fail *)
@@ -6664,7 +6664,7 @@ end
 
 module Test2 : module type of Test with type t = Test.t = Test
 
-let f (x : Test.t) : Test2.t = x
+let f (x : Test.t) = (x : Test2.t)
 
 let f Test2.A = ()
 
@@ -7006,7 +7006,7 @@ module PR_4758 = struct
     type t
   end
 
-  let f (x : F(C).t) : F(C').t = x
+  let f (x : F(C).t) = (x : F(C').t)
 end
 
 (* PR 4557 *)
@@ -7038,7 +7038,7 @@ module PR_4557 = struct
 
       type t = XSet.t XMap.t
 
-      let compare x y = 0
+      let compare = fun x y -> 0
     end
 
     and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
@@ -7072,7 +7072,7 @@ module F (X : Set.OrderedType) = struct
 
     type t = XSet.t XMap.t
 
-    let compare x y = 0
+    let compare = fun x y -> 0
   end
 
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
@@ -8966,7 +8966,7 @@ let g = function
   | ({l1= x; l2= y} [@foo]) -> ()
   | {l1= x; l2= y; _} -> ()
 
-let h ?l:(p = 1) ?y:u ?(x = 3) = 2
+let h = fun ?l:(p = 1) ?y:u ?(x = 3) -> 2
 
 let _ = function
   | a, s, ba1, ba2, ba3, bg ->
