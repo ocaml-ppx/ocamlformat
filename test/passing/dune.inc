@@ -1332,6 +1332,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to disable_class_type.ml.stdout
+   (with-stderr-to disable_class_type.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/disable_class_type.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_class_type.ml disable_class_type.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_class_type.ml.err disable_class_type.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to disable_conf_attrs.ml.stdout
    (with-stderr-to disable_conf_attrs.ml.stderr
      (run %{bin:ocamlformat} --margin-check --disable-conf-attrs %{dep:tests/disable_conf_attrs.ml})))))
