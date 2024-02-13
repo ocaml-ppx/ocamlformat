@@ -1,3 +1,8 @@
-class type c = let open [@ocamlformat "disable"] Z
+class type c =
+  let open [@ocamlformat "disable"] Z
   in
-  z
+z
+
+class type c =
+  object [@ocamlformat "disable"]
+         end
