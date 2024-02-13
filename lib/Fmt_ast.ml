@@ -178,6 +178,10 @@ let update_config_maybe_disabled c loc l f =
   let c = update_config c l in
   maybe_disabled c loc l f
 
+let update_config_maybe_disabled_k c loc l ~if_disabled enabled =
+  let c = update_config c l in
+  maybe_disabled_k c loc l enabled if_disabled
+
 let update_config_maybe_disabled_attrs c loc attrs f =
   let l = attrs.attrs_before @ attrs.attrs_after in
   update_config_maybe_disabled c loc l f
@@ -2874,7 +2878,8 @@ and fmt_class_type ?(pro = noop) c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
-  update_config_maybe_disabled c pcty_loc pcty_attributes
+  update_config_maybe_disabled_k c pcty_loc pcty_attributes
+    ~if_disabled:(fun fmt -> vbox 2 (pro $ fmt) )
   @@ fun c ->
   let doc, atrs = doc_atrs pcty_attributes in
   let parens = parenze_cty xtyp in
