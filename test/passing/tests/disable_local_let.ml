@@ -8,27 +8,23 @@ let f () =
   in
   ()
 
-let f () =
-  let open [@ocamlformat "disable"] X
+let f () = let open [@ocamlformat "disable"] X
   in
   ()
 
-let f () =
-  let module [@ocamlformat "disable"] X = Y
+let f () = let module [@ocamlformat "disable"] X = Y
   in
   ()
 
-let f () =
-  let exception [@ocamlformat "disable"] X
+let f () = let exception [@ocamlformat "disable"] X
   in
   ()
 
-class c =
-  let open [@ocamlformat "disable"] X
+class c = let open [@ocamlformat "disable"] X
   in
   x
 
-  class c =
+class c =
   let [@ocamlformat "disable"] x = y
   in
   object end
