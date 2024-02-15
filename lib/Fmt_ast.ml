@@ -2328,12 +2328,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
           ~loc_in:lbs.pvbs_loc_in lbs.pvbs_rec bindings body
-  | Pexp_letop {let_; ands; body} ->
+  | Pexp_letop {let_; ands; body; loc_in} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-          ~loc_in:None Nonrecursive bd body
+          ~loc_in:(Some loc_in) Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2987,9 +2987,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
       let loc_in = lbs.pvbs_loc_in in
-      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens
-        ~loc_in ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
-        ~indent_after_in
+      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4398,12 +4397,21 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
   in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (fmt_in indent) in
-    let loc_in =
-      match loc_in with Some loc_in when last -> Some loc_in | _ -> None
+    let in_ =
+      if last then
+        Some
+          { txt= (fun indent -> fmt_in indent)
+          ; loc=
+              (* I have checked the parser, this should never happen. *)
+              Option.value_exn
+                ~message:
+                  "Bug in the parser : let bindings with an should always \
+                   have a matching loc_in"
+                loc_in }
+      else None
     in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ?ext ~in_ ?loc_in binding
+    fmt_value_binding c ~rec_flag ?ext ?in_ binding
     $ fmt_if (not last)
         ( match c.conf.fmt_opts.let_and.v with
         | `Sparse -> "@;<1000 0>"
@@ -4457,8 +4465,13 @@ and fmt_value_constraint c vc_opt =
             $ fmt_core_type c (sub_typ ~ctx coercion) ) )
   | None -> (noop, noop)
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?loc_in ?epi
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
     {lb_op; lb_pat; lb_args; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
+  let in_, loc_in =
+    match in_ with
+    | None -> (None, None)
+    | Some {txt; loc} -> (Some txt, Some loc)
+  in
   let loc_with_in =
     match loc_in with
     | None -> lb_loc

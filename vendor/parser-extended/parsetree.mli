@@ -477,6 +477,7 @@ and letop =
     let_ : binding_op;
     ands : binding_op list;
     body : expression;
+    loc_in : Location.t
   }
 
 and binding_op =

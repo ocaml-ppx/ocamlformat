@@ -1372,7 +1372,7 @@ end = struct
               List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
               || e == exp )
-        | Pexp_letop {let_; ands; body} ->
+        | Pexp_letop {let_; ands; body; loc_in= _} ->
             let f {pbop_exp; _} = pbop_exp == exp in
             assert (f let_ || List.exists ~f ands || body == exp)
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()

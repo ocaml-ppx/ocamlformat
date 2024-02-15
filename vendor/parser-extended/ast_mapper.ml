@@ -608,8 +608,8 @@ module E = struct
     | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
     | Pexp_letopen (o, e) ->
         letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
-    | Pexp_letop {let_; ands; body} ->
-        letop ~loc ~attrs (sub.binding_op sub let_)
+    | Pexp_letop {let_; ands; body; loc_in} ->
+        letop ~loc ~attrs ~loc_in (sub.binding_op sub let_)
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
@@ -819,8 +819,8 @@ let default_mapper =
       );
 
     module_substitution =
-      (fun this 
-        { pms_name; pms_manifest; pms_ext_attrs; 
+      (fun this
+        { pms_name; pms_manifest; pms_ext_attrs;
            pms_loc } ->
          Ms.mk
            (map_loc this pms_name)
@@ -834,7 +834,7 @@ let default_mapper =
          Mtd.mk
            (map_loc this pmtd_name)
            ?typ:(map_opt (this.module_type this) pmtd_type)
-           ~attrs:(this.ext_attrs this pmtd_ext_attrs) 
+           ~attrs:(this.ext_attrs this pmtd_ext_attrs)
            ~loc:(this.location this pmtd_loc)
       );
 
@@ -843,7 +843,7 @@ let default_mapper =
          Mb.mk (map_loc this pmb_name)
            (List.map (map_functor_param this) pmb_args)
            (this.module_expr this pmb_expr)
-           ~attrs:(this.ext_attrs this pmb_ext_attrs) 
+           ~attrs:(this.ext_attrs this pmb_ext_attrs)
            ~loc:(this.location this pmb_loc)
       );
 

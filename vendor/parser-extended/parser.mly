@@ -2235,12 +2235,15 @@ expr:
       { $1 }
   | let_bindings(ext) mkrhs(IN) seq_expr
       { expr_of_let_bindings ~loc:$sloc ($1 ~loc_in:(Some $2.loc)) $3 }
-  | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
+  | pbop_op = mkrhs(LETOP) bindings = letop_bindings _in_kw=IN body = seq_expr
       { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
-        mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
+        let loc_in = make_loc $loc(_in_kw) in
+        let let_ =
+          {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc}
+        in
+        mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body; loc_in}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
         | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc $sloc) ($1 :: l)

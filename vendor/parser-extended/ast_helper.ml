@@ -158,8 +158,8 @@ module Exp = struct
   let pack ?loc ?attrs a b = mk ?loc ?attrs (Pexp_pack (a, b))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
   let letopen ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letopen (a, b))
-  let letop ?loc ?attrs let_ ands body =
-    mk ?loc ?attrs (Pexp_letop {let_; ands; body})
+  let letop ?loc ?attrs ~loc_in let_ ands body =
+    mk ?loc ?attrs (Pexp_letop {let_; ands; body; loc_in})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
