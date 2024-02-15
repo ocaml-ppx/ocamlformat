@@ -4405,8 +4405,8 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
               (* I have checked the parser, this should never happen. *)
               Option.value_exn
                 ~message:
-                  "Bug in the parser : let bindings with an should always \
-                   have a matching loc_in"
+                  "Bug in the parser : let bindings with an `in` should \
+                   always have a matching loc_in"
                 loc_in }
       else None
     in
