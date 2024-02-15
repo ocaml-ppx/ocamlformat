@@ -28,6 +28,11 @@ class c =
   in
   x
 
+  class c =
+  let [@ocamlformat "disable"] x = y
+  in
+  object end
+
 class type c =
   let open [@ocamlformat "disable"] X
   in

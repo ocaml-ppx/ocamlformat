@@ -2986,8 +2986,9 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
+      let loc_in = lbs.pvbs_loc_in in
       fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens
-        ~loc_in:None ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
+        ~loc_in ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
         ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
