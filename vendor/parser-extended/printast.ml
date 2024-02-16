@@ -341,8 +341,9 @@ and expression i ppf x =
   | Pexp_constant (c) ->
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
-  | Pexp_let (l, e) ->
+  | Pexp_let (l, e, loc_in) ->
       line i ppf "Pexp_let %a\n" fmt_rec_flag l.pvbs_rec;
+      line (i + 1) ppf "loc_in: %a\n" fmt_location loc_in;
       value_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->
@@ -584,7 +585,7 @@ and attributes i ppf l =
 and ext_attrs i ppf attrs =
   let i = i + 1 in
   option (i + 1)
-    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext) 
+    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext)
     ppf attrs.attrs_extension;
   attributes i ppf attrs.attrs_before;
   attributes i ppf attrs.attrs_after
@@ -743,8 +744,9 @@ and class_expr i ppf x =
       line i ppf "Pcl_apply\n";
       class_expr i ppf ce;
       list i label_x_expression ppf l;
-  | Pcl_let (lbs, ce) ->
+  | Pcl_let (lbs, ce, loc_in) ->
       line i ppf "Pcl_let %a\n" fmt_rec_flag lbs.pvbs_rec;
+      line (i + 1) ppf "loc_in: %a\n" fmt_location loc_in;
       value_bindings i ppf lbs;
       class_expr i ppf ce;
   | Pcl_constraint (ce, ct) ->
@@ -1120,7 +1122,7 @@ and include_description i = include_infos "include_description" module_type i
 and include_declaration i = include_infos "include_declaration" module_expr i
 
 and value_bindings i ppf x =
-  list i value_binding ppf x.pvbs_bindings
+  list i value_binding ppf x.pvbs_bindings;
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"

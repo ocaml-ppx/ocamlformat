@@ -1016,7 +1016,7 @@ end = struct
                 Option.exists c ~f:(function
                   | Pconstraint t -> f t
                   | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
-      | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
+      | Pexp_let (lbs, _, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fpe _ | Fpc _ -> assert false
     | Vc c -> assert (check_value_constraint c)
@@ -1029,7 +1029,7 @@ end = struct
           match pcl_desc with
           | Pcl_constr (_, l) -> List.exists l ~f
           | Pcl_constraint _ -> false
-          | Pcl_let (lbs, _) -> check_let_bindings lbs
+          | Pcl_let (lbs, _, _) -> check_let_bindings lbs
           | Pcl_apply _ -> false
           | Pcl_fun _ -> false
           | Pcl_open _ -> false
@@ -1138,7 +1138,7 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply _ -> false
-          | Pcl_let (_, _) -> false
+          | Pcl_let (_, _, _) -> false
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
@@ -1190,7 +1190,7 @@ end = struct
           | Pcl_structure _ -> false
           | Pcl_fun (_, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
-          | Pcl_let (_, x) -> x == cl
+          | Pcl_let (_, x, _) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
           | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
@@ -1279,7 +1279,7 @@ end = struct
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
           assert (Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self)
-      | Pexp_let ({pvbs_bindings; _}, _) ->
+      | Pexp_let ({pvbs_bindings; _}, _, _) ->
           assert (check_bindings pvbs_bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
@@ -1306,7 +1306,8 @@ end = struct
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
           | Pcl_apply _ -> false
-          | Pcl_let ({pvbs_bindings; _}, _) -> check_bindings pvbs_bindings
+          | Pcl_let ({pvbs_bindings; _}, _, _) ->
+              check_bindings pvbs_bindings
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1367,12 +1368,12 @@ end = struct
          |Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object _ -> assert false
-        | Pexp_let ({pvbs_bindings; _}, e) ->
+        | Pexp_let ({pvbs_bindings; _}, e, _) ->
             assert (
               List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
               || e == exp )
-        | Pexp_letop {let_; ands; body} ->
+        | Pexp_letop {let_; ands; body; loc_in= _} ->
             let f {pbop_exp; _} = pbop_exp == exp in
             assert (f let_ || List.exists ~f ands || body == exp)
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
@@ -1461,7 +1462,7 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
-          | Pcl_let ({pvbs_bindings; _}, _) ->
+          | Pcl_let ({pvbs_bindings; _}, _, _) ->
               List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
           | Pcl_constraint _ -> false
@@ -1974,7 +1975,7 @@ end = struct
       ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
-    | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _); _}
+    | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
       , pat_desc ) -> (
       match pat_desc with
@@ -2035,7 +2036,7 @@ end = struct
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
-        | Pexp_let (_, e)
+        | Pexp_let (_, e, _)
          |Pexp_letop {body= e; _}
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, _, e) -> (
@@ -2103,7 +2104,7 @@ end = struct
        |Pexp_variant (_, Some e) ->
           continue e
       | Pexp_cons l -> continue (List.last_exn l)
-      | Pexp_let (_, e)
+      | Pexp_let (_, e, _)
        |Pexp_letop {body= e; _}
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, _, e) ->

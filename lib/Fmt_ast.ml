@@ -2319,20 +2319,20 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                 $ p.break_end_branch ) ) )
                       $ fmt_if_k (not last) p.space_between_branches ) ) )
           $ fmt_atrs )
-  | Pexp_let (lbs, body) ->
+  | Pexp_let (lbs, body, loc_in) ->
       let bindings =
         Sugar.Let_binding.of_let_bindings ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let ext = lbs.pvbs_extension in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
           lbs.pvbs_rec bindings body
-  | Pexp_letop {let_; ands; body} ->
+  | Pexp_letop {let_; ands; body; loc_in} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
           Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
@@ -2796,8 +2796,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
-    bindings body =
+and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
+    rec_flag bindings body =
   let indent_after_in =
     match body.pexp_desc with
     | Pexp_let _ | Pexp_letmodule _
@@ -2815,7 +2815,7 @@ and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
   fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
-    ~body_loc:body.pexp_loc ~indent_after_in
+    ~loc_in ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
@@ -2975,7 +2975,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (lbs, body) ->
+  | Pcl_let (lbs, body, loc_in) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
@@ -2986,8 +2986,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~has_attr
-        ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4383,8 +4383,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_class_types ?ext c ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs ?ext c cls
 
-and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
-    ~has_attr ~indent_after_in =
+and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
+    ~body_loc ~has_attr ~indent_after_in =
   let parens = parens || has_attr in
   let fmt_in indent =
     match c.conf.fmt_opts.break_before_in.v with
@@ -4393,18 +4393,18 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
   in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (fmt_in indent) in
+    let in_ =
+      if last then Some {txt= (fun indent -> fmt_in indent); loc= loc_in}
+      else None
+    in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ?ext ~in_ binding
+    fmt_value_binding c ~rec_flag ?ext ?in_ binding
     $ fmt_if (not last)
         ( match c.conf.fmt_opts.let_and.v with
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
-  let blank_line_after_in =
-    let last_bind = List.last_exn bindings in
-    sequence_blank_line c last_bind.lb_loc body_loc
-  in
+  let blank_line_after_in = sequence_blank_line c loc_in body_loc in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
@@ -4450,7 +4450,20 @@ and fmt_value_constraint c vc_opt =
 
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
     {lb_op; lb_pat; lb_args; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
-  update_config_maybe_disabled c lb_loc lb_attrs
+  let in_, loc_in =
+    match in_ with
+    | None -> (None, None)
+    | Some {txt; loc} -> (Some txt, Some loc)
+  in
+  let loc_with_in =
+    match loc_in with
+    | None -> lb_loc
+    | Some loc_in ->
+        { loc_start= lb_loc.loc_start
+        ; loc_end= loc_in.loc_end
+        ; loc_ghost= lb_loc.loc_ghost || loc_in.loc_ghost }
+  in
+  update_config_maybe_disabled c loc_with_in lb_attrs
   @@ fun c ->
   let lb_pun =
     Ocaml_version.(
@@ -4481,7 +4494,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
         , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
         , fmt_opt epi
         , Cmts.fmt_before c lb_loc
-        , Cmts.fmt_after c lb_loc )
+        , Cmts.fmt_after c lb_loc ~pro:(break 1000 0) )
     | None ->
         let epi =
           fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
@@ -4524,8 +4537,12 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                       $ fmt_if_k (not lb_pun) pre_body )
                   $ fmt_if (not lb_pun) "@ "
                   $ fmt_if_k (not lb_pun) body )
-              $ cmts_after )
+              $ cmts_after
+              $ opt loc_in
+                  (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop)
+              )
           $ in_ )
+      $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
       $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 

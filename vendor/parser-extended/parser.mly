@@ -487,13 +487,13 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
 
-let expr_of_let_bindings ~loc lbs body =
-  mkexp_attrs ~loc (Pexp_let (mk_let_bindings lbs, body)) (None, [])
+let expr_of_let_bindings ~loc ~loc_in lbs body =
+  mkexp_attrs ~loc (Pexp_let (mk_let_bindings lbs, body, loc_in)) (None, [])
 
-let class_of_let_bindings ~loc lbs body =
+let class_of_let_bindings ~loc ~loc_in lbs body =
   (* Our use of let_bindings(no_ext) guarantees the following: *)
   assert (lbs.lbs_extension = None);
-  mkclass ~loc (Pcl_let (mk_let_bindings lbs, body))
+  mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
@@ -1829,7 +1829,7 @@ class_expr:
   | FUN attributes class_fun_def
       { wrap_class_attrs ~loc:$sloc $3 $2 }
   | let_bindings(no_ext) IN class_expr
-      { class_of_let_bindings ~loc:$sloc $1 $3 }
+      { class_of_let_bindings ~loc:$sloc ~loc_in:(make_loc $loc($2)) $1 $3 }
   | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_expr
       { let loc = ($startpos($2), $endpos($5)) in
         let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
@@ -2231,13 +2231,16 @@ expr:
   | mkexp(expr_)
       { $1 }
   | let_bindings(ext) IN seq_expr
-      { expr_of_let_bindings ~loc:$sloc $1 $3 }
-  | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
+      { expr_of_let_bindings ~loc:$sloc ~loc_in:(make_loc $loc($2)) $1 $3 }
+  | pbop_op = mkrhs(LETOP) bindings = letop_bindings _in_kw=IN body = seq_expr
       { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let let_ = {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
-        mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
+        let loc_in = make_loc $loc(_in_kw) in
+        let let_ =
+          {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc}
+        in
+        mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body; loc_in}) }
   | expr COLONCOLON e = expr
       { match e.pexp_desc, e.pexp_attributes with
         | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc $sloc) ($1 :: l)

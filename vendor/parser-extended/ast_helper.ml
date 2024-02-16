@@ -122,7 +122,7 @@ module Exp = struct
 
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
-  let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_let (a, b))
+  let let_ ?loc ?attrs ~loc_in a b = mk ?loc ?attrs (Pexp_let (a, b, loc_in))
   let fun_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_fun (a, b))
   let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
@@ -158,8 +158,8 @@ module Exp = struct
   let pack ?loc ?attrs a b = mk ?loc ?attrs (Pexp_pack (a, b))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
   let letopen ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letopen (a, b))
-  let letop ?loc ?attrs let_ ands body =
-    mk ?loc ?attrs (Pexp_letop {let_; ands; body})
+  let letop ?loc ?attrs ~loc_in let_ ands body =
+    mk ?loc ?attrs (Pexp_letop {let_; ands; body; loc_in})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
@@ -284,7 +284,7 @@ module Cl = struct
   let structure ?loc ?attrs a = mk ?loc ?attrs (Pcl_structure a)
   let fun_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_fun (a, b))
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pcl_apply (a, b))
-  let let_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_let (a, b))
+  let let_ ?loc ?attrs ~loc_in a b = mk ?loc ?attrs (Pcl_let (a, b, loc_in))
   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_constraint (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pcl_extension a)
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_open (a, b))

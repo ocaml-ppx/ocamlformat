@@ -516,8 +516,9 @@ module E = struct
     match desc with
     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
-    | Pexp_let (lbs, e) ->
-        let_ ~loc ~attrs (sub.value_bindings sub lbs)
+    | Pexp_let (lbs, e, loc_in) ->
+      let loc_in = sub.location sub loc_in in
+        let_ ~loc ~loc_in ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
     | Pexp_fun (p, e) ->
         fun_ ~loc ~attrs
@@ -608,8 +609,8 @@ module E = struct
     | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc sub o) (sub.expr sub e)
     | Pexp_letopen (o, e) ->
         letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
-    | Pexp_letop {let_; ands; body} ->
-        letop ~loc ~attrs (sub.binding_op sub let_)
+    | Pexp_letop {let_; ands; body; loc_in} ->
+        letop ~loc ~attrs ~loc_in (sub.binding_op sub let_)
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
@@ -707,8 +708,9 @@ module CE = struct
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)
           (List.map (map_tuple (sub.arg_label sub) (sub.expr sub)) l)
-    | Pcl_let (lbs, ce) ->
-        let_ ~loc ~attrs (sub.value_bindings sub lbs)
+    | Pcl_let (lbs, ce, loc_in) ->
+        let loc_in = sub.location sub loc_in in
+        let_ ~loc ~attrs ~loc_in (sub.value_bindings sub lbs)
           (sub.class_expr sub ce)
     | Pcl_constraint (ce, ct) ->
         constraint_ ~loc ~attrs (sub.class_expr sub ce) (sub.class_type sub ct)
@@ -818,8 +820,8 @@ let default_mapper =
       );
 
     module_substitution =
-      (fun this 
-        { pms_name; pms_manifest; pms_ext_attrs; 
+      (fun this
+        { pms_name; pms_manifest; pms_ext_attrs;
            pms_loc } ->
          Ms.mk
            (map_loc this pms_name)
@@ -833,7 +835,7 @@ let default_mapper =
          Mtd.mk
            (map_loc this pmtd_name)
            ?typ:(map_opt (this.module_type this) pmtd_type)
-           ~attrs:(this.ext_attrs this pmtd_ext_attrs) 
+           ~attrs:(this.ext_attrs this pmtd_ext_attrs)
            ~loc:(this.location this pmtd_loc)
       );
 
@@ -842,7 +844,7 @@ let default_mapper =
          Mb.mk (map_loc this pmb_name)
            (List.map (map_functor_param this) pmb_args)
            (this.module_expr this pmb_expr)
-           ~attrs:(this.ext_attrs this pmb_ext_attrs) 
+           ~attrs:(this.ext_attrs this pmb_ext_attrs)
            ~loc:(this.location this pmb_loc)
       );
 
