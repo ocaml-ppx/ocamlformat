@@ -94,6 +94,8 @@ let break n o =
       Box_debug.break fs n o ;
       Format_.pp_print_break fs n o )
 
+let force_break = break 1000 0
+
 let cbreak ~fits ~breaks =
   with_pp (fun fs ->
       Box_debug.cbreak fs ~fits ~breaks ;

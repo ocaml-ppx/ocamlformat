@@ -54,6 +54,9 @@ val protect : t -> on_error:(exn -> unit) -> t
 val break : int -> int -> t
 (** Format a break hint. *)
 
+val force_break : t
+(** [force_break] forces a break with indentation 0. Equivalent to [break 1000 0].*)
+
 val cbreak : fits:string * int * string -> breaks:string * int * string -> t
 (** Format a custom break.
 

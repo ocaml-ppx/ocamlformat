@@ -218,8 +218,8 @@ let fmt_item_list c ctx update_config ast fmt_item items =
   $ opt next (fun (i_n, c_n) ->
         fmt_or_k
           (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
-          (fmt "\n@;<1000 0>")
-          (fmt_or break_struct "@;<1000 0>" "@ ") )
+          (str "\n" $ force_break)
+          (fmt_or_k break_struct force_break (fmt "@ ")) )
 
 let fmt_recmodule c ctx items fmt_item ast sub =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
@@ -230,7 +230,7 @@ let fmt_recmodule c ctx items fmt_item ast sub =
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
-(* In several places, a break such as "@;<1000 0>" is used to force the
+(* In several places, a break such as [Fmt.force_break] is used to force the
    enclosing box to break across multiple lines. *)
 
 let rec fmt_longident (li : Longident.t) =
@@ -892,12 +892,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         match rfs with
         | [] -> Cmts.fmt_within c ~pro:noop ptyp_loc
         | _ ->
-            list rfs
+            list_k rfs
               ( if
                   in_type_declaration
                   && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then "@;<1000 0>| "
-                else "@ | " )
+                then force_break $ str "| "
+                else fmt "@ | " )
               (fmt_row_field c ctx)
       in
       let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
@@ -1380,7 +1380,7 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
-  | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
+  | _ -> (noop, fmt_expression c ~eol:force_break xbody)
 
 and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
   let {pia_lhs; pia_kind; pia_paren; pia_rhs} = x in
@@ -1552,9 +1552,9 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
-      if sequence_blank_line c l1 l2 then fmt "\n@;<1000 0>"
+      if sequence_blank_line c l1 l2 then str "\n" $ Fmt.force_break
       else if c.conf.fmt_opts.break_sequences.v || force_break then
-        fmt "@;<1000 0>"
+        Fmt.force_break
       else if parens && Poly.(c.conf.fmt_opts.sequence_style.v = `Before)
       then fmt "@;<1 -2>"
       else fmt "@;<1 0>"
@@ -1780,7 +1780,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         $ fmt "@ ->" )
                     $ fmt "@ " $ fmt_expression c xbody ) )
              $ fmt "@ ;@ "
-             $ list grps " ;@;<1000 0>" fmt_grp ) )
+             $ list_k grps (str " ;" $ force_break) fmt_grp ) )
   | Pexp_infix
       ( {txt= "|>"; loc}
       , e0
@@ -1894,7 +1894,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                  $ fmt_opt fmt_cstr )
                              $ fmt "@ ->" ) )
                      $ pre_body )
-                 $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
+                 $ fmt_or_k followed_by_infix_op force_break (fmt "@ ")
                  $ body $ fmt_if parens_r ")" $ cmts_after ) )
           $ fmt_atrs )
   | Pexp_infix
@@ -1943,7 +1943,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             | Some op ->
                 (* side effects of Cmts.fmt_before before fmt_expression is
                    important *)
-                let adj = break 1000 0 in
+                let adj = force_break in
                 let fmt_before_cmts =
                   if Cmts.has_before c.cmts op.loc then
                     Some (Cmts.fmt_before ~adj c op.loc)
@@ -2348,7 +2348,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                       (hvbox 2
                          (pre $ fmt_extension_constructor c ctx ext_cstr) )
                   $ fmt "@ in" )
-              $ fmt "@;<1000 0>"
+              $ force_break
               $ fmt_expression c (sub_exp ~ctx exp) )
           $ fmt_atrs )
   | Pexp_letmodule (name, args, pmod, exp) ->
@@ -2379,7 +2379,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                      xmty
                      ~attrs:(Ast_helper.Attr.ext_attrs ?ext ())
                      ~epi:(str "in") ~can_sparse ~rec_flag:false )
-              $ fmt "@;<1000 0>"
+              $ force_break
               $ fmt_expression c (sub_exp ~ctx exp) )
           $ fmt_atrs )
   | Pexp_open (lid, e0) ->
@@ -2437,7 +2437,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
                            $ str " in" )
-                       $ break 1000 0
+                       $ force_break
                        $ fmt_expression c (sub_exp ~ctx e0) ) ) )
              $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
@@ -2688,9 +2688,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              $ fmt_direction_flag dir
                              $ fmt_expression c (sub_exp ~ctx e2) )
                          $ fmt "@;do" )
-                     $ fmt "@;<1000 0>"
+                     $ force_break
                      $ fmt_expression c (sub_exp ~ctx e3) )
-                 $ fmt "@;<1000 0>done" )
+                 $ force_break $ fmt "done" )
              $ fmt_atrs ) )
   | Pexp_coerce (e1, t1, t2) ->
       pro
@@ -2714,9 +2714,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          $ fmt "@;<1 2>"
                          $ fmt_expression c (sub_exp ~ctx e1)
                          $ fmt "@;do" )
-                     $ fmt "@;<1000 0>"
+                     $ force_break
                      $ fmt_expression c (sub_exp ~ctx e2) )
-                 $ fmt "@;<1000 0>done" )
+                 $ force_break $ fmt "done" )
              $ fmt_atrs ) )
   | Pexp_unreachable -> pro $ str "."
   | Pexp_send (exp, meth) ->
@@ -2782,8 +2782,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let wrap_beginend k =
         let opn = str "begin" $ fmt_extension_suffix c ext
         and cls = str "end" in
-        hvbox 0
-          (wrap_k opn cls (wrap_k (break 1 2) (break 1000 0) k) $ fmt_atrs)
+        hvbox 0 (wrap_k opn cls (wrap_k (break 1 2) force_break k) $ fmt_atrs)
       in
       pro
       $ wrap_beginend
@@ -2838,9 +2837,9 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
       | _ -> noop )
     $ fmt_or_k (List.is_empty fields)
         (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
-        (fmt "@;<1000 0>")
+        force_break
     $ fmt_item_list c ctx update_config ast fmt_item fields )
-  $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
+  $ fmt_or_k (List.is_empty fields) (fmt "@ ") force_break
   $ str "end"
 
 (** [epi] is a function to ensure ordered access to comments. *)
@@ -3000,7 +2999,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       hvbox 0
         ( fmt_open_description c ~keyword:"let open"
             ~kw_attributes:pcl_attributes popen
-        $ fmt " in@;<1000 0>"
+        $ fmt " in" $ force_break
         $ fmt_class_expr c (sub_cl ~ctx cl) )
 
 and fmt_class_field_kind c ctx = function
@@ -3194,9 +3193,7 @@ and fmt_case c ctx ~first ~last case =
     | _ -> parenze_pat xlhs
   in
   let eol =
-    Option.some_if
-      (Cmts.has_before c.cmts pc_rhs.pexp_loc)
-      (fmt "@;<1000 0>")
+    Option.some_if (Cmts.has_before c.cmts pc_rhs.pexp_loc) force_break
   in
   let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
@@ -3431,8 +3428,9 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let sparse = Poly.( = ) c.conf.fmt_opts.type_decl.v `Sparse in
   (* Force break if comment before pcd_loc, it would interfere with an
      eventual comment placed after the previous constructor *)
-  fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
-  $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
+  fmt_if_k (not first)
+    (fmt_or_k (sparse || has_cmt_before) force_break (fmt "@ "))
+  $ Cmts.fmt_before ~epi:force_break c pcd_loc
   $ hvbox ~name:"constructor_decl" 2
       ( hovbox
           (Params.Indent.constructor_docstring c.conf)
@@ -3606,7 +3604,7 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= (within $ if empty then noop else fmt_signature c ctx s)
       ; cls= noop
-      ; esp= fmt_if (not empty) "@;<1000 0>"
+      ; esp= fmt_if_k (not empty) force_break
       ; epi=
           Some
             ( str "end" $ after
@@ -3806,7 +3804,7 @@ and fmt_class_types ?ext c ~pre ~sep cls =
           ( fmt_class_type c ~pro (sub_cty ~ctx cl.pci_expr)
           $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
       in
-      fmt_if (not first) "\n@;<1000 0>"
+      fmt_if_k (not first) (str "\n" $ force_break)
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
@@ -3846,7 +3844,7 @@ and fmt_class_exprs ?ext c cls =
              $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
          in
-         fmt_if (not first) "\n@;<1000 0>"
+         fmt_if_k (not first) (str "\n" $ force_break)
          $ hovbox 0
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
 
@@ -4222,7 +4220,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       ; cls= noop
       ; esp=
           fmt_if_k (not empty)
-            (fmt_or c.conf.fmt_opts.break_struct.v "@;<1000 0>" "@;<1 0>")
+            (fmt_or_k c.conf.fmt_opts.break_struct.v force_break (break 1 0))
       ; epi=
           Some
             ( hovbox_if (not empty) 0
@@ -4399,10 +4397,10 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
     in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
     fmt_value_binding c ~rec_flag ?ext ?in_ binding
-    $ fmt_if (not last)
+    $ fmt_if_k (not last)
         ( match c.conf.fmt_opts.let_and.v with
-        | `Sparse -> "@;<1000 0>"
-        | `Compact -> "@ " )
+        | `Sparse -> force_break
+        | `Compact -> fmt "@ " )
   in
   let blank_line_after_in = sequence_blank_line c loc_in body_loc in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
@@ -4494,7 +4492,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
         , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
         , fmt_opt epi
         , Cmts.fmt_before c lb_loc
-        , Cmts.fmt_after c lb_loc ~pro:(break 1000 0) )
+        , Cmts.fmt_after c lb_loc ~pro:force_break )
     | None ->
         let epi =
           fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
@@ -4539,10 +4537,9 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after
               $ opt loc_in
-                  (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop)
-              )
+                  (Cmts.fmt_before c ~pro:force_break ~epi:noop ~eol:noop) )
           $ in_ )
-      $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
+      $ opt loc_in (Cmts.fmt_after ~pro:force_break c)
       $ epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
@@ -4621,10 +4618,10 @@ let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
   $ fmt_toplevel ~force_semisemi:true c ctx [prepl_phrase]
   $ fmt_if_k
       (not (String.is_empty prepl_output))
-      (break 1000 0 $ str prepl_output)
+      (force_break $ str prepl_output)
 
 let fmt_repl_file c _ itms =
-  vbox 0 @@ list itms "@;<1000 0>" @@ fmt_repl_phrase c Rep
+  vbox 0 @@ list_k itms force_break @@ fmt_repl_phrase c Rep
 
 (** Entry points *)
 
@@ -4648,8 +4645,9 @@ module Chunk = struct
           | `Disable ->
               let output =
                 output
-                $ Cmts.fmt_before c chunk.attr_loc ~eol:(fmt "\n@;<1000 0>")
-                $ fmt_if (i > 0) "\n@;<1000 0>"
+                $ Cmts.fmt_before c chunk.attr_loc
+                    ~eol:(str "\n" $ force_break)
+                $ fmt_if_k (i > 0) (str "\n" $ force_break)
                 $ str
                     (String.strip
                        (Source.string_at c.source chunk.chunk_loc) )
@@ -4658,7 +4656,7 @@ module Chunk = struct
           | `Enable ->
               let output =
                 output
-                $ fmt_if (i > 0) "@;<1000 0>"
+                $ fmt_if_k (i > 0) force_break
                 $ fmt_item fg c ctx chunk.items
               in
               (output, locs)
