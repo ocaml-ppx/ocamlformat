@@ -4511,7 +4511,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
         , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
         , fmt_opt epi
         , Cmts.fmt_before c lb_loc
-        , Cmts.fmt_after c lb_loc )
+        , Cmts.fmt_after c lb_loc ~pro:(break 1000 0) )
     | None ->
         let epi =
           fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
@@ -4555,7 +4555,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                   $ fmt_if (not lb_pun) "@ "
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after
-              $ opt loc_in (Cmts.fmt_before c) )
+              $ opt loc_in (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop) )
           $ in_ )
       $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
       $ epi )
