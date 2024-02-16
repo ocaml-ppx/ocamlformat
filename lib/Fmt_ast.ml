@@ -218,7 +218,7 @@ let fmt_item_list c ctx update_config ast fmt_item items =
   $ opt next (fun (i_n, c_n) ->
         fmt_or_k
           (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
-          (fmt "\n@;<1000 0>")
+          (fmt "\n" $ force_break)
           (fmt_or break_struct "@;<1000 0>" "@ ") )
 
 let fmt_recmodule c ctx items fmt_item ast sub =
@@ -231,7 +231,8 @@ let fmt_recmodule c ctx items fmt_item ast sub =
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
 (* In several places, a break such as "@;<1000 0>" is used to force the
-   enclosing box to break across multiple lines. *)
+   enclosing box to break across multiple lines.
+   Such break are now implemented with [Fmt.force_break]. *)
 
 let rec fmt_longident (li : Longident.t) =
   let fmt_id id =
@@ -1380,7 +1381,7 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
-  | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
+  | _ -> (noop, fmt_expression c ~eol:(force_break) xbody)
 
 and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
   let {pia_lhs; pia_kind; pia_paren; pia_rhs} = x in
@@ -1552,9 +1553,9 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
-      if sequence_blank_line c l1 l2 then fmt "\n@;<1000 0>"
+      if sequence_blank_line c l1 l2 then fmt "\n" $ Fmt.force_break
       else if c.conf.fmt_opts.break_sequences.v || force_break then
-        fmt "@;<1000 0>"
+        Fmt.force_break
       else if parens && Poly.(c.conf.fmt_opts.sequence_style.v = `Before)
       then fmt "@;<1 -2>"
       else fmt "@;<1 0>"
@@ -1943,7 +1944,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             | Some op ->
                 (* side effects of Cmts.fmt_before before fmt_expression is
                    important *)
-                let adj = break 1000 0 in
+                let adj = force_break in
                 let fmt_before_cmts =
                   if Cmts.has_before c.cmts op.loc then
                     Some (Cmts.fmt_before ~adj c op.loc)
@@ -2348,7 +2349,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                       (hvbox 2
                          (pre $ fmt_extension_constructor c ctx ext_cstr) )
                   $ fmt "@ in" )
-              $ fmt "@;<1000 0>"
+              $ force_break
               $ fmt_expression c (sub_exp ~ctx exp) )
           $ fmt_atrs )
   | Pexp_letmodule (name, args, pmod, exp) ->
@@ -2379,7 +2380,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                      xmty
                      ~attrs:(Ast_helper.Attr.ext_attrs ?ext ())
                      ~epi:(str "in") ~can_sparse ~rec_flag:false )
-              $ fmt "@;<1000 0>"
+              $ force_break
               $ fmt_expression c (sub_exp ~ctx exp) )
           $ fmt_atrs )
   | Pexp_open (lid, e0) ->
@@ -2437,7 +2438,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
                            $ str " in" )
-                       $ break 1000 0
+                       $ force_break
                        $ fmt_expression c (sub_exp ~ctx e0) ) ) )
              $ fmt_atrs ) )
   | Pexp_try (e0, [{pc_lhs; pc_guard; pc_rhs}])
@@ -2688,9 +2689,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              $ fmt_direction_flag dir
                              $ fmt_expression c (sub_exp ~ctx e2) )
                          $ fmt "@;do" )
-                     $ fmt "@;<1000 0>"
+                     $ force_break
                      $ fmt_expression c (sub_exp ~ctx e3) )
-                 $ fmt "@;<1000 0>done" )
+                 $ force_break $ fmt "done" )
              $ fmt_atrs ) )
   | Pexp_coerce (e1, t1, t2) ->
       pro
@@ -2714,9 +2715,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          $ fmt "@;<1 2>"
                          $ fmt_expression c (sub_exp ~ctx e1)
                          $ fmt "@;do" )
-                     $ fmt "@;<1000 0>"
+                     $ force_break
                      $ fmt_expression c (sub_exp ~ctx e2) )
-                 $ fmt "@;<1000 0>done" )
+                 $ force_break $ fmt "done" )
              $ fmt_atrs ) )
   | Pexp_unreachable -> pro $ str "."
   | Pexp_send (exp, meth) ->
@@ -2783,7 +2784,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         let opn = str "begin" $ fmt_extension_suffix c ext
         and cls = str "end" in
         hvbox 0
-          (wrap_k opn cls (wrap_k (break 1 2) (break 1000 0) k) $ fmt_atrs)
+          (wrap_k opn cls (wrap_k (break 1 2) (force_break) k) $ fmt_atrs)
       in
       pro
       $ wrap_beginend
@@ -2838,7 +2839,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
       | _ -> noop )
     $ fmt_or_k (List.is_empty fields)
         (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
-        (fmt "@;<1000 0>")
+        (force_break)
     $ fmt_item_list c ctx update_config ast fmt_item fields )
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
@@ -3196,7 +3197,7 @@ and fmt_case c ctx ~first ~last case =
   let eol =
     Option.some_if
       (Cmts.has_before c.cmts pc_rhs.pexp_loc)
-      (fmt "@;<1000 0>")
+      (force_break)
   in
   let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
@@ -3432,7 +3433,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   (* Force break if comment before pcd_loc, it would interfere with an
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
-  $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
+  $ Cmts.fmt_before ~epi:(force_break) c pcd_loc
   $ hvbox ~name:"constructor_decl" 2
       ( hovbox
           (Params.Indent.constructor_docstring c.conf)
@@ -4621,7 +4622,7 @@ let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
   $ fmt_toplevel ~force_semisemi:true c ctx [prepl_phrase]
   $ fmt_if_k
       (not (String.is_empty prepl_output))
-      (break 1000 0 $ str prepl_output)
+      (force_break $ str prepl_output)
 
 let fmt_repl_file c _ itms =
   vbox 0 @@ list itms "@;<1000 0>" @@ fmt_repl_phrase c Rep
