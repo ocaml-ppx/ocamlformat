@@ -1828,8 +1828,8 @@ class_expr:
       { $1 }
   | FUN attributes class_fun_def
       { wrap_class_attrs ~loc:$sloc $3 $2 }
-  | let_bindings(no_ext) mkrhs(IN) class_expr
-      { class_of_let_bindings ~loc:$sloc ~loc_in:$2.loc $1 $3 }
+  | let_bindings(no_ext) IN class_expr
+      { class_of_let_bindings ~loc:$sloc ~loc_in:(make_loc $loc($2)) $1 $3 }
   | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_expr
       { let loc = ($startpos($2), $endpos($5)) in
         let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
@@ -2230,8 +2230,8 @@ expr:
         mkexp_attrs ~loc:$sloc desc attrs }
   | mkexp(expr_)
       { $1 }
-  | let_bindings(ext) mkrhs(IN) seq_expr
-      { expr_of_let_bindings ~loc:$sloc ~loc_in:$2.loc $1 $3 }
+  | let_bindings(ext) IN seq_expr
+      { expr_of_let_bindings ~loc:$sloc ~loc_in:(make_loc $loc($2)) $1 $3 }
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings _in_kw=IN body = seq_expr
       { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in

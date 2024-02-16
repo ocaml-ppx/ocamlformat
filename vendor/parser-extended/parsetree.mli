@@ -1116,7 +1116,7 @@ and value_bindings =
   {
     pvbs_bindings: value_binding list;
     pvbs_rec: rec_flag;
-    pvbs_extension: string loc option;
+    pvbs_extension: string loc option
   }
 
 and module_binding =
