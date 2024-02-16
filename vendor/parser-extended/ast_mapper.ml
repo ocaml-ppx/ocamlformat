@@ -516,8 +516,9 @@ module E = struct
     match desc with
     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
-    | Pexp_let (lbs, e) ->
-        let_ ~loc ~attrs (sub.value_bindings sub lbs)
+    | Pexp_let (lbs, e, loc_in) ->
+      let loc_in = sub.location sub loc_in in
+        let_ ~loc ~loc_in ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
     | Pexp_fun (p, e) ->
         fun_ ~loc ~attrs
@@ -635,11 +636,10 @@ module E = struct
 end
 
 module PVB = struct
-  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension; pvbs_loc_in } =
-    let pvbs_loc_in = map_opt (sub.location sub) pvbs_loc_in in
+  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension } =
     let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
     let pvbs_extension = map_opt (map_loc sub) pvbs_extension in
-    { pvbs_bindings; pvbs_rec; pvbs_extension; pvbs_loc_in }
+    { pvbs_bindings; pvbs_rec; pvbs_extension }
 end
 
 module P = struct
@@ -708,8 +708,9 @@ module CE = struct
     | Pcl_apply (ce, l) ->
         apply ~loc ~attrs (sub.class_expr sub ce)
           (List.map (map_tuple (sub.arg_label sub) (sub.expr sub)) l)
-    | Pcl_let (lbs, ce) ->
-        let_ ~loc ~attrs (sub.value_bindings sub lbs)
+    | Pcl_let (lbs, ce, loc_in) ->
+        let loc_in = sub.location sub loc_in in
+        let_ ~loc ~attrs ~loc_in (sub.value_bindings sub lbs)
           (sub.class_expr sub ce)
     | Pcl_constraint (ce, ct) ->
         constraint_ ~loc ~attrs (sub.class_expr sub ce) (sub.class_type sub ct)

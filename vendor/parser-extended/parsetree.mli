@@ -314,12 +314,13 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of value_bindings * expression
-      (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
+  | Pexp_let of value_bindings * expression * Location.t
+      (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E, loc_in)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
             - [let rec P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
+            - [loc_in] is the location of the [in] keyword.
          *)
   | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
   | Pexp_fun of expr_function_param * expression
@@ -793,12 +794,13 @@ and class_expr_desc =
 
             Invariant: [n > 0]
         *)
-  | Pcl_let of value_bindings * class_expr
-      (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE)] represents:
+  | Pcl_let of value_bindings * class_expr * Location.t
+      (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE, loc_in)] represents:
             - [let P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
             - [let rec P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
+            - [loc_in] is the location of the [in] keyword.
         *)
   | Pcl_constraint of class_expr * class_type  (** [(CE : CT)] *)
   | Pcl_extension of extension  (** [[%id]] *)
@@ -1115,7 +1117,6 @@ and value_bindings =
     pvbs_bindings: value_binding list;
     pvbs_rec: rec_flag;
     pvbs_extension: string loc option;
-    pvbs_loc_in : Location.t option;
   }
 
 and module_binding =

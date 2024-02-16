@@ -2319,21 +2319,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                 $ p.break_end_branch ) ) )
                       $ fmt_if_k (not last) p.space_between_branches ) ) )
           $ fmt_atrs )
-  | Pexp_let (lbs, body) ->
+  | Pexp_let (lbs, body, loc_in) ->
       let bindings =
         Sugar.Let_binding.of_let_bindings ~ctx lbs.pvbs_bindings
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let ext = lbs.pvbs_extension in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-          ~loc_in:lbs.pvbs_loc_in lbs.pvbs_rec bindings body
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
+          lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body; loc_in} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-          ~loc_in:(Some loc_in) Nonrecursive bd body
+      $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
+          Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2975,7 +2975,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (lbs, body) ->
+  | Pcl_let (lbs, body, loc_in) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
@@ -2986,7 +2986,6 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      let loc_in = lbs.pvbs_loc_in in
       fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
         ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
@@ -4345,11 +4344,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
-  | Pstr_value
-      { pvbs_rec= rec_flag
-      ; pvbs_bindings= bindings
-      ; pvbs_extension
-      ; pvbs_loc_in= _ } ->
+  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension}
+    ->
       let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
@@ -4398,16 +4394,7 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ =
-      if last then
-        Some
-          { txt= (fun indent -> fmt_in indent)
-          ; loc=
-              (* I have checked the parser, this should never happen. *)
-              Option.value_exn
-                ~message:
-                  "Bug in the parser : let bindings with an `in` should \
-                   always have a matching loc_in"
-                loc_in }
+      if last then Some {txt= (fun indent -> fmt_in indent); loc= loc_in}
       else None
     in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
@@ -4417,11 +4404,7 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
-  let blank_line_after_in =
-    let last_bind = List.last_exn bindings in
-    let loc_in = Option.value loc_in ~default:last_bind.lb_loc in
-    sequence_blank_line c loc_in body_loc
-  in
+  let blank_line_after_in = sequence_blank_line c loc_in body_loc in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
@@ -4555,7 +4538,9 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                   $ fmt_if (not lb_pun) "@ "
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after
-              $ opt loc_in (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop) )
+              $ opt loc_in
+                  (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop)
+              )
           $ in_ )
       $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
       $ epi )

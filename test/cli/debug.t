@@ -153,6 +153,9 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[5,90+140]..[5,90+142])
+                comments
+                  before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
                   pattern (a.ml[5,90+21]..[5,90+22])
@@ -177,9 +180,6 @@
                       within: (* within unit #2 *)
                     None
               ]
-              in_loc: (a.ml[5,90+140]..[5,90+142])
-              comments
-                before: (* after unit *)
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
         ]
@@ -207,6 +207,9 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[5,90+140]..[5,90+142])
+                comments
+                  before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
                   pattern (a.ml[5,90+21]..[5,90+22])
@@ -231,9 +234,6 @@
                       within: (* within unit #2 *)
                     None
               ]
-              in_loc: (a.ml[5,90+140]..[5,90+142])
-              comments
-                before: (* after unit *)
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
         ]
@@ -261,6 +261,7 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[12,260+2]..[12,260+4])
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
@@ -287,7 +288,6 @@
                       within: (* within unit #2 *)
                     None
               ]
-              in_loc: (a.ml[12,260+2]..[12,260+4])
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
         ]
@@ -314,6 +314,7 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[12,260+2]..[12,260+4])
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
@@ -340,7 +341,6 @@
                       within: (* within unit #2 *)
                     None
               ]
-              in_loc: (a.ml[12,260+2]..[12,260+4])
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
         ]
