@@ -218,7 +218,7 @@ let fmt_item_list c ctx update_config ast fmt_item items =
   $ opt next (fun (i_n, c_n) ->
         fmt_or_k
           (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
-          (fmt "\n" $ force_break)
+          (str "\n" $ force_break)
           (fmt_or_k break_struct force_break (fmt "@ ")) )
 
 let fmt_recmodule c ctx items fmt_item ast sub =
@@ -896,7 +896,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
               ( if
                   in_type_declaration
                   && Poly.(c.conf.fmt_opts.type_decl.v = `Sparse)
-                then force_break $ fmt "| "
+                then force_break $ str "| "
                 else fmt "@ | " )
               (fmt_row_field c ctx)
       in
@@ -1552,7 +1552,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
-      if sequence_blank_line c l1 l2 then fmt "\n" $ Fmt.force_break
+      if sequence_blank_line c l1 l2 then str "\n" $ Fmt.force_break
       else if c.conf.fmt_opts.break_sequences.v || force_break then
         Fmt.force_break
       else if parens && Poly.(c.conf.fmt_opts.sequence_style.v = `Before)
@@ -1780,7 +1780,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         $ fmt "@ ->" )
                     $ fmt "@ " $ fmt_expression c xbody ) )
              $ fmt "@ ;@ "
-             $ list_k grps (fmt " ;" $ force_break) fmt_grp ) )
+             $ list_k grps (str " ;" $ force_break) fmt_grp ) )
   | Pexp_infix
       ( {txt= "|>"; loc}
       , e0
@@ -3804,7 +3804,7 @@ and fmt_class_types ?ext c ~pre ~sep cls =
           ( fmt_class_type c ~pro (sub_cty ~ctx cl.pci_expr)
           $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs )
       in
-      fmt_if_k (not first) (fmt "\n" $ force_break)
+      fmt_if_k (not first) (str "\n" $ force_break)
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
@@ -3844,7 +3844,7 @@ and fmt_class_exprs ?ext c cls =
              $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
            $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
          in
-         fmt_if_k (not first) (fmt "\n" $ force_break)
+         fmt_if_k (not first) (str "\n" $ force_break)
          $ hovbox 0
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
 
@@ -4646,8 +4646,8 @@ module Chunk = struct
               let output =
                 output
                 $ Cmts.fmt_before c chunk.attr_loc
-                    ~eol:(fmt "\n" $ force_break)
-                $ fmt_if_k (i > 0) (fmt "\n" $ force_break)
+                    ~eol:(str "\n" $ force_break)
+                $ fmt_if_k (i > 0) (str "\n" $ force_break)
                 $ str
                     (String.strip
                        (Source.string_at c.source chunk.chunk_loc) )
