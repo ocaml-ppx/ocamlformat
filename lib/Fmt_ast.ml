@@ -1381,7 +1381,7 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
-  | _ -> (noop, fmt_expression c ~eol:(force_break) xbody)
+  | _ -> (noop, fmt_expression c ~eol:force_break xbody)
 
 and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
   let {pia_lhs; pia_kind; pia_paren; pia_rhs} = x in
@@ -2783,8 +2783,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let wrap_beginend k =
         let opn = str "begin" $ fmt_extension_suffix c ext
         and cls = str "end" in
-        hvbox 0
-          (wrap_k opn cls (wrap_k (break 1 2) (force_break) k) $ fmt_atrs)
+        hvbox 0 (wrap_k opn cls (wrap_k (break 1 2) force_break k) $ fmt_atrs)
       in
       pro
       $ wrap_beginend
@@ -2839,7 +2838,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
       | _ -> noop )
     $ fmt_or_k (List.is_empty fields)
         (Cmts.fmt_within ~epi:noop c (Ast.location ctx))
-        (force_break)
+        force_break
     $ fmt_item_list c ctx update_config ast fmt_item fields )
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
@@ -3195,9 +3194,7 @@ and fmt_case c ctx ~first ~last case =
     | _ -> parenze_pat xlhs
   in
   let eol =
-    Option.some_if
-      (Cmts.has_before c.cmts pc_rhs.pexp_loc)
-      (force_break)
+    Option.some_if (Cmts.has_before c.cmts pc_rhs.pexp_loc) force_break
   in
   let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
@@ -3433,7 +3430,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   (* Force break if comment before pcd_loc, it would interfere with an
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
-  $ Cmts.fmt_before ~epi:(force_break) c pcd_loc
+  $ Cmts.fmt_before ~epi:force_break c pcd_loc
   $ hvbox ~name:"constructor_decl" 2
       ( hovbox
           (Params.Indent.constructor_docstring c.conf)
@@ -4495,7 +4492,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
         , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
         , fmt_opt epi
         , Cmts.fmt_before c lb_loc
-        , Cmts.fmt_after c lb_loc ~pro:(break 1000 0) )
+        , Cmts.fmt_after c lb_loc ~pro:force_break )
     | None ->
         let epi =
           fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
@@ -4540,8 +4537,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
                   $ fmt_if_k (not lb_pun) body )
               $ cmts_after
               $ opt loc_in
-                  (Cmts.fmt_before c ~pro:(break 1000 0) ~epi:noop ~eol:noop)
-              )
+                  (Cmts.fmt_before c ~pro:force_break ~epi:noop ~eol:noop) )
           $ in_ )
       $ opt loc_in (Cmts.fmt_after ~pro:(fmt "@;<1000 0>") c)
       $ epi )
