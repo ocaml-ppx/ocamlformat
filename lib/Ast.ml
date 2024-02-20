@@ -432,14 +432,13 @@ module Signature_item = struct
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
      |Psig_modsubst {pms_ext_attrs= ea; _} ->
         Ext_attrs.has_doc ea
-
     | Psig_include
         {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _}
      |Psig_exception
         { ptyexn_attributes= ea
         ; ptyexn_constructor= {pext_attributes= atrs; _}
         ; _ }
-    | Psig_recmodule
+     |Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
      |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
       ->

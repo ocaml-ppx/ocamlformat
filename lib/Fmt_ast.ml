@@ -489,7 +489,7 @@ let extract_doc_attrs docs attrs =
   in
   let docs, attrs = extract_once docs attrs in
   let docs, attrs = extract_once docs attrs in
-  List.rev docs, attrs
+  (List.rev docs, attrs)
 
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
@@ -2489,12 +2489,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                        ( hvbox 0
                            ( fmt_module_statement c ~attributes
                                ~keyword:
-                                 ( hvbox 0
-                                     ( str "let" $ break 1 0
-                                     $ Cmts.fmt_before c popen_loc
-                                     $ fmt_or override (str "open!") (str "open")
-                                     $ opt ext (fun _ -> fmt_if override " ")
-                                     $ fmt_extension_suffix c ext ) )
+                                 (hvbox 0
+                                    ( str "let" $ break 1 0
+                                    $ Cmts.fmt_before c popen_loc
+                                    $ fmt_or override (str "open!") (str "open")
+                                    $ opt ext (fun _ -> fmt_if override " ")
+                                    $ fmt_extension_suffix c ext ) )
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
                            $ str " in" )
@@ -2859,8 +2859,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_let_bindings c ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
-    rec_flag bindings body =
+and fmt_let_bindings c ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_flag
+    bindings body =
   let indent_after_in =
     match body.pexp_desc with
     | Pexp_let _ | Pexp_letmodule _
@@ -2877,8 +2877,8 @@ and fmt_let_bindings c ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
         0
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
-  fmt_let c ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
-    ~loc_in ~body_loc:body.pexp_loc ~indent_after_in
+  fmt_let c ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
+    ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
@@ -3051,8 +3051,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
-        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in ~has_attr
+        ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3350,8 +3350,7 @@ and fmt_class_params c ctx params =
        ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
-and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
-    =
+and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
   protect c (Td decl)
   @@
   let { ptype_name= {txt; loc}
@@ -3615,8 +3614,8 @@ and fmt_type_extension c ctx
 and fmt_type_exception ~pre c ctx
     {ptyexn_attributes= item_attrs; ptyexn_constructor; ptyexn_loc} =
   let {pext_attributes= cons_attrs; _} = ptyexn_constructor in
-  (* Here, the order is very important. We need the attrs_after to be at the end
-    of the list. *)
+  (* Here, the order is very important. We need the attrs_after to be at the
+     end of the list. *)
   let docs, cons_attrs = extract_doc_attrs [] cons_attrs in
   let docs, attrs_after = extract_doc_attrs docs item_attrs.attrs_after in
   let docs, attrs_before = extract_doc_attrs docs item_attrs.attrs_before in
@@ -3628,7 +3627,9 @@ and fmt_type_exception ~pre c ctx
     | _ -> assert false
   in
   let doc_before, doc_after = fmt_docstring_around_item' c doc1 doc2 in
-  let ptyexn_constructor = {ptyexn_constructor with pext_attributes= cons_attrs} in
+  let ptyexn_constructor =
+    {ptyexn_constructor with pext_attributes= cons_attrs}
+  in
   let ext = item_attrs.attrs_extension in
   Cmts.fmt c ptyexn_loc
     (hvbox 0
@@ -3638,7 +3639,7 @@ and fmt_type_exception ~pre c ctx
            $ fmt_extension_suffix c ext
            $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
            $ fmt "@ "
-           $ fmt_extension_constructor c ctx ptyexn_constructor)
+           $ fmt_extension_constructor c ctx ptyexn_constructor )
        $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
        $ doc_after ) )
 
@@ -3886,8 +3887,7 @@ and fmt_signature_item c {ast= si; _} =
   | Psig_typext te -> fmt_type_extension c ctx te
   | Psig_value vd -> fmt_value_description c ctx vd
   | Psig_class cl -> fmt_class_types c ~pre:"class" ~sep:":" cl
-  | Psig_class_type cl ->
-      fmt_class_types c ~pre:"class type" ~sep:"=" cl
+  | Psig_class_type cl -> fmt_class_types c ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ~eq:":=" Recursive decls ctx
 
 and fmt_class_types c ~pre ~sep cls =
@@ -4508,8 +4508,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
         $ hvbox_if (not box) 0 ~name:"ext2" (fmt_item_extension c ctx ext)
         $ fmt_item_attributes c ~pre:Space atrs
         $ doc_after )
-  | Pstr_class_type cl ->
-      fmt_class_types c ~pre:"class type" ~sep:"=" cl
+  | Pstr_class_type cl -> fmt_class_types c ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c cls
 
 and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
@@ -4649,8 +4648,7 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
     in
     box_fun_decl_args c 4 (Params.Align.fun_decl c.conf ~decl ~pattern ~args)
   in
-  doc1
-  $ cmts_before
+  doc1 $ cmts_before
   $ hvbox 0
       ( hvbox indent
           ( hvbox_if toplevel 0

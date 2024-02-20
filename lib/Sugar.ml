@@ -171,6 +171,6 @@ module Let_binding = struct
         ; lb_typ= bo.pbop_typ
         ; lb_exp= sub_exp ~ctx bo.pbop_exp
         ; lb_pun= bo.pbop_is_pun
-        ; lb_attrs= (Ast_helper.Attr.ext_attrs ())
+        ; lb_attrs= Ast_helper.Attr.ext_attrs ()
         ; lb_loc= bo.pbop_loc } )
 end
