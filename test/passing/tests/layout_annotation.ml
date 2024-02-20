@@ -310,3 +310,9 @@ let f (type (a : immediate) b) x = x
 let f (type a (b : immediate)) x = x
 
 let f (type (a : immediate) (b : immediate)) x = x
+
+module type S = sig
+  val init_with_immediates :
+    ('a : immediate) ('b : immediate).
+    int -> f:local_ (int -> local_ 'a) -> local_ 'a t
+end

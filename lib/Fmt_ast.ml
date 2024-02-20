@@ -3626,6 +3626,10 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
     =
   protect c (Td decl)
   @@
+  let decl =
+    if Erase_jane_syntax.should_erase () then decl
+    else Sugar.rewrite_type_declaration_imm_attr_to_layout_annot c.cmts decl
+  in
   let { ptype_name= {txt; loc}
       ; ptype_params
       ; ptype_cstrs

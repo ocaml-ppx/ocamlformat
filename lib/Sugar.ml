@@ -131,6 +131,32 @@ let remove_local_attrs cmts param =
       in
       Pparam_val (is_local, label, default, {pattern with ppat_attributes})
 
+let get_layout_of_legacy_attr attr =
+  match (attr.attr_name.txt, attr.attr_payload) with
+  | ("ocaml.immediate64" | "immediate64"), PStr [] -> Some Immediate64
+  | ("ocaml.immediate" | "immediate"), PStr [] -> Some Immediate
+  | _ -> None
+
+let rewrite_type_declaration_imm_attr_to_layout_annot cmts decl =
+  let immediate_attrs, remaining_attrs =
+    decl.ptype_attributes
+    |> List.partition_map ~f:(fun attr ->
+           match get_layout_of_legacy_attr attr with
+           | Some layout -> First (layout, attr)
+           | None -> Second attr )
+  in
+  match (decl.ptype_layout, immediate_attrs) with
+  | None, [(layout, attr)] ->
+      (* We only do this rewrite if (1.) there's no layout annotation already
+         present and (2.) only one immediate attribute is attached *)
+      let ptype_layout = Some Location.(mknoloc layout) in
+      Cmts.relocate_all_to_before cmts ~src:attr.attr_name.loc
+        ~before:decl.ptype_loc ;
+      Cmts.relocate_all_to_before cmts ~src:attr.attr_loc
+        ~before:decl.ptype_loc ;
+      {decl with ptype_attributes= remaining_attrs; ptype_layout}
+  | _ -> decl
+
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in

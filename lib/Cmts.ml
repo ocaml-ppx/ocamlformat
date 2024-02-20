@@ -88,6 +88,8 @@ let remaining_comments t =
 
 let remaining_before t loc = Map.find_multi t.cmts_before loc
 
+let remaining_after t loc = Map.find_multi t.cmts_after loc
+
 let remaining_locs t = Set.to_list t.remaining
 
 let restore src ~into =
@@ -310,14 +312,18 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
       deep_loc
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
+
+let merge_and_sort x y =
+  List.rev_append x y
+  |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
+
+(* [relocate], [relocate_all_to_before], and [relocate_all_to_after] are very
+   similar in implementation. When fixing bugs, should consider propagating
+   the changes to all three functions. *)
 let relocate (t : t) ~src ~before ~after =
   if t.debug then
     Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
       Location.fmt before Location.fmt after ;
-  let merge_and_sort x y =
-    List.rev_append x y
-    |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
-  in
   update_cmts t `Before
     ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
   update_cmts t `After
@@ -330,14 +336,37 @@ let relocate (t : t) ~src ~before ~after =
         let s = Set.add s after in
         Set.add s before )
 
+(* [relocate], [relocate_all_to_before], and [relocate_all_to_after] are very
+   similar in implementation. When fixing bugs, should consider propagating
+   the changes to all three functions. *)
+let relocate_all_to_before (t : t) ~src ~before =
+  if t.debug then
+    Format.eprintf "relocate %a all to %a@\n%!" Location.fmt src Location.fmt
+      before ;
+  t.cmts_before <-
+    Map.change t.cmts_before before ~f:(fun r ->
+        let cmts = remaining_after t src in
+        match (r, cmts) with
+        | Some data, _ -> Some (merge_and_sort data cmts)
+        | None, _ :: _ -> Some cmts
+        | None, [] -> None ) ;
+  t.cmts_after <- Map.remove t.cmts_after src ;
+  update_cmts t `Before
+    ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
+  update_cmts t `Within
+    ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
+  if t.debug then
+    update_remaining t ~f:(fun s ->
+        let s = Set.remove s src in
+        Set.add s before )
+
+(* [relocate], [relocate_all_to_before], and [relocate_all_to_after] are very
+   similar in implementation. When fixing bugs, should consider propagating
+   the changes to all three functions. *)
 let relocate_all_to_after (t : t) ~src ~after =
   if t.debug then
     Format.eprintf "relocate %a all to %a@\n%!" Location.fmt src Location.fmt
       after ;
-  let merge_and_sort x y =
-    List.rev_append x y
-    |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
-  in
   t.cmts_after <-
     Map.change t.cmts_after after ~f:(fun r ->
         let cmts = remaining_before t src in

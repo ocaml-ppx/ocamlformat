@@ -3660,7 +3660,14 @@ layout_string: (* : string with_loc *)
 layout_attr:
   COLON
   layout=layout_string
-    { Attr.mk ~loc:layout.loc layout (PStr []) }
+    {
+      (* CR layouts: This deviates from what's in [flambda-backend].
+      In the long term, we want to be able to just import
+      parser-standard from there to make them the same again. *)
+      Attr.mk ~loc:layout.loc
+        {layout with txt = "jane.erasable.layouts." ^ layout.txt}
+        (PStr [])
+    }
 ;
 
 %inline type_param_with_layout:

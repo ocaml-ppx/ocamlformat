@@ -3085,7 +3085,7 @@ let check : type s. (s t, s) pair -> bool = function
 ;;
 
 module type S = sig
-  type t [@@immediate]
+  type t : immediate
 end
 
 module F (M : S) : S = M
@@ -3100,16 +3100,16 @@ module F : functor (M : S) -> S
 
 module A = struct
   (* Abstract types can be immediate *)
-  type t [@@immediate]
+  type t : immediate
 
   (* [@@immediate] tag here is unnecessary but valid since t has it *)
-  type s = t [@@immediate]
+  type s : immediate = t
 
   (* Again, valid alias even without tag *)
   type r = s
 
   (* Mutually recursive declarations work as well *)
-  type p = q [@@immediate]
+  type p : immediate = q
   and q = int
 end
 
@@ -3135,7 +3135,7 @@ module Y = struct
 end
 
 module Z : sig
-  type t [@@immediate]
+  type t : immediate
 end = (Y : X with type t = int)
 
 [%%expect
@@ -3175,7 +3175,7 @@ module Foo : sig type t val x : t ref end
 |}]
 
 module Bar : sig
-  type t [@@immediate]
+  type t : immediate
 
   val x : t ref
 end = struct
@@ -3226,7 +3226,7 @@ val test_bar : unit -> unit = <fun>
 
 (* Cannot directly declare a non-immediate type as immediate *)
 module B = struct
-  type t = string [@@immediate]
+  type t : immediate = string
 end
 
 [%%expect
@@ -3239,7 +3239,7 @@ Error: Types marked with the immediate attribute must be
 (* Not guaranteed that t is immediate, so this is an invalid declaration *)
 module C = struct
   type t
-  type s = t [@@immediate]
+  type s : immediate = t
 end
 
 [%%expect
@@ -3251,7 +3251,7 @@ Error: Types marked with the immediate attribute must be
 
 (* Can't ascribe to an immediate type signature with a non-immediate type *)
 module D : sig
-  type t [@@immediate]
+  type t : immediate
 end = struct
   type t = string
 end
@@ -3294,7 +3294,7 @@ Error: Signature mismatch:
 
 (* Can't use a non-immediate type even if mutually recursive *)
 module E = struct
-  type t = s [@@immediate]
+  type t : immediate = s
   and s = string
 end
 
@@ -9596,8 +9596,8 @@ exception First_exception
 exception Second_exception
 
 module M = struct
-  type t
-  [@@immediate] (* ______________________________________ *)
+  type t : immediate
+  (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
 

@@ -98,6 +98,31 @@ let is_doc = function
 let is_erasable_jane_syntax attr =
   String.is_prefix ~prefix:"jane.erasable." attr.attr_name.txt
 
+(* Immediate layout annotations should be treated the same as their attribute
+   counterparts *)
+let normalize_immediate_annot_and_attrs attr =
+  match (attr.attr_name.txt, attr.attr_payload) with
+  (* CR layouts: change to something like: {[ | (
+     "jane.erasable.layouts.annot" , PStr [ { pstr_desc= Pstr_eval
+     ({pexp_desc= Pexp_ident {txt= Lident "immediate"; _}; _}, _) ; _ } ] )
+     -> attr ]} after the parsing logic catches up to what's in
+     flambda-backend. *)
+  (* We also have to normalize "ocaml.immediate" into "immediate"
+     for this to work. Since if we rewrite [@@ocaml.immediate] into
+     an annotation and treat that as [@@immediate]. That's an attribute
+     change we need to accept. *)
+  | "jane.erasable.layouts.immediate", PStr [] | "ocaml.immediate", PStr []
+    ->
+      { attr with
+        attr_name= {attr.attr_name with txt= "immediate"}
+      ; attr_payload= PStr [] }
+  | "jane.erasable.layouts.immediate64", PStr []
+   |"ocaml.immediate64", PStr [] ->
+      { attr with
+        attr_name= {attr.attr_name with txt= "immediate64"}
+      ; attr_payload= PStr [] }
+  | _, _ -> attr
+
 let dedup_cmts fragment ast comments =
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
@@ -252,6 +277,19 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
           convert_legacy_jane_street_local_annotations ~segment:Type
             typ.ptyp_attributes }
     in
+    let typ =
+      match typ with
+      (* Allow [???#] to [???] change when erasing jane syntax. *)
+      | {ptyp_desc= Ptyp_constr (({txt= Lident s; _} as ident_loc), l); _}
+        when String.is_suffix s ~suffix:"#" && erase_jane_syntax ->
+          { typ with
+            ptyp_desc=
+              Ptyp_constr
+                ( { ident_loc with
+                    txt= Lident (String.chop_suffix_exn s ~suffix:"#") }
+                , l ) }
+      | _ -> typ
+    in
     Ast_mapper.default_mapper.typ m typ
   in
   let structure =
@@ -323,6 +361,13 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     Ast_mapper.default_mapper.constructor_declaration m
       {decl with pcd_args= args}
   in
+  let type_declaration (m : Ast_mapper.mapper) decl =
+    let ptype_attributes =
+      decl.ptype_attributes
+      |> List.map ~f:normalize_immediate_annot_and_attrs
+    in
+    Ast_mapper.default_mapper.type_declaration m {decl with ptype_attributes}
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
@@ -335,7 +380,8 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   ; pat
   ; typ
   ; label_declaration
-  ; constructor_declaration }
+  ; constructor_declaration
+  ; type_declaration }
 
 let ast fragment ~ignore_doc_comments ~erase_jane_syntax c =
   map fragment (make_mapper c ~ignore_doc_comments ~erase_jane_syntax)

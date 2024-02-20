@@ -37,6 +37,10 @@ val relocate :
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
+val relocate_all_to_before : t -> src:Location.t -> before:Location.t -> unit
+(** [relocate_all_to_before src before] moves (changes the association with
+    locations) comments before and after [src] all to before [before]. *)
+
 val relocate_all_to_after : t -> src:Location.t -> after:Location.t -> unit
 (** [relocate_all_to_after src after] moves (changes the association with
     locations) comments before and after [src] all to after [after]. *)

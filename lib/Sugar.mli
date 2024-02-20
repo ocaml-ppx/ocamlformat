@@ -45,6 +45,12 @@ val cl_fun :
 
 val remove_local_attrs : Cmts.t -> function_param_desc -> function_param_desc
 
+val rewrite_type_declaration_imm_attr_to_layout_annot :
+  Cmts.t -> type_declaration -> type_declaration
+(** Rewrites [@@immediate] to [_ : immediate] and do the same for [@@immediate64].
+    This only happens if there's no existing layout annotation AND there's only
+    one immediacy attribute. *)
+
 module Exp : sig
   val infix :
        Cmts.t

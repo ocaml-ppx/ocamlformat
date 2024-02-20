@@ -3504,6 +3504,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to layout_annotation-erased.ml.stdout
+   (with-stderr-to layout_annotation-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=4 %{dep:tests/layout_annotation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation-erased.ml.ref layout_annotation-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation-erased.ml.err layout_annotation-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to layout_annotation.ml.stdout
    (with-stderr-to layout_annotation.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/layout_annotation.ml})))))
@@ -3517,6 +3535,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/layout_annotation.ml.err layout_annotation.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_immediate_rewrite.ml.stdout
+   (with-stderr-to layout_annotation_immediate_rewrite.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iter=4 --profile=janestreet %{dep:tests/layout_annotation_immediate_rewrite.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_immediate_rewrite.ml.ref layout_annotation_immediate_rewrite.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_immediate_rewrite.ml.err layout_annotation_immediate_rewrite.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
