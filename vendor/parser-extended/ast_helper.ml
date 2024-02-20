@@ -370,9 +370,6 @@ module Val = struct
      pval_loc = loc;
      pval_prim = prim;
     }
-
-  let mk_exh ~loc ~attrs ~docs ?prim name typ =
-    mk ~loc ~attrs ~docs ?prim name typ 
 end
 
 module Md = struct
@@ -385,8 +382,6 @@ module Md = struct
      pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
-
-let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
 end
 
 module Ms = struct
@@ -398,8 +393,6 @@ module Ms = struct
      pms_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pms_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
 end
 
 module Mtd = struct
@@ -411,8 +404,6 @@ module Mtd = struct
      pmtd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmtd_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs ~typ = mk ~loc ~attrs ~docs ?text ?typ
 end
 
 module Mb = struct
@@ -425,8 +416,6 @@ module Mb = struct
      pmb_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmb_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
 end
 
 module Opn = struct
@@ -448,8 +437,6 @@ module Incl = struct
      pincl_attributes = add_docs_attrs' docs attrs;
     }
 
-  let mk_exh ~loc ~attrs ~docs = mk ~loc ~attrs ~docs
-
 end
 
 module Vb = struct
@@ -461,7 +448,8 @@ module Vb = struct
      pvb_expr = expr;
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;
-     pvb_attributes = attrs;
+     pvb_attributes =
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pvb_loc = loc;
     }
 end
@@ -482,9 +470,6 @@ module Ci = struct
        add_text_attrs' text (add_docs_attrs' docs attrs);
      pci_loc = loc;
     }
-
-  let mk_exh ~text ~loc ~attrs ~docs = mk ~loc ~attrs ~docs ?text
-
 end
 
 module Type = struct

@@ -1104,7 +1104,7 @@ and open_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ ->  'a open_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a %a\n" label fmt_override_flag x.popen_override
     fmt_location x.popen_loc;
-  attributes i ppf x.popen_attributes;
+  ext_attrs i ppf x.popen_attributes;
   f (i+1) ppf x.popen_expr
 
 and open_description i = open_infos "open_description" longident_loc i
@@ -1114,7 +1114,7 @@ and open_declaration i = open_infos "open_declaration" module_expr i
 and include_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a include_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a\n" label fmt_location x.pincl_loc;
-  attributes i ppf x.pincl_attributes;
+  ext_attrs i ppf x.pincl_attributes;
   f (i+1) ppf x.pincl_mod
 
 and include_description i = include_infos "include_description" module_type i

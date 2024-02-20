@@ -421,26 +421,28 @@ module Signature_item = struct
     match itm.psig_desc with
     | Psig_attribute atr -> Attr.is_doc atr
     | Psig_extension (_, atrs) -> List.exists ~f:Attr.is_doc atrs
-    | Psig_class_type ({pci_attributes= ea; _} :: _)
+    | Psig_value {pval_attributes= ea; _}
+     |Psig_type (_, {ptype_attributes= ea; _} :: _)
+     |Psig_typesubst ({ptype_attributes= ea; _} :: _)
+     |Psig_typext {ptyext_attributes= ea; _}
+     |Psig_open {popen_attributes= ea; _}
+     |Psig_class_type ({pci_attributes= ea; _} :: _)
      |Psig_class ({pci_attributes= ea; _} :: _)
      |Psig_modtype {pmtd_ext_attrs= ea; _}
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
-     |Psig_modsubst {pms_ext_attrs= ea; _}
-     |Psig_open {popen_attributes= ea; _}
-     |Psig_type (_, {ptype_attributes= ea; _} :: _)
-     |Psig_typesubst ({ptype_attributes= ea; _} :: _)
-     |Psig_value {pval_attributes= ea; _}
-     |Psig_typext {ptyext_attributes= ea; _} ->
+     |Psig_modsubst {pms_ext_attrs= ea; _} ->
         Ext_attrs.has_doc ea
-    | Psig_recmodule
-        ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
-     |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
-     |Psig_include
+
+    | Psig_include
         {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _}
      |Psig_exception
         { ptyexn_attributes= ea
         ; ptyexn_constructor= {pext_attributes= atrs; _}
-        ; _ } ->
+        ; _ }
+    | Psig_recmodule
+        ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
+     |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
+      ->
         Ext_attrs.has_doc ea || (List.exists ~f:Attr.is_doc) atrs
     | Psig_type (_, [])
      |Psig_typesubst []
@@ -708,8 +710,8 @@ let attributes = function
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
-  | Cd x -> x.pci_attributes
-  | Ctd x -> x.pci_attributes
+  | Cd x -> attrs_of_ext_attrs x.pci_attributes
+  | Ctd x -> attrs_of_ext_attrs x.pci_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
   | Sig _ -> []

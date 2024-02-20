@@ -163,6 +163,8 @@ let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
 let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
 (*
 let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
+let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
+let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
 *)
 
 let mkinfix arg1 op arg2 =
@@ -381,6 +383,22 @@ let wrap_mod_attrs ~loc:_ attrs body =
   {body with pmod_attributes = attrs @ body.pmod_attributes}
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
+
+let wrap_str_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some id -> ghstr ~loc (Pstr_extension ((id, PStr [body]), []))
+
+let wrap_mkstr_ext ~loc (item, ext) =
+  wrap_str_ext ~loc (mkstr ~loc item) ext
+
+let wrap_sig_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some id -> ghsig ~loc (Psig_extension ((id, PSig [body]), []))
+
+let wrap_mksig_ext ~loc (item, ext) =
+  wrap_sig_ext ~loc (mksig ~loc item) ext
 *)
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
@@ -434,7 +452,7 @@ type let_bindings' =
     lbs_rec: rec_flag;
     lbs_has_ext: bool }
 
-let mklb ?(text=[]) ~docs ~loc (p, e, typ, is_pun) attrs =
+let mklb ?(text=[]) ~docs ~loc (p, args, typ, e, is_pun) attrs =
   {
     lb_pattern = p;
     lb_args = args;
@@ -1485,7 +1503,7 @@ open_declaration:
     { let attrs = Attr.ext_attrs ?ext ~before ~after () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      Opn.mk me ~override ~loc ~attrs ~docs }
+      Opn.mk me ~override ~attrs ~loc ~docs }
 ;
 
 open_description:
@@ -1495,7 +1513,8 @@ open_description:
   before = attributes
   id = mkrhs(mod_ext_longident)
   after = post_item_attributes
-  { let attrs = Attr.ext_attrs ?ext ~before ~after () in
+  {
+    let attrs = Attr.ext_attrs ?ext ~before ~after () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     Opn.mk id ~override ~attrs ~loc ~docs
@@ -1592,26 +1611,26 @@ signature_item:
         { Psig_modtype $1 }
     | module_type_subst
         { Psig_modtypesubst $1 }
+    | value_description
+        { Psig_value $1 }
+    | primitive_declaration
+        { Psig_value $1 }
+    | type_declarations
+        { psig_type $1 }
+    | type_subst_declarations
+        { psig_typesubst $1 }
+    | sig_type_extension
+        { Psig_typext $1 }
+    | sig_exception_declaration
+        { Psig_exception $1 }
+    | open_description
+        { Psig_open $1 }
     | include_statement(module_type)
         { Psig_include $1 }
     | class_descriptions
         { Psig_class $1 }
     | class_type_declarations
         { Psig_class_type $1 }
-    | primitive_declaration
-        { Psig_value $1 }
-    | value_description
-        { Psig_value $1 }
-    | sig_type_extension
-        { Psig_typext $1 }
-    | type_declarations
-        { psig_type $1 }
-    | type_subst_declarations
-        { psig_typesubst $1 }
-    | open_description
-        { Psig_open $1 }
-    | str_exception_declaration
-        { Psig_exception $1 }
     )
     { $1 }
 
@@ -1754,13 +1773,14 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Ci.mk id body ~virt ~params ~attrs ~loc ~docs
+    let (args, constraint_, body) = cfb in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~docs ~args ?constraint_
   }
 ;
 %inline and_class_declaration:
@@ -1769,14 +1789,15 @@ module_type_subst:
   virt = virtual_flag
   params = formal_class_parameters
   id = mkrhs(LIDENT)
-  body = class_fun_binding
+  cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
     let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
-    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs
+    let (args, constraint_, body) = cfb in
+    Ci.mk id body ~virt ~params ~attrs ~loc ~text ~docs ~args ?constraint_
   }
 ;
 
