@@ -234,3 +234,7 @@ val parenze_mty : module_type xt -> bool
 val parenze_mod : module_expr xt -> bool
 (** [parenze_mod xmod] holds when module_expr-in-context [xmod] should be
     parenthesized. *)
+
+module Ext_attrs : sig
+  val has_attrs : ext_attrs -> bool
+end

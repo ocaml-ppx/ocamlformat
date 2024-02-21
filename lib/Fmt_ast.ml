@@ -4174,14 +4174,13 @@ and fmt_with_constraint c ctx ~pre = function
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c ctx "module type" m1 [] None ~rec_flag:false m2
-          ~attrs:(Ast_helper.Attr.ext_attrs ())
+          ~attrs:Ast_helper.Attr.empty_ext_attrs
   | Pwith_modtypesubst (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c ctx ~eqty:":=" "module type" m1 [] None ~rec_flag:false
-          m2
-          ~attrs:(Ast_helper.Attr.ext_attrs ())
+          m2 ~attrs:Ast_helper.Attr.empty_ext_attrs
 
 and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
   match me_f.pmod_desc with

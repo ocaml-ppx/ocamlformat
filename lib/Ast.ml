@@ -106,6 +106,10 @@ module Ext = struct
 end
 
 module Ext_attrs = struct
+  let has_attrs = function
+    | {attrs_extension= _; attrs_before= []; attrs_after= []} -> false
+    | _ -> true
+
   let has_doc ea =
     List.exists ~f:Attr.is_doc ea.attrs_before
     || List.exists ~f:Attr.is_doc ea.attrs_after
@@ -503,9 +507,7 @@ module Signature_item = struct
 end
 
 module Lb = struct
-  let has_doc itm =
-    List.exists ~f:Attr.is_doc itm.pvb_attributes.attrs_before
-    || List.exists ~f:Attr.is_doc itm.pvb_attributes.attrs_after
+  let has_doc itm = Ext_attrs.has_doc itm.pvb_attributes
 
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
@@ -547,9 +549,7 @@ module Md = struct
 end
 
 module Td = struct
-  let has_doc itm =
-    List.exists ~f:Attr.is_doc itm.ptype_attributes.attrs_before
-    || List.exists ~f:Attr.is_doc itm.ptype_attributes.attrs_after
+  let has_doc itm = Ext_attrs.has_doc itm.ptype_attributes
 
   let is_simple (i, (c : Conf.t)) =
     match c.fmt_opts.module_item_spacing.v with

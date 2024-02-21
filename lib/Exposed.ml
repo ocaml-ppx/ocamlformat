@@ -59,8 +59,7 @@ module Right = struct
     | {pcd_args= args; _} -> constructor_arguments args
 
   let type_declaration = function
-    | { ptype_attributes= {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
-      ; _ } ->
+    | {ptype_attributes; _} when Ast.Ext_attrs.has_attrs ptype_attributes ->
         false
     | {ptype_cstrs= _ :: _ as cstrs; _} ->
         (* type a = ... constraint left = < ... > *)
@@ -75,9 +74,8 @@ module Right = struct
         list ~elt:constructor_declaration cdecls
 
   let type_extension = function
-    | { ptyext_attributes=
-          {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
-      ; _ } ->
+    | {ptyext_attributes; _} when Ast.Ext_attrs.has_attrs ptyext_attributes
+      ->
         false
     (* type a += A of ... * ... * < ... > *)
     | {ptyext_constructors; _} ->
@@ -95,16 +93,14 @@ module Right = struct
 
   (* exception C of ... * ... * < ... > *)
   let type_exception = function
-    | { ptyexn_attributes=
-          {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
-      ; _ } ->
+    | {ptyexn_attributes; _} when Ast.Ext_attrs.has_attrs ptyexn_attributes
+      ->
         false
     | {ptyexn_constructor; _} -> extension_constructor ptyexn_constructor
 
   (* val x : < ... > *)
   let value_description = function
-    | { pval_attributes= {attrs_before= _ :: _; _} | {attrs_after= _ :: _; _}
-      ; _ } ->
+    | {pval_attributes; _} when Ast.Ext_attrs.has_attrs pval_attributes ->
         false
     | {pval_prim= _ :: _; _} -> false
     | {pval_type= ct; _} -> core_type ct
