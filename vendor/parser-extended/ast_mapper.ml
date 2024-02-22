@@ -597,11 +597,7 @@ module E = struct
           (sub.expr sub e)
     | Pexp_assert e -> assert_ ~loc ~attrs (sub.expr sub e)
     | Pexp_lazy e -> lazy_ ~loc ~attrs (sub.expr sub e)
-    | Pexp_poly (e, t) ->
-        poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
-    | Pexp_newtype (s, e) ->
-        newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
     | Pexp_pack (me, pt) ->
         pack ~loc ~attrs
           (sub.module_expr sub me)
@@ -717,8 +713,17 @@ module CE = struct
     | Pcl_open (o, ce) ->
         open_ ~loc ~attrs (sub.open_description sub o) (sub.class_expr sub ce)
 
-  let map_kind sub = function
-    | Cfk_concrete (o, e) -> Cfk_concrete (o, sub.expr sub e)
+  let map_value_kind sub = function
+    | Cfk_concrete (o, tc, e) ->
+        let tc = map_opt (E.map_constraint sub) tc in
+        Cfk_concrete (o, tc, sub.expr sub e)
+    | Cfk_virtual t -> Cfk_virtual (sub.typ sub t)
+  
+  let map_method_kind sub = function
+    | Cfk_concrete (o, (args, t), e) ->
+        let args = List.map (FP.map sub FP.map_expr) args in
+        let t = map_opt (map_value_constraint sub) t in
+        Cfk_concrete (o, (args, t), sub.expr sub e)
     | Cfk_virtual t -> Cfk_virtual (sub.typ sub t)
 
   let map_field sub {pcf_desc = desc; pcf_loc = loc; pcf_attributes = attrs} =
@@ -731,10 +736,10 @@ module CE = struct
           (map_opt (map_loc sub) s)
     | Pcf_val (s, mv, k) ->
         val_ ~loc ~attrs (map_loc sub s) (Flag.map_mutable_virtual sub mv)
-          (map_kind sub k)
+          (map_value_kind sub k)
     | Pcf_method (s, pv, k) ->
         method_ ~loc ~attrs (map_loc sub s) (Flag.map_private_virtual sub pv)
-          (map_kind sub k)
+          (map_method_kind sub k)
     | Pcf_constraint (t1, t2) ->
         constraint_ ~loc ~attrs (sub.typ sub t1) (sub.typ sub t2)
     | Pcf_initializer e -> initializer_ ~loc ~attrs (sub.expr sub e)

@@ -168,15 +168,6 @@ and core_type_desc =
              to a constraint on a let-binding:
             {[let x : 'a1 ... 'an. T = e ...]}
 
-           - Under {{!class_field_kind.Cfk_virtual}[Cfk_virtual]} for methods
-          (not values).
-
-           - As the {!core_type} of a
-           {{!class_type_field_desc.Pctf_method}[Pctf_method]} node.
-
-           - As the {!core_type} of a {{!expression_desc.Pexp_poly}[Pexp_poly]}
-           node.
-
            - As the {{!label_declaration.pld_type}[pld_type]} field of a
            {!label_declaration}.
 
@@ -411,14 +402,7 @@ and expression_desc =
            Note: [assert false] is treated in a special way by the
            type-checker. *)
   | Pexp_lazy of expression  (** [lazy E] *)
-  | Pexp_poly of expression * core_type option
-      (** Used for method bodies.
-
-           Can only be used as the expression under
-           {{!class_field_kind.Cfk_concrete}[Cfk_concrete]} for methods (not
-           values). *)
   | Pexp_object of class_structure  (** [object ... end] *)
-  | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
   | Pexp_pack of module_expr * package_type option
       (** - [(module M)] is represented as [Pexp_pack(M, None)]
           - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
@@ -735,10 +719,7 @@ and class_type_field_desc =
   | Pctf_val of (label loc * mutable_virtual * core_type)
       (** [val x: T] *)
   | Pctf_method of (label loc * private_virtual * core_type)
-      (** [method x: T]
-
-            Note: [T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]}.
-        *)
+      (** [method x: T] *)
   | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pctf_attribute of attribute  (** [[\@\@\@id]] *)
   | Pctf_extension of extension  (** [[%%id]] *)
@@ -839,35 +820,29 @@ and class_field_desc =
                    when [flag] is {{!Asttypes.override_flag.Override}[Override]}
                     and [s] is [Some x]
   *)
-  | Pcf_val of (label loc * mutable_virtual * class_field_kind)
+  | Pcf_val of (label loc * mutable_virtual * class_field_value_kind)
       (** [Pcf_val(x,flag, kind)] represents:
             - [val x = E]
-       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
-        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val virtual x: T]
-       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
-        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
             - [val mutable x = E]
-       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
-        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val mutable virtual x: T]
-       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
-        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
   *)
-  | Pcf_method of (label loc * private_virtual * class_field_kind)
+  | Pcf_method of (label loc * private_virtual * class_field_method_kind)
       (** - [method x = E]
-                        ([E] can be a {{!expression_desc.Pexp_poly}[Pexp_poly]})
-            - [method virtual x: T]
-                        ([T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]})
+          - [method virtual x: T]
   *)
   | Pcf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pcf_initializer of expression  (** [initializer E] *)
   | Pcf_attribute of attribute  (** [[\@\@\@id]] *)
   | Pcf_extension of extension  (** [[%%id]] *)
 
-and class_field_kind =
+and 'a class_field_kind =
   | Cfk_virtual of core_type
-  | Cfk_concrete of override_flag * expression
+  | Cfk_concrete of override_flag * 'a * expression
+
+and class_field_value_kind = type_constraint option class_field_kind
+
+and class_field_method_kind = (expr_function_param list * value_constraint option) class_field_kind
 
 and class_declaration = class_expr class_infos
 

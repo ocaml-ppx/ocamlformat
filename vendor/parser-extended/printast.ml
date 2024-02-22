@@ -446,16 +446,9 @@ and expression i ppf x =
   | Pexp_lazy (e) ->
       line i ppf "Pexp_lazy\n";
       expression i ppf e;
-  | Pexp_poly (e, cto) ->
-      line i ppf "Pexp_poly\n";
-      expression i ppf e;
-      option i core_type ppf cto;
   | Pexp_object s ->
       line i ppf "Pexp_object\n";
       class_structure i ppf s
-  | Pexp_newtype (s, e) ->
-      line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
-      expression i ppf e
   | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
       module_expr i ppf me;
@@ -778,11 +771,11 @@ and class_field i ppf x =
   | Pcf_val (s, mf, k) ->
       line i ppf "Pcf_val %a\n" fmt_mutable_virtual_flag mf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
-      class_field_kind (i+1) ppf k
+      class_field_value_kind (i+1) ppf k
   | Pcf_method (s, pf, k) ->
       line i ppf "Pcf_method %a\n" fmt_private_virtual_flag pf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
-      class_field_kind (i+1) ppf k
+      class_field_method_kind (i+1) ppf k
   | Pcf_constraint (ct1, ct2) ->
       line i ppf "Pcf_constraint\n";
       core_type (i+1) ppf ct1;
@@ -796,9 +789,20 @@ and class_field i ppf x =
       line i ppf "Pcf_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
-and class_field_kind i ppf = function
-  | Cfk_concrete (o, e) ->
+and class_field_value_kind i ppf = function
+  | Cfk_concrete (o, tc, e) ->
       line i ppf "Concrete %a\n" fmt_override_flag o;
+      option i type_constraint ppf tc;
+      expression i ppf e
+  | Cfk_virtual t ->
+      line i ppf "Virtual\n";
+      core_type i ppf t
+
+and class_field_method_kind i ppf = function
+  | Cfk_concrete (o, (args, t), e) ->
+      line i ppf "Concrete %a\n" fmt_override_flag o;
+      list i expr_function_param ppf args;
+      option i value_constraint ppf t;
       expression i ppf e
   | Cfk_virtual t ->
       line i ppf "Virtual\n";
