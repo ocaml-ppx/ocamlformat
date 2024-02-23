@@ -99,13 +99,13 @@ module Make (Itv : IN) = struct
     let open Fmt in
     let rec dump_ tree roots =
       vbox 0
-        (list roots "@," (fun root ->
+        (list_k roots cut_break (fun root ->
              let children = children tree root in
              vbox 1
                ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
-               $ wrap_if
+               $ wrap_if_k
                    (not (List.is_empty children))
-                   "@,{" " }" (dump_ tree children) ) ) )
+                   (cut_break $ str "{") (str " }") (dump_ tree children) ) ) )
     in
     set_margin 100000000 $ dump_ tree tree.roots
 end

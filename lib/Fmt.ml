@@ -69,8 +69,6 @@ end
 
 include T
 
-type s = (unit, Format_.formatter, unit) format
-
 type sp = Blank | Cut | Space | Break of int * int
 
 let ( >$ ) f g x = f $ g x
@@ -96,6 +94,19 @@ let break n o =
 
 let force_break = break 1000 0
 
+let space_break =
+  with_pp (fun fs -> Format_.pp_print_space fs () )
+
+
+  let cut_break =
+    with_pp (fun fs -> Format_.pp_print_cut fs () )
+
+let flush_newline =
+    with_pp (fun fs -> Format_.pp_print_newline fs () )
+
+let force_newline =
+  with_pp (fun fs -> Format_.pp_force_newline fs () )
+
 let cbreak ~fits ~breaks =
   with_pp (fun fs ->
       Box_debug.cbreak fs ~fits ~breaks ;
@@ -116,9 +127,6 @@ let sequence l =
   in
   go l (List.length l)
 
-let fmt f =
-  with_pp (fun fs ->
-      if Box_debug.fmt fs f then () else Format_.fprintf fs f )
 
 (** Primitive types -----------------------------------------------------*)
 
@@ -133,8 +141,8 @@ let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
   | Blank -> char ' '
-  | Cut -> fmt "@,"
-  | Space -> fmt "@ "
+  | Cut -> cut_break
+  | Space -> space_break
   | Break (x, y) -> break x y
 
 (** Primitive containers ------------------------------------------------*)
@@ -166,17 +174,11 @@ let list_fl xs pp =
 let list_k l sep f =
   list_fl l (fun ~first:_ ~last x -> f x $ if last then noop else sep)
 
-let list xs sep pp = list_k xs (fmt sep) pp
-
 (** Conditional formatting ----------------------------------------------*)
 
 let fmt_if_k cnd x = if cnd then x else noop
 
-let fmt_if cnd f = fmt_if_k cnd (fmt f)
-
 let fmt_or_k cnd t f = if cnd then t else f
-
-let fmt_or cnd t f = fmt_or_k cnd (fmt t) (fmt f)
 
 let fmt_opt o = Option.value o ~default:noop
 
@@ -217,10 +219,6 @@ let fits_breaks_if ?force ?hint ?level cnd fits breaks =
 let wrap_if_k cnd pre suf k = fmt_if_k cnd pre $ k $ fmt_if_k cnd suf
 
 let wrap_k x = wrap_if_k true x
-
-let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
-
-and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
 let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap_k (str pre) (str suf) k

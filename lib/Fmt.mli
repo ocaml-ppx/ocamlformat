@@ -11,9 +11,6 @@
 
 (** Formatting combinators *)
 
-(** Format strings that accept no arguments. *)
-type s = (unit, Format_.formatter, unit) format
-
 (** Format thunks. *)
 type t
 
@@ -57,6 +54,18 @@ val break : int -> int -> t
 val force_break : t
 (** [force_break] forces a break with indentation 0. Equivalent to [break 1000 0].*)
 
+val space_break: t
+(** fmt "@ " *)
+
+val cut_break: t
+(** fmt "@," *)
+
+val flush_newline: t
+(** fmt "@." *)
+
+val force_newline: t
+(** force_newline *)
+
 val cbreak : fits:string * int * string -> breaks:string * int * string -> t
 (** Format a custom break.
 
@@ -67,9 +76,6 @@ val cbreak : fits:string * int * string -> breaks:string * int * string -> t
 
 val noop : t
 (** Format nothing. *)
-
-val fmt : s -> t
-(** Format a format string. *)
 
 (** Primitive types -----------------------------------------------------*)
 
@@ -87,10 +93,6 @@ val str_as : int -> string -> t
 val opt : 'a option -> ('a -> t) -> t
 (** Format an option using provided formatter for the element. *)
 
-val list : 'a list -> s -> ('a -> t) -> t
-(** Format a list separated by a format string using provided function for
-    the elements. *)
-
 val list_fl : 'a list -> (first:bool -> last:bool -> 'a -> t) -> t
 (** Format a list using provided function for the elements, which is passed
     the flags indicating if the element is the first or last. *)
@@ -104,14 +106,8 @@ val list_k : 'a list -> t -> ('a -> t) -> t
 
 (** Conditional formatting ----------------------------------------------*)
 
-val fmt_if : bool -> s -> t
-(** Conditionally format. *)
-
 val fmt_if_k : bool -> t -> t
 (** Conditionally format thunk. *)
-
-val fmt_or : bool -> s -> s -> t
-(** Conditionally select between two format strings. *)
 
 val fmt_or_k : bool -> t -> t -> t
 (** Conditionally select between two format thunks. *)
@@ -151,15 +147,9 @@ val fits_breaks_if :
 
 (** Wrapping ------------------------------------------------------------*)
 
-val wrap : s -> s -> t -> t
-(** [wrap prologue epilogue body] formats [prologue] then [body] then
-    [epilogue]. *)
 
 val wrap_k : t -> t -> t -> t
 (** As [wrap], but prologue and epilogue may be arbitrary format thunks. *)
-
-val wrap_if : bool -> s -> s -> t -> t
-(** As [wrap], but prologue and epilogue are only formatted conditionally. *)
 
 val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)

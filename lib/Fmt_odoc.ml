@@ -86,7 +86,7 @@ let str_normalized ?(escape = escape_all) c s =
   if c.conf.fmt_opts.wrap_docstrings.v then
     split_on_whitespaces s
     |> List.filter ~f:(Fn.non String.is_empty)
-    |> fun s -> list s "@ " (fun s -> escape s |> str)
+    |> fun s -> list_k s space_break (fun s -> escape s |> str)
   else str (escape s)
 
 let ign_loc ~f with_loc = f with_loc.Loc.value
@@ -95,10 +95,10 @@ let fmt_verbatim_block ~loc s =
   let force_break = loc.Loc.start.line < loc.end_.line in
   let content =
     (* Literal newline to avoid indentation *)
-    if force_break then wrap "\n" "@\n" (str s)
+    if force_break then wrap_k (str "\n") force_newline (str s)
     else fits_breaks " " "\n" $ str s $ fits_breaks " " ~hint:(0, 0) ""
   in
-  hvbox 0 (wrap "{v" "v}" content)
+  hvbox 0 (wrap_k (str "{v") (str "v}") content)
 
 let fmt_metadata (lang, meta) =
   let fmt_meta meta = str " " $ str meta in
@@ -106,13 +106,13 @@ let fmt_metadata (lang, meta) =
 
 let fmt_code_block c s1 s2 =
   let wrap_code x =
-    str "{" $ opt s1 fmt_metadata $ fmt "[@;<1000 2>" $ x $ fmt "@ ]}"
+    str "{" $ opt s1 fmt_metadata $ str "[" $ break 1000 2 $ x $ space_break $ str "]}"
   in
   let fmt_line ~first ~last:_ l =
     let l = String.rstrip l in
     if first then str l
     else if String.length l = 0 then str "\n"
-    else fmt "@," $ str l
+    else cut_break $ str l
   in
   let fmt_code s =
     let lines = String.split_lines s in
@@ -138,9 +138,9 @@ let fmt_code_block c s1 s2 =
         fmt_code original )
   | Some _ -> fmt_code original
 
-let fmt_code_span s = wrap "[" "]" (str (escape_balanced_brackets s))
+let fmt_code_span s = wrap_k (str "[") (str "]") (str (escape_balanced_brackets s))
 
-let fmt_math_span s = hovbox 2 (wrap "{m " "}" (str s))
+let fmt_math_span s = hovbox 2 (wrap_k (str "{m ") (str "}") (str s))
 
 let fmt_math_block s =
   let lines =
@@ -153,9 +153,9 @@ let fmt_math_block s =
   let fmt ~first ~last:_ line =
     if first then str line
     else if String.is_empty line then str "\n"
-    else fmt "@;<1000 0>" $ str line
+    else break 1000 0 $ str line
   in
-  hvbox 2 (wrap "{math@;" "@;<0 -2>}" (list_fl lines fmt))
+  hvbox 2 (wrap_k (str "{math" $ space_break) (break 0 (-2) $ str "}") (list_fl lines fmt))
 
 let fmt_reference = ign_loc ~f:str
 
@@ -192,8 +192,8 @@ let list_block_elem c elems f =
                 (elem.Loc.value :> block_element)
                 (n.value :> block_element)
               || should_preserve_blank c elem.location n.location
-            then fmt "\n@\n"
-            else fmt "@\n"
+            then str "\n" $ force_newline
+            else force_newline
         | None -> noop
       in
       f elem $ break )
@@ -202,12 +202,12 @@ let space_elt c : inline_element with_location =
   let sp = if c.conf.fmt_opts.wrap_docstrings.v then "" else " " in
   Loc.(at (span []) (`Space sp))
 
-let non_wrap_space sp = if String.contains sp '\n' then fmt "@\n" else str sp
+let non_wrap_space sp = if String.contains sp '\n' then force_newline else str sp
 
 let rec fmt_inline_elements c elements =
   let wrap_elements opn cls ~always_wrap hd = function
-    | [] -> wrap_if always_wrap opn cls hd
-    | tl -> wrap opn cls (hd $ fmt_inline_elements c (space_elt c :: tl))
+    | [] -> wrap_if_k always_wrap opn cls hd
+    | tl -> wrap_k opn cls (hd $ fmt_inline_elements c (space_elt c :: tl))
   in
   let rec aux = function
     | [] -> noop
@@ -218,11 +218,11 @@ let rec fmt_inline_elements c elements =
           (non_wrap_space sp)
         $ str w $ aux t
     | `Space sp :: t ->
-        fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (fmt "@ ")
+        fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (space_break)
           (non_wrap_space sp)
         $ aux t
     | `Word w :: t ->
-        fmt_if (String.is_prefix ~prefix:"@" w) "\\"
+        fmt_if_k (String.is_prefix ~prefix:"@" w) (str "\\")
         $ str_normalized c w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
@@ -232,7 +232,8 @@ let rec fmt_inline_elements c elements =
           | Some l -> str_normalized c l $ str ":"
           | None -> noop
         in
-        wrap "{%%" "%%}" (lang $ str s) $ aux t
+        (* todo check this was an escape sequence *)
+        wrap_k (str "{%") (str "%}") (lang $ str s) $ aux t
     | `Styled (style, elems) :: t ->
         let s =
           match style with
@@ -244,15 +245,15 @@ let rec fmt_inline_elements c elements =
         in
         hovbox_if c.conf.fmt_opts.wrap_docstrings.v
           (1 + String.length s + 1)
-          (wrap_elements "{" "}" ~always_wrap:true (str_normalized c s) elems)
+          (wrap_elements (str "{") (str "}") ~always_wrap:true (str_normalized c s) elems)
         $ aux t
     | `Reference (_kind, rf, txt) :: t ->
-        let rf = wrap "{!" "}" (fmt_reference rf) in
-        wrap_elements "{" "}" ~always_wrap:false rf txt $ aux t
+        let rf = wrap_k (str "{!") (str "}") (fmt_reference rf) in
+        wrap_elements (str "{") (str "}") ~always_wrap:false rf txt $ aux t
     | `Link (url, txt) :: t ->
-        let url = wrap "{:" "}" (str_normalized c url) in
+        let url = wrap_k (str "{:") (str "}") (str_normalized c url) in
         hovbox_if c.conf.fmt_opts.wrap_docstrings.v 2
-        @@ wrap_elements "{" "}" ~always_wrap:false url txt
+        @@ wrap_elements (str "{") (str "}") ~always_wrap:false url txt
         $ aux t
   in
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
@@ -265,8 +266,8 @@ and fmt_nestable_block_element c elm =
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
   | `Modules mods ->
       hovbox 0
-        (wrap "{!modules:@," "@,}"
-           (list mods "@ " (fun ref -> fmt_reference ref)) )
+        (wrap_k (str "{!modules:" $ cut_break) (cut_break $ str "}")
+           (list_k mods space_break (fun ref -> fmt_reference ref)) )
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
@@ -274,39 +275,37 @@ and fmt_nestable_block_element c elm =
 and fmt_list_heavy c kind items =
   let fmt_item elems =
     let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
-    box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements c elems))
-  and start : s =
-    match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
+    box (wrap_k (str "{- ") (break 1 (-3) $ str "}") (fmt_nestable_block_elements c elems))
+  and start =
+    match kind with `Unordered -> str "{ul" $ cut_break | `Ordered -> str "{ol" $ cut_break
   in
-  vbox 1 (wrap start "@;<1 -1>}" (list items "@," fmt_item))
+  vbox 1 (wrap_k start (break 1 (-1) $ str "}") (list_k items cut_break fmt_item))
 
 and fmt_list_light c kind items =
   let line_start =
-    match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
+    match kind with `Unordered -> str "- " | `Ordered -> str "+ "
   in
   let fmt_item elems =
     line_start $ hovbox 0 (fmt_nestable_block_elements c elems)
   in
-  vbox 0 (list items "@," fmt_item)
+  vbox 0 (list_k items cut_break fmt_item)
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
-let space = fmt "@ "
-
 let fmt_tag_args ?arg ?txt c tag =
   at $ str tag
   $ opt arg (fun x -> char ' ' $ x)
   $ opt txt (function
       | [] -> noop
-      | x -> space $ hovbox 0 (fmt_nestable_block_elements c x) )
+      | x -> space_break $ hovbox 0 (fmt_nestable_block_elements c x) )
 
 let wrap_see = function
-  | `Url -> wrap "<" ">"
-  | `File -> wrap "'" "'"
-  | `Document -> wrap "\"" "\""
+  | `Url -> wrap_k (str "<") (str ">")
+  | `File -> wrap_k (str "'") (str "'")
+  | `Document -> wrap_k (str "\"") (str "\"")
 
 let fmt_tag c = function
   | `Author s -> fmt_tag_args c "author" ~arg:(str s)
@@ -336,7 +335,7 @@ let fmt_block_element c elm =
       let elems =
         if List.is_empty elems then elems else space_elt c :: elems
       in
-      hovbox 0 (wrap "{" "}" (str lvl $ lbl $ fmt_inline_elements c elems))
+      hovbox 0 (wrap_k (str "{") (str "}") (str lvl $ lbl $ fmt_inline_elements c elems))
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 
@@ -366,9 +365,9 @@ let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let fmt_parsed parsed =
     str (String.make begin_offset ' ')
     $ fmt_ast conf ~fmt_code parsed
-    $ fmt_if
+    $ fmt_if_k
         (String.length input > 1 && String.ends_with_whitespace input)
-        " "
+        (str " ")
   in
   match parsed with
   | _ when not conf.fmt_opts.parse_docstrings.v -> str input
