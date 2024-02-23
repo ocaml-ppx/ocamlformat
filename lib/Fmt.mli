@@ -54,16 +54,16 @@ val break : int -> int -> t
 val force_break : t
 (** [force_break] forces a break with indentation 0. Equivalent to [break 1000 0].*)
 
-val space_break: t
+val space_break : t
 (** fmt "@ " *)
 
-val cut_break: t
+val cut_break : t
 (** fmt "@," *)
 
-val flush_newline: t
+val flush_newline : t
 (** fmt "@." *)
 
-val force_newline: t
+val force_newline : t
 (** force_newline *)
 
 val cbreak : fits:string * int * string -> breaks:string * int * string -> t
@@ -146,7 +146,6 @@ val fits_breaks_if :
 (** As [fits_breaks], but conditional. *)
 
 (** Wrapping ------------------------------------------------------------*)
-
 
 val wrap_k : t -> t -> t -> t
 (** As [wrap], but prologue and epilogue may be arbitrary format thunks. *)

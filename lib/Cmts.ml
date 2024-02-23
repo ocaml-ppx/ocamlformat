@@ -492,7 +492,8 @@ module Wrapped = struct
              fmt_if_k (not first) (str "\n" $ force_newline)
              $ hovbox 0
                  (list_fl group (fun ~first ~last x ->
-                      fmt_if_k (not first) space_break $ fmt_line x
+                      fmt_if_k (not first) space_break
+                      $ fmt_line x
                       $ fmt_if_k (last_group && last) (str suffix $ epi) ) ) )
         )
 end
@@ -501,7 +502,8 @@ module Asterisk_prefixed = struct
   open Fmt
 
   let fmt_line ~first:_ ~last s =
-    if last && is_only_whitespaces s then cut_break else cut_break $ str "*" $ str s
+    if last && is_only_whitespaces s then cut_break
+    else cut_break $ str "*" $ str s
 
   let fmt ~pro ~epi = function
     | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
@@ -536,7 +538,8 @@ module Cinaps = struct
   let fmt ~pro ~epi ~fmt_code conf ~offset code =
     match fmt_code conf ~offset ~set_margin:false code with
     | Ok formatted ->
-        hvbox 0 (pro $ hvbox (-1) (space_break $ formatted) $ space_break $ epi)
+        hvbox 0
+          (pro $ hvbox (-1) (space_break $ formatted) $ space_break $ epi)
     | Error _ -> Verbatim.fmt ~pro ~epi code
 end
 
@@ -664,7 +667,8 @@ module Toplevel = struct
               if Source.begins_line t.source first_loc then
                 fmt_or_k
                   (Source.empty_line_before t.source first_loc)
-                  (str "\n" $ force_break) force_newline
+                  (str "\n" $ force_break)
+                  force_newline
               else break 1 0
         in
         let epi =
@@ -674,7 +678,8 @@ module Toplevel = struct
               if Source.ends_line t.source last_loc then
                 fmt_or_k
                   (Source.empty_line_after t.source last_loc)
-                  (str "\n" $ force_break) force_newline
+                  (str "\n" $ force_break)
+                  force_newline
               else break 1 0
           | After -> noop
         in

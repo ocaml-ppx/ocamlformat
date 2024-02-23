@@ -105,7 +105,8 @@ module Make (Itv : IN) = struct
                ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
                $ wrap_if_k
                    (not (List.is_empty children))
-                   (cut_break $ str "{") (str " }") (dump_ tree children) ) ) )
+                   (cut_break $ str "{")
+                   (str " }") (dump_ tree children) ) ) )
     in
     set_margin 100000000 $ dump_ tree tree.roots
 end

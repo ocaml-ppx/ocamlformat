@@ -106,7 +106,8 @@ let fmt_metadata (lang, meta) =
 
 let fmt_code_block c s1 s2 =
   let wrap_code x =
-    str "{" $ opt s1 fmt_metadata $ str "[" $ break 1000 2 $ x $ space_break $ str "]}"
+    str "{" $ opt s1 fmt_metadata $ str "[" $ break 1000 2 $ x $ space_break
+    $ str "]}"
   in
   let fmt_line ~first ~last:_ l =
     let l = String.rstrip l in
@@ -138,7 +139,8 @@ let fmt_code_block c s1 s2 =
         fmt_code original )
   | Some _ -> fmt_code original
 
-let fmt_code_span s = wrap_k (str "[") (str "]") (str (escape_balanced_brackets s))
+let fmt_code_span s =
+  wrap_k (str "[") (str "]") (str (escape_balanced_brackets s))
 
 let fmt_math_span s = hovbox 2 (wrap_k (str "{m ") (str "}") (str s))
 
@@ -155,7 +157,11 @@ let fmt_math_block s =
     else if String.is_empty line then str "\n"
     else break 1000 0 $ str line
   in
-  hvbox 2 (wrap_k (str "{math" $ space_break) (break 0 (-2) $ str "}") (list_fl lines fmt))
+  hvbox 2
+    (wrap_k
+       (str "{math" $ space_break)
+       (break 0 (-2) $ str "}")
+       (list_fl lines fmt) )
 
 let fmt_reference = ign_loc ~f:str
 
@@ -202,7 +208,8 @@ let space_elt c : inline_element with_location =
   let sp = if c.conf.fmt_opts.wrap_docstrings.v then "" else " " in
   Loc.(at (span []) (`Space sp))
 
-let non_wrap_space sp = if String.contains sp '\n' then force_newline else str sp
+let non_wrap_space sp =
+  if String.contains sp '\n' then force_newline else str sp
 
 let rec fmt_inline_elements c elements =
   let wrap_elements opn cls ~always_wrap hd = function
@@ -218,7 +225,7 @@ let rec fmt_inline_elements c elements =
           (non_wrap_space sp)
         $ str w $ aux t
     | `Space sp :: t ->
-        fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (space_break)
+        fmt_or_k c.conf.fmt_opts.wrap_docstrings.v space_break
           (non_wrap_space sp)
         $ aux t
     | `Word w :: t ->
@@ -245,7 +252,8 @@ let rec fmt_inline_elements c elements =
         in
         hovbox_if c.conf.fmt_opts.wrap_docstrings.v
           (1 + String.length s + 1)
-          (wrap_elements (str "{") (str "}") ~always_wrap:true (str_normalized c s) elems)
+          (wrap_elements (str "{") (str "}") ~always_wrap:true
+             (str_normalized c s) elems )
         $ aux t
     | `Reference (_kind, rf, txt) :: t ->
         let rf = wrap_k (str "{!") (str "}") (fmt_reference rf) in
@@ -266,7 +274,9 @@ and fmt_nestable_block_element c elm =
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
   | `Modules mods ->
       hovbox 0
-        (wrap_k (str "{!modules:" $ cut_break) (cut_break $ str "}")
+        (wrap_k
+           (str "{!modules:" $ cut_break)
+           (cut_break $ str "}")
            (list_k mods space_break (fun ref -> fmt_reference ref)) )
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
@@ -275,11 +285,17 @@ and fmt_nestable_block_element c elm =
 and fmt_list_heavy c kind items =
   let fmt_item elems =
     let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
-    box (wrap_k (str "{- ") (break 1 (-3) $ str "}") (fmt_nestable_block_elements c elems))
+    box
+      (wrap_k (str "{- ")
+         (break 1 (-3) $ str "}")
+         (fmt_nestable_block_elements c elems) )
   and start =
-    match kind with `Unordered -> str "{ul" $ cut_break | `Ordered -> str "{ol" $ cut_break
+    match kind with
+    | `Unordered -> str "{ul" $ cut_break
+    | `Ordered -> str "{ol" $ cut_break
   in
-  vbox 1 (wrap_k start (break 1 (-1) $ str "}") (list_k items cut_break fmt_item))
+  vbox 1
+    (wrap_k start (break 1 (-1) $ str "}") (list_k items cut_break fmt_item))
 
 and fmt_list_light c kind items =
   let line_start =
@@ -335,7 +351,9 @@ let fmt_block_element c elm =
       let elems =
         if List.is_empty elems then elems else space_elt c :: elems
       in
-      hovbox 0 (wrap_k (str "{") (str "}") (str lvl $ lbl $ fmt_inline_elements c elems))
+      hovbox 0
+        (wrap_k (str "{") (str "}")
+           (str lvl $ lbl $ fmt_inline_elements c elems) )
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 
