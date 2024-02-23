@@ -1,3 +1,5 @@
+[%foo type[@foo] t = < .. > ]
+
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
 
 let f (x [@warning ""]) = ()

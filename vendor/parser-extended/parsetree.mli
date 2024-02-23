@@ -1115,7 +1115,6 @@ and value_binding =
 and value_bindings =
   {
     pvbs_bindings: value_binding list;
-    pvbs_has_ext: bool;
     pvbs_rec: rec_flag;
   }
 

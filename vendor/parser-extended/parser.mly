@@ -476,7 +476,7 @@ let mklbs rf lb =
   } in
   addlb lbs lb
 
-let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext } =
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext=_ } =
   let pvbs_bindings =
     List.rev_map
       (fun lb ->
@@ -485,7 +485,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext } =
            lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
-  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_has_ext = lbs_has_ext }
+  { pvbs_bindings; pvbs_rec = lbs_rec }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
@@ -1494,27 +1494,27 @@ module_type_declaration:
 (* Opens. *)
 
 open_declaration:
-    OPEN
-    override = override_flag
-    ext = ext
-    before = attributes
-    me = module_expr
-    after = post_item_attributes
-    { let attrs = Attr.ext_attrs ?ext ~before ~after () in
-      let loc = make_loc $sloc in
-      let docs = symbol_docs $sloc in
-      Opn.mk me ~override ~attrs ~loc ~docs }
+  OPEN
+  override = override_flag
+  ext = ext
+  attrs1 = attributes
+  me = module_expr
+  attrs2 = post_item_attributes
+  { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+    let loc = make_loc $sloc in
+    let docs = symbol_docs $sloc in
+    Opn.mk me ~override ~attrs ~loc ~docs }
 ;
 
 open_description:
   OPEN
   override = override_flag
   ext = ext
-  before = attributes
+  attrs1 = attributes
   id = mkrhs(mod_ext_longident)
-  after = post_item_attributes
+  attrs2 = post_item_attributes
   {
-    let attrs = Attr.ext_attrs ?ext ~before ~after () in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     Opn.mk id ~override ~attrs ~loc ~docs
@@ -2524,25 +2524,25 @@ let_bindings(EXT):
 %inline let_binding(EXT):
   LET
   ext = EXT
-  before = attributes
+  attrs1 = attributes
   rec_flag = rec_flag
   body = let_binding_body
-  after = post_item_attributes
+  attrs2 = post_item_attributes
     {
       let docs = symbol_docs $sloc in
-      let attrs = Attr.ext_attrs ?ext ~after ~before () in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       mklbs rec_flag (mklb ~loc:$sloc body ~docs attrs)
     }
 ;
 and_let_binding:
   AND
-  before = attributes
+  attrs1 = attributes
   body = let_binding_body
-  after = post_item_attributes
+  attrs2 = post_item_attributes
     {
       let text = symbol_text $symbolstartpos in
       let docs = symbol_docs $sloc in
-      let attrs = Attr.ext_attrs ~after ~before () in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       mklb ~text ~docs ~loc:$sloc body attrs
     }
 ;
@@ -3089,33 +3089,33 @@ str_exception_declaration:
     { $1 }
 | EXCEPTION
   ext = ext
-  before = attributes
+  attrs1 = attributes
   id = mkrhs(constr_ident)
   EQUAL
   lid = mkrhs(constr_longident)
-  attrs_inside = attributes
-  after = post_item_attributes
+  attrs2 = attributes
+  attrs = post_item_attributes
   { let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    let attrs = Attr.ext_attrs ~before ~after ?ext () in
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs ?ext () in
     Te.mk_exception ~attrs
-      (Te.rebind id lid ~attrs:attrs_inside ~loc ~docs)
+      (Te.rebind id lid ~attrs:attrs2 ~loc ~docs)
   }
 ;
 sig_exception_declaration:
   EXCEPTION
   ext = ext
-  before = attributes
+  attrs1 = attributes
   id = mkrhs(constr_ident)
   vars_args_res = generalized_constructor_arguments
-  attrs_inside = attributes
-  after = post_item_attributes
+  attrs2 = attributes
+  attrs = post_item_attributes
     { let vars, args, res = vars_args_res in
-      let loc = make_loc ($startpos, $endpos(attrs_inside)) in
+      let loc = make_loc ($startpos, $endpos(attrs2)) in
       let docs = symbol_docs $sloc in
-      let attrs = Attr.ext_attrs ~before ~after ?ext () in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs ?ext () in
       Te.mk_exception ~attrs
-        (Te.decl id ~vars ~args ?res ~attrs:attrs_inside ~loc ~docs)
+        (Te.decl id ~vars ~args ?res ~attrs:attrs2 ~loc ~docs)
     }
 ;
 %inline let_exception_declaration:
@@ -3177,16 +3177,16 @@ label_declaration_semi:
 %inline type_extension(declaration):
   TYPE
   ext = ext
-  before = attributes
+  attrs1 = attributes
   no_nonrec_flag
   params = type_parameters
   tid = mkrhs(type_longident)
   PLUSEQ
   priv = private_flag
   cs = bar_llist(declaration)
-  after = post_item_attributes
+  attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
-      let attrs = Attr.ext_attrs ?ext ~before ~after () in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       Te.mk tid cs ~params ~priv ~attrs ~docs }
 ;
 %inline extension_constructor(opening):

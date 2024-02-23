@@ -3616,6 +3616,7 @@ and fmt_type_exception ~pre c ctx
   let {pext_attributes= cons_attrs; _} = ptyexn_constructor in
   (* Here, the order is very important. We need the attrs_after to be at the
      end of the list. *)
+  (* On 4.08 the doc is attached to the constructor *)
   let docs, cons_attrs = extract_doc_attrs [] cons_attrs in
   let docs, attrs_after = extract_doc_attrs docs item_attrs.attrs_after in
   let docs, attrs_before = extract_doc_attrs docs item_attrs.attrs_before in
@@ -4470,7 +4471,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
-  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_has_ext= _}
+  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings }
     ->
       let update_config c i =
         update_config ~quiet:true c

@@ -636,9 +636,9 @@ module E = struct
 end
 
 module PVB = struct
-  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_has_ext } =
+  let map_value_bindings sub { pvbs_bindings; pvbs_rec } =
     let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
-    { pvbs_bindings; pvbs_rec; pvbs_has_ext }
+    { pvbs_bindings; pvbs_rec }
 end
 
 module P = struct

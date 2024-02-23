@@ -59,7 +59,7 @@ module Right = struct
     | {pcd_args= args; _} -> constructor_arguments args
 
   let type_declaration = function
-    | {ptype_attributes; _} when Ast.Ext_attrs.has_attrs ptype_attributes ->
+    | {ptype_attributes={attrs_after=_::_; _}; _} ->
         false
     | {ptype_cstrs= _ :: _ as cstrs; _} ->
         (* type a = ... constraint left = < ... > *)
