@@ -55,16 +55,24 @@ val force_break : t
 (** [force_break] forces a break with indentation 0. Equivalent to [break 1000 0].*)
 
 val space_break : t
-(** fmt "@ " *)
+(** [space_break] is either a single space or a newline.
+    See {!Stdlib.Format.print_space_break}.
+    Equivalement to format syntax ["@ "].*)
 
 val cut_break : t
-(** fmt "@," *)
+(** [cut_break] is either a newline or a {!noop}.
+    See {!Stdlib.Format.print_cut}.
+    Equivalement to format syntax ["@,"].*)
 
 val flush_newline : t
-(** fmt "@." *)
+(** [flush_newline] flushes (finishes pretty printing) and output a newline.
+    See {!Stdlib.Format.print_newline}
+    Equivalement to format syntax ["@."].*)
 
 val force_newline : t
-(** force_newline *)
+(** [force_newline] force a new line in the current pretty-printing box.
+    See {!Stdlib.Format.force_newline}.
+    Equivalement to format syntax ["@\n"].*)
 
 val cbreak : fits:string * int * string -> breaks:string * int * string -> t
 (** Format a custom break.
