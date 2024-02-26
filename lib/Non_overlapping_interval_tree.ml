@@ -99,11 +99,11 @@ module Make (Itv : IN) = struct
     let open Fmt in
     let rec dump_ tree roots =
       vbox 0
-        (list_k roots cut_break (fun root ->
+        (list roots cut_break (fun root ->
              let children = children tree root in
              vbox 1
                ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
-               $ wrap_if_k
+               $ wrap_if
                    (not (List.is_empty children))
                    (cut_break $ str "{")
                    (str " }") (dump_ tree children) ) ) )

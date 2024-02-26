@@ -109,15 +109,15 @@ val list_pn : 'a list -> (prev:'a option -> 'a -> next:'a option -> t) -> t
 (** Format a list using provided function for the elements, which is passed
     the previous and next elements, if any. *)
 
-val list_k : 'a list -> t -> ('a -> t) -> t
+val list : 'a list -> t -> ('a -> t) -> t
 (** Format a list using the format thunk for the separators between elements. *)
 
 (** Conditional formatting ----------------------------------------------*)
 
-val fmt_if_k : bool -> t -> t
+val fmt_if : bool -> t -> t
 (** Conditionally format thunk. *)
 
-val fmt_or_k : bool -> t -> t -> t
+val fmt_or : bool -> t -> t -> t
 (** Conditionally select between two format thunks. *)
 
 val fmt_opt : t option -> t
@@ -155,10 +155,10 @@ val fits_breaks_if :
 
 (** Wrapping ------------------------------------------------------------*)
 
-val wrap_k : t -> t -> t -> t
+val wrap : t -> t -> t -> t
 (** As [wrap], but prologue and epilogue may be arbitrary format thunks. *)
 
-val wrap_if_k : bool -> t -> t -> t -> t
+val wrap_if : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
 val wrap_if_fits_or : bool -> string -> string -> t -> t

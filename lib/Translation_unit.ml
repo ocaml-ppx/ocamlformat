@@ -259,7 +259,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
           ~buffer_size:(String.length prev_source)
           ( set_margin conf.fmt_opts.margin.v
           $ set_max_indent conf.fmt_opts.max_indent.v
-          $ fmt_if_k
+          $ fmt_if
               (not (String.is_empty ext_t.prefix))
               (str ext_t.prefix $ flush_newline)
           $ with_optional_box_debug ~box_debug

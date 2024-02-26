@@ -475,7 +475,7 @@ module Wrapped = struct
           (String.split_on_chars line
              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
       in
-      list_k words space_break str
+      list words space_break str
     in
     let lines =
       List.remove_consecutive_duplicates
@@ -489,12 +489,12 @@ module Wrapped = struct
     $ hovbox 0
         (list_fl groups (fun ~first ~last:last_group group ->
              let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
-             fmt_if_k (not first) (str "\n" $ force_newline)
+             fmt_if (not first) (str "\n" $ force_newline)
              $ hovbox 0
                  (list_fl group (fun ~first ~last x ->
-                      fmt_if_k (not first) space_break
+                      fmt_if (not first) space_break
                       $ fmt_line x
-                      $ fmt_if_k (last_group && last) (str suffix $ epi) ) ) )
+                      $ fmt_if (last_group && last) (str suffix $ epi) ) ) )
         )
 end
 
@@ -564,9 +564,9 @@ module Doc = struct
     let open Fmt in
     hvbox 2
       ( pro
-      $ fmt_if_k pre_nl (break 1000 1)
+      $ fmt_if pre_nl (break 1000 1)
       $ doc
-      $ fmt_if_k trail_nl (break 1000 (-2))
+      $ fmt_if trail_nl (break 1000 (-2))
       $ epi )
 end
 
@@ -597,7 +597,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [] -> impossible "previous match"
          | [cmt] ->
              let break =
-               fmt_if_k
+               fmt_if
                  ( conf.fmt_opts.ocp_indent_compat.v
                  && Poly.(pos = Cmt.After)
                  && String.contains (Cmt.txt cmt) '\n' )
@@ -605,13 +605,13 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
              in
              break $ fmt_cmt conf cmt ~fmt_code
          | group ->
-             list_k group force_break (fun cmt ->
-                 wrap_k (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
+             list group force_break (fun cmt ->
+                 wrap (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
          $
          match next with
          | Some (next :: _) ->
              let last = List.last_exn group in
-             fmt_if_k
+             fmt_if
                (Location.line_difference (Cmt.loc last) (Cmt.loc next) > 1)
                (str "\n")
              $ space_break
@@ -628,7 +628,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.break 1000 0)
         let last_loc = Cmt.loc (List.last_exn cmts) in
         let eol_cmt = Source.ends_line t.source last_loc in
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
-        fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
+        fmt_or eol_cmt (fmt_or adj_cmt adj eol) (fmt_opt epi)
       in
       fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
@@ -665,7 +665,7 @@ module Toplevel = struct
           | Before -> noop
           | Within | After ->
               if Source.begins_line t.source first_loc then
-                fmt_or_k
+                fmt_or
                   (Source.empty_line_before t.source first_loc)
                   (str "\n" $ force_break)
                   force_newline
@@ -676,7 +676,7 @@ module Toplevel = struct
           match pos with
           | Before | Within ->
               if Source.ends_line t.source last_loc then
-                fmt_or_k
+                fmt_or
                   (Source.empty_line_after t.source last_loc)
                   (str "\n" $ force_break)
                   force_newline
