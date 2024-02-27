@@ -475,7 +475,7 @@ module Wrapped = struct
           (String.split_on_chars line
              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
       in
-      list words "@ " str
+      list words space_break str
     in
     let lines =
       List.remove_consecutive_duplicates
@@ -489,11 +489,12 @@ module Wrapped = struct
     $ hovbox 0
         (list_fl groups (fun ~first ~last:last_group group ->
              let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
-             fmt_if (not first) "\n@\n"
+             fmt_if (not first) (str "\n" $ force_newline)
              $ hovbox 0
                  (list_fl group (fun ~first ~last x ->
-                      fmt_if (not first) "@ " $ fmt_line x
-                      $ fmt_if_k (last_group && last) (str suffix $ epi) ) ) )
+                      fmt_if (not first) space_break
+                      $ fmt_line x
+                      $ fmt_if (last_group && last) (str suffix $ epi) ) ) )
         )
 end
 
@@ -501,7 +502,8 @@ module Asterisk_prefixed = struct
   open Fmt
 
   let fmt_line ~first:_ ~last s =
-    if last && is_only_whitespaces s then fmt "@," else fmt "@,*" $ str s
+    if last && is_only_whitespaces s then cut_break
+    else cut_break $ str "*" $ str s
 
   let fmt ~pro ~epi = function
     | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
@@ -536,7 +538,8 @@ module Cinaps = struct
   let fmt ~pro ~epi ~fmt_code conf ~offset code =
     match fmt_code conf ~offset ~set_margin:false code with
     | Ok formatted ->
-        hvbox 0 (pro $ hvbox (-1) (fmt "@;" $ formatted) $ fmt "@;" $ epi)
+        hvbox 0
+          (pro $ hvbox (-1) (space_break $ formatted) $ space_break $ epi)
     | Error _ -> Verbatim.fmt ~pro ~epi code
 end
 
@@ -561,9 +564,9 @@ module Doc = struct
     let open Fmt in
     hvbox 2
       ( pro
-      $ fmt_if pre_nl "@;<1000 1>"
+      $ fmt_if pre_nl (break 1000 1)
       $ doc
-      $ fmt_if trail_nl "@;<1000 -2>"
+      $ fmt_if trail_nl (break 1000 (-2))
       $ epi )
 end
 
@@ -594,7 +597,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [] -> impossible "previous match"
          | [cmt] ->
              let break =
-               fmt_if_k
+               fmt_if
                  ( conf.fmt_opts.ocp_indent_compat.v
                  && Poly.(pos = Cmt.After)
                  && String.contains (Cmt.txt cmt) '\n' )
@@ -602,20 +605,20 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
              in
              break $ fmt_cmt conf cmt ~fmt_code
          | group ->
-             list group "@;<1000 0>" (fun cmt ->
-                 wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
+             list group force_break (fun cmt ->
+                 wrap (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
          $
          match next with
          | Some (next :: _) ->
              let last = List.last_exn group in
              fmt_if
                (Location.line_difference (Cmt.loc last) (Cmt.loc next) > 1)
-               "\n"
-             $ fmt "@ "
+               (str "\n")
+             $ space_break
          | _ -> noop ) )
 
 (** Format comments for loc. *)
-let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@;<1000 0>")
+let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.break 1000 0)
     ?(adj = eol) found loc pos =
   let open Fmt in
   match found with
@@ -625,7 +628,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@;<1000 0>")
         let last_loc = Cmt.loc (List.last_exn cmts) in
         let eol_cmt = Source.ends_line t.source last_loc in
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
-        fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
+        fmt_or eol_cmt (fmt_or adj_cmt adj eol) (fmt_opt epi)
       in
       fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
@@ -664,7 +667,8 @@ module Toplevel = struct
               if Source.begins_line t.source first_loc then
                 fmt_or
                   (Source.empty_line_before t.source first_loc)
-                  "\n@;<1000 0>" "@\n"
+                  (str "\n" $ force_break)
+                  force_newline
               else break 1 0
         in
         let epi =
@@ -674,7 +678,8 @@ module Toplevel = struct
               if Source.ends_line t.source last_loc then
                 fmt_or
                   (Source.empty_line_after t.source last_loc)
-                  "\n@;<1000 0>" "@\n"
+                  (str "\n" $ force_break)
+                  force_newline
               else break 1 0
           | After -> noop
         in

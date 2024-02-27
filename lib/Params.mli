@@ -164,7 +164,7 @@ val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val comma_sep : Conf.t -> Fmt.s
+val comma_sep : Conf.t -> Fmt.t
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
 

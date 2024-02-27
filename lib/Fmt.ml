@@ -69,8 +69,6 @@ end
 
 include T
 
-type s = (unit, Format_.formatter, unit) format
-
 type sp = Blank | Cut | Space | Break of int * int
 
 let ( >$ ) f g x = f $ g x
@@ -96,6 +94,12 @@ let break n o =
 
 let force_break = break 1000 0
 
+let space_break = with_pp (fun fs -> Format_.pp_print_space fs ())
+
+let cut_break = with_pp (fun fs -> Format_.pp_print_cut fs ())
+
+let force_newline = with_pp (fun fs -> Format_.pp_force_newline fs ())
+
 let cbreak ~fits ~breaks =
   with_pp (fun fs ->
       Box_debug.cbreak fs ~fits ~breaks ;
@@ -116,10 +120,6 @@ let sequence l =
   in
   go l (List.length l)
 
-let fmt f =
-  with_pp (fun fs ->
-      if Box_debug.fmt fs f then () else Format_.fprintf fs f )
-
 (** Primitive types -----------------------------------------------------*)
 
 let char c = with_pp (fun fs -> Format_.pp_print_char fs c)
@@ -133,8 +133,8 @@ let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
   | Blank -> char ' '
-  | Cut -> fmt "@,"
-  | Space -> fmt "@ "
+  | Cut -> cut_break
+  | Space -> space_break
   | Break (x, y) -> break x y
 
 (** Primitive containers ------------------------------------------------*)
@@ -163,20 +163,14 @@ let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
-let list_k l sep f =
+let list l sep f =
   list_fl l (fun ~first:_ ~last x -> f x $ if last then noop else sep)
-
-let list xs sep pp = list_k xs (fmt sep) pp
 
 (** Conditional formatting ----------------------------------------------*)
 
-let fmt_if_k cnd x = if cnd then x else noop
+let fmt_if cnd x = if cnd then x else noop
 
-let fmt_if cnd f = fmt_if_k cnd (fmt f)
-
-let fmt_or_k cnd t f = if cnd then t else f
-
-let fmt_or cnd t f = fmt_or_k cnd (fmt t) (fmt f)
+let fmt_or cnd t f = if cnd then t else f
 
 let fmt_opt o = Option.value o ~default:noop
 
@@ -206,29 +200,25 @@ let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
   let nspaces, offset = hint in
   match force with
   | Some Fit -> str fits
-  | Some Break -> fmt_if_k (offset >= 0) (break nspaces offset) $ str breaks
+  | Some Break -> fmt_if (offset >= 0) (break nspaces offset) $ str breaks
   | None -> fits_or_breaks ~level fits nspaces offset breaks
 
 let fits_breaks_if ?force ?hint ?level cnd fits breaks =
-  fmt_if_k cnd (fits_breaks ?force ?hint ?level fits breaks)
+  fmt_if cnd (fits_breaks ?force ?hint ?level fits breaks)
 
 (** Wrapping ------------------------------------------------------------*)
 
-let wrap_if_k cnd pre suf k = fmt_if_k cnd pre $ k $ fmt_if_k cnd suf
+let wrap_if cnd pre suf k = fmt_if cnd pre $ k $ fmt_if cnd suf
 
-let wrap_k x = wrap_if_k true x
-
-let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
-
-and wrap pre suf = wrap_k (fmt pre) (fmt suf)
+let wrap x = wrap_if true x
 
 let wrap_if_fits_or cnd pre suf k =
-  if cnd then wrap_k (str pre) (str suf) k
+  if cnd then wrap (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""
 
 let wrap_fits_breaks_if ?(space = true) (c : Conf.t) cnd pre suf k =
   match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
-  | `No, false -> wrap_if_k cnd (str pre) (str suf) k
+  | `No, false -> wrap_if cnd (str pre) (str suf) k
   | `Space, _ | `No, true ->
       fits_breaks_if cnd pre (pre ^ " ")
       $ k
@@ -276,18 +266,18 @@ and close_box =
 
 (** Wrapping boxes ------------------------------------------------------*)
 
-let cbox ?name n = wrap_k (open_box ?name n) close_box
+let cbox ?name n = wrap (open_box ?name n) close_box
 
-and vbox ?name n = wrap_k (open_vbox ?name n) close_box
+and vbox ?name n = wrap (open_vbox ?name n) close_box
 
-and hvbox ?name n = wrap_k (open_hvbox ?name n) close_box
+and hvbox ?name n = wrap (open_hvbox ?name n) close_box
 
-and hovbox ?name n = wrap_k (open_hovbox ?name n) close_box
+and hovbox ?name n = wrap (open_hovbox ?name n) close_box
 
-and cbox_if ?name cnd n = wrap_if_k cnd (open_box ?name n) close_box
+and cbox_if ?name cnd n = wrap_if cnd (open_box ?name n) close_box
 
-and vbox_if ?name cnd n = wrap_if_k cnd (open_vbox ?name n) close_box
+and vbox_if ?name cnd n = wrap_if cnd (open_vbox ?name n) close_box
 
-and hvbox_if ?name cnd n = wrap_if_k cnd (open_hvbox ?name n) close_box
+and hvbox_if ?name cnd n = wrap_if cnd (open_hvbox ?name n) close_box
 
-and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
+and hovbox_if ?name cnd n = wrap_if cnd (open_hovbox ?name n) close_box
