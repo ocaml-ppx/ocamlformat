@@ -2493,7 +2493,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                     ( str "let" $ break 1 0
                                     $ Cmts.fmt_before c popen_loc
                                     $ fmt_or override (str "open!") (str "open")
-                                    $ opt ext (fun _ -> fmt_if override " ")
+                                    $ opt ext (fun _ -> fmt_if override (str " "))
                                     $ fmt_extension_suffix c ext ) )
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
@@ -3639,7 +3639,7 @@ and fmt_type_exception ~pre c ctx
            ( pre
            $ fmt_extension_suffix c ext
            $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-           $ fmt "@ "
+           $ space_break
            $ fmt_extension_constructor c ctx ptyexn_constructor )
        $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
        $ doc_after ) )
@@ -4462,7 +4462,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
         fmt_or
           (is_override popen_override)
           ( str "open!"
-          $ fmt_if (Option.is_some attributes.attrs_extension) "@ " )
+          $ fmt_if (Option.is_some attributes.attrs_extension) space_break)
           (str "open")
       in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
@@ -4526,7 +4526,7 @@ and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
     in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
     fmt_value_binding c ~rec_flag ?in_ binding
-    $ fmt_if_k (not last)
+    $ fmt_if (not last)
         ( match c.conf.fmt_opts.let_and.v with
         | `Sparse -> force_break
         | `Compact -> space_break )
