@@ -90,14 +90,14 @@ module Right = struct
 
   (* exception C of ... * ... * < ... > *)
   let type_exception = function
-    | {ptyexn_attributes; _} when Ast.Ext_attrs.has_attrs ptyexn_attributes
+    | {ptyexn_attributes= {attrs_after= _ :: _; _}; _}
       ->
         false
     | {ptyexn_constructor; _} -> extension_constructor ptyexn_constructor
 
   (* val x : < ... > *)
   let value_description = function
-    | {pval_attributes; _} when Ast.Ext_attrs.has_attrs pval_attributes ->
+    | {pval_attributes= {attrs_after= _ :: _; _}; _} ->
         false
     | {pval_prim= _ :: _; _} -> false
     | {pval_type= ct; _} -> core_type ct
