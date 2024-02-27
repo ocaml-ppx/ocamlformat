@@ -261,7 +261,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
           $ set_max_indent conf.fmt_opts.max_indent.v
           $ fmt_if
               (not (String.is_empty ext_t.prefix))
-              (str ext_t.prefix $ flush_newline)
+              (str ext_t.prefix $ force_newline)
           $ with_optional_box_debug ~box_debug
               (Fmt_ast.fmt_ast ext_fg ~debug:conf.opr_opts.debug.v
                  ext_t.source cmts_t conf ext_t.ast ) )

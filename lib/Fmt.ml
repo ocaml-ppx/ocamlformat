@@ -98,8 +98,6 @@ let space_break = with_pp (fun fs -> Format_.pp_print_space fs ())
 
 let cut_break = with_pp (fun fs -> Format_.pp_print_cut fs ())
 
-let flush_newline = with_pp (fun fs -> Format_.pp_print_newline fs ())
-
 let force_newline = with_pp (fun fs -> Format_.pp_force_newline fs ())
 
 let cbreak ~fits ~breaks =

@@ -64,11 +64,6 @@ val cut_break : t
     See {!Stdlib.Format.print_cut}.
     Equivalement to format syntax ["@,"].*)
 
-val flush_newline : t
-(** [flush_newline] flushes (finishes pretty printing) and output a newline.
-    See {!Stdlib.Format.print_newline}
-    Equivalement to format syntax ["@."].*)
-
 val force_newline : t
 (** [force_newline] force a new line in the current pretty-printing box.
     See {!Stdlib.Format.force_newline}.
