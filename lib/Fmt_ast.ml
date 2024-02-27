@@ -2492,8 +2492,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                  (hvbox 0
                                     ( str "let" $ break 1 0
                                     $ Cmts.fmt_before c popen_loc
-                                    $ fmt_or override (str "open!") (str "open")
-                                    $ opt ext (fun _ -> fmt_if override (str " "))
+                                    $ fmt_or override (str "open!")
+                                        (str "open")
+                                    $ opt ext (fun _ ->
+                                          fmt_if override (str " ") )
                                     $ fmt_extension_suffix c ext ) )
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
@@ -4151,8 +4153,7 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
              ( fmt_opt keyword
              $ fmt_extension_suffix c attributes.attrs_extension
              $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-             $ space_break
-             $ fmt_opt blk.pro )
+             $ space_break $ fmt_opt blk.pro )
          $ blk.psp $ blk.bdy ) )
   $ blk.esp $ fmt_opt blk.epi
   $ fmt_item_attributes c ~pre:Blank attrs_after
@@ -4462,7 +4463,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
         fmt_or
           (is_override popen_override)
           ( str "open!"
-          $ fmt_if (Option.is_some attributes.attrs_extension) space_break)
+          $ fmt_if (Option.is_some attributes.attrs_extension) space_break )
           (str "open")
       in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
@@ -4471,8 +4472,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
       fmt_recmodule c ctx mbs fmt_module_binding (fun x -> Mb x) sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
-  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings }
-    ->
+  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings} ->
       let update_config c i =
         update_config ~quiet:true c
           (i.pvb_attributes.attrs_before @ i.pvb_attributes.attrs_after)
@@ -4535,7 +4535,7 @@ and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ ( if blank_line_after_in then  str "\n" $ cut_break
+       $ ( if blank_line_after_in then str "\n" $ cut_break
            else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
