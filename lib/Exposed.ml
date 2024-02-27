@@ -73,9 +73,7 @@ module Right = struct
         list ~elt:constructor_declaration cdecls
 
   let type_extension = function
-    | {ptyext_attributes; _} when Ast.Ext_attrs.has_attrs ptyext_attributes
-      ->
-        false
+    | {ptyext_attributes= {attrs_after= _ :: _; _}; _} -> false
     (* type a += A of ... * ... * < ... > *)
     | {ptyext_constructors; _} ->
         list ~elt:extension_constructor ptyext_constructors

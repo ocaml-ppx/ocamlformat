@@ -698,7 +698,7 @@ let attrs_of_ext_attrs ea = ea.attrs_before @ ea.attrs_after
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
-  | Td x -> x.ptype_attributes.attrs_before @ x.ptype_attributes.attrs_after
+  | Td x -> attrs_of_ext_attrs x.ptype_attributes
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
