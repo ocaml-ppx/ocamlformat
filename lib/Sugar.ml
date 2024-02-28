@@ -146,7 +146,7 @@ module Let_binding = struct
     ; lb_typ: value_constraint option
     ; lb_exp: expression xt
     ; lb_pun: bool
-    ; lb_attrs: attribute list
+    ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }
 
   let of_let_binding ~ctx ~first vb =
@@ -171,6 +171,6 @@ module Let_binding = struct
         ; lb_typ= bo.pbop_typ
         ; lb_exp= sub_exp ~ctx bo.pbop_exp
         ; lb_pun= bo.pbop_is_pun
-        ; lb_attrs= []
+        ; lb_attrs= Ast_helper.Attr.empty_ext_attrs
         ; lb_loc= bo.pbop_loc } )
 end

@@ -209,6 +209,9 @@ module type S = sig
   class%foo[@foo] x : t
   class type%foo[@foo] x = x
 
+  class%foo x : t [@@foo]
+  class type%foo x = x [@@foo]
+
 end
 
 type t = ..;;

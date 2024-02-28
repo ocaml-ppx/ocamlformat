@@ -529,7 +529,7 @@ and value_description =
      pval_name: string loc;
      pval_type: core_type;
      pval_prim: string loc list;
-     pval_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pval_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      pval_loc: Location.t;
     }
 (** Values of type {!value_description} represents:
@@ -551,7 +551,7 @@ and type_declaration =
      ptype_kind: type_kind;
      ptype_private: private_flag;  (** for [= private ...] *)
      ptype_manifest: core_type option;  (** represents [= T] *)
-     ptype_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     ptype_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      ptype_loc: Location.t;
     }
 (**
@@ -639,7 +639,7 @@ and type_extension =
      ptyext_constructors: extension_constructor list;
      ptyext_private: private_flag;
      ptyext_loc: Location.t;
-     ptyext_attributes: attributes;  (** ... [\@\@id1] [\@\@id2] *)
+     ptyext_attributes: ext_attrs;  (** ... [\@\@id1] [\@\@id2] *)
     }
 (**
    Definition of new extensions constructors for the extensive sum type [t]
@@ -658,7 +658,7 @@ and type_exception =
   {
     ptyexn_constructor : extension_constructor;
     ptyexn_loc : Location.t;
-    ptyexn_attributes : attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+    ptyexn_attributes : ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
   }
 (** Definition of a new exception ([exception E]). *)
 
@@ -752,7 +752,7 @@ and 'a class_infos =
      pci_constraint: class_type option;
      pci_expr: 'a;
      pci_loc: Location.t;
-     pci_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pci_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
     }
 (** Values of type [class_expr class_infos] represents:
     - [class c = ...]
@@ -972,7 +972,7 @@ and 'a open_infos =
      popen_expr: 'a;
      popen_override: override_flag;
      popen_loc: Location.t;
-     popen_attributes: attributes;
+     popen_attributes: ext_attrs;
     }
 (** Values of type ['a open_infos] represents:
     - [open! X] when {{!open_infos.popen_override}[popen_override]}
@@ -997,7 +997,7 @@ and 'a include_infos =
     {
      pincl_mod: 'a;
      pincl_loc: Location.t;
-     pincl_attributes: attributes;
+     pincl_attributes: ext_attrs;
     }
 
 and include_description = module_type include_infos
@@ -1108,7 +1108,7 @@ and value_binding =
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
-    pvb_attributes: attributes;
+    pvb_attributes: ext_attrs;
     pvb_loc: Location.t;
   }(** [let pat : type_constraint = exp] *)
 
@@ -1116,7 +1116,6 @@ and value_bindings =
   {
     pvbs_bindings: value_binding list;
     pvbs_rec: rec_flag;
-    pvbs_extension: string loc option
   }
 
 and module_binding =

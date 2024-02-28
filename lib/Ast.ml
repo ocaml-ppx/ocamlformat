@@ -106,6 +106,10 @@ module Ext = struct
 end
 
 module Ext_attrs = struct
+  let has_attrs = function
+    | {attrs_extension= _; attrs_before= []; attrs_after= []} -> false
+    | _ -> true
+
   let has_doc ea =
     List.exists ~f:Attr.is_doc ea.attrs_before
     || List.exists ~f:Attr.is_doc ea.attrs_after
@@ -326,28 +330,27 @@ module Structure_item = struct
     | Pstr_attribute atr -> Attr.is_doc atr
     (* one attribute list *)
     | Pstr_eval (_, atrs)
-     |Pstr_value {pvbs_bindings= {pvb_attributes= atrs; _} :: _; _}
-     |Pstr_primitive {pval_attributes= atrs; _}
-     |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
-     |Pstr_typext {ptyext_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
-     |Pstr_open {popen_attributes= atrs; _}
-     |Pstr_extension (_, atrs)
-     |Pstr_class_type ({pci_attributes= atrs; _} :: _)
-     |Pstr_class ({pci_attributes= atrs; _} :: _) ->
+     |Pstr_extension (_, atrs) ->
         List.exists ~f:Attr.is_doc atrs
-    | Pstr_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ }
+    | Pstr_open {popen_attributes= ea; _}
+     |Pstr_class_type ({pci_attributes= ea; _} :: _)
+     |Pstr_class ({pci_attributes= ea; _} :: _)
+     |Pstr_modtype {pmtd_ext_attrs= ea; _}
+     |Pstr_type (_, {ptype_attributes= ea; _} :: _)
+     |Pstr_value {pvbs_bindings= {pvb_attributes= ea; _} :: _; _}
+     |Pstr_primitive {pval_attributes= ea; _}
+     |Pstr_typext {ptyext_attributes= ea; _} ->
+        Ext_attrs.has_doc ea
+    | Pstr_module
+        {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
      |Pstr_include
-        {pincl_mod= {pmod_attributes= atrs1; _}; pincl_attributes= atrs2; _}
-      ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Pstr_modtype {pmtd_ext_attrs; _} -> Ext_attrs.has_doc pmtd_ext_attrs
-    | Pstr_module {pmb_ext_attrs; pmb_expr= {pmod_attributes; _}; _} ->
-        Ext_attrs.has_doc pmb_ext_attrs
-        || List.exists ~f:Attr.is_doc pmod_attributes
+        {pincl_mod= {pmod_attributes= attrs; _}; pincl_attributes= ea; _}
+     |Pstr_exception
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= attrs; _}
+        ; _ } ->
+        Ext_attrs.has_doc ea || List.exists ~f:Attr.is_doc attrs
     | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
      |Pstr_recmodule []
@@ -421,29 +424,25 @@ module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
     | Psig_attribute atr -> Attr.is_doc atr
-    (* one attribute list *)
-    | Psig_value {pval_attributes= atrs; _}
-     |Psig_type (_, {ptype_attributes= atrs; _} :: _)
-     |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
-     |Psig_typext {ptyext_attributes= atrs; _}
-     |Psig_open {popen_attributes= atrs; _}
-     |Psig_extension (_, atrs)
-     |Psig_class_type ({pci_attributes= atrs; _} :: _)
-     |Psig_class ({pci_attributes= atrs; _} :: _) ->
-        List.exists ~f:Attr.is_doc atrs
-    (* two attribute list *)
-    | Psig_modtype {pmtd_ext_attrs= ea; _}
+    | Psig_extension (_, atrs) -> List.exists ~f:Attr.is_doc atrs
+    | Psig_value {pval_attributes= ea; _}
+     |Psig_type (_, {ptype_attributes= ea; _} :: _)
+     |Psig_typesubst ({ptype_attributes= ea; _} :: _)
+     |Psig_typext {ptyext_attributes= ea; _}
+     |Psig_open {popen_attributes= ea; _}
+     |Psig_class_type ({pci_attributes= ea; _} :: _)
+     |Psig_class ({pci_attributes= ea; _} :: _)
+     |Psig_modtype {pmtd_ext_attrs= ea; _}
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
      |Psig_modsubst {pms_ext_attrs= ea; _} ->
         Ext_attrs.has_doc ea
     | Psig_include
-        {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
+        {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _}
      |Psig_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ } ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Psig_recmodule
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= atrs; _}
+        ; _ }
+     |Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
      |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
       ->
@@ -508,7 +507,7 @@ module Signature_item = struct
 end
 
 module Lb = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.pvb_attributes
+  let has_doc itm = Ext_attrs.has_doc itm.pvb_attributes
 
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
@@ -550,7 +549,7 @@ module Md = struct
 end
 
 module Td = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
+  let has_doc itm = Ext_attrs.has_doc itm.ptype_attributes
 
   let is_simple (i, (c : Conf.t)) =
     match c.fmt_opts.module_item_spacing.v with
@@ -699,19 +698,19 @@ let attrs_of_ext_attrs ea = ea.attrs_before @ ea.attrs_after
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
-  | Td x -> x.ptype_attributes
+  | Td x -> attrs_of_ext_attrs x.ptype_attributes
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Fpe _ | Fpc _ -> []
   | Vc _ -> []
-  | Lb x -> x.pvb_attributes
+  | Lb x -> attrs_of_ext_attrs x.pvb_attributes
   | Bo _ -> []
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
-  | Cd x -> x.pci_attributes
-  | Ctd x -> x.pci_attributes
+  | Cd x -> attrs_of_ext_attrs x.pci_attributes
+  | Ctd x -> attrs_of_ext_attrs x.pci_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
   | Sig _ -> []

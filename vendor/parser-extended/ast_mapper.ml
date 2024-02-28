@@ -254,7 +254,7 @@ module T = struct
        ptype_attributes;
        ptype_loc} =
     let loc = sub.location sub ptype_loc in
-    let attrs = sub.attributes sub ptype_attributes in
+    let attrs = sub.ext_attrs sub ptype_attributes in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
       ~priv:(Flag.map_private sub ptype_private)
@@ -285,7 +285,7 @@ module T = struct
        ptyext_loc;
        ptyext_attributes} =
     let loc = sub.location sub ptyext_loc in
-    let attrs = sub.attributes sub ptyext_attributes in
+    let attrs = sub.ext_attrs sub ptyext_attributes in
     Te.mk ~loc ~attrs
       (map_loc sub ptyext_path)
       (List.map (sub.extension_constructor sub) ptyext_constructors)
@@ -295,7 +295,7 @@ module T = struct
   let map_type_exception sub
       {ptyexn_constructor; ptyexn_loc; ptyexn_attributes} =
     let loc = sub.location sub ptyexn_loc in
-    let attrs = sub.attributes sub ptyexn_attributes in
+    let attrs = sub.ext_attrs sub ptyexn_attributes in
     Te.mk_exception ~loc ~attrs
       (sub.extension_constructor sub ptyexn_constructor)
 
@@ -636,10 +636,9 @@ module E = struct
 end
 
 module PVB = struct
-  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension } =
+  let map_value_bindings sub { pvbs_bindings; pvbs_rec } =
     let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
-    let pvbs_extension = map_opt (map_loc sub) pvbs_extension in
-    { pvbs_bindings; pvbs_rec; pvbs_extension }
+    { pvbs_bindings; pvbs_rec }
 end
 
 module P = struct
@@ -751,7 +750,7 @@ module CE = struct
   let class_infos sub f {pci_virt; pci_params = pl; pci_name; pci_expr;
                          pci_loc; pci_attributes; pci_args; pci_constraint} =
     let loc = sub.location sub pci_loc in
-    let attrs = sub.attributes sub pci_attributes in
+    let attrs = sub.ext_attrs sub pci_attributes in
     Ci.mk ~loc ~attrs
      ~virt:(Flag.map_virtual sub pci_virt)
      ~params:(List.map (map_fst (sub.typ sub)) pl)
@@ -800,7 +799,7 @@ let default_mapper =
         Val.mk
           (map_loc this pval_name)
           (this.typ this pval_type)
-          ~attrs:(this.attributes this pval_attributes)
+          ~attrs:(this.ext_attrs this pval_attributes)
           ~loc:(this.location this pval_loc)
           ~prim:(List.map (map_loc this) pval_prim)
       );
@@ -853,7 +852,7 @@ let default_mapper =
          Opn.mk (this.module_expr this popen_expr)
            ~override:popen_override
            ~loc:(this.location this popen_loc)
-           ~attrs:(this.attributes this popen_attributes)
+           ~attrs:(this.ext_attrs this popen_attributes)
       );
 
     open_description =
@@ -861,21 +860,21 @@ let default_mapper =
          Opn.mk (map_loc this popen_expr)
            ~override:popen_override
            ~loc:(this.location this popen_loc)
-           ~attrs:(this.attributes this popen_attributes)
+           ~attrs:(this.ext_attrs this popen_attributes)
       );
 
     include_description =
       (fun this {pincl_mod; pincl_attributes; pincl_loc} ->
          Incl.mk (this.module_type this pincl_mod)
            ~loc:(this.location this pincl_loc)
-           ~attrs:(this.attributes this pincl_attributes)
+           ~attrs:(this.ext_attrs this pincl_attributes)
       );
 
     include_declaration =
       (fun this {pincl_mod; pincl_attributes; pincl_loc} ->
          Incl.mk (this.module_expr this pincl_mod)
            ~loc:(this.location this pincl_loc)
-           ~attrs:(this.attributes this pincl_attributes)
+           ~attrs:(this.ext_attrs this pincl_attributes)
       );
 
     value_binding =
@@ -887,7 +886,7 @@ let default_mapper =
            ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun
            ~loc:(this.location this pvb_loc)
-           ~attrs:(this.attributes this pvb_attributes)
+           ~attrs:(this.ext_attrs this pvb_attributes)
       );
     value_bindings = PVB.map_value_bindings;
 

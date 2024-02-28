@@ -70,12 +70,16 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
+(* These are not needed because extension are put directly in the AST
 let pstr_typext (te, ext) =
   (Pstr_typext te, ext)
 let pstr_primitive (vd, ext) =
   (Pstr_primitive vd, ext)
-let pstr_type ((nr, ext), tys) =
-  (Pstr_type (nr, tys), ext)
+*)
+let pstr_type (nr, tys) =
+  Pstr_type (nr, tys)
+
+(* These are not needed because extension are put directly in the AST
 let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 let pstr_include (body, ext) =
@@ -85,15 +89,20 @@ let psig_typext (te, ext) =
   (Psig_typext te, ext)
 let psig_value (vd, ext) =
   (Psig_value vd, ext)
-let psig_type ((nr, ext), tys) =
-  (Psig_type (nr, tys), ext)
-let psig_typesubst ((nr, ext), tys) =
+*)
+
+let psig_type (nr, tys) =
+  Psig_type (nr, tys)
+let psig_typesubst (nr, tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
-  (Psig_typesubst tys, ext)
+  Psig_typesubst tys
+
+(* These are not needed because extension are put directly in the AST
 let psig_exception (te, ext) =
   (Psig_exception te, ext)
 let psig_include (body, ext) =
   (Psig_include body, ext)
+*)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -154,9 +163,9 @@ let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
 let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
 (*
 let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
-*)
 let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
 let ghsig ~loc d = Sig.mk ~loc:(ghost_loc loc) d
+*)
 
 let mkinfix arg1 op arg2 =
   Pexp_infix(op, arg1, arg2)
@@ -374,7 +383,6 @@ let wrap_mod_attrs ~loc:_ attrs body =
   {body with pmod_attributes = attrs @ body.pmod_attributes}
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
-*)
 
 let wrap_str_ext ~loc body ext =
   match ext with
@@ -391,6 +399,7 @@ let wrap_sig_ext ~loc body ext =
 
 let wrap_mksig_ext ~loc (item, ext) =
   wrap_sig_ext ~loc (mksig ~loc item) ext
+*)
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
@@ -435,54 +444,48 @@ type let_binding =
     lb_expression: expression;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
-    lb_attributes: attributes;
-    lb_docs: docs Lazy.t;
-    lb_text: text Lazy.t;
+    lb_attributes: ext_attrs;
     lb_loc: Location.t; }
 
 type let_bindings' =
   { lbs_bindings: let_binding list;
     lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option }
+    lbs_has_ext: bool }
 
-let mklb first ~loc (p, args, typ, e, is_pun) attrs =
+let mklb ?(text=[]) ~docs ~loc (p, args, typ, e, is_pun) attrs =
   {
     lb_pattern = p;
     lb_args = args;
     lb_expression = e;
     lb_constraint=typ;
     lb_is_pun = is_pun;
-    lb_attributes = attrs;
-    lb_docs = symbol_docs_lazy loc;
-    lb_text = (if first then empty_text_lazy
-               else symbol_text_lazy (fst loc));
+    lb_attributes = add_text_attrs' text (add_docs_attrs' docs attrs);
     lb_loc = make_loc loc;
   }
 
 let addlb lbs lb =
-  if lb.lb_is_pun && lbs.lbs_extension = None then syntax_error ();
+  (* [let%foo x = y and z in] should be allowed, but not [let x = y and z in] *)
+  if lb.lb_is_pun && not lbs.lbs_has_ext then syntax_error ();
   { lbs with lbs_bindings = lb :: lbs.lbs_bindings }
 
-let mklbs ext rf lb =
+let mklbs rf lb =
   let lbs = {
     lbs_bindings = [];
     lbs_rec = rf;
-    lbs_extension = ext;
+    lbs_has_ext = Option.is_some (lb.lb_attributes.attrs_extension)
   } in
   addlb lbs lb
 
-let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext=_ } =
   let pvbs_bindings =
     List.rev_map
       (fun lb ->
          Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           ~docs:(Lazy.force lb.lb_docs)
-           ~text:(Lazy.force lb.lb_text)
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
            lb.lb_pattern lb.lb_args lb.lb_expression)
       lbs_bindings
   in
-  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
+  { pvbs_bindings; pvbs_rec = lbs_rec }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
@@ -492,7 +495,7 @@ let expr_of_let_bindings ~loc ~loc_in lbs body =
 
 let class_of_let_bindings ~loc ~loc_in lbs body =
   (* Our use of let_bindings(no_ext) guarantees the following: *)
-  assert (lbs.lbs_extension = None);
+  assert (not lbs.lbs_has_ext);
   mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
 
 (* Alternatively, we could keep the generic module type in the Parsetree
@@ -514,7 +517,7 @@ let package_type_of_module_type pmty =
 
         (* restrictions below are checked by the 'with_constraint' rule *)
         assert (ptyp.ptype_kind = Ptype_abstract);
-        assert (ptyp.ptype_attributes = []);
+        assert (ptyp.ptype_attributes.attrs_before @ ptyp.ptype_attributes.attrs_after = []);
         let ty =
           match ptyp.ptype_manifest with
           | Some ty -> ty
@@ -1355,26 +1358,24 @@ structure_item:
         { Pstr_recmodule $1 }
     | module_type_declaration
         { Pstr_modtype $1 }
-    )
-  | wrap_mkstr_ext(
-      primitive_declaration
-        { pstr_primitive $1 }
+    | primitive_declaration
+        { Pstr_primitive $1 }
     | value_description
-        { pstr_primitive $1 }
+        { Pstr_primitive $1 }
     | type_declarations
         { pstr_type $1 }
     | str_type_extension
-        { pstr_typext $1 }
+        { Pstr_typext $1 }
     | str_exception_declaration
-        { pstr_exception $1 }
+        { Pstr_exception $1 }
     | open_declaration
-        { let (body, ext) = $1 in (Pstr_open body, ext) }
+        { Pstr_open $1 }
     | class_declarations
-        { let (ext, l) = $1 in (Pstr_class l, ext) }
+        { Pstr_class $1 }
     | class_type_declarations
-        { let (ext, l) = $1 in (Pstr_class_type l, ext) }
+        { Pstr_class_type $1 }
     | include_statement(module_expr)
-        { pstr_include $1 }
+        { Pstr_include $1 }
     )
     { $1 }
 ;
@@ -1465,10 +1466,10 @@ module_binding_body:
   thing = thing
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Incl.mk thing ~attrs ~loc ~docs, ext
+    Incl.mk thing ~attrs ~loc ~docs
   }
 ;
 
@@ -1499,12 +1500,10 @@ open_declaration:
   attrs1 = attributes
   me = module_expr
   attrs2 = post_item_attributes
-  {
-    let attrs = attrs1 @ attrs2 in
+  { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Opn.mk me ~override ~attrs ~loc ~docs, ext
-  }
+    Opn.mk me ~override ~attrs ~loc ~docs }
 ;
 
 open_description:
@@ -1515,10 +1514,10 @@ open_description:
   id = mkrhs(mod_ext_longident)
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Opn.mk id ~override ~attrs ~loc ~docs, ext
+    Opn.mk id ~override ~attrs ~loc ~docs
   }
 ;
 
@@ -1612,29 +1611,26 @@ signature_item:
         { Psig_modtype $1 }
     | module_type_subst
         { Psig_modtypesubst $1 }
-    )
-    { $1 }
-  | wrap_mksig_ext(
-      value_description
-        { psig_value $1 }
+    | value_description
+        { Psig_value $1 }
     | primitive_declaration
-        { psig_value $1 }
+        { Psig_value $1 }
     | type_declarations
         { psig_type $1 }
     | type_subst_declarations
         { psig_typesubst $1 }
     | sig_type_extension
-        { psig_typext $1 }
+        { Psig_typext $1 }
     | sig_exception_declaration
-        { psig_exception $1 }
+        { Psig_exception $1 }
     | open_description
-        { let (body, ext) = $1 in (Psig_open body, ext) }
+        { Psig_open $1 }
     | include_statement(module_type)
-        { psig_include $1 }
+        { Psig_include $1 }
     | class_descriptions
-        { let (ext, l) = $1 in (Psig_class l, ext) }
+        { Psig_class $1 }
     | class_type_declarations
-        { let (ext, l) = $1 in (Psig_class_type l, ext) }
+        { Psig_class_type $1 }
     )
     { $1 }
 
@@ -1767,8 +1763,8 @@ module_type_subst:
 (* Class declarations. *)
 
 %inline class_declarations:
-  xlist(class_declaration, and_class_declaration)
-    { $1 }
+  class_declaration list(and_class_declaration)
+    { $1 :: $2 }
 ;
 %inline class_declaration:
   CLASS
@@ -1780,11 +1776,10 @@ module_type_subst:
   cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     let (args, constraint_, body) = cfb in
-    ext,
     Ci.mk id body ~virt ~params ~attrs ~loc ~docs ~args ?constraint_
   }
 ;
@@ -1797,7 +1792,7 @@ module_type_subst:
   cfb = class_fun_binding
   attrs2 = post_item_attributes
   {
-    let attrs = attrs1 @ attrs2 in
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
@@ -2061,8 +2056,8 @@ constrain_field:
 ;
 (* A group of class descriptions. *)
 %inline class_descriptions:
-  xlist(class_description, and_class_description)
-    { $1 }
+  class_description list(and_class_description)
+    { $1 :: $2 }
 ;
 %inline class_description:
   CLASS
@@ -2075,10 +2070,9 @@ constrain_field:
   cty = class_type
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      ext,
       Ci.mk id cty ~virt ~params ~attrs ~loc ~docs
     }
 ;
@@ -2092,7 +2086,7 @@ constrain_field:
   cty = class_type
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
       let text = symbol_text $symbolstartpos in
@@ -2100,8 +2094,8 @@ constrain_field:
     }
 ;
 class_type_declarations:
-  xlist(class_type_declaration, and_class_type_declaration)
-    { $1 }
+  class_type_declaration list(and_class_type_declaration)
+    { $1 :: $2 }
 ;
 %inline class_type_declaration:
   CLASS TYPE
@@ -2114,10 +2108,9 @@ class_type_declarations:
   csig = class_signature
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      ext,
       Ci.mk id csig ~virt ~params ~attrs ~loc ~docs
     }
 ;
@@ -2131,7 +2124,7 @@ class_type_declarations:
   csig = class_signature
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
       let text = symbol_text $symbolstartpos in
@@ -2536,8 +2529,9 @@ let_bindings(EXT):
   body = let_binding_body
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
-      mklbs ext rec_flag (mklb ~loc:$sloc true body attrs)
+      let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      mklbs rec_flag (mklb ~loc:$sloc body ~docs attrs)
     }
 ;
 and_let_binding:
@@ -2546,8 +2540,10 @@ and_let_binding:
   body = let_binding_body
   attrs2 = post_item_attributes
     {
-      let attrs = attrs1 @ attrs2 in
-      mklb ~loc:$sloc false body attrs
+      let text = symbol_text $symbolstartpos in
+      let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
+      mklb ~text ~docs ~loc:$sloc body attrs
     }
 ;
 letop_binding_body:
@@ -2879,11 +2875,11 @@ value_description:
   COLON
   ty = possibly_poly(core_type)
   attrs2 = post_item_attributes
-    { let attrs = attrs1 @ attrs2 in
+    { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      Val.mk id ty ~attrs ~loc ~docs,
-      ext }
+      Val.mk id ty ~attrs ~loc ~docs
+    }
 ;
 
 /* Primitive declarations */
@@ -2898,11 +2894,11 @@ primitive_declaration:
   EQUAL
   prim = mkrhs(raw_string)+
   attrs2 = post_item_attributes
-    { let attrs = attrs1 @ attrs2 in
+    { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      Val.mk id ty ~prim ~attrs ~loc ~docs,
-      ext }
+      Val.mk id ty ~prim ~attrs ~loc ~docs
+    }
 ;
 
 (* Type declarations and type substitutions. *)
@@ -2954,9 +2950,9 @@ generic_type_declaration(flag, kind):
     {
       let (kind, priv, manifest) = kind_priv_manifest in
       let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
-      (flag, ext),
+      flag,
       Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
@@ -2971,7 +2967,7 @@ generic_type_declaration(flag, kind):
     {
       let (kind, priv, manifest) = kind_priv_manifest in
       let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
       Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
@@ -3101,9 +3097,10 @@ str_exception_declaration:
   attrs = post_item_attributes
   { let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
+    let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs ?ext () in
     Te.mk_exception ~attrs
-      (Te.rebind id lid ~attrs:(attrs1 @ attrs2) ~loc ~docs)
-    , ext }
+      (Te.rebind id lid ~attrs:attrs2 ~loc ~docs)
+  }
 ;
 sig_exception_declaration:
   EXCEPTION
@@ -3116,9 +3113,10 @@ sig_exception_declaration:
     { let vars, args, res = vars_args_res in
       let loc = make_loc ($startpos, $endpos(attrs2)) in
       let docs = symbol_docs $sloc in
+      let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs ?ext () in
       Te.mk_exception ~attrs
-        (Te.decl id ~vars ~args ?res ~attrs:(attrs1 @ attrs2) ~loc ~docs)
-      , ext }
+        (Te.decl id ~vars ~args ?res ~attrs:attrs2 ~loc ~docs)
+    }
 ;
 %inline let_exception_declaration:
     mkrhs(constr_ident) generalized_constructor_arguments attributes
@@ -3188,9 +3186,8 @@ label_declaration_semi:
   cs = bar_llist(declaration)
   attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
-      let attrs = attrs1 @ attrs2 in
-      Te.mk tid cs ~params ~priv ~attrs ~docs,
-      ext }
+      let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+      Te.mk tid cs ~params ~priv ~attrs ~docs }
 ;
 %inline extension_constructor(opening):
     extension_constructor_declaration(opening)

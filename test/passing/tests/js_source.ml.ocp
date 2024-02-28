@@ -179,18 +179,18 @@ end
 let%foo[@foo] x = 4
 and[@foo] y = x
 
-type%foo t = int [@@foo]
-and t = int [@@foo]
+type%foo[@foo] t = int
+and[@foo] t = int
 
-type%foo t += T [@@foo]
+type%foo [@foo] t += T
 
-class%foo x = x [@@foo]
+class%foo [@foo] x = x
 
-class type%foo x = x [@@foo]
+class type%foo [@foo] x = x
 
-external%foo x : _ = "" [@@foo]
+external%foo [@foo] x : _ = ""
 
-exception%foo X [@foo]
+exception%foo [@foo] X
 
 module%foo [@foo] M = M
 
@@ -199,19 +199,20 @@ and [@foo] M : S = M
 
 module type%foo [@foo] S = S
 
-include%foo M [@@foo]
-open%foo M [@@foo]
+include%foo [@foo] M
+open%foo [@foo] M
 
 (* Signature items *)
 module type S = sig
-  val%foo x : t [@@foo]
-  external%foo x : t = "" [@@foo]
+  val%foo [@foo] x : t
+  external%foo [@foo] x : t = ""
 
-  type%foo t = int [@@foo]
-  and t' = int [@@foo]
+  type%foo[@foo] t = int
+  and[@foo] t' = int
 
-  type%foo t += T [@@foo]
-  exception%foo X [@foo]
+  type%foo [@foo] t += T
+
+  exception%foo [@foo] X
 
   module%foo [@foo] M : S
 
@@ -222,9 +223,15 @@ module type S = sig
 
   module type%foo [@foo] S = S
 
-  include%foo M [@@foo]
-  open%foo M [@@foo]
+  include%foo [@foo] M
+  open%foo [@foo] M
+
+  class%foo [@foo] x : t
+
+  class type%foo [@foo] x = x
+
   class%foo x : t [@@foo]
+
   class type%foo x = x [@@foo]
 end
 

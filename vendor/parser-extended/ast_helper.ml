@@ -56,6 +56,9 @@ module Attr = struct
       attr_loc = loc }
   let ext_attrs ?ext ?(before=[]) ?(after=[]) () =
     {attrs_extension = ext; attrs_before = before; attrs_after = after }
+
+  let empty_ext_attrs =
+    ext_attrs ()
 end
 
 module Typ = struct
@@ -361,19 +364,19 @@ module Cf = struct
 end
 
 module Val = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs) ?(docs = empty_docs)
         ?(prim = []) name typ =
     {
      pval_name = name;
      pval_type = typ;
-     pval_attributes = add_docs_attrs docs attrs;
+     pval_attributes = add_docs_attrs' docs attrs;
      pval_loc = loc;
      pval_prim = prim;
     }
 end
 
 module Md = struct
-  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
+  let mk ?(loc = !default_loc) ?(attrs=Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = []) name args typ =
     {
      pmd_name = name;
@@ -385,7 +388,7 @@ module Md = struct
 end
 
 module Ms = struct
-  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
+  let mk ?(loc = !default_loc) ?(attrs=Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = []) name syn =
     {
      pms_name = name;
@@ -396,7 +399,7 @@ module Ms = struct
 end
 
 module Mtd = struct
-  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
+  let mk ?(loc = !default_loc) ?(attrs=Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = []) ?typ name =
     {
      pmtd_name = name;
@@ -407,7 +410,7 @@ module Mtd = struct
 end
 
 module Mb = struct
-  let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
+  let mk ?(loc = !default_loc) ?(attrs=Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = []) name args expr =
     {
      pmb_name = name;
@@ -419,28 +422,28 @@ module Mb = struct
 end
 
 module Opn = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs) ?(docs = empty_docs)
         ?(override = Fresh) expr =
     {
      popen_expr = expr;
      popen_override = override;
      popen_loc = loc;
-     popen_attributes = add_docs_attrs docs attrs;
+     popen_attributes = add_docs_attrs' docs attrs;
     }
 end
 
 module Incl = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs) mexpr =
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs) ?(docs = empty_docs) mexpr =
     {
      pincl_mod = mexpr;
      pincl_loc = loc;
-     pincl_attributes = add_docs_attrs docs attrs;
+     pincl_attributes = add_docs_attrs' docs attrs;
     }
 
 end
 
 module Vb = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs)  ?(docs = empty_docs)
         ?(text = []) ?value_constraint ~is_pun pat args expr =
     {
      pvb_pat = pat;
@@ -449,13 +452,13 @@ module Vb = struct
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;
      pvb_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pvb_loc = loc;
     }
 end
 
 module Ci = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = [])
         ?(args = []) ?constraint_
         ?(virt = Concrete) ?(params = []) name expr =
@@ -467,13 +470,13 @@ module Ci = struct
      pci_constraint = constraint_;
      pci_expr = expr;
      pci_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pci_loc = loc;
     }
 end
 
 module Type = struct
-  let mk ?(loc = !default_loc) ?(attrs = [])
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs)
         ?(docs = empty_docs) ?(text = [])
       ?(params = [])
       ?(cstrs = [])
@@ -489,7 +492,7 @@ module Type = struct
      ptype_private = priv;
      ptype_manifest = manifest;
      ptype_attributes =
-       add_text_attrs text (add_docs_attrs docs attrs);
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      ptype_loc = loc;
     }
 
@@ -518,7 +521,7 @@ end
 
 (** Type extensions *)
 module Te = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs) ?(docs = empty_docs)
         ?(params = []) ?(priv = Public) path constructors =
     {
      ptyext_path = path;
@@ -526,15 +529,15 @@ module Te = struct
      ptyext_constructors = constructors;
      ptyext_private = priv;
      ptyext_loc = loc;
-     ptyext_attributes = add_docs_attrs docs attrs;
+     ptyext_attributes = add_docs_attrs' docs attrs;
     }
 
-  let mk_exception ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+  let mk_exception ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs) ?(docs = empty_docs)
       constructor =
     {
      ptyexn_constructor = constructor;
      ptyexn_loc = loc;
-     ptyexn_attributes = add_docs_attrs docs attrs;
+     ptyexn_attributes = add_docs_attrs' docs attrs;
     }
 
   let constructor ?(loc = !default_loc) ?(attrs = [])

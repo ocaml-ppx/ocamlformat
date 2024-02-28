@@ -115,7 +115,6 @@ and M : S = M [@@foo]
 module type%foo S = S [@@foo]
 
 include%foo M [@@foo]
-
 open%foo M [@@foo]
 
 (* Signature items *)
