@@ -54,12 +54,11 @@ module Attr = struct
     { attr_name = name;
       attr_payload = payload;
       attr_loc = loc }
-
   let ext_attrs ?ext ?(before=[]) ?(after=[]) () =
     {attrs_extension = ext; attrs_before = before; attrs_after = after }
 
-    let empty_ext_attrs =
-   ext_attrs ()
+  let empty_ext_attrs =
+    ext_attrs ()
 end
 
 module Typ = struct
