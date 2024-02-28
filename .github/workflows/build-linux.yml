@@ -41,6 +41,9 @@ jobs:
           opam exec -- dune subst
           opam exec -- dune build -p ocamlformat-lib,ocamlformat
 
+      - name: Format
+        run: opam exec -- dune fmt
+
       - name: Runtest
         run: opam exec -- dune runtest
 
