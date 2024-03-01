@@ -50,6 +50,10 @@ profile. This started with version 0.26.0.
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
 
+### Added
+
+- New profile: `diff-friendly`, aiming to minimize the vertical diff (#2020, @gpetiot)
+
 ## 0.26.1 (2023-09-15)
 
 ### Changed
