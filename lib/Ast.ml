@@ -146,7 +146,7 @@ module Exp = struct
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
     | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
-     |Pexp_newtype _ | Pexp_try _ ->
+     |Pexp_try _ ->
         false
     | _ -> List.exists pexp_attributes ~f:(Fn.non Attr.is_doc)
 
@@ -186,8 +186,7 @@ module Exp = struct
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _
-            | Pexp_letopen _ )
+            | Pexp_letmodule _ | Pexp_open _ | Pexp_letopen _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
         true
@@ -943,6 +942,10 @@ end = struct
     let check_let_bindings lbs =
       List.exists lbs.pvbs_bindings ~f:check_pvb
     in
+    let check_type_constraint = function
+      | Pconstraint t -> f t
+      | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2
+    in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
@@ -1003,7 +1006,6 @@ end = struct
       | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
-       |Pexp_poly (_, Some t1)
        |Pexp_extension (_, PTyp t1) ->
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
@@ -1012,9 +1014,7 @@ end = struct
       | Pexp_record (en1, _) ->
           assert (
             List.exists en1 ~f:(fun (_, c, _) ->
-                Option.exists c ~f:(function
-                  | Pconstraint t -> f t
-                  | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
+                Option.exists c ~f:check_type_constraint ) )
       | Pexp_let (lbs, _, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fpe _ | Fpc _ -> assert false
@@ -1067,28 +1067,11 @@ end = struct
           match pcf_desc with
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_val (_, _, Cfk_concrete _) -> false
+          | Pcf_val (_, _, Cfk_concrete (_, tc, _)) ->
+              Option.exists tc ~f:check_type_constraint
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt); _}))
-            ->
-              let rec loop = function
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
-                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
-                | _ -> false
-              in
-              (match topt with None -> false | Some t -> typ == t)
-              || loop e
-          | Pcf_method (_, _, Cfk_concrete _) -> false
+          | Pcf_method (_, _, Cfk_concrete (_, (_, t), _)) ->
+              Option.exists t ~f:check_value_constraint
           | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
           | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false )
     | Ctf {pctf_desc; _} ->
@@ -1268,12 +1251,12 @@ end = struct
        |Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
        |Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
        |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
-       |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
-       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
-       |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
-       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
-       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
+       |Pexp_open _ | Pexp_override _ | Pexp_pack _ | Pexp_record _
+       |Pexp_send _ | Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
+       |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _
+       |Pexp_hole | Pexp_beginend _ | Pexp_parens _ | Pexp_cons _
+       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _
+        ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1416,10 +1399,8 @@ end = struct
          |Pexp_lazy e
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, _, e)
-         |Pexp_newtype (_, e)
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
-         |Pexp_poly (e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
@@ -1475,32 +1456,14 @@ end = struct
     | Ctf _ -> assert false
     | Clf {pcf_desc; _} ->
         assert (
+          let check_cfk = function
+            | Cfk_concrete (_, _, e) -> e == exp
+            | Cfk_virtual _ -> false
+          in
           match pcf_desc with
           | Pcf_initializer e -> e == exp
-          | Pcf_val (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_val (_, _, Cfk_virtual _) -> false
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _); _}))
-           |Pcf_method (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_method (_, _, Cfk_virtual _) -> false
+          | Pcf_val (_, _, cfk) -> check_cfk cfk
+          | Pcf_method (_, _, cfk) -> check_cfk cfk
           | Pcf_extension (_, ext) -> check_extensions ext
           | Pcf_inherit _ -> false
           | Pcf_constraint _ -> false
@@ -2018,7 +1981,6 @@ end = struct
          |Pexp_prefix (_, e)
          |Pexp_infix (_, _, e)
          |Pexp_lazy e
-         |Pexp_newtype (_, e)
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
          |Pexp_sequence (_, e)
@@ -2052,7 +2014,7 @@ end = struct
          |Pexp_construct (_, None)
          |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
-         |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
+         |Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
          |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
          |Pexp_indexop_access _ ->
@@ -2093,7 +2055,6 @@ end = struct
        |Pexp_prefix (_, e)
        |Pexp_infix (_, _, e)
        |Pexp_lazy e
-       |Pexp_newtype (_, e)
        |Pexp_open (_, e)
        |Pexp_letopen (_, e)
        |Pexp_fun (_, e)
@@ -2131,7 +2092,7 @@ end = struct
        |Pexp_construct (_, None)
        |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
-       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
+       |Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
        |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _ ->
           false

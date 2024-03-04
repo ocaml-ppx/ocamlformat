@@ -401,8 +401,8 @@ let fmt_private_virtual_flag c = function
 
 let virtual_or_override = function
   | Cfk_virtual _ -> noop
-  | Cfk_concrete (Override, _) -> str "!"
-  | Cfk_concrete (Fresh, _) -> noop
+  | Cfk_concrete (Override, _, _) -> str "!"
+  | Cfk_concrete (Fresh, _, _) -> noop
 
 let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
   assert (not (String.is_empty input)) ;
@@ -1476,7 +1476,7 @@ and fmt_fun ?force_closing_paren
   let body =
     let box =
       match xbody.ast.pexp_desc with
-      | Pexp_fun _ | Pexp_newtype _ | Pexp_function _ -> Some false
+      | Pexp_fun _ | Pexp_function _ -> Some false
       | _ -> None
     in
     fmt_expression c ?box xbody
@@ -1535,7 +1535,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
                ~pro:(fmt_label lbl (str ":" $ break 0 2))
                ~box xarg )
         $ cmts_after )
-  | (Labelled _ | Optional _), (Pexp_fun _ | Pexp_newtype _) ->
+  | (Labelled _ | Optional _), Pexp_fun _ ->
       fmt_fun ~box ~label:lbl ~parens:true c xarg
   | _ ->
       let label_sep : t =
@@ -1684,8 +1684,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
            the end of the operator. Preserve the break to avoid introducing
            large diffs while allowing consistent formatting. *)
         Source.begins_line c.source exp.pexp_loc
-    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_match _ | Pexp_newtype _
-     |Pexp_sequence _ | Pexp_try _ | Pexp_letopen _ ->
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_match _ | Pexp_sequence _
+     |Pexp_try _ | Pexp_letopen _ ->
         true
     | _ -> false
   in
@@ -2278,7 +2278,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
-  | Pexp_newtype _ | Pexp_fun _ ->
+  | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
       let body_is_function =
@@ -2841,8 +2841,6 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ fmt_atrs ) )
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
-  | Pexp_poly _ ->
-      impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend e ->
       let wrap_beginend k =
@@ -3070,81 +3068,32 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         $ str " in" $ force_break
         $ fmt_class_expr c (sub_cl ~ctx cl) )
 
-and fmt_class_field_kind c ctx = function
-  | Cfk_virtual typ ->
-      ( space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx typ)
-      , noop
-      , noop
-      , noop )
-  | Cfk_concrete
-      ( _
-      , { pexp_desc=
-            Pexp_poly
-              (e, Some ({ptyp_desc= Ptyp_poly (poly_args, _); _} as poly))
-        ; pexp_loc
-        ; _ } ) -> (
-      let rec cleanup names e args' =
-        match (e, args') with
-        | {pexp_desc= Pexp_constraint (e, t); _}, [] ->
-            Some (List.rev names, t, e)
-        | ( {pexp_desc= Pexp_newtype (({txt; _} as newtyp), body); _}
-          , {txt= txt'; _} :: args )
-          when String.equal txt txt' ->
-            cleanup (newtyp :: names) body args
-        | _ -> None
-      in
-      match cleanup [] e poly_args with
-      | Some (args, t, e) ->
-          let before =
-            match args with x :: _ -> x.loc | [] -> e.pexp_loc
-          in
-          Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
-          ( space_break $ str ": type "
-            $ list args space_break (fmt_str_loc c)
-            $ fmt_core_type ~pro:"." ~pro_space:false c (sub_typ ~ctx t)
-          , noop
-          , break 1 2 $ str "="
-          , space_break $ fmt_expression c (sub_exp ~ctx e) )
-      | None ->
-          ( space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx poly)
-          , noop
-          , break 1 2 $ str "="
-          , space_break $ fmt_expression c (sub_exp ~ctx e) ) )
-  | Cfk_concrete (_, {pexp_desc= Pexp_poly (e, poly); pexp_loc; _}) ->
-      let xargs, xbody =
-        match poly with
-        | None ->
-            Sugar.fun_ c.cmts ~will_keep_first_ast_node:false
-              (sub_exp ~ctx e)
-        | Some _ -> ([], sub_exp ~ctx e)
-      in
-      let ty, e =
-        match (xbody.ast, poly) with
-        | {pexp_desc= Pexp_constraint (e, t); pexp_loc; _}, None ->
-            Cmts.relocate c.cmts ~src:pexp_loc ~before:t.ptyp_loc
-              ~after:e.pexp_loc ;
-            (Some t, sub_exp ~ctx e)
-        | {pexp_desc= Pexp_constraint _; _}, Some _ -> (poly, xbody)
-        | _, poly -> (poly, xbody)
-      in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
-        ~after:e.ast.pexp_loc ;
-      ( noop
-      , fmt_if (not (List.is_empty xargs)) space_break
-        $ wrap_fun_decl_args c (fmt_expr_fun_args c xargs)
-        $ opt ty (fun t ->
-              space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx t) )
+and fmt_type_constraint c ctx = function
+  | Pconstraint t1 ->
+      space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx t1)
+  | Pcoerce (t1, t2) ->
+      opt t1 (fun t ->
+          space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx t) )
+      $ str " :> "
+      $ fmt_core_type c (sub_typ ~ctx t2)
+
+and fmt_class_field_virtual c ctx typ =
+  (space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx typ), noop, noop)
+
+and fmt_class_field_value_kind c ctx = function
+  | Cfk_virtual typ -> fmt_class_field_virtual c ctx typ
+  | Cfk_concrete (_, tc, e) ->
+      ( opt tc (fmt_type_constraint c ctx)
       , break 1 2 $ str "="
-      , space_break $ fmt_expression c e )
-  | Cfk_concrete (_, e) ->
-      let ty, e =
-        match e with
-        | {pexp_desc= Pexp_constraint (e, t); _} -> (Some t, e)
-        | _ -> (None, e)
-      in
-      ( opt ty (fun t ->
-            space_break $ str ": " $ fmt_core_type c (sub_typ ~ctx t) )
-      , noop
+      , space_break $ fmt_expression c (sub_exp ~ctx e) )
+
+and fmt_class_field_method_kind c ctx = function
+  | Cfk_virtual typ -> fmt_class_field_virtual c ctx typ
+  | Cfk_concrete (_, (args, t), e) ->
+      let fmt_newtypes, fmt_cstr = fmt_value_constraint c t in
+      ( fmt_if (not (List.is_empty args)) space_break
+        $ wrap_fun_decl_args c (fmt_expr_fun_args c args)
+        $ fmt_newtypes $ fmt_cstr
       , break 1 2 $ str "="
       , space_break $ fmt_expression c (sub_exp ~ctx e) )
 
@@ -3172,31 +3121,29 @@ and fmt_class_field c {ast= cf; _} =
         $ ( fmt_class_expr c (sub_cl ~ctx cl)
           $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
   | Pcf_method (name, pv, kind) ->
-      let typ, args, eq, expr = fmt_class_field_kind c ctx kind in
+      let typ, eq, expr = fmt_class_field_method_kind c ctx kind in
       hvbox 2
         ( hovbox 2
             ( hovbox 4
                 (box_fun_decl_args c
                    (Params.Indent.fun_args c.conf)
-                   ( box_fun_sig_args c
-                       (Params.Indent.fun_type_annot c.conf)
-                       ( str "method" $ virtual_or_override kind
-                       $ fmt_private_virtual_flag c pv
-                       $ str " " $ fmt_str_loc c name $ typ )
-                   $ args ) )
+                   (box_fun_sig_args c
+                      (Params.Indent.fun_type_annot c.conf)
+                      ( str "method" $ virtual_or_override kind
+                      $ fmt_private_virtual_flag c pv
+                      $ str " " $ fmt_str_loc c name $ typ ) ) )
             $ eq )
         $ expr )
   | Pcf_val (name, mv, kind) ->
-      let typ, args, eq, expr = fmt_class_field_kind c ctx kind in
+      let typ, eq, expr = fmt_class_field_value_kind c ctx kind in
       hvbox 2
         ( hovbox 2
             ( hovbox 4
                 (box_fun_decl_args c 4
-                   ( box_fun_sig_args c 4
-                       ( str "val" $ virtual_or_override kind
-                       $ fmt_mutable_virtual_flag c mv
-                       $ str " " $ fmt_str_loc c name $ typ )
-                   $ args ) )
+                   (box_fun_sig_args c 4
+                      ( str "val" $ virtual_or_override kind
+                      $ fmt_mutable_virtual_flag c mv
+                      $ str " " $ fmt_str_loc c name $ typ ) ) )
             $ eq )
         $ expr )
   | Pcf_constraint (t1, t2) ->
@@ -4606,8 +4553,7 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ -> c.conf.fmt_opts.function_indent.v
-    | (Pexp_fun _ | Pexp_newtype _)
-      when c.conf.fmt_opts.let_binding_deindent_fun.v ->
+    | Pexp_fun _ when c.conf.fmt_opts.let_binding_deindent_fun.v ->
         max (c.conf.fmt_opts.let_binding_indent.v - 1) 0
     | _ -> c.conf.fmt_opts.let_binding_indent.v
   in

@@ -336,18 +336,6 @@ let pat_of_label lbl =
   Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
 *)
 
-let mk_newtypes ~loc newtypes exp =
-  let mkexp = mkexp ~loc in
-  List.fold_right (fun newtype exp -> mkexp (Pexp_newtype (newtype, exp)))
-    newtypes exp
-
-let wrap_type_annotation ~loc newtypes core_type body =
-  let mkexp, ghtyp = mkexp ~loc, ghtyp ~loc in
-  let mk_newtypes = mk_newtypes ~loc in
-  let exp = mkexp(Pexp_constraint(body,core_type)) in
-  let exp = mk_newtypes newtypes exp in
-  (exp, ghtyp(Ptyp_poly(newtypes, core_type)))
-
 let wrap_exp_attrs ~loc body (ext, attrs) =
   let ghexp = ghexp ~loc in
   (* todo: keep exact location for the entire attribute *)
@@ -1914,12 +1902,10 @@ value:
     label = mkrhs(label) COLON ty = core_type
       { (label, mutable_, Cfk_virtual ty), attrs }
   | override_flag attributes mutable_flag mkrhs(label) EQUAL seq_expr
-      { ($4, mv_of_mut $3, Cfk_concrete ($1, $6)), $2 }
+      { ($4, mv_of_mut $3, Cfk_concrete ($1, None, $6)), $2 }
   | override_flag attributes mutable_flag mkrhs(label) type_constraint
     EQUAL seq_expr
-      { let e = mkexp_constraint ~loc:$sloc $7 $5 in
-        ($4, mv_of_mut $3, Cfk_concrete ($1, e)), $2
-      }
+      { ($4, mv_of_mut $3, Cfk_concrete ($1, Some $5, $7)), $2 }
 ;
 method_:
     no_override_flag
@@ -1928,28 +1914,16 @@ method_:
     label = mkrhs(label) COLON ty = poly_type
       { (label, private_, Cfk_virtual ty), attrs }
   | override_flag attributes private_flag mkrhs(label) strict_binding
-      { let e = $5 in
-        let loc = Location.(e.pexp_loc.loc_start, e.pexp_loc.loc_end) in
-        ($4, pv_of_priv $3,
-        Cfk_concrete ($1, ghexp ~loc (Pexp_poly (e, None)))), $2 }
+      { let args, tc, exp = $5 in
+        ($4, pv_of_priv $3, Cfk_concrete ($1, (args, tc), exp)), $2 }
   | override_flag attributes private_flag mkrhs(label)
     COLON poly_type EQUAL seq_expr
-      { let poly_exp =
-          let loc = ($startpos($6), $endpos($8)) in
-          ghexp ~loc (Pexp_poly($8, Some $6)) in
-        ($4, pv_of_priv $3, Cfk_concrete ($1, poly_exp)), $2 }
+      { let tc = Pvc_constraint { locally_abstract_univars= []; typ= $6 } in
+        ($4, pv_of_priv $3, Cfk_concrete ($1, ([], Some tc), $8)), $2 }
   | override_flag attributes private_flag mkrhs(label) COLON TYPE lident_list
     DOT core_type EQUAL seq_expr
-      { let poly_exp_loc = ($startpos($7), $endpos($11)) in
-        let poly_exp =
-          let exp, poly =
-            (* it seems odd to use the global ~loc here while poly_exp_loc
-               is tighter, but this is what ocamlyacc does;
-               TODO improve parser.mly *)
-            wrap_type_annotation ~loc:$sloc $7 $9 $11 in
-          ghexp ~loc:poly_exp_loc (Pexp_poly(exp, Some poly)) in
-        ($4, pv_of_priv $3,
-        Cfk_concrete ($1, poly_exp)), $2 }
+      { let tc = Pvc_constraint { locally_abstract_univars= $7; typ= $9 } in
+        ($4, pv_of_priv $3, Cfk_concrete ($1, ([], Some tc), $11)), $2 }
 ;
 
 /* Class types */
@@ -2475,7 +2449,7 @@ labeled_simple_expr:
     val_ident { mkpatvar ~loc:$sloc $1 }
 ;
 let_binding_body_no_punning:
-    let_ident args_typ_strict_binding
+    let_ident strict_binding
       { let args, tc, exp = $2 in
         ($1, args, tc, exp) }
   | let_ident type_constraint EQUAL seq_expr
@@ -2547,7 +2521,7 @@ and_let_binding:
     }
 ;
 letop_binding_body:
-    pat = let_ident args_typ_strict_binding
+    pat = let_ident strict_binding
       { let args, tc, exp = $2 in
         (pat, args, tc, exp, false) }
   | val_ident
@@ -2569,20 +2543,7 @@ letop_bindings:
         let and_ = {pbop_op; pbop_args; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
         let_pat, let_args, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
 ;
-fun_binding:
-    strict_binding
-      { $1 }
-  | type_constraint EQUAL seq_expr
-      { mkexp_constraint ~loc:$sloc $3 $1 }
-;
 strict_binding:
-    EQUAL seq_expr
-      { $2 }
-  | expr_fun_param fun_binding
-      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-;
-// [args_typ_strict_binding] will replace [strict_binding] when the lists of args are unfolded everywhere
-args_typ_strict_binding:
     EQUAL seq_expr
       { [], None, $2 }
   | nonempty_llist(expr_fun_param) type_constraint? EQUAL seq_expr

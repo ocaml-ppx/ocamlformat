@@ -70,9 +70,7 @@ module Exp = struct
         | Pexp_apply (_, args) -> (
           (* Rhs is an apply and it ends with a [fun]. *)
           match List.last_exn args with
-          | _, {pexp_desc= Pexp_fun _ | Pexp_newtype _ | Pexp_function _; _}
-            ->
-              true
+          | _, {pexp_desc= Pexp_fun _ | Pexp_function _; _} -> true
           | _ -> false )
         | Pexp_match _ | Pexp_try _ -> true
         | _ -> false

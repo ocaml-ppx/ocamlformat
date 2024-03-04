@@ -26,6 +26,8 @@ profile. This started with version 0.26.0.
 - \* Don't align breaking module arguments (#2505, @Julow)
 - Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
 - \* Undo let-bindings normalizations (#2523, @gpetiot)
+- \* Undo method parameters normalizations (#2529, @gpetiot)
+- \* The `break-colon` option is now taken into account for method type constraints (#2529, @gpetiot)
 
 ### Fixed
 

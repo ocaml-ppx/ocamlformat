@@ -55,11 +55,11 @@ let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy
 
 class ffffffffffffffffffff =
   object
-    method ffffffffffffffffffff
-        :    aaaaaaaaaaaaaaaaaaaaaa
-          -> bbbbbbbbbbbbbbbbbbbbbb
-          -> cccccccccccccccccccccc
-          -> dddddddddddddddddddddd =
+    method ffffffffffffffffffff :
+           aaaaaaaaaaaaaaaaaaaaaa
+        -> bbbbbbbbbbbbbbbbbbbbbb
+        -> cccccccccccccccccccccc
+        -> dddddddddddddddddddddd =
       g
 
     val ffffffffffffffffffff

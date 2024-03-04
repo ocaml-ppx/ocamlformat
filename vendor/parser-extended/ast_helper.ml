@@ -155,9 +155,7 @@ module Exp = struct
   let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))
   let assert_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_assert a)
   let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_lazy a)
-  let poly ?loc ?attrs a b = mk ?loc ?attrs (Pexp_poly (a, b))
   let object_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_object a)
-  let newtype ?loc ?attrs a b = mk ?loc ?attrs (Pexp_newtype (a, b))
   let pack ?loc ?attrs a b = mk ?loc ?attrs (Pexp_pack (a, b))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
   let letopen ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letopen (a, b))
@@ -355,9 +353,6 @@ module Cf = struct
     List.map
       (fun ds -> attribute ~loc:(docstring_loc ds) (text_attr ds))
       f_txt
-
-  let virtual_ ct = Cfk_virtual ct
-  let concrete o e = Cfk_concrete (o, e)
 
   let attr d a = {d with pcf_attributes = d.pcf_attributes @ [a]}
 
