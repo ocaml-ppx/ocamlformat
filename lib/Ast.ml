@@ -106,6 +106,10 @@ module Ext = struct
 end
 
 module Ext_attrs = struct
+  let has_attrs = function
+    | {attrs_extension= _; attrs_before= []; attrs_after= []} -> false
+    | _ -> true
+
   let has_doc ea =
     List.exists ~f:Attr.is_doc ea.attrs_before
     || List.exists ~f:Attr.is_doc ea.attrs_after
@@ -142,7 +146,7 @@ module Exp = struct
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
     | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
-     |Pexp_newtype _ | Pexp_try _ ->
+     |Pexp_try _ ->
         false
     | _ -> List.exists pexp_attributes ~f:(Fn.non Attr.is_doc)
 
@@ -182,8 +186,7 @@ module Exp = struct
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _
-            | Pexp_letopen _ )
+            | Pexp_letmodule _ | Pexp_open _ | Pexp_letopen _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
         true
@@ -326,28 +329,27 @@ module Structure_item = struct
     | Pstr_attribute atr -> Attr.is_doc atr
     (* one attribute list *)
     | Pstr_eval (_, atrs)
-     |Pstr_value {pvbs_bindings= {pvb_attributes= atrs; _} :: _; _}
-     |Pstr_primitive {pval_attributes= atrs; _}
-     |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
-     |Pstr_typext {ptyext_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
-     |Pstr_open {popen_attributes= atrs; _}
-     |Pstr_extension (_, atrs)
-     |Pstr_class_type ({pci_attributes= atrs; _} :: _)
-     |Pstr_class ({pci_attributes= atrs; _} :: _) ->
+     |Pstr_extension (_, atrs) ->
         List.exists ~f:Attr.is_doc atrs
-    | Pstr_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ }
+    | Pstr_open {popen_attributes= ea; _}
+     |Pstr_class_type ({pci_attributes= ea; _} :: _)
+     |Pstr_class ({pci_attributes= ea; _} :: _)
+     |Pstr_modtype {pmtd_ext_attrs= ea; _}
+     |Pstr_type (_, {ptype_attributes= ea; _} :: _)
+     |Pstr_value {pvbs_bindings= {pvb_attributes= ea; _} :: _; _}
+     |Pstr_primitive {pval_attributes= ea; _}
+     |Pstr_typext {ptyext_attributes= ea; _} ->
+        Ext_attrs.has_doc ea
+    | Pstr_module
+        {pmb_ext_attrs= ea; pmb_expr= {pmod_attributes= attrs; _}; _}
      |Pstr_include
-        {pincl_mod= {pmod_attributes= atrs1; _}; pincl_attributes= atrs2; _}
-      ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Pstr_modtype {pmtd_ext_attrs; _} -> Ext_attrs.has_doc pmtd_ext_attrs
-    | Pstr_module {pmb_ext_attrs; pmb_expr= {pmod_attributes; _}; _} ->
-        Ext_attrs.has_doc pmb_ext_attrs
-        || List.exists ~f:Attr.is_doc pmod_attributes
+        {pincl_mod= {pmod_attributes= attrs; _}; pincl_attributes= ea; _}
+     |Pstr_exception
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= attrs; _}
+        ; _ } ->
+        Ext_attrs.has_doc ea || List.exists ~f:Attr.is_doc attrs
     | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
      |Pstr_recmodule []
@@ -421,29 +423,25 @@ module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
     | Psig_attribute atr -> Attr.is_doc atr
-    (* one attribute list *)
-    | Psig_value {pval_attributes= atrs; _}
-     |Psig_type (_, {ptype_attributes= atrs; _} :: _)
-     |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
-     |Psig_typext {ptyext_attributes= atrs; _}
-     |Psig_open {popen_attributes= atrs; _}
-     |Psig_extension (_, atrs)
-     |Psig_class_type ({pci_attributes= atrs; _} :: _)
-     |Psig_class ({pci_attributes= atrs; _} :: _) ->
-        List.exists ~f:Attr.is_doc atrs
-    (* two attribute list *)
-    | Psig_modtype {pmtd_ext_attrs= ea; _}
+    | Psig_extension (_, atrs) -> List.exists ~f:Attr.is_doc atrs
+    | Psig_value {pval_attributes= ea; _}
+     |Psig_type (_, {ptype_attributes= ea; _} :: _)
+     |Psig_typesubst ({ptype_attributes= ea; _} :: _)
+     |Psig_typext {ptyext_attributes= ea; _}
+     |Psig_open {popen_attributes= ea; _}
+     |Psig_class_type ({pci_attributes= ea; _} :: _)
+     |Psig_class ({pci_attributes= ea; _} :: _)
+     |Psig_modtype {pmtd_ext_attrs= ea; _}
      |Psig_modtypesubst {pmtd_ext_attrs= ea; _}
      |Psig_modsubst {pms_ext_attrs= ea; _} ->
         Ext_attrs.has_doc ea
     | Psig_include
-        {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
+        {pincl_mod= {pmty_attributes= atrs; _}; pincl_attributes= ea; _}
      |Psig_exception
-        { ptyexn_attributes= atrs1
-        ; ptyexn_constructor= {pext_attributes= atrs2; _}
-        ; _ } ->
-        List.exists ~f:Attr.is_doc atrs1 || List.exists ~f:Attr.is_doc atrs2
-    | Psig_recmodule
+        { ptyexn_attributes= ea
+        ; ptyexn_constructor= {pext_attributes= atrs; _}
+        ; _ }
+     |Psig_recmodule
         ({pmd_type= {pmty_attributes= atrs; _}; pmd_ext_attrs= ea; _} :: _)
      |Psig_module {pmd_ext_attrs= ea; pmd_type= {pmty_attributes= atrs; _}; _}
       ->
@@ -508,7 +506,7 @@ module Signature_item = struct
 end
 
 module Lb = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.pvb_attributes
+  let has_doc itm = Ext_attrs.has_doc itm.pvb_attributes
 
   let is_simple (i, (c : Conf.t)) =
     Poly.(c.fmt_opts.module_item_spacing.v = `Compact)
@@ -550,7 +548,7 @@ module Md = struct
 end
 
 module Td = struct
-  let has_doc itm = List.exists ~f:Attr.is_doc itm.ptype_attributes
+  let has_doc itm = Ext_attrs.has_doc itm.ptype_attributes
 
   let is_simple (i, (c : Conf.t)) =
     match c.fmt_opts.module_item_spacing.v with
@@ -699,19 +697,19 @@ let attrs_of_ext_attrs ea = ea.attrs_before @ ea.attrs_after
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
-  | Td x -> x.ptype_attributes
+  | Td x -> attrs_of_ext_attrs x.ptype_attributes
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
   | Fpe _ | Fpc _ -> []
   | Vc _ -> []
-  | Lb x -> x.pvb_attributes
+  | Lb x -> attrs_of_ext_attrs x.pvb_attributes
   | Bo _ -> []
   | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
-  | Cd x -> x.pci_attributes
-  | Ctd x -> x.pci_attributes
+  | Cd x -> attrs_of_ext_attrs x.pci_attributes
+  | Ctd x -> attrs_of_ext_attrs x.pci_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
   | Sig _ -> []
@@ -944,6 +942,10 @@ end = struct
     let check_let_bindings lbs =
       List.exists lbs.pvbs_bindings ~f:check_pvb
     in
+    let check_type_constraint = function
+      | Pconstraint t -> f t
+      | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2
+    in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
@@ -1004,7 +1006,6 @@ end = struct
       | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
-       |Pexp_poly (_, Some t1)
        |Pexp_extension (_, PTyp t1) ->
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
@@ -1013,10 +1014,8 @@ end = struct
       | Pexp_record (en1, _) ->
           assert (
             List.exists en1 ~f:(fun (_, c, _) ->
-                Option.exists c ~f:(function
-                  | Pconstraint t -> f t
-                  | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2 ) ) )
-      | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
+                Option.exists c ~f:check_type_constraint ) )
+      | Pexp_let (lbs, _, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fpe _ | Fpc _ -> assert false
     | Vc c -> assert (check_value_constraint c)
@@ -1029,7 +1028,7 @@ end = struct
           match pcl_desc with
           | Pcl_constr (_, l) -> List.exists l ~f
           | Pcl_constraint _ -> false
-          | Pcl_let (lbs, _) -> check_let_bindings lbs
+          | Pcl_let (lbs, _, _) -> check_let_bindings lbs
           | Pcl_apply _ -> false
           | Pcl_fun _ -> false
           | Pcl_open _ -> false
@@ -1068,28 +1067,11 @@ end = struct
           match pcf_desc with
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_val (_, _, Cfk_concrete _) -> false
+          | Pcf_val (_, _, Cfk_concrete (_, tc, _)) ->
+              Option.exists tc ~f:check_type_constraint
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
-              typ == t
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt); _}))
-            ->
-              let rec loop = function
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
-                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
-                | _ -> false
-              in
-              (match topt with None -> false | Some t -> typ == t)
-              || loop e
-          | Pcf_method (_, _, Cfk_concrete _) -> false
+          | Pcf_method (_, _, Cfk_concrete (_, (_, t), _)) ->
+              Option.exists t ~f:check_value_constraint
           | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
           | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false )
     | Ctf {pctf_desc; _} ->
@@ -1138,7 +1120,7 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply _ -> false
-          | Pcl_let (_, _) -> false
+          | Pcl_let (_, _, _) -> false
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
@@ -1190,7 +1172,7 @@ end = struct
           | Pcl_structure _ -> false
           | Pcl_fun (_, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
-          | Pcl_let (_, x) -> x == cl
+          | Pcl_let (_, x, _) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
           | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
@@ -1269,17 +1251,17 @@ end = struct
        |Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
        |Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
        |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
-       |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
-       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
-       |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
-       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
-       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
+       |Pexp_open _ | Pexp_override _ | Pexp_pack _ | Pexp_record _
+       |Pexp_send _ | Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
+       |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _
+       |Pexp_hole | Pexp_beginend _ | Pexp_parens _ | Pexp_cons _
+       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _
+        ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
           assert (Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self)
-      | Pexp_let ({pvbs_bindings; _}, _) ->
+      | Pexp_let ({pvbs_bindings; _}, _, _) ->
           assert (check_bindings pvbs_bindings)
       | Pexp_letop {let_; ands; _} ->
           let f {pbop_pat; _} = check_subpat pbop_pat in
@@ -1306,7 +1288,8 @@ end = struct
           | Pcl_structure {pcstr_self; _} ->
               Option.exists ~f:(fun self_ -> self_ == pat) pcstr_self
           | Pcl_apply _ -> false
-          | Pcl_let ({pvbs_bindings; _}, _) -> check_bindings pvbs_bindings
+          | Pcl_let ({pvbs_bindings; _}, _, _) ->
+              check_bindings pvbs_bindings
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
           | Pcl_open _ -> false )
@@ -1367,12 +1350,12 @@ end = struct
          |Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object _ -> assert false
-        | Pexp_let ({pvbs_bindings; _}, e) ->
+        | Pexp_let ({pvbs_bindings; _}, e, _) ->
             assert (
               List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
               || e == exp )
-        | Pexp_letop {let_; ands; body} ->
+        | Pexp_letop {let_; ands; body; loc_in= _} ->
             let f {pbop_exp; _} = pbop_exp == exp in
             assert (f let_ || List.exists ~f ands || body == exp)
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
@@ -1416,10 +1399,8 @@ end = struct
          |Pexp_lazy e
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, _, e)
-         |Pexp_newtype (_, e)
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
-         |Pexp_poly (e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
@@ -1461,7 +1442,7 @@ end = struct
           | Pcl_constr _ -> false
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
-          | Pcl_let ({pvbs_bindings; _}, _) ->
+          | Pcl_let ({pvbs_bindings; _}, _, _) ->
               List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                   pvb_expr == exp )
           | Pcl_constraint _ -> false
@@ -1475,32 +1456,14 @@ end = struct
     | Ctf _ -> assert false
     | Clf {pcf_desc; _} ->
         assert (
+          let check_cfk = function
+            | Cfk_concrete (_, _, e) -> e == exp
+            | Cfk_virtual _ -> false
+          in
           match pcf_desc with
           | Pcf_initializer e -> e == exp
-          | Pcf_val (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_val (_, _, Cfk_virtual _) -> false
-          | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _); _}))
-           |Pcf_method (_, _, Cfk_concrete (_, e)) ->
-              let rec loop x =
-                x == exp
-                ||
-                match x with
-                | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
-                | {pexp_desc= Pexp_fun (_, e); _} -> loop e
-                | _ -> false
-              in
-              loop e
-          | Pcf_method (_, _, Cfk_virtual _) -> false
+          | Pcf_val (_, _, cfk) -> check_cfk cfk
+          | Pcf_method (_, _, cfk) -> check_cfk cfk
           | Pcf_extension (_, ext) -> check_extensions ext
           | Pcf_inherit _ -> false
           | Pcf_constraint _ -> false
@@ -1974,7 +1937,7 @@ end = struct
       ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
-    | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _); _}
+    | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
       , pat_desc ) -> (
       match pat_desc with
@@ -2018,7 +1981,6 @@ end = struct
          |Pexp_prefix (_, e)
          |Pexp_infix (_, _, e)
          |Pexp_lazy e
-         |Pexp_newtype (_, e)
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
          |Pexp_sequence (_, e)
@@ -2035,7 +1997,7 @@ end = struct
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
-        | Pexp_let (_, e)
+        | Pexp_let (_, e, _)
          |Pexp_letop {body= e; _}
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, _, e) -> (
@@ -2052,7 +2014,7 @@ end = struct
          |Pexp_construct (_, None)
          |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
-         |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
+         |Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
          |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
          |Pexp_indexop_access _ ->
@@ -2093,7 +2055,6 @@ end = struct
        |Pexp_prefix (_, e)
        |Pexp_infix (_, _, e)
        |Pexp_lazy e
-       |Pexp_newtype (_, e)
        |Pexp_open (_, e)
        |Pexp_letopen (_, e)
        |Pexp_fun (_, e)
@@ -2103,7 +2064,7 @@ end = struct
        |Pexp_variant (_, Some e) ->
           continue e
       | Pexp_cons l -> continue (List.last_exn l)
-      | Pexp_let (_, e)
+      | Pexp_let (_, e, _)
        |Pexp_letop {body= e; _}
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, _, e) ->
@@ -2131,7 +2092,7 @@ end = struct
        |Pexp_construct (_, None)
        |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
-       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
+       |Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
        |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _ ->
           false

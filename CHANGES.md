@@ -26,6 +26,8 @@ profile. This started with version 0.26.0.
 - \* Don't align breaking module arguments (#2505, @Julow)
 - Improvements to ocp-indent-compat and the Janestreet profile (#2314, @Julow)
 - \* Undo let-bindings normalizations (#2523, @gpetiot)
+- \* Undo method parameters normalizations (#2529, @gpetiot)
+- \* The `break-colon` option is now taken into account for method type constraints (#2529, @gpetiot)
 
 ### Fixed
 
@@ -44,6 +46,11 @@ profile. This started with version 0.26.0.
 - Fix position of comments around and within `(type ...)` function arguments (#2503, @gpetiot)
 - Fix missing parentheses around constraint expressions with attributes (#2513, @alanechang)
 - Fix formatting of type vars in GADT constructors (#2518, @Julow)
+- Fix `[@ocamlformat "disable"]` inside `class type` constructs. (#2525, @EmileTrotignon)
+- Fix the formatting of the `in` keyword when `[@ocamlformat disable]` is attached to a let-binding (#2242, @EmileTrotignon)
+
+### Changes
+- The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
 
 ## 0.26.1 (2023-09-15)
 

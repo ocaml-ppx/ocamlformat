@@ -19,6 +19,7 @@
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -47,6 +48,7 @@
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -75,6 +77,7 @@
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -102,6 +105,7 @@
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
             before: (* Intentionally not formatted *)
+                None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
@@ -145,6 +149,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -153,8 +158,12 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[5,90+140]..[5,90+142])
+                comments
+                  before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -170,13 +179,11 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
-                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
-                       after: (* after unit *)
                     None
               ]
               expression (a.ml[6,233+2]..[6,233+3])
@@ -198,6 +205,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -206,8 +214,12 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[5,90+140]..[5,90+142])
+                comments
+                  before: (* after unit *)
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -223,13 +235,11 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
-                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
-                       after: (* after unit *)
                     None
               ]
               expression (a.ml[6,233+2]..[6,233+3])
@@ -251,6 +261,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -259,10 +270,12 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[12,260+2]..[12,260+4])
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
                    after: (* after unit *)
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -303,6 +316,7 @@
           comments
             before: (* before let-binding *)
              after: (* after let-binding *)
+                None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
@@ -311,10 +325,12 @@
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
               Pexp_let Nonrec
+                loc_in: (a.ml[12,260+2]..[12,260+4])
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
                    after: (* after unit *)
+                      None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)

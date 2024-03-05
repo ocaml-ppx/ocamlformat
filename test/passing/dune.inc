@@ -1224,6 +1224,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to comments_in_local_let.ml.stdout
+   (with-stderr-to comments_in_local_let.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/comments_in_local_let.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_local_let.ml comments_in_local_let.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_local_let.ml.err comments_in_local_let.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comments_in_record.ml.stdout
    (with-stderr-to comments_in_record.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/comments_in_record.ml})))))
@@ -1332,6 +1350,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to disable_class_type.ml.stdout
+   (with-stderr-to disable_class_type.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/disable_class_type.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_class_type.ml disable_class_type.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_class_type.ml.err disable_class_type.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to disable_conf_attrs.ml.stdout
    (with-stderr-to disable_conf_attrs.ml.stderr
      (run %{bin:ocamlformat} --margin-check --disable-conf-attrs %{dep:tests/disable_conf_attrs.ml})))))
@@ -1345,6 +1381,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/disable_conf_attrs.ml.err disable_conf_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to disable_local_let.ml.stdout
+   (with-stderr-to disable_local_let.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/disable_local_let.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_local_let.ml disable_local_let.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disable_local_let.ml.err disable_local_let.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -4053,7 +4107,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/object.ml object.ml.stdout)))
+ (action (diff tests/object.ml.ref object.ml.stdout)))
 
 (rule
  (alias runtest)

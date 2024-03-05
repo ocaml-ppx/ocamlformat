@@ -19,11 +19,11 @@ class foo =
 
 class virtual map =
   object
-    method visit_expr_node
-        : 'env 'info_0 'info_1.
-             ('env -> 'info_0 -> 'info_1)
-          -> 'env
-          -> 'info_0 expr_node
-          -> 'info_1 expr_node =
+    method visit_expr_node :
+        'env 'info_0 'info_1.
+           ('env -> 'info_0 -> 'info_1)
+        -> 'env
+        -> 'info_0 expr_node
+        -> 'info_1 expr_node =
       assert false
   end

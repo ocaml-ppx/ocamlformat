@@ -259,36 +259,38 @@ let _ =
   let open [%ext] in
   ()
 
-open A [@@attr]
-open B [@@attr]
+open [@attr] A
+open [@attr] B
 
-open struct
+open [@attr] struct
   type t
-end [@@attr]
+end
 
 open
+  [@attr]
   functor
     (A : S)
     ->
     struct
       type t
-    end [@@attr]
+    end
 
 open
+  [@attr]
   functor
     (_ : S)
     ->
     struct
       type t
-    end [@@attr]
+    end
 
-open A (B) [@@attr]
+open [@attr] A (B)
 
-open (A : S) [@@attr]
+open [@attr] (A : S)
 
-open (val x) [@@attr]
+open [@attr] (val x)
 
-open [%ext] [@@attr]
+open [@attr] [%ext]
 
 let g =
   M.f

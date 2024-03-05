@@ -61,7 +61,6 @@ module%ext T := M
 [%%ext: module T := M]
 
 open%ext M
-
 open! %ext M
 
 [%%ext open M]

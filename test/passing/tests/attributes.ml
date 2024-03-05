@@ -1,3 +1,5 @@
+[%foo type[@foo] t = < .. > ]
+
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
 
 let f (x [@warning ""]) = ()
@@ -435,3 +437,5 @@ let _ = f ((1 : int) [@a])
 let _ = f ((1 : int) [@a]) ((1 : int) [@a])
 
 let _ = f ((((1 : int) [@a]) : (int[@b])) [@a]) ((1 : int) [@a])
+
+include [@foo] M [@boo]

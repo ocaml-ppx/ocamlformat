@@ -168,15 +168,6 @@ and core_type_desc =
              to a constraint on a let-binding:
             {[let x : 'a1 ... 'an. T = e ...]}
 
-           - Under {{!class_field_kind.Cfk_virtual}[Cfk_virtual]} for methods
-          (not values).
-
-           - As the {!core_type} of a
-           {{!class_type_field_desc.Pctf_method}[Pctf_method]} node.
-
-           - As the {!core_type} of a {{!expression_desc.Pexp_poly}[Pexp_poly]}
-           node.
-
            - As the {{!label_declaration.pld_type}[pld_type]} field of a
            {!label_declaration}.
 
@@ -314,12 +305,13 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of value_bindings * expression
-      (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
+  | Pexp_let of value_bindings * expression * Location.t
+      (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E, loc_in)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
             - [let rec P1 = E1 and ... and Pn = EN in E]
                when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
+            - [loc_in] is the location of the [in] keyword.
          *)
   | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
   | Pexp_fun of expr_function_param * expression
@@ -410,14 +402,7 @@ and expression_desc =
            Note: [assert false] is treated in a special way by the
            type-checker. *)
   | Pexp_lazy of expression  (** [lazy E] *)
-  | Pexp_poly of expression * core_type option
-      (** Used for method bodies.
-
-           Can only be used as the expression under
-           {{!class_field_kind.Cfk_concrete}[Cfk_concrete]} for methods (not
-           values). *)
   | Pexp_object of class_structure  (** [object ... end] *)
-  | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
   | Pexp_pack of module_expr * package_type option
       (** - [(module M)] is represented as [Pexp_pack(M, None)]
           - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
@@ -477,6 +462,7 @@ and letop =
     let_ : binding_op;
     ands : binding_op list;
     body : expression;
+    loc_in : Location.t
   }
 
 and binding_op =
@@ -527,7 +513,7 @@ and value_description =
      pval_name: string loc;
      pval_type: core_type;
      pval_prim: string loc list;
-     pval_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pval_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      pval_loc: Location.t;
     }
 (** Values of type {!value_description} represents:
@@ -549,7 +535,7 @@ and type_declaration =
      ptype_kind: type_kind;
      ptype_private: private_flag;  (** for [= private ...] *)
      ptype_manifest: core_type option;  (** represents [= T] *)
-     ptype_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     ptype_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
      ptype_loc: Location.t;
     }
 (**
@@ -637,7 +623,7 @@ and type_extension =
      ptyext_constructors: extension_constructor list;
      ptyext_private: private_flag;
      ptyext_loc: Location.t;
-     ptyext_attributes: attributes;  (** ... [\@\@id1] [\@\@id2] *)
+     ptyext_attributes: ext_attrs;  (** ... [\@\@id1] [\@\@id2] *)
     }
 (**
    Definition of new extensions constructors for the extensive sum type [t]
@@ -656,7 +642,7 @@ and type_exception =
   {
     ptyexn_constructor : extension_constructor;
     ptyexn_loc : Location.t;
-    ptyexn_attributes : attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+    ptyexn_attributes : ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
   }
 (** Definition of a new exception ([exception E]). *)
 
@@ -733,10 +719,7 @@ and class_type_field_desc =
   | Pctf_val of (label loc * mutable_virtual * core_type)
       (** [val x: T] *)
   | Pctf_method of (label loc * private_virtual * core_type)
-      (** [method x: T]
-
-            Note: [T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]}.
-        *)
+      (** [method x: T] *)
   | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pctf_attribute of attribute  (** [[\@\@\@id]] *)
   | Pctf_extension of extension  (** [[%%id]] *)
@@ -750,7 +733,7 @@ and 'a class_infos =
      pci_constraint: class_type option;
      pci_expr: 'a;
      pci_loc: Location.t;
-     pci_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
+     pci_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
     }
 (** Values of type [class_expr class_infos] represents:
     - [class c = ...]
@@ -792,12 +775,13 @@ and class_expr_desc =
 
             Invariant: [n > 0]
         *)
-  | Pcl_let of value_bindings * class_expr
-      (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE)] represents:
+  | Pcl_let of value_bindings * class_expr * Location.t
+      (** [Pcl_let(rec, [(P1, E1); ... ; (Pn, En)], CE, loc_in)] represents:
             - [let P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
             - [let rec P1 = E1 and ... and Pn = EN in CE]
                 when [rec] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
+            - [loc_in] is the location of the [in] keyword.
         *)
   | Pcl_constraint of class_expr * class_type  (** [(CE : CT)] *)
   | Pcl_extension of extension  (** [[%id]] *)
@@ -836,35 +820,29 @@ and class_field_desc =
                    when [flag] is {{!Asttypes.override_flag.Override}[Override]}
                     and [s] is [Some x]
   *)
-  | Pcf_val of (label loc * mutable_virtual * class_field_kind)
+  | Pcf_val of (label loc * mutable_virtual * class_field_value_kind)
       (** [Pcf_val(x,flag, kind)] represents:
             - [val x = E]
-       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
-        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val virtual x: T]
-       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
-        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
             - [val mutable x = E]
-       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
-        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val mutable virtual x: T]
-       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
-        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
   *)
-  | Pcf_method of (label loc * private_virtual * class_field_kind)
+  | Pcf_method of (label loc * private_virtual * class_field_method_kind)
       (** - [method x = E]
-                        ([E] can be a {{!expression_desc.Pexp_poly}[Pexp_poly]})
-            - [method virtual x: T]
-                        ([T] can be a {{!core_type_desc.Ptyp_poly}[Ptyp_poly]})
+          - [method virtual x: T]
   *)
   | Pcf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pcf_initializer of expression  (** [initializer E] *)
   | Pcf_attribute of attribute  (** [[\@\@\@id]] *)
   | Pcf_extension of extension  (** [[%%id]] *)
 
-and class_field_kind =
+and 'a class_field_kind =
   | Cfk_virtual of core_type
-  | Cfk_concrete of override_flag * expression
+  | Cfk_concrete of override_flag * 'a * expression
+
+and class_field_value_kind = type_constraint option class_field_kind
+
+and class_field_method_kind = (expr_function_param list * value_constraint option) class_field_kind
 
 and class_declaration = class_expr class_infos
 
@@ -969,7 +947,7 @@ and 'a open_infos =
      popen_expr: 'a;
      popen_override: override_flag;
      popen_loc: Location.t;
-     popen_attributes: attributes;
+     popen_attributes: ext_attrs;
     }
 (** Values of type ['a open_infos] represents:
     - [open! X] when {{!open_infos.popen_override}[popen_override]}
@@ -994,7 +972,7 @@ and 'a include_infos =
     {
      pincl_mod: 'a;
      pincl_loc: Location.t;
-     pincl_attributes: attributes;
+     pincl_attributes: ext_attrs;
     }
 
 and include_description = module_type include_infos
@@ -1105,7 +1083,7 @@ and value_binding =
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
-    pvb_attributes: attributes;
+    pvb_attributes: ext_attrs;
     pvb_loc: Location.t;
   }(** [let pat : type_constraint = exp] *)
 
@@ -1113,7 +1091,6 @@ and value_bindings =
   {
     pvbs_bindings: value_binding list;
     pvbs_rec: rec_flag;
-    pvbs_extension: string loc option
   }
 
 and module_binding =

@@ -341,8 +341,9 @@ and expression i ppf x =
   | Pexp_constant (c) ->
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
-  | Pexp_let (l, e) ->
+  | Pexp_let (l, e, loc_in) ->
       line i ppf "Pexp_let %a\n" fmt_rec_flag l.pvbs_rec;
+      line (i + 1) ppf "loc_in: %a\n" fmt_location loc_in;
       value_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->
@@ -445,16 +446,9 @@ and expression i ppf x =
   | Pexp_lazy (e) ->
       line i ppf "Pexp_lazy\n";
       expression i ppf e;
-  | Pexp_poly (e, cto) ->
-      line i ppf "Pexp_poly\n";
-      expression i ppf e;
-      option i core_type ppf cto;
   | Pexp_object s ->
       line i ppf "Pexp_object\n";
       class_structure i ppf s
-  | Pexp_newtype (s, e) ->
-      line i ppf "Pexp_newtype %a\n" fmt_string_loc s;
-      expression i ppf e
   | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
       module_expr i ppf me;
@@ -548,7 +542,7 @@ and type_constraint i ppf constraint_ =
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
        x.pval_name fmt_location x.pval_loc;
-  attributes i ppf x.pval_attributes;
+  ext_attrs i ppf x.pval_attributes;
   core_type (i+1) ppf x.pval_type;
   list (i+1) string_loc ppf x.pval_prim
 
@@ -557,7 +551,7 @@ and type_parameter i ppf (x, _variance) = core_type i ppf x
 and type_declaration i ppf x =
   line i ppf "type_declaration %a %a\n" fmt_string_loc x.ptype_name
        fmt_location x.ptype_loc;
-  attributes i ppf x.ptype_attributes;
+  ext_attrs i ppf x.ptype_attributes;
   let i = i+1 in
   line i ppf "ptype_params =\n";
   list (i+1) type_parameter ppf x.ptype_params;
@@ -584,7 +578,7 @@ and attributes i ppf l =
 and ext_attrs i ppf attrs =
   let i = i + 1 in
   option (i + 1)
-    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext) 
+    (fun i ppf ext ->  line i ppf "extension %a\n" fmt_string_loc ext)
     ppf attrs.attrs_extension;
   attributes i ppf attrs.attrs_before;
   attributes i ppf attrs.attrs_after
@@ -615,7 +609,7 @@ and type_kind i ppf x =
 
 and type_extension i ppf x =
   line i ppf "type_extension %a\n" fmt_location x.ptyext_loc;
-  attributes i ppf x.ptyext_attributes;
+  ext_attrs i ppf x.ptyext_attributes;
   let i = i+1 in
   line i ppf "ptyext_path = %a\n" fmt_longident_loc x.ptyext_path;
   line i ppf "ptyext_params =\n";
@@ -626,7 +620,7 @@ and type_extension i ppf x =
 
 and type_exception i ppf x =
   line i ppf "type_exception %a\n" fmt_location x.ptyexn_loc;
-  attributes i ppf x.ptyexn_attributes;
+  ext_attrs i ppf x.ptyexn_attributes;
   let i = i+1 in
   line i ppf "ptyext_constructor =\n";
   let i = i+1 in
@@ -708,7 +702,7 @@ and class_type_field i ppf x =
 and class_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a class_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a\n" label fmt_location x.pci_loc;
-  attributes i ppf x.pci_attributes;
+  ext_attrs i ppf x.pci_attributes;
   let i = i+1 in
   line i ppf "pci_virt = %a\n" fmt_virtual_flag x.pci_virt;
   line i ppf "pci_params =\n";
@@ -743,8 +737,9 @@ and class_expr i ppf x =
       line i ppf "Pcl_apply\n";
       class_expr i ppf ce;
       list i label_x_expression ppf l;
-  | Pcl_let (lbs, ce) ->
+  | Pcl_let (lbs, ce, loc_in) ->
       line i ppf "Pcl_let %a\n" fmt_rec_flag lbs.pvbs_rec;
+      line (i + 1) ppf "loc_in: %a\n" fmt_location loc_in;
       value_bindings i ppf lbs;
       class_expr i ppf ce;
   | Pcl_constraint (ce, ct) ->
@@ -776,11 +771,11 @@ and class_field i ppf x =
   | Pcf_val (s, mf, k) ->
       line i ppf "Pcf_val %a\n" fmt_mutable_virtual_flag mf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
-      class_field_kind (i+1) ppf k
+      class_field_value_kind (i+1) ppf k
   | Pcf_method (s, pf, k) ->
       line i ppf "Pcf_method %a\n" fmt_private_virtual_flag pf;
       line (i+1) ppf "%a\n" fmt_string_loc s;
-      class_field_kind (i+1) ppf k
+      class_field_method_kind (i+1) ppf k
   | Pcf_constraint (ct1, ct2) ->
       line i ppf "Pcf_constraint\n";
       core_type (i+1) ppf ct1;
@@ -794,9 +789,20 @@ and class_field i ppf x =
       line i ppf "Pcf_extension %a\n" fmt_string_loc s;
       payload i ppf arg
 
-and class_field_kind i ppf = function
-  | Cfk_concrete (o, e) ->
+and class_field_value_kind i ppf = function
+  | Cfk_concrete (o, tc, e) ->
       line i ppf "Concrete %a\n" fmt_override_flag o;
+      option i type_constraint ppf tc;
+      expression i ppf e
+  | Cfk_virtual t ->
+      line i ppf "Virtual\n";
+      core_type i ppf t
+
+and class_field_method_kind i ppf = function
+  | Cfk_concrete (o, (args, t), e) ->
+      line i ppf "Concrete %a\n" fmt_override_flag o;
+      list i expr_function_param ppf args;
+      option i value_constraint ppf t;
       expression i ppf e
   | Cfk_virtual t ->
       line i ppf "Virtual\n";
@@ -1079,7 +1085,7 @@ and case i ppf {pc_lhs; pc_guard; pc_rhs} =
 
 and value_binding i ppf x =
   line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  attributes (i+1) ppf x.pvb_attributes;
+  ext_attrs (i+1) ppf x.pvb_attributes;
   pattern (i+1) ppf x.pvb_pat;
   Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
   expression (i+1) ppf x.pvb_expr
@@ -1102,7 +1108,7 @@ and open_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ ->  'a open_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a %a\n" label fmt_override_flag x.popen_override
     fmt_location x.popen_loc;
-  attributes i ppf x.popen_attributes;
+  ext_attrs i ppf x.popen_attributes;
   f (i+1) ppf x.popen_expr
 
 and open_description i = open_infos "open_description" longident_loc i
@@ -1112,7 +1118,7 @@ and open_declaration i = open_infos "open_declaration" module_expr i
 and include_infos : 'a. _ -> (_ -> _ -> 'a -> _) -> _ -> _ -> 'a include_infos -> _ =
  fun label f i ppf x ->
   line i ppf "%s %a\n" label fmt_location x.pincl_loc;
-  attributes i ppf x.pincl_attributes;
+  ext_attrs i ppf x.pincl_attributes;
   f (i+1) ppf x.pincl_mod
 
 and include_description i = include_infos "include_description" module_type i
@@ -1120,7 +1126,7 @@ and include_description i = include_infos "include_description" module_type i
 and include_declaration i = include_infos "include_declaration" module_expr i
 
 and value_bindings i ppf x =
-  list i value_binding ppf x.pvbs_bindings
+  list i value_binding ppf x.pvbs_bindings;
 
 and binding_op i ppf x =
   line i ppf "<binding_op> %a %a"

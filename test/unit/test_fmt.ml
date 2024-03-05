@@ -17,7 +17,7 @@ let tests_lazy =
           r := Some s ;
           Fmt.str s
         in
-        let term = Fmt.fmt_if_k false (pp "hello") in
+        let term = Fmt.fmt_if false (pp "hello") in
         let expected = "" in
         let expected_r = Some "hello" in
         let got = eval_fmt term in
@@ -35,7 +35,7 @@ let tests_lazy =
               r := Some s ;
               Fmt.str s )
         in
-        let term = Fmt.fmt_if_k false (pp "hello") in
+        let term = Fmt.fmt_if false (pp "hello") in
         let expected = "" in
         let expected_r = None in
         let got = eval_fmt term in
@@ -75,7 +75,7 @@ let tests_list_pn =
   ; test "does not call pp if not formatting" ~expected:"" ~expected_calls:[]
       (fun pp_spy ->
         let l = ["a"; "b"; "c"; "d"; "e"] in
-        Fmt.fmt_if_k false (Fmt.list_pn l pp_spy) ) ]
+        Fmt.fmt_if false (Fmt.list_pn l pp_spy) ) ]
 
 let tests_list_k =
   let test name ~expected ~expected_calls f =
@@ -96,11 +96,11 @@ let tests_list_k =
   [ test "evaluation order" ~expected:"a b c d e"
       ~expected_calls:["a"; "b"; "c"; "d"; "e"] (fun pp_spy ->
         let l = ["a"; "b"; "c"; "d"; "e"] in
-        Fmt.list_k l (Fmt.str " ") pp_spy )
+        Fmt.list l (Fmt.str " ") pp_spy )
   ; test "does not call pp if not formatting" ~expected:"" ~expected_calls:[]
       (fun pp_spy ->
         let l = ["a"; "b"; "c"; "d"; "e"] in
-        Fmt.fmt_if_k false (Fmt.list_k l (Fmt.str " ") pp_spy) ) ]
+        Fmt.fmt_if false (Fmt.list l (Fmt.str " ") pp_spy) ) ]
 
 let tests_sequence =
   let test name term ~expected =

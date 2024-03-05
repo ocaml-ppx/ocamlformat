@@ -179,18 +179,18 @@ end
 let%foo[@foo] x = 4
 and[@foo] y = x
 
-type%foo t = int [@@foo]
-and t = int [@@foo]
+type%foo[@foo] t = int
+and[@foo] t = int
 
-type%foo t += T [@@foo]
+type%foo [@foo] t += T
 
-class%foo x = x [@@foo]
+class%foo [@foo] x = x
 
-class type%foo x = x [@@foo]
+class type%foo [@foo] x = x
 
-external%foo x : _ = "" [@@foo]
+external%foo [@foo] x : _ = ""
 
-exception%foo X [@foo]
+exception%foo [@foo] X
 
 module%foo [@foo] M = M
 
@@ -199,19 +199,20 @@ and [@foo] M : S = M
 
 module type%foo [@foo] S = S
 
-include%foo M [@@foo]
-open%foo M [@@foo]
+include%foo [@foo] M
+open%foo [@foo] M
 
 (* Signature items *)
 module type S = sig
-  val%foo x : t [@@foo]
-  external%foo x : t = "" [@@foo]
+  val%foo [@foo] x : t
+  external%foo [@foo] x : t = ""
 
-  type%foo t = int [@@foo]
-  and t' = int [@@foo]
+  type%foo[@foo] t = int
+  and[@foo] t' = int
 
-  type%foo t += T [@@foo]
-  exception%foo X [@foo]
+  type%foo [@foo] t += T
+
+  exception%foo [@foo] X
 
   module%foo [@foo] M : S
 
@@ -222,9 +223,15 @@ module type S = sig
 
   module type%foo [@foo] S = S
 
-  include%foo M [@@foo]
-  open%foo M [@@foo]
+  include%foo [@foo] M
+  open%foo [@foo] M
+
+  class%foo [@foo] x : t
+
+  class type%foo [@foo] x = x
+
   class%foo x : t [@@foo]
+
   class type%foo x = x [@@foo]
 end
 
@@ -1423,8 +1430,9 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ]
 
        method inj
-         : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [ `A of int | `B of string | `C ] =
+         : type c.
+           (int -> string -> noarg -> unit, c) ty_sel * c
+           -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -6071,7 +6079,7 @@ class virtual ['subject, 'event] observer =
 
 class ['event] subject =
   object (self : 'subject)
-    val mutable observers : ('subject, 'event) observer list = []
+    val mutable observers = ([] : ('subject, 'event) observer list)
     method add_observer obs = observers <- obs :: observers
     method notify_observers (e : 'event) = List.iter (fun x -> x#notify self e) observers
   end
@@ -9411,7 +9419,7 @@ let _ = fun (x : < x : int >) y z -> (y :> 'a), (x :> 'a), (z :> 'a)
 
 class ['a] c () =
   object
-    method f : int c = new c ()
+    method f = (new c () : int c)
   end
 
 and ['a] d () =
@@ -9440,7 +9448,7 @@ let _ =
 class ['a] c () =
   object
     constraint 'a = < .. > -> unit
-    method m : 'a = fun x -> ()
+    method m = (fun x -> () : 'a)
   end
 
 let f : type a'. a' = assert false
