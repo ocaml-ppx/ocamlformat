@@ -357,6 +357,11 @@ let _ =
   foo
 
 let _ =
+  (match[@ocaml.warning "-4"] bar with _ -> ()) ;
+  (match[@ocaml.warning "-4"] bar with _ -> ()) ;
+  foo
+
+let _ =
   (try[@ocaml.warning "-4"] bar with _ -> ()) ;
   foo
 
