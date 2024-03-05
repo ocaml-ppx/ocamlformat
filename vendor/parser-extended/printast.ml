@@ -398,10 +398,13 @@ and expression i ppf x =
       line i ppf "Pexp_ifthenelse\n";
       list i if_branch ppf eN;
       option i expression ppf eo;
-  | Pexp_sequence (e1, e2) ->
+  | Pexp_sequence l ->
       line i ppf "Pexp_sequence\n";
-      expression i ppf e1;
-      expression i ppf e2;
+      list i (fun i ppf (exp, ext_opt) ->
+        expression i ppf exp;
+        option i (fun i ppf ->
+          line i ppf ";%a" fmt_string_loc) ppf ext_opt)
+      ppf l
   | Pexp_while (e1, e2) ->
       line i ppf "Pexp_while\n";
       expression i ppf e1;

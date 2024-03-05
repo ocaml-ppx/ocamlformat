@@ -557,8 +557,13 @@ module E = struct
     | Pexp_ifthenelse (eN, e2) ->
         ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)
           (map_opt (sub.expr sub) e2)
-    | Pexp_sequence (e1, e2) ->
-        sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
+    | Pexp_sequence el ->
+        sequence ~loc ~attrs
+          (List.map (fun (exp, ext_opt) ->
+              let exp = sub.expr sub exp in
+              let ext_opt = map_opt (map_loc sub) ext_opt in
+              exp, ext_opt)
+            el)
     | Pexp_while (e1, e2) ->
         while_ ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
     | Pexp_for (p, e1, e2, d, e3) ->
