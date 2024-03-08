@@ -746,25 +746,6 @@ and fmt_type_cstr c ?constraint_ctx xtyp =
       (fmt_core_type c ~pro:":" ?constraint_ctx ~pro_space:(not colon_before)
          ~box:(not colon_before) xtyp )
 
-and type_constr_and_body c xbody =
-  let body = xbody.ast in
-  match xbody.ast.pexp_desc with
-  | Pexp_constraint (exp, typ) ->
-      Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-        ~after:exp.pexp_loc ;
-      let typ_ctx = Exp body in
-      let exp_ctx =
-        let pat = Ast_helper.Pat.any () in
-        let param =
-          { pparam_desc= Param_val (Nolabel, None, pat)
-          ; pparam_loc= pat.ppat_loc }
-        in
-        Exp Ast_helper.(Exp.fun_ param exp)
-      in
-      ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
-      , sub_exp ~ctx:exp_ctx exp )
-  | _ -> (None, xbody)
-
 and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   let arg_label lbl =
     match lbl with
@@ -1305,7 +1286,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         $ wrap (str opn) (str cls)
             (break 0 2 $ fmt_pattern c (sub_pat ~ctx pat)) )
 
-and fmt_param_val c ctx : param_val -> _ = function
+and fmt_param_val c ctx : pparam_val -> _ = function
   | ( ((Labelled l | Optional l) as lbl)
     , None
     , ( { ppat_desc=
@@ -1379,7 +1360,7 @@ and fmt_param_val c ctx : param_val -> _ = function
             $ str " =" $ break 1 2 $ fmt_expression c xexp ) )
   | (Labelled _ | Nolabel), Some _, _ -> impossible "not accepted by parser"
 
-and fmt_param_newtype c : param_newtype -> _ = function
+and fmt_param_newtype c = function
   | [] -> impossible "not accepted by parser"
   | names ->
       cbox 0
@@ -1391,8 +1372,8 @@ and fmt_expr_fun_arg c fp =
   Cmts.fmt c fp.pparam_loc
   @@
   match fp.pparam_desc with
-  | Param_val x -> fmt_param_val c ctx x
-  | Param_newtype x -> fmt_param_newtype c x
+  | Pparam_val x -> fmt_param_val c ctx x
+  | Pparam_newtype x -> fmt_param_newtype c x
 
 and fmt_class_fun_arg c fp =
   let ctx = Fpc fp in
@@ -1473,6 +1454,7 @@ and fmt_fun ?force_closing_paren
   in
   let xargs, xbody = Sugar.fun_ c.cmts xast in
   let fmt_cstr, xbody = type_constr_and_body c xbody in
+  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
   let body =
     let box =
       match xbody.ast.pexp_desc with
@@ -1808,6 +1790,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       , e2 ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
+  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let is_simple x = is_simple c.conf (expression_width c) x in
       let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
       let grps =
@@ -1845,6 +1828,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         ; _ } ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
+  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       pro
       $ hvbox 0
           (Params.Exp.wrap c.conf ~parens
@@ -1917,6 +1901,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let parens_r = parenze_exp xr in
       let xargs, xbody = Sugar.fun_ c.cmts xr in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
+  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
       let followed_by_infix_op =
@@ -2281,6 +2266,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
+  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let body_is_function =
         match xbody.ast.pexp_desc with Pexp_function _ -> true | _ -> false
       in
