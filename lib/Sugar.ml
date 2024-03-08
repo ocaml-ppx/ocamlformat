@@ -14,23 +14,6 @@ open Asttypes
 open Ast
 open Extended_ast
 
-let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
-  let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
-    let ctx = Exp exp in
-    let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
-    if will_keep_first_ast_node || List.is_empty pexp_attributes then
-      match pexp_desc with
-      | Pexp_fun (p, body) ->
-          if not will_keep_first_ast_node then
-            Cmts.relocate cmts ~src:pexp_loc ~before:p.pparam_loc
-              ~after:body.pexp_loc ;
-          let xargs, xbody = fun_ (sub_exp ~ctx body) in
-          (p :: xargs, xbody)
-      | _ -> ([], xexp)
-    else ([], xexp)
-  in
-  fun_ ~will_keep_first_ast_node xexp
-
 module Exp = struct
   let infix cmts prec xexp =
     let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
