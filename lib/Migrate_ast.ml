@@ -92,6 +92,8 @@ module Location = struct
 
   let width x = Position.distance x.loc_start x.loc_end
 
+  let height x = x.loc_end.pos_lnum - x.loc_start.pos_lnum + 1
+
   let descending cmp a b = -cmp a b
 
   let compare_width_decreasing =
