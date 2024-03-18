@@ -1165,7 +1165,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
          |Exp
             { pexp_desc=
                 ( Pexp_match _ | Pexp_try _
-                | Pexp_function (_, _, Pfunction_cases _) )
+                | Pexp_function ([], None, Pfunction_cases _) )
             ; _ } ->
             List.is_empty xpat.ast.ppat_attributes
         | _ -> false
@@ -1393,7 +1393,7 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
   let ctx = Exp body in
   let parens = parenze_exp xbody in
   match body with
-  | { pexp_desc= Pexp_function (_, _, Pfunction_cases (_, _, cs))
+  | { pexp_desc= Pexp_function ([], None, Pfunction_cases (cs, _, _))
     ; pexp_attributes
     ; pexp_loc
     ; _ } ->
@@ -1944,13 +1944,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_infix
       ( op
       , l
-      , ( { pexp_desc= Pexp_function (_, _, Pfunction_cases (_, _, cs))
-          ; pexp_loc
-          ; pexp_attributes
-          ; _ } as r ) )
+      , ({pexp_desc= Pexp_function ([], None, Pfunction_cases (cs, loc, attrs)); pexp_loc; pexp_attributes; _} as r) )
     when not c.conf.fmt_opts.break_infix_before_func.v ->
-      let cmts_before = Cmts.fmt_before c pexp_loc in
-      let cmts_after = Cmts.fmt_after c pexp_loc in
+      let cmts_before = Cmts.fmt_before c pexp_loc $ Cmts.fmt_before c loc in
+      let cmts_after = Cmts.fmt_after c loc $ Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       let indent = Params.Indent.function_ c.conf ~parens xr in
@@ -1966,7 +1963,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          $ fmt_if parens_r (str "( ")
                          $ str "function"
                          $ fmt_extension_suffix c ext )
-                     $ fmt_attributes c pexp_attributes ) )
+                         $ fmt_attributes c (pexp_attributes @ attrs) ) )
              $ space_break $ fmt_cases c (Exp r) cs
              $ fmt_if parens_r (str " )")
              $ cmts_after ) )
@@ -2062,7 +2059,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           let args =
             let break_body =
               match eN1_body.pexp_desc with
-              | Pexp_function (_, _, Pfunction_cases _) ->
+              | Pexp_function ([], None, Pfunction_cases _) ->
                   break 1
                     (Params.Indent.docked_function_after_fun c.conf
                        ~parens:true ~lbl )
@@ -2089,7 +2086,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           hvbox_if has_attr 0
             (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))
       | Pexp_function
-          (_, _, Pfunction_cases (_, _, [{pc_lhs; pc_guard= None; pc_rhs}]))
+          ([], None, Pfunction_cases ([{pc_lhs; pc_guard= None; pc_rhs}], loc, attrs))
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let force =
@@ -2112,10 +2109,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         $ fmt_args_grouped e0 args_before
                         $ space_break
                         $ Cmts.fmt_before c last_arg.pexp_loc
+                        $ Cmts.fmt_before c loc
+                        $ fmt_label lbl ":" $ str "(function"
                         $ fmt_label lbl (str ":")
                         $ str "(function"
                         $ fmt_attributes c ~pre:Blank
-                            last_arg.pexp_attributes )
+                            (last_arg.pexp_attributes @ attrs) )
                     $ space_break $ leading_cmt
                     $ hvbox 0
                         ( fmt_pattern c ~pro:(if_newline "| ")
@@ -2124,9 +2123,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     $ space_break
                     $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
                     $ closing_paren c ~force
+                    $ Cmts.fmt_after c loc 
                     $ Cmts.fmt_after c last_arg.pexp_loc )
                 $ fmt_atrs ) )
-      | Pexp_function (_, _, Pfunction_cases (_, _, cs))
+      | Pexp_function ([], None, Pfunction_cases (cs, loc, attrs))
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let wrap =
@@ -2277,7 +2277,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let body_is_function =
         match xbody.ast.pexp_desc with
-        | Pexp_function (_, _, Pfunction_cases _) -> true
+        | Pexp_function ([], None, Pfunction_cases _) -> true
         | _ -> false
       in
       let pre_body, body = fmt_body c ?ext xbody in
@@ -2305,7 +2305,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.Exp.wrap c.conf ~parens ~disambiguate:true
              ~fits_breaks:false ~offset_closing_paren:(-2)
              (hovbox 2 (intro $ str " ->" $ pre_body) $ space_break $ body) )
-  | Pexp_function (_, _, Pfunction_cases (_, _, cs)) ->
+  | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
       pro
       $ Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
