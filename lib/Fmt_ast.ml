@@ -1807,13 +1807,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ( name
               , PStr
                   [ ( { pstr_desc=
-                          Pstr_eval (({pexp_desc= Pexp_function (_, _, Pfunction_body _); _} as call), [])
+                          Pstr_eval (({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as call), [])
                       ; pstr_loc= _ } as pld ) ] )
         ; _ }
       , e2 ) ->
-      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let is_simple x = is_simple c.conf (expression_width c) x in
       let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
       let grps =
@@ -1829,13 +1826,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( hvbox c.conf.fmt_opts.extension_indent.v
                  (wrap (str "[") (str "]")
-                    ( str "%"
-                    $ hovbox 2
-                        ( fmt_str_loc c name $ str " fun "
-                        $ fmt_attributes c ~suf:" " call.pexp_attributes
-                        $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
-                        $ space_break $ str "->" )
-                    $ space_break $ fmt_expression c xbody ) )
+                    (fmt_function ~ctx ~wrap_intro:(fun x -> 
+                         ( str "%"
+                           $ hovbox 2
+                               ( fmt_str_loc c name $ x)))
+                        ~label:Nolabel ~parens:false ~attrs:call.pexp_attributes ~loc:call.pexp_loc c (args, typ, body)
+                           )
+                 )
              $ space_break $ str ";" $ space_break
              $ list grps (str " ;" $ force_break) fmt_grp ) )
   | Pexp_infix
@@ -1846,12 +1843,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ( name
               , PStr
                   [ ( { pstr_desc=
-                          Pstr_eval (({pexp_desc= Pexp_function (_, _, Pfunction_body _); _} as retn), [])
+                          Pstr_eval (({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as retn), [])
                       ; pstr_loc= _ } as pld ) ] )
         ; _ } ) ->
-      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       pro
       $ hvbox 0
           (Params.Exp.wrap c.conf ~parens
@@ -1860,13 +1854,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ Cmts.fmt c loc (str "|>" $ force_newline)
              $ hvbox c.conf.fmt_opts.extension_indent.v
                  (wrap (str "[") (str "]")
-                    ( str "%"
-                    $ hovbox 2
-                        ( fmt_str_loc c name $ str " fun "
-                        $ fmt_attributes c ~suf:" " retn.pexp_attributes
-                        $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
-                        $ space_break $ str "->" )
-                    $ space_break $ fmt_expression c xbody ) ) ) )
+                    (fmt_function ~ctx ~wrap_intro:(fun x -> 
+                         ( str "%"
+                           $ hovbox 2
+                               ( fmt_str_loc c name $ x)))
+                        ~label:Nolabel ~parens:false ~attrs:retn.pexp_attributes ~loc:retn.pexp_loc c (args, typ, body)
+                           )
+                 ) ) )
   | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       let bol_indent = Params.Indent.assignment_operator_bol c.conf in
@@ -1915,49 +1909,34 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ hvbox 0 (fmt_str_loc c op)
           $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_infix
-      (op, l, ({pexp_desc= Pexp_function (_, _, Pfunction_body _); pexp_loc; pexp_attributes; _} as r))
+      (op, l, ({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as r))
     when not c.conf.fmt_opts.break_infix_before_func.v ->
-      (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
-      let cmts_before = Cmts.fmt_before c pexp_loc in
-      let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
-      let xargs, xbody = Sugar.fun_ c.cmts xr in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
       let indent_wrap = if parens then -2 else 0 in
-      let pre_body, body = fmt_body c ?ext xbody in
-      let followed_by_infix_op =
-        match xbody.ast.pexp_desc with
-        | Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}) -> true
-        | _ -> false
-      in
+      (* let followed_by_infix_op = *)
+      (*   match xbody.ast.pexp_desc with *)
+      (*   | Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}) -> true *)
+      (*   | _ -> false *)
+      (* in *)
       pro
       $ wrap_fits_breaks_if c.conf parens "(" ")"
           ( hovbox 0
               (wrap_if has_attr (str "(") (str ")")
+                 (fmt_function
+                   ~ctx ~wrap_intro:(fun intro ->
+
                  ( hvbox 2
                      ( hvbox indent_wrap
                          ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
                          $ space_break
                          $ hovbox 2
                              ( hvbox 0
-                                 ( fmt_str_loc c op $ space_break
-                                 $ cmts_before
-                                 $ fmt_if parens_r (str "(")
-                                 $ str "fun " )
-                             $ fmt_attributes c pexp_attributes ~suf:" "
-                             $ hvbox_if
-                                 (not c.conf.fmt_opts.wrap_fun_args.v)
-                                 4
-                                 ( fmt_expr_fun_args c xargs
-                                 $ fmt_opt fmt_cstr )
-                             $ space_break $ str "->" ) )
-                     $ pre_body )
-                 $ fmt_or followed_by_infix_op force_break space_break
-                 $ body
-                 $ fmt_if parens_r (str ")")
-                 $ cmts_after ) )
+                                 ( fmt_str_loc c op $ space_break $ intro)))
+                      )
+                 ))
+                   ~label:Nolabel ~parens:true ~attrs:r.pexp_attributes ~loc:r.pexp_loc c (args, typ, body)
+                 ))
           $ fmt_atrs )
   | Pexp_infix
       ( op
