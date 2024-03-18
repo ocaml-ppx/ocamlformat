@@ -739,12 +739,17 @@ and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
   $ cbox 0
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
 
-and fmt_type_cstr c ?constraint_ctx xtyp =
+and fmt_type_cstr c ~ctx ?constraint_ctx typ =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
+  let fmt_typ ~pro t =
+    fmt_core_type c ~pro ?constraint_ctx ~pro_space:(not colon_before)
+      ~box:(not colon_before) (sub_typ ~ctx t)
+  in
   fmt_or colon_before (fits_breaks " " ~hint:(1000, 0) "") (break 0 (-1))
-  $ cbox_if colon_before 0
-      (fmt_core_type c ~pro:":" ?constraint_ctx ~pro_space:(not colon_before)
-         ~box:(not colon_before) xtyp )
+  $ cbox_if colon_before 0 @@
+      (match typ with
+       | Pconstraint t -> fmt_typ ~pro:":" t
+       | Pcoerce (t1, t2) -> opt t1 (fmt_typ ~pro:":") $ fmt_typ ~pro:":>" t2)
 
 and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   let arg_label lbl =
@@ -1444,34 +1449,19 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
                  fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ) )
 
-(** Format [Pexp_fun] or [Pexp_newtype]. [wrap_intro] wraps up to after the
-    [->] and is responsible for breaking. *)
-and fmt_fun ?force_closing_paren
-    ?(wrap_intro = fun x -> hvbox 2 x $ space_break) ?(box = true) ~label
-    ?(parens = false) c ({ast; _} as xast) =
+(** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
+    responsible for breaking. *)
+and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ space_break) ?(box = true)
+      ~label ?(parens = false) ~attrs ~loc c (args, typ, body) =
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
      before Sugar.fun_ is important. *)
   let has_cmts_outer, cmts_outer, cmts_inner =
     let eol = if has_label then Some cut_break else None in
-    let has_cmts = Cmts.has_before c.cmts ast.pexp_loc in
-    let cmts = Cmts.fmt_before ?eol c ast.pexp_loc in
+    let has_cmts = Cmts.has_before c.cmts loc in
+    let cmts = Cmts.fmt_before ?eol c loc in
     if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
-  in
-  let xargs, xbody = Sugar.fun_ c.cmts xast in
-  let fmt_cstr, xbody = type_constr_and_body c xbody in
-  (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
-  let body =
-    let box =
-      match xbody.ast.pexp_desc with
-      | Pexp_function _ -> Some false
-      | _ -> None
-    in
-    fmt_expression c ?box xbody
-  and closing =
-    if parens then closing_paren c ?force:force_closing_paren ~offset:(-2)
-    else noop
   in
   let (label_sep : t), break_fun =
     (* Break between the label and the fun to avoid ocp-indent's alignment.
@@ -1481,22 +1471,50 @@ and fmt_fun ?force_closing_paren
       (str ":" $ cut_break, break 1 2)
     else (str ":", if has_label then break 1 2 else space_break)
   in
+  let fmt_typ typ =
+    fmt_type_cstr c ~ctx ~constraint_ctx:`Fun typ
+  in
+  let fmt_fun_args_typ args typ =
+    str "fun" $ fmt_attributes c attrs $ break_fun
+    $ fmt_expr_fun_args c args $ fmt_opt (Option.map ~f:fmt_typ typ)
+    $ break 1 (-2) $ str "->"
+  in
+  (* [head] is [fun args ->] or [function]. [body] is an expression or the
+     cases. *)
+  let head, body =
+    match args, typ, body with
+    | (_ :: _), _, Pfunction_body body ->
+        (* Only [fun]. *)
+        fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body)
+    | [], _, Pfunction_body _ -> assert false
+    | args, typ, Pfunction_cases (cs, loc, cs_attrs) ->
+        (* Only [function]. *)
+        let fun_ =
+          match args, typ with
+          | [], None -> noop
+          | [], Some _ -> assert false
+          | args, typ -> fmt_fun_args_typ args typ
+        and function_ =
+          str "function" $ fmt_attributes c cs_attrs
+        in
+        fun_ $ function_, fmt_cases c ctx cs
+  in
+  let opn_paren, cls_paren =
+    if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:(-2)
+    else noop, noop
+  in
   hovbox_if box 2
     ( wrap_intro
         (hvbox_if has_cmts_outer 0
            ( cmts_outer
            $ hvbox 2
                ( fmt_label label label_sep $ cmts_inner
-               $ fmt_if parens (str "(")
-               $ str "fun" $ break_fun
-               $ hvbox 0
-                   ( fmt_attributes c ast.pexp_attributes ~suf:" "
-                   $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
-                   $ break 1 (-2) $ str "->" ) ) ) )
-    $ body $ closing
-    $ Cmts.fmt_after c ast.pexp_loc )
+               $ opn_paren
+               $ head ) ) )
+    $ body $ cls_paren
+    $ Cmts.fmt_after c loc )
 
-and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
+and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; ctx} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
@@ -1524,8 +1542,8 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
                ~pro:(fmt_label lbl (str ":" $ break 0 2))
                ~box xarg )
         $ cmts_after )
-  | (Labelled _ | Optional _), Pexp_fun _ ->
-      fmt_fun ~box ~label:lbl ~parens:true c xarg
+  | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
+        fmt_function ~ctx ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
   | _ ->
       let label_sep : t =
         if box || c.conf.fmt_opts.wrap_fun_args.v then str ":" $ cut_break
