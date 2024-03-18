@@ -1807,7 +1807,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ( name
               , PStr
                   [ ( { pstr_desc=
-                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as call), [])
+                          Pstr_eval (({pexp_desc= Pexp_function (_, _, Pfunction_body _); _} as call), [])
                       ; pstr_loc= _ } as pld ) ] )
         ; _ }
       , e2 ) ->
@@ -1846,7 +1846,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ( name
               , PStr
                   [ ( { pstr_desc=
-                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as retn), [])
+                          Pstr_eval (({pexp_desc= Pexp_function (_, _, Pfunction_body _); _} as retn), [])
                       ; pstr_loc= _ } as pld ) ] )
         ; _ } ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
@@ -1915,7 +1915,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ hvbox 0 (fmt_str_loc c op)
           $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_infix
-      (op, l, ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r))
+      (op, l, ({pexp_desc= Pexp_function (_, _, Pfunction_body _); pexp_loc; pexp_attributes; _} as r))
     when not c.conf.fmt_opts.break_infix_before_func.v ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
@@ -2069,7 +2069,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         if parens || not dock_fun_arg then (noop, pro) else (pro, noop)
       in
       match last_arg.pexp_desc with
-      | Pexp_fun (_, eN1_body)
+      | Pexp_function (_, _, Pfunction_body eN1_body)
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           (* Last argument is a [fun _ ->]. *)
@@ -2289,7 +2289,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
-  | Pexp_fun _ ->
+  | Pexp_function (_, _, Pfunction_body _) ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
       (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
