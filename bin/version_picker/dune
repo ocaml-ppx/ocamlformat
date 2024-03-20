@@ -1,0 +1,15 @@
+(executable
+ (name version_picker)
+ (public_name ocamlformat)
+ (package ocamlformat)
+ (libraries ocamlformat-lib ocamlformat.bin_conf bos)
+ (flags
+  (:standard
+   -open
+   Ocamlformat_ocaml_common
+   -open
+   Ocamlformat_parser_extended
+   -open
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_format)))

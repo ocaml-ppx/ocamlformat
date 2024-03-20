@@ -263,7 +263,8 @@ let default =
       ; ocaml_version= elt Ocaml_version.Releases.v4_04_0
       ; quiet= elt false
       ; disable_conf_attrs= elt false
-      ; version_check= elt true } }
+      ; version_check= elt true
+      ; required_version= elt None } }
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
@@ -1472,18 +1473,24 @@ end
 
 let options = Operational.options @ Formatting.options @ options
 
-let parse_line config ?(version_check = config.opr_opts.version_check.v)
+let parse_line config
     ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs.v) ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
     match (name, from) with
-    | "version", `File _ ->
-        if String.equal Version.current value || not version_check then
-          Ok config
-        else
-          Error
-            (Error.Version_mismatch {read= value; installed= Version.current})
+    | "version", `File x ->
+
+          Ok
+            { config with
+              opr_opts=
+                { config.opr_opts with
+                  required_version=
+                    Elt.make (Some value)
+                      (`Updated
+                        ( `Parsed (`File x)
+                        , Some (Elt.from config.opr_opts.required_version) )
+                        ) } }
     | name, `File x ->
         Decl.update options ~config
           ~from:(`Parsed (`File x))
@@ -1538,8 +1545,8 @@ let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
   | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
       Error
         (`Msg
-           (Format.sprintf "Invalid format: Unknown suffix %S"
-              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+          (Format.sprintf "Invalid format: Unknown suffix %S"
+             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
   | _ -> Error `Ignore
 
 let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =

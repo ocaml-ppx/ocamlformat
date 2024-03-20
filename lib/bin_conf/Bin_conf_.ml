@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocamlformat_lib
+open Ocamlformat_lib_
 open Conf
 open Cmdliner
 module Decl = Conf_decl
@@ -392,7 +392,7 @@ let update_from_ocp_indent c loc (oic : IndentConfig.t) =
       ; match_indent_nested= elt @@ convert_threechoices oic.i_strict_with }
   }
 
-let read_config_file ?version_check ?disable_conf_attrs conf = function
+let read_config_file ?disable_conf_attrs conf = function
   | File_system.Ocp_indent file -> (
       let filename = Fpath.to_string file in
       try
@@ -440,7 +440,7 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
                 ~f:(fun (conf, errors) {txt= line; loc} ->
                   let from = `File loc in
                   match
-                    parse_line ?version_check ?disable_conf_attrs conf ~from
+                    parse_line ?disable_conf_attrs conf ~from
                       line
                   with
                   | Ok conf -> (conf, errors)
@@ -553,12 +553,11 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ~disable_conf_files:!global_conf.disable_conf_files
       ~ocp_indent_config:!global_conf.ocp_indent_config ~root ~file:file_abs
   in
-  (* [version-check] can be modified by cmdline (evaluated last) but could
-     lead to errors when parsing the .ocamlformat files (evaluated first).
-     Similarly, [disable-conf-attrs] could lead to incorrect config. *)
+  (* [disable-conf-attrs] can be modified by cmdline (evaluated last) but could
+     lead to errors when parsing the .ocamlformat files (evaluated first). *)
   let forward_conf =
     let read_config_file =
-      read_config_file ~version_check:false ~disable_conf_attrs:false
+      read_config_file ~disable_conf_attrs:false
     in
     List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
     |> update_using_env |> update_using_cmdline info
