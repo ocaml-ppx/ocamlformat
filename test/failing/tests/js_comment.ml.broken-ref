@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/js_comment.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/js_comment.ml" (syntax error)
 File "tests/js_comment.ml", line 165, characters 2-4:
 165 |   -> bar_snoo : a b
         ^^

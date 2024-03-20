@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/quotations2.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/quotations2.ml" (syntax error)
 File "tests/quotations2.ml", line 19, characters 6-8:
 19 |       <:xhtml<<li class="current"><a href=$str:url$>$str:long$</a></li>&>>
            ^^

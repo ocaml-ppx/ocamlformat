@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/js_default.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/js_default.ml" (syntax error)
 File "tests/js_default.ml", line 5, characters 6-10:
 5 |       with default(Year_month.Map.empty);
           ^^^^
