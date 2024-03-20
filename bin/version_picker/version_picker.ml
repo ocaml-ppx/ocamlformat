@@ -17,7 +17,6 @@ let redirect_stdout () =
 let () =
   let oldstderr = Unix.dup Unix.stderr in
   let oldstdout = Unix.dup Unix.stdout in
-
   let devnull = Stdlib.open_out "/dev/null" in
   Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stdout ;
   Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stderr ;
@@ -46,7 +45,7 @@ let () =
           !Bin_conf.global_conf.lib_conf.opr_opts.version_check
       then (
         Stdlib.Printf.eprintf
-          "Ocamlformat version %s not installed\nHint: `opam install %s`\n%!" v
-          exec_name ;
+          "Ocamlformat version %s not installed\nHint: `opam install %s`\n%!"
+          v exec_name ;
         Stdlib.exit 2 )
       else run (ocamlformat_cmd latest)

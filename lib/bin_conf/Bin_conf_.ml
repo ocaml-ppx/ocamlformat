@@ -439,10 +439,7 @@ let read_config_file ?disable_conf_attrs conf = function
               List.fold_left lines ~init:(conf, [])
                 ~f:(fun (conf, errors) {txt= line; loc} ->
                   let from = `File loc in
-                  match
-                    parse_line ?disable_conf_attrs conf ~from
-                      line
-                  with
+                  match parse_line ?disable_conf_attrs conf ~from line with
                   | Ok conf -> (conf, errors)
                   | Error _ when !global_conf.ignore_invalid_options ->
                       warn ~loc "ignoring invalid options %S" line ;
@@ -553,12 +550,11 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       ~disable_conf_files:!global_conf.disable_conf_files
       ~ocp_indent_config:!global_conf.ocp_indent_config ~root ~file:file_abs
   in
-  (* [disable-conf-attrs] can be modified by cmdline (evaluated last) but could
-     lead to errors when parsing the .ocamlformat files (evaluated first). *)
+  (* [disable-conf-attrs] can be modified by cmdline (evaluated last) but
+     could lead to errors when parsing the .ocamlformat files (evaluated
+     first). *)
   let forward_conf =
-    let read_config_file =
-      read_config_file ~disable_conf_attrs:false
-    in
+    let read_config_file = read_config_file ~disable_conf_attrs:false in
     List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
     |> update_using_env |> update_using_cmdline info
   in
