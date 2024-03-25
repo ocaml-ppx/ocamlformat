@@ -43,7 +43,7 @@ Cannot specify files with stdin:
 The input is named after the '--name' argument in formatting error messages:
 
   $ echo 'let y =' | ocamlformat --name foo.ml -
-  ocamlformat: ignoring "foo.ml" (syntax error)
+  ocamlformat-26-1: ignoring "foo.ml" (syntax error)
   File "foo.ml", line 2, characters 0-0:
   Error: Syntax error
   [1]
@@ -51,7 +51,7 @@ The input is named after the '--name' argument in formatting error messages:
 Bad kind of syntax --impl/--intf:
 
   $ echo 'module X : S' | ocamlformat --impl -
-  ocamlformat: ignoring "<standard input>" (syntax error)
+  ocamlformat-26-1: ignoring "<standard input>" (syntax error)
   File "<standard input>", line 2, characters 0-0:
   Error: Syntax error
   [1]
@@ -59,7 +59,7 @@ Bad kind of syntax --impl/--intf:
 Not specifying --impl/--intf (inferred from --name) resulting in a syntax error:
 
   $ echo 'module X : S' | ocamlformat --name foo.ml -
-  ocamlformat: ignoring "foo.ml" (syntax error)
+  ocamlformat-26-1: ignoring "foo.ml" (syntax error)
   File "foo.ml", line 2, characters 0-0:
   Error: Syntax error
   [1]

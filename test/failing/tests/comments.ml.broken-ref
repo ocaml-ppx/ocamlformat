@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/comments.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/comments.ml" (syntax error)
 File "tests/comments.ml", line 64, characters 0-6:
 64 | module M_ok : sig
      ^^^^^^

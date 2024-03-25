@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/nesting.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/nesting.ml" (syntax error)
 File "tests/nesting.ml", line 35, characters 0-0:
 Error: Syntax error: "end" expected
 File "tests/nesting.ml", line 1, characters 11-17:

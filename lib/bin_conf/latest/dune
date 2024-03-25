@@ -1,0 +1,4 @@
+(library
+ (name bin_conf)
+ (public_name ocamlformat.bin_conf)
+ (libraries ocamlformat-26-1.bin_conf))

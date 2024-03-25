@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/edge_cases.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/edge_cases.ml" (syntax error)
 File "tests/edge_cases.ml", line 90, characters 4-12:
 90 |     function (_ : [ `c ]) -> d
          ^^^^^^^^

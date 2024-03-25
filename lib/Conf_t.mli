@@ -133,7 +133,8 @@ type opr_opts =
         (** Version of OCaml syntax of the output. *)
   ; quiet: bool elt
   ; disable_conf_attrs: bool elt
-  ; version_check: bool elt }
+  ; version_check: bool elt
+  ; required_version: string option elt }
 
 type t =
   { fmt_opts: fmt_opts

@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/unit_extensions.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/unit_extensions.ml" (syntax error)
 File "tests/unit_extensions.ml", line 101, characters 8-11:
 101 |       M.sig
               ^^^

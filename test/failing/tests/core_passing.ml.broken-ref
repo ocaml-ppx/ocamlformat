@@ -1,4 +1,4 @@
-ocamlformat: ignoring "tests/core_passing.ml" (syntax error)
+ocamlformat-26-1: ignoring "tests/core_passing.ml" (syntax error)
 File "tests/core_passing.ml", line 27, characters 0-3:
 27 | let error_string message = error message () <:sexp_of< unit >>
      ^^^

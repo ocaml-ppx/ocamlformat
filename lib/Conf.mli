@@ -27,13 +27,14 @@ val parse_state_attr : Parsetree.attribute -> [`Enable | `Disable] option
 
 val parse_line :
      t
-  -> ?version_check:bool
   -> ?disable_conf_attrs:bool
   -> from:[< `Attribute of Warnings.loc | `File of Warnings.loc]
   -> string
   -> (t, Error.t) Result.t
 
 val print_config : t -> unit
+
+val enable_warnings : bool -> unit
 
 val collect_warnings : (unit -> t) -> t * (unit -> unit)
 
