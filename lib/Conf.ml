@@ -16,12 +16,16 @@ let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
 
-let warn_raw, collect_warnings =
+let enable_warnings, warn_raw, collect_warnings =
   let delay_warning = ref false in
   let delayed_warning_list = ref [] in
+  let enabled = ref true in
+  let enable b = enabled := b in
   let warn_ s =
-    if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s%!" s
+    if !enabled then
+      if !delay_warning then
+        delayed_warning_list := s :: !delayed_warning_list
+      else Format.eprintf "%s%!" s
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
@@ -33,7 +37,7 @@ let warn_raw, collect_warnings =
     delayed_warning_list := old_list ;
     (res, fun () -> List.iter ~f:warn_ collected)
   in
-  (warn_, collect_warnings)
+  (enable, warn_, collect_warnings)
 
 let warn ~loc fmt =
   Format.kasprintf
@@ -1487,9 +1491,9 @@ let parse_line config
                 required_version=
                   Elt.make (Some value)
                     (`Updated
-                       ( `Parsed (`File x)
-                       , Some (Elt.from config.opr_opts.required_version) )
-                    ) } }
+                      ( `Parsed (`File x)
+                      , Some (Elt.from config.opr_opts.required_version) ) )
+              } }
     | name, `File x ->
         Decl.update options ~config
           ~from:(`Parsed (`File x))
@@ -1544,8 +1548,8 @@ let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
   | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
       Error
         (`Msg
-           (Format.sprintf "Invalid format: Unknown suffix %S"
-              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+          (Format.sprintf "Invalid format: Unknown suffix %S"
+             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
   | _ -> Error `Ignore
 
 let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =

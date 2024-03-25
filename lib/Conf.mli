@@ -34,6 +34,8 @@ val parse_line :
 
 val print_config : t -> unit
 
+val enable_warnings : bool -> unit
+
 val collect_warnings : (unit -> t) -> t * (unit -> unit)
 
 val warn :

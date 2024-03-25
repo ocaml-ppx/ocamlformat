@@ -7,18 +7,11 @@ let latest = to_dashes Ocamlformat_lib.Version.current
 let run cmd =
   match OS.Cmd.run cmd with
   | Ok () -> Stdlib.exit 0
-  | Error _e -> Stdlib.exit 1
-
+  | Error _e -> (*Format.printf "%a@." Rresult.R.pp_msg _e ;*) Stdlib.exit 1
 
 let () =
-  let oldstderr = Unix.dup Unix.stderr in
-  let oldstdout = Unix.dup Unix.stdout in
-  let devnull = Stdlib.open_out "/dev/null" in
-  Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stdout ;
-  Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stderr ;
-  ignore @@ Bin_conf.action ();
-  Unix.dup2 oldstdout Unix.stdout ;
-  Unix.dup2 oldstderr Unix.stderr ;
+  Ocamlformat_lib.Conf.enable_warnings false ;
+  if Result.is_error (Bin_conf.action ()) then Stdlib.exit 1 ;
   let required_version =
     Ocamlformat_lib.Conf_t.Elt.v
       !Bin_conf.global_conf.lib_conf.opr_opts.required_version
