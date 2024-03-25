@@ -9,10 +9,6 @@ let run cmd =
   | Ok () -> Stdlib.exit 0
   | Error _e -> Stdlib.exit 1
 
-let redirect_stdout () =
-  let newstdout = Stdlib.open_out "/dev/null" in
-  Unix.dup2 (Unix.descr_of_out_channel newstdout) Unix.stdout ;
-  Unix.dup2 (Unix.descr_of_out_channel newstdout) Unix.stderr
 
 let () =
   let oldstderr = Unix.dup Unix.stderr in
@@ -20,7 +16,7 @@ let () =
   let devnull = Stdlib.open_out "/dev/null" in
   Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stdout ;
   Unix.dup2 (Unix.descr_of_out_channel devnull) Unix.stderr ;
-  (match Bin_conf.action () with Ok _ -> () | Error _e -> ()) ;
+  ignore @@ Bin_conf.action ();
   Unix.dup2 oldstdout Unix.stdout ;
   Unix.dup2 oldstderr Unix.stderr ;
   let required_version =
