@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/js_test.ml" (syntax error)
+ocamlformat: ignoring "tests/js_test.ml" (syntax error)
 File "tests/js_test.ml", line 1, characters 9-10:
 1 | let%test =
              ^

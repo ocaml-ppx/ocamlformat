@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/misc_2019.ml" (syntax error)
+ocamlformat: ignoring "tests/misc_2019.ml" (syntax error)
 File "tests/misc_2019.ml", line 15, characters 2-8:
 15 |   module type of struct
        ^^^^^^

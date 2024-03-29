@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/macro.ml" (syntax error)
+ocamlformat: ignoring "tests/macro.ml" (syntax error)
 File "tests/macro.ml", line 3, characters 0-7:
 3 | INCLUDE "bar"
     ^^^^^^^

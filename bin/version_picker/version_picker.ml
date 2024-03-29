@@ -36,5 +36,5 @@ let () =
         Stdlib.Printf.eprintf
           "Ocamlformat version %s not installed\nHint: `opam install %s`\n%!"
           v exec_name ;
-        Stdlib.exit 2 )
+        Stdlib.exit 1 )
       else run (ocamlformat_cmd latest)

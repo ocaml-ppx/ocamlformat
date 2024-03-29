@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/never_align.ml" (syntax error)
+ocamlformat: ignoring "tests/never_align.ml" (syntax error)
 File "tests/never_align.ml", line 13, characters 4-5:
 13 |     b
          ^

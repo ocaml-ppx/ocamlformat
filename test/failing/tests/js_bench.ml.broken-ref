@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/js_bench.ml" (syntax error)
+ocamlformat: ignoring "tests/js_bench.ml" (syntax error)
 File "tests/js_bench.ml", line 13, characters 28-34:
 13 | BENCH_MODULE "Blit tests" = struct
                                  ^^^^^^

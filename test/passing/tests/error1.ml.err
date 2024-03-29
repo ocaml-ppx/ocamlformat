@@ -1,3 +1,3 @@
-ocamlformat-26-1: ignoring "tests/error1.ml" (syntax error)
+ocamlformat: ignoring "tests/error1.ml" (syntax error)
 File "tests/error1.ml", line 2, characters 0-0:
 Error: Syntax error

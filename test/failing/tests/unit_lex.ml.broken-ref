@@ -2,7 +2,7 @@ File "tests/unit_lex.ml", line 18, characters 4-10:
 18 |     éçèæùà (* this file must be iso-8859-1 *)
          ^^^^^^
 Alert deprecated: ISO-Latin1 characters in identifiers
-ocamlformat-26-1: ignoring "tests/unit_lex.ml" (syntax error)
+ocamlformat: ignoring "tests/unit_lex.ml" (syntax error)
 
 File "tests/unit_lex.ml", line 55, characters 2-8:
 55 |   '\999'; (* wrong, but yet... *)

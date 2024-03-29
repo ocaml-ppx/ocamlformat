@@ -87,6 +87,8 @@ let run_action action =
   | Print_config conf -> Conf.print_config conf ; Ok ()
 ;;
 
+let () = Stdlib.Sys.argv.(0) <- "ocamlformat";;
+
 match Bin_conf.action () with
 | Ok (`Ok action) -> (
   match run_action action with

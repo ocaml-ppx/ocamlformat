@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/error2.ml" (syntax error)
+ocamlformat: ignoring "tests/error2.ml" (syntax error)
 File "tests/error2.ml", line 1, characters 0-1:
 1 | "asdd
     ^

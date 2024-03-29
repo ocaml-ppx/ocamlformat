@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/core_failing.ml" (syntax error)
+ocamlformat: ignoring "tests/core_failing.ml" (syntax error)
 File "tests/core_failing.ml", line 18, characters 6-7:
 18 |     (A)
            ^

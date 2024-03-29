@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/error3.ml" (misplaced documentation comments - warning 50)
+ocamlformat: ignoring "tests/error3.ml" (misplaced documentation comments - warning 50)
 File "tests/error3.ml", line 2, characters 0-13:
 2 | (** a or b *)
     ^^^^^^^^^^^^^

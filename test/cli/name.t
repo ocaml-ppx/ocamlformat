@@ -6,14 +6,14 @@
 
   $ echo 'let y =' > syntax_error.ml
   $ ocamlformat --name foo.ml syntax_error.ml
-  ocamlformat-26-1: ignoring "foo.ml" (syntax error)
+  ocamlformat: ignoring "foo.ml" (syntax error)
   File "foo.ml", line 2, characters 0-0:
   Error: Syntax error
   [1]
 
   $ echo 'module X : S' > a.mli
   $ ocamlformat --name foo.ml a.mli
-  ocamlformat-26-1: ignoring "foo.ml" (syntax error)
+  ocamlformat: ignoring "foo.ml" (syntax error)
   File "foo.ml", line 2, characters 0-0:
   Error: Syntax error
   [1]

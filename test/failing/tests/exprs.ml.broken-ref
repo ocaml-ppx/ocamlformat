@@ -1,4 +1,4 @@
-ocamlformat-26-1: ignoring "tests/exprs.ml" (syntax error)
+ocamlformat: ignoring "tests/exprs.ml" (syntax error)
 File "tests/exprs.ml", line 19, characters 5-6:
 19 |     x:x
           ^
