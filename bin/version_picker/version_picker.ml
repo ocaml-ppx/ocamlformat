@@ -5,9 +5,10 @@ let to_dashes v = String.map v ~f:(function '.' -> '-' | c -> c)
 let latest = to_dashes Ocamlformat_lib.Version.current
 
 let run cmd =
-  match OS.Cmd.run cmd with
-  | Ok () -> Stdlib.exit 0
-  | Error _e -> (*Format.printf "%a@." Rresult.R.pp_msg _e ;*) Stdlib.exit 1
+  let li = Cmd.to_list cmd in
+  let e = List.hd_exn li in
+  let argv = li |> Array.of_list in
+  Unix.execvp e argv
 
 let () =
   Ocamlformat_lib.Conf.enable_warnings false ;
