@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocamlformat_lib_
+open Ocamlformat_lib_26_1
 open Conf
 open Cmdliner
 module Decl = Conf_decl

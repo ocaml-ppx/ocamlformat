@@ -110,7 +110,7 @@
   (csexp
    (>= 1.4.0))
   dune
-  (ocamlformat-lib
+  (ocamlformat-lib-26-1
    (= :version))
   (ocamlformat-rpc-lib
    (and
@@ -121,7 +121,7 @@
 
 (package
  (name ocamlformat)
- (depends ocamformat-26-1))
+ (depends ocamformat-26-1 (ocamlformat-lib (= :version))))
 
 (package
  (name ocamlformat-bench)

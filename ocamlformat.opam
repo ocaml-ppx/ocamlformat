@@ -17,6 +17,7 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.8"}
   "ocamformat-26-1"
+  "ocamlformat-lib" {= "0.26.1"}
   "odoc" {with-doc}
 ]
 build: [

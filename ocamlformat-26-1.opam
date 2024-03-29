@@ -27,7 +27,7 @@ depends: [
   "cmdliner" {with-test = "false" & >= "1.1.0" | with-test & >= "1.2.0"}
   "csexp" {>= "1.4.0"}
   "dune" {>= "2.8"}
-  "ocamlformat-lib" {= version}
+  "ocamlformat-lib-26-1" {= version}
   "ocamlformat-rpc-lib" {with-test & = version}
   "re" {>= "1.10.3"}
   "odoc" {with-doc}

@@ -1,6 +1,6 @@
 (library
  (public_name ocamlformat-26-1.bin_conf)
- (name bin_conf_)
+ (name bin_conf_26_1)
  (flags
   (:standard -open Ocamlformat_ocaml_common -open Ocamlformat_stdlib))
  (instrumentation
