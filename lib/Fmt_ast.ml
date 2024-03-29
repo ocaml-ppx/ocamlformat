@@ -404,6 +404,12 @@ let virtual_or_override = function
   | Cfk_concrete (Override, _, _) -> str "!"
   | Cfk_concrete (Fresh, _, _) -> noop
 
+(** Format the [:] before a type constraint. *)
+let fmt_constraint_sep c sep =
+  match c.conf.fmt_opts.break_colon.v with
+  | `Before -> space_break $ str sep $ char ' '
+  | `After -> char ' ' $ str sep $ space_break
+
 let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
   assert (not (String.is_empty input)) ;
   let offset =
@@ -741,12 +747,10 @@ and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
 
 and fmt_type_cstr c ~ctx ?constraint_ctx typ =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
-  let fmt_typ ~pro t =
-    fmt_core_type c ~pro ?constraint_ctx ~pro_space:(not colon_before)
-      ~box:(not colon_before) (sub_typ ~ctx t)
+  let fmt_typ ?pro t =
+    fmt_core_type c ?pro ?constraint_ctx ~box:(not colon_before) (sub_typ ~ctx t)
   in
-  fmt_or colon_before (fits_breaks " " ~hint:(1000, 0) "") (break 0 (-1))
-  $ cbox_if colon_before 0 @@
+  cbox_if colon_before 0 @@
       (match typ with
        | Pconstraint t -> fmt_typ ~pro:":" t
        | Pcoerce (t1, t2) -> opt t1 (fmt_typ ~pro:":") $ fmt_typ ~pro:":>" t2)
@@ -796,7 +800,7 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
-and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
+and fmt_core_type c ?(box = true) ?pro ?constraint_ctx
     ({ast= typ; ctx} as xtyp) =
   protect c (Typ typ)
   @@
@@ -804,10 +808,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
   ( match pro with
-  | Some pro -> (
-    match c.conf.fmt_opts.break_colon.v with
-    | `Before -> fmt_if pro_space space_break $ str pro $ str " "
-    | `After -> fmt_if pro_space (str " ") $ str pro $ space_break )
+  | Some pro -> (fmt_constraint_sep c pro)
   | None -> noop )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
@@ -1392,31 +1393,6 @@ and fmt_expr_fun_args c args = list args space_break (fmt_expr_fun_arg c)
 
 and fmt_class_fun_args c args = list args space_break (fmt_class_fun_arg c)
 
-(** The second returned value of [fmt_body] belongs to a box of level N-1 if
-    the first returned value belongs to a box of level N. *)
-and fmt_body c ?ext ({ast= body; _} as xbody) =
-  let ctx = Exp body in
-  let parens = parenze_exp xbody in
-  match body with
-  | { pexp_desc= Pexp_function ([], None, Pfunction_cases (cs, _, _))
-    ; pexp_attributes
-    ; pexp_loc
-    ; _ } ->
-      ( ( update_config_maybe_disabled c pexp_loc pexp_attributes
-        @@ fun c ->
-        space_break
-        $ Cmts.fmt_before c pexp_loc
-        $ fmt_if parens (str "(")
-        $ str "function"
-        $ fmt_extension_suffix c ext
-        $ fmt_attributes c pexp_attributes )
-      , update_config_maybe_disabled c pexp_loc pexp_attributes
-        @@ fun c ->
-        fmt_cases c ctx cs
-        $ fmt_if parens (str ")")
-        $ Cmts.fmt_after c pexp_loc )
-  | _ -> (noop, fmt_expression c ~eol:force_break xbody)
-
 and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
   let {pia_lhs; pia_kind; pia_paren; pia_rhs} = x in
   let wrap_paren =
@@ -1463,7 +1439,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
     let cmts = Cmts.fmt_before ?eol c loc in
     if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
   in
-  let (label_sep : t), break_fun =
+  let (label_sep : t), _break_fun =
     (* Break between the label and the fun to avoid ocp-indent's alignment.
        If a label is present, arguments should be indented more than the
        arrow and the eventually breaking [fun] keyword. *)
@@ -1475,8 +1451,12 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
     fmt_type_cstr c ~ctx ~constraint_ctx:`Fun typ
   in
   let fmt_fun_args_typ args typ =
-    str "fun" $ fmt_attributes c attrs $ break_fun
-    $ fmt_expr_fun_args c args $ fmt_opt (Option.map ~f:fmt_typ typ)
+    let kw =
+    str "fun" $ fmt_attributes c attrs
+    and args = fmt_expr_fun_args c args
+    and annot = Option.map ~f:fmt_typ typ
+    in
+    Params.Exp.box_fun_decl_args c.conf ~parens ~kw ~args ~annot
     $ break 1 (-2) $ str "->"
   in
   (* [head] is [fun args ->] or [function]. [body] is an expression or the
@@ -1487,7 +1467,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
         (* Only [fun]. *)
         fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body)
     | [], _, Pfunction_body _ -> assert false
-    | args, typ, Pfunction_cases (cs, loc, cs_attrs) ->
+    | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* Only [function]. *)
         let fun_ =
           match args, typ with
@@ -1808,7 +1788,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               , PStr
                   [ ( { pstr_desc=
                           Pstr_eval (({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as call), [])
-                      ; pstr_loc= _ } as pld ) ] )
+                      ; pstr_loc= _ } as _pld ) ] )
         ; _ }
       , e2 ) ->
       let is_simple x = is_simple c.conf (expression_width c) x in
@@ -1844,7 +1824,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               , PStr
                   [ ( { pstr_desc=
                           Pstr_eval (({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as retn), [])
-                      ; pstr_loc= _ } as pld ) ] )
+                      ; pstr_loc= _ } as _pld ) ] )
         ; _ } ) ->
       pro
       $ hvbox 0
@@ -1909,7 +1889,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ hvbox 0 (fmt_str_loc c op)
           $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_infix
-      (op, l, ({pexp_desc= Pexp_function (args, typ, (Pfunction_body _ as body)); _} as r))
+      (op, l, ({pexp_desc= Pexp_function (args, typ, body); _} as r))
     when not c.conf.fmt_opts.break_infix_before_func.v ->
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
@@ -1922,10 +1902,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ wrap_fits_breaks_if c.conf parens "(" ")"
           ( hovbox 0
-              (wrap_if has_attr (str "(") (str ")")
+              (
                  (fmt_function
-                   ~ctx ~wrap_intro:(fun intro ->
-
+                   ~ctx ~parens:(parens_r || has_attr) ~wrap_intro:(fun intro ->
                  ( hvbox 2
                      ( hvbox indent_wrap
                          ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
@@ -1935,35 +1914,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                  ( fmt_str_loc c op $ space_break $ intro)))
                       )
                  ))
-                   ~label:Nolabel ~parens:true ~attrs:r.pexp_attributes ~loc:r.pexp_loc c (args, typ, body)
+                   ~label:Nolabel ~attrs:r.pexp_attributes ~loc:r.pexp_loc c (args, typ, body)
                  ))
           $ fmt_atrs )
-  | Pexp_infix
-      ( op
-      , l
-      , ({pexp_desc= Pexp_function ([], None, Pfunction_cases (cs, loc, attrs)); pexp_loc; pexp_attributes; _} as r) )
-    when not c.conf.fmt_opts.break_infix_before_func.v ->
-      let cmts_before = Cmts.fmt_before c pexp_loc $ Cmts.fmt_before c loc in
-      let cmts_after = Cmts.fmt_after c loc $ Cmts.fmt_after c pexp_loc in
-      let xr = sub_exp ~ctx r in
-      let parens_r = parenze_exp xr in
-      let indent = Params.Indent.function_ c.conf ~parens xr in
-      pro
-      $ Params.parens_if parens c.conf
-          (hvbox indent
-             ( hvbox 0
-                 ( fmt_expression c (sub_exp ~ctx l)
-                 $ space_break
-                 $ hovbox 2
-                     ( hvbox 0
-                         ( fmt_str_loc c op $ space_break $ cmts_before
-                         $ fmt_if parens_r (str "( ")
-                         $ str "function"
-                         $ fmt_extension_suffix c ext )
-                         $ fmt_attributes c (pexp_attributes @ attrs) ) )
-             $ space_break $ fmt_cases c (Exp r) cs
-             $ fmt_if parens_r (str " )")
-             $ cmts_after ) )
   | Pexp_infix _ ->
       let op_args = Sugar.Exp.infix c.cmts (prec_ast (Exp exp)) xexp in
       let inner_wrap = parens || has_attr in
@@ -2048,20 +2001,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         if parens || not dock_fun_arg then (noop, pro) else (pro, noop)
       in
       match last_arg.pexp_desc with
-      | Pexp_function (_, _, Pfunction_body eN1_body)
+      | Pexp_function (largs, ltyp, lbody)
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
-          (* Last argument is a [fun _ ->]. *)
-          let xlast_arg = sub_exp ~ctx last_arg in
           let args =
-            let break_body =
-              match eN1_body.pexp_desc with
-              | Pexp_function ([], None, Pfunction_cases _) ->
-                  break 1
+            let indent_body =
+              match lbody with
+              | Pfunction_cases _ ->
                     (Params.Indent.docked_function_after_fun c.conf
                        ~parens:true ~lbl )
-              | _ ->
-                  break 1
+              | Pfunction_body _ ->
                     (Params.Indent.docked_fun c.conf ~source:c.source
                        ~loc:last_arg.pexp_loc ~lbl )
             in
@@ -2070,82 +2019,17 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                 ( intro_epi
                 $ fmt_args_grouped e0 args_before
                 $ space_break $ hvbox 0 x )
-              $ break_body
+              $ break 1 indent_body
             in
             let force_closing_paren =
               if Location.is_single_line pexp_loc c.conf.fmt_opts.margin.v
               then Fit
               else Break
             in
-            fmt_fun c ~force_closing_paren ~wrap_intro ~label:lbl
-              ~parens:true xlast_arg
+            fmt_function ~force_closing_paren ~ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))
-      | Pexp_function
-          ([], None, Pfunction_cases ([{pc_lhs; pc_guard= None; pc_rhs}], loc, attrs))
-        when List.for_all args_before ~f:(fun (_, eI) ->
-                 is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
-          let force =
-            if
-              Location.is_single_line last_arg.pexp_loc
-                c.conf.fmt_opts.margin.v
-            then Fit
-            else Break
-          in
-          let ctx = Exp last_arg in
-          (* side effects of Cmts.fmt_before before [fmt_pattern] is
-             important *)
-          let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
-          hvbox 2
-            ( expr_epi
-            $ Params.parens_if parens c.conf
-                ( hovbox 4
-                    ( wrap
-                        ( intro_epi
-                        $ fmt_args_grouped e0 args_before
-                        $ space_break
-                        $ Cmts.fmt_before c last_arg.pexp_loc
-                        $ Cmts.fmt_before c loc
-                        $ fmt_label lbl ":" $ str "(function"
-                        $ fmt_label lbl (str ":")
-                        $ str "(function"
-                        $ fmt_attributes c ~pre:Blank
-                            (last_arg.pexp_attributes @ attrs) )
-                    $ space_break $ leading_cmt
-                    $ hvbox 0
-                        ( fmt_pattern c ~pro:(if_newline "| ")
-                            (sub_pat ~ctx pc_lhs)
-                        $ space_break $ str "->" )
-                    $ space_break
-                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                    $ closing_paren c ~force
-                    $ Cmts.fmt_after c loc 
-                    $ Cmts.fmt_after c last_arg.pexp_loc )
-                $ fmt_atrs ) )
-      | Pexp_function ([], None, Pfunction_cases (cs, loc, attrs))
-        when List.for_all args_before ~f:(fun (_, eI) ->
-                 is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
-          let wrap =
-            if c.conf.fmt_opts.wrap_fun_args.v then hovbox 2 else hvbox 2
-          in
-          let xlast_arg = sub_exp ~ctx last_arg in
-          let ctx'' = Exp last_arg in
-          hvbox
-            (Params.Indent.docked_function c.conf ~parens xlast_arg)
-            ( expr_epi
-            $ Params.parens_if parens c.conf
-                ( wrap
-                    ( intro_epi
-                    $ fmt_args_grouped e0 args_before
-                    $ space_break
-                    $ Cmts.fmt_before c last_arg.pexp_loc
-                    $ fmt_label lbl (str ":")
-                    $ str "(function"
-                    $ fmt_attributes c ~pre:Blank last_arg.pexp_attributes )
-                $ space_break $ fmt_cases c ctx'' cs $ closing_paren c
-                $ Cmts.fmt_after c last_arg.pexp_loc
-                $ fmt_atrs ) )
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes
@@ -2268,27 +2152,24 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
-  | Pexp_function (_, _, Pfunction_body _) ->
-      let xargs, xbody = Sugar.fun_ c.cmts xexp in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      (* fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ) *)
-      let body_is_function =
-        match xbody.ast.pexp_desc with
-        | Pexp_function ([], None, Pfunction_cases _) -> true
-        | _ -> false
-      in
-      let pre_body, body = fmt_body c ?ext xbody in
-      let indent =
-        if body_is_function then
-          let default_indent =
-            if Option.is_none eol then 2
-            else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
-            else 0
-          in
-          Params.Indent.function_ ~default:default_indent c.conf ~parens xexp
-        else Params.Indent.fun_ ?eol c.conf
-      in
-      let intro =
+  | Pexp_function (args, typ, (Pfunction_body _ as body))
+  | Pexp_function ((_ :: _ as args), typ, body) ->
+      (* let body_is_function = *)
+      (*   match xbody.ast.pexp_desc with *)
+      (*   | Pexp_function ([], None, Pfunction_cases _) -> true *)
+      (*   | _ -> false *)
+      (* in *)
+      (* let indent = *)
+      (*   if body_is_function then *)
+      (*     let default_indent = *)
+      (*       if Option.is_none eol then 2 *)
+      (*       else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1 *)
+      (*       else 0 *)
+      (*     in *)
+      (*     Params.Indent.function_ ~default:default_indent c.conf ~parens xexp *)
+      (*   else Params.Indent.fun_ ?eol c.conf *)
+      (* in *)
+      let wrap_intro =
         let kw =
           str "fun"
           $ fmt_extension_suffix c ext
@@ -2313,6 +2194,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                $ fmt_attributes c pexp_attributes )
            $ break 1 indent
            $ hvbox 0 (fmt_cases c ctx cs) )
+  | Pexp_function ([], Some _, _) -> assert false
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
       pro
@@ -3260,7 +3142,7 @@ and fmt_value_description c ctx vd =
               (not
                  ( c.conf.fmt_opts.ocp_indent_compat.v
                  && is_arrow_or_poly pval_type ) )
-            ~pro_space:true (sub_typ ~ctx pval_type)
+            (sub_typ ~ctx pval_type)
         $ fmt_if (not (List.is_empty pval_prim)) (space_break $ str "= ")
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim space_break fmt_val_prim )
@@ -4481,29 +4363,32 @@ and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
   $ fmt_atrs
 
 and fmt_value_constraint c vc_opt =
-  let fmt_sep x =
-    match c.conf.fmt_opts.break_colon.v with
-    | `Before -> space_break $ str x $ char ' '
-    | `After -> char ' ' $ str x $ space_break
-  in
   match vc_opt with
   | Some vc -> (
       let ctx = Vc vc in
       match vc with
       | Pvc_constraint {locally_abstract_univars= []; typ} ->
-          (noop, fmt_type_cstr c (sub_typ ~ctx typ))
+          (* Handles breaking the [:] according to [break_colon]. *)
+          let fmt_typ pro =
+            fmt_core_type c ?pro (sub_typ ~ctx typ) in
+(match c.conf.fmt_opts.break_colon.v with
+  |`Before ->
+      noop, fmt_typ (Some ":")
+  | `After ->
+      str ":", fmt_typ None
+)
       | Pvc_constraint {locally_abstract_univars= pvars; typ} -> (
         match c.conf.fmt_opts.break_colon.v with
         | `Before ->
             ( noop
-            , fmt_sep ":"
+            , fmt_constraint_sep c ":"
               $ hvbox 0
                   ( str "type "
                   $ list pvars (str " ") (fmt_str_loc c)
                   $ str "." $ space_break
                   $ fmt_core_type c (sub_typ ~ctx typ) ) )
         | `After ->
-            ( fmt_sep ":"
+            ( fmt_constraint_sep c ":"
               $ hvbox 0
                   ( str "type "
                   $ list pvars (str " ") (fmt_str_loc c)
@@ -4512,8 +4397,8 @@ and fmt_value_constraint c vc_opt =
       | Pvc_coercion {ground; coercion} ->
           ( noop
           , opt ground (fun ty ->
-                fmt_sep ":" $ fmt_core_type c (sub_typ ~ctx ty) )
-            $ fmt_sep ":>"
+                fmt_constraint_sep c ":" $ fmt_core_type c (sub_typ ~ctx ty) )
+            $ fmt_constraint_sep c ":>"
             $ fmt_core_type c (sub_typ ~ctx coercion) ) )
   | None -> (noop, noop)
 
