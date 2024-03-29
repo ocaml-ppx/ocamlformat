@@ -24,7 +24,15 @@ let () =
   in
   let open Bos in
   match required_version with
-  | None -> run (ocamlformat_cmd latest)
+  | None ->
+      let cmd = ocamlformat_cmd latest in
+      if Stdlib.Result.get_ok @@ OS.Cmd.exists cmd then run cmd
+      else (
+        Stdlib.Printf.eprintf
+          "Latest ocamlformat version \"ocamlformat-%s\" could not be found.\n\
+           This should never happen, please report this to maintainers.%!"
+          latest ;
+        Stdlib.exit 23 )
   | Some v ->
       let v_dashes = to_dashes v in
       let exec_name = "ocamlformat-" ^ v_dashes in
