@@ -2,7 +2,7 @@
 
 (library
  (name ocamlformat_odoc_parser)
- (public_name ocamlformat-lib-26-1.odoc_parser)
+ (public_name ocamlformat-lib-dev.odoc_parser)
  (instrumentation
   (backend bisect_ppx))
  (flags

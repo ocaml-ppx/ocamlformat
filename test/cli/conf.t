@@ -16,7 +16,7 @@ Exit code is printed by hand because sed succeeding would hide the error.
   $ (<a.ml ocamlformat --impl -; echo [$?]) 2>&1 | sed 's/version is "[^"]*"/version is "..."/g'
   Ocamlformat version bad not installed
   Hint: `opam install ocamlformat-bad`
-  [2]
+  [1]
 
 Disable version check:
 

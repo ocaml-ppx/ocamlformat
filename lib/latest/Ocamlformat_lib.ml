@@ -1,1 +1,1 @@
-include Ocamlformat_lib_26_1
+include Ocamlformat_lib_dev

@@ -1,1 +1,1 @@
-include Bin_conf_26_1
+include Bin_conf_dev

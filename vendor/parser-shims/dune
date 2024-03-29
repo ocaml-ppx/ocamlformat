@@ -1,6 +1,6 @@
 (library
  (name ocamlformat_parser_shims)
- (public_name ocamlformat-lib-26-1.parser_shims)
+ (public_name ocamlformat-lib-dev.parser_shims)
  (flags
   (:standard -w -37 -w -38))
  (libraries compiler-libs.common))

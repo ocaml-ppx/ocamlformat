@@ -1,4 +1,4 @@
 (library
  (name ocamlformat_lib)
  (public_name ocamlformat-lib)
- (libraries ocamlformat-lib-26-1))
+ (libraries ocamlformat-lib-dev))

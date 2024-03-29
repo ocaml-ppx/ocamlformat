@@ -11,8 +11,8 @@
 
 (executable
  (name main)
- (public_name ocamlformat-26-1)
- (package ocamlformat-26-1)
+ (public_name ocamlformat-dev)
+ (package ocamlformat-dev)
  (modules main)
  (flags
   (:standard -open Ocamlformat_stdlib))

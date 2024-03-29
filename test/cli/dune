@@ -1,6 +1,6 @@
 (cram
  (package ocamlformat)
- (deps %{bin:ocamlformat} %{bin:ocamlformat-26-1}))
+ (deps %{bin:ocamlformat} %{bin:ocamlformat-dev}))
 
 (cram
  (applies_to large_string conf removed_option repl_file_errors debug)
