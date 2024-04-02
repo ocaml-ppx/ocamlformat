@@ -11,6 +11,7 @@
 
 (** OCamlFormat *)
 
+module Bin_conf = Bin_conf_dev
 open Ocamlformat_lib_dev
 open Ocamlformat_format ;;
 
