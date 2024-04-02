@@ -2,6 +2,8 @@
  (name version_picker)
  (public_name ocamlformat)
  (package ocamlformat)
+ (link_deps
+  (package ocamlformat-dev))
  (libraries ocamlformat-lib ocamlformat.bin_conf bos)
  (flags
   (:standard
