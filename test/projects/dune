@@ -1,5 +1,6 @@
 (rule
  (deps
+  (package ocamlformat-dev)
   enable_outside_detected_project/dune-project
   enable_outside_detected_project/main.ml
   .ocamlformat)
@@ -21,6 +22,7 @@
 
 (rule
  (deps
+  (package ocamlformat-dev)
   outside_detected_project/dune-project
   outside_detected_project/main.ml)
  (package ocamlformat)
@@ -43,6 +45,7 @@
 
 (rule
  (deps
+  (package ocamlformat-dev)
   disable_outside_detected_project/dune-project
   disable_outside_detected_project/main.ml)
  (package ocamlformat)
@@ -67,6 +70,7 @@
 
 (rule
  (deps
+  (package ocamlformat-dev)
   (source_tree outside_detected_project_with_name))
  (package ocamlformat)
  (action
