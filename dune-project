@@ -121,7 +121,11 @@
 
 (package
  (name ocamlformat)
- (depends ocamlformat-dev (ocamlformat-lib (= :version))))
+ (depends
+  bos
+  ocamlformat-dev
+  (ocamlformat-lib
+   (= :version))))
 
 (package
  (name ocamlformat-bench)

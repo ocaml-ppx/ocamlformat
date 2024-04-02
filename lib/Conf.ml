@@ -1491,9 +1491,9 @@ let parse_line config
                 required_version=
                   Elt.make (Some value)
                     (`Updated
-                      ( `Parsed (`File x)
-                      , Some (Elt.from config.opr_opts.required_version) ) )
-              } }
+                       ( `Parsed (`File x)
+                       , Some (Elt.from config.opr_opts.required_version) )
+                    ) } }
     | name, `File x ->
         Decl.update options ~config
           ~from:(`Parsed (`File x))
@@ -1548,8 +1548,8 @@ let parse_attr {attr_name= {txt; loc= _}; attr_payload; _} =
   | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
       Error
         (`Msg
-          (Format.sprintf "Invalid format: Unknown suffix %S"
-             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
+           (Format.sprintf "Invalid format: Unknown suffix %S"
+              (String.chop_prefix_exn ~prefix:"ocamlformat." txt) ) )
   | _ -> Error `Ignore
 
 let update ?(quiet = false) c ({attr_name= {txt; loc}; _} as attr) =

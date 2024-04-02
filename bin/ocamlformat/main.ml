@@ -86,9 +86,8 @@ let run_action action =
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
-;;
 
-let () = Stdlib.Sys.argv.(0) <- "ocamlformat";;
+let () = Stdlib.Sys.argv.(0) <- "ocamlformat" ;;
 
 match Bin_conf.action () with
 | Ok (`Ok action) -> (

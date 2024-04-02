@@ -760,7 +760,8 @@ let validate () =
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
-let _discard_formatter = Format.make_formatter (fun _ _ _ -> ()) (fun () -> ())
+let _discard_formatter =
+  Format.make_formatter (fun _ _ _ -> ()) (fun () -> ())
 
-let action  () =
+let action () =
   Cmd.eval_value (Cmd.v info Term.(ret (const validate $ set_global_term)))

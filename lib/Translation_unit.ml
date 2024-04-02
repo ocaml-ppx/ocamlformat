@@ -117,15 +117,15 @@ module Error = struct
         if debug then print_diff input_name ~prev ~next ;
         if iteration <= 1 then
           Format.fprintf fmt
-            "%s: %S was not already formatted. ([max-iters = 1])\n%!" (exe ())
-            input_name
+            "%s: %S was not already formatted. ([max-iters = 1])\n%!"
+            (exe ()) input_name
         else (
           Format.fprintf fmt
             "%s: Cannot process %S.\n\
             \  Please report this bug at \
              https://github.com/ocaml-ppx/ocamlformat/issues.\n\
              %!"
-             (exe ()) input_name ;
+            (exe ()) input_name ;
           Format.fprintf fmt
             "  BUG: formatting did not stabilize after %i iterations.\n%!"
             iteration )
@@ -136,7 +136,7 @@ module Error = struct
           \  Please report this bug at \
            https://github.com/ocaml-ppx/ocamlformat/issues.\n\
            %!"
-           (exe ()) input_name ;
+          (exe ()) input_name ;
         match exn with
         | Internal_error (errors, l) ->
             List.iter errors ~f:(print_internal_error ~debug ~quiet fmt) ;
