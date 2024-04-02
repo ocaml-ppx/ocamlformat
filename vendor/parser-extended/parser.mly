@@ -724,6 +724,25 @@ let convert_layout_to_legacy_attr =
   | {txt = Immediate64; loc} -> mk ~loc "immediate64"
   | _ -> []
 
+(* NOTE: An alternate approach for performing the erasure of %call_pos and %src_pos
+   could have been doing it as a ppx transformation instead of performing the erasing
+   inside of ocamlformat. *)
+let transl_label ~pattern ~arg_label ~loc =
+  if not (Erase_jane_syntax.should_erase ())
+  then arg_label, pattern, None
+  else (
+    match arg_label, pattern.ppat_desc with
+    | ( Labelled l
+      , Ppat_constraint
+          (pat, { ptyp_desc = Ptyp_extension ({ txt = "call_pos"; loc = _ }, _); _ }) ) ->
+      ( Optional l
+      , pat
+      , Some
+          (Ast_helper.Exp.ident
+             { loc; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "dummy_pos") }) )
+    | _ -> arg_label, pattern, None)
+;;
+
 %}
 
 /* Tokens */
@@ -2365,13 +2384,32 @@ labeled_simple_pattern:
   | OPTLABEL pattern_var
       { false, mk_optional $1 $sloc, None, $2 }
   | TILDE LPAREN optional_local label_let_pattern RPAREN
-      { $3, mk_labelled (fst $4) $sloc, None, mkpat_local_if $3 (snd $4) }
+      { let arg_label, pat, default_value = 
+          transl_label 
+            ~pattern:(snd $4)
+            ~arg_label:(mk_labelled (fst $4) $sloc)
+            ~loc:(make_loc $sloc)
+        in 
+        $3, arg_label, default_value, mkpat_local_if $3 pat
+      }
   | TILDE label_var
       { false, mk_labelled (fst $2) $sloc, None, snd $2 }
   | LABEL simple_pattern
-      { false, mk_labelled $1 $sloc, None, $2 }
+      { let arg_label, pat, default_value = 
+          transl_label 
+            ~pattern:($2)
+            ~arg_label:(mk_labelled $1 $sloc)
+            ~loc:(make_loc $sloc)
+        in
+        false, arg_label, default_value, pat }
   | LABEL LPAREN LOCAL pattern RPAREN
-      { true, mk_labelled $1 $sloc, None, mkpat_stack $4 }
+      { let arg_label, pat, default_value = 
+          transl_label 
+            ~pattern:(mkpat_stack $4)
+            ~arg_label:(mk_labelled $1 $sloc)
+            ~loc:(make_loc $sloc)
+        in
+        true, arg_label, default_value, pat }
   | simple_pattern
       { false, Nolabel, None, $1 }
   | LPAREN LOCAL let_pattern RPAREN
@@ -2727,7 +2765,18 @@ comprehension_clause:
   | simple_expr op(HASHOP) simple_expr
       { mkinfix $1 $2 $3 }
   | extension
-      { Pexp_extension $1 }
+      { let (({ txt = id; _ }, _) as p) = $1 in
+        if not (Erase_jane_syntax.should_erase ()) then Pexp_extension p
+        else (
+          match id with
+          | "src_pos" ->
+            Pexp_ident
+              { loc = make_loc $sloc
+              ; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "dummy_pos")
+              }
+          | _ -> Pexp_extension p
+        )
+      }
   | UNDERSCORE
       { Pexp_hole }
   | od=open_dot_declaration DOT mkrhs(LPAREN RPAREN {Lident "()"})
@@ -3912,12 +3961,22 @@ strict_function_or_labeled_tuple_type:
       domain = extra_rhs(param_type)
       MINUSGREATER
       codomain = strict_function_or_labeled_tuple_type
-        { let arrow_type = {
-            pap_label = label;
-            pap_loc = make_loc $sloc;
-            pap_type = mktyp_modes local domain;
-          }
+        { let type_ = mktyp_modes local domain in
+          let label, type_ =
+            if not (Erase_jane_syntax.should_erase ())
+            then label, type_
+            else (
+              match label, type_.ptyp_desc with
+              | Labelled l, Ptyp_extension ({ txt = "call_pos"; _ }, _) ->
+                ( Optional l
+                , Ast_helper.Typ.constr
+                    { loc = make_loc $sloc
+                    ; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "position")
+                    }
+                    [] )
+              | _ -> label, type_)
           in
+          let arrow_type = { pap_label = label; pap_loc = make_loc $sloc; pap_type = type_ } in
           let params, codomain =
             match codomain.ptyp_attributes, codomain.ptyp_desc with
             | [], Ptyp_arrow (params, codomain) -> params, codomain

@@ -173,6 +173,10 @@ let docstring (c : Conf.t) =
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
+let dummy_position ~loc =
+  Ast_helper.Exp.ident
+    {loc; txt= Ldot (Ldot (Lident "Stdlib", "Lexing"), "dummy_pos")}
+
 let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   let open Ast_helper in
   (* remove locations *)
@@ -236,6 +240,27 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
           (Exp.sequence ~loc:loc1 ~attrs:attrs1
              (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
              exp3 )
+    | Pexp_fun
+        ( Labelled l
+        , None
+        , { ppat_desc=
+              Ppat_constraint
+                ( pat
+                , {ptyp_desc= Ptyp_extension ({txt= "call_pos"; loc}, _); _}
+                )
+          ; _ }
+        , expression )
+      when erase_jane_syntax ->
+        let default_pos = dummy_position ~loc in
+        let expression =
+          let pexp_desc =
+            Pexp_fun (Optional l, Some default_pos, pat, expression)
+          in
+          {exp with pexp_desc}
+        in
+        m.expr m expression
+    | Pexp_extension ({txt= "src_pos"; loc}, _) when erase_jane_syntax ->
+        m.expr m (dummy_position ~loc)
     | _ -> (
       match convert_legacy_jane_street_local_extension_expressions exp with
       | `Changed exp -> m.expr m exp
@@ -288,6 +313,22 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
                 ( { ident_loc with
                     txt= Lident (String.chop_suffix_exn s ~suffix:"#") }
                 , l ) }
+      | { ptyp_desc=
+            Ptyp_arrow
+              ( Labelled l
+              , {ptyp_desc= Ptyp_extension ({txt= "call_pos"; loc}, _); _}
+              , return_type )
+        ; _ }
+        when erase_jane_syntax ->
+          let lexing_position_type =
+            Ast_helper.Typ.constr
+              {loc; txt= Ldot (Ldot (Lident "Stdlib", "Lexing"), "position")}
+              []
+          in
+          let desc =
+            Ptyp_arrow (Optional l, lexing_position_type, return_type)
+          in
+          {typ with ptyp_desc= desc}
       | _ -> typ
     in
     Ast_mapper.default_mapper.typ m typ
