@@ -50,11 +50,11 @@ jobs:
       - name: Check manpages
         run: opam exec -- dune build @gen_manpage --auto-promote
 
-      - name: Upload binary
+      - name: Upload binaries
         uses: actions/upload-artifact@v3
         with:
-          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
-          path: _build/install/default/bin/ocamlformat
+          name: ocamlformat-bin-${{ runner.os }}-${{ runner.arch }}
+          path: _build/install/default/bin/
 
   test-branch:
     needs: build-linux
@@ -100,7 +100,7 @@ jobs:
       - name: Fetch new build of ocamlformat
         uses: actions/download-artifact@v3
         with:
-          name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
+          name: ocamlformat-bin-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-b
 
       - name: Test ${{ matrix.profile }} profile
