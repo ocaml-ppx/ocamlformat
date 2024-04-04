@@ -4,11 +4,23 @@ let to_dashes v = String.map v ~f:(function '.' -> '-' | c -> c)
 
 let latest = to_dashes Ocamlformat_lib.Version.current
 
+let execvp =
+  if Sys.unix then Unix.execvp
+  else fun f args ->
+    let pid =
+      Unix.create_process f args Unix.stdin Unix.stdout Unix.stderr
+    in
+    let _pid, r = Unix.waitpid [] pid in
+    match r with
+    | Unix.WEXITED code -> Stdlib.exit code
+    | Unix.WSIGNALED code | Unix.WSTOPPED code ->
+        Unix.kill (Unix.getpid ()) code
+
 let run cmd =
   let li = Cmd.to_list cmd in
   let e = List.hd_exn li in
   let argv = li |> Array.of_list in
-  Unix.execvp e argv
+  execvp e argv
 
 let () =
   Ocamlformat_lib.Conf.enable_warnings false ;
