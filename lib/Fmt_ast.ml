@@ -4431,7 +4431,6 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
         max (c.conf.fmt_opts.let_binding_indent.v - 1) 0
     | _ -> c.conf.fmt_opts.let_binding_indent.v
   in
-  let pre_body, body = fmt_body c lb_exp in
   let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   let toplevel, in_, epi, cmts_before, cmts_after =
     match in_ with
@@ -4452,7 +4451,7 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
   let ext = lb_attrs.attrs_extension in
-  let decl_args =
+  let decl =
     let decl =
       fmt_str_loc c lb_op
       $ fmt_extension_suffix c ext
@@ -4466,24 +4465,30 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
         (space_break $ wrap_fun_decl_args c (fmt_expr_fun_args c lb_args))
       $ fmt_newtypes
     in
-    box_fun_decl_args c 4 (Params.Align.fun_decl c.conf ~decl ~pattern ~args)
+    let decl_args =
+      box_fun_decl_args c 4 (Params.Align.fun_decl c.conf ~decl ~pattern ~args)
+    in
+    hovbox
+      (Params.Indent.fun_type_annot c.conf)
+      (decl_args $ fmt_cstr)
+  in
+  let decl_and_body =
+    if lb_pun then decl
+    else
+      let pro =
+      hovbox 2 (
+        decl
+        $ (fmt_or c.conf.fmt_opts.ocp_indent_compat.v
+               (fits_breaks " =" ~hint:(1000, 0) "=")
+               (break 1 2 $ str "=") )) $ space_break
+      in
+      fmt_expression c ~box:false ~pro lb_exp
   in
   doc1 $ cmts_before
   $ hvbox 0
       ( hvbox indent
           ( hvbox_if toplevel 0
-              ( hvbox_if toplevel indent
-                  ( hovbox 2
-                      ( hovbox
-                          (Params.Indent.fun_type_annot c.conf)
-                          (decl_args $ fmt_cstr)
-                      $ fmt_if (not lb_pun)
-                          (fmt_or c.conf.fmt_opts.ocp_indent_compat.v
-                             (fits_breaks " =" ~hint:(1000, 0) "=")
-                             (break 1 2 $ str "=") )
-                      $ fmt_if (not lb_pun) pre_body )
-                  $ fmt_if (not lb_pun) space_break
-                  $ fmt_if (not lb_pun) body )
+              ( hvbox_if toplevel indent decl_and_body
               $ cmts_after
               $ opt loc_in
                   (Cmts.fmt_before c ~pro:force_break ~epi:noop ~eol:noop) )
