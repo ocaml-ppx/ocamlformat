@@ -1,6 +1,6 @@
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to align_infix.ml.stdout
@@ -18,7 +18,7 @@
  (action (diff tests/align_infix.ml.err align_infix.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to alignment.ml.stdout
@@ -36,7 +36,7 @@
  (action (diff tests/alignment.ml.err alignment.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to apply.ml.stdout
@@ -54,7 +54,7 @@
  (action (diff tests/apply.ml.err apply.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to apply_functor.ml.stdout
@@ -72,7 +72,7 @@
  (action (diff tests/apply_functor.ml.err apply_functor.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to args_grouped-conventional.ml.stdout
@@ -90,7 +90,7 @@
  (action (diff tests/args_grouped-conventional.ml.err args_grouped-conventional.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to args_grouped.ml.stdout
@@ -108,7 +108,7 @@
  (action (diff tests/args_grouped.ml.err args_grouped.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to array.ml.stdout
@@ -126,7 +126,7 @@
  (action (diff tests/array.ml.err array.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to assignment_operator-op_begin_line.ml.stdout
@@ -144,7 +144,7 @@
  (action (diff tests/assignment_operator-op_begin_line.ml.err assignment_operator-op_begin_line.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to assignment_operator.ml.stdout
@@ -162,7 +162,7 @@
  (action (diff tests/assignment_operator.ml.err assignment_operator.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to attribute_and_expression.ml.stdout
@@ -180,7 +180,7 @@
  (action (diff tests/attribute_and_expression.ml.err attribute_and_expression.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to attributes.ml.stdout
@@ -198,7 +198,7 @@
  (action (diff tests/attributes.ml.err attributes.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to attributes.mli.stdout
@@ -216,7 +216,7 @@
  (action (diff tests/attributes.mli.err attributes.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to binders.ml.stdout
@@ -234,7 +234,7 @@
  (action (diff tests/binders.ml.err binders.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_before_in-auto.ml.stdout
@@ -252,7 +252,7 @@
  (action (diff tests/break_before_in-auto.ml.err break_before_in-auto.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_before_in.ml.stdout
@@ -270,7 +270,7 @@
  (action (diff tests/break_before_in.ml.err break_before_in.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -291,7 +291,7 @@
  (action (diff tests/break_cases-align.ml.err break_cases-align.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -312,7 +312,7 @@
  (action (diff tests/break_cases-all.ml.err break_cases-all.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -333,7 +333,7 @@
  (action (diff tests/break_cases-closing_on_separate_line.ml.err break_cases-closing_on_separate_line.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -354,7 +354,7 @@
  (action (diff tests/break_cases-closing_on_separate_line_leading_nested_match_parens.ml.err break_cases-closing_on_separate_line_leading_nested_match_parens.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -375,7 +375,7 @@
  (action (diff tests/break_cases-cosl_lnmp_cmei.ml.err break_cases-cosl_lnmp_cmei.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -396,7 +396,7 @@
  (action (diff tests/break_cases-fit_or_vertical.ml.err break_cases-fit_or_vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -417,7 +417,7 @@
  (action (diff tests/break_cases-nested.ml.err break_cases-nested.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -438,7 +438,7 @@
  (action (diff tests/break_cases-normal_indent.ml.err break_cases-normal_indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_cases-toplevel.ml.stdout
@@ -456,7 +456,7 @@
  (action (diff tests/break_cases-toplevel.ml.err break_cases-toplevel.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -477,7 +477,7 @@
  (action (diff tests/break_cases-vertical.ml.err break_cases-vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_cases.ml.stdout
@@ -495,7 +495,7 @@
  (action (diff tests/break_cases.ml.err break_cases.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_collection_expressions-wrap.ml.stdout
@@ -513,7 +513,7 @@
  (action (diff tests/break_collection_expressions-wrap.ml.err break_collection_expressions-wrap.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_collection_expressions.ml.stdout
@@ -531,7 +531,7 @@
  (action (diff tests/break_collection_expressions.ml.err break_collection_expressions.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_colon-before.ml.stdout
@@ -549,7 +549,7 @@
  (action (diff tests/break_colon-before.ml.err break_colon-before.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_colon.ml.stdout
@@ -567,7 +567,7 @@
  (action (diff tests/break_colon.ml.err break_colon.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_fun_decl-fit_or_vertical.ml.stdout
@@ -585,7 +585,7 @@
  (action (diff tests/break_fun_decl-fit_or_vertical.ml.err break_fun_decl-fit_or_vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_fun_decl-smart.ml.stdout
@@ -603,7 +603,7 @@
  (action (diff tests/break_fun_decl-smart.ml.err break_fun_decl-smart.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_fun_decl-wrap.ml.stdout
@@ -621,7 +621,7 @@
  (action (diff tests/break_fun_decl-wrap.ml.err break_fun_decl-wrap.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_fun_decl.ml.stdout
@@ -639,7 +639,7 @@
  (action (diff tests/break_fun_decl.ml.err break_fun_decl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_infix-fit-or-vertical.ml.stdout
@@ -657,7 +657,7 @@
  (action (diff tests/break_infix-fit-or-vertical.ml.err break_infix-fit-or-vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_infix-wrap.ml.stdout
@@ -675,7 +675,7 @@
  (action (diff tests/break_infix-wrap.ml.err break_infix-wrap.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_infix.ml.stdout
@@ -693,7 +693,7 @@
  (action (diff tests/break_infix.ml.err break_infix.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_record.ml.stdout
@@ -711,7 +711,7 @@
  (action (diff tests/break_record.ml.err break_record.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_separators-after.ml.stdout
@@ -729,7 +729,7 @@
  (action (diff tests/break_separators-after.ml.err break_separators-after.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_separators-after_docked.ml.stdout
@@ -747,7 +747,7 @@
  (action (diff tests/break_separators-after_docked.ml.err break_separators-after_docked.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_separators-before_docked.ml.stdout
@@ -765,7 +765,7 @@
  (action (diff tests/break_separators-before_docked.ml.err break_separators-before_docked.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_separators.ml.stdout
@@ -783,7 +783,7 @@
  (action (diff tests/break_separators.ml.err break_separators.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_sequence_before.ml.stdout
@@ -801,7 +801,7 @@
  (action (diff tests/break_sequence_before.ml.err break_sequence_before.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_string_literals-never.ml.stdout
@@ -819,7 +819,7 @@
  (action (diff tests/break_string_literals-never.ml.err break_string_literals-never.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_string_literals.ml.stdout
@@ -837,7 +837,7 @@
  (action (diff tests/break_string_literals.ml.err break_string_literals.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to break_struct.ml.stdout
@@ -855,7 +855,7 @@
  (action (diff tests/break_struct.ml.err break_struct.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to cases_exp_grouping.ml.stdout
@@ -873,7 +873,7 @@
  (action (diff tests/cases_exp_grouping.ml.err cases_exp_grouping.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -894,7 +894,7 @@
  (action (diff tests/cinaps.ml.err cinaps.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to class_expr.ml.stdout
@@ -912,7 +912,7 @@
  (action (diff tests/class_expr.ml.err class_expr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to class_sig-after.mli.stdout
@@ -930,7 +930,7 @@
  (action (diff tests/class_sig-after.mli.err class_sig-after.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to class_sig.mli.stdout
@@ -948,7 +948,7 @@
  (action (diff tests/class_sig.mli.err class_sig.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to class_type.ml.stdout
@@ -966,7 +966,7 @@
  (action (diff tests/class_type.ml.err class_type.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to cmdline_override.ml.stdout
@@ -984,7 +984,7 @@
  (action (diff tests/cmdline_override.ml.err cmdline_override.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to cmdline_override2.ml.stdout
@@ -1002,7 +1002,7 @@
  (action (diff tests/cmdline_override2.ml.err cmdline_override2.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to coerce.ml.stdout
@@ -1020,7 +1020,7 @@
  (action (diff tests/coerce.ml.err coerce.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comment_breaking.ml.stdout
@@ -1038,7 +1038,7 @@
  (action (diff tests/comment_breaking.ml.err comment_breaking.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -1059,7 +1059,7 @@
  (action (diff tests/comment_header.ml.err comment_header.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comment_in_empty.ml.stdout
@@ -1077,7 +1077,7 @@
  (action (diff tests/comment_in_empty.ml.err comment_in_empty.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comment_in_modules.ml.stdout
@@ -1095,7 +1095,7 @@
  (action (diff tests/comment_in_modules.ml.err comment_in_modules.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comment_last.ml.stdout
@@ -1113,7 +1113,7 @@
  (action (diff tests/comment_last.ml.err comment_last.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comment_sparse.ml.stdout
@@ -1131,7 +1131,7 @@
  (action (diff tests/comment_sparse.ml.err comment_sparse.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments-no-wrap.ml.stdout
@@ -1149,7 +1149,7 @@
  (action (diff tests/comments-no-wrap.ml.err comments-no-wrap.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments.ml.stdout
@@ -1167,7 +1167,7 @@
  (action (diff tests/comments.ml.err comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments.mli.stdout
@@ -1185,7 +1185,7 @@
  (action (diff tests/comments.mli.err comments.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments_args.ml.stdout
@@ -1203,7 +1203,7 @@
  (action (diff tests/comments_args.ml.err comments_args.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments_around_disabled.ml.stdout
@@ -1221,7 +1221,7 @@
  (action (diff tests/comments_around_disabled.ml.err comments_around_disabled.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments_in_local_let.ml.stdout
@@ -1239,7 +1239,7 @@
  (action (diff tests/comments_in_local_let.ml.err comments_in_local_let.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to comments_in_record.ml.stdout
@@ -1257,7 +1257,7 @@
  (action (diff tests/comments_in_record.ml.err comments_in_record.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to crlf_to_crlf.ml.stdout
@@ -1275,7 +1275,7 @@
  (action (diff tests/crlf_to_crlf.ml.err crlf_to_crlf.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to crlf_to_lf.ml.stdout
@@ -1293,7 +1293,7 @@
  (action (diff tests/crlf_to_lf.ml.err crlf_to_lf.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to custom_list.ml.stdout
@@ -1311,7 +1311,7 @@
  (action (diff tests/custom_list.ml.err custom_list.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to directives.mlt.stdout
@@ -1329,7 +1329,7 @@
  (action (diff tests/directives.mlt.err directives.mlt.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disable_attr.ml.stdout
@@ -1347,7 +1347,7 @@
  (action (diff tests/disable_attr.ml.err disable_attr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disable_class_type.ml.stdout
@@ -1365,7 +1365,7 @@
  (action (diff tests/disable_class_type.ml.err disable_class_type.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disable_conf_attrs.ml.stdout
@@ -1383,7 +1383,7 @@
  (action (diff tests/disable_conf_attrs.ml.err disable_conf_attrs.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disable_local_let.ml.stdout
@@ -1401,7 +1401,7 @@
  (action (diff tests/disable_local_let.ml.err disable_local_let.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disabled.ml.stdout
@@ -1419,7 +1419,7 @@
  (action (diff tests/disabled.ml.err disabled.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disabled_attr.ml.stdout
@@ -1437,7 +1437,7 @@
  (action (diff tests/disabled_attr.ml.err disabled_attr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disambiguate.ml.stdout
@@ -1455,7 +1455,7 @@
  (action (diff tests/disambiguate.ml.err disambiguate.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to disambiguated_types.ml.stdout
@@ -1473,7 +1473,7 @@
  (action (diff tests/disambiguated_types.ml.err disambiguated_types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc.mld.stdout
@@ -1491,7 +1491,7 @@
  (action (diff tests/doc.mld.err doc.mld.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-after.ml.stdout
@@ -1509,7 +1509,7 @@
  (action (diff tests/doc_comments-after.ml.err doc_comments-after.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-before-except-val.ml.stdout
@@ -1527,7 +1527,7 @@
  (action (diff tests/doc_comments-before-except-val.ml.err doc_comments-before-except-val.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-before.ml.stdout
@@ -1545,7 +1545,7 @@
  (action (diff tests/doc_comments-before.ml.err doc_comments-before.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments-no-parse-docstrings.mli.stdout
@@ -1563,7 +1563,7 @@
  (action (diff tests/doc_comments-no-parse-docstrings.mli.err doc_comments-no-parse-docstrings.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -1584,7 +1584,7 @@
  (action (diff tests/doc_comments-no-wrap.mli.err doc_comments-no-wrap.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments.ml.stdout
@@ -1602,7 +1602,7 @@
  (action (diff tests/doc_comments.ml.err doc_comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -1623,7 +1623,7 @@
  (action (diff tests/doc_comments.mli.err doc_comments.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_comments_padding.ml.stdout
@@ -1641,7 +1641,7 @@
  (action (diff tests/doc_comments_padding.ml.err doc_comments_padding.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to doc_repl.mld.stdout
@@ -1659,7 +1659,7 @@
  (action (diff tests/doc_repl.mld.err doc_repl.mld.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to docstrings_toplevel_directives.mlt.stdout
@@ -1677,7 +1677,7 @@
  (action (diff tests/docstrings_toplevel_directives.mlt.err docstrings_toplevel_directives.mlt.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to eliom_ext.eliom.stdout
@@ -1695,7 +1695,7 @@
  (action (diff tests/eliom_ext.eliom.err eliom_ext.eliom.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to empty.ml.stdout
@@ -1713,7 +1713,7 @@
  (action (diff tests/empty.ml.err empty.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to empty_ml.ml.stdout
@@ -1731,7 +1731,7 @@
  (action (diff tests/empty_ml.ml.err empty_ml.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to empty_mli.mli.stdout
@@ -1749,7 +1749,7 @@
  (action (diff tests/empty_mli.mli.err empty_mli.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to empty_mlt.mlt.stdout
@@ -1767,7 +1767,7 @@
  (action (diff tests/empty_mlt.mlt.err empty_mlt.mlt.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to error1.ml.stdout
@@ -1786,7 +1786,7 @@
  (action (diff tests/error1.ml.err error1.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to error2.ml.stdout
@@ -1805,7 +1805,7 @@
  (action (diff tests/error2.ml.err error2.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to error3.ml.stdout
@@ -1824,7 +1824,7 @@
  (action (diff tests/error3.ml.err error3.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to error4.ml.stdout
@@ -1842,7 +1842,7 @@
  (action (diff tests/error4.ml.err error4.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -1863,7 +1863,7 @@
  (action (diff tests/escaped_nl.ml.err escaped_nl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to exceptions.ml.stdout
@@ -1881,7 +1881,7 @@
  (action (diff tests/exceptions.ml.err exceptions.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to exceptions.mli.stdout
@@ -1899,7 +1899,7 @@
  (action (diff tests/exceptions.mli.err exceptions.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to exp_grouping-parens.ml.stdout
@@ -1917,7 +1917,7 @@
  (action (diff tests/exp_grouping-parens.ml.err exp_grouping-parens.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to exp_grouping.ml.stdout
@@ -1935,7 +1935,7 @@
  (action (diff tests/exp_grouping.ml.err exp_grouping.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to exp_record.ml.stdout
@@ -1953,7 +1953,7 @@
  (action (diff tests/exp_record.ml.err exp_record.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to expect_test.ml.stdout
@@ -1971,7 +1971,7 @@
  (action (diff tests/expect_test.ml.err expect_test.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to extensions-indent.ml.stdout
@@ -1989,7 +1989,7 @@
  (action (diff tests/extensions-indent.ml.err extensions-indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to extensions-indent.mli.stdout
@@ -2007,7 +2007,7 @@
  (action (diff tests/extensions-indent.mli.err extensions-indent.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to extensions.ml.stdout
@@ -2025,7 +2025,7 @@
  (action (diff tests/extensions.ml.err extensions.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to extensions.mli.stdout
@@ -2043,7 +2043,7 @@
  (action (diff tests/extensions.mli.err extensions.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to extensions_exp_grouping.ml.stdout
@@ -2061,7 +2061,7 @@
  (action (diff tests/extensions_exp_grouping.ml.err extensions_exp_grouping.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to field-op_begin_line.ml.stdout
@@ -2079,7 +2079,7 @@
  (action (diff tests/field-op_begin_line.ml.err field-op_begin_line.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to field.ml.stdout
@@ -2097,7 +2097,7 @@
  (action (diff tests/field.ml.err field.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to first_class_module.ml.stdout
@@ -2115,7 +2115,7 @@
  (action (diff tests/first_class_module.ml.err first_class_module.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to floating_doc.ml.stdout
@@ -2133,7 +2133,7 @@
  (action (diff tests/floating_doc.ml.err floating_doc.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to for_while.ml.stdout
@@ -2151,7 +2151,7 @@
  (action (diff tests/for_while.ml.err for_while.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to fun_decl.ml.stdout
@@ -2169,7 +2169,7 @@
  (action (diff tests/fun_decl.ml.err fun_decl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to fun_function.ml.stdout
@@ -2187,7 +2187,7 @@
  (action (diff tests/fun_function.ml.err fun_function.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to function_indent-never.ml.stdout
@@ -2205,7 +2205,7 @@
  (action (diff tests/function_indent-never.ml.err function_indent-never.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to function_indent.ml.stdout
@@ -2223,7 +2223,7 @@
  (action (diff tests/function_indent.ml.err function_indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to functor.ml.stdout
@@ -2241,7 +2241,7 @@
  (action (diff tests/functor.ml.err functor.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to functor.mli.stdout
@@ -2259,7 +2259,7 @@
  (action (diff tests/functor.mli.err functor.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to funsig.ml.stdout
@@ -2277,7 +2277,7 @@
  (action (diff tests/funsig.ml.err funsig.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to gadt.ml.stdout
@@ -2295,7 +2295,7 @@
  (action (diff tests/gadt.ml.err gadt.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to generative.ml.stdout
@@ -2313,7 +2313,7 @@
  (action (diff tests/generative.ml.err generative.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to hash_bang.ml.stdout
@@ -2331,7 +2331,7 @@
  (action (diff tests/hash_bang.ml.err hash_bang.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to hash_types.ml.stdout
@@ -2349,7 +2349,7 @@
  (action (diff tests/hash_types.ml.err hash_types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to holes.ml.stdout
@@ -2367,7 +2367,7 @@
  (action (diff tests/holes.ml.err holes.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ifand.ml.stdout
@@ -2385,7 +2385,7 @@
  (action (diff tests/ifand.ml.err ifand.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to index_op.ml.stdout
@@ -2403,7 +2403,7 @@
  (action (diff tests/index_op.ml.err index_op.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to indicate_multiline_delimiters-cosl.ml.stdout
@@ -2421,7 +2421,7 @@
  (action (diff tests/indicate_multiline_delimiters-cosl.ml.err indicate_multiline_delimiters-cosl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to indicate_multiline_delimiters-space.ml.stdout
@@ -2439,7 +2439,7 @@
  (action (diff tests/indicate_multiline_delimiters-space.ml.err indicate_multiline_delimiters-space.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to indicate_multiline_delimiters.ml.stdout
@@ -2457,7 +2457,7 @@
  (action (diff tests/indicate_multiline_delimiters.ml.err indicate_multiline_delimiters.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_arg_grouping.ml.stdout
@@ -2475,7 +2475,7 @@
  (action (diff tests/infix_arg_grouping.ml.err infix_arg_grouping.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_bind-break.ml.stdout
@@ -2493,7 +2493,7 @@
  (action (diff tests/infix_bind-break.ml.err infix_bind-break.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_bind-fit_or_vertical-break.ml.stdout
@@ -2511,7 +2511,7 @@
  (action (diff tests/infix_bind-fit_or_vertical-break.ml.err infix_bind-fit_or_vertical-break.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_bind-fit_or_vertical.ml.stdout
@@ -2529,7 +2529,7 @@
  (action (diff tests/infix_bind-fit_or_vertical.ml.err infix_bind-fit_or_vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_bind.ml.stdout
@@ -2547,7 +2547,7 @@
  (action (diff tests/infix_bind.ml.err infix_bind.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to infix_precedence.ml.stdout
@@ -2565,7 +2565,7 @@
  (action (diff tests/infix_precedence.ml.err infix_precedence.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to injectivity.ml.stdout
@@ -2583,7 +2583,7 @@
  (action (diff tests/injectivity.ml.err injectivity.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to into_infix.ml.stdout
@@ -2601,7 +2601,7 @@
  (action (diff tests/into_infix.ml.err into_infix.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to invalid.ml.stdout
@@ -2619,7 +2619,7 @@
  (action (diff tests/invalid.ml.err invalid.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to invalid_docstring.ml.stdout
@@ -2637,7 +2637,7 @@
  (action (diff tests/invalid_docstring.ml.err invalid_docstring.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -2658,7 +2658,7 @@
  (action (diff tests/invalid_docstrings.mli.err invalid_docstrings.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue114.ml.stdout
@@ -2676,7 +2676,7 @@
  (action (diff tests/issue114.ml.err issue114.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue1750.ml.stdout
@@ -2694,7 +2694,7 @@
  (action (diff tests/issue1750.ml.err issue1750.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue289.ml.stdout
@@ -2712,7 +2712,7 @@
  (action (diff tests/issue289.ml.err issue289.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue48.ml.stdout
@@ -2730,7 +2730,7 @@
  (action (diff tests/issue48.ml.err issue48.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue51.ml.stdout
@@ -2748,7 +2748,7 @@
  (action (diff tests/issue51.ml.err issue51.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue57.ml.stdout
@@ -2766,7 +2766,7 @@
  (action (diff tests/issue57.ml.err issue57.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue60.ml.stdout
@@ -2784,7 +2784,7 @@
  (action (diff tests/issue60.ml.err issue60.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue77.ml.stdout
@@ -2802,7 +2802,7 @@
  (action (diff tests/issue77.ml.err issue77.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue85.ml.stdout
@@ -2820,7 +2820,7 @@
  (action (diff tests/issue85.ml.err issue85.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to issue89.ml.stdout
@@ -2838,7 +2838,7 @@
  (action (diff tests/issue89.ml.err issue89.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-compact.ml.stdout
@@ -2856,7 +2856,7 @@
  (action (diff tests/ite-compact.ml.err ite-compact.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-compact_closing.ml.stdout
@@ -2874,7 +2874,7 @@
  (action (diff tests/ite-compact_closing.ml.err ite-compact_closing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-fit_or_vertical.ml.stdout
@@ -2892,7 +2892,7 @@
  (action (diff tests/ite-fit_or_vertical.ml.err ite-fit_or_vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-fit_or_vertical_closing.ml.stdout
@@ -2910,7 +2910,7 @@
  (action (diff tests/ite-fit_or_vertical_closing.ml.err ite-fit_or_vertical_closing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-fit_or_vertical_no_indicate.ml.stdout
@@ -2928,7 +2928,7 @@
  (action (diff tests/ite-fit_or_vertical_no_indicate.ml.err ite-fit_or_vertical_no_indicate.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-kr.ml.stdout
@@ -2946,7 +2946,7 @@
  (action (diff tests/ite-kr.ml.err ite-kr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-kr_closing.ml.stdout
@@ -2964,7 +2964,7 @@
  (action (diff tests/ite-kr_closing.ml.err ite-kr_closing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-kw_first.ml.stdout
@@ -2982,7 +2982,7 @@
  (action (diff tests/ite-kw_first.ml.err ite-kw_first.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-kw_first_closing.ml.stdout
@@ -3000,7 +3000,7 @@
  (action (diff tests/ite-kw_first_closing.ml.err ite-kw_first_closing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-kw_first_no_indicate.ml.stdout
@@ -3018,7 +3018,7 @@
  (action (diff tests/ite-kw_first_no_indicate.ml.err ite-kw_first_no_indicate.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-no_indicate.ml.stdout
@@ -3036,7 +3036,7 @@
  (action (diff tests/ite-no_indicate.ml.err ite-no_indicate.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite-vertical.ml.stdout
@@ -3054,7 +3054,7 @@
  (action (diff tests/ite-vertical.ml.err ite-vertical.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ite.ml.stdout
@@ -3072,7 +3072,7 @@
  (action (diff tests/ite.ml.err ite.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_args.ml.stdout
@@ -3090,7 +3090,7 @@
  (action (diff tests/js_args.ml.err js_args.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_begin.ml.stdout
@@ -3108,7 +3108,7 @@
  (action (diff tests/js_begin.ml.err js_begin.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_bind.ml.stdout
@@ -3126,7 +3126,7 @@
  (action (diff tests/js_bind.ml.err js_bind.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_fun.ml.stdout
@@ -3144,7 +3144,7 @@
  (action (diff tests/js_fun.ml.err js_fun.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_map.ml.stdout
@@ -3162,7 +3162,7 @@
  (action (diff tests/js_map.ml.err js_map.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_pattern.ml.stdout
@@ -3180,7 +3180,7 @@
  (action (diff tests/js_pattern.ml.err js_pattern.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_poly.ml.stdout
@@ -3198,7 +3198,7 @@
  (action (diff tests/js_poly.ml.err js_poly.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_record.ml.stdout
@@ -3216,7 +3216,7 @@
  (action (diff tests/js_record.ml.err js_record.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_sig.mli.stdout
@@ -3234,7 +3234,7 @@
  (action (diff tests/js_sig.mli.err js_sig.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_source.ml.stdout
@@ -3264,7 +3264,7 @@
  (action (diff tests/js_source.ml.ocp js_source.ml.ocp.output)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_syntax.ml.stdout
@@ -3282,7 +3282,7 @@
  (action (diff tests/js_syntax.ml.err js_syntax.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -3303,7 +3303,7 @@
  (action (diff tests/js_to_do.ml.err js_to_do.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to js_upon.ml.stdout
@@ -3321,7 +3321,7 @@
  (action (diff tests/js_upon.ml.err js_upon.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to kw_extentions.ml.stdout
@@ -3339,7 +3339,7 @@
  (action (diff tests/kw_extentions.ml.err kw_extentions.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to label_option_default_args.ml.stdout
@@ -3357,7 +3357,7 @@
  (action (diff tests/label_option_default_args.ml.err label_option_default_args.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to labelled_args-414.ml.stdout
@@ -3375,7 +3375,7 @@
  (action (diff tests/labelled_args-414.ml.err labelled_args-414.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to labelled_args.ml.stdout
@@ -3393,7 +3393,7 @@
  (action (diff tests/labelled_args.ml.err labelled_args.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to lazy.ml.stdout
@@ -3411,7 +3411,7 @@
  (action (diff tests/lazy.ml.err lazy.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding-in_indent.ml.stdout
@@ -3429,7 +3429,7 @@
  (action (diff tests/let_binding-in_indent.ml.err let_binding-in_indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding-indent.ml.stdout
@@ -3447,7 +3447,7 @@
  (action (diff tests/let_binding-indent.ml.err let_binding-indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding.ml.stdout
@@ -3465,7 +3465,7 @@
  (action (diff tests/let_binding.ml.err let_binding.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding_spacing-double-semicolon.ml.stdout
@@ -3483,7 +3483,7 @@
  (action (diff tests/let_binding_spacing-double-semicolon.ml.err let_binding_spacing-double-semicolon.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding_spacing-sparse.ml.stdout
@@ -3501,7 +3501,7 @@
  (action (diff tests/let_binding_spacing-sparse.ml.err let_binding_spacing-sparse.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_binding_spacing.ml.stdout
@@ -3519,7 +3519,7 @@
  (action (diff tests/let_binding_spacing.ml.err let_binding_spacing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_in_constr.ml.stdout
@@ -3537,7 +3537,7 @@
  (action (diff tests/let_in_constr.ml.err let_in_constr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_module-sparse.ml.stdout
@@ -3555,7 +3555,7 @@
  (action (diff tests/let_module-sparse.ml.err let_module-sparse.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_module.ml.stdout
@@ -3573,7 +3573,7 @@
  (action (diff tests/let_module.ml.err let_module.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to let_punning.ml.stdout
@@ -3591,7 +3591,7 @@
  (action (diff tests/let_punning.ml.err let_punning.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to line_directives.ml.stdout
@@ -3610,7 +3610,7 @@
  (action (diff tests/line_directives.ml.err line_directives.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to list-space_around.ml.stdout
@@ -3628,7 +3628,7 @@
  (action (diff tests/list-space_around.ml.err list-space_around.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to list.ml.stdout
@@ -3646,7 +3646,7 @@
  (action (diff tests/list.ml.err list.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to list_and_comments.ml.stdout
@@ -3664,7 +3664,7 @@
  (action (diff tests/list_and_comments.ml.err list_and_comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to list_normalized.ml.stdout
@@ -3682,7 +3682,7 @@
  (action (diff tests/list_normalized.ml.err list_normalized.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to loc_stack.ml.stdout
@@ -3700,7 +3700,7 @@
  (action (diff tests/loc_stack.ml.err loc_stack.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to locally_abtract_types.ml.stdout
@@ -3718,7 +3718,7 @@
  (action (diff tests/locally_abtract_types.ml.err locally_abtract_types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to margin_80.ml.stdout
@@ -3736,7 +3736,7 @@
  (action (diff tests/margin_80.ml.err margin_80.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to match.ml.stdout
@@ -3754,7 +3754,7 @@
  (action (diff tests/match.ml.err match.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to match2.ml.stdout
@@ -3772,7 +3772,7 @@
  (action (diff tests/match2.ml.err match2.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to match_indent-never.ml.stdout
@@ -3790,7 +3790,7 @@
  (action (diff tests/match_indent-never.ml.err match_indent-never.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to match_indent.ml.stdout
@@ -3808,7 +3808,7 @@
  (action (diff tests/match_indent.ml.err match_indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to max_indent.ml.stdout
@@ -3826,7 +3826,7 @@
  (action (diff tests/max_indent.ml.err max_indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to mod_type_subst.ml.stdout
@@ -3844,7 +3844,7 @@
  (action (diff tests/mod_type_subst.ml.err mod_type_subst.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module.ml.stdout
@@ -3862,7 +3862,7 @@
  (action (diff tests/module.ml.err module.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_anonymous.ml.stdout
@@ -3880,7 +3880,7 @@
  (action (diff tests/module_anonymous.ml.err module_anonymous.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_attributes.ml.stdout
@@ -3898,7 +3898,7 @@
  (action (diff tests/module_attributes.ml.err module_attributes.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_item_spacing-preserve.ml.stdout
@@ -3916,7 +3916,7 @@
  (action (diff tests/module_item_spacing-preserve.ml.err module_item_spacing-preserve.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_item_spacing-sparse.ml.stdout
@@ -3934,7 +3934,7 @@
  (action (diff tests/module_item_spacing-sparse.ml.err module_item_spacing-sparse.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_item_spacing.ml.stdout
@@ -3952,7 +3952,7 @@
  (action (diff tests/module_item_spacing.ml.err module_item_spacing.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_item_spacing.mli.stdout
@@ -3970,7 +3970,7 @@
  (action (diff tests/module_item_spacing.mli.err module_item_spacing.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_type.ml.stdout
@@ -3988,7 +3988,7 @@
  (action (diff tests/module_type.ml.err module_type.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to module_type.mli.stdout
@@ -4006,7 +4006,7 @@
  (action (diff tests/module_type.mli.err module_type.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to monadic_binding.ml.stdout
@@ -4024,7 +4024,7 @@
  (action (diff tests/monadic_binding.ml.err monadic_binding.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to multi_index_op.ml.stdout
@@ -4042,7 +4042,7 @@
  (action (diff tests/multi_index_op.ml.err multi_index_op.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to named_existentials.ml.stdout
@@ -4060,7 +4060,7 @@
  (action (diff tests/named_existentials.ml.err named_existentials.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to need_format.ml.stdout
@@ -4079,7 +4079,7 @@
  (action (diff tests/need_format.ml.err need_format.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to new.ml.stdout
@@ -4097,7 +4097,7 @@
  (action (diff tests/new.ml.err new.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to object.ml.stdout
@@ -4115,7 +4115,7 @@
  (action (diff tests/object.ml.err object.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to object2.ml.stdout
@@ -4133,7 +4133,7 @@
  (action (diff tests/object2.ml.err object2.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to object_expr-414.ml.stdout
@@ -4151,7 +4151,7 @@
  (action (diff tests/object_expr-414.ml.err object_expr-414.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to object_expr.ml.stdout
@@ -4169,7 +4169,7 @@
  (action (diff tests/object_expr.ml.err object_expr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to object_type.ml.stdout
@@ -4187,7 +4187,7 @@
  (action (diff tests/object_type.ml.err object_type.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to obuild.ml.stdout
@@ -4205,7 +4205,7 @@
  (action (diff tests/obuild.ml.err obuild.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ocp_indent_compat-break_colon_after.ml.stdout
@@ -4223,7 +4223,7 @@
  (action (diff tests/ocp_indent_compat-break_colon_after.ml.err ocp_indent_compat-break_colon_after.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ocp_indent_compat.ml.stdout
@@ -4241,7 +4241,7 @@
  (action (diff tests/ocp_indent_compat.ml.err ocp_indent_compat.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to ocp_indent_options.ml.stdout
@@ -4259,7 +4259,7 @@
  (action (diff tests/ocp_indent_options.ml.err ocp_indent_options.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to open-closing-on-separate-line.ml.stdout
@@ -4277,7 +4277,7 @@
  (action (diff tests/open-closing-on-separate-line.ml.err open-closing-on-separate-line.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to open.ml.stdout
@@ -4295,7 +4295,7 @@
  (action (diff tests/open.ml.err open.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to open_types.ml.stdout
@@ -4313,7 +4313,7 @@
  (action (diff tests/open_types.ml.err open_types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to option.ml.stdout
@@ -4331,7 +4331,7 @@
  (action (diff tests/option.ml.err option.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to override.ml.stdout
@@ -4349,7 +4349,7 @@
  (action (diff tests/override.ml.err override.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to parens_tuple_patterns.ml.stdout
@@ -4367,7 +4367,7 @@
  (action (diff tests/parens_tuple_patterns.ml.err parens_tuple_patterns.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to polytypes-default.ml.stdout
@@ -4385,7 +4385,7 @@
  (action (diff tests/polytypes-default.ml.err polytypes-default.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to polytypes-janestreet.ml.stdout
@@ -4403,7 +4403,7 @@
  (action (diff tests/polytypes-janestreet.ml.err polytypes-janestreet.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to polytypes.ml.stdout
@@ -4421,7 +4421,7 @@
  (action (diff tests/polytypes.ml.err polytypes.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to pre_post_extensions.ml.stdout
@@ -4439,7 +4439,7 @@
  (action (diff tests/pre_post_extensions.ml.err pre_post_extensions.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to precedence.ml.stdout
@@ -4457,7 +4457,7 @@
  (action (diff tests/precedence.ml.err precedence.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to prefix_infix.ml.stdout
@@ -4475,7 +4475,7 @@
  (action (diff tests/prefix_infix.ml.err prefix_infix.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
+ (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -4496,7 +4496,7 @@
  (action (diff tests/print_config.ml.err print_config.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to profiles.ml.stdout
@@ -4514,7 +4514,7 @@
  (action (diff tests/profiles.ml.err profiles.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to profiles2.ml.stdout
@@ -4532,7 +4532,7 @@
  (action (diff tests/profiles2.ml.err profiles2.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to protected_object_types.ml.stdout
@@ -4550,7 +4550,7 @@
  (action (diff tests/protected_object_types.ml.err protected_object_types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to qtest.ml.stdout
@@ -4568,7 +4568,7 @@
  (action (diff tests/qtest.ml.err qtest.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to quoted_strings.ml.stdout
@@ -4586,7 +4586,7 @@
  (action (diff tests/quoted_strings.ml.err quoted_strings.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to recmod.mli.stdout
@@ -4604,7 +4604,7 @@
  (action (diff tests/recmod.mli.err recmod.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record-402.ml.stdout
@@ -4622,7 +4622,7 @@
  (action (diff tests/record-402.ml.err record-402.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record-loose.ml.stdout
@@ -4640,7 +4640,7 @@
  (action (diff tests/record-loose.ml.err record-loose.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record-tight_decl.ml.stdout
@@ -4658,7 +4658,7 @@
  (action (diff tests/record-tight_decl.ml.err record-tight_decl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record.ml.stdout
@@ -4676,7 +4676,7 @@
  (action (diff tests/record.ml.err record.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record_punning-js.ml.stdout
@@ -4694,7 +4694,7 @@
  (action (diff tests/record_punning-js.ml.err record_punning-js.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to record_punning.ml.stdout
@@ -4712,7 +4712,7 @@
  (action (diff tests/record_punning.ml.err record_punning.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -4733,7 +4733,7 @@
  (action (diff tests/reformat_string.ml.err reformat_string.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to refs.ml.stdout
@@ -4751,7 +4751,7 @@
  (action (diff tests/refs.ml.err refs.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to remove_extra_parens.ml.stdout
@@ -4769,7 +4769,7 @@
  (action (diff tests/remove_extra_parens.ml.err remove_extra_parens.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to repl.ml.stdout
@@ -4787,7 +4787,7 @@
  (action (diff tests/repl.ml.err repl.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to repl.mli.stdout
@@ -4805,7 +4805,7 @@
  (action (diff tests/repl.mli.err repl.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to revapply_ext.ml.stdout
@@ -4823,7 +4823,7 @@
  (action (diff tests/revapply_ext.ml.err revapply_ext.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to send.ml.stdout
@@ -4841,7 +4841,7 @@
  (action (diff tests/send.ml.err send.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to sequence-preserve.ml.stdout
@@ -4859,7 +4859,7 @@
  (action (diff tests/sequence-preserve.ml.err sequence-preserve.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to sequence.ml.stdout
@@ -4877,7 +4877,7 @@
  (action (diff tests/sequence.ml.err sequence.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to shebang.ml.stdout
@@ -4895,7 +4895,7 @@
  (action (diff tests/shebang.ml.err shebang.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to shortcut_ext_attr.ml.stdout
@@ -4913,7 +4913,7 @@
  (action (diff tests/shortcut_ext_attr.ml.err shortcut_ext_attr.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to sig_value.mli.stdout
@@ -4931,7 +4931,7 @@
  (action (diff tests/sig_value.mli.err sig_value.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to single_line.mli.stdout
@@ -4949,7 +4949,7 @@
  (action (diff tests/single_line.mli.err single_line.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to skip.ml.stdout
@@ -4967,7 +4967,7 @@
  (action (diff tests/skip.ml.err skip.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to source.ml.stdout
@@ -4985,7 +4985,7 @@
  (action (diff tests/source.ml.err source.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to str_value.ml.stdout
@@ -5003,7 +5003,7 @@
  (action (diff tests/str_value.ml.err str_value.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to string.ml.stdout
@@ -5021,7 +5021,7 @@
  (action (diff tests/string.ml.err string.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to string_array.ml.stdout
@@ -5039,7 +5039,7 @@
  (action (diff tests/string_array.ml.err string_array.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to string_wrapping.ml.stdout
@@ -5057,7 +5057,7 @@
  (action (diff tests/string_wrapping.ml.err string_wrapping.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to symbol.ml.stdout
@@ -5075,7 +5075,7 @@
  (action (diff tests/symbol.ml.err symbol.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to tag_only.ml.stdout
@@ -5093,7 +5093,7 @@
  (action (diff tests/tag_only.ml.err tag_only.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to tag_only.mli.stdout
@@ -5111,7 +5111,7 @@
  (action (diff tests/tag_only.mli.err tag_only.mli.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to try_with_or_pattern.ml.stdout
@@ -5129,7 +5129,7 @@
  (action (diff tests/try_with_or_pattern.ml.err try_with_or_pattern.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to tuple.ml.stdout
@@ -5147,7 +5147,7 @@
  (action (diff tests/tuple.ml.err tuple.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to tuple_less_parens.ml.stdout
@@ -5165,7 +5165,7 @@
  (action (diff tests/tuple_less_parens.ml.err tuple_less_parens.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to tuple_type_parens.ml.stdout
@@ -5183,7 +5183,7 @@
  (action (diff tests/tuple_type_parens.ml.err tuple_type_parens.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to type_and_constraint.ml.stdout
@@ -5201,7 +5201,7 @@
  (action (diff tests/type_and_constraint.ml.err type_and_constraint.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to type_annotations.ml.stdout
@@ -5219,7 +5219,7 @@
  (action (diff tests/type_annotations.ml.err type_annotations.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-compact-space_around-docked.ml.stdout
@@ -5237,7 +5237,7 @@
  (action (diff tests/types-compact-space_around-docked.ml.err types-compact-space_around-docked.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-compact-space_around.ml.stdout
@@ -5255,7 +5255,7 @@
  (action (diff tests/types-compact-space_around.ml.err types-compact-space_around.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-compact.ml.stdout
@@ -5273,7 +5273,7 @@
  (action (diff tests/types-compact.ml.err types-compact.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-indent.ml.stdout
@@ -5291,7 +5291,7 @@
  (action (diff tests/types-indent.ml.err types-indent.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-sparse-space_around.ml.stdout
@@ -5309,7 +5309,7 @@
  (action (diff tests/types-sparse-space_around.ml.err types-sparse-space_around.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types-sparse.ml.stdout
@@ -5327,7 +5327,7 @@
  (action (diff tests/types-sparse.ml.err types-sparse.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to types.ml.stdout
@@ -5345,7 +5345,7 @@
  (action (diff tests/types.ml.err types.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to unary.ml.stdout
@@ -5363,7 +5363,7 @@
  (action (diff tests/unary.ml.err unary.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to unary_hash.ml.stdout
@@ -5381,7 +5381,7 @@
  (action (diff tests/unary_hash.ml.err unary_hash.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to unicode.ml.stdout
@@ -5399,7 +5399,7 @@
  (action (diff tests/unicode.ml.err unicode.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to use_file.mlt.stdout
@@ -5417,7 +5417,7 @@
  (action (diff tests/use_file.mlt.err use_file.mlt.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to variants.ml.stdout
@@ -5435,7 +5435,7 @@
  (action (diff tests/variants.ml.err variants.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to verbatim_comments-wrap.ml.stdout
@@ -5453,7 +5453,7 @@
  (action (diff tests/verbatim_comments-wrap.ml.err verbatim_comments-wrap.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to verbatim_comments.ml.stdout
@@ -5471,7 +5471,7 @@
  (action (diff tests/verbatim_comments.ml.err verbatim_comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -5492,7 +5492,7 @@
  (action (diff tests/verbose1.ml.err verbose1.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to w50.ml.stdout
@@ -5510,7 +5510,7 @@
  (action (diff tests/w50.ml.err w50.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -5531,7 +5531,7 @@
  (action (diff tests/wrap_comments.ml.err wrap_comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to wrap_comments_break.ml.stdout
@@ -5549,7 +5549,7 @@
  (action (diff tests/wrap_comments_break.ml.err wrap_comments_break.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to wrap_invalid_doc_comments.ml.stdout
@@ -5567,7 +5567,7 @@
  (action (diff tests/wrap_invalid_doc_comments.ml.err wrap_invalid_doc_comments.ml.stderr)))
 
 (rule
- (deps (package ocamlformat-dev) tests/.ocamlformat )
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to wrapping_functor_args.ml.stdout

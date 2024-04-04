@@ -1,7 +1,6 @@
 (rule
  (alias runtest)
  (deps
-  (package ocamlformat-dev)
   (source_tree dir1))
  (package ocamlformat)
  (enabled_if
@@ -12,7 +11,6 @@
 (rule
  (alias runtest)
  (deps
-  (package ocamlformat-dev)
   (source_tree dir1))
  (package ocamlformat)
  (enabled_if
