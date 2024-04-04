@@ -105,7 +105,7 @@ jobs:
 
       - name: Test ${{ matrix.profile }} profile
         run: |
-          chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat ocamlformat-a/ocamlformat-dev ocamlformat-b/ocamlformat-dev
+          chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat ocamlformat-b/ocamlformat-dev
           ./tools/test_branch.sh $TEST_BRANCH_ARGS -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat-dev 'profile=${{ matrix.profile }}'
         shell: bash
         env:
