@@ -517,8 +517,8 @@ let fmt_docstring_around_item_attrs ?is_val ?force_before ?fit c attrs =
   in
   (doc_before, doc_after, attrs.attrs_before, attrs_after)
 
-let fmt_extension_suffix c ext =
-  opt ext (fun name -> str "%" $ fmt_str_loc c name)
+let fmt_extension_suffix ?epi c ext =
+  opt ext (fun name -> str "%" $ fmt_str_loc c name $ fmt_opt epi)
 
 let is_arrow_or_poly = function
   | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
@@ -1428,7 +1428,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
 and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ space_break) ?(box = true)
-      ~label ?(parens = false) ~attrs ~loc c (args, typ, body) =
+      ~label ?(parens = false) ?ext ~attrs ~loc c (args, typ, body) =
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
@@ -1452,7 +1452,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
   in
   let fmt_fun_args_typ args typ =
     let kw =
-    str "fun" $ fmt_attributes c attrs
+    str "fun" $ fmt_extension_suffix ~epi:(str " ") c ext $ fmt_attributes c attrs
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     in
@@ -2154,35 +2154,29 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_function (args, typ, (Pfunction_body _ as body))
   | Pexp_function ((_ :: _ as args), typ, body) ->
-      (* let body_is_function = *)
-      (*   match xbody.ast.pexp_desc with *)
-      (*   | Pexp_function ([], None, Pfunction_cases _) -> true *)
-      (*   | _ -> false *)
-      (* in *)
-      (* let indent = *)
-      (*   if body_is_function then *)
-      (*     let default_indent = *)
-      (*       if Option.is_none eol then 2 *)
-      (*       else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1 *)
-      (*       else 0 *)
-      (*     in *)
-      (*     Params.Indent.function_ ~default:default_indent c.conf ~parens xexp *)
-      (*   else Params.Indent.fun_ ?eol c.conf *)
-      (* in *)
-      let wrap_intro =
-        let kw =
-          str "fun"
-          $ fmt_extension_suffix c ext
-          $ str " "
-          $ fmt_attributes c pexp_attributes ~suf:" "
-        and args = fmt_expr_fun_args c xargs in
-        Params.Exp.box_fun_decl_args c.conf ~parens ~kw ~args ~annot:fmt_cstr
+      let body_is_function =
+        match body with
+        | Pfunction_cases _ -> true
+        | _ -> false
+      in
+      let indent =
+        if body_is_function then
+          let default_indent =
+            if Option.is_none eol then 2
+            else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
+            else 0
+          in
+          Params.Indent.function_ ~default:default_indent c.conf ~parens xexp
+        else Params.Indent.fun_ ?eol c.conf
       in
       pro
       $ hvbox_if (box || body_is_function) indent
           (Params.Exp.wrap c.conf ~parens ~disambiguate:true
              ~fits_breaks:false ~offset_closing_paren:(-2)
-             (hovbox 2 (intro $ str " ->" $ pre_body) $ space_break $ body) )
+             (
+      fmt_function ~ctx
+        ~label:Nolabel ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
+             ) )
   | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
       pro
