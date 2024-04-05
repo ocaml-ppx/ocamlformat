@@ -14,8 +14,10 @@ Invalid version:
 Exit code is printed by hand because sed succeeding would hide the error.
 
   $ (<a.ml ocamlformat --impl -; echo [$?]) 2>&1 | sed 's/version is "[^"]*"/version is "..."/g'
-  Ocamlformat version bad not installed
-  Hint: `opam install ocamlformat-bad`
+  Ocamlformat version bad not installed.
+  You may be able to get it with: `opam install ocamlformat-bad`
+  If this package does not exists, try `opam update`.
+  If it still does not exist, there might be a typo in your config, or the version is very old and has been not been yet repackaged.
   [1]
 
 Disable version check:
