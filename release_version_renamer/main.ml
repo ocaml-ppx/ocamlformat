@@ -1,9 +1,9 @@
 let handle_arg arg =
-    print_endline arg;
-    let b = Buffer.create 128 in
+  print_endline arg ;
+  let b = Buffer.create 128 in
   In_channel.with_open_text arg (fun input ->
       let lexbuf = Lexing.from_channel input in
-      Lexer.disabled  (Buffer.add_string b) lexbuf ) ;
+      Lexer.disabled (Buffer.add_string b) lexbuf ) ;
   Out_channel.with_open_text arg (fun out -> Buffer.output_buffer out b)
 
 let () =

@@ -1,12 +1,11 @@
 (cram
  (package ocamlformat)
- (deps %{bin:ocamlformat}
+ (deps
+  %{bin:ocamlformat}
   ; enable release renaming
-
- %{bin:ocamlformat-devversion}
+  %{bin:ocamlformat-devversion}
   ; disable release renaming
-
- ))
+  ))
 
 (cram
  (applies_to large_string conf removed_option repl_file_errors debug)

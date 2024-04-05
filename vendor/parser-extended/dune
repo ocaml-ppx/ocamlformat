@@ -1,32 +1,32 @@
 (library
  (name
- ; enable release renaming
- ocamlformat_parser_extended_devversion
- ; disable release renaming
- )
+  ; enable release renaming
+  ocamlformat_parser_extended_devversion
+  ; disable release renaming
+  )
  (public_name
- ; enable release renaming
- ocamlformat-lib-devversion.parser_extended
- ; enable release renaming
- )
+  ; enable release renaming
+  ocamlformat-lib-devversion.parser_extended
+  ; enable release renaming
+  )
  (flags
   (:standard
    -w
    -9
    -open
- ; enable release renaming
+   ; enable release renaming
    Ocamlformat_parser_shims_devversion
    -open
    Ocamlformat_ocaml_common_devversion
- ; disable release renaming
+   ; disable release renaming
    ))
  (libraries
   compiler-libs.common
   menhirLib
- ; enable release renaming
+  ; enable release renaming
   ocamlformat_parser_shims_devversion
   ocamlformat_ocaml_common_devversion
- ; disable release renaming
+  ; disable release renaming
   ))
 
 (ocamllex lexer)

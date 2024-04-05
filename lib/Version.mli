@@ -16,4 +16,3 @@ val make : major:int -> minor:int -> patch:int option -> t
 val to_string : t -> string
 
 val pp : Format.formatter -> t -> unit
-

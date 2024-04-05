@@ -2,4 +2,4 @@
 
 (executable
  (name main)
- (libraries ))
+ (libraries))

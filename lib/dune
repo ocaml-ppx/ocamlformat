@@ -16,38 +16,38 @@
 (rule
  (action
   (write-file
-    current_version.ml
-  ; enable release renaming
-    "let v = \"devversion\""
-  ; disable release renaming
-    )))
+   current_version.ml
+   ; enable release renaming
+   "let v = \"devversion\""
+   ; disable release renaming
+   )))
 
 (rule
  (action
   (write-file
-    ocamlformat_parser_extended.ml
-    ; enable release renaming
-"include Ocamlformat_parser_extended_devversion"
-; disable release renaming
-)))
+   ocamlformat_parser_extended.ml
+   ; enable release renaming
+   "include Ocamlformat_parser_extended_devversion"
+   ; disable release renaming
+   )))
 
 (rule
  (action
   (write-file
-    ocamlformat_odoc_parser.ml
-    ; enable release renaming
-"include Ocamlformat_odoc_parser_devversion"
-; disable release renaming
-)))
+   ocamlformat_odoc_parser.ml
+   ; enable release renaming
+   "include Ocamlformat_odoc_parser_devversion"
+   ; disable release renaming
+   )))
 
 (rule
  (action
   (write-file
-    ocamlformat_parser_standard.ml
-    ; enable release renaming
-"include Ocamlformat_parser_standard_devversion"
-; disable release renaming
-)))
+   ocamlformat_parser_standard.ml
+   ; enable release renaming
+   "include Ocamlformat_parser_standard_devversion"
+   ; disable release renaming
+   )))
 
 (library
  (name

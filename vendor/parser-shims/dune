@@ -16,7 +16,6 @@
    ; disable release renaming
    )))
 
-
 (library
  (name
   ; enable release renaming

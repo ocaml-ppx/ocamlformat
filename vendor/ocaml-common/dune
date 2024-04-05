@@ -9,12 +9,14 @@
   ; disable release renaming
   )
  (flags
-  (:standard -w -9 -open
-
-  ; enable release renaming
-  Ocamlformat_parser_shims_devversion
-  ; enable release renaming
-  ))
+  (:standard
+   -w
+   -9
+   -open
+   ; enable release renaming
+   Ocamlformat_parser_shims_devversion
+   ; enable release renaming
+   ))
  (libraries
   ; enable release renaming
   ocamlformat_parser_shims_devversion

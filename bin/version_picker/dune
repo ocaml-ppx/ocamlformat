@@ -4,23 +4,21 @@
  (package ocamlformat)
  (link_deps
   (package
-
-  ; enable release renaming
-  ocamlformat-devversion
-  ; disable release renaming
-  ))
+   ; enable release renaming
+   ocamlformat-devversion
+   ; disable release renaming
+   ))
  (libraries ocamlformat-lib ocamlformat.bin_conf bos)
  (flags
   (:standard
    -open
-  ; enable release renaming
+   ; enable release renaming
    Ocamlformat_ocaml_common_devversion
-
    -open
    Ocamlformat_parser_extended_devversion
    -open
    Ocamlformat_stdlib_devversion
    -open
    Ocamlformat_format_devversion
-  ; disable release renaming
+   ; disable release renaming
    )))
