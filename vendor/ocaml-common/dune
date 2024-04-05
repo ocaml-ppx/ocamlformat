@@ -1,6 +1,22 @@
 (library
- (name ocamlformat_ocaml_common)
- (public_name ocamlformat-lib-dev.ocaml_common)
+ (name
+  ; enable release renaming
+  ocamlformat_ocaml_common_devversion
+  ; disable release renaming
+  )
+ (public_name ; enable release renaming
+  ocamlformat-lib-devversion.ocaml_common
+  ; disable release renaming
+  )
  (flags
-  (:standard -w -9 -open Ocamlformat_parser_shims))
- (libraries ocamlformat_parser_shims))
+  (:standard -w -9 -open
+
+  ; enable release renaming
+  Ocamlformat_parser_shims_devversion
+  ; enable release renaming
+  ))
+ (libraries
+  ; enable release renaming
+  ocamlformat_parser_shims_devversion
+  ; disable release renaming
+  ))

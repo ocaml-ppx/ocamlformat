@@ -15,9 +15,9 @@ authors: [
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.14"}
   "bos"
-  "ocamlformat-dev"
+  "ocamlformat-devversion"
   "ocamlformat-lib" {= version}
   "odoc" {with-doc}
 ]

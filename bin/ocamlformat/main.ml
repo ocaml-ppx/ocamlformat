@@ -11,8 +11,7 @@
 
 (** OCamlFormat *)
 
-module Bin_conf = Bin_conf_dev
-open Ocamlformat_lib_dev
+open Ocamlformat_lib
 open Ocamlformat_format ;;
 
 Stdlib.at_exit (Format.pp_print_flush Format.err_formatter) ;;

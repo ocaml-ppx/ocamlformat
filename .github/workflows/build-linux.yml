@@ -42,7 +42,7 @@ jobs:
       - name: Build
         run: |
           opam exec -- dune subst
-          opam exec -- dune build -p ocamlformat-lib-dev,ocamlformat-dev,ocamlformat-lib,ocamlformat
+          opam exec -- dune build -p ocamlformat-lib-devversion,ocamlformat-devversion,ocamlformat-lib,ocamlformat
 
       - name: Runtest
         run: opam exec -- dune runtest
@@ -105,8 +105,8 @@ jobs:
 
       - name: Test ${{ matrix.profile }} profile
         run: |
-          chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat ocamlformat-b/ocamlformat-dev
-          ./tools/test_branch.sh $TEST_BRANCH_ARGS -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat-dev 'profile=${{ matrix.profile }}'
+          chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat ocamlformat-b/ocamlformat-devversion
+          ./tools/test_branch.sh $TEST_BRANCH_ARGS -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat-devversion 'profile=${{ matrix.profile }}'
         shell: bash
         env:
           OCP_INDENT_CONFIG: ${{ matrix.ocp_indent_config }}

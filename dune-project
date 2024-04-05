@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 3.14)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                        ;
@@ -35,7 +35,11 @@
  (github ocaml-ppx/ocamlformat))
 
 (package
- (name ocamlformat-lib-dev)
+ (name
+  ; enable release renaming
+  ocamlformat-lib-devversion
+  ; disable release renaming
+  )
  (synopsis "OCaml Code Formatter")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
@@ -89,10 +93,18 @@
 
 (package
  (name ocamlformat-lib)
- (depends ocamlformat-lib-dev))
+ (depends
+  ; enable release renaming
+  ocamlformat-lib-devversion
+  ; disable release renaming
+  ))
 
 (package
- (name ocamlformat-dev)
+ (name
+  ; enable release renaming
+  ocamlformat-devversion
+  ; disable release renaming
+  )
  (synopsis "Auto-formatter for OCaml code")
  (description
   "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
@@ -110,7 +122,9 @@
   (csexp
    (>= 1.4.0))
   dune
-  (ocamlformat-lib-dev
+  (; enable release renaming
+   ocamlformat-lib-devversion
+   ; disable release renaming
    (= :version))
   (ocamlformat-rpc-lib
    (and
@@ -123,12 +137,15 @@
  (name ocamlformat)
  (depends
   bos
-  ocamlformat-dev
+  ; enable release renaming
+  ocamlformat-devversion
+  ; disable release renaming
   (ocamlformat-lib
    (= :version))))
 
 (package
  (name ocamlformat-bench)
+ (allow_empty)
  (synopsis "Auto-formatter for OCaml code")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")

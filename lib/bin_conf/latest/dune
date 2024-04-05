@@ -1,4 +1,17 @@
+(rule
+ (action
+  (write-file
+   Bin_conf.ml
+   ; enable release renaming
+   "include Bin_conf_devversion"
+   ; disable release renaming
+   )))
+
 (library
  (name bin_conf)
  (public_name ocamlformat.bin_conf)
- (libraries ocamlformat-dev.bin_conf))
+ (libraries
+  ; enable release renaming
+  ocamlformat-devversion.bin_conf
+  ; disable release renaming
+  ))

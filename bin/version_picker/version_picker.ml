@@ -1,8 +1,12 @@
+(* This executable reads the conf to know the required version. Then it tries
+   to run [ocamlformat-%version%]. If it is not found, then it prints
+   instructions to install it. *)
+
 open Bos
 
 let to_dashes v = String.map v ~f:(function '.' -> '-' | c -> c)
 
-let latest = to_dashes Ocamlformat_lib.Version.current
+let latest = to_dashes Ocamlformat_lib.Current_version.v
 
 let execvp =
   if Sys.unix then Unix.execvp
@@ -55,7 +59,13 @@ let () =
           !Bin_conf.global_conf.lib_conf.opr_opts.version_check
       then (
         Stdlib.Printf.eprintf
-          "Ocamlformat version %s not installed\nHint: `opam install %s`\n%!"
+          "Ocamlformat version %s not installed.\n\
+           You may be able to get it with: `opam install %s`\n\
+           If this package does not exists, try `opam update`.\n\
+           If it still does not exist, there might be a typo in your \
+           config, or the version is very old and has been not been yet \
+           repackaged.\n\
+           %!"
           v exec_name ;
         Stdlib.exit 1 )
       else run (ocamlformat_cmd latest)

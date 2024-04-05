@@ -17,14 +17,3 @@ val to_string : t -> string
 
 val pp : Format.formatter -> t -> unit
 
-val current : string
-(** A version number, or "unknown". This is provided by [dune-build-info],
-    which means that it will be resolved in the following way:
-
-    - if (version) is set in (dune-project), it is used. This is what happens
-      when using opam pins (through dune subst), or for released versions
-      (through dune-release).
-    - otherwise, a description from [git describe] will be used. Caveat for
-      this case: binaries under [_build/] will not have this information, but
-      [dune install --prefix _install] will copy a valid binary under
-      [_install/bin]. *)

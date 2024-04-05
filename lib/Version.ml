@@ -20,4 +20,3 @@ let to_string = function
 
 let pp fs v = Format.fprintf fs "%s" (to_string v)
 
-let current = "dev"

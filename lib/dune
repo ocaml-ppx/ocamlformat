@@ -13,29 +13,78 @@
 
 (ocamllex Toplevel_lexer)
 
+(rule
+ (action
+  (write-file
+    current_version.ml
+  ; enable release renaming
+    "let v = \"devversion\""
+  ; disable release renaming
+    )))
+
+(rule
+ (action
+  (write-file
+    ocamlformat_parser_extended.ml
+    ; enable release renaming
+"include Ocamlformat_parser_extended_devversion"
+; disable release renaming
+)))
+
+(rule
+ (action
+  (write-file
+    ocamlformat_odoc_parser.ml
+    ; enable release renaming
+"include Ocamlformat_odoc_parser_devversion"
+; disable release renaming
+)))
+
+(rule
+ (action
+  (write-file
+    ocamlformat_parser_standard.ml
+    ; enable release renaming
+"include Ocamlformat_parser_standard_devversion"
+; disable release renaming
+)))
+
 (library
- (name ocamlformat_lib_dev)
- (public_name ocamlformat-lib-dev)
+ (name
+  ; enable release renaming
+  ocamlformat_lib_devversion
+  ; disable release renaming
+  )
+ (public_name
+  ; enable release renaming
+  ocamlformat-lib-devversion
+  ; disable release renaming
+  )
  (flags
   (:standard
+   ; enable release renaming
    -open
-   Ocamlformat_ocaml_common
+   Ocamlformat_ocaml_common_devversion
    -open
-   Ocamlformat_parser_extended
+   Ocamlformat_parser_extended_devversion
    -open
-   Ocamlformat_stdlib
+   Ocamlformat_stdlib_devversion
    -open
-   Ocamlformat_format))
+   Ocamlformat_format_devversion
+   ; disable release renaming
+   ))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   dune-build-info
   ocaml-version
-  ocamlformat_format
-  ocamlformat_ocaml_common
-  ocamlformat_odoc_parser
-  ocamlformat_parser_extended
-  ocamlformat_parser_standard
-  ocamlformat_stdlib
+  ; enable release renaming
+  ocamlformat_format_devversion
+  ocamlformat_ocaml_common_devversion
+  ocamlformat_odoc_parser_devversion
+  ocamlformat_parser_extended_devversion
+  ocamlformat_parser_standard_devversion
+  ocamlformat_stdlib_devversion
+  ; disable release renaming
   ocp-indent.lib
   uuseg.string))

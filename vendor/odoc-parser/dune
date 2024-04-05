@@ -1,8 +1,16 @@
 (ocamllex lexer)
 
 (library
- (name ocamlformat_odoc_parser)
- (public_name ocamlformat-lib-dev.odoc_parser)
+ (name
+  ; enable release renaming
+  ocamlformat_odoc_parser_devversion
+  ; disable release renaming
+  )
+ (public_name
+  ; enable release renaming
+  ocamlformat-lib-devversion.odoc_parser
+  ; disable release renaming
+  )
  (instrumentation
   (backend bisect_ppx))
  (flags

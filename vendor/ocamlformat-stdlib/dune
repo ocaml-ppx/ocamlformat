@@ -1,6 +1,44 @@
+(rule
+ (action
+  (copy
+   ocamlformat_stdlib.ml
+   ; enable release renaming
+   ocamlformat_stdlib_devversion.ml
+   ; disable release renaming
+   )))
+
+(rule
+ (action
+  (copy
+   ocamlformat_stdlib.mli
+   ; enable release renaming
+   ocamlformat_stdlib_devversion.mli
+   ; disable release renaming
+   )))
+
 (library
- (name ocamlformat_stdlib)
- (public_name ocamlformat-lib-dev.ocamlformat_stdlib)
+ (name
+  ; enable release renaming
+  ocamlformat_stdlib_devversion
+  ; disable release renaming
+  )
+ (public_name
+  ; enable release renaming
+  ocamlformat-lib-devversion.ocamlformat_stdlib
+  ; disable release renaming
+  )
  (flags
-  (:standard -open Ocamlformat_ocaml_common))
- (libraries base cmdliner ocamlformat_ocaml_common fpath stdio))
+  (:standard
+   -open
+   ; enable release renaming
+   Ocamlformat_ocaml_common_devversion
+   ; enable release renaming
+   ))
+ (libraries
+  base
+  cmdliner
+  ; enable release renaming
+  ocamlformat_ocaml_common_devversion
+  ; disable release renaming
+  fpath
+  stdio))

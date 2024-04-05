@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocamlformat_lib_dev
+open Ocamlformat_lib
 open Conf
 open Cmdliner
 module Decl = Conf_decl
@@ -102,7 +102,7 @@ let info =
         "Unless mentioned otherwise non-formatting options cannot be set in \
          attributes or $(b,.ocamlformat) files." ]
   in
-  Cmd.info "ocamlformat" ~version:Version.current ~doc ~man
+  Cmd.info "ocamlformat" ~version:Current_version.v ~doc ~man
 
 let kind = Decl.Operational
 

@@ -1,4 +1,18 @@
+(rule
+ (action
+  (write-file
+    ocamlformat_lib.ml
+  ; enable release renaming
+    "include Ocamlformat_lib_devversion"
+  ; disable release renaming
+    )))
+
+
 (library
  (name ocamlformat_lib)
  (public_name ocamlformat-lib)
- (libraries ocamlformat-lib-dev))
+ (libraries
+  ; enable release renaming
+  ocamlformat-lib-devversion
+  ; disable release renaming
+  ))

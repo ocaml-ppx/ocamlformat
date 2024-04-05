@@ -10,7 +10,6 @@
 (**************************************************************************)
 
 open Ocamlformat_lib
-open Ocamlformat_stdlib
 
 module IO = struct
   type 'a t = 'a
