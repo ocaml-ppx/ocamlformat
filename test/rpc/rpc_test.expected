@@ -106,13 +106,13 @@ let ssmap
 Testing v2
 [ocf] client V2 selected
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
-Output: aaa ->
-bbb ->
-ccc ->
-ddd ->
-eee ->
-fff ->
-ggg
+Output:    aaa
+-> bbb
+-> ccc
+-> ddd
+-> eee
+-> fff
+-> ggg
 
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
 Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
