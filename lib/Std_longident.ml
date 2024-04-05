@@ -13,24 +13,24 @@ open Longident
 
 module Indexing_op = struct
   type raw =
-    { opchars: string
-    ; brackets: Asttypes.paren_kind
-    ; extended: bool  (** eg. [.*{;..}] *)
-    ; has_rhs: bool  (** eg. [.*{}<-] *) }
+    { _opchars: string
+    ; _brackets: Asttypes.paren_kind
+    ; _extended: bool  (** eg. [.*{;..}] *)
+    ; _has_rhs: bool  (** eg. [.*{}<-] *) }
 
   let parse ident =
     match String.chop_prefix ~prefix:"." ident with
     | None -> None
     | Some ident ->
-        let ident, has_rhs =
+        let ident, _has_rhs =
           match String.chop_suffix ident ~suffix:"<-" with
           | Some ident -> (ident, true)
           | None -> (ident, false)
         in
-        let find_suffix (suffix, brackets, extended) =
+        let find_suffix (suffix, _brackets, _extended) =
           match String.chop_suffix ident ~suffix with
           | None -> None
-          | Some opchars -> Some {opchars; brackets; extended; has_rhs}
+          | Some _opchars -> Some {_opchars; _brackets; _extended; _has_rhs}
         in
         List.find_map ~f:find_suffix
           [ ("{}", Asttypes.Brace, false)

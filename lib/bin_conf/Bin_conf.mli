@@ -39,8 +39,6 @@ val action :
   unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
 
 open Ocamlformat_lib
-open Conf
-open Cmdliner
 
 type t =
   { lib_conf: Conf.t
