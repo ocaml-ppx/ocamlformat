@@ -18,7 +18,7 @@ rule enabled b = parse
 and disabled b = parse
 | enabler { b (Lexing.lexeme lexbuf) ; enabled b lexbuf}
 | eof { () }
-| _ { b (Lexing.lexeme lexbuf) ; enabled b lexbuf }
+| _ {  b (Lexing.lexeme lexbuf) ; disabled b lexbuf }
 
 {
 }
