@@ -3,7 +3,7 @@
   (write-file
    Bin_conf.ml
    ; enable release renaming
-   "include Bin_conf_dev"
+   "include Bin_conf_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -12,6 +12,6 @@
  (public_name ocamlformat.bin_conf)
  (libraries
   ; enable release renaming
-  ocamlformat-dev.bin_conf
+  ocamlformat-multi_version_alpha1.bin_conf
   ; disable release renaming
   ))

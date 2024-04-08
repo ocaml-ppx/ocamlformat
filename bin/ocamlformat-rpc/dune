@@ -17,9 +17,9 @@
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib_multi_version_alpha1
    -open
-   Ocamlformat_format_dev
+   Ocamlformat_format_multi_version_alpha1
    ; disable release renaming
    ))
  (instrumentation

@@ -5,7 +5,7 @@
  (link_deps
   (package
    ; enable release renaming
-   ocamlformat-dev
+   ocamlformat-multi_version_alpha1
    ; disable release renaming
    ))
  (libraries ocamlformat-lib ocamlformat.bin_conf bos)
@@ -13,12 +13,12 @@
   (:standard
    -open
    ; enable release renaming
-   Ocamlformat_ocaml_common_dev
+   Ocamlformat_ocaml_common_multi_version_alpha1
    -open
-   Ocamlformat_parser_extended_dev
+   Ocamlformat_parser_extended_multi_version_alpha1
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib_multi_version_alpha1
    -open
-   Ocamlformat_format_dev
+   Ocamlformat_format_multi_version_alpha1
    ; disable release renaming
    )))

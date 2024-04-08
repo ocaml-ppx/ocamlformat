@@ -14,7 +14,7 @@
   (write-file
    ocamlformat_format.ml
    ; enable release renaming
-   "include Ocamlformat_format_dev"
+   "include Ocamlformat_format_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -23,7 +23,7 @@
   (write-file
    ocamlformat_lib.ml
    ; enable release renaming
-   "include Ocamlformat_lib_dev"
+   "include Ocamlformat_lib_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -32,7 +32,7 @@
   (write-file
    bin_conf.ml
    ; enable release renaming
-   "include Bin_conf_dev"
+   "include Bin_conf_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -40,27 +40,27 @@
  (name main)
  (public_name
   ; enable release renaming
-  ocamlformat-dev
+  ocamlformat-multi_version_alpha1
   ; disable release renaming
   )
  (package
   ; enable release renaming
-  ocamlformat-dev
+  ocamlformat-multi_version_alpha1
   ; disable release renaming
   )
  (flags
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib_multi_version_alpha1
    ; disable release renaming
    ))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   ; enable release renaming
-  ocamlformat-lib-dev
-  bin_conf_dev
+  ocamlformat-lib-multi_version_alpha1
+  bin_conf_multi_version_alpha1
   ; disable release renaming
   ))
 

@@ -3,7 +3,7 @@
   (copy
    ocamlformat_parser_shims.ml
    ; enable release renaming
-   ocamlformat_parser_shims_dev.ml
+   ocamlformat_parser_shims_multi_version_alpha1.ml
    ; disable release renaming
    )))
 
@@ -12,19 +12,19 @@
   (copy
    ocamlformat_parser_shims.mli
    ; enable release renaming
-   ocamlformat_parser_shims_dev.mli
+   ocamlformat_parser_shims_multi_version_alpha1.mli
    ; disable release renaming
    )))
 
 (library
  (name
   ; enable release renaming
-  ocamlformat_parser_shims_dev
+  ocamlformat_parser_shims_multi_version_alpha1
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-dev.parser_shims
+  ocamlformat-lib-multi_version_alpha1.parser_shims
   ; disable release renaming
   )
  (flags

@@ -3,7 +3,7 @@
  (deps
   %{bin:ocamlformat}
   ; enable release renaming
-  %{bin:ocamlformat-dev}
+  %{bin:ocamlformat-multi_version_alpha1}
   ; disable release renaming
   ))
 

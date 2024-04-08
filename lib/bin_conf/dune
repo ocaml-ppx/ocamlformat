@@ -2,7 +2,7 @@
  (action
   (write-file
    ; enable release renaming
-   bin_conf_dev.ml
+   bin_conf_multi_version_alpha1.ml
    ; disable release renaming
    "include Bin_conf")))
 
@@ -11,34 +11,34 @@
   (write-file
    ocamlformat_lib.ml
    ; enable release renaming
-   "include Ocamlformat_lib_dev"
+   "include Ocamlformat_lib_multi_version_alpha1"
    ; disable release renaming
    )))
 
 (library
  (public_name
   ; enable release renaming
-  ocamlformat-dev.bin_conf
+  ocamlformat-multi_version_alpha1.bin_conf
   ; disable release renaming
   )
  (name
   ; enable release renaming
-  bin_conf_dev
+  bin_conf_multi_version_alpha1
   ; disable release renaming
   )
  (flags
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_ocaml_common_dev
+   Ocamlformat_ocaml_common_multi_version_alpha1
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib_multi_version_alpha1
    ; disable release renaming
    ))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-lib-multi_version_alpha1
   ; disable release renaming
   re))

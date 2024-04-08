@@ -18,7 +18,7 @@
   (write-file
    current_version.ml
    ; enable release renaming
-   "let v = \"dev\""
+   "let v = \"multi_version_alpha1\""
    ; disable release renaming
    )))
 
@@ -27,7 +27,7 @@
   (write-file
    ocamlformat_parser_extended.ml
    ; enable release renaming
-   "include Ocamlformat_parser_extended_dev"
+   "include Ocamlformat_parser_extended_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -36,7 +36,7 @@
   (write-file
    ocamlformat_odoc_parser.ml
    ; enable release renaming
-   "include Ocamlformat_odoc_parser_dev"
+   "include Ocamlformat_odoc_parser_multi_version_alpha1"
    ; disable release renaming
    )))
 
@@ -45,32 +45,32 @@
   (write-file
    ocamlformat_parser_standard.ml
    ; enable release renaming
-   "include Ocamlformat_parser_standard_dev"
+   "include Ocamlformat_parser_standard_multi_version_alpha1"
    ; disable release renaming
    )))
 
 (library
  (name
   ; enable release renaming
-  ocamlformat_lib_dev
+  ocamlformat_lib_multi_version_alpha1
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-lib-multi_version_alpha1
   ; disable release renaming
   )
  (flags
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_ocaml_common_dev
+   Ocamlformat_ocaml_common_multi_version_alpha1
    -open
-   Ocamlformat_parser_extended_dev
+   Ocamlformat_parser_extended_multi_version_alpha1
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib_multi_version_alpha1
    -open
-   Ocamlformat_format_dev
+   Ocamlformat_format_multi_version_alpha1
    ; disable release renaming
    ))
  (instrumentation
@@ -79,12 +79,12 @@
   dune-build-info
   ocaml-version
   ; enable release renaming
-  ocamlformat_format_dev
-  ocamlformat_ocaml_common_dev
-  ocamlformat_odoc_parser_dev
-  ocamlformat_parser_extended_dev
-  ocamlformat_parser_standard_dev
-  ocamlformat_stdlib_dev
+  ocamlformat_format_multi_version_alpha1
+  ocamlformat_ocaml_common_multi_version_alpha1
+  ocamlformat_odoc_parser_multi_version_alpha1
+  ocamlformat_parser_extended_multi_version_alpha1
+  ocamlformat_parser_standard_multi_version_alpha1
+  ocamlformat_stdlib_multi_version_alpha1
   ; disable release renaming
   ocp-indent.lib
   uuseg.string))
