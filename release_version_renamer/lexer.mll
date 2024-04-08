@@ -9,7 +9,7 @@ let enabler = "; enable release renaming"
 let disabler = "; disable release renaming"
 
 
-let dev_version_name = "devversion"
+let dev_version_name = "dev"
 
 rule enabled b = parse
 | dev_version_name { b target_version ; enabled b lexbuf}
