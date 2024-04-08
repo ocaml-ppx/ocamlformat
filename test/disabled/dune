@@ -2,18 +2,18 @@
  (alias runtest)
  (deps
   (source_tree dir1))
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action
-  (run %{bin:ocamlformat} -n 1 -i dir1/dir2/ignore_1.ml)))
+  (run %{bin:ocamlformat-0_26_1} -n 1 -i dir1/dir2/ignore_1.ml)))
 
 (rule
  (alias runtest)
  (deps
   (source_tree dir1))
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action
-  (run %{bin:ocamlformat} -n 1 -i dir1/dir2/ignore_2.ml)))
+  (run %{bin:ocamlformat-0_26_1} -n 1 -i dir1/dir2/ignore_2.ml)))

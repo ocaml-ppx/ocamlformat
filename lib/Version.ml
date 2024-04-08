@@ -20,6 +20,4 @@ let to_string = function
 
 let pp fs v = Format.fprintf fs "%s" (to_string v)
 
-let current =
-  let open Build_info.V1 in
-  version () |> Option.value_map ~f:Version.to_string ~default:"unknown"
+let current = "0.26.1"

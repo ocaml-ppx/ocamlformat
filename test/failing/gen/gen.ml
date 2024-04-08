@@ -101,14 +101,14 @@ let emit_test test_name setup =
     {|
 (rule
  (deps tests/.ocamlformat %s)%s
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
    (with-outputs-to %s.output
      %s)))
 
 (rule
  (alias runtest)%s
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action (diff %s %s.output)))
 |}
     extra_deps enabled_if_line test_name
@@ -121,14 +121,14 @@ let emit_test test_name setup =
       {|
 (rule
  (deps tests/.ocp-indent %s)%s
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
    (with-outputs-to %s.ocp.output
      %s)))
 
 (rule
  (alias runtest)%s
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action (diff tests/%s.ocp %s.ocp.output)))
 |}
       extra_deps enabled_if_line test_name

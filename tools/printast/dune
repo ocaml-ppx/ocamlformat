@@ -1,3 +1,0 @@
-(executable
- (name printast)
- (libraries ocamlformat-lib stdio))

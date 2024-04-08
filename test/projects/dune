@@ -3,7 +3,7 @@
   enable_outside_detected_project/dune-project
   enable_outside_detected_project/main.ml
   .ocamlformat)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
   (with-stdout-to
    enable_outside_detected_project.output
@@ -13,7 +13,7 @@
 
 (rule
  (alias runtest)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
   (diff
    enable_outside_detected_project.expected
@@ -23,7 +23,7 @@
  (deps
   outside_detected_project/dune-project
   outside_detected_project/main.ml)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action
@@ -35,7 +35,7 @@
 
 (rule
  (alias runtest)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action
@@ -44,7 +44,7 @@
 (rule
  (deps
   (source_tree outside_detected_project_with_name))
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
   (with-outputs-to
    outside_detected_project_with_name.output
@@ -54,7 +54,7 @@
 
 (rule
  (alias runtest)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (action
   (diff
    outside_detected_project_with_name.expected

@@ -15,7 +15,7 @@
 
 (library
  (name ocamlformat_lib)
- (public_name ocamlformat-lib)
+ (package ocamlformat-0_26_1)
  (flags
   (:standard
    -open

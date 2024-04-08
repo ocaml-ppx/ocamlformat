@@ -11,7 +11,7 @@
 ;                                                                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(name ocamlformat)
+(name ocamlformat-0_26_1)
 
 (using menhir 2.1)
 
@@ -35,10 +35,10 @@
  (github ocaml-ppx/ocamlformat))
 
 (package
- (name ocamlformat-lib)
- (synopsis "OCaml Code Formatter")
+ (name ocamlformat-0_26_1)
+ (synopsis "ocamlformat executable for version 0.26.1")
  (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+  "**ocamlformat** is a code formatter for OCaml.\nThis package provides an executable for compatibility with ocamlformat 0.26.1.\nDo not install without the package `ocamlformat` installed.")
  (depends
   (ocaml
    (>= 4.08))
@@ -61,10 +61,6 @@
    (>= 20201216))
   (ocaml-version
    (>= 3.5.0))
-  (ocamlformat-rpc-lib
-   (and
-    :with-test
-    (= :version)))
   (ocp-indent
    (or
     (and
@@ -83,16 +79,7 @@
   ; for vendored odoc-parser
   astring
   result
-  camlp-streams))
-
-(package
- (name ocamlformat)
- (synopsis "Auto-formatter for OCaml code")
- (description
-  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
- (depends
-  (ocaml
-   (>= 4.08))
+  camlp-streams
   (cmdliner
    (or
     (and
@@ -100,47 +87,4 @@
      (>= 1.1.0))
     (and
      :with-test
-     (>= 1.2.0))))
-  dune
-  (ocamlformat-lib
-   (= :version))
-  (ocamlformat-rpc-lib
-   (and
-    :with-test
-    (= :version)))
-  (re
-   (>= 1.10.3))))
-
-(package
- (name ocamlformat-bench)
- (synopsis "Auto-formatter for OCaml code")
- (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
- (depends
-  (ocaml
-   (>= 4.08))
-  (alcotest
-   (and
-    :with-test
-    (>= 1.3.0)))
-  (bechamel
-   (>= 0.2.0))
-  (bechamel-js
-   (>= 0.2.0))
-  (ocamlformat-lib
-   (= :version))
-  stdio
-  (yojson
-   (>= 1.6.0))))
-
-(package
- (name ocamlformat-rpc-lib)
- (synopsis "Auto-formatter for OCaml code (RPC mode)")
- (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style. This package defines a RPC interface to OCamlFormat")
- (license MIT)
- (depends
-  (ocaml
-   (>= 4.08))
-  (csexp
-   (>= 1.4.0))))
+     (>= 1.2.0))))))

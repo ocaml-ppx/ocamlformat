@@ -3,7 +3,7 @@
 (rule
  (deps
   (source_tree .))
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action
@@ -13,7 +13,7 @@
 
 (rule
  (alias runtest)
- (package ocamlformat)
+ (package ocamlformat-0_26_1)
  (enabled_if
   (<> %{os_type} Win32))
  (action

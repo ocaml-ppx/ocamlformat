@@ -1,3 +1,4 @@
 (library
  (name ocamlformat_result)
- (public_name ocamlformat-lib.result))
+ (package ocamlformat-0_26_1)
+ (modules ocamlformat_result))
