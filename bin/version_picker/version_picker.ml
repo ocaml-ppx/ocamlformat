@@ -4,9 +4,9 @@
 
 open Bos
 
-let to_dashes v = String.map v ~f:(function '.' -> '-' | c -> c)
+let to_unders v = String.map v ~f:(function '.' -> '_' | c -> c)
 
-let latest = to_dashes Ocamlformat_lib.Current_version.v
+let latest = to_unders Ocamlformat_lib.Current_version.v
 
 let execvp =
   if Sys.unix then Unix.execvp
@@ -50,7 +50,7 @@ let () =
           latest ;
         Stdlib.exit 23 )
   | Some v ->
-      let v_dashes = to_dashes v in
+      let v_dashes = to_unders v in
       let exec_name = "ocamlformat-" ^ v_dashes in
       let cmd = ocamlformat_cmd v_dashes in
       if Stdlib.Result.get_ok @@ OS.Cmd.exists cmd then run cmd
