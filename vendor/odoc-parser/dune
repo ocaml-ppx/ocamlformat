@@ -3,12 +3,12 @@
 (library
  (name
   ; enable release renaming
-  ocamlformat_odoc_parser_devversion
+  ocamlformat_odoc_parser_dev
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-devversion.odoc_parser
+  ocamlformat-lib-dev.odoc_parser
   ; disable release renaming
   )
  (instrumentation

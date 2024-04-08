@@ -5,7 +5,7 @@
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_format_devversion
+   Ocamlformat_format_dev
    ; disable release renaming
    ))
  (libraries alcotest base ocamlformat-lib))

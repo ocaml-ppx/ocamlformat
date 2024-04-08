@@ -1,12 +1,12 @@
 (library
  (name
   ; enable release renaming
-  ocamlformat_parser_standard_devversion
+  ocamlformat_parser_standard_dev
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-devversion.parser_standard
+  ocamlformat-lib-dev.parser_standard
   ; disable release renaming
   )
  (flags
@@ -15,17 +15,17 @@
    -9
    ; enable release renaming
    -open
-   Ocamlformat_parser_shims_devversion
+   Ocamlformat_parser_shims_dev
    -open
-   Ocamlformat_ocaml_common_devversion
+   Ocamlformat_ocaml_common_dev
    ; disable release renaming
    ))
  (libraries
   compiler-libs.common
   menhirLib
   ; enable release renaming
-  ocamlformat_parser_shims_devversion
-  ocamlformat_ocaml_common_devversion
+  ocamlformat_parser_shims_dev
+  ocamlformat_ocaml_common_dev
   ; disable release renaming
   ))
 

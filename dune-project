@@ -37,7 +37,7 @@
 (package
  (name
   ; enable release renaming
-  ocamlformat-lib-devversion
+  ocamlformat-lib-dev
   ; disable release renaming
   )
  (synopsis "OCaml Code Formatter")
@@ -95,14 +95,14 @@
  (name ocamlformat-lib)
  (depends
   ; enable release renaming
-  ocamlformat-lib-devversion
+  ocamlformat-lib-dev
   ; disable release renaming
   ))
 
 (package
  (name
   ; enable release renaming
-  ocamlformat-devversion
+  ocamlformat-dev
   ; disable release renaming
   )
  (synopsis "Auto-formatter for OCaml code")
@@ -123,7 +123,7 @@
    (>= 1.4.0))
   dune
   (; enable release renaming
-   ocamlformat-lib-devversion
+   ocamlformat-lib-dev
    ; disable release renaming
    (= :version))
   (ocamlformat-rpc-lib
@@ -138,7 +138,7 @@
  (depends
   bos
   ; enable release renaming
-  ocamlformat-devversion
+  ocamlformat-dev
   ; disable release renaming
   (ocamlformat-lib
    (= :version))))

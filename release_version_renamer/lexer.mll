@@ -1,7 +1,7 @@
 {
 (* This cannot contains [.] because it will be used in opam package names.
    It also cannot contain [-] because it will be used in ocaml module names. *)
-let target_version = "devversion"
+let target_version = "dev"
 }
 
 let enabler = "; enable release renaming"

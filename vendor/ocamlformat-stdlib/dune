@@ -3,7 +3,7 @@
   (copy
    ocamlformat_stdlib.ml
    ; enable release renaming
-   ocamlformat_stdlib_devversion.ml
+   ocamlformat_stdlib_dev.ml
    ; disable release renaming
    )))
 
@@ -12,33 +12,33 @@
   (copy
    ocamlformat_stdlib.mli
    ; enable release renaming
-   ocamlformat_stdlib_devversion.mli
+   ocamlformat_stdlib_dev.mli
    ; disable release renaming
    )))
 
 (library
  (name
   ; enable release renaming
-  ocamlformat_stdlib_devversion
+  ocamlformat_stdlib_dev
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-devversion.ocamlformat_stdlib
+  ocamlformat-lib-dev.ocamlformat_stdlib
   ; disable release renaming
   )
  (flags
   (:standard
    -open
    ; enable release renaming
-   Ocamlformat_ocaml_common_devversion
+   Ocamlformat_ocaml_common_dev
    ; enable release renaming
    ))
  (libraries
   base
   cmdliner
   ; enable release renaming
-  ocamlformat_ocaml_common_devversion
+  ocamlformat_ocaml_common_dev
   ; disable release renaming
   fpath
   stdio))

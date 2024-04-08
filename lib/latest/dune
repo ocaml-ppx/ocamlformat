@@ -3,7 +3,7 @@
   (write-file
    ocamlformat_lib.ml
    ; enable release renaming
-   "include Ocamlformat_lib_devversion"
+   "include Ocamlformat_lib_dev"
    ; disable release renaming
    )))
 
@@ -12,6 +12,6 @@
  (public_name ocamlformat-lib)
  (libraries
   ; enable release renaming
-  ocamlformat-lib-devversion
+  ocamlformat-lib-dev
   ; disable release renaming
   ))

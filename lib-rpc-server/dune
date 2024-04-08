@@ -5,7 +5,7 @@
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_stdlib_devversion
+   Ocamlformat_stdlib_dev
    ; disable release renaming
    ))
  (libraries

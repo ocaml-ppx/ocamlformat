@@ -18,7 +18,7 @@
   (write-file
    current_version.ml
    ; enable release renaming
-   "let v = \"devversion\""
+   "let v = \"dev\""
    ; disable release renaming
    )))
 
@@ -27,7 +27,7 @@
   (write-file
    ocamlformat_parser_extended.ml
    ; enable release renaming
-   "include Ocamlformat_parser_extended_devversion"
+   "include Ocamlformat_parser_extended_dev"
    ; disable release renaming
    )))
 
@@ -36,7 +36,7 @@
   (write-file
    ocamlformat_odoc_parser.ml
    ; enable release renaming
-   "include Ocamlformat_odoc_parser_devversion"
+   "include Ocamlformat_odoc_parser_dev"
    ; disable release renaming
    )))
 
@@ -45,32 +45,32 @@
   (write-file
    ocamlformat_parser_standard.ml
    ; enable release renaming
-   "include Ocamlformat_parser_standard_devversion"
+   "include Ocamlformat_parser_standard_dev"
    ; disable release renaming
    )))
 
 (library
  (name
   ; enable release renaming
-  ocamlformat_lib_devversion
+  ocamlformat_lib_dev
   ; disable release renaming
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-devversion
+  ocamlformat-lib-dev
   ; disable release renaming
   )
  (flags
   (:standard
    ; enable release renaming
    -open
-   Ocamlformat_ocaml_common_devversion
+   Ocamlformat_ocaml_common_dev
    -open
-   Ocamlformat_parser_extended_devversion
+   Ocamlformat_parser_extended_dev
    -open
-   Ocamlformat_stdlib_devversion
+   Ocamlformat_stdlib_dev
    -open
-   Ocamlformat_format_devversion
+   Ocamlformat_format_dev
    ; disable release renaming
    ))
  (instrumentation
@@ -79,12 +79,12 @@
   dune-build-info
   ocaml-version
   ; enable release renaming
-  ocamlformat_format_devversion
-  ocamlformat_ocaml_common_devversion
-  ocamlformat_odoc_parser_devversion
-  ocamlformat_parser_extended_devversion
-  ocamlformat_parser_standard_devversion
-  ocamlformat_stdlib_devversion
+  ocamlformat_format_dev
+  ocamlformat_ocaml_common_dev
+  ocamlformat_odoc_parser_dev
+  ocamlformat_parser_extended_dev
+  ocamlformat_parser_standard_dev
+  ocamlformat_stdlib_dev
   ; disable release renaming
   ocp-indent.lib
   uuseg.string))
