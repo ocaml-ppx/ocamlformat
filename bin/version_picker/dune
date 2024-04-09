@@ -8,7 +8,7 @@
    ocamlformat-dev
    ; disable release renaming
    ))
- (libraries ocamlformat-lib ocamlformat.bin_conf bos)
+ (libraries ocamlformat-lib ocamlformat.bin_conf unix)
  (flags
   (:standard
    -open

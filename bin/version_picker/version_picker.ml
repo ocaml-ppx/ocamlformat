@@ -2,11 +2,35 @@
    to run [ocamlformat-%version%]. If it is not found, then it prints
    instructions to install it. *)
 
-open Bos
+module Sys = Stdlib.Sys
 
 let to_unders v = String.map v ~f:(function '.' -> '_' | c -> c)
 
 let latest = to_unders Ocamlformat_lib.Current_version.v
+
+(* Tool existence and search *)
+
+let find_exec_in_dir dirname exec_name =
+  let dir = Sys.readdir dirname in
+  dir
+  |> Array.find ~f:(String.( = ) exec_name)
+  |> Option.map ~f:(Filename.concat dirname)
+
+let path_sep = if Sys.win32 then ';' else ':'
+
+let find_in_path exec =
+  Unix.getenv "PATH" |> String.split ~on:path_sep
+  |> List.find_map ~f:(function
+       | "" -> None
+       | dir -> find_exec_in_dir dir exec )
+
+let exec_of_version version = "ocamlformat-" ^ to_unders version
+
+let find_version version =
+  let exec_name = exec_of_version version in
+  let dirname = Filename.dirname Sys.executable_name in
+  find_exec_in_dir dirname exec_name
+  |> function None -> find_in_path exec_name | a -> a
 
 let execvp =
   if Sys.unix then Unix.execvp
@@ -20,11 +44,18 @@ let execvp =
     | Unix.WSIGNALED code | Unix.WSTOPPED code ->
         Unix.kill (Unix.getpid ()) code
 
-let run cmd =
-  let li = Cmd.to_list cmd in
-  let e = List.hd_exn li in
-  let argv = li |> Array.of_list in
-  execvp e argv
+let error_exec_not_found version =
+  Stdlib.Printf.eprintf
+    "Ocamlformat version %s not installed.\n\
+     You may be able to get it with: `opam install %s`\n\
+     If this package does not exists, try `opam update`.\n\
+     If it still does not exist, there might be a typo in your config, or \
+     the version is very old and has been not been yet repackaged.\n\
+     %!"
+    version (exec_of_version version) ;
+  Stdlib.exit 1
+
+let run exec = execvp exec Sys.argv
 
 let () =
   Ocamlformat_lib.Conf.enable_warnings false ;
@@ -33,39 +64,18 @@ let () =
     Ocamlformat_lib.Conf_t.Elt.v
       !Bin_conf.global_conf.lib_conf.opr_opts.required_version
   in
-  let ocamlformat_cmd version =
-    Cmd.(
-      v ("ocamlformat-" ^ version)
-      %% (() |> Sys.get_argv |> Array.to_list |> List.tl_exn |> of_list) )
+  let version =
+    match required_version with None -> latest | Some version -> version
   in
-  let open Bos in
-  match required_version with
-  | None ->
-      let cmd = ocamlformat_cmd latest in
-      if Stdlib.Result.get_ok @@ OS.Cmd.exists cmd then run cmd
-      else (
-        Stdlib.Printf.eprintf
-          "Latest ocamlformat version \"ocamlformat-%s\" could not be found.\n\
-           This should never happen, please report this to maintainers.%!"
-          latest ;
-        Stdlib.exit 23 )
-  | Some v ->
-      let v_dashes = to_unders v in
-      let exec_name = "ocamlformat-" ^ v_dashes in
-      let cmd = ocamlformat_cmd v_dashes in
-      if Stdlib.Result.get_ok @@ OS.Cmd.exists cmd then run cmd
-      else if
-        Ocamlformat_lib.Conf_t.Elt.v
-          !Bin_conf.global_conf.lib_conf.opr_opts.version_check
-      then (
-        Stdlib.Printf.eprintf
-          "Ocamlformat version %s not installed.\n\
-           You may be able to get it with: `opam install %s`\n\
-           If this package does not exists, try `opam update`.\n\
-           If it still does not exist, there might be a typo in your \
-           config, or the version is very old and has been not been yet \
-           repackaged.\n\
-           %!"
-          v exec_name ;
-        Stdlib.exit 1 )
-      else run (ocamlformat_cmd latest)
+  let exec =
+    match find_version version with
+    | None
+      when not
+           @@ Ocamlformat_lib.Conf_t.Elt.v
+                !Bin_conf.global_conf.lib_conf.opr_opts.version_check ->
+        find_version latest
+    | exec -> exec
+  in
+  match exec with
+  | None -> error_exec_not_found version
+  | Some exec -> run exec

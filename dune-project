@@ -136,7 +136,6 @@
 (package
  (name ocamlformat)
  (depends
-  bos
   ; enable release renaming
   ocamlformat-dev
   ; disable release renaming
