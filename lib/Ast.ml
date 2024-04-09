@@ -180,12 +180,12 @@ module Exp = struct
      |( {pexp_desc= Pexp_sequence _; _}
       , (Non_apply | Sequence | Then | ThenElse) )
      |( { pexp_desc=
-            ( Pexp_function (_, _, Pfunction_cases _) | Pexp_match _ | Pexp_try _
+            ( Pexp_function (_, Some _, _) | Pexp_function (_, _, Pfunction_cases _) | Pexp_match _ | Pexp_try _
              )
         ; _ }
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
-            ( Pexp_function _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
+            ( Pexp_function (_, _, Pfunction_body _) | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
             | Pexp_letmodule _ | Pexp_open _ | Pexp_letopen _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
@@ -1916,7 +1916,7 @@ end = struct
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
                 | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _ }
-        | Exp {pexp_desc= Pexp_function _; _} )
+        | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _; _}
       , ( Ppat_construct _ | Ppat_cons _
@@ -1932,14 +1932,14 @@ end = struct
      |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
-     |Exp {pexp_desc= Pexp_function _; _}, Ppat_or _
+     |Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}, Ppat_or _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
-     |( Exp {pexp_desc= Pexp_function _; _}
+     |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
         | Ppat_variant _ ) ) ->
         true
