@@ -4369,7 +4369,7 @@ and fmt_value_constraint c vc_opt =
   |`Before ->
       noop, fmt_typ (Some ":")
   | `After ->
-      str ":", fmt_typ None
+      fmt_constraint_sep c ":", fmt_typ None
 )
       | Pvc_constraint {locally_abstract_univars= pvars; typ} -> (
         match c.conf.fmt_opts.break_colon.v with
