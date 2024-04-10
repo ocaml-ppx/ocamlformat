@@ -1016,6 +1016,7 @@ end = struct
             List.exists en1 ~f:(fun (_, c, _) ->
                 Option.exists c ~f:check_type_constraint ) )
       | Pexp_let (lbs, _, _) -> assert (check_let_bindings lbs)
+      | Pexp_function (_, Some t1, _) -> assert (check_type_constraint t1)
       | _ -> assert false )
     | Fpe _ | Fpc _ -> assert false
     | Vc c -> assert (check_value_constraint c)
