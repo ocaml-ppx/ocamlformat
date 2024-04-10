@@ -1494,7 +1494,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
     $ body $ cls_paren
     $ Cmts.fmt_after c loc )
 
-and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; ctx} as xarg)) =
+and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
@@ -1523,7 +1523,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; ctx} as xarg)) =
                ~box xarg )
         $ cmts_after )
   | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
-        fmt_function ~ctx ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
+        fmt_function ~ctx:(Exp arg) ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
   | _ ->
       let label_sep : t =
         if box || c.conf.fmt_opts.wrap_fun_args.v then str ":" $ cut_break
@@ -1806,7 +1806,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( hvbox c.conf.fmt_opts.extension_indent.v
                  (wrap (str "[") (str "]")
-                    (fmt_function ~ctx ~wrap_intro:(fun x -> 
+                    (fmt_function ~ctx:(Exp call) ~wrap_intro:(fun x -> 
                          ( str "%"
                            $ hovbox 2
                                ( fmt_str_loc c name $ x)))
