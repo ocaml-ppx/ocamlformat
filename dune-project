@@ -97,7 +97,10 @@
   ; enable release renaming
   ocamlformat-lib-dev
   ; disable release renaming
-  ))
+  )
+ (synopsis "OCaml Code Formatter")
+ (description
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style."))
 
 (package
  (name
@@ -105,9 +108,16 @@
   ocamlformat-dev
   ; disable release renaming
   )
- (synopsis "Auto-formatter for OCaml code")
+ (synopsis
+  ; enable release renaming
+  "ocamlformat executable for version dev"
+  ; disable release renaming
+  )
  (description
-  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
+  ; enable release renaming
+  "**ocamlformat** is a code formatter for OCaml.\nThis package provides an executable for compatibility with ocamlformat dev.\nDo not install without the package `ocamlformat` installed."
+  ; disable release renaming
+  )
  (depends
   (ocaml
    (>= 4.08))
@@ -135,6 +145,9 @@
 
 (package
  (name ocamlformat)
+ (synopsis "Auto-formatter for OCaml code")
+ (description
+  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
  (depends
   ; enable release renaming
   ocamlformat-dev
