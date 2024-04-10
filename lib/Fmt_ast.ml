@@ -2180,11 +2180,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ) )
   | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
-      pro
+      let outer_pro, inner_pro = if parens then pro, noop else noop, pro in
+      outer_pro
       $ Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
         @@ Params.Align.function_ c.conf ~parens ~ctx0 ~self:exp
         @@ ( hvbox 2
-               ( str "function"
+               (inner_pro $ str "function"
                $ fmt_extension_suffix c ext
                $ fmt_attributes c pexp_attributes )
            $ break 1 indent
@@ -4423,14 +4424,14 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
     fmt_docstring_around_item_attrs ~force_before:true c lb_attrs
   in
   let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in
-  let indent =
+  let indent, intro_as_pro =
     match lb_exp.ast.pexp_desc with
     | Pexp_function (_, _, Pfunction_cases _) ->
-        c.conf.fmt_opts.function_indent.v
+        c.conf.fmt_opts.function_indent.v, true
     | Pexp_function (_, _, Pfunction_body _)
       when c.conf.fmt_opts.let_binding_deindent_fun.v ->
-        max (c.conf.fmt_opts.let_binding_indent.v - 1) 0
-    | _ -> c.conf.fmt_opts.let_binding_indent.v
+        max (c.conf.fmt_opts.let_binding_indent.v - 1) 0, false
+    | _ -> c.conf.fmt_opts.let_binding_indent.v, false
   in
   let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   let toplevel, in_, epi, cmts_before, cmts_after =
@@ -4483,7 +4484,10 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
                (fits_breaks " =" ~hint:(1000, 0) "=")
                (break 1 2 $ str "=") )) $ space_break
       in
-      fmt_expression c ~box:false ~pro lb_exp
+      if intro_as_pro then
+        fmt_expression c ~pro ~box:false lb_exp
+      else
+        pro$fmt_expression c ~box:false lb_exp
   in
   doc1 $ cmts_before
   $ hvbox 0
