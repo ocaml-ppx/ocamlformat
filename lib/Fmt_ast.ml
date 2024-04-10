@@ -2172,11 +2172,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       in
       pro
       $ hvbox_if (box || body_is_function) indent
-          (Params.Exp.wrap c.conf ~parens ~disambiguate:true
-             ~fits_breaks:false ~offset_closing_paren:(-2)
+          (
+            (* Params.Exp.wrap c.conf ~parens ~disambiguate:true *)
+            (*  ~fits_breaks:false ~offset_closing_paren:(-2) *)
              (
       fmt_function ~ctx
-        ~label:Nolabel ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
+        ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
              ) )
   | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
