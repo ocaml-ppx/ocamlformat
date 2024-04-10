@@ -1468,14 +1468,16 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
         fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body)
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
-        (* Only [function]. *)
-        let fun_ =
+        (* Only [function]. [spilled_attrs] are extra attrs to add to the
+           [function] keyword. *)
+        let fun_, spilled_attrs =
           match args, typ with
-          | [], None -> noop
+          | [], None -> noop, attrs
           | [], Some _ -> assert false
-          | args, typ -> fmt_fun_args_typ args typ
-        and function_ =
-          str "function" $ fmt_attributes c cs_attrs
+          | args, typ -> fmt_fun_args_typ args typ, []
+        in
+        let function_ =
+          str "function" $ fmt_attributes c spilled_attrs $ fmt_attributes c cs_attrs
         in
         fun_ $ function_, fmt_cases c ctx cs
   in
