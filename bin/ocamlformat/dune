@@ -64,12 +64,3 @@
   ; disable release renaming
   ))
 
-(rule
- (with-stdout-to
-  ocamlformat.1
-  (run ./main.exe --help=groff)))
-
-(install
- (section man)
- (files ocamlformat.1)
- (package ocamlformat))

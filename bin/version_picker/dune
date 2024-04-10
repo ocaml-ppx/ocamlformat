@@ -22,3 +22,17 @@
    Ocamlformat_format_dev
    ; disable release renaming
    )))
+
+(rule
+ (with-stdout-to
+  ocamlformat.1
+  (run
+   ; enable release renaming
+   ocamlformat-dev
+   ; disable release renaming
+   --help=groff)))
+
+(install
+ (section man)
+ (files ocamlformat.1)
+ (package ocamlformat))
