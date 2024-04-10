@@ -1452,7 +1452,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
   in
   let fmt_fun_args_typ args typ =
     let kw =
-    str "fun" $ fmt_extension_suffix ~epi:(str " ") c ext $ fmt_attributes c attrs $ space_break
+    str "fun" $ fmt_extension_suffix ~epi:(str " ") c ext $ fmt_attributes c ~pre:Blank attrs $ space_break
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     in
@@ -1477,7 +1477,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
           | args, typ -> fmt_fun_args_typ args typ, []
         in
         let function_ =
-          str "function" $ fmt_attributes c spilled_attrs $ fmt_attributes c cs_attrs
+          str "function" $ fmt_attributes c ~pre:Blank spilled_attrs $ fmt_attributes c ~pre:Blank cs_attrs
         in
         fun_ $ function_, fmt_cases c ctx cs
   in
