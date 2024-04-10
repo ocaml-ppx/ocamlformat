@@ -1904,9 +1904,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ wrap_fits_breaks_if c.conf parens "(" ")"
           ( hovbox 0
-              (
+              (wrap_if has_attr (str "(") (str ")")
                  (fmt_function
-                   ~ctx:(Exp r) ~box:false ~parens:(parens_r || has_attr) ~wrap_intro:(fun intro ->
+                   ~ctx:(Exp r) ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->
                  ( 
                      ( hvbox indent_wrap
                          ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
