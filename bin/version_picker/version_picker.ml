@@ -11,10 +11,12 @@ let latest = to_unders Ocamlformat_lib.Current_version.v
 (* Tool existence and search *)
 
 let find_exec_in_dir dirname exec_name =
-  let dir = Sys.readdir dirname in
-  dir
-  |> Array.find ~f:(String.( = ) exec_name)
-  |> Option.map ~f:(Filename.concat dirname)
+  if Sys.file_exists dirname && Sys.is_directory dirname then
+    let dir = Sys.readdir dirname in
+    dir
+    |> Array.find ~f:(String.( = ) exec_name)
+    |> Option.map ~f:(Filename.concat dirname)
+  else None
 
 let path_sep = if Sys.win32 then ';' else ':'
 
