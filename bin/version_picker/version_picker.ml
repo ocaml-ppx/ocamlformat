@@ -26,13 +26,15 @@ let find_in_path exec =
        | "" -> None
        | dir -> find_exec_in_dir dir exec )
 
-let exec_of_version version = "ocamlformat-" ^ to_unders version
+let exec_of_version version =
+  "ocamlformat-" ^ to_unders version ^ if Sys.win32 then ".exe" else ""
 
 let find_version version =
   let exec_name = exec_of_version version in
   let dirname = Filename.dirname Sys.executable_name in
   find_exec_in_dir dirname exec_name
-  |> function None -> find_in_path exec_name | a -> a
+  |> (function None -> find_in_path exec_name | a -> a)
+  |> function None -> Error version | Some a -> Ok a
 
 let execvp =
   if Sys.unix then Unix.execvp
@@ -71,7 +73,7 @@ let () =
   in
   let exec =
     match find_version version with
-    | None
+    | Error _
       when not
            @@ Ocamlformat_lib.Conf_t.Elt.v
                 !Bin_conf.global_conf.lib_conf.opr_opts.version_check ->
@@ -79,5 +81,5 @@ let () =
     | exec -> exec
   in
   match exec with
-  | None -> error_exec_not_found version
-  | Some exec -> run exec
+  | Error version -> error_exec_not_found version
+  | Ok exec -> run exec
