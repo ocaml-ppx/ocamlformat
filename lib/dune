@@ -18,7 +18,7 @@
   (write-file
    current_version.ml
    ; enable release renaming
-   "let v = \"dev\""
+   "let v = \"dev\" |> String.split ~on:'_' |> String.concat ~sep:\".\""
    ; disable release renaming
    )))
 
