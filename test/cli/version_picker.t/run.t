@@ -6,7 +6,6 @@ executable and checking that the correct one is picked.
   $ echo "version = red" > .ocamlformat
   $ PATH=$PATH:. ocamlformat-red
   version red
-
   $ PATH=$PATH:. ocamlformat test.ml
   version red
   $ echo "version = blue" > .ocamlformat
