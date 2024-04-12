@@ -12,7 +12,7 @@ You also have packages for the libs : `ocamlformat-lib.X.Y.Z` and
 You can only have one `ocamlformat` executable on your switch, but you can have
 multiple `ocamlformat-X_Y_Z` installed.
 
-The `ocamlformat` does not contains the formatter itself : it just reads your
+The `ocamlformat` package does not contain the formatter itself: it just reads your
 configuration, and search for the `ocamlformat-X_Y_Z` executable for the correct
 version. If the executable is found, it is executed, if not, instructions to
 install it are printed.
