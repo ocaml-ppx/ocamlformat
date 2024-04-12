@@ -1,21 +1,23 @@
 # Explaination of the versionning scheme
 
-OCamlformat now an unsual versionning scheme. For every version `X.Y.Z` of ocamlformat,
-there are multiple packages :
+OCamlformat now uses an unsual versionning scheme. For every version `X.Y.Z` of
+ocamlformat, there are multiple packages :
 
 - `ocamlformat.X.Y.Z` which contains the `ocamlformat` executable
 - `ocamlformat-X_Y_Z.1.0` which contains the `ocamformat-X_Y_Z` executable
 
 You also have packages for the libs : `ocamlformat-lib.X.Y.Z` and
-`ocamlformat-lib-X_Y_Z.1.0`.
+`ocamlformat-lib-X_Y_Z.1.0`. `ocamlformat-lib-X_Y_Z` is only published in its
+own package because it is required for both `ocamlformat-lib` and the executable
+`ocamlformat-X_Y_Z`.
 
 You can only have one `ocamlformat` executable on your switch, but you can have
 multiple `ocamlformat-X_Y_Z` installed.
 
-The `ocamlformat` package does not contain the formatter itself: it just reads your
-configuration, and search for the `ocamlformat-X_Y_Z` executable for the correct
-version. If the executable is found, it is executed, if not, instructions to
-install it are printed.
+The `ocamlformat` package does not contain the formatter itself: it just reads
+your configuration, and search for the `ocamlformat-X_Y_Z` executable for the
+correct version. If the executable is found, it is executed, if not,
+instructions to install it are printed.
 
 # How to make a release
 
