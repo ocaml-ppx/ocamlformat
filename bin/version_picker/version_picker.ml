@@ -26,8 +26,9 @@ let find_in_path exec =
        | "" -> None
        | dir -> find_exec_in_dir dir exec )
 
-let exec_of_version version =
-  "ocamlformat-" ^ to_unders version ^ if Sys.win32 then ".exe" else ""
+let exec_of_version ?(ensure_dot_exe = true) version =
+  "ocamlformat-" ^ to_unders version
+  ^ if ensure_dot_exe && Sys.win32 then ".exe" else ""
 
 let find_version version =
   let exec_name = exec_of_version version in
@@ -56,7 +57,8 @@ let error_exec_not_found version =
      If it still does not exist, there might be a typo in your config, or \
      the version is very old and has been not been yet repackaged.\n\
      %!"
-    version (exec_of_version version) ;
+    version
+    (exec_of_version ~ensure_dot_exe:false version) ;
   Stdlib.exit 1
 
 let run exec = execvp exec Sys.argv
