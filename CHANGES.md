@@ -8,6 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Added
 
+- Support for installing multiple versions of ocamlformat in the same switch. (#2535, @EmileTrotignon)
 - Support OCaml 5.2 syntax (#2519, @Julow)
   This includes:
   + Local open in types.
