@@ -4,10 +4,6 @@ executable and checking that the correct one is picked.
   $ printf "#!/bin/bash\necho \"version blue\"" > ocamlformat-blue
   $ chmod +x ocamlformat-red
   $ chmod +x ocamlformat-blue
-  $ ls -l
-  total 8
-  -rwxr-xr-x 1 emile emile 31 Apr 11 14:05 ocamlformat-blue
-  -rwxr-xr-x 1 emile emile 30 Apr 11 14:05 ocamlformat-red
   $ cat ocamlformat-red
   #!/bin/bash
   echo "version red"
