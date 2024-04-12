@@ -2,9 +2,6 @@ This tests the version picker by providing two mock ocamlformat-$version$
 executable and checking that the correct one is picked.
   $ ocamlopt ocamlformat_blue.ml -o ocamlformat-blue
   $ ocamlopt ocamlformat_red.ml -o ocamlformat-red
-  $ cp _build/install/default/bin* .
-  cp: cannot stat '_build/install/default/bin*': No such file or directory
-  [1]
   $ echo "let x = 3" > test.ml
   $ echo "version = red" > .ocamlformat
   $ PATH=$PATH:. ocamlformat-red
