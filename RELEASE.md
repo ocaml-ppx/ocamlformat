@@ -22,7 +22,7 @@ instructions to install it are printed.
 # How to make a release
 
 When you are develloping, the current version is `dev`. You have packages
-`ocamlformat-dev`, `ocamlformat-lib-dev`, etc.
+`ocamlformat-dev`, `ocamlformat-dev`, etc.
 
 To make a release you need to pick a release number `A.B.C`, and checkout to a
 fresh release branch. Then go to `release_version_renamer/lexer.mll` and replace

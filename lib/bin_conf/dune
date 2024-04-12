@@ -39,6 +39,6 @@
   (backend bisect_ppx))
  (libraries
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-dev.ocamlformat-lib
   ; disable release renaming
   re))

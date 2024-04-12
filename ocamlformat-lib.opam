@@ -19,7 +19,7 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "3.14"}
-  "ocamlformat-lib-dev"
+  "ocamlformat-dev"
   "odoc" {with-doc}
 ]
 build: [

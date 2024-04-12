@@ -12,6 +12,6 @@
  (public_name ocamlformat-lib)
  (libraries
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-dev.ocamlformat-lib
   ; disable release renaming
   ))

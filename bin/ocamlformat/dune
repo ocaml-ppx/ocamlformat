@@ -59,7 +59,7 @@
   (backend bisect_ppx))
  (libraries
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-dev.ocamlformat-lib
   bin_conf_dev
   ; disable release renaming
   ))

@@ -6,7 +6,7 @@
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-dev.format_
+  ocamlformat-dev.format_
   ; disable release renaming
   )
  (flags

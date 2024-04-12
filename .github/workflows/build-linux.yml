@@ -42,7 +42,7 @@ jobs:
       - name: Build
         run: |
           opam exec -- dune subst
-          opam exec -- dune build -p ocamlformat-lib-dev,ocamlformat-dev,ocamlformat-lib,ocamlformat
+          opam exec -- dune build -p ocamlformat-dev,ocamlformat-lib,ocamlformat
 
       - name: Runtest
         run: opam exec -- dune runtest

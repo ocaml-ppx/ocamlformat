@@ -6,7 +6,7 @@
   )
  (public_name
   ; enable release renaming
-  ocamlformat-lib-dev.parser_extended
+  ocamlformat-dev.parser_extended
   ; enable release renaming
   )
  (flags

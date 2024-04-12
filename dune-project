@@ -37,12 +37,19 @@
 (package
  (name
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-dev
   ; disable release renaming
   )
- (synopsis "OCaml Code Formatter")
+ (synopsis
+  ; enable release renaming
+  "ocamlformat executable for version dev"
+  ; disable release renaming
+  )
  (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+  ; enable release renaming
+  "**ocamlformat** is a code formatter for OCaml.\nThis package provides an executable for compatibility with ocamlformat dev.\nDo not install without the package `ocamlformat` installed."
+  ; disable release renaming
+  )
  (depends
   (ocaml
    (>= 4.08))
@@ -53,7 +60,13 @@
   (base
    (>= v0.12.0))
   (cmdliner
-   (>= 1.1.0))
+   (or
+    (and
+     (= :with-test false)
+     (>= 1.1.0))
+    (and
+     :with-test
+     (>= 1.2.0))))
   dune
   dune-build-info
   either
@@ -89,59 +102,20 @@
    (>= 1.4.0))
   ; for vendored odoc-parser
   astring
-  camlp-streams))
+  camlp-streams
+  (re
+   (>= 1.10.3))))
 
 (package
  (name ocamlformat-lib)
  (depends
   ; enable release renaming
-  ocamlformat-lib-dev
+  ocamlformat-dev
   ; disable release renaming
   )
  (synopsis "OCaml Code Formatter")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style."))
-
-(package
- (name
-  ; enable release renaming
-  ocamlformat-dev
-  ; disable release renaming
-  )
- (synopsis
-  ; enable release renaming
-  "ocamlformat executable for version dev"
-  ; disable release renaming
-  )
- (description
-  ; enable release renaming
-  "**ocamlformat** is a code formatter for OCaml.\nThis package provides an executable for compatibility with ocamlformat dev.\nDo not install without the package `ocamlformat` installed."
-  ; disable release renaming
-  )
- (depends
-  (ocaml
-   (>= 4.08))
-  (cmdliner
-   (or
-    (and
-     (= :with-test false)
-     (>= 1.1.0))
-    (and
-     :with-test
-     (>= 1.2.0))))
-  (csexp
-   (>= 1.4.0))
-  dune
-  (; enable release renaming
-   ocamlformat-lib-dev
-   ; disable release renaming
-   (= :version))
-  (ocamlformat-rpc-lib
-   (and
-    :with-test
-    (= :version)))
-  (re
-   (>= 1.10.3))))
 
 (package
  (name ocamlformat)
