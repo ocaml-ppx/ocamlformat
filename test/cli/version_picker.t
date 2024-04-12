@@ -2,8 +2,12 @@ This tests the version picker by providing two mock ocamlformat-$version$
 executable and checking that the correct one is picked.
   $ printf "#!/bin/bash\necho \"version red\"" > ocamlformat-red
   $ printf "#!/bin/bash\necho \"version blue\"" > ocamlformat-blue
+  $ printf "#!/bin/bash\necho \"version red\"" > ocamlformat-red.exe
+  $ printf "#!/bin/bash\necho \"version blue\"" > ocamlformat-blue.exe
   $ chmod +x ocamlformat-red
   $ chmod +x ocamlformat-blue
+  $ chmod +x ocamlformat-red.exe
+  $ chmod +x ocamlformat-blue.exe
   $ cat ocamlformat-red
   #!/bin/bash
   echo "version red"
