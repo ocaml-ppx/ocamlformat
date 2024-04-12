@@ -6,7 +6,9 @@ executable and checking that the correct one is picked.
   $ ocamlopt ocamlformat_red.ml -o ocamlformat-red.exe
   $ ls
   ocamlformat-blue
+  ocamlformat-blue.exe
   ocamlformat-red
+  ocamlformat-red.exe
   ocamlformat_blue.cmi
   ocamlformat_blue.cmx
   ocamlformat_blue.ml
