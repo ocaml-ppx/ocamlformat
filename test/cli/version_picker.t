@@ -9,7 +9,7 @@ executable and checking that the correct one is picked.
   $ chmod +x ocamlformat-red.exe
   $ chmod +x ocamlformat-blue.exe
   $ cat ocamlformat-red
-  #!/bin/bash
+  #!/bin/sh
   echo "version red"
   $ echo "let x = 3" > test.ml
   $ echo "version = red" > .ocamlformat
