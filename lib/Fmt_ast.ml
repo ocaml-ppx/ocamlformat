@@ -2543,7 +2543,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  ( match c.conf.fmt_opts.indicate_multiline_delimiters.v with
                  | `No -> str ")"
                  | `Space -> str " )"
-                 | `Closing_on_separate_line -> break 1000 (-2) ) ) )
+                 | `Closing_on_separate_line -> break 1000 (-2) $ str ")" )
+             ) )
   | Pexp_match (e0, cs) ->
       fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"

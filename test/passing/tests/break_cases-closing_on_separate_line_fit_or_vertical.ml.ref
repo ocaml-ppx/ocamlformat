@@ -1,9 +1,6 @@
 let f x = function
-  | C
-   |P (this, test, [is; wide; enough; _to; break], [the; line])
-   |A
-   |K ->
-      1
+  | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K
+    -> 1
   | D ->
       let a = "this" in
       let b = "breaks" in
@@ -12,54 +9,54 @@ let f x = function
 let f =
   let g = function
     | H when x y <> k -> 2
-    | T
-     |P
-     |U ->
-        3
+    | T | P | U -> 3
   in
   fun x g t h y u ->
     match x with
     | E -> 4
-    | Z
-     |P
-     |M -> (
-        match y with
-        | O -> 5
-        | P when h x -> (
-            function
-            | A -> 6 ) )
+    | Z | P | M -> (
+      match y with
+      | O -> 5
+      | P when h x -> (
+          function
+          | A -> 6
+        )
+    )
 
 let foo =
   List.map ~f:(fun x g t h y u ->
       match x with
       | E -> 4
-      | Z
-       |P
-       |M -> (
-          match y with
-          | O -> 5
-          | P when h x -> (
-              function
-              | A -> 6 ) ) ) ;
+      | Z | P | M -> (
+        match y with
+        | O -> 5
+        | P when h x -> (
+            function
+            | A -> 6
+          )
+      )
+  ) ;
   List.map ~f:(fun x g t h y u ->
       fooooooooooooo foooooooo ;
       ( match k with
-      | foooo -> foooooooo ) ;
-      fooooooooooooooo fooooooooooooo )
+      | foooo -> foooooooo
+      ) ;
+      fooooooooooooooo fooooooooooooo
+  )
 ;;
 
 match x with
 | true -> (
-    match y with
-    | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
+  match y with
+  | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+)
 | false -> "cccccccccccccccccccccccccccccc"
 ;;
 
 match x with
 | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", yyyyyyyyyy
-  when fffffffffffffff bbbbbbbbbb yyyyyyyyyy ->
-    ()
+  when fffffffffffffff bbbbbbbbbb yyyyyyyyyy -> ()
 | _ -> ()
 
 let is_sequence exp =
@@ -67,8 +64,7 @@ let is_sequence exp =
   | Pexp_sequence _
    |Pexp_extension
       (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
-      true
+    -> true
   | _ -> false
 
 let _ =
@@ -77,9 +73,10 @@ let _ =
     | None -> false
     | Some looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
       -> (
-        match y with
-        | Some _ -> true
-        | None -> false )
+      match y with
+      | Some _ -> true
+      | None -> false
+    )
   in
   ()
 
@@ -89,14 +86,8 @@ let () =
 
 let () =
   match foooo with
-  | x
-   |x
-   |x ->
-      x
-  | y
-   |foooooooooo
-   |fooooooooo ->
-      y
+  | x | x | x -> x
+  | y | foooooooooo | fooooooooo -> y
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
@@ -112,7 +103,8 @@ let foo =
       , Const (Cfun callee_pname)
       , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
       , loc
-      , _ )
+      , _
+      )
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
 
@@ -121,15 +113,11 @@ let mod_int c1 c2 is_safe dbg =
   | c1, Cconst_int (0, _) ->
       Csequence (c1, raise_symbol dbg "caml_exn_Division_by_zero")
   | c1, Cconst_int ((1 | -1), _) -> Csequence (c1, Cconst_int (0, dbg))
-  | x
-   | -1 ->
-      ()
+  | x | -1 -> ()
 
 let merge_columns l old_table =
   let rec aux = function
-    | []
-     |[None] ->
-        ([], [])
+    | [] | [None] -> ([], [])
   in
   foooooooooooooooooooooooooo fooooooooooooooooooooo
 
@@ -140,20 +128,13 @@ let is_sequence exp =
   | Pexp_sequence _
   | Pexp_extension
       (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
-      true
+    -> true
   | _ -> false
 
 let () =
   match foooo with
-  | x
-  | x
-  | x ->
-      x
-  | y
-  | foooooooooo
-  | fooooooooo ->
-      y
+  | x | x | x -> x
+  | y | foooooooooo | fooooooooo -> y
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
@@ -175,38 +156,33 @@ let ffffff ~foo =
   | Bbbbbbbbbbbbbbbbb
   | Ccccccccccccccccc
   | Ddddddddddddddddd
-  | Eeeeeeeeeeeeeeeee ->
-      foooooooooooooooooooo
+  | Eeeeeeeeeeeeeeeee -> foooooooooooooooooooo
   | Fffffffffffffffff -> fooooooooooooooooo
 
 let () =
   match v with
   | None -> None
   | Some x -> (
+    match x with
+    | None -> None
+    | Some x -> (
       match x with
       | None -> None
-      | Some x -> (
-          match x with
-          | None -> None
-          | Some x -> x ) )
+      | Some x -> x
+    )
+  )
 
 let _ = function
-  | (exception A)
-  | B ->
-      1
+  | (exception A) | B -> 1
   | C -> 2
 
 let _ = function
-  | A
-  | (exception B) ->
-      1
+  | A | (exception B) -> 1
   | C -> 2
 
 let _ =
   match x with
-  | (exception A)
-  | (exception B) ->
-      1
+  | (exception A) | (exception B) -> 1
   | C -> 2
 
 let _ =
@@ -216,7 +192,8 @@ let _ =
         match fooooooooo with
         | foooooooooo -> fooooooooooo
         | foooooooooo -> fooooooooooo
-        | foooooooooo -> fooooooooooo )
+        | foooooooooo -> fooooooooooo
+      )
 
 let handler =
   object
@@ -224,8 +201,7 @@ let handler =
       match x with
       | Call Thing
       (* isset($var::thing) but not isset($foo::$bar) *)
-      | Call OtherThing ->
-          Errors.isset_in_strict p
+      | Call OtherThing -> Errors.isset_in_strict p
       | _ -> ()
   end
 
@@ -234,23 +210,23 @@ let _ =
   | Fooooooooooooooooo (* comment *)
   | Baaaaaaaaaaaaaaaar
   (* comment *)
-  | Baaaaaaaaaaaaaaaaz (* comment *) ->
-      ()
+  | Baaaaaaaaaaaaaaaaz (* comment *) -> ()
 
 let _ =
   match x with
   | { y=
         (* _____________________________________________________________________ *)
-        ( X _ | Y _ ) } ->
-      ()
+        ( X _ | Y _ )
+    } -> ()
 
 let _ =
   match x with
   | { y=
         ( Z
         (* _____________________________________________________________________ *)
-        | X _ | Y _ ) } ->
-      ()
+        | X _
+        | Y _ )
+    } -> ()
 
 let foooooooooooooo = function
   | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *)
@@ -266,8 +242,7 @@ let foooooooooooooo = function
   | FooooFoooooFoooooo (* fooooooooooooooooooooooooooooooooooo *)
   | Foooo
     (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo
-       fooo *) ->
-      Foooooooooo.Foooooo
+       fooo *) -> Foooooooooo.Foooooo
   | Foooo {foooo_fooo= {foooooooooo}} ->
       Foooo_Foooo_fooooooo.get_foooooooooo fooooo_fooo
 
@@ -276,20 +251,19 @@ let get_nullability = function
   | OptimisticFallback (* non-null is the most optimistic type *)
   | Undef
     (* This is a very special case, assigning non-null is a technical
-       trick *) ->
-      Nullability.Nonnull
+       trick *) -> Nullability.Nonnull
 
 let _ =
-  try () with
-  | _ -> (
-      match () with
-      | _ -> () )
+  try ()
+  with _ -> (
+    match () with
+    | _ -> ()
+  )
 
 let _ =
   let _ =
-    try () with
-    | _ -> (
-        try () with
-        | _ -> () )
+    try ()
+    with _ -> ( try () with _ -> ()
+    )
   in
   ()
