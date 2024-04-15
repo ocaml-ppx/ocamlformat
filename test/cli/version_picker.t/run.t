@@ -1,7 +1,7 @@
 This tests the version picker by providing two mock ocamlformat-$version$
 executable and checking that the correct one is picked.
-  $ ocamlopt ocamlformat_blue.ml -o ocamlformat-blue
-  $ ocamlopt ocamlformat_red.ml -o ocamlformat-red
+  $ ocamlc ocamlformat_blue.ml -o ocamlformat-blue
+  $ ocamlc ocamlformat_red.ml -o ocamlformat-red
   $ echo "let x = 3" > test.ml
   $ echo "version = red" > .ocamlformat
   $ PATH=$PATH:. ocamlformat-red
