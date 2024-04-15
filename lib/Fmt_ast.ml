@@ -1141,25 +1141,31 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         in
         hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
-      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
       let last_sep, fmt_underscore =
         match closed_flag with
         | OClosed -> (true, noop)
-        | OOpen loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
+        | OOpen loc ->
+            let underscore =
+              p.sep_before
+              $ hvbox 0 (Cmts.fmt c loc (str "_"))
+              $ p.sep_after_final
+            in
+            (false, underscore)
       in
-      let last_loc (lid, t, p) =
-        match (t, p) with
-        | _, Some p -> p.ppat_loc
+      let last_loc (lid, t, pat) =
+        match (t, pat) with
+        | _, Some pat -> pat.ppat_loc
         | Some t, _ -> t.ptyp_loc
         | _ -> lid.loc
       in
       let fmt_fields =
-        fmt_elements_collection c ~last_sep p1 last_loc ppat_loc fmt_field
+        fmt_elements_collection c ~last_sep p last_loc ppat_loc fmt_field
           flds
       in
       hvbox_if parens 0
         (Params.parens_if parens c.conf
-           (p1.box (fmt_fields $ fmt_underscore)) )
+           (p.box (fmt_fields $ fmt_underscore)) )
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
