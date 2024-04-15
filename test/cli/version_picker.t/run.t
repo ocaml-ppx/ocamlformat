@@ -4,8 +4,6 @@ executable and checking that the correct one is picked.
   $ ocamlc ocamlformat_red.ml -o ocamlformat-red
   $ ocamlopt ocamlformat_blue.ml -o ocamlformat-blue 2> null > null || true
   $ ocamlopt ocamlformat_red.ml -o ocamlformat-red  2> null > null || true
-  $ cp ocamlformat-red ocamlformat-red.exe
-  $ cp ocamlformat-blue ocamlformat-blue.exe
   $ echo "let x = 3" > test.ml
   $ echo "version = red" > .ocamlformat
   $ PATH=$PATH:. ocamlformat-red
