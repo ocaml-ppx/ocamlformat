@@ -1242,6 +1242,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to comments_in_record-break_separator-after.ml.stdout
+   (with-stderr-to comments_in_record-break_separator-after.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separator=after %{dep:tests/comments_in_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-after.ml.ref comments_in_record-break_separator-after.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-after.ml.err comments_in_record-break_separator-after.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to comments_in_record-break_separator-before.ml.stdout
+   (with-stderr-to comments_in_record-break_separator-before.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separator=before %{dep:tests/comments_in_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-before.ml.ref comments_in_record-break_separator-before.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-before.ml.err comments_in_record-break_separator-before.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to comments_in_record.ml.stdout
    (with-stderr-to comments_in_record.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/comments_in_record.ml})))))
