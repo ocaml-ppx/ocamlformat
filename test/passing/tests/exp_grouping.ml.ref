@@ -389,3 +389,19 @@ let _ =
       loop
     end
     [@attr]
+
+let _ =
+  match x with
+  | _ ->
+    (* xxx *)
+    begin
+      y
+    end
+
+let _ =
+  match x with
+  | _ ->
+    begin
+      y
+    end
+    [@foo]
