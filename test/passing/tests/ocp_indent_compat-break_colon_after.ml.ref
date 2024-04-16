@@ -62,18 +62,20 @@ module type M = sig
     -> unit
 end
 
-let ssmap : (module MapT
-               with type key = string
-                and type data = string
-                and type map = SSMap.map )
+let ssmap :
+  (module MapT
+     with type key = string
+      and type data = string
+      and type map = SSMap.map )
   =
   ()
 
-let ssmap : (module MapT
-               with type key = string
-                and type data = string
-                and type map = SSMap.map )
-            -> unit
+let ssmap :
+   (module MapT
+      with type key = string
+       and type data = string
+       and type map = SSMap.map )
+  -> unit
   =
   ()
 

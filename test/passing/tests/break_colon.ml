@@ -61,30 +61,31 @@ module type M = sig
     -> unit
 end
 
-let ssmap : (module MapT
-               with type key = string
-                and type data = string
-                and type map = SSMap.map ) =
+let ssmap :
+    (module MapT
+       with type key = string
+        and type data = string
+        and type map = SSMap.map ) =
   ()
 
-let ssmap :    (module MapT
-                  with type key = string
-                   and type data = string
-                   and type map = SSMap.map )
-            -> unit =
+let ssmap :
+       (module MapT
+          with type key = string
+           and type data = string
+           and type map = SSMap.map )
+    -> unit =
   ()
 
 let long_function_name : type a.
     a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit =
  fun () -> ()
 
-let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n
-    (a : 'a array) : numbering * 'b array =
+let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n (a : 'a array)
+    : numbering * 'b array =
   match Array.length a with 0 -> (n, [||]) | 1 -> x
 
-let to_clambda_function
-    (id, (function_decl : Flambda.function_declaration)) : Clambda.ufunction
-    =
+let to_clambda_function (id, (function_decl : Flambda.function_declaration))
+    : Clambda.ufunction =
   (* All that we need in the environment, for translating one closure from a
      closed set of closures, is the substitutions for variables bound to the
      various closures in the set. Such closures will always be ... *)

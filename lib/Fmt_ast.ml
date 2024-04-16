@@ -745,15 +745,27 @@ and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
   $ cbox 0
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
 
-and fmt_type_cstr c ~ctx ?constraint_ctx typ =
+and fmt_type_cstr c ?(pro=":") ?constraint_ctx xtyp =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
-  let fmt_typ ?pro t =
-    fmt_core_type c ?pro ?constraint_ctx ~box:(not colon_before) (sub_typ ~ctx t)
-  in
-  cbox_if colon_before 0 @@
-      (match typ with
+    let wrap, inner_pro, box =
+      if colon_before then
+        let wrap x =
+          fits_breaks " " ~hint:(1000, 0) "" $ cbox 0 (str pro $ str " " $ x)
+        in
+        wrap, None, false
+      else
+        let wrap x =
+          break 0 ~-1 $ x
+        in
+        wrap, Some pro, true
+    in
+    wrap (fmt_core_type c ?pro:inner_pro ?constraint_ctx ~box xtyp)
+
+and fmt_type_pcstr c ~ctx ?constraint_ctx cstr =
+  let fmt_typ ~pro t = fmt_type_cstr c ~pro ?constraint_ctx (sub_typ ~ctx t) in
+  match cstr with
        | Pconstraint t -> fmt_typ ~pro:":" t
-       | Pcoerce (t1, t2) -> opt t1 (fmt_typ ~pro:":") $ fmt_typ ~pro:":>" t2)
+       | Pcoerce (t1, t2) -> opt t1 (fmt_typ ~pro:":") $ fmt_typ ~pro:":>" t2
 
 and fmt_arrow_param c ctx {pap_label= lI; pap_loc= locI; pap_type= tI} =
   let arg_label lbl =
@@ -1448,7 +1460,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
     else (str ":", if has_label then break 1 2 else space_break)
   in
   let fmt_typ typ =
-    fmt_type_cstr c ~ctx ~constraint_ctx:`Fun typ
+    fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ
   in
   let fmt_fun_args_typ args typ =
     let kw =
@@ -4367,15 +4379,7 @@ and fmt_value_constraint c vc_opt =
       let ctx = Vc vc in
       match vc with
       | Pvc_constraint {locally_abstract_univars= []; typ} ->
-          (* Handles breaking the [:] according to [break_colon]. *)
-          let fmt_typ pro =
-            fmt_core_type c ?pro (sub_typ ~ctx typ) in
-(match c.conf.fmt_opts.break_colon.v with
-  |`Before ->
-      noop, fmt_typ (Some ":")
-  | `After ->
-      fmt_constraint_sep c ":", fmt_typ None
-)
+          (noop, fmt_type_cstr c (sub_typ ~ctx typ))
       | Pvc_constraint {locally_abstract_univars= pvars; typ} -> (
         match c.conf.fmt_opts.break_colon.v with
         | `Before ->

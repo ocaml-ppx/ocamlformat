@@ -34,15 +34,17 @@ class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
 let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb =
   g
 
-let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
-                           -> bbbbbbbbbbbbbbbbbbbbbb
-                           -> cccccccccccccccccccccc =
+let ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc =
   g
 
-let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
-                           -> bbbbbbbbbbbbbbbbbbbbbb
-                           -> cccccccccccccccccccccc
-                           -> dddddddddddddddddddddd =
+let ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc
+    -> dddddddddddddddddddddd =
   g
 
 let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()

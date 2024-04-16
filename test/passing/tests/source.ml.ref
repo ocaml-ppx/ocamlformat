@@ -57,10 +57,11 @@ let [%foo? Bar x | Baz x] : [%foo? #bar] = [%foo? {x}]
 
 [%%foo: module M : [%baz]]
 
-let [%foo: include S with type t = t] : [%foo:
-                                          val x : t
+let [%foo: include S with type t = t] :
+    [%foo:
+      val x : t
 
-                                          val y : t] =
+      val y : t] =
   [%foo: type t = t]
 
 let int_with_custom_modifier =
@@ -2550,24 +2551,18 @@ type ('a, 'result, 'visit_action) context =
   | Local : ('a, ('a * insert as 'result), 'a local_visit_action) context
   | Global : ('a, 'a, 'a visit_action) context
 
-let vexpr (type visit_action) :    (_, _, visit_action) context
-                                -> _
-                                -> visit_action =
+let vexpr (type visit_action) :
+    (_, _, visit_action) context -> _ -> visit_action =
   function
   | Local -> fun _ -> raise Exit | Global -> fun _ -> raise Exit
 
-let vexpr (type visit_action) :    ('a, 'result, visit_action) context
-                                -> 'a
-                                -> visit_action =
+let vexpr (type visit_action) :
+    ('a, 'result, visit_action) context -> 'a -> visit_action =
   function
   | Local -> fun _ -> raise Exit | Global -> fun _ -> raise Exit
 
-let vexpr (type result) (type visit_action) :    ( unit
-                                                 , result
-                                                 , visit_action )
-                                                 context
-                                              -> unit
-                                              -> visit_action =
+let vexpr (type result) (type visit_action) :
+    (unit, result, visit_action) context -> unit -> visit_action =
   function
   | Local -> fun _ -> raise Exit | Global -> fun _ -> raise Exit
 
@@ -4094,17 +4089,15 @@ end = struct
 
   let _ = fun (_ : ('a, 'perms) t) -> ()
 
-  let t_of_sexp : 'a 'perms.
-                  (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
-      =
+  let t_of_sexp :
+      'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
     fun _of_a -> fun _of_perms -> fun t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
-  let sexp_of_t : 'a 'perms.
-                  ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
-      =
+  let sexp_of_t :
+      'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
    fun _of_a -> fun _of_perms -> fun v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t

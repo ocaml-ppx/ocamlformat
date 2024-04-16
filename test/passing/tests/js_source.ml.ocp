@@ -2437,7 +2437,8 @@ let eval
       (type c)
       (bop : (a, b, c) binop)
       (x : a constant)
-      (y : b constant) : c constant
+      (y : b constant)
+  : c constant
   =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
@@ -9595,7 +9596,7 @@ let ssmap
 ;;
 
 let ssmap
-  :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+  : (module MapT with type key = string and type data = string and type map = SSMap.map)
     -> unit
   =
   ()

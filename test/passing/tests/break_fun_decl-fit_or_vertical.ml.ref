@@ -56,15 +56,17 @@ class ffffffffffffffffffff
 let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb =
   g
 
-let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
-                           -> bbbbbbbbbbbbbbbbbbbbbb
-                           -> cccccccccccccccccccccc =
+let ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc =
   g
 
-let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
-                           -> bbbbbbbbbbbbbbbbbbbbbb
-                           -> cccccccccccccccccccccc
-                           -> dddddddddddddddddddddd =
+let ffffffffffffffffffff :
+       aaaaaaaaaaaaaaaaaaaaaa
+    -> bbbbbbbbbbbbbbbbbbbbbb
+    -> cccccccccccccccccccccc
+    -> dddddddddddddddddddddd =
   g
 
 let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()
@@ -77,7 +79,8 @@ let fffffffffffffffffffffffffffffffffff
 
 class ffffffffffffffffffff =
   object
-    method ffffffffffffffffffff :
+    method ffffffffffffffffffff
+        :
            aaaaaaaaaaaaaaaaaaaaaa
         -> bbbbbbbbbbbbbbbbbbbbbb
         -> cccccccccccccccccccccc
