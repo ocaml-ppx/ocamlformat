@@ -4495,7 +4495,7 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
       if intro_as_pro then
         fmt_expression c ~pro ~box:false lb_exp
       else
-        pro$fmt_expression c ~box:false lb_exp
+        pro$fmt_expression c lb_exp
   in
   doc1 $ cmts_before
   $ hvbox 0
