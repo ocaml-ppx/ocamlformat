@@ -334,6 +334,24 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_cases-closing_on_separate_line_fit_or_vertical.ml.stdout
+   (with-stderr-to break_cases-closing_on_separate_line_fit_or_vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-cases=fit-or-vertical --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/break_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_cases-closing_on_separate_line_fit_or_vertical.ml.ref break_cases-closing_on_separate_line_fit_or_vertical.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_cases-closing_on_separate_line_fit_or_vertical.ml.err break_cases-closing_on_separate_line_fit_or_vertical.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action

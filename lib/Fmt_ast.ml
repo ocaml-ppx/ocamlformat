@@ -2549,7 +2549,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  ( match c.conf.fmt_opts.indicate_multiline_delimiters.v with
                  | `No -> str ")"
                  | `Space -> str " )"
-                 | `Closing_on_separate_line -> break 1000 (-2) ) ) )
+                 | `Closing_on_separate_line -> break 1000 (-2) $ str ")" )
+             ) )
   | Pexp_match (e0, cs) ->
       fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"
@@ -3219,10 +3220,10 @@ and fmt_case c ctx ~first ~last case =
     | Ppat_or _ when Option.is_some pc_guard -> true
     | _ -> parenze_pat xlhs
   in
-  let eol =
-    Option.some_if (Cmts.has_before c.cmts pc_rhs.pexp_loc) force_break
+  let cmts_before = Cmts.has_before c.cmts pc_rhs.pexp_loc in
+  let p =
+    Params.get_cases c.conf ~ctx ~first ~last ~cmts_before ~xbch:xrhs
   in
-  let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
@@ -3235,7 +3236,8 @@ and fmt_case c ctx ~first ~last case =
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
+          ( fmt_expression ?eol:p.expr_eol c ?parens:p.expr_parens
+              p.branch_expr
           $ p.close_paren_branch ) )
 
 and fmt_value_description c ctx vd =

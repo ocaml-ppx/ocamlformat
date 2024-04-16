@@ -80,6 +80,7 @@ type cases =
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
+  ; expr_eol: Fmt.t option
   ; branch_expr: expression Ast.xt  (** Expression on the RHS of the [->]. *)
   ; close_paren_branch: Fmt.t }
 
@@ -88,6 +89,7 @@ val get_cases :
   -> ctx:Ast.t
   -> first:bool
   -> last:bool
+  -> cmts_before:bool
   -> xbch:expression Ast.xt
   -> cases
 
