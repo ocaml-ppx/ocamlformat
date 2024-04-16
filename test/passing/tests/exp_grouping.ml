@@ -272,3 +272,14 @@ let _ =
   if something_changed then begin[@attr]
     loop
   end
+
+let _ =
+  match x with
+  | _ ->
+      (* xxx *)
+      begin y end
+
+let _ =
+  match x with
+  | _ ->
+      begin[@foo] y end
