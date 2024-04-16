@@ -367,8 +367,6 @@ type elements_collection =
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
 
-type elements_collection_record_pat = {wildcard: Fmt.t}
-
 let get_record_expr (c : Conf.t) =
   let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
   let dock = c.fmt_opts.dock_collection_brackets.v in
@@ -454,8 +452,7 @@ let get_record_pat (c : Conf.t) ~ctx =
         ~space_around:c.fmt_opts.space_around_records.v "{" "}"
     else params.box
   in
-  ( {params with box}
-  , {wildcard= params.sep_before $ str "_" $ params.sep_after_final} )
+  {params with box}
 
 let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
   let params = collection_expr c ~space_around opn cls in
