@@ -181,8 +181,7 @@ type cases =
   ; branch_expr: expression Ast.xt
   ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~ctx ~first ~last ~force_break_cases
-    ~xbch:({ast; _} as xast) =
+let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
@@ -232,7 +231,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~force_break_cases
         in
         (fmt_if parens_branch (str " ("), close_paren, xast)
   in
-  match if force_break_cases then `All else c.fmt_opts.break_cases.v with
+  match c.fmt_opts.break_cases.v with
   | `Fit ->
       { leading_space= fmt_if (not first) space_break
       ; bar= fmt_or first (if_newline "| ") (str "| ")
