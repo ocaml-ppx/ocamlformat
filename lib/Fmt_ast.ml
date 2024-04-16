@@ -1811,7 +1811,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     (fmt_function ~ctx:(Exp call) ~wrap_intro:(fun x -> 
                          ( str "%"
                            $ hovbox 2
-                               ( fmt_str_loc c name $ space_break $ x)))
+                               ( fmt_str_loc c name $ space_break $ x))$space_break)
                         ~label:Nolabel ~parens:false ~attrs:call.pexp_attributes ~loc:call.pexp_loc c (args, typ, body)
                            )
                  )
@@ -1839,7 +1839,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     (fmt_function ~ctx:(Exp retn) ~wrap_intro:(fun x -> 
                          ( str "%"
                            $ hovbox 2
-                               ( fmt_str_loc c name $ space_break $ x)))
+                               ( fmt_str_loc c name $ space_break $ x))$space_break)
                         ~label:Nolabel ~parens:false ~attrs:retn.pexp_attributes ~loc:retn.pexp_loc c (args, typ, body)
                            )
                  ) ) )
