@@ -1,19 +1,13 @@
 f x >>= fun y ->
 g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () -> y ()
+f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
 ;;
 
 f x >>= function
 | A -> (
     g y >>= fun () ->
     f x >>= fun y ->
-    g y >>= function
-    | x -> (
-        f x >>= fun y ->
-        g y >>= function _ -> y () ) )
+    g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
@@ -62,8 +56,7 @@ eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
-|> function
-| x -> x
+|> function x -> x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -142,11 +135,10 @@ let foo =
       let b = Batch batch in
       foo
 
-let _ = foo >>= function[@warning "-4"] A -> false | B -> true
+let _ = foo >>= function [@warning "-4"] A -> false | B -> true
 
 let _ =
-  foo >>= function[@warning "-4"]
-  | Afoooooooooooooooooo fooooooooo -> false
+  foo >>= function [@warning "-4"] Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
 let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
@@ -157,7 +149,7 @@ let _ =
     fooooooooooooooooooooooo
 
 let _ =
-  foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
+  foo >>= function (* foo before *) [@warning "-4"] (* foo after *)
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
@@ -190,8 +182,7 @@ let f =
   Ok ()
   >>=
   (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
-  function
-  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  function Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 (** The tests below are testing a dropped comment with
     `--no-break-infix-before-func` *)
@@ -217,7 +208,7 @@ let encoder f =
 let default =
   command##hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
   command##hasPermission #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)

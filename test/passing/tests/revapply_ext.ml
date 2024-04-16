@@ -2,8 +2,8 @@ let _ =
   ()
   (* one *)
   |>
-  [%ext fun _ -> ()]
+  [%ext fun _ ->()]
 
 let _ = ()
         |>
-        [%ext fun _ -> ()]
+        [%ext fun _ ->()]

@@ -15,6 +15,7 @@ let old_good =
 let old_good =
   foo bar qaz
   *>>| fun x ->
-  hey ho lala
-  *>>> fun y ->
-  foo bar qaz +>>| fun x -> hey ho lala +>>> fun y -> return (x, y)
+         hey ho lala
+         *>>> fun y ->
+                foo bar qaz
+                +>>| fun x -> hey ho lala +>>> fun y -> return (x, y)

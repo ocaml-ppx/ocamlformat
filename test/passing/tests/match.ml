@@ -34,16 +34,16 @@ let _ =
 let x =
   let g =
     match x with
-    | `A -> ( fun id -> function A -> e ; e | _ -> () )
-    | `B -> ( fun id -> function A -> e ; e | _ -> () )
+    | `A -> ( fun id ->function A -> e ; e | _ -> () )
+    | `B -> ( fun id ->function A -> e ; e | _ -> () )
   in
   ()
 
 let x =
   let g =
     match x with
-    | `A -> ( fun id -> function A -> () | B -> () )
-    | `B -> ( fun id -> function A -> () | _ -> () )
+    | `A -> ( fun id ->function A -> () | B -> () )
+    | `B -> ( fun id ->function A -> () | _ -> () )
   in
   ()
 

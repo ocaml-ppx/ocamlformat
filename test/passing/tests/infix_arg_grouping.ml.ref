@@ -109,8 +109,8 @@ let () =
   (* Keep going... *)
   another_action
   |> fun t ->
-  (* And finally do this *)
-  final_action t
+       (* And finally do this *)
+       final_action t
 
 let () =
   (* Open the repo *)

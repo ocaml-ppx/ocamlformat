@@ -34,17 +34,15 @@ class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
 let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb =
   g
 
-let ffffffffffffffffffff :
-       aaaaaaaaaaaaaaaaaaaaaa
-    -> bbbbbbbbbbbbbbbbbbbbbb
-    -> cccccccccccccccccccccc =
+let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
+                           -> bbbbbbbbbbbbbbbbbbbbbb
+                           -> cccccccccccccccccccccc =
   g
 
-let ffffffffffffffffffff :
-       aaaaaaaaaaaaaaaaaaaaaa
-    -> bbbbbbbbbbbbbbbbbbbbbb
-    -> cccccccccccccccccccccc
-    -> dddddddddddddddddddddd =
+let ffffffffffffffffffff :    aaaaaaaaaaaaaaaaaaaaaa
+                           -> bbbbbbbbbbbbbbbbbbbbbb
+                           -> cccccccccccccccccccccc
+                           -> dddddddddddddddddddddd =
   g
 
 let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()
@@ -95,14 +93,13 @@ end
 
 let _ =
  fun (module Store : Irmin.Generic_key.S with type repo = repo)
-     (module Store : Irmin.Generic_key.S with type repo = repo) ->
-  body
+     (module Store : Irmin.Generic_key.S with type repo = repo)
+ -> body
 
 let _ =
   f
-    (fun
-      (module Store : Irmin.Generic_key.S with type repo = repo)
-      (module Store : Irmin.Generic_key.S with type repo = repo)
+    (fun (module Store : Irmin.Generic_key.S with type repo = repo)
+         (module Store : Irmin.Generic_key.S with type repo = repo)
     -> body )
 
 let f (module Store : Irmin.Generic_key.S with type repo = repo)

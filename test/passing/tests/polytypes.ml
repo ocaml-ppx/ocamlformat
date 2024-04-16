@@ -1,25 +1,25 @@
 let t1 : 'a 'b. 'a t -> b t = ()
 
-let t2 :
-    'a 'b.
-       'a t________________________________
-    -> 'b t_______________________________________ =
+let t2 : 'a 'b.
+            'a t________________________________
+         -> 'b t_______________________________________ =
   ()
 
-let t3 :
-    'long 'sequence 'of_ 'universally 'quantified 'type_ 'variables 'that
-    'must 'wrap.
-       'a t_________________________________________________
-    -> 'b t______________________________________________________________
-    -> 'c t______________________________________________________________ =
+let t3 : 'long 'sequence 'of_ 'universally 'quantified 'type_ 'variables
+         'that 'must 'wrap.
+            'a t_________________________________________________
+         -> 'b
+            t______________________________________________________________
+         -> 'c
+            t______________________________________________________________ =
   ()
 
-let t4 :
-    'long 'sequence 'of_ 'universally 'quantified 'type_ 'variables 'that
-    'must 'wrap.
-    'a t_________________________________________________
-    * 'b t______________________________________________________________
-    * 'c t______________________________________________________________ =
+let t4 : 'long 'sequence 'of_ 'universally 'quantified 'type_ 'variables
+         'that 'must 'wrap.
+         'a t_________________________________________________
+         * 'b t______________________________________________________________
+         * 'c t______________________________________________________________
+    =
   ()
 
 let foo : type a. a =
@@ -34,16 +34,20 @@ let _ =
   let id : 'a. 'a -> 'a = fun x -> x in
   ()
 
-let equal_list :
-    'a. ('a, 't) gexpr marked list -> ('a, 't) gexpr marked list -> bool =
+let equal_list : 'a.
+                    ('a, 't) gexpr marked list
+                 -> ('a, 't) gexpr marked list
+                 -> bool =
  fun es1 es2 ->
-  try List.for_all2 equal es1 es2 with Invalid_argument _ -> false
+   try List.for_all2 equal es1 es2 with Invalid_argument _ -> false
 
-let rec equal_list :
-    'a. ('a, 't) gexpr marked list -> ('a, 't) gexpr marked list -> bool =
+let rec equal_list : 'a.
+                        ('a, 't) gexpr marked list
+                     -> ('a, 't) gexpr marked list
+                     -> bool =
  fun es1 es2 ->
-  try List.for_all2 equal es1 es2 with Invalid_argument _ -> false
+   try List.for_all2 equal es1 es2 with Invalid_argument _ -> false
 
 and equal : 'a. ('a, 't) gexpr marked -> ('a, 't) gexpr marked -> bool =
  fun (type a) (e1 : (a, 't) gexpr marked) (e2 : (a, 't) gexpr marked) ->
-  match (Marked.unmark e1, Marked.unmark e2) with x -> x
+   match (Marked.unmark e1, Marked.unmark e2) with x -> x

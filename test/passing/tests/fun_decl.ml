@@ -6,13 +6,13 @@ let fooo = List.foooo ~f:(fun foooo foooo : bool -> foooooooooooooooooooooo)
 
 let _ =
  fun (x : int) (x : int) (x : int) (x : int) (x : int) :
-     fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
-  some_large_computation
+     fooooooooooooooooooooooooooo foooooooooooooo foooooooooo
+ -> some_large_computation
 
 let _ =
  fun (x : int) (x : int) (x : int) (x : int) (x : int) (x : int) (x : int) :
-     fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
-  some_large_computation
+     fooooooooooooooooooooooooooo foooooooooooooo foooooooooo
+ -> some_large_computation
 
 [@@@ocamlformat "wrap-fun-args=false"]
 
@@ -65,8 +65,6 @@ let translate_captured
   ()
 
 let f ssssssssss =
-  String.fold ssssssssss ~init:innnnnnnnnnit ~f:(fun accuuuuuuuuuum ->
-    function
-    | '0' -> g accuuuuuuuuuum
-    | '1' -> h accuuuuuuuuuum
-    | _ -> i accuuuuuuuuuum )
+  String.fold ssssssssss ~init:innnnnnnnnnit
+    ~f:(fun accuuuuuuuuuum ->function '0' -> g accuuuuuuuuuum
+    | '1' -> h accuuuuuuuuuum | _ -> i accuuuuuuuuuum )

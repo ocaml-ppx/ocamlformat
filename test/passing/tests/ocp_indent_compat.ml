@@ -76,7 +76,7 @@ let ssmap
         with type key = string
          and type data = string
          and type map = SSMap.map )
-  -> unit
+    -> unit
   =
   ()
 

@@ -1,6 +1,6 @@
 [@@@ocamlformat "disambiguate-non-breaking-match"]
 
-let () = r := (fun () -> f () ; g ())
+let () = r := fun () -> f () ; g ()
 
 let () =
   r :=

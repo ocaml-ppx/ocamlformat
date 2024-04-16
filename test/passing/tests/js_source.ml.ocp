@@ -1041,7 +1041,8 @@ let rec variantize : type t. t ty -> t -> variant =
   | Record { fields } ->
     VRecord
       (List.map
-         (fun (Field { field_type; label; get }) -> label, variantize field_type (get x))
+         (fun (Field { field_type; label; get }) ->
+            label, variantize field_type (get x))
          fields)
 ;;
 
@@ -1293,10 +1294,11 @@ let ty_abc =
   and inj
     : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
-    = function
-      | Thd, v -> `A v
-      | Ttl Thd, v -> `B v
-      | Ttl (Ttl Thd), Noarg -> `C
+    =
+    function
+    | Thd, v -> `A v
+    | Ttl Thd, v -> `B v
+    | Ttl (Ttl Thd), Noarg -> `C
   in
   (* Coherence of sum_inj and sum_cases is checked by the typing *)
   Sum
@@ -1330,10 +1332,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
              | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
-           (fun (type c) : ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
-              function
-              | Thd, Noarg -> `Nil
-              | Ttl Thd, v -> `Cons v)
+           (fun (type c) ->
+              (function
+                | Thd, Noarg -> `Nil
+                | Ttl Thd, v -> `Cons v
+                                : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist))
            (* One can also write the type annotation directly *)
        })
 ;;
@@ -1570,7 +1573,8 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
   | Ttip -> []
   | Tnode m -> if eq n m then [ Phere ] else []
   | Tfork (x, y) ->
-    List.map (fun x -> Pleft x) (find eq n x) @ List.map (fun x -> Pright x) (find eq n y)
+    List.map (fun x -> Pleft x) (find eq n x)
+    @ List.map (fun x -> Pright x) (find eq n y)
 ;;
 
 let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
@@ -2019,7 +2023,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
 type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
-  fun x r -> function
+  fun x r ->function
     | [] -> raise Not_found
     | Assoc (x', r', v) :: env ->
       if x = x'
@@ -2040,7 +2044,7 @@ type _ term =
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
 let rec eval_term : type a. assoc list -> a term -> a =
-  fun env -> function
+  fun env ->function
     | Var (x, r) -> assoc x r env
     | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
     | Const x -> x
@@ -2381,7 +2385,8 @@ let inlineseq_from_astseq seq =
       | x, Ast_Bold xs -> Bold (List.map (process x) xs)
       | Kind Maylink, Ast_Link lnk -> Link lnk
       | Kind Nonlink, Ast_Link _ -> assert false
-      | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
+      | Kind Maylink, Ast_Mref (lnk, xs) ->
+        Mref (lnk, List.map (process (Kind Nonlink)) xs)
       | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
@@ -2432,8 +2437,7 @@ let eval
       (type c)
       (bop : (a, b, c) binop)
       (x : a constant)
-      (y : b constant)
-  : c constant
+      (y : b constant) : c constant
   =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
@@ -2665,23 +2669,24 @@ type ('a, 'result, 'visit_action) context =
   | Local : ('a, ('a * insert as 'result), 'a local_visit_action) context
   | Global : ('a, 'a, 'a visit_action) context
 
-let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action
-  = function
-    | Local -> fun _ -> raise Exit
-    | Global -> fun _ -> raise Exit
+let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action =
+  function
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
-let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
-  = function
-    | Local -> fun _ -> raise Exit
-    | Global -> fun _ -> raise Exit
+let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action =
+  function
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
 let vexpr (type result) (type visit_action)
   : (unit, result, visit_action) context -> unit -> visit_action
-  = function
-    | Local -> fun _ -> raise Exit
-    | Global -> fun _ -> raise Exit
+  =
+  function
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
 module A = struct
@@ -3071,7 +3076,7 @@ let magic : 'a 'b. 'a -> 'b =
 type (_, +_) eq = Refl : ('a, 'a) eq
 
 let magic : 'a 'b. 'a -> 'b =
-  fun (type a b) (x : a) ->
+  fun (type a) (type b) (x : a) ->
   let bad_proof (type a) = (Refl : (< m : a >, < m : a >) eq :> (< m : a >, < >) eq) in
   let downcast : type a. (a, < >) eq -> < > -> a =
     fun (type a) (Refl : (a, < >) eq) (s : < >) -> (s :> a)
@@ -4307,11 +4312,15 @@ let int_of_sexp _ = 42
 
 let t_of_sexp : 'a. (sexp -> 'a) -> sexp -> 'a t =
   let _tp_loc = "core_array.ml.t" in
-  fun _of_a t -> (array_of_sexp _of_a) t
+  fun _of_a -> fun t -> (array_of_sexp _of_a) t
 ;;
 
 let _ = t_of_sexp
-let sexp_of_t : 'a. ('a -> sexp) -> 'a t -> sexp = fun _of_a v -> (sexp_of_array _of_a) v
+
+let sexp_of_t : 'a. ('a -> sexp) -> 'a t -> sexp =
+  fun _of_a -> fun v -> (sexp_of_array _of_a) v
+;;
+
 let _ = sexp_of_t
 
 module T = struct
@@ -4358,13 +4367,13 @@ end = struct
 
   let t_of_sexp : 'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
-    fun _of_a _of_perms t -> (array_of_sexp _of_a) t
+    fun _of_a -> fun _of_perms -> fun t -> (array_of_sexp _of_a) t
   ;;
 
   let _ = t_of_sexp
 
   let sexp_of_t : 'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
-    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
+    fun _of_a -> fun _of_perms -> fun v -> (sexp_of_array _of_a) v
   ;;
 
   let _ = sexp_of_t
@@ -4378,13 +4387,13 @@ end = struct
 
     let t_of_sexp : 'perms. (sexp -> 'perms) -> sexp -> 'perms t =
       let _tp_loc = "core_array.ml.Permissioned.Int.t" in
-      fun _of_perms t -> t__of_sexp t
+      fun _of_perms -> fun t -> t__of_sexp t
     ;;
 
     let _ = t_of_sexp
 
     let sexp_of_t : 'perms. ('perms -> sexp) -> 'perms t -> sexp =
-      fun _of_perms v -> sexp_of_t_ v
+      fun _of_perms -> fun v -> sexp_of_t_ v
     ;;
 
     let _ = sexp_of_t
@@ -4903,7 +4912,10 @@ type t = F(M).t
 module Common0 = struct
   type msg = Msg
 
-  let handle_msg = ref (function _ -> failwith "Unable to handle message")
+  let handle_msg =
+    ref (function
+      | _ -> failwith "Unable to handle message")
+  ;;
 
   let extend_handle f =
     let old = !handle_msg in
@@ -4920,7 +4932,10 @@ let q' : Common0.msg Queue.t = Common0.q
 module Common = struct
   type msg = ..
 
-  let handle_msg = ref (function _ -> failwith "Unable to handle message")
+  let handle_msg =
+    ref (function
+      | _ -> failwith "Unable to handle message")
+  ;;
 
   let extend_handle f =
     let old = !handle_msg in
@@ -6767,7 +6782,7 @@ end =
   M1
 ;;
 
-fun (x : M1.t) : M2.t -> x
+fun (x : M1.t) -> (x : M2.t)
 
 (* fails *)
 
@@ -8643,9 +8658,10 @@ type v =
 let f
   : type a b c d e f g.
     a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
-  = function
-    | A, A, A, A, A, A, A, _, U, U -> 1
-    | _, _, _, _, _, _, _, G, _, _ -> 1
+  =
+  function
+  | A, A, A, A, A, A, A, _, U, U -> 1
+  | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
 
 (*| _ -> _ *)
@@ -9453,8 +9469,8 @@ class ['a] c () =
 
 let f : type a'. a' = assert false
 let foo : type a' b'. a' -> b' = fun a -> assert false
-let foo : type t'. t' = fun (type t') : t' -> assert false
-let foo : 't. 't = fun (type t) : t -> assert false
+let foo : type t'. t' = fun (type t') -> (assert false : t')
+let foo : 't. 't = fun (type t) -> (assert false : t)
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
 let f x =
@@ -9798,8 +9814,9 @@ let _ =
   match x with
   | _
     when f
-           ~f:(function [@ocaml.warning
-              (* ....................................... *) "-4"] _ -> .) -> y
+           ~f:
+             (function [@ocaml.warning (* ....................................... *) "-4"]
+               | _ -> .) -> y
 ;;
 
 let[@a
@@ -9814,20 +9831,23 @@ let[@a
   with
   | _
     when f
-           ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
-             | _ -> .)
-           ~f:(function[@ocaml.warning
-              (* ....................................... *)
-             (* ....................................... *)
-             "foooooooooooooooooooooooooooo \
-              fooooooooooooooooooooooooooooooooooooo"]
-             | _ -> .)
-           ~f:(function[@ocaml.warning
-              (* ....................................... *)
-             let x = a
-             and y = b in
-             x + y]
-             | _ -> .) ->
+           ~f:
+             (function [@ocaml.warning (* ....................................... *) "-4"]
+               | _ -> .)
+           ~f:
+             (function [@ocaml.warning
+                (* ....................................... *)
+               (* ....................................... *)
+               "foooooooooooooooooooooooooooo \
+                fooooooooooooooooooooooooooooooooooooo"]
+               | _ -> .)
+           ~f:
+             (function [@ocaml.warning
+                (* ....................................... *)
+               let x = a
+               and y = b in
+               x + y]
+               | _ -> .) ->
     y
     [@attr
        (* ... *)
@@ -9948,8 +9968,8 @@ let _ =
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
-      (fun
-        (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee) -> FFFFFFFFF gg)
+      (fun (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee)
+        -> FFFFFFFFF gg)
     ~h
 ;;
 
@@ -10045,7 +10065,11 @@ let _ =
        fooooooooooo
 ;;
 
-let _ = foo |> List.map (function A -> do_something ())
+let _ =
+  foo
+  |> List.map (function
+    | A -> do_something ())
+;;
 
 let _ =
   foo
@@ -10188,7 +10212,7 @@ let _ =
   Foooooooooooooooooooo.foooooooooooooooooooo
     foooooooooooooooooooo
     foooooooooooooooooooo
-    (fun x -> function
+    (fun x ->function
        | Foooooooooooooooooooo -> foooooooooooooooooooo
        | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
@@ -10197,7 +10221,7 @@ let _ =
   Foooooooooooooooooooo.foooooooooooooooooooo
     foooooooooooooooooooo
     foooooooooooooooooooo
-    ~x:(fun x -> function
+    ~x:(fun x ->function
       | Foooooooooooooooooooo -> foooooooooooooooooooo
       | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
@@ -10224,13 +10248,14 @@ let _ =
 
 let _ =
   let x = x in
-  fun foooooooooooooooooo
+  fun
     foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
-    foooooooooooooooooo ->
-    ()
+    foooooooooooooooooo
+    foooooooooooooooooo
+    -> ()
 ;;
 
 module type For_let_syntax_local =
@@ -10284,10 +10309,11 @@ module M =
 
 let _ =
   Some
-    (fun fooooooooooooooooooooooooooooooo
+    (fun
       fooooooooooooooooooooooooooooooo
-      fooooooooooooooooooooooooooooooo ->
-      foo)
+      fooooooooooooooooooooooooooooooo
+      fooooooooooooooooooooooooooooooo
+      -> foo)
 ;;
 
 type t =
@@ -10372,8 +10398,8 @@ let () =
   match () with
   | _ ->
     (fun _ : _ ->
-       match () with
-       | _ -> ())
+       (match () with
+        | _ -> ()))
   | _ -> ()
 ;;
 
@@ -10445,7 +10471,8 @@ let _ =
 
 let _ =
   fooooooooooooooooooooooooooooooo
-  |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function foo -> bar)
+  |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
+    | foo -> bar)
 ;;
 
 let _ =
