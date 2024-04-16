@@ -1,0 +1,17 @@
+(env
+ (_
+  (env-vars
+   ; Don't run tests as if Alcotest was run in CI
+   (CI false)
+   ; Don't guess source code position for compat with < 4.12.
+   (ALCOTEST_SOURCE_CODE_POSITION false))))
+
+(executable
+ (name gen_dune_rules)
+ (libraries cmdliner fmt)
+ (modules gen_dune_rules))
+
+(executable
+ (name strip_randomness)
+ (libraries unix re)
+ (modules strip_randomness))

@@ -1,0 +1,4 @@
+(library
+ (name impl)
+ (public_name dune-vlib.impl)
+ (implements vlib))

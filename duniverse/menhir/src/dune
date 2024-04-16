@@ -1,0 +1,91 @@
+;; Compilation flags for Menhir.
+
+;; Warnings are enabled (and fatal) during development,
+;; but are disabled in releases.
+
+;; If you change these flags, please also update the file
+;; src/.merlin, which currently is *not* auto-generated.
+
+(env
+  (dev (flags
+    :standard
+    -safe-string
+    -g
+    -w @1..66-4-9-41-44-45-60
+  ))
+  (release (flags
+    :standard
+    -safe-string
+    -g
+  ))
+)
+
+(copy_files# StackLang/*.{ml,mli})
+
+;; The following parsers are built by ocamlyacc.
+
+(ocamlyacc
+  sentenceParser
+)
+
+;; The following lexers are built by ocamllex.
+
+(ocamllex
+  DecodeString
+  lexer
+  lineCount
+  lexmli
+  lexdep
+  chopInlined
+  sentenceLexer
+  segment
+  lexpointfree
+)
+
+;; The Menhir standard library "standard.mly" is embedded in the source code of
+;; Menhir using the following rule. It generates a file "standard_mly.ml" with
+;; contents "let contents = {|<contents of standard.mly>|}".
+
+(rule
+  (with-stdout-to standard_mly.ml
+    (progn
+      (echo "let contents = {|")
+      (cat standard.mly)
+      (echo "|}")
+    )
+  )
+)
+
+;; The sources of the runtime library ("menhirLib.ml" and "menhirLib.mli")
+;; are embedded in the source code of Menhir using the following rule. It
+;; generates a single file "menhirLibSource.ml" with contents "let impl =
+;; {|<contents of menhirLib.ml>|}" and "let intf = {|<contents of
+;; menhirLib.mli>|}".
+
+(rule
+  (with-stdout-to menhirLibSource.ml
+    (progn
+      (echo "let impl = {|")
+      (cat ../lib/pack/menhirLib.ml)
+      (echo "|}")
+      (echo "let intf = {|")
+      (cat ../lib/pack/menhirLib.mli)
+      (echo "|}"))))
+
+;; This rule allows distinguishing development builds and release builds.
+;; The file profile.ml defines the Boolean flag [release] to be [true]
+;; in a release build and false in a development build.
+
+(rule
+  (enabled_if (= %{profile} dev))
+  (action
+    (with-stdout-to profile.ml
+      (echo "let release = false")
+)))
+
+(rule
+  (enabled_if (= %{profile} release))
+  (action
+    (with-stdout-to profile.ml
+      (echo "let release = true")
+)))

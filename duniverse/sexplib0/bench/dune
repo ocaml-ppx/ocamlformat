@@ -1,0 +1,2 @@
+(library (name sexplib0_bench) (libraries parsexp sexplib0)
+ (preprocess (pps ppx_bench)))

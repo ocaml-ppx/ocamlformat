@@ -1,0 +1,140 @@
+(env
+ (_
+  (env-vars
+   (DUNE_CONFIG__BACKGROUND_SANDBOXES disabled)
+   (DUNE_CONFIG__BACKGROUND_DIGESTS disabled))
+  (binaries
+   ../utils/dune_cmd.exe
+   ../utils/dunepp.exe
+   ../utils/melc_stdlib_prefix.exe
+   ../utils/refmt.exe
+   ../utils/webserver_oneshot.exe
+   ../utils/sherlodoc.exe)))
+
+(cram
+ (applies_to pp-cwd)
+ (deps %{bin:dunepp}))
+
+(cram
+ (applies_to :whole_subtree)
+ (deps
+  %{bin:dune_cmd}
+  (package dune)))
+
+(subdir
+ jsoo
+ (cram
+  (deps %{bin:node})
+  (alias runtest-js)))
+
+(cram
+ (applies_to windows-diff)
+ (alias runtest-windows))
+
+; DISABLED TESTS
+
+(subdir
+ env
+ (cram
+  (applies_to envs-and-contexts)
+  (enabled_if false)))
+
+(cram
+ (applies_to fdo)
+ (enabled_if false))
+
+; This test is flaky
+
+(cram
+ (applies_to tests-locks)
+ (enabled_if false))
+
+; The following test is flaky due to platform sensitivity
+; see https://github.com/ocaml/dune/issues/3744
+
+(subdir
+ cram
+ (cram
+  (applies_to error)
+  (enabled_if false)))
+
+(cram
+ (applies_to sandboxing)
+ (deps %{bin:file}))
+
+; CONDITIONALLY DISABLED TESTS
+
+(cram
+ (applies_to signal-exit-code)
+ (enabled_if
+  (and
+   (<> %{env:CI=false} true) ;; in github action, CI=true
+   (= %{system} macosx))))
+
+(cram
+ (applies_to github764)
+ (enabled_if
+  (<> %{ocaml-config:system} win)))
+
+(cram
+ (applies_to output-obj)
+ (enabled_if
+  (and
+   (<> %{ocaml-config:system} macosx)
+   (<> %{ocaml-config:system} win))))
+
+(subdir
+ cram
+ ;  mac has a different sh error message
+ (cram
+  (applies_to error)
+  (enabled_if
+   (<> "macosx" %{ocaml-config:system}))))
+
+(cram
+ (applies_to github3766)
+ (enabled_if
+  (>= %{ocaml_version} 4.12.0))
+ (deps ./github3766.t/test.exe))
+
+(subdir
+ github3766.t
+ (executable
+  (libraries stdune spawn unix)
+  (name test)))
+
+(subdir
+ cram
+ (cram
+  (applies_to hg-access)
+  (enabled_if %{bin-available:hg})))
+
+(cram
+ (applies_to patch-back-source-tree)
+ (enabled_if
+  (<> %{system} macosx)))
+
+(cram
+ (applies_to link-time-transitive-deps)
+ (deps
+  (package dune-build-info)))
+
+(cram
+ (applies_to version-corruption)
+ (deps %{bin:od} %{bin:git} %{bin:cmp} %{bin:sed} %{bin:chmod}))
+
+(cram
+ (applies_to github8041)
+ (enabled_if
+  (= %{system} linux))
+ (deps %{bin:strace} %{bin:head}))
+
+(cram
+ (applies_to reason)
+ (deps %{bin:refmt}))
+
+(cram
+ (applies_to github4194)
+ (enabled_if
+  (not %{arch_sixtyfour}))
+ (deps %{bin:ocaml}))

@@ -1,0 +1,18 @@
+(library
+ (name csexp_rpc)
+ (synopsis "Threaded client & server that uses csexp for communication")
+ (libraries
+  stdune
+  dyn
+  dune_util
+  dune_console
+  csexp
+  fiber
+  dune_async_io
+  threads.posix
+  (re_export unix))
+ (foreign_stubs
+  (language c)
+  (names csexp_rpc_stubs))
+ (instrumentation
+  (backend bisect_ppx)))

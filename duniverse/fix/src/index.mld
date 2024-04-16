@@ -1,0 +1,76 @@
+{0 Fix: Memoization and Fixed Points Made Easy}
+
+[fix] is an OCaml library that helps with various algorithmic
+constructions that involve memoization, recursion, and numbering.
+
+{1 Installation and Usage}
+
+Type [opam install fix].
+
+In your [dune] file, add [(libraries fix)] to the description of
+your [library] or [executable].
+
+Within your code, you may wish to declare [open Fix].
+This allows you to access the submodules without the
+leading "[Fix.]" qualifier.
+
+{1 Data Flow Analysis}
+
+The following submodules help solve systems of recursive monotone
+equations. In other words, they help implement data flow analyses.
+
+{!modules:
+Fix.Fix
+Fix.DataFlow
+}
+
+The following submodules help construct the arguments required by the
+functors in {!Fix.Fix} and {!Fix.DataFlow}.
+
+{!modules:
+Fix.Prop
+Fix.Glue
+}
+
+{1 Numbering}
+
+The following submodules help generate unique numbers
+and assign unique numbers to objects.
+
+{!modules:
+Fix.Gensym
+Fix.HashCons
+Fix.Numbering
+Fix.GraphNumbering
+Fix.Indexing
+}
+
+{1 Memoization and Tabulation}
+
+The following submodules help construct memoized or tabulated
+functions, both of which have the property that repeated computation
+is avoided.
+
+{!modules:
+Fix.Memoize
+Fix.Tabulate
+}
+
+{1 Minimization}
+
+The following submodules offer minimization algorithms.
+
+{!modules:
+Fix.Minimize
+}
+
+{1 Data Structures}
+
+The following submodules offer data structures that can be
+of general interest.
+
+{!modules:
+Fix.CompactQueue
+Fix.Enum
+Fix.Partition
+}

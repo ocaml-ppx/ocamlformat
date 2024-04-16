@@ -1,0 +1,5 @@
+(executable
+ (name extract_args)
+ (libraries str))
+
+(ocamllex extract_args)

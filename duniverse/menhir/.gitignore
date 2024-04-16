@@ -1,0 +1,7 @@
+*~
+.merlin
+_build
+analysis/data.csv
+analysis/*.pdf
+dune-workspace.versions
+benchmarks/build

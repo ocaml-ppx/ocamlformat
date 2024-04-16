@@ -1,0 +1,8 @@
+Testing `test/e2e/alcotest/passing/skip_in_test.ml'.
+This run has ID `<uuid>'.
+
+  [OK]          test-a          0   Run test case.
+  [SKIP]        test-a          1   Skip test case.
+
+Full test results in `<build-context>/_build/_tests/<test-dir>'.
+Test Successful in <test-duration>s. 1 test run.

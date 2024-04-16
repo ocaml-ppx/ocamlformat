@@ -1,0 +1,3 @@
+(library
+ (public_name uucp)
+ (flags :standard -w -39))

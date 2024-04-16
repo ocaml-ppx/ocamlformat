@@ -1,0 +1,5 @@
+(library
+ (name ocaml)
+ (libraries stdune dune_sexp ocaml_config)
+ (instrumentation
+  (backend bisect_ppx)))

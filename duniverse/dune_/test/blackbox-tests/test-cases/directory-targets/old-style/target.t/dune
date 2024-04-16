@@ -1,0 +1,23 @@
+(executable
+ (name foo)
+ (modules foo)
+ (libraries unix))
+
+(executable
+ (name cat_dir)
+ (modules cat_dir)
+ (libraries unix))
+
+(rule
+ (targets dir)
+ (action (run ./foo.exe dir)))
+
+(alias
+ (name default)
+ (deps dir))
+
+(alias
+ (name cat_dir)
+ (deps dir)
+ (action (run ./cat_dir.exe dir))
+ )

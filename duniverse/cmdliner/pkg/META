@@ -1,0 +1,7 @@
+version = "v1.2.0+dune"
+description = "Declarative definition of command line interfaces"
+requires = ""
+archive(byte) = "cmdliner.cma"
+archive(native) = "cmdliner.cmxa"
+plugin(byte) = "cmdliner.cma"
+plugin(native) = "cmdliner.cmxs"

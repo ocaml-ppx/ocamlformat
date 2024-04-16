@@ -1,0 +1,98 @@
+(lang dune 3.0)
+(implicit_transitive_deps false)
+(generate_opam_files true)
+
+(name alcotest)
+(version 1.7.0)
+(source (github mirage/alcotest))
+(license ISC)
+(authors "Thomas Gazagnaire")
+(maintainers "thomas@gazagnaire.org")
+
+(package
+ (name alcotest)
+ (synopsis "Alcotest is a lightweight and colourful test framework")
+ (documentation "https://mirage.github.io/alcotest")
+ (description "\
+Alcotest exposes simple interface to perform unit tests. It exposes
+a simple TESTABLE module type, a check function to assert test
+predicates and a run function to perform a list of unit -> unit
+test callbacks.
+
+Alcotest provides a quiet and colorful output where only faulty runs
+are fully displayed at the end of the run (with the full logs ready to
+inspect), with a simple (yet expressive) query language to select the
+tests to run.
+")
+ (depends
+  (ocaml (>= 4.05.0))
+  (fmt (>= 0.8.7))
+  astring
+  (cmdliner (>= 1.1.0))
+  (re (>= 1.7.2))
+  stdlib-shims
+  (uutf (>= 1.0.1))
+  ocaml-syntax-shims)
+ (conflicts
+  (result (< 1.5)) ;; Ensure `Result.result` = `Stdlib.result` when possible
+  ))
+
+(package
+ (name alcotest-async)
+ (synopsis "Async-based helpers for Alcotest")
+ (description "Async-based helpers for Alcotest")
+ (documentation "https://mirage.github.io/alcotest")
+ (depends
+  (re :with-test)
+  (fmt :with-test)
+  (cmdliner (and :with-test (>= 1.1.0)))
+  (core (>= v0.15.0))
+  (core_unix (>= v0.15.0))
+  base
+  async_kernel
+  (ocaml (>= 4.11.0))
+  (alcotest (= :version))
+  (async (>= v0.15.0))
+  (async_unix (>= v0.15.0))))
+
+(package
+ (name alcotest-lwt)
+ (synopsis "Lwt-based helpers for Alcotest")
+ (description "Lwt-based helpers for Alcotest")
+ (documentation "https://mirage.github.io/alcotest")
+ (depends
+  (re :with-test)
+  (cmdliner (and :with-test (>= 1.1.0)))
+  fmt
+  (ocaml (>= 4.05.0))
+  (alcotest (= :version))
+  lwt
+  logs))
+
+(package
+ (name alcotest-mirage)
+ (synopsis "Mirage implementation for Alcotest")
+ (description "Mirage implementation for Alcotest")
+ (documentation "https://mirage.github.io/alcotest")
+ (depends
+  (re :with-test)
+  (cmdliner (and :with-test (>= 1.1.0)))
+  fmt
+  (ocaml (>= 4.05.0))
+  (alcotest (= :version))
+  (mirage-clock (>= 2.0.0))
+  duration
+  lwt
+  logs))
+
+(package
+ (name alcotest-js)
+ (synopsis "Virtual package containing optional JavaScript dependencies for Alcotest")
+ (description "Virtual package containing optional JavaScript dependencies for Alcotest")
+ (documentation "https://mirage.github.io/alcotest")
+ (allow_empty)
+ (depends
+  (alcotest (= :version))
+  (js_of_ocaml-compiler (>= 3.11.0))
+  (fmt (and :with-test (>= 0.8.7)))
+  (cmdliner (and :with-test (>= 1.1.0)))))

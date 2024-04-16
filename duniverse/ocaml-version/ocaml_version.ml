@@ -1,0 +1,642 @@
+(* Copyright (c) 2017 Anil Madhavapeddy <anil@recoil.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+*)
+
+type t = { major: int; minor: int; patch: int option; prerelease:string option; extra: string option }
+let v ?patch ?prerelease ?extra major minor =
+  { major; minor; patch; prerelease; extra }
+
+let major { major; _ } = major
+let minor { minor; _ } = minor
+let patch { patch; _ } = patch
+let extra { extra; _ } = extra
+let prerelease { prerelease; _ } = prerelease
+
+let choose_seps ~prerelease_sep ~sep = match prerelease_sep, sep with
+  | None, None -> "~", "+"
+  | Some x, Some y -> String.make 1 x, String.make 1 y
+  | Some x, None -> String.make 1 x, "+"
+  | None, Some x -> String.make 2 x, String.make 1 x
+
+let with_sep ~sep = function
+  | None -> ""
+  | Some x -> sep ^ x
+
+let to_string ?prerelease_sep ?sep v =
+  let presep, sep = choose_seps ~prerelease_sep ~sep in
+  let prerelease = with_sep ~sep:presep v.prerelease in
+  let extra = with_sep ~sep v.extra in
+  let minor_fmt = format_of_string (if v.major >= 5 then "%d" else "%02d") in
+  match v.patch with
+  | None ->
+    Printf.sprintf "%d.%(%d%)%s%s" v.major minor_fmt v.minor prerelease extra
+  | Some patch ->
+    Printf.sprintf "%d.%(%d%).%d%s%s" v.major minor_fmt v.minor patch prerelease extra
+
+let parse s =
+  let build patch major minor sep extra =
+    match sep, extra with
+    | "~", extra ->
+      begin match String.index_opt extra '+' with
+        | None -> v ?patch ~prerelease:extra major minor
+        | Some r ->
+          let prerelease = String.sub extra 0 r in
+          let after_plus = r + 1 in
+          let extra = String.sub extra after_plus (String.length extra - after_plus) in
+          v ?patch ~prerelease ~extra major minor
+      end
+    | "+", extra -> v ?patch ~extra:extra major minor
+    | "", "" -> v ?patch major minor
+    | _ -> raise (Scanf.Scan_failure ("invalid ocaml version: "^ s))
+  in
+  try Scanf.sscanf s "%d.%d.%d%1[+~]%s" (fun major minor patch -> build (Some patch) major minor)
+  with End_of_file | Scanf.Scan_failure _ ->
+    Scanf.sscanf s "%d.%d%1[+~]%s" (build None)
+
+let of_string s =
+  try Ok (parse s) with
+  | _ -> Error (`Msg (Printf.sprintf "Unable to parse OCaml version '%s'" s))
+
+let of_string_exn s =
+  try parse s with
+  | _ -> raise (Invalid_argument (Printf.sprintf "Unable to parse OCaml version '%s'" s))
+
+let pp ppf v = Format.pp_print_string ppf (to_string v)
+
+let ( ++ ) x fn =
+  match x with
+  | 0 -> fn ()
+  | r -> r
+
+let equal {major; minor; patch; prerelease; extra} a =
+  (major : int) = a.major &&
+  (minor : int) = a.minor &&
+  (patch : int option) = a.patch &&
+  (prerelease: string option) = a.prerelease &&
+  (extra : string option) = a.extra
+
+let compare_prerelease (x:string option) (y:string option) = match x, y with
+    | Some x, Some y -> compare x y
+  (* reversed order None > Some _  *)
+    | None, None -> 0
+    | None, Some _ -> 1
+    | Some _, None -> -1
+
+let compare {major; minor; patch; prerelease; extra} a =
+  compare major a.major ++ fun () ->
+    compare minor a.minor ++ fun () ->
+      compare patch a.patch ++ fun () ->
+        compare_prerelease prerelease a.prerelease ++ fun () ->
+          compare extra a.extra
+
+let sys_version = of_string_exn Sys.ocaml_version
+
+let with_variant t extra = { t with extra }
+let without_variant t = { t with extra=None }
+let with_patch t patch = { t with patch }
+let without_patch t = { t with patch=None }
+let with_just_major_and_minor t = { t with patch=None; extra=None }
+
+module Releases = struct
+  let v3_07_0 = of_string_exn "3.07"
+  let v3_07_1 = of_string_exn "3.07+1"
+  let v3_07_2 = of_string_exn "3.07+2"
+  let v3_07 = v3_07_2
+
+  let v3_08_0 = of_string_exn "3.08.0"
+  let v3_08_1 = of_string_exn "3.08.1"
+  let v3_08_2 = of_string_exn "3.08.2"
+  let v3_08_3 = of_string_exn "3.08.3"
+  let v3_08_4 = of_string_exn "3.08.4"
+  let v3_08 = v3_08_4
+
+  let v3_09_0 = of_string_exn "3.09.0"
+  let v3_09_1 = of_string_exn "3.09.1"
+  let v3_09_2 = of_string_exn "3.09.2"
+  let v3_09_3 = of_string_exn "3.09.3"
+  let v3_09 = v3_09_3
+
+  let v3_10_0 = of_string_exn "3.10.0"
+  let v3_10_1 = of_string_exn "3.10.1"
+  let v3_10_2 = of_string_exn "3.10.2"
+  let v3_10 = v3_10_2
+
+  let v3_11_0 = of_string_exn "3.11.0"
+  let v3_11_1 = of_string_exn "3.11.1"
+  let v3_11_2 = of_string_exn "3.11.2"
+  let v3_11 = v3_11_2
+
+  let v3_12_0 = of_string_exn "3.12.0"
+  let v3_12_1 = of_string_exn "3.12.1"
+  let v3_12 = v3_12_1
+
+  let v4_00_0 = of_string_exn "4.00.0"
+  let v4_00_1 = of_string_exn "4.00.1"
+  let v4_00 = v4_00_1
+
+  let v4_01_0 = of_string_exn "4.01.0"
+  let v4_01 = v4_01_0
+
+  let v4_02_0 = of_string_exn "4.02.0"
+  let v4_02_1 = of_string_exn "4.02.1"
+  let v4_02_2 = of_string_exn "4.02.2"
+  let v4_02_3 = of_string_exn "4.02.3"
+  let v4_02 = v4_02_3
+
+  let v4_03_0 = of_string_exn "4.03.0"
+  let v4_03 = v4_03_0
+
+  let v4_04_0 = of_string_exn "4.04.0"
+  let v4_04_1 = of_string_exn "4.04.1"
+  let v4_04_2 = of_string_exn "4.04.2"
+  let v4_04 = v4_04_2
+
+  let v4_05_0 = of_string_exn "4.05.0"
+  let v4_05 = v4_05_0
+
+  let v4_06_0 = of_string_exn "4.06.0"
+  let v4_06_1 = of_string_exn "4.06.1"
+  let v4_06 = v4_06_1
+
+  let v4_07_0 = of_string_exn "4.07.0"
+  let v4_07_1 = of_string_exn "4.07.1"
+  let v4_07 = v4_07_1
+
+  let v4_08_0 = of_string_exn "4.08.0"
+  let v4_08_1 = of_string_exn "4.08.1"
+  let v4_08 = v4_08_1
+
+  let v4_09_0 = of_string_exn "4.09.0"
+  let v4_09_1 = of_string_exn "4.09.1"
+  let v4_09 = v4_09_1
+
+  let v4_10_0 = of_string_exn "4.10.0"
+  let v4_10_1 = of_string_exn "4.10.1"
+  let v4_10_2 = of_string_exn "4.10.2"
+  let v4_10 = v4_10_2
+
+  let v4_11_0 = of_string_exn "4.11.0"
+  let v4_11_1 = of_string_exn "4.11.1"
+  let v4_11_2 = of_string_exn "4.11.2"
+  let v4_11 = v4_11_2
+
+  let v4_12_0 = of_string_exn "4.12.0"
+  let v4_12_1 = of_string_exn "4.12.1"
+  let v4_12 = v4_12_1
+
+  let v4_13_0 = of_string_exn "4.13.0"
+  let v4_13_1 = of_string_exn "4.13.1"
+  let v4_13 = v4_13_1
+
+  let v4_14_0 = of_string_exn "4.14.0"
+  let v4_14_1 = of_string_exn "4.14.1"
+  let v4_14_2 = of_string_exn "4.14.2"
+  let v4_14 = v4_14_2
+
+  let v5_0_0 = of_string_exn "5.0.0"
+  let v5_0 = v5_0_0
+
+  let v5_1_0 = of_string_exn "5.1.0"
+  let v5_1_1 = of_string_exn "5.1.1"
+  let v5_1 = v5_1_1
+
+  let v5_2_0 = of_string_exn "5.2.0"
+  let v5_2 = v5_2_0
+
+  let v5_3_0 = of_string_exn "5.3.0"
+  let v5_3 = v5_3_0
+
+  let all_patches = [
+    v3_07_0; v3_07_1; v3_07_2; v3_08_0; v3_08_1;
+    v3_08_2; v3_08_3; v3_08_4; v3_09_0; v3_09_1;
+    v3_09_2; v3_09_3; v3_10_0; v3_10_1; v3_10_2;
+    v3_11_0; v3_11_1; v3_11_2; v3_12_0; v3_12_1;
+    v4_00_0; v4_00_1; v4_01_0; v4_02_0; v4_02_1;
+    v4_02_2; v4_02_3; v4_03_0; v4_04_0; v4_04_1;
+    v4_04_2; v4_05_0; v4_06_0; v4_06_1; v4_07_0;
+    v4_07_1; v4_08_0; v4_08_1; v4_09_0; v4_09_1;
+    v4_10_0; v4_10_1; v4_10_2; v4_11_0; v4_11_1;
+    v4_11_2; v4_12_0; v4_12_1; v4_13_0; v4_13_1;
+    v4_14_0; v4_14_1; v4_14_2; v5_0_0; v5_1_0;
+    v5_1_1 ]
+
+  let all = [ v3_07; v3_08; v3_09; v3_10; v3_11;
+              v3_12; v4_00; v4_01; v4_02; v4_03;
+              v4_04; v4_05; v4_06; v4_07; v4_08;
+              v4_09; v4_10; v4_11; v4_12; v4_13;
+              v4_14; v5_0; v5_1 ]
+
+  let recent = [ v4_02; v4_03; v4_04; v4_05; v4_06; v4_07; v4_08; v4_09; v4_10; v4_11; v4_12; v4_13; v4_14; v5_0; v5_1 ]
+
+  let latest = v5_1
+
+  let unreleased_betas = [ of_string_exn "5.2.0~alpha1" ]
+  let dev = [ v5_3; v5_2 ]
+
+  let trunk =
+    match dev with
+    | [] -> latest
+    | [v] -> v
+    | _ -> List.hd @@ List.sort (fun x y -> -(compare x y)) dev
+
+  let is_dev t =
+    let t = with_just_major_and_minor t in
+    let dev = List.map with_just_major_and_minor dev in
+    List.mem t dev
+
+  let recent_with_dev = List.concat [recent; dev]
+end
+
+type arch = [ `I386 | `X86_64 | `Aarch64 | `Ppc64le | `Aarch32 | `S390x | `Riscv64 ]
+let arches = [ `I386; `X86_64; `Aarch64; `Ppc64le; `Aarch32; `S390x; `Riscv64 ]
+
+let arch_is_32bit = function `I386 | `Aarch32 -> true |_ -> false
+
+let string_of_arch = function
+  | `Aarch64 -> "arm64"
+  | `Aarch32 -> "arm32v7"
+  | `X86_64 -> "amd64"
+  | `Ppc64le -> "ppc64le"
+  | `I386 -> "i386"
+  | `S390x -> "s390x"
+  | `Riscv64 -> "riscv64"
+
+let arch_of_string = function
+  | "arm64" | "aarch64" -> Ok `Aarch64
+  | "amd64" | "x86_64" -> Ok `X86_64
+  | "i386"  | "i686" | "686" | "386" -> Ok `I386
+  | "arm32" | "arm32v7" | "aarch32" -> Ok `Aarch32
+  | "ppc64le" -> Ok `Ppc64le
+  | "s390x" -> Ok `S390x
+  | "riscv64" -> Ok `Riscv64
+  | arch -> Error (`Msg ("Unknown architecture " ^ arch))
+
+let arch_of_string_exn a =
+  match arch_of_string a with
+  | Ok a -> a
+  | Error (`Msg m) -> raise (Invalid_argument m)
+
+let to_opam_arch = function
+  | `I386 -> "x86_32"
+  | `X86_64 -> "x86_64"
+  | `Ppc64le -> "ppc64"
+  | `Aarch32 -> "arm32"
+  | `Aarch64 -> "arm64"
+  | `S390x -> "s390x"
+  | `Riscv64 -> "riscv64"
+
+let of_opam_arch = function
+  | "x86_32" -> Some `I386
+  | "x86_64" -> Some `X86_64
+  | "ppc64" -> Some `Ppc64le
+  | "arm32" -> Some `Aarch32
+  | "arm64" -> Some `Aarch64
+  | "s390x" -> Some `S390x
+  | "riscv64" -> Some `Riscv64
+  | _ -> None
+
+let to_docker_arch = function
+   | `I386 -> "386"
+   | `X86_64 -> "amd64"
+   | `Ppc64le -> "ppc64le"
+   | `Aarch32 -> "arm"
+   | `Aarch64 -> "arm64"
+   | `S390x -> "s390x"
+   | `Riscv64 -> "riscv64"
+
+let of_docker_arch = function
+  | "386" -> Some `I386
+  | "amd64" -> Some `X86_64
+  | "ppc64le" -> Some `Ppc64le
+  | "arm" -> Some `Aarch32
+  | "arm64" -> Some `Aarch64
+  | "s390x" -> Some `S390x
+  | "riscv64" -> Some `Riscv64
+  | _ -> None
+
+module Since = struct
+  let bytes = Releases.v4_03_0
+
+  let arch (a:arch) =
+    match a with
+    | `I386 -> Releases.v3_07_0
+    | `Aarch32 -> Releases.v4_02_3
+    | `Aarch64 -> Releases.v4_02_3
+    | `Ppc64le -> Releases.v4_03_0
+    | `S390x -> Releases.v4_03_0
+    | `Riscv64 -> Releases.v4_11_0
+    | `X86_64 -> Releases.v3_07_0
+
+  let autoconf = Releases.v4_08_0
+
+  let options_packages = Releases.v4_12_0
+end
+
+module Has = struct
+
+  let bytes v =
+    match compare Since.bytes v with
+    |(-1) | 0 -> true
+    |_ -> false
+
+  let arch (a:arch) v =
+    match compare (Since.arch a) v with
+    |(-1) | 0 -> true
+    |_ -> false
+
+  let autoconf v =
+    match compare Since.autoconf v with
+    |(-1) | 0 -> true
+    |_ -> false
+
+  let options_packages v =
+    match compare Since.options_packages v with
+    |(-1) | 0 -> true
+    |_ -> false
+
+  let multicore v =
+    match v.major, v.minor with
+    | 4, 10 -> true
+    | 4, 12 -> true
+    | _ -> false
+end
+
+module Configure_options = struct
+  type o = [
+      `Afl
+    | `Default_unsafe_string
+    | `Disable_flat_float_array
+    | `Domains
+    | `Effects
+    | `Flambda
+    | `Force_safe_string
+    | `Frame_pointer
+    | `Multicore
+    | `Multicore_no_effect_syntax
+    | `No_naked_pointers
+    | `No_naked_pointers_checker ]
+
+  let to_description (t:o) =
+    match t with
+    | `Afl -> "AFL (fuzzing) support"
+    | `Flambda -> "flambda inlining"
+    | `Default_unsafe_string -> "default to unsafe strings"
+    | `Domains -> "experimental multicore parallelism"
+    | `Effects -> "experimental multicore parallelism and effects-based concurrency"
+    | `Force_safe_string -> "force safe string mode"
+    | `Frame_pointer -> "frame pointer"
+    | `Multicore -> "experimental multicore parallelism"
+    | `Multicore_no_effect_syntax -> "experimental multicore with syntax matching vanilla OCaml"
+    | `No_naked_pointers -> "forbid unboxed pointers"
+    | `No_naked_pointers_checker -> "enable the naked pointers checker"
+    | `Disable_flat_float_array -> "disable float array unboxing"
+
+  let to_string t =
+    match t with
+    | `Afl -> "afl"
+    | `Flambda -> "flambda"
+    | `Default_unsafe_string -> "default-unsafe-string"
+    | `Domains -> "domains"
+    | `Effects -> "effects"
+    | `Force_safe_string -> "force-safe-string"
+    | `Frame_pointer -> "fp"
+    | `Multicore -> "multicore"
+    | `Multicore_no_effect_syntax -> "no-effect-syntax"
+    | `No_naked_pointers -> "nnp"
+    | `No_naked_pointers_checker -> "nnpchecker"
+    | `Disable_flat_float_array -> "no-flat-float-array"
+
+  let of_string = function
+    | "afl" -> Some `Afl
+    | "flambda" -> Some `Flambda
+    | "default-unsafe-string" -> Some `Default_unsafe_string
+    | "domains" -> Some `Domains
+    | "effects" -> Some `Effects
+    | "force-safe-string" -> Some `Force_safe_string
+    | "fp" -> Some `Frame_pointer
+    | "multicore" -> Some `Multicore
+    | "no-effect-syntax" -> Some `Multicore_no_effect_syntax
+    | "nnp" -> Some `No_naked_pointers
+    | "nnpchecker" -> Some `No_naked_pointers_checker
+    | "no-flat-float-array" -> Some `Disable_flat_float_array
+    | _ -> None
+
+  let compare_pre_options a b =
+    (* For backwards compat reasons, multicore and fp always comes first. *)
+    match a,b with
+    | `Frame_pointer, `Frame_pointer -> 0
+    | `Multicore, `Multicore -> 0
+    | `Multicore, _ -> (-1)
+    | `Frame_pointer, _ -> (-1)
+    | _, `Multicore -> 1
+    | _, `Frame_pointer -> 1
+    | a, b -> Stdlib.compare a b
+
+  let compare_post_options a b =
+    (* Lexically ordered options since 4.12.0 *)
+    String.compare (to_string a) (to_string b)
+
+  let compare t =
+    if Has.options_packages t then
+      compare_post_options
+    else
+      compare_pre_options
+
+  let equal t a b = compare t a b = 0
+
+  let to_t t = function
+    | [] -> with_variant t None
+    | ol ->
+      List.sort (compare t) ol |> List.map to_string |> String.concat "+" |>
+      fun s -> with_variant t (Some s)
+
+  let of_t t =
+    match t.extra with None -> Ok [] | Some extra ->
+    String.split_on_char '+' extra |>
+    List.map (fun b -> match of_string b with
+      | None -> Error (`Msg ("unknown variant: " ^ b))
+      | Some v -> Ok v) |>
+    List.fold_left (fun a b ->
+      match a, b with
+      | Ok a, Ok b -> Ok (List.sort (compare t) (b :: a))
+      | _, Error b -> Error b
+      | Error a, _-> Error a) (Ok [])
+
+  let of_t_exn t =
+    match of_t t with
+    | Ok v -> v
+    | Error (`Msg m) -> raise (Failure m)
+
+  let to_configure_flag t o =
+    if Has.autoconf t then
+      match o with
+      | `Afl -> "--with-afl"
+      | `Flambda -> "--enable-flambda"
+      | `Default_unsafe_string -> "--enable-default-unsafe-string"
+      | `Force_safe_string -> "--force-safe-string"
+      | `Frame_pointer -> "--enable-frame-pointers"
+      | `Multicore | `Domains | `Effects | `Multicore_no_effect_syntax -> ""
+      | `No_naked_pointers -> "--disable-naked-pointers"
+      | `No_naked_pointers_checker -> "--enable-naked-pointers-checker"
+      | `Disable_flat_float_array -> "--disable-flat-float-array"
+    else
+      match o with
+      | `Afl -> "-afl-instrument"
+      | `Flambda -> "-flambda"
+      | `Default_unsafe_string -> "-default-unsafe-string"
+      | `Force_safe_string -> "-force-safe-string"
+      | `Frame_pointer -> "-with-frame-pointer"
+      | _ -> ""
+
+  let is_multicore t =
+    of_t_exn t |>
+    List.exists (function |`Multicore |`Domains -> true |_ -> false)
+
+end
+
+module Sources = struct
+  let trunk = Releases.trunk
+
+  let git_tag ({major; minor; patch; _ } as ov) =
+    match major, minor, patch with
+    | major, minor, _ when major = trunk.major && minor = trunk.minor -> "trunk"
+    | _ -> to_string (with_variant ov None)
+end
+
+let trunk_variants (arch:arch) =
+  let base =
+    if arch = `X86_64 || arch = `Aarch64 then
+      [[]; [`Afl]; [`Flambda]; [`Disable_flat_float_array]]
+    else
+      [[]; [`Disable_flat_float_array]]
+  in
+  (* Frame pointers aren't currently supported on trunk *)
+  let _arch_opts =
+    match arch with
+    |`X86_64 -> [[`Frame_pointer]; [`Frame_pointer; `Flambda]]
+    |_ -> []
+  in
+  List.map (Configure_options.to_t Sources.trunk) (base (*@ arch_opts*))
+
+let compiler_variants arch ({major; minor; _} as t) =
+  let variants = [] in
+  let version = (major, minor) in
+  if version = (Releases.trunk.major, Releases.trunk.minor) then
+    trunk_variants arch
+  else
+    let variants =
+      (* No variants for OCaml < 4.00 *)
+      if version < (4, 00) then []
+      else
+        (* +nnpchecker for OCaml 4.12-4.14 on x86_64 *)
+        let variants =
+          if arch = `X86_64 && version >= (4, 12) && version < (5, 0) then
+            [`No_naked_pointers_checker] :: variants
+          else
+            variants in
+        (* +nnp for OCaml 4.12-4.14 *)
+        let variants =
+          if version >= (4, 12) && version < (5, 0) then
+            [`No_naked_pointers] :: variants
+          else
+            variants in
+        (* +no-flat-float-array for OCaml 4.12+ *)
+        let variants =
+          if version >= (4, 12) then
+            [`Disable_flat_float_array] :: variants
+          else
+            variants in
+        (* +fp+flambda for OCaml 4.12+ on x86_64 *)
+        let variants =
+          if arch = `X86_64 && (version >= (4, 12) && version < (5, 0)) then
+            [`Frame_pointer;`Flambda] :: variants
+          else
+            variants in
+      (* +fp for OCaml 4.08+ on x86_64 *)
+        let variants =
+          if arch = `X86_64 && (version >= (4, 08) && version < (5, 0)) then
+            [`Frame_pointer] :: variants
+          else
+            variants in
+        (* +flambda for OCaml 4.03+ *)
+        let variants =
+          if version >= (4, 03) && (version < (5, 0) || arch = `X86_64 || arch = `Aarch64) then
+            [`Flambda] :: variants
+          else
+            variants in
+        (* +afl for OCaml 4.05+ *)
+        if version >= (4, 05) && (version < (5, 0) || arch = `X86_64 || arch = `Aarch64) then
+          [`Afl] :: variants
+        else
+          variants in
+    let f = List.map (Configure_options.to_t t) in
+    f ([] :: variants)
+
+module Opam = struct
+
+  module V2 = struct
+
+    let package t =
+      match t.extra with
+      | Some extra when Releases.is_dev t ->
+          let version =
+            let version = to_string (without_variant t) ^ "+trunk" in
+            if Has.options_packages t then
+              version
+            else
+              Printf.sprintf "%s+%s" version extra
+          in
+            ("ocaml-variants", version)
+      | Some _ ->
+         let t =
+            (* multicore fork packages are at the lowest patch version *)
+            if Configure_options.is_multicore t then
+              with_patch t (Some 0)
+            else if Has.options_packages t then
+              with_variant t (Some "options")
+            else
+              t
+          in
+            ("ocaml-variants", to_string t)
+      | None when Releases.is_dev t -> ("ocaml-variants", Printf.sprintf "%s+trunk" (to_string t))
+      | None -> ("ocaml-base-compiler", to_string t)
+
+    let additional_packages t =
+      if Has.options_packages t && not (Configure_options.is_multicore t) then
+        match Configure_options.of_t t with
+        | Ok []
+        | Error _ -> []
+        | Ok options ->
+            let options_only_package =
+              List.map Configure_options.to_string options
+              |> String.concat "-"
+              |> (^) "ocaml-options-only-" in
+            [options_only_package]
+      else
+        []
+
+    let name t =
+      let (name, version) = package t in
+      name ^ "." ^ version
+
+    let variant_switch t vs =
+      match vs with
+      | [] -> with_variant t None
+      | vs -> Configure_options.to_t t vs
+
+    let switches arch t =
+      compiler_variants arch t
+  end
+end

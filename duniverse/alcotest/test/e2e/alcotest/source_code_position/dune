@@ -1,0 +1,90 @@
+(env
+ (_
+  (env-vars
+   (ALCOTEST_COLOR never)
+   (ALCOTEST_SHOW_ERRORS true))))
+
+(executable
+ (name test_source_code_position)
+ (libraries alcotest astring))
+
+(rule
+ (target with-position.actual)
+ (action
+  (setenv
+   ALCOTEST_SOURCE_CODE_POSITION
+   true
+   (with-accepted-exit-codes
+    (or 1 2 124 125)
+    (with-outputs-to
+     %{target}
+     (run %{dep:test_source_code_position.exe}))))))
+
+(rule
+ (target without-position.actual)
+ (action
+  (setenv
+   ALCOTEST_SOURCE_CODE_POSITION
+   false
+   (with-accepted-exit-codes
+    (or 1 2 124 125)
+    (with-outputs-to
+     %{target}
+     (run %{dep:test_source_code_position.exe}))))))
+
+(rule
+ (target pre-4.12.actual)
+ (action
+  (setenv
+   ALCOTEST_SOURCE_CODE_POSITION
+   true
+   (with-accepted-exit-codes
+    (or 1 2 124 125)
+    (with-outputs-to
+     %{target}
+     (run %{dep:test_source_code_position.exe}))))))
+
+(rule
+ (target with-position.processed)
+ (action
+  (with-outputs-to
+   %{target}
+   (run ../../strip_randomness.exe %{dep:with-position.actual}))))
+
+(rule
+ (target without-position.processed)
+ (action
+  (with-outputs-to
+   %{target}
+   (run ../../strip_randomness.exe %{dep:without-position.actual}))))
+
+(rule
+ (target pre-4.12.processed)
+ (action
+  (with-outputs-to
+   %{target}
+   (run ../../strip_randomness.exe %{dep:pre-4.12.actual}))))
+
+(rule
+ (alias runtest)
+ (package alcotest)
+ (enabled_if
+  (>= %{ocaml_version} 4.12.0))
+ (action
+  (diff with-position.expected with-position.processed)))
+
+(rule
+ (alias runtest)
+ (package alcotest)
+ (enabled_if
+  (>= %{ocaml_version} 4.12.0))
+ (action
+  (diff without-position.expected without-position.processed)))
+
+(rule
+ (alias runtest)
+ (package alcotest)
+ (enabled_if
+  (< %{ocaml_version} 4.12.0))
+ (action
+  (diff pre-4.12.expected pre-4.12.processed)))

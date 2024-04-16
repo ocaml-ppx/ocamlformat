@@ -1,0 +1,30 @@
+(rule
+ (target callsite_loc.ml)
+ (deps callsite_loc.412.ml)
+ (enabled_if
+  (>= %{ocaml_version} 4.12.0))
+ (action
+  (copy %{deps} %{target})))
+
+(rule
+ (target callsite_loc.ml)
+ (enabled_if
+  (< %{ocaml_version} 4.12.0))
+ (action
+  (write-file
+   %{target}
+   "let get ?__FUNCTION__ () =\n  ignore __FUNCTION__;\n  None\n")))
+
+(library
+ (name alcotest_engine)
+ (public_name alcotest.engine)
+ (libraries
+  alcotest.stdlib_ext
+  fmt
+  astring
+  cmdliner
+  fmt.cli
+  re
+  stdlib-shims
+  uutf)
+ (preprocess future_syntax))

@@ -1,0 +1,28 @@
+(executables
+ (names simple floats)
+ (modes exe js)
+ (libraries alcotest))
+
+(rule
+ (alias runtest)
+ (package alcotest)
+ (action
+  (run %{dep:floats.exe})))
+
+(rule
+ (alias runtest)
+ (package alcotest)
+ (action
+  (run %{dep:simple.exe})))
+
+(rule
+ (alias runtest-js)
+ (package alcotest-js)
+ (action
+  (run node %{dep:floats.bc.js})))
+
+(rule
+ (alias runtest-js)
+ (package alcotest-js)
+ (action
+  (run node %{dep:simple.bc.js})))

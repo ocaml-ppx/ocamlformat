@@ -1,0 +1,7 @@
+(melange.emit
+ (target output)
+ (modules c)
+ (libraries app)
+ (alias mel)
+ (module_systems
+  (es6 mjs)))

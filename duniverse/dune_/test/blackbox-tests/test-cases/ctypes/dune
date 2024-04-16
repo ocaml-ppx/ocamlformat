@@ -1,0 +1,37 @@
+(cram
+ (applies_to :whole_subtree)
+ (deps
+  libexample/libexample.a
+  libexample/libexample.so
+  libexample/example.h
+  libexample/pkgconfig/libexample.pc
+  %{bin:install}
+  %{bin:awk}
+  (package ctypes)))
+
+(cram
+ (applies_to :whole_subtree)
+ (deps
+  libneed-mangling/libneed-mangling.a
+  libneed-mangling/libneed-mangling.so
+  libneed-mangling/example.h
+  libneed-mangling/pkgconfig/need-mangling.pc
+  %{bin:install}
+  %{bin:awk}
+  (package ctypes)))
+
+(cram
+ (applies_to lib-return-errno)
+ (deps
+  (package integers)))
+
+(cram
+ (applies_to
+  lib-pkg_config
+  lib-pkg_config-multiple-fd
+  lib-external-name-need-mangling
+  exe-pkg_config-multiple-fd
+  lib-return-errno
+  github-5561-name-mangle
+  exe-pkg_config)
+ (deps %{bin:pkg-config}))

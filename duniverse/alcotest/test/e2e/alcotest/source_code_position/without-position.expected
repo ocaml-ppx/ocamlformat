@@ -1,0 +1,58 @@
+Testing `First suite'.
+This run has ID `<uuid>'.
+
+  [FAIL]        to_test          0   capitalise.
+  [FAIL]        to_test          1   double all.
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [FAIL]        to_test          0   capitalise.                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+ASSERT strings
+FAIL strings
+
+   Expected: `"A"'
+   Received: `"B"'
+
+<stacktrace>
+
+Logs saved to `<build-context>/_build/_tests/<test-dir>/to_test.000.output'.
+ ──────────────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [FAIL]        to_test          1   double all.                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+ASSERT int lists 1
+FAIL int lists 1
+
+   Expected: `[1]'
+   Received: `[2; 2; 4; 6]'
+
+<stacktrace>
+
+Logs saved to `<build-context>/_build/_tests/<test-dir>/to_test.001.output'.
+ ──────────────────────────────────────────────────────────────────────────────
+
+Full test results in `<build-context>/_build/_tests/<test-dir>'.
+2 failures! in <test-duration>s. 2 tests run.Forging ahead regardless!
+
+Testing `Second suite'.
+This run has ID `<uuid>'.
+
+  [OK]          Ωèone          0   Passing test 1.
+  [FAIL]        Ωèone          1   Failing test.
+  [OK]          Ωèone          2   Passing test 2.
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [FAIL]        Ωèone          1   Failing test.                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+ASSERT This was never going to work...
+FAIL This was never going to work...
+<stacktrace>
+
+Logs saved to `<build-context>/_build/_tests/<test-dir>/U+03A9U+00E8one.001.output'.
+ ──────────────────────────────────────────────────────────────────────────────
+
+Full test results in `<build-context>/_build/_tests/<test-dir>'.
+1 failure! in <test-duration>s. 3 tests run.
+Fatal error: exception Alcotest_engine__Core.Make(P)(M).Test_error

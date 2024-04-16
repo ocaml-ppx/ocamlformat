@@ -1,0 +1,16 @@
+(executable
+ (name bad)
+ (modes exe js)
+ (libraries alcotest astring))
+
+; This fails at runtime, so just build the executable
+
+(alias
+ (name runtest)
+ (package alcotest)
+ (deps bad.exe))
+
+(alias
+ (name runtest-js)
+ (package alcotest)
+ (deps bad.bc.js))

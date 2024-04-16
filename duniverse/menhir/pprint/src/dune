@@ -1,0 +1,12 @@
+(env
+  (dev     (flags :standard -w @A-4))
+  (release (flags :standard))
+)
+
+(library
+  (name vendored_pprint)
+  (public_name vendored_pprint)
+  (wrapped false)
+)
+
+(documentation)

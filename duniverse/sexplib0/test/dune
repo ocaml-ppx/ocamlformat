@@ -1,0 +1,4 @@
+(library (name sexplib0_test)
+ (libraries base expect_test_helpers_core.expect_test_helpers_base sexplib0)
+ (preprocess
+  (pps ppx_compare ppx_expect ppx_here ppx_sexp_conv ppx_sexp_value)))

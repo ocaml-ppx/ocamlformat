@@ -1,0 +1,7 @@
+description = "Unicode character properties"
+version = "15.1.0+dune"
+requires = ""
+archive(byte) = "uucp.cma"
+archive(native) = "uucp.cmxa"
+plugin(byte) = "uucp.cma"
+plugin(native) = "uucp.cmxs"

@@ -1,0 +1,12 @@
+true : bin_annot, safe_string
+
+<_b0> : -traverse
+<src> : include
+<src/**> : no_alias_deps
+<support> : include
+<support/**> : package(uucd unix)
+
+<test> : include
+<test/test.{ml,mli,byte,native}> : package(uucd)
+<test/examples.{ml,mli,byte,native}> : package(uunf)
+<test/ucharinfo.{ml,mli,byte,native}> : package(uunf cmdliner)

@@ -1,0 +1,155 @@
+{
+  "nodes": {
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1705309234,
+        "narHash": "sha256-uNRRNRKmJyCRC/8y1RqBkqWBLM034y4qN7EprSdmgyA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "1ef2e671c3b0c19053962c07dbda38332dcebf26",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "melange": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "melange-compiler-libs": "melange-compiler-libs",
+        "nix-filter": "nix-filter",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1707255164,
+        "narHash": "sha256-eJ2+nbjEGnTinf67lhUPuE8fzfGXeC2ErGRvU2omUgs=",
+        "owner": "melange-re",
+        "repo": "melange",
+        "rev": "71cc9a89b4236cbf02668b21602e86b653b9a6a0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "melange-re",
+        "ref": "v3-414",
+        "repo": "melange",
+        "type": "github"
+      }
+    },
+    "melange-compiler-libs": {
+      "inputs": {
+        "flake-utils": [
+          "melange",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "melange",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1705107784,
+        "narHash": "sha256-tN+g+m2yXUL5Mik2I0SbMDhhoqatHL/it0VR9cjVYag=",
+        "owner": "melange-re",
+        "repo": "melange-compiler-libs",
+        "rev": "2c06d6ea9257c52a18cef82f154307eaa2a1bbae",
+        "type": "github"
+      },
+      "original": {
+        "owner": "melange-re",
+        "ref": "4.14",
+        "repo": "melange-compiler-libs",
+        "type": "github"
+      }
+    },
+    "nix-filter": {
+      "locked": {
+        "lastModified": 1705332318,
+        "narHash": "sha256-kcw1yFeJe9N4PjQji9ZeX47jg0p9A0DuU4djKvg1a7I=",
+        "owner": "numtide",
+        "repo": "nix-filter",
+        "rev": "3449dc925982ad46246cfc36469baf66e1b64f17",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "nix-filter",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1707171055,
+        "narHash": "sha256-7ZiKRdhrScsDfhDkGy8yJWAT6BfHqa8PYMX04roU03k=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "4b1aab22192b787355733c9495d47f4c66af084c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "ocamllsp": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1706623517,
+        "narHash": "sha256-WUFQvkLkvnFzq+T/N3he6glVqs9GmbTGeEdeO7rm5uk=",
+        "ref": "refs/heads/master",
+        "rev": "a74fb4add55bcaab7ac72d3a3a51972401c64e39",
+        "revCount": 2061,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/ocaml/ocaml-lsp"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/ocaml/ocaml-lsp"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "melange": "melange",
+        "nixpkgs": "nixpkgs",
+        "ocamllsp": "ocamllsp"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

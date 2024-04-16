@@ -1,0 +1,80 @@
+(include_subdirs unqualified)
+
+(library
+ (name dune_rules)
+ (libraries
+  stdune
+  csexp
+  fiber
+  memo
+  ocaml
+  dune_re
+  predicate_lang
+  dune_console
+  dune_digest
+  install
+  dune_lang
+  dune_glob
+  ocaml_config
+  dune_action_plugin
+  chrome_trace
+  dune_stats
+  dune_site_private
+  dune_util
+  dune_meta_parser
+  dune_section
+  opam_format
+  dune_cache
+  dune_pkg
+  dune_targets
+  opam_core
+  build_path_prefix_map
+  dune_engine
+  dune_vcs
+  dune_config
+  dune_config_file
+  dune_shared_cache
+  dune_findlib
+  dune_patch
+  scheme
+  fs
+  unix)
+ (synopsis "Internal Dune library, do not use!")
+ (instrumentation
+  (backend bisect_ppx)))
+
+(ocamllex ocamlobjinfo)
+
+(rule
+ (mode promote)
+ (target assets.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (progn
+    (echo "let jbuild_plugin_ml = {jbp|\n")
+    (cat %{project_root}/plugin/jbuild_plugin.ml)
+    (echo "|jbp}\n\n")
+    (echo "let jbuild_plugin_mli = {jbp|")
+    (cat %{project_root}/plugin/jbuild_plugin.mli)
+    (echo "|jbp}")))))
+
+(rule
+ (targets setup.ml)
+ (mode fallback)
+ (action
+  (copy# setup.defaults.ml setup.ml)))
+
+(rule
+ (mode promote)
+ (alias runtest)
+ (targets setup.defaults.ml)
+ (deps
+  (:configure %{project_root}/boot/configure.ml))
+ (action
+  (chdir
+   %{project_root}
+   (setenv
+    DUNE_CONFIGURE_OUTPUT
+    "src/dune_rules/setup.defaults.ml"
+    (run %{ocaml} %{configure})))))

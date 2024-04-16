@@ -1,0 +1,1 @@
+(env (_ (flags -g -bin-annot -safe-string))) ; Use the same flags as with ocamlbuild
