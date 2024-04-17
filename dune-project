@@ -35,21 +35,10 @@
  (github ocaml-ppx/ocamlformat))
 
 (package
- (name
-  ; enable release renaming
-  ocamlformat-dev
-  ; disable release renaming
-  )
- (synopsis
-  ; enable release renaming
-  "ocamlformat executable for version dev"
-  ; disable release renaming
-  )
+ (name ocamlformat-lib)
+ (synopsis "OCaml Code Formatter")
  (description
-  ; enable release renaming
-  "**ocamlformat** is a code formatter for OCaml.\nThis package provides an executable for compatibility with ocamlformat dev.\nDo not install without the package `ocamlformat` installed."
-  ; disable release renaming
-  )
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
    (>= 4.08))
@@ -60,13 +49,7 @@
   (base
    (>= v0.12.0))
   (cmdliner
-   (or
-    (and
-     (= :with-test false)
-     (>= 1.1.0))
-    (and
-     :with-test
-     (>= 1.2.0))))
+   (>= 1.1.0))
   dune
   dune-build-info
   either
@@ -102,32 +85,41 @@
    (>= 1.4.0))
   ; for vendored odoc-parser
   astring
-  camlp-streams
-  (re
-   (>= 1.10.3))
-  (ocamlformat-lib
-   (= :version))))
+  camlp-streams))
 
 (package
- (name ocamlformat-lib)
+ (name ocamlformat-dev)
+ (synopsis "Do not release !")
+ (description "Do not release !")
  (depends
-  ; enable release renaming
-  ocamlformat-dev
-  ; disable release renaming
-  )
- (synopsis "OCaml Code Formatter")
- (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style."))
+  (ocaml
+   (>= 4.08))
+  (cmdliner
+   (or
+    (and
+     (= :with-test false)
+     (>= 1.1.0))
+    (and
+     :with-test
+     (>= 1.2.0))))
+  (csexp
+   (>= 1.4.0))
+  dune
+  (ocamlformat-lib
+   (= :version))
+  (ocamlformat-rpc-lib
+   (and
+    :with-test
+    (= :version)))
+  (re
+   (>= 1.10.3))))
 
 (package
  (name ocamlformat)
- (synopsis "Auto-formatter for OCaml code")
- (description
-  "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
+ (synopsis "Do not release !")
+ (description "Do not release !")
  (depends
-  ; enable release renaming
   ocamlformat-dev
-  ; disable release renaming
   (ocamlformat-lib
    (= :version))))
 
