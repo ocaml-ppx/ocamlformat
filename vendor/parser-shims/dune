@@ -1,32 +1,6 @@
-(rule
- (action
-  (copy
-   ocamlformat_parser_shims.ml
-   ; enable release renaming
-   ocamlformat_parser_shims_dev.ml
-   ; disable release renaming
-   )))
-
-(rule
- (action
-  (copy
-   ocamlformat_parser_shims.mli
-   ; enable release renaming
-   ocamlformat_parser_shims_dev.mli
-   ; disable release renaming
-   )))
-
 (library
- (name
-  ; enable release renaming
-  ocamlformat_parser_shims_dev
-  ; disable release renaming
-  )
- (public_name
-  ; enable release renaming
-  ocamlformat-dev.parser_shims
-  ; disable release renaming
-  )
+ (name ocamlformat_parser_shims)
+ (public_name ocamlformat-lib.parser_shims)
  (flags
   (:standard -w -37 -w -38))
  (libraries compiler-libs.common))

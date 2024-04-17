@@ -1,44 +1,8 @@
-(rule
- (action
-  (write-file
-   ; enable release renaming
-   bin_conf_dev.ml
-   ; disable release renaming
-   "include Bin_conf")))
-
-(rule
- (action
-  (write-file
-   ocamlformat_lib.ml
-   ; enable release renaming
-   "include Ocamlformat_lib_dev"
-   ; disable release renaming
-   )))
-
 (library
- (public_name
-  ; enable release renaming
-  ocamlformat-dev.bin_conf
-  ; disable release renaming
-  )
- (name
-  ; enable release renaming
-  bin_conf_dev
-  ; disable release renaming
-  )
+ (public_name ocamlformat-lib.bin_conf)
+ (name bin_conf)
  (flags
-  (:standard
-   ; enable release renaming
-   -open
-   Ocamlformat_ocaml_common_dev
-   -open
-   Ocamlformat_stdlib_dev
-   ; disable release renaming
-   ))
+  (:standard -open Ocamlformat_ocaml_common -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries
-  ; enable release renaming
-  ocamlformat-dev.ocamlformat-lib
-  ; disable release renaming
-  re))
+ (libraries ocamlformat-lib re))

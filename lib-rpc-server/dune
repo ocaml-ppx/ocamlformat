@@ -1,14 +1,7 @@
 (library
  (name ocamlformat_rpc)
  (public_name ocamlformat.rpc)
- (flags
-  (:standard
-   ; enable release renaming
-   -open
-   Ocamlformat_stdlib_dev
-   ; disable release renaming
-   ))
  (libraries
   ocamlformat-lib
-  ocamlformat.bin_conf
+  ocamlformat-lib.bin_conf
   ocamlformat.rpc_lib_protocol))

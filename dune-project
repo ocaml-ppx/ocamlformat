@@ -104,7 +104,9 @@
   astring
   camlp-streams
   (re
-   (>= 1.10.3))))
+   (>= 1.10.3))
+  (ocamlformat-lib
+   (= :version))))
 
 (package
  (name ocamlformat-lib)

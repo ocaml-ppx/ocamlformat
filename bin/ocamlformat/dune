@@ -9,33 +9,6 @@
 ;                                                                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule
- (action
-  (write-file
-   ocamlformat_format.ml
-   ; enable release renaming
-   "include Ocamlformat_format_dev"
-   ; disable release renaming
-   )))
-
-(rule
- (action
-  (write-file
-   ocamlformat_lib.ml
-   ; enable release renaming
-   "include Ocamlformat_lib_dev"
-   ; disable release renaming
-   )))
-
-(rule
- (action
-  (write-file
-   bin_conf.ml
-   ; enable release renaming
-   "include Bin_conf_dev"
-   ; disable release renaming
-   )))
-
 (executable
  (name main)
  (public_name
@@ -50,16 +23,12 @@
   )
  (flags
   (:standard
-   ; enable release renaming
    -open
-   Ocamlformat_stdlib_dev
-   ; disable release renaming
+   Ocamlformat_stdlib
    ))
  (instrumentation
   (backend bisect_ppx))
  (libraries
-  ; enable release renaming
-  ocamlformat-dev.ocamlformat-lib
-  bin_conf_dev
-  ; disable release renaming
+  ocamlformat-lib
+  ocamlformat-lib.bin_conf
   ))

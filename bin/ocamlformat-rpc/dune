@@ -14,14 +14,7 @@
  (public_name ocamlformat-rpc)
  (package ocamlformat)
  (flags
-  (:standard
-   ; enable release renaming
-   -open
-   Ocamlformat_stdlib_dev
-   -open
-   Ocamlformat_format_dev
-   ; disable release renaming
-   ))
+  (:standard -open Ocamlformat_stdlib -open Ocamlformat_format))
  (instrumentation
   (backend bisect_ppx))
  (libraries ocamlformat.rpc))

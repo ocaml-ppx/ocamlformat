@@ -8,18 +8,18 @@
    ocamlformat-dev
    ; disable release renaming
    ))
- (libraries ocamlformat-lib ocamlformat.bin_conf unix)
+ (libraries ocamlformat-lib ocamlformat-lib.bin_conf unix)
  (flags
   (:standard
    -open
    ; enable release renaming
-   Ocamlformat_ocaml_common_dev
+   Ocamlformat_ocaml_common
    -open
-   Ocamlformat_parser_extended_dev
+   Ocamlformat_parser_extended
    -open
-   Ocamlformat_stdlib_dev
+   Ocamlformat_stdlib
    -open
-   Ocamlformat_format_dev
+   Ocamlformat_format
    ; disable release renaming
    )))
 
@@ -28,7 +28,7 @@
   ocamlformat.1
   (run
    ; enable release renaming
-   ocamlformat-dev
+   ocamlformat
    ; disable release renaming
    --help=groff)))
 

@@ -2,10 +2,5 @@
  (name test_unit)
  (package ocamlformat-lib)
  (flags
-  (:standard
-   ; enable release renaming
-   -open
-   Ocamlformat_format_dev
-   ; disable release renaming
-   ))
+  (:standard -open Ocamlformat_format))
  (libraries alcotest base ocamlformat-lib))
