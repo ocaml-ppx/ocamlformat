@@ -432,19 +432,19 @@ let _ = f ((try%ext x with _ -> x) [@attr])
 
 let _ = f ([%ext try x with _ -> x] [@attr])
 
-let _ = fun%ext  x -> x
+let _ = fun%ext x -> x
 
 let _ = [%ext fun x -> x]
 
-let _ = f (fun%ext  x -> x)
+let _ = f (fun%ext x -> x)
 
 let _ = f [%ext fun x -> x]
 
-let _ = (fun%ext  x -> x) [@attr]
+let _ = (fun%ext x -> x) [@attr]
 
 let _ = [%ext fun x -> x] [@attr]
 
-let _ = f ((fun%ext  x -> x) [@attr])
+let _ = f ((fun%ext x -> x) [@attr])
 
 let _ = f ([%ext fun x -> x] [@attr])
 

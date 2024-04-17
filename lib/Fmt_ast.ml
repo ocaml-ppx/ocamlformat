@@ -1464,7 +1464,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
   in
   let fmt_fun_args_typ args typ =
     let kw =
-    str "fun" $ fmt_extension_suffix ~epi:(str " ") c ext $ fmt_attributes c ~pre:Blank attrs $ space_break
+    str "fun" $ fmt_extension_suffix c ext $ fmt_attributes c ~pre:Blank attrs $ space_break
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     in
