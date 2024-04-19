@@ -2169,28 +2169,28 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_function (args, typ, (Pfunction_body _ as body))
   | Pexp_function ((_ :: _ as args), typ, body) ->
-      let body_is_function =
-        match body with
-        | Pfunction_cases _ -> true
-        | _ -> false
-      in
-      let indent =
-        if body_is_function then
-          let default_indent =
-            if Option.is_none eol then 2
-            else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1
-            else 0
-          in
-          Params.Indent.function_ ~default:default_indent c.conf ~parens xexp
-        else Params.Indent.fun_ ?eol c.conf
-      in
+      (* let body_is_function = *)
+      (*   match body with *)
+      (*   | Pfunction_cases _ -> true *)
+      (*   | _ -> false *)
+      (* in *)
+      (* let indent = *)
+      (*   if body_is_function then *)
+      (*     let default_indent = *)
+      (*       if Option.is_none eol then 2 *)
+      (*       else if c.conf.fmt_opts.let_binding_deindent_fun.v then 1 *)
+      (*       else 0 *)
+      (*     in *)
+      (*     Params.Indent.function_ ~default:default_indent c.conf ~parens xexp *)
+      (*   else Params.Indent.fun_ ?eol c.conf *)
+      (* in *)
       pro
-      $ hvbox_if (box || body_is_function) indent
+      $ 
           (
             (* Params.Exp.wrap c.conf ~parens ~disambiguate:true *)
             (*  ~fits_breaks:false ~offset_closing_paren:(-2) *)
              (
-      fmt_function ~ctx
+      fmt_function ~box ~ctx
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
              ) )
   | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->

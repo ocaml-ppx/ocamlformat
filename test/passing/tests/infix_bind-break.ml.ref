@@ -1,10 +1,8 @@
 f x
 >>= fun y ->
-      g y
-      >>= fun () ->
-            f x
-            >>= fun y ->
-                  g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
+g y
+>>= fun () ->
+f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
 ;;
 
 f x
@@ -12,11 +10,9 @@ f x
 | A -> (
     g y
     >>= fun () ->
-          f x
-          >>= fun y ->
-                g y
-                >>= function
-                | x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
+    f x
+    >>= fun y ->
+    g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
@@ -33,7 +29,7 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> fun xxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxx ->
-     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
@@ -54,7 +50,7 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee
 
 eeeeeeeeeeeee eeeeeeeeee
 |> fun xxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxx ->
-     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
@@ -102,13 +98,13 @@ let parens =
   | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} ->
       update_config_maybe_disabled c pexp_loc pexp_attributes
       @@ fun c ->
-           fmt "@ "
-           $ Cmts.fmt c.cmts pexp_loc
-               (wrap_if parens "(" ")"
-                  ( fmt "function"
-                  $ fmt_extension_suffix c ext
-                  $ fmt_attributes c ~key:"@" pexp_attributes
-                  $ close_box $ fmt "@ " $ fmt_cases c ctx cs ) )
+      fmt "@ "
+      $ Cmts.fmt c.cmts pexp_loc
+          (wrap_if parens "(" ")"
+             ( fmt "function"
+             $ fmt_extension_suffix c ext
+             $ fmt_attributes c ~key:"@" pexp_attributes
+             $ close_box $ fmt "@ " $ fmt_cases c ctx cs ) )
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
@@ -161,8 +157,8 @@ let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
 let _ =
   foo
   >>= fun [@warning "-4"] x y ->
-        fooooooooooooooooooooooo fooooooooooooooooooooooo
-          fooooooooooooooooooooooo fooooooooooooooooooooooo
+  fooooooooooooooooooooooo fooooooooooooooooooooooo fooooooooooooooooooooooo
+    fooooooooooooooooooooooo
 
 let _ =
   foo
@@ -173,7 +169,7 @@ let _ =
 let _ =
   foo
   >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
-        fooooooooooooooooooooooo
+  fooooooooooooooooooooooo
 
 let f =
   Ok ()
@@ -206,7 +202,7 @@ let f =
   >>=
   (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
   fun foooooo fooooo foooo foooooo ->
-    Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
@@ -239,7 +235,7 @@ let default =
   command ## hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
   command ## hasPermission
   #= (fun ctx ->
-       foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)

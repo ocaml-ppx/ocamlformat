@@ -3,8 +3,8 @@ let f x =
   (* We don't do this as a matter of style, but the indentation reveals a
      common mistake. *)
   >>> fun () ->
-        don't_wait_for (close fd) ;
-        bind fd
+  don't_wait_for (close fd) ;
+  bind fd
 
 let f x =
   ( stop
