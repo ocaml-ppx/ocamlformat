@@ -22,6 +22,12 @@ let _ = ~z, ~((* baz *) y : int)
 let _ = ~z, ~(y : (* baz *) int)
 let _ = ~z, ~(y : int (* baz *))
 let _ = ~z, ~(y : int) (* baz *)
+let _ = (* baz *) ~z:1, ~y:2
+let _ = ~z:(* baz *) 1, ~y:2
+let _ = ~z:1 (* baz *), ~y:2
+let _ = ~z:1, (* baz *) ~y:2
+let _ = ~z:1, ~y:(* baz *) 2
+let _ = ~z:1, ~y:2 (* baz *)
 
 (* Attrs around types *)
 type t = z:(int[@attr]) * y:bool
@@ -56,3 +62,9 @@ let ~z:42, ~((* baz *) y : int) = ()
 let ~z:42, ~(y : (* baz *) int) = ()
 let ~z:42, ~(y : int (* baz *)) = ()
 let ~z:42, ~(y : int) (* baz *) = ()
+let (* baz *) ~z:a, ~y:b = ()
+let ~z:(* baz *) a, ~y:b = ()
+let ~z:a (* baz *), ~y:b = ()
+let ~z:a, (* baz *) ~y:b = ()
+let ~z:a, ~y:(* baz *) b = ()
+let ~z:a, ~y:b (* baz *) = ()
