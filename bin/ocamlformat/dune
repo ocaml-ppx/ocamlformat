@@ -22,13 +22,7 @@
   ; disable release renaming
   )
  (flags
-  (:standard
-   -open
-   Ocamlformat_stdlib
-   ))
+  (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries
-  ocamlformat-lib
-  ocamlformat-lib.bin_conf
-  ))
+ (libraries ocamlformat-lib ocamlformat-lib.bin_conf))
