@@ -743,19 +743,6 @@ let mk_directive ~loc name arg =
       pdir_loc = make_loc loc;
     }
 
-let check_layout ~loc id : const_layout =
-  match id with
-  | "any" -> Any
-  | "value" -> Value
-  | "void" -> Void
-  | "immediate64" -> Immediate64
-  | "immediate" -> Immediate
-  | "float64" -> Float64
-  | "word" -> Word
-  | "bits32" -> Bits32
-  | "bits64" -> Bits64
-  | _ -> expecting_loc loc "layout"
-
 (* Unboxed literals *)
 
 (* CR layouts v2.5: The [unboxed_*] functions will both be improved and lose
@@ -3647,13 +3634,11 @@ type_parameters:
 
 layout_annotation: (* : layout_annotation *)
   ident { let loc = make_loc $sloc in
-          mkloc (check_layout ~loc $1) loc }
+          mkloc (Layout $1) loc }
 ;
 
 layout_string: (* : string with_loc *)
-  (* the [check_layout] just ensures this is the name of a layout *)
   ident { let loc = make_loc $sloc in
-          ignore (check_layout ~loc $1 : const_layout);
           mkloc $1 loc }
 ;
 

@@ -704,24 +704,11 @@ let mk_directive ~loc name arg =
       pdir_loc = make_loc loc;
     }
 
-let check_layout ~loc id : const_layout =
-  match id with
-  | "any" -> Any
-  | "value" -> Value
-  | "void" -> Void
-  | "immediate64" -> Immediate64
-  | "immediate" -> Immediate
-  | "float64" -> Float64
-  | "word" -> Word
-  | "bits32" -> Bits32
-  | "bits64" -> Bits64
-  | _ -> expecting_loc loc "layout"
-
 let convert_layout_to_legacy_attr =
   let mk ~loc name = [Attr.mk ~loc (mkloc name loc) (PStr [])] in
   function
-  | {txt = Immediate; loc} -> mk ~loc "immediate"
-  | {txt = Immediate64; loc} -> mk ~loc "immediate64"
+  | {txt = Layout "immediate"; loc} -> mk ~loc "immediate"
+  | {txt = Layout "immediate64"; loc} -> mk ~loc "immediate64"
   | _ -> []
 
 (* NOTE: An alternate approach for performing the erasure of %call_pos and %src_pos
@@ -3576,7 +3563,7 @@ layout_annotation_gen:
   ident
     {
       let loc = make_loc $sloc in
-      (mkloc (check_layout ~loc $1) loc)
+      (mkloc (Layout $1) loc)
     }
 
 layout_annotation: (* : layout_annotation *)

@@ -19,17 +19,6 @@ open Lexing
 open Location
 open Parsetree
 
-let const_layout_to_string = function
-  | Any -> "any"
-  | Value -> "value"
-  | Immediate -> "immediate"
-  | Immediate64 -> "immediate64"
-  | Void -> "void"
-  | Float64 -> "float64"
-  | Word -> "word"
-  | Bits32 -> "bits32"
-  | Bits64 -> "bits64"
-
 let fmt_position with_name f l =
   let fname = if with_name then l.pos_fname else "" in
   if l.pos_lnum = -1
@@ -149,8 +138,8 @@ let tyvar ppf s =
   else
     Format.fprintf ppf "'%s" s
 
-let const_layout ppf lay =
-  Format.fprintf ppf "%s" (const_layout_to_string lay)
+let const_layout ppf (Layout lay) =
+  Format.fprintf ppf "%s" lay
 
 let layout_annotation i ppf layout =
   line i ppf "%a" const_layout layout.txt

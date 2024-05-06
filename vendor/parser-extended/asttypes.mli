@@ -61,18 +61,7 @@ type 'a loc = 'a Location.loc = {
   loc : Location.t;
 }
 
-(* constant layouts are parsed as layout annotations, and also used
-   in the type checker as already-inferred (i.e. non-variable) layouts *)
-type const_layout =
-  | Any
-  | Value
-  | Void
-  | Immediate64
-  | Immediate
-  | Float64
-  | Word
-  | Bits32
-  | Bits64
+type const_layout = Layout of string [@@unboxed]
 
 type layout_annotation = const_layout loc
 type ty_var = string option loc * layout_annotation option

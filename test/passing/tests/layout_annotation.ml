@@ -316,3 +316,18 @@ module type S = sig
     ('a : immediate) ('b : immediate).
     int -> f:local_ (int -> local_ 'a) -> local_ 'a t
 end
+
+(**************************************)
+(* Test 11: Arbitrary strings as layout names *)
+
+type t_asdf : asdf
+
+let x : int as ('a : some_layout) = 5
+
+let f : ('a : alayout). 'a t -> 'a t = fun x -> x
+
+let _ : _ =
+  [%str
+    let%lpoly rec fold (type (a : poly) acc) (xs : a list) ~(init : acc) ~f =
+      match xs with [] -> init | x :: xs -> fold xs ~init:(f init x) ~f
+    [@@layout (poly : value bits64), (acc : value bits64)]]

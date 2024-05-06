@@ -540,16 +540,7 @@ let fmt_quoted_string key ext s = function
 
 let type_var_has_layout_annot (_, layout_opt) = Option.is_some layout_opt
 
-let layout_to_string = function
-  | Any -> "any"
-  | Value -> "value"
-  | Void -> "void"
-  | Immediate64 -> "immediate64"
-  | Immediate -> "immediate"
-  | Float64 -> "float64"
-  | Word -> "word"
-  | Bits32 -> "bits32"
-  | Bits64 -> "bits64"
+let layout_to_string = function Layout s -> s
 
 let fmt_layout_str ~c ~loc string =
   fmt "@ :@ " $ Cmts.fmt c loc @@ str string

@@ -309,3 +309,18 @@ let f (type a b) x = x
 module type S = sig
   val init_with_immediates : 'a 'b. int -> f:(int -> 'a) -> 'a t
 end
+
+(**************************************)
+(* Test 11: Arbitrary strings as layout names *)
+
+type t_asdf
+
+let x : int as 'a = 5
+
+let f : 'a. 'a t -> 'a t = fun x -> x
+
+let _ : _ =
+  [%str
+    let%lpoly rec fold (type a acc) (xs : a list) ~(init : acc) ~f =
+      match xs with [] -> init | x :: xs -> fold xs ~init:(f init x) ~f
+    [@@layout (poly : value bits64), (acc : value bits64)]]
