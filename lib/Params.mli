@@ -37,7 +37,8 @@ module Exp : sig
     -> Fmt.t
 
   val box_fun_decl_args :
-       Conf.t
+       ctx:Ast.t
+    -> Conf.t
     -> parens:bool
     -> kw:Fmt.t
     -> args:Fmt.t

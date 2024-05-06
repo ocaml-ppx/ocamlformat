@@ -1439,7 +1439,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ space_break) ?(box = true)
+and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hvbox 2 x $ space_break) ?(box = true)
       ~label ?(parens = false) ?ext ~attrs ~loc c (args, typ, body) =
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
@@ -1468,7 +1468,7 @@ and fmt_function ?force_closing_paren ~ctx ?(wrap_intro = fun x -> hvbox 2 x $ s
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     in
-    Params.Exp.box_fun_decl_args c.conf ~parens ~kw ~args ~annot
+    Params.Exp.box_fun_decl_args ~ctx:ctx0 c.conf ~parens ~kw ~args ~annot
     $ break 1 (-2) $ str "->"
   in
   (* [head] is [fun args ->] or [function]. [body] is an expression or the
@@ -1537,7 +1537,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
                ~box xarg )
         $ cmts_after )
   | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
-        fmt_function ~ctx:(Exp arg) ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
+        fmt_function ~ctx:(Exp arg) ~ctx0:xarg.ctx ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
   | _ ->
       let label_sep : t =
         if box || c.conf.fmt_opts.wrap_fun_args.v then str ":" $ cut_break
@@ -1820,7 +1820,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( hvbox c.conf.fmt_opts.extension_indent.v
                  (wrap (str "[") (str "]")
-                    (fmt_function ~ctx:(Exp call) ~wrap_intro:(fun x -> 
+                    (fmt_function ~ctx:(Exp call) ~ctx0 ~wrap_intro:(fun x ->
                          ( str "%"
                            $ hovbox 2
                                ( fmt_str_loc c name $ space_break $ x))$space_break)
@@ -1848,7 +1848,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ Cmts.fmt c loc (str "|>" $ force_newline)
              $ hvbox c.conf.fmt_opts.extension_indent.v
                  (wrap (str "[") (str "]")
-                    (fmt_function ~ctx:(Exp retn) ~wrap_intro:(fun x -> 
+                    (fmt_function ~ctx:(Exp retn)  ~ctx0 ~wrap_intro:(fun x ->
                          ( str "%"
                            $ hovbox 2
                                ( fmt_str_loc c name $ space_break $ x))$space_break)
@@ -1918,13 +1918,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           ( hovbox 0
               (wrap_if has_attr (str "(") (str ")")
                  (fmt_function
-                   ~ctx:(Exp r) ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->
-                 ( 
+                   ~ctx:(Exp r)  ~ctx0 ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->
+                 (
                      ( hvbox indent_wrap
                          ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
                          $ space_break
                          $ hovbox 0
-                             ( 
+                             (
                                  ( fmt_str_loc c op $ space_break $ intro)))
                       )
                  ) $ space_break)
@@ -2041,7 +2041,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               then Fit
               else Break
             in
-            fmt_function ~force_closing_paren ~ctx:inner_ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
+            fmt_function ~force_closing_paren ~ctx:inner_ctx  ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))
@@ -2185,12 +2185,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       (*   else Params.Indent.fun_ ?eol c.conf *)
       (* in *)
       pro
-      $ 
+      $
           (
             (* Params.Exp.wrap c.conf ~parens ~disambiguate:true *)
             (*  ~fits_breaks:false ~offset_closing_paren:(-2) *)
              (
-      fmt_function ~box ~ctx
+      fmt_function ~box ~ctx  ~ctx0
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
              ) )
   | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->

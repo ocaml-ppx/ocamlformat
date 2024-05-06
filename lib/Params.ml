@@ -91,10 +91,17 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let box_fun_decl_args c ~parens ~kw ~args ~annot =
+  let box_fun_decl_args ~ctx c ~parens ~kw ~args ~annot =
+    let is_let_func =
+      match ctx with
+      Ast.Str _ ->
+         (* special case than aligns the arguments of [let _ = fun ...] *) true | _ -> false
+    in
     let box_decl, should_box_args =
       if ocp c then (hvbox (if parens then 1 else 2), false)
-      else (hovbox 4, not c.fmt_opts.wrap_fun_args.v)
+      else
+        ( (if is_let_func then hovbox 4 else hvbox (if parens then 1 else 2))
+        , not c.fmt_opts.wrap_fun_args.v )
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 end
