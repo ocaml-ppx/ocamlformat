@@ -54,6 +54,12 @@ profile. This started with version 0.26.0.
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
 
+## 0.26.2 (2024-04-18)
+
+### Changed
+
+- Compatible with OCaml 5.2.0 (#2510, @gpetiot, @Julow)
+
 ## 0.26.1 (2023-09-15)
 
 ### Changed
