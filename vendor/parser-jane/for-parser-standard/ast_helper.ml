@@ -223,7 +223,6 @@ module Exp = struct
     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
-  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
 
   let case lhs ?guard rhs =
     {
@@ -269,7 +268,6 @@ module Mod = struct
   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
-  let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
 end
 
 module Sig = struct

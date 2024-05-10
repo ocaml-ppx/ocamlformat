@@ -2,10 +2,9 @@
 (*                                                                        *)
 (*                                 OCaml                                  *)
 (*                                                                        *)
-(*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
+(*               Antal Spector-Zabusky, Jane Street, New York             *)
 (*                                                                        *)
-(*   Copyright 1997 Institut National de Recherche en Informatique et     *)
-(*     en Automatique.                                                    *)
+(*   Copyright 2023 Jane Street Group LLC                                 *)
 (*                                                                        *)
 (*   All rights reserved.  This file is distributed under the terms of    *)
 (*   the GNU Lesser General Public License version 2.1, with the          *)
@@ -13,27 +12,26 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Auxiliary type for reporting syntax errors
+(** Auxiliary Jane Street extensions to AST types used by parsetree and
+    typedtree.
+
+    This file exists because [Asttypes] is considered part of the parse tree,
+    and we can't modify the parse tree.  This also enables us to build other
+    files with the upstream compiler as long as [jane_asttypes.mli] is present;
+    see Note [Buildable with upstream] in jane_syntax.mli for details on that.
 
   {b Warning:} this module is unstable and part of
   {{!Compiler_libs}compiler-libs}.
 
 *)
 
-type error =
-    Unclosed of Location.t * string * Location.t * string
-  | Expecting of Location.t * string
-  | Not_expecting of Location.t * string
-  | Applicative_path of Location.t
-  | Variable_in_scope of Location.t * string
-  | Other of Location.t
-  | Ill_formed_ast of Location.t * string
-  | Invalid_package_type of Location.t * string
-  | Removed_string_set of Location.t
-  | Missing_unboxed_literal_suffix of Location.t
+(** [const_jkind] is private to limit confusion with type variables, which
+    are also strings in the parser.
+*)
+type const_jkind
 
-exception Error of error
-exception Escape_error
+val jkind_of_string : string -> const_jkind
 
-val location_of_error: error -> Location.t
-val ill_formed_ast: Location.t -> string -> 'a
+val jkind_to_string : const_jkind -> string
+
+type jkind_annotation = const_jkind Location.loc

@@ -779,7 +779,7 @@ let letter_alert tokens =
       let nowhere = ghost_loc_in_file "_none_" in
       let spelling_hint ppf =
         let max_seq_len =
-          List.fold_left (fun l x -> Int.max l (List.length x))
+          List.fold_left (fun l x -> Misc.Stdlib.Int.max l (List.length x))
             0 consecutive_letters
         in
         if max_seq_len >= 5 then
@@ -874,7 +874,7 @@ let parse_opt error active errflag s =
         in
         List.iter (action modifier) (letter lc)
     | Num(n1,n2,modifier) ->
-        for n = n1 to Int.min n2 last_warning_number do action modifier n done
+        for n = n1 to Misc.Stdlib.Int.min n2 last_warning_number do action modifier n done
   in
   let parse_and_eval s =
     let tokens = parse_warnings s in
@@ -910,12 +910,6 @@ let () = ignore @@ parse_options false defaults_w
 let () = ignore @@ parse_options true defaults_warn_error
 let () =
   List.iter (set_alert ~error:false ~enable:false) default_disabled_alerts
-
-let print_see_manual ppf manual_section =
-  let open Format in
-  fprintf ppf "(see manual section %a)"
-    (pp_print_list ~pp_sep:(fun f () -> pp_print_char f '.') pp_print_int)
-    manual_section
 
 let message = function
   | Comment_start ->
@@ -1084,7 +1078,7 @@ let message = function
         "Code should not depend on the actual values of\n\
          this constructor's arguments. They are only for information\n\
          and may change in future versions. %a"
-        print_see_manual ref_manual
+        Misc.print_see_manual ref_manual
   | Unreachable_case ->
       "this match case is unreachable.\n\
        Consider replacing it with a refutation case '<pat> -> .'"
@@ -1115,7 +1109,7 @@ let message = function
          %s.\n\
          Only the first match will be used to evaluate the guard expression.\n\
          %a"
-        vars_explanation print_see_manual ref_manual
+        vars_explanation Misc.print_see_manual ref_manual
   | No_cmx_file name ->
       Printf.sprintf
         "no cmx file was found in path for module %s, \

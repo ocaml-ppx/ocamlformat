@@ -37,6 +37,7 @@ end
 
 module Clflags = struct
   let include_dirs = ref ([] : string list)(* -I *)
+  let hidden_include_dirs = ref ([] : string list) (* -H *)
   let debug = ref false                   (* -g *)
   let unsafe = ref false                  (* -unsafe *)
   let absname = ref false                 (* -absname *)
@@ -52,13 +53,17 @@ module Clflags = struct
   let error_style = ref None              (* -error-style *)
   let unboxed_types = ref false
   let no_std_include = ref false
+  let no_auto_include_otherlibs = ref false      (* -no-auto-include-otherlibs *)
 end
 
 module Load_path = struct
   type dir
   type auto_include_callback =
     (dir -> string -> string option) -> string -> string
-  let init ~auto_include:_ _ = ()
-  let get_paths () = []
+  type paths =
+    { visible : string list;
+      hidden : string list }
+  let init ~auto_include:_ ~visible:_ ~hidden:_ = ()
+  let get_paths () = { visible = []; hidden = [] }
   let auto_include_otherlibs _ _ s = s
 end

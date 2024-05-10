@@ -13,12 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Auxiliary type for reporting syntax errors
-
-  {b Warning:} this module is unstable and part of
-  {{!Compiler_libs}compiler-libs}.
-
-*)
+(* Auxiliary type for reporting syntax errors *)
 
 type error =
     Unclosed of Location.t * string * Location.t * string
@@ -35,5 +30,18 @@ type error =
 exception Error of error
 exception Escape_error
 
-val location_of_error: error -> Location.t
-val ill_formed_ast: Location.t -> string -> 'a
+let location_of_error = function
+  | Unclosed(l,_,_,_)
+  | Applicative_path l
+  | Variable_in_scope(l,_)
+  | Other l
+  | Not_expecting (l, _)
+  | Ill_formed_ast (l, _)
+  | Invalid_package_type (l, _)
+  | Expecting (l, _)
+  | Removed_string_set l -> l
+  | Missing_unboxed_literal_suffix l -> l
+
+
+let ill_formed_ast loc s =
+  raise (Error (Ill_formed_ast (loc, s)))

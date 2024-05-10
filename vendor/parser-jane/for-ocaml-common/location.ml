@@ -205,6 +205,35 @@ let rewrite_absolute_path path =
   | None -> path
   | Some map -> Build_path_prefix_map.rewrite map path
 
+let rewrite_find_first_existing path =
+  match Misc.get_build_path_prefix_map () with
+  | None ->
+      if Sys.file_exists path then Some path
+      else None
+  | Some prefix_map ->
+    match Build_path_prefix_map.rewrite_all prefix_map path with
+    | [] ->
+      if Sys.file_exists path then Some path
+      else None
+    | matches ->
+      Some (List.find Sys.file_exists matches)
+
+let rewrite_find_all_existing_dirs path =
+  let ok path = Sys.file_exists path && Sys.is_directory path in
+  match Misc.get_build_path_prefix_map () with
+  | None ->
+      if ok path then [path]
+      else []
+  | Some prefix_map ->
+    match Build_path_prefix_map.rewrite_all prefix_map path with
+    | [] ->
+        if ok path then [path]
+        else []
+    | matches ->
+      match (List.filter ok matches) with
+      | [] -> raise Not_found
+      | results -> results
+
 let absolute_path s = (* This function could go into Filename *)
   let open Filename in
   let s = if (is_relative s) then (concat (Sys.getcwd ()) s) else s in

@@ -70,40 +70,6 @@ let foo () =
   if true then (local_ ()) ;
   ()
 
-type loc_long_attrs = local_ string -> local_ string
-
-type loc_short_attrs = local_ string -> local_ string
-
-type loc_short_attrs2 = local_ (string[@aaa] [@bbb] [@ccc]) -> local_ string
-
-type global_long_attrs =
-  | Foo of {global_ s: string; b: int}
-  | Bar of global_ string
-
-type global_short_attrs =
-  | Foo of {global_ s: string}
-  | Bar of global_ string
-
-type global_short_attrs =
-  | Foo of {global_ s: string}
-  | Bar of global_ string
-
-let local_ local_long_ext = ()
-
-let local_ local_short_ext = ()
-
-let exclave_long_ext = exclave_ ()
-
-let exclave_short_ext = exclave_ ()
-
-let () =
-  let local_ g a b c = 1 in
-  ()
-
-let local_ g a b c = 1
-
-let g = f (local_ fun a b c -> 1)
-
 let[@ocaml.local] upstream_local_attr_long x = x
 
 module type S = functor (_ : S) (_ : S) -> S

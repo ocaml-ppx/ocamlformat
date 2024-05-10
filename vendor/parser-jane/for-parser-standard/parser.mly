@@ -149,6 +149,7 @@ let mkuplus ~oploc name arg =
       Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg]), []
 
 let mk_attr ~loc name payload =
+  Builtin_attributes.(register_attr Parser name);
   Attr.mk ~loc name payload
 
 let mkpat_with_modes ~loc ~pat ~cty ~modes =
@@ -316,6 +317,9 @@ let expecting_loc (loc : Location.t) (nonterm : string) =
 let expecting (loc : Lexing.position * Lexing.position) nonterm =
      expecting_loc (make_loc loc) nonterm
 
+let removed_string_set loc =
+  raise(Syntaxerr.Error(Syntaxerr.Removed_string_set(make_loc loc)))
+
 let ppat_ltuple loc elts closed =
   Jane_syntax.Labeled_tuples.pat_of
     ~loc:(make_loc loc)
@@ -410,7 +414,9 @@ let builtin_arraylike_name loc _ ~assign paren_kind n =
   let opname = if !Clflags.unsafe then "unsafe_" ^ opname else opname in
   let prefix = match paren_kind with
     | Paren -> Lident "Array"
-    | Bracket -> Lident "String"
+    | Bracket ->
+        if assign then removed_string_set loc
+        else Lident "String"
     | Brace ->
        let submodule_name = match n with
          | One -> "Array1"
@@ -1004,7 +1010,6 @@ let unboxed_type sloc lident tys =
 %token HASH_SUFFIX            "# "
 %token <string> HASHOP        "##" (* just an example *)
 %token SIG                    "sig"
-%token SLASH                  "/"
 %token STAR                   "*"
 %token <string * Location.t * string option>
        STRING                 "\"hello\"" (* just an example *)
@@ -1031,8 +1036,6 @@ let unboxed_type sloc lident tys =
 %token <Docstrings.docstring> DOCSTRING "(** documentation *)"
 
 %token EOL                    "\\n"      (* not great, but EOL is unused *)
-
-%token <string> TYPE_DISAMBIGUATOR "2" (* just an example *)
 
 /* Precedences and associativities.
 
@@ -1084,7 +1087,7 @@ The precedences must be listed from low to high.
 %nonassoc LBRACKETAT
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT SLASH INFIXOP3 MOD STAR                 /* expr (e OP e OP e) */
+%left     PERCENT INFIXOP3 MOD STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
@@ -1097,7 +1100,7 @@ The precedences must be listed from low to high.
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
-          NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
+          NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT QUOTED_STRING_EXPR
 
 
@@ -1620,9 +1623,6 @@ module_expr:
     | (* An extension. *)
       ex = extension
         { Pmod_extension ex }
-    | (* A hole. *)
-      UNDERSCORE
-        { Pmod_hole }
     )
     { $1 }
 ;
@@ -2726,6 +2726,10 @@ fun_expr:
     { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
   | fun_expr attribute
       { Exp.attr $1 $2 }
+/* BEGIN AVOID */
+  | UNDERSCORE
+     { not_expecting $loc($1) "wildcard \"_\"" }
+/* END AVOID */
   | mode=mode_legacy exp=seq_expr
      { add_mode_constraint_to_exp ~loc:$sloc ~exp ~modes:[mode] }
   | EXCLAVE seq_expr
@@ -2964,8 +2968,6 @@ comprehension_clause:
       { mkinfix $1 $2 $3 }
   | extension
       { Pexp_extension $1 }
-  | UNDERSCORE
-      { Pexp_hole }
   | od=open_dot_declaration DOT mkrhs(LPAREN RPAREN {Lident "()"})
       { Pexp_open(od, mkexp ~loc:($loc($3)) (Pexp_construct($3, None))) }
   | mod_longident DOT LPAREN seq_expr error
@@ -4658,7 +4660,6 @@ operator:
   | PLUSEQ        {"+="}
   | MINUS          {"-"}
   | MINUSDOT      {"-."}
-  | SLASH          {"/"}
   | STAR           {"*"}
   | PERCENT        {"%"}
   | EQUAL          {"="}
@@ -4713,8 +4714,6 @@ type_trailing_hash:
 ;
 type_longident:
     mk_longident(mod_ext_longident, type_trailing_no_hash)  { $1 }
-  (* Allow identifiers like [t/42]. *)
-  | type_trailing_no_hash SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 type_unboxed_longident:
     mk_longident(mod_ext_longident, type_trailing_hash)  { $1 }
@@ -4723,13 +4722,8 @@ type_unboxed_longident:
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
-mod_ext_longident_:
-    UIDENT                          { Lident $1 }
-  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
-  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
-;
 mod_ext_longident:
-    mod_ext_longident_ { $1 }
+    mk_longident(mod_ext_longident, UIDENT) { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
@@ -5004,6 +4998,9 @@ payload:
   | QUESTION pattern WHEN seq_expr { PPat ($2, Some $4) }
 ;
 attr_payload:
-  payload { $1 }
+  payload
+    { Builtin_attributes.mark_payload_attrs_used $1;
+      $1
+    }
 ;
 %%

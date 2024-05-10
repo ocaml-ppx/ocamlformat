@@ -80,9 +80,6 @@ type mapper = {
   value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
-  directive_argument: mapper -> directive_argument -> directive_argument;
-  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
-  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
 
   expr_jane_syntax:
     mapper -> Jane_syntax.Expression.t -> Jane_syntax.Expression.t;
@@ -491,7 +488,6 @@ module M = struct
                     (sub.module_type sub mty)
     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
-    | Pmod_hole -> hole ~loc ~attrs ()
 
   module IF = Jane_syntax.Include_functor
 
@@ -736,7 +732,6 @@ module E = struct
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
-    | Pexp_hole -> hole ~loc ~attrs ()
 
   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
     let open Exp in
@@ -1084,22 +1079,6 @@ let default_mapper =
          | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
       );
 
-    directive_argument =
-      (fun this a ->
-         { pdira_desc= a.pdira_desc
-         ; pdira_loc= this.location this a.pdira_loc} );
-
-    toplevel_directive =
-      (fun this d ->
-         { pdir_name= map_loc this d.pdir_name
-         ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
-         ; pdir_loc= this.location this d.pdir_loc } );
-
-    toplevel_phrase =
-      (fun this -> function
-         | Ptop_def s -> Ptop_def (this.structure this s)
-         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
-
     jkind_annotation = (fun _this l -> l);
 
     expr_jane_syntax = E.map_jst;
@@ -1435,3 +1414,28 @@ let add_ppx_context_sig ~tool_name ast =
 
 let apply ~source ~target mapper =
   apply_lazy ~source ~target (fun () -> mapper)
+
+let run_main mapper =
+  try
+    let a = Sys.argv in
+    let n = Array.length a in
+    if n > 2 then
+      let mapper () =
+        try mapper (Array.to_list (Array.sub a 1 (n - 3)))
+        with exn ->
+          (* PR#6463 *)
+          let f _ _ = raise exn in
+          {default_mapper with structure = f; signature = f}
+      in
+      apply_lazy ~source:a.(n - 2) ~target:a.(n - 1) mapper
+    else begin
+      Printf.eprintf "Usage: %s [extra_args] <infile> <outfile>\n%!"
+                     Sys.executable_name;
+      exit 2
+    end
+  with exn ->
+    prerr_endline (Printexc.to_string exn);
+    exit 2
+
+let register_function = ref (fun _name f -> run_main f)
+let register name f = !register_function name f

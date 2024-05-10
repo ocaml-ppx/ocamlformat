@@ -407,15 +407,6 @@ let () =
     | Error (loc, err) -> Some (report_error ~loc err)
     | _ -> None)
 
-let () =
-  Printexc.register_printer (function
-    | Error (loc, err) ->
-      let buf = Buffer.create 512 in
-      let formatter = Format.formatter_of_buffer buf in
-      Location.print_report formatter (report_error ~loc err);
-      Some (Buffer.contents buf)
-    | _ -> None)
-
 (******************************************************************************)
 (** Generically find and create the OCaml AST syntax used to encode one of our
     novel syntactic features.  One module per variety of AST (expressions,
