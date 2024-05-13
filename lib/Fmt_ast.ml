@@ -1782,7 +1782,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
   Cmts.relocate_wrongfully_attached_cmts c.cmts c.source exp ;
-  let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
+  let pro = pro $ Cmts.fmt_before c ?eol pexp_loc in
+  let fmt_cmts_after k = k $ Cmts.fmt_after c pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
@@ -1791,7 +1792,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     fmt_args_grouped c ctx ?epi ((Nolabel, e0) :: a1N)
   in
   hvbox_if box 0 ~name:"expr"
-  @@ fmt_cmts
+  @@ fmt_cmts_after
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
