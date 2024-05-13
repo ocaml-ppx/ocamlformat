@@ -2194,18 +2194,20 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       fmt_function ~box ~ctx  ~ctx0
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
              ) )
-  | Pexp_function ([], None, Pfunction_cases (cs, _, _)) ->
+  | Pexp_function ([], None, Pfunction_cases (cs, cs_loc, cs_attrs)) ->
       let indent = Params.Indent.function_ c.conf ~parens xexp in
       let outer_pro, inner_pro = if parens then pro, noop else noop, pro in
       outer_pro
       $ Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
         @@ Params.Align.function_ c.conf ~parens ~ctx0 ~self:exp
-        @@ ( hvbox 2
+        @@ ( Cmts.fmt_before c cs_loc $ hvbox 2
                (inner_pro $ str "function"
                $ fmt_extension_suffix c ext
-               $ fmt_attributes c pexp_attributes )
+               $ fmt_attributes c pexp_attributes
+               $ fmt_attributes c cs_attrs )
            $ break 1 indent
-           $ hvbox 0 (fmt_cases c ctx cs) )
+           $ hvbox 0 (fmt_cases c ctx cs)
+           $ Cmts.fmt_after c cs_loc)
   | Pexp_function ([], Some _, _) -> assert false
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
