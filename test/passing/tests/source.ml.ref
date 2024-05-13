@@ -1973,7 +1973,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
 type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
-  fun x r ->function
+  fun x r -> function
   | [] -> raise Not_found
   | Assoc (x', r', v) :: env ->
       if x = x' then
@@ -1992,7 +1992,7 @@ type _ term =
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
 let rec eval_term : type a. assoc list -> a term -> a =
-  fun env ->function
+  fun env -> function
   | Var (x, r) -> assoc x r env
   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
   | Const x -> x
@@ -9144,7 +9144,7 @@ let formula_base x =
 let _ = call ~f:(fun pair -> (pair : a * b)) ;;
 
 f
-  (fun _ ->function
+  (fun _ -> function
     | true ->
         let () = () in
         () | false -> () )
@@ -9152,7 +9152,7 @@ f
 ;;
 
 f
-  (fun _ ->function
+  (fun _ -> function
     | true ->
         let () = () in
         () (* comment *) | false -> () )

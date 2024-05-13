@@ -1486,7 +1486,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hvbox 2
           match args, typ with
           | [], None -> noop, attrs
           | [], Some _ -> assert false
-          | args, typ -> fmt_fun_args_typ args typ, []
+          | args, typ -> fmt_fun_args_typ args typ $ space_break, []
         in
         let function_ =
           str "function" $ fmt_attributes c ~pre:Blank spilled_attrs $ fmt_attributes c ~pre:Blank cs_attrs

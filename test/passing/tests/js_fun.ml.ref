@@ -19,7 +19,7 @@ let () = expr >>| function x -> 3 | y -> 4
 
 let () = expr >>| fun z -> match z with x -> 3 | y -> 4
 
-let () = expr >>| fun z ->function x -> 3 | y -> 4
+let () = expr >>| fun z -> function x -> 3 | y -> 4
 
 let () = my_func () >>= function A -> 0 | B -> 0
 
