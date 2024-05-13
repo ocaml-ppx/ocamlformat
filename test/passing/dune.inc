@@ -185,7 +185,7 @@
  (action
   (with-stdout-to attributes.ml.stdout
    (with-stderr-to attributes.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/attributes.ml})))))
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/attributes.ml})))))
 
 (rule
  (alias runtest)
