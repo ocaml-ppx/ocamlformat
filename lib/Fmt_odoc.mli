@@ -23,6 +23,7 @@ val fmt_ast :
 
 val fmt_parsed :
      Conf.t
+  -> ?trailing_space:Fmt.t
   -> fmt_code:fmt_code
   -> input:string
   -> offset:int
