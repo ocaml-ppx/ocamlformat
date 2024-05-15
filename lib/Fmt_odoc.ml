@@ -372,7 +372,8 @@ let beginning_offset (conf : Conf.t) input =
     whitespace_count
   else min whitespace_count 1
 
-let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
+let fmt_parsed (conf : Conf.t) ?trailing_space ~fmt_code ~input ~offset
+    parsed =
   let open Fmt in
   let begin_offset = beginning_offset conf input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
@@ -380,12 +381,18 @@ let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let fmt_code conf ~offset:offset' ~set_margin input =
     fmt_code conf ~offset:(offset + offset') ~set_margin input
   in
+  let trailing_space =
+    match trailing_space with
+    | Some sp -> sp
+    | None ->
+        fmt_if
+          (String.length input > 1 && String.ends_with_whitespace input)
+          space_break
+  in
   let fmt_parsed parsed =
     str (String.make begin_offset ' ')
     $ fmt_ast conf ~fmt_code parsed
-    $ fmt_if
-        (String.length input > 1 && String.ends_with_whitespace input)
-        (str " ")
+    $ trailing_space
   in
   match parsed with
   | _ when not conf.fmt_opts.parse_docstrings.v -> str input

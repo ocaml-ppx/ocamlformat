@@ -8,7 +8,8 @@ type block =
   | `Noblank
   | `Blocks of block list ]
 
-(** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod *)
+(** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+*)
 include M with type t := t
 
 val escape : string -> string
@@ -122,7 +123,8 @@ val k : k
 
     @canonical foo
 
-    @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar *)
+    @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+*)
 
 val x : x
 (** a comment
@@ -375,14 +377,16 @@ end
 
     @canonical Foo.Bar *)
 
-(** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
+(** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%}
+*)
 
 (** [Multi
      Line]
 
     [ A lot of    spaces ]
 
-    [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
+    [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
+*)
 
 (** {[
       for i = 1 to 3 do
@@ -449,7 +453,8 @@ end
 
 (** This is a comment with code inside
     {[
-      (** This is a comment with code inside [ let code inside = f inside ] *)
+      (** This is a comment with code inside [ let code inside = f inside ]
+      *)
       let code inside (* comment   *) = f inside
     ]}
 
@@ -463,7 +468,8 @@ end
     ]}
 
     {@ocaml kind=toplevel env=e1[
-      (** This is a comment with code inside [ let code inside = f inside ] *)
+      (** This is a comment with code inside [ let code inside = f inside ]
+      *)
       let code inside (* comment   *) = f inside
     ]} *)
 
@@ -520,7 +526,8 @@ val k : int
 
 (** Brackets must not be escaped in the first argument of some tags: *)
 
-(** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.[x]]. *)
+(** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.[x]].
+*)
 
 (** @author [Abc] [def] \[hij\] *)
 

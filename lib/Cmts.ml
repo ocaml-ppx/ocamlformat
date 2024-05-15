@@ -554,14 +554,23 @@ module Doc = struct
           let l = List.last_exn lines in
           (is_only_whitespaces h, is_only_whitespaces l)
     in
+    let force_trailing_space =
+      String.length txt > 1 && String.ends_with_whitespace txt
+    in
     let txt = if pre_nl then String.lstrip txt else txt in
     let txt = if trail_nl then String.rstrip txt else txt in
     let parsed = Docstring.parse ~loc txt in
     (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
     let open Fmt in
+    let trailing_space =
+      if (not trail_nl) && force_trailing_space then str " " else noop
+    in
+    let doc =
+      Fmt_odoc.fmt_parsed conf ~trailing_space ~fmt_code ~input:txt ~offset
+        parsed
+    in
     hvbox 2
       ( pro
       $ fmt_if pre_nl (break 1000 1)
