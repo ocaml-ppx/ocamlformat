@@ -50,6 +50,7 @@ profile. This started with version 0.26.0.
 - Fix the formatting of the `in` keyword when `[@ocamlformat disable]` is attached to a let-binding (#2242, @EmileTrotignon)
 - Fix comments around underscore in record patterns (#2540, @Julow)
 - Fix dropped comments before `begin .. end` in a match case (#2541, @Julow)
+- Fix closing `*)` in doc-comments exceeding the margin (#2550, @Julow)
 - Fix invalid syntax geneated for begin..end attributes (#2551, @Julow)
   The attribute is moved from `begin .. end [@attr]` to `begin [@attr] .. end`.
 

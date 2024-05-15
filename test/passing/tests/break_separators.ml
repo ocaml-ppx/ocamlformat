@@ -287,7 +287,8 @@ let foooooooooooo =
 
 let foooooooooooo =
   { foooooooooooooo with
-    (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
+    (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo
+    *)
     fooooooooooooooooooooooooooooo= fooooooooooooo
   ; fooooooooooooo= foooooooooooooo }
 
@@ -381,6 +382,7 @@ let () =
   match x with
   | ( _
     , (* verrrrrrrrrrrrrrrrrrrrrrrry looooooooooooooooong line 1
-         veeeeeeeeeeeeeeeeeeeeeryyyy loooooooooooooooooong line 2 *)
+         veeeeeeeeeeeeeeeeeeeeeryyyy loooooooooooooooooong line 2
+      *)
       Some _ ) ->
       x

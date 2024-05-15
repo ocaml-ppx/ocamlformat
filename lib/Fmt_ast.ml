@@ -413,7 +413,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
   let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~offset ~input parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
-       (fmt_opt pro $ wrap (str "(**") (str "*)") doc $ epi)
+       (fmt_opt pro $ hovbox 0 (str "(**" $ doc $ str "*)") $ epi)
 
 let docstring_epi ~standalone ~next ~epi ~floating =
   let epi = if Option.is_some next then force_newline else fmt_opt epi in
