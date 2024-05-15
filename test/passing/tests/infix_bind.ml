@@ -56,7 +56,8 @@ eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
-|> function x -> x
+|> function
+| x -> x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -138,7 +139,8 @@ let foo =
 let _ = foo >>= function[@warning "-4"] A -> false | B -> true
 
 let _ =
-  foo >>= function[@warning "-4"] Afoooooooooooooooooo fooooooooo -> false
+  foo >>= function[@warning "-4"]
+  | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
 let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
@@ -182,7 +184,8 @@ let f =
   Ok ()
   >>=
   (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
-  function Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  function
+  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 (** The tests below are testing a dropped comment with
     `--no-break-infix-before-func` *)

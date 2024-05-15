@@ -1911,6 +1911,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       let indent_wrap = if parens then -2 else 0 in
+      let box =
+        (* TODO: fmt_function should box correctly in the [Pfunction_cases]
+           case. ~box shouldn't ever be false. *)
+        match body with
+        | Pfunction_body _ -> hovbox 0
+        | Pfunction_cases _ -> (fun x -> x)
+      in
       (* let followed_by_infix_op = *)
       (*   match xbody.ast.pexp_desc with *)
       (*   | Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}) -> true *)
@@ -1918,7 +1925,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       (* in *)
       pro
       $ wrap_fits_breaks_if c.conf parens "(" ")"
-          ( hovbox 0
+          ( box
               (wrap_if has_attr (str "(") (str ")")
                  (fmt_function
                    ~ctx:(Exp r)  ~ctx0 ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->

@@ -65,8 +65,11 @@ let foo =
 let foo =
   match foo with
   | 1 ->
-      bar >>= (function a -> fooooo | b -> fooooo
-      | c -> foooooooo foooooooooo fooooooooooooooooooo () | _ -> () )
+      bar >>= (function
+      | a -> fooooo
+      | b -> fooooo
+      | c -> foooooooo foooooooooo fooooooooooooooooooo ()
+      | _ -> () )
   | other -> ()
 
 let _ =
