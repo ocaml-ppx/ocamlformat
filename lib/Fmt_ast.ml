@@ -2853,7 +2853,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let wrap_beginend k =
         let opn = str "begin" $ fmt_extension_suffix c ext
         and cls = str "end" in
-        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k) $ fmt_atrs)
+        hvbox 0
+          (wrap_if parens (str "(") (str ")")
+             (wrap opn cls (wrap (break 1 2) force_break k) $ fmt_atrs) )
       in
       pro
       $ wrap_beginend
