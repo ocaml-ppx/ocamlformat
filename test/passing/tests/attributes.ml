@@ -138,9 +138,9 @@ let ("" [@test]) = ()
 
 let _ = f x ~f:(fun [@test] x -> x)
 
-let _ = f x ~f:(function [@test] x -> x)
+let _ = f x ~f:(function[@test] x -> x)
 
-let _ = f x ~f:(function [@test] X -> x | X -> x)
+let _ = f x ~f:(function[@test] X -> x | X -> x)
 
 let () = ()
 
@@ -387,9 +387,9 @@ let _ =
   match x with
   | _
     when f
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *)
-                          "-4"] _ -> . ) ->
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         "-4"] _ -> . ) ->
       y
 
 let[@a
@@ -405,18 +405,18 @@ let[@a
   with
   | _
     when f
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *) "-4"]
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *) "-4"]
              | _ -> . )
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *)
-                          (* ....................................... *)
-                          "foooooooooooooooooooooooooooo \
-                           fooooooooooooooooooooooooooooooooooooo"] _ -> . )
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *)
-                          let x = a and y = b in
-                          x + y] _ -> . ) ->
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         (* ....................................... *)
+                         "foooooooooooooooooooooooooooo \
+                          fooooooooooooooooooooooooooooooooooooo"] _ -> . )
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         let x = a and y = b in
+                         x + y] _ -> . ) ->
       y
       [@attr
         (* ... *)

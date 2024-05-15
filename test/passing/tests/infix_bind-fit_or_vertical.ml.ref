@@ -140,10 +140,10 @@ let foo =
       let b = Batch batch in
       foo
 
-let _ = foo >>= function [@warning "-4"] A -> false | B -> true
+let _ = foo >>= function[@warning "-4"] A -> false | B -> true
 
 let _ =
-  foo >>= function [@warning "-4"] Afoooooooooooooooooo fooooooooo -> false
+  foo >>= function[@warning "-4"] Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
 let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
@@ -154,7 +154,7 @@ let _ =
     fooooooooooooooooooooooo
 
 let _ =
-  foo >>= function (* foo before *) [@warning "-4"] (* foo after *)
+  foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 

@@ -1489,9 +1489,11 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hvbox 2
           | args, typ -> fmt_fun_args_typ args typ $ space_break, []
         in
         let function_ =
-          str "function" $ fmt_attributes c ~pre:Blank spilled_attrs $ fmt_attributes c ~pre:Blank cs_attrs
+          str "function"
+          $ fmt_attributes c spilled_attrs
+          $ fmt_attributes c cs_attrs
         in
-        fun_ $ function_, fmt_cases c ctx cs
+        (fun_ $ function_, fmt_cases c ctx cs)
   in
   let opn_paren, cls_paren =
     if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:(-2)
