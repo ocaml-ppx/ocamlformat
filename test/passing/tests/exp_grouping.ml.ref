@@ -351,10 +351,9 @@ let _ =
   end
 
 let _ =
-  begin
+  begin [@landmark "parse_constant_dividends"]
     market_data_items := ()
   end
-  [@landmark "parse_constant_dividends"]
 
 let () =
   if a then begin
@@ -370,7 +369,7 @@ let x =
       match Tbl.find dist_tbl (pv1, pv2) with
       | None ->
         (* FIXME: temporary hack to avoid Jane Street's annoying warnings. *)
-        begin
+        begin [@warning "-3"]
           try
             let path', dist = Dijkstra.shortest_path pgraph pv1 pv2 in
             let path = unwrap_path path' in
@@ -378,17 +377,15 @@ let x =
             Some (path, dist)
           with Not_found | Not_found_s _ -> None
         end
-        [@warning "-3"]
       | pd -> pd
   in
   ()
 
 let _ =
   if something_changed then
-    begin
+    begin [@attr]
       loop
     end
-    [@attr]
 
 let _ =
   match x with
@@ -401,7 +398,6 @@ let _ =
 let _ =
   match x with
   | _ ->
-    begin
+    begin [@foo]
       y
     end
-    [@foo]

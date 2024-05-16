@@ -2851,9 +2851,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend e ->
       let wrap_beginend k =
-        let opn = str "begin" $ fmt_extension_suffix c ext
+        let opn =
+          hvbox 0 (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs)
         and cls = str "end" in
-        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k) $ fmt_atrs)
+        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k))
       in
       pro
       $ wrap_beginend
