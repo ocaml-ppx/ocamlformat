@@ -976,7 +976,8 @@ end = struct
       | Ptyp_alias (t1, _) | Ptyp_poly (_, t1) -> assert (typ == t1)
       | Ptyp_arrow (t, t2) ->
           assert (List.exists t ~f:(fun x -> typ == x.pap_type) || typ == t2)
-      | Ptyp_tuple t1N -> assert (List.exists t1N ~f:(fun (_, t) -> f t))
+      | Ptyp_tuple t1N | Ptyp_unboxed_tuple t1N ->
+          assert (List.exists t1N ~f:(fun (_, t) -> f t))
       | Ptyp_constr (_, t1N) -> assert (List.exists t1N ~f)
       | Ptyp_variant (r1N, _, _) ->
           assert (
@@ -1329,7 +1330,7 @@ end = struct
         match ctx.ppat_desc with
         | Ppat_array (_, p1N) | Ppat_list p1N | Ppat_cons p1N ->
             assert (List.exists p1N ~f)
-        | Ppat_tuple (p1N, _) ->
+        | Ppat_tuple (p1N, _) | Ppat_unboxed_tuple (p1N, _) ->
             assert (List.exists p1N ~f:(fun (_, p) -> f p))
         | Ppat_record (p1N, _) ->
             assert (List.exists p1N ~f:(fun (_, _, x) -> Option.exists x ~f))
@@ -1359,9 +1360,10 @@ end = struct
        |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
-       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole
-       |Pexp_beginend _ | Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
-       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ ->
+       |Pexp_unboxed_tuple _ | Pexp_unreachable | Pexp_variant _
+       |Pexp_while _ | Pexp_hole | Pexp_beginend _ | Pexp_parens _
+       |Pexp_cons _ | Pexp_letopen _ | Pexp_indexop_access _
+       |Pexp_prefix _ | Pexp_infix _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1478,7 +1480,8 @@ end = struct
         | Pexp_apply (e0, e1N) ->
             (* FAIL *)
             assert (e0 == exp || List.exists e1N ~f:snd_f)
-        | Pexp_tuple e1N -> assert (List.exists e1N ~f:(fun (_, e) -> f e))
+        | Pexp_tuple e1N | Pexp_unboxed_tuple e1N ->
+            assert (List.exists e1N ~f:(fun (_, e) -> f e))
         | Pexp_array (_, e1N) | Pexp_list e1N | Pexp_cons e1N ->
             assert (List.exists e1N ~f)
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
@@ -1604,7 +1607,7 @@ end = struct
         Exp.is_trivial e0
     | Pexp_array (_, e1N) | Pexp_list e1N ->
         List.for_all e1N ~f:Exp.is_trivial && fit_margin c (width xexp)
-    | Pexp_tuple e1N ->
+    | Pexp_tuple e1N | Pexp_unboxed_tuple e1N ->
         List.for_all e1N ~f:(fun (_, e) -> Exp.is_trivial e)
         && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
@@ -1680,7 +1683,7 @@ end = struct
             else Right
           in
           Some (MinusGreater, assoc)
-      | Ptyp_tuple _ -> Some (InfixOp3, Non)
+      | Ptyp_tuple _ | Ptyp_unboxed_tuple _ -> Some (InfixOp3, Non)
       | Ptyp_alias _ -> Some (As, Non)
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
@@ -1708,7 +1711,8 @@ end = struct
     | {ast= Typ _; _} -> None
     | {ctx= Exp {pexp_desc; _}; ast= Exp exp} -> (
       match pexp_desc with
-      | Pexp_tuple ((_, e0) :: _ as exps) ->
+      | Pexp_tuple ((_, e0) :: _ as exps)
+       |Pexp_unboxed_tuple ((_, e0) :: _ as exps) ->
           (* Jane Street: Here we pretend tuple elements with labels have the
              same precedence as function arguments, because they need to be
              parenthesized in the same cases. *)
@@ -1813,7 +1817,7 @@ end = struct
       match ptyp_desc with
       | Ptyp_package _ -> Some Low
       | Ptyp_arrow _ -> Some MinusGreater
-      | Ptyp_tuple _ -> Some InfixOp3
+      | Ptyp_tuple _ | Ptyp_unboxed_tuple _ -> Some InfixOp3
       | Ptyp_alias _ -> Some As
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
@@ -1824,7 +1828,7 @@ end = struct
       match pcty_desc with Pcty_arrow _ -> Some MinusGreater | _ -> None )
     | Exp {pexp_desc; _} -> (
       match pexp_desc with
-      | Pexp_tuple _ -> Some Comma
+      | Pexp_tuple _ | Pexp_unboxed_tuple _ -> Some Comma
       | Pexp_cons _ -> Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant
@@ -2038,7 +2042,8 @@ end = struct
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
+                | Ppat_lazy _ | Ppat_tuple _ | Ppat_unboxed_tuple _
+                | Ppat_variant _ | Ppat_list _ )
             ; _ }
         | Exp {pexp_desc= Pexp_fun _; _} )
       , Ppat_alias _ )
@@ -2049,11 +2054,11 @@ end = struct
      |( Pat
           { ppat_desc=
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
-              | Ppat_variant _ | Ppat_list _ )
+              | Ppat_unboxed_tuple _ | Ppat_variant _ | Ppat_list _ )
           ; _ }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_lazy _; _}, Ppat_tuple _
-     |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
+     |Pat {ppat_desc= Ppat_tuple _ | Ppat_unboxed_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
      |Exp {pexp_desc= Pexp_fun _; _}, Ppat_or _
@@ -2071,7 +2076,8 @@ end = struct
        than normal tuple elements. E.g., {[ match foo with | Some x, Some y
        -> ... ]} is valid but {[ match foo with | Some x, ~l:Some y -> ... ]}
        is not - parens are needed. *)
-    | Pat {ppat_desc= Ppat_tuple (els, _); _}, _
+    | ( Pat {ppat_desc= Ppat_tuple (els, _) | Ppat_unboxed_tuple (els, _); _}
+      , _ )
       when List.exists els ~f:(function
              | Some _, pat' -> pat == pat'
              | _ -> false )
@@ -2166,6 +2172,7 @@ end = struct
             true
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (snd (List.last_exn es))
+        | Pexp_unboxed_tuple _ -> false
         | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
          |Pexp_constraint _
          |Pexp_construct (_, None)
@@ -2246,6 +2253,7 @@ end = struct
         match rhs with Some e -> continue e | None -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (snd (List.last_exn es))
+      | Pexp_unboxed_tuple _ -> false
       | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
        |Pexp_constraint _
        |Pexp_construct (_, None)
@@ -2272,7 +2280,8 @@ end = struct
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       Prec.compare p Apply < 0 ) ->
             true
-        | Pexp_tuple e1N -> snd (List.last_exn e1N) == xexp.ast
+        | Pexp_tuple e1N | Pexp_unboxed_tuple e1N ->
+            snd (List.last_exn e1N) == xexp.ast
         | _ -> false
       in
       match ambig_prec (sub_ast ~ctx (Exp exp)) with
@@ -2387,7 +2396,7 @@ end = struct
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
     (* Jane Street: Labeled tuple elements must be parenthesized more than
        normal tuple elements. *)
-    | Exp {pexp_desc= Pexp_tuple els; _}, _
+    | Exp {pexp_desc= Pexp_tuple els | Pexp_unboxed_tuple els; _}, _
       when List.exists els ~f:(function
              | Some _, exp' -> exp == exp'
              | _ -> false )

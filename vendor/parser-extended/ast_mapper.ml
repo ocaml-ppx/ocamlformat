@@ -206,6 +206,8 @@ module T = struct
           (sub.typ sub t2)
     | Ptyp_tuple tyl ->
         tuple ~loc ~attrs (List.map (fun (lbl, t) -> map_opt (map_loc sub) lbl, sub.typ sub t) tyl)
+    | Ptyp_unboxed_tuple tyl ->
+        unboxed_tuple ~loc ~attrs (List.map (fun (lbl, t) -> map_opt (map_loc sub) lbl, sub.typ sub t) tyl)
     | Ptyp_constr (lid, tl) ->
         constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_object (l, o) ->
@@ -563,6 +565,8 @@ module E = struct
     | Pexp_try (e, pel) -> try_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
     | Pexp_tuple el ->
         tuple ~loc ~attrs (List.map (fun (lbl, e) -> map_opt (map_loc sub) lbl, sub.expr sub e) el)
+    | Pexp_unboxed_tuple el ->
+        unboxed_tuple ~loc ~attrs (List.map (fun (lbl, e) -> map_opt (map_loc sub) lbl, sub.expr sub e) el)
     | Pexp_construct (lid, arg) ->
         construct ~loc ~attrs (map_loc sub lid) (map_opt (sub.expr sub) arg)
     | Pexp_variant (lab, eo) ->
@@ -690,6 +694,8 @@ module P = struct
         interval ~loc ~attrs (sub.constant sub c1) (sub.constant sub c2)
     | Ppat_tuple (pl, oc) ->
         tuple ~loc ~attrs (List.map (fun (lbl, p) -> map_opt (map_loc sub) lbl, sub.pat sub p) pl) oc
+    | Ppat_unboxed_tuple (pl, oc) ->
+        unboxed_tuple ~loc ~attrs (List.map (fun (lbl, p) -> map_opt (map_loc sub) lbl, sub.pat sub p) pl) oc
     | Ppat_construct (l, p) ->
         construct ~loc ~attrs (map_loc sub l)
           (map_opt

@@ -11046,6 +11046,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_tuples.ml.stdout
+   (with-stderr-to unboxed_tuples.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples.ml unboxed_tuples.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples.ml.err unboxed_tuples.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_tuples.ml.js-stdout
+   (with-stderr-to unboxed_tuples.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/unboxed_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples.ml.js-ref unboxed_tuples.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples.ml.js-err unboxed_tuples.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_tuples_cmts_attrs.ml.stdout
+   (with-stderr-to unboxed_tuples_cmts_attrs.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_tuples_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs.ml unboxed_tuples_cmts_attrs.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs.ml.err unboxed_tuples_cmts_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_tuples_cmts_attrs.ml.js-stdout
+   (with-stderr-to unboxed_tuples_cmts_attrs.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/unboxed_tuples_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs.ml.js-ref unboxed_tuples_cmts_attrs.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs.ml.js-err unboxed_tuples_cmts_attrs.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_types.ml.stdout
    (with-stderr-to unboxed_types.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_types.ml})))))

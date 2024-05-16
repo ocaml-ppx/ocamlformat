@@ -106,6 +106,13 @@ and core_type_desc =
 
            Invariant: [n >= 2].
         *)
+  | Ptyp_unboxed_tuple of (string option * core_type) list
+      (** Unboxed tuple types: [Ptyp_unboxed_tuple([(Some l1,P1);...;(Some l2,Pn)]]
+          represents a product type [#(l1:T1 * ... * l2:Tn)], and the labels
+          are optional.
+
+           Invariant: [n >= 2].
+        *)
   | Ptyp_constr of Longident.t loc * core_type list
       (** [Ptyp_constr(lident, l)] represents:
             - [tconstr]               when [l=[]],
@@ -249,6 +256,15 @@ and pattern_desc =
 
            Invariant: [n >= 2]
         *)
+  | Ppat_unboxed_tuple of (string option * pattern) list * Asttypes.closed_flag
+      (** Unboxed tuple patterns: [#(l1:P1, ..., ln:Pn)] is [([(Some
+          l1,P1);...;(Some l2,Pn)], Closed)], and the labels are optional.  An
+          [Open] pattern ends in [..].
+
+          Invariant:
+          - If Closed, [n >= 2]
+          - If Open, [n >= 1]
+        *)
   | Ppat_construct of Longident.t loc * (string loc list * pattern) option
       (** [Ppat_construct(C, args)] represents:
             - [C]               when [args] is [None],
@@ -369,6 +385,13 @@ and expression_desc =
       (** Expressions [(E1, ..., En)]
 
            Invariant: [n >= 2]
+        *)
+  | Pexp_unboxed_tuple of (string option * expression) list
+      (** Unboxed tuple expressions: [Pexp_unboxed_tuple([(Some l1,P1);...;(Some
+          l2,Pn)])] represents [#(l1:E1, ..., ln:En)], and the labels are
+          optional.
+
+          Invariant: [n >= 2]
         *)
   | Pexp_construct of Longident.t loc * expression option
       (** [Pexp_construct(C, exp)] represents:

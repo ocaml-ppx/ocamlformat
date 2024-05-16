@@ -876,7 +876,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   let parens = (not tydecl_param) && parenze_typ xtyp in
   hvbox_if box 0
   @@ Params.parens_if
-       (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
+       ( match typ.ptyp_desc with
+       | Ptyp_tuple _ | Ptyp_unboxed_tuple _ -> false
+       | _ -> parens )
        c.conf
   @@
   let in_type_declaration =
@@ -952,6 +954,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
               (list typs "@ * " (fun (lbl, typ) ->
                    let typ = sub_typ ~ctx typ in
                    fmt_labeled_tuple_type c lbl typ ) ) ) )
+  | Ptyp_unboxed_tuple typs ->
+      hvbox 1
+        (wrap_fits_breaks ~space:false c.conf "#(" ")"
+           (list typs "@ * " (fun (lbl, typ) ->
+                let typ = sub_typ ~ctx typ in
+                fmt_labeled_tuple_type c lbl typ ) ) )
   | Ptyp_var s -> fmt_type_var ~have_tick:true c s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
@@ -1139,7 +1147,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                      "( " " )" (str txt) ) ) ) )
   | Ppat_constant const -> fmt_constant c const
   | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
-  | Ppat_tuple (pats, oc) ->
+  | Ppat_tuple (pats, oc) | Ppat_unboxed_tuple (pats, oc) ->
+      let unboxed =
+        match ppat_desc with
+        | Ppat_tuple _ -> false
+        | Ppat_unboxed_tuple _ -> true
+        | _ -> assert false
+      in
       let parens =
         parens || Poly.(c.conf.fmt_opts.parens_tuple_patterns.v = `Always)
       in
@@ -1180,8 +1194,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         | Closed -> noop
         | Open -> fmt (Params.comma_sep c.conf) $ str ".."
       in
-      hvbox 0
-        (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
+      hvbox
+        (if unboxed then 1 else 0)
+        (Params.wrap_tuple ~unboxed ~parens ~no_parens_if_break:false c.conf
            (fmt_elements $ fmt_oc) )
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
@@ -2789,7 +2804,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  $ str "." $ fmt_longident_loc c lid $ fmt_assign_arrow c
                  $ fmt_expression c (sub_exp ~ctx e2) )
              $ fmt_atrs ) )
-  | Pexp_tuple es ->
+  | Pexp_tuple es | Pexp_unboxed_tuple es ->
+      let unboxed =
+        match pexp_desc with
+        | Pexp_tuple _ -> false
+        | Pexp_unboxed_tuple _ -> true
+        | _ -> assert false
+      in
       let parens =
         match xexp.ctx with
         | Str {pstr_desc= Pstr_eval _; pstr_loc= _} -> false
@@ -2845,9 +2866,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox_if outer_wrap 0
           (Params.parens_if outer_wrap c.conf
-             ( hvbox 0
-                 (Params.wrap_tuple ~parens:inner_wrap ~no_parens_if_break
-                    c.conf
+             ( hvbox
+                 (if unboxed then 1 else 0)
+                 (Params.wrap_tuple ~unboxed ~parens:inner_wrap
+                    ~no_parens_if_break c.conf
                     (list es (Params.comma_sep c.conf) fmt_lt_exp_element) )
              $ fmt_atrs ) )
   | Pexp_lazy e ->

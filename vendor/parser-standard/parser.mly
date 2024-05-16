@@ -930,6 +930,7 @@ let unboxed_type sloc lident tys =
 %token GREATER                ">"
 %token GREATERRBRACE          ">}"
 %token GREATERRBRACKET        ">]"
+%token HASHLPAREN             "#("
 %token IF                     "if"
 %token IN                     "in"
 %token INCLUDE                "include"
@@ -1098,7 +1099,7 @@ The precedences must be listed from low to high.
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
-          LBRACKETPERCENT QUOTED_STRING_EXPR
+          LBRACKETPERCENT QUOTED_STRING_EXPR HASHLPAREN
 
 
 /* Entry points */
@@ -3047,6 +3048,8 @@ comprehension_clause:
   | mod_longident DOT
     LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($3) ")" $loc($8) }
+  | HASHLPAREN labeled_tuple RPAREN
+      { Pexp_unboxed_tuple $2 }
 ;
 labeled_simple_expr:
     simple_expr %prec below_HASH
@@ -3665,6 +3668,9 @@ simple_delimited_pattern:
             (fun elts -> Ppat_array elts)
             $1
         }
+    | HASHLPAREN reversed_labeled_tuple_pattern(pattern) RPAREN
+        { let (closed, fields) = $2 in
+          Ppat_unboxed_tuple (List.rev fields, closed) }
   ) { $1 }
   | array_patterns(LBRACKETCOLON, COLONRBRACKET)
       { Generic_array.Pattern.to_ast
@@ -4469,6 +4475,22 @@ tuple_type:
     ltys = separated_nonempty_llist(STAR, labeled_tuple_typ_element)
       { ty, ltys }
 
+(* In the case of an unboxed tuple, we don't need the nonsense above because
+the [#( ... )] disambiguates.  However, we still must write out
+the first element explicitly because [labeled_tuple_typ_element] is
+restricted to tail position by its %prec annotation. *)
+%inline unboxed_tuple_type_body:
+  | ty1 = atomic_type
+    STAR
+    ltys = separated_nonempty_llist(STAR, labeled_tuple_typ_element)
+    { (None, ty1) :: ltys }
+  | label = LIDENT
+    COLON
+    ty1 = atomic_type
+    STAR
+    ltys = separated_nonempty_llist(STAR, labeled_tuple_typ_element)
+    { (Some label, ty1) :: ltys }
+
 %inline labeled_tuple_typ_element :
   | atomic_type %prec STAR
      { None, $1 }
@@ -4522,6 +4544,8 @@ atomic_type:
         { Ptyp_variant($3, Closed, Some []) }
     | LBRACKETLESS BAR? row_field_list GREATER name_tag_list RBRACKET
         { Ptyp_variant($3, Closed, Some $5) }
+    | HASHLPAREN unboxed_tuple_type_body RPAREN
+        { Ptyp_unboxed_tuple $2 }
     | extension
         { Ptyp_extension $1 }
   )

@@ -222,6 +222,10 @@ let variant_var i ppf (x : variant_var) =
   line i ppf "variant_var %a\n" fmt_location x.loc;
   string_loc (i+1) ppf x.txt
 
+let labeled_tuple_element f i ppf (l, ct) =
+  option i string_loc ppf l;
+  f i ppf ct
+
 let rec core_type i ppf x =
   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
   attributes i ppf x.ptyp_attributes;
@@ -237,6 +241,9 @@ let rec core_type i ppf x =
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
       list i labeled_core_type ppf l;
+  | Ptyp_unboxed_tuple l ->
+      line i ppf "Ptyp_unboxed_tuple\n";
+      list i (labeled_tuple_element core_type) ppf l
   | Ptyp_constr (li, l) ->
       line i ppf "Ptyp_constr %a\n" fmt_longident_loc li;
       list i core_type ppf l;
@@ -319,6 +326,9 @@ and pattern i ppf x =
       line i ppf "Ppat_tuple\n";
       list i labeled_pattern ppf l;
       open_closed i ppf op
+  | Ppat_unboxed_tuple (l, c) ->
+      line i ppf "Ppat_unboxed_tuple %a\n" fmt_closed_flag c;
+      list i (labeled_tuple_element pattern) ppf l
   | Ppat_construct (li, po) ->
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
@@ -412,6 +422,9 @@ and expression i ppf x =
   | Pexp_tuple (l) ->
       line i ppf "Pexp_tuple\n";
       list i labeled_expression ppf l;
+  | Pexp_unboxed_tuple (l) ->
+      line i ppf "Pexp_unboxed_tuple\n";
+      list i (labeled_tuple_element expression) ppf l;
   | Pexp_construct (li, eo) ->
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;

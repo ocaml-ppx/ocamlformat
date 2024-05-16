@@ -300,8 +300,9 @@ let wrap_collec c ~space_around opn cls =
 let wrap_record (c : Conf.t) =
   wrap_collec c ~space_around:c.fmt_opts.space_around_records.v "{" "}"
 
-let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
-  if parens then wrap_fits_breaks c "(" ")"
+let wrap_tuple (c : Conf.t) ~unboxed ~parens ~no_parens_if_break =
+  if unboxed then wrap_fits_breaks c "#(" ")"
+  else if parens then wrap_fits_breaks c "(" ")"
   else if no_parens_if_break then Fn.id
   else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
 
