@@ -99,3 +99,21 @@ type t =
   ; mutable ci_spilled
       (* spilled stack slots (reg.loc = Stack (Local n)) still in use *):
       IntervalSet.t }
+
+let _ =
+  match c with
+  | {issuer = _; (* TODO *)
+     _
+    } -> ()
+  | {issuer = _;
+     (* TODO *) _
+    } -> ()
+  | {issuer = _;
+     _ (* TODO *)
+    } -> ()
+  | {issuer = _; (* TODO *)
+     _ (* TODO *)
+    } -> ()
+  | {issuer = _;
+     (* TODO *) _ (* TODO *)
+    } -> ()

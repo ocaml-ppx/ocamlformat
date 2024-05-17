@@ -16,7 +16,8 @@ module type M = sig
 
   val transl_modtype_longident
     (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *)
+       foooooooooooooo foooooooooooo
+    *)
     : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val imported_sets_of_closures_table

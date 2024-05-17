@@ -195,10 +195,12 @@ type cases =
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
+  ; expr_eol: Fmt.t option
   ; branch_expr: expression Ast.xt
   ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
+let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
+    ~xbch:({ast; _} as xast) =
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
@@ -228,7 +230,8 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
   let indent = if align_nested_match then 0 else indent in
   let open_paren_branch, close_paren_branch, branch_expr =
     match ast with
-    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
+    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _}
+      when not cmts_before ->
         let close_paren =
           let offset =
             match c.fmt_opts.break_cases.v with `Nested -> 0 | _ -> -2
@@ -248,6 +251,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
         in
         (fmt_if parens_branch (str " ("), close_paren, xast)
   in
+  let expr_eol = Option.some_if cmts_before force_break in
   match c.fmt_opts.break_cases.v with
   | `Fit ->
       { leading_space= fmt_if (not first) space_break
@@ -259,6 +263,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= space_break
       ; expr_parens
+      ; expr_eol
       ; branch_expr
       ; close_paren_branch }
   | `Nested ->
@@ -272,6 +277,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; break_after_opening_paren=
           fmt_or (indent > 2) (break 1 4) (break 1 2)
       ; expr_parens
+      ; expr_eol
       ; branch_expr
       ; close_paren_branch }
   | `Fit_or_vertical ->
@@ -284,6 +290,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= space_break
       ; expr_parens
+      ; expr_eol
       ; branch_expr
       ; close_paren_branch }
   | `Toplevel | `All ->
@@ -296,6 +303,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= space_break
       ; expr_parens
+      ; expr_eol
       ; branch_expr
       ; close_paren_branch }
   | `Vertical ->
@@ -308,6 +316,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~xbch:({ast; _} as xast) =
       ; open_paren_branch
       ; break_after_opening_paren= break 1000 0
       ; expr_parens
+      ; expr_eol
       ; branch_expr
       ; close_paren_branch }
 
@@ -374,8 +383,6 @@ type elements_collection =
   ; sep_after_final: Fmt.t }
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
-
-type elements_collection_record_pat = {wildcard: Fmt.t}
 
 let get_record_expr (c : Conf.t) =
   let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
@@ -462,8 +469,7 @@ let get_record_pat (c : Conf.t) ~ctx =
         ~space_around:c.fmt_opts.space_around_records.v "{" "}"
     else params.box
   in
-  ( {params with box}
-  , {wildcard= params.sep_before $ str "_" $ params.sep_after_final} )
+  {params with box}
 
 let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
   let params = collection_expr c ~space_around opn cls in

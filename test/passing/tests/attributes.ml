@@ -441,3 +441,23 @@ let _ = f ((1 : int) [@a]) ((1 : int) [@a])
 let _ = f ((((1 : int) [@a]) : (int[@b])) [@a]) ((1 : int) [@a])
 
 include [@foo] M [@boo]
+
+let () =
+  let () =
+    S.ntyp Cbor_type.Reserved
+    @@ S.tok
+         begin [@warning "-4"]
+           fun ev ->
+             match ev with Cbor_event.Reserved int -> Some int | _ -> None
+         end
+  in
+  ()
+
+let () =
+  let () =
+    S.ntyp Cbor_type.Reserved
+    @@ (S.tok (fun ev ->
+            match ev with Cbor_event.Reserved int -> Some int | _ -> None )
+       [@warning "-4"] )
+  in
+  ()

@@ -248,3 +248,15 @@ let get_nullability = function
   | Undef
   (* This is a very special case, assigning non-null is a technical trick *) ->
       Nullability.Nonnull
+
+let _ =
+  try
+    ()
+  with _ ->
+    (match () with _ -> ())
+
+let _ =
+  let _ =
+    try () with _ ->
+    try () with _ -> () in
+  ()
