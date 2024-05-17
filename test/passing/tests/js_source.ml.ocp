@@ -2382,8 +2382,7 @@ let inlineseq_from_astseq seq =
       | x, Ast_Bold xs -> Bold (List.map (process x) xs)
       | Kind Maylink, Ast_Link lnk -> Link lnk
       | Kind Nonlink, Ast_Link _ -> assert false
-      | Kind Maylink, Ast_Mref (lnk, xs) ->
-        Mref (lnk, List.map (process (Kind Nonlink)) xs)
+      | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
       | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq

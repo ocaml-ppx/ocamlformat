@@ -2303,15 +2303,14 @@ type _ linkp = Nonlink : [`Nonlink] linkp | Maylink : inkind linkp
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp -> ast_t -> a inline_t =
    fun allow_link ast ->
-     match (allow_link, ast) with
-     | Maylink, Ast_Text txt -> Text txt
-     | Nonlink, Ast_Text txt -> Text txt
-     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-     | Maylink, Ast_Link lnk -> Link lnk
-     | Nonlink, Ast_Link _ -> assert false
-     | Maylink, Ast_Mref (lnk, xs) ->
-         Mref (lnk, List.map (process Nonlink) xs)
-     | Nonlink, Ast_Mref _ -> assert false
+    match (allow_link, ast) with
+    | Maylink, Ast_Text txt -> Text txt
+    | Nonlink, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Maylink, Ast_Link lnk -> Link lnk
+    | Nonlink, Ast_Link _ -> assert false
+    | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
+    | Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process Maylink) seq
 
@@ -2321,14 +2320,14 @@ type _ linkp2 = Kind : 'a linkp -> ([< inkind] as 'a) linkp2
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp2 -> ast_t -> a inline_t =
    fun allow_link ast ->
-     match (allow_link, ast) with
-     | Kind _, Ast_Text txt -> Text txt
-     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-     | Kind Maylink, Ast_Link lnk -> Link lnk
-     | Kind Nonlink, Ast_Link _ -> assert false
-     | Kind Maylink, Ast_Mref (lnk, xs) ->
-         Mref (lnk, List.map (process (Kind Nonlink)) xs)
-     | Kind Nonlink, Ast_Mref _ -> assert false
+    match (allow_link, ast) with
+    | Kind _, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Kind Maylink, Ast_Link lnk -> Link lnk
+    | Kind Nonlink, Ast_Link _ -> assert false
+    | Kind Maylink, Ast_Mref (lnk, xs) ->
+        Mref (lnk, List.map (process (Kind Nonlink)) xs)
+    | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
 

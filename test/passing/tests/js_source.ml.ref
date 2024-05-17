@@ -2359,14 +2359,14 @@ type _ linkp =
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp -> ast_t -> a inline_t =
     fun allow_link ast ->
-      match allow_link, ast with
-      | Maylink, Ast_Text txt -> Text txt
-      | Nonlink, Ast_Text txt -> Text txt
-      | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-      | Maylink, Ast_Link lnk -> Link lnk
-      | Nonlink, Ast_Link _ -> assert false
-      | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
-      | Nonlink, Ast_Mref _ -> assert false
+    match allow_link, ast with
+    | Maylink, Ast_Text txt -> Text txt
+    | Nonlink, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Maylink, Ast_Link lnk -> Link lnk
+    | Nonlink, Ast_Link _ -> assert false
+    | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
+    | Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process Maylink) seq
 ;;
@@ -2377,14 +2377,13 @@ type _ linkp2 = Kind : 'a linkp -> ([< inkind ] as 'a) linkp2
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp2 -> ast_t -> a inline_t =
     fun allow_link ast ->
-      match allow_link, ast with
-      | Kind _, Ast_Text txt -> Text txt
-      | x, Ast_Bold xs -> Bold (List.map (process x) xs)
-      | Kind Maylink, Ast_Link lnk -> Link lnk
-      | Kind Nonlink, Ast_Link _ -> assert false
-      | Kind Maylink, Ast_Mref (lnk, xs) ->
-        Mref (lnk, List.map (process (Kind Nonlink)) xs)
-      | Kind Nonlink, Ast_Mref _ -> assert false
+    match allow_link, ast with
+    | Kind _, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Kind Maylink, Ast_Link lnk -> Link lnk
+    | Kind Nonlink, Ast_Link _ -> assert false
+    | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
+    | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
 ;;
@@ -3661,8 +3660,8 @@ let map_lambda ~map_rec : _ lambda -> _ = function
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current;
-    !current
+  incr current;
+  !current
 ;;
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
@@ -3873,8 +3872,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current;
-    !current
+  incr current;
+  !current
 ;;
 
 class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -4118,8 +4117,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current;
-    !current
+  incr current;
+  !current
 ;;
 
 let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =

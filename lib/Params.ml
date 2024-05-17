@@ -708,7 +708,7 @@ module Indent = struct
     | _ -> false
 
   let ctx_is_let = function
-    | Lb _ | Str _ -> true
+    | Lb _ | Str _ | Exp { pexp_desc= Pexp_let _; _ } | Bo _ -> true
     | _ -> false
 
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
