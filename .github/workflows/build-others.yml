@@ -18,9 +18,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          # PR 65 broke windows support. Getting this back isn't high priority,
-          # but it would be nice.
-          # - windows-latest
+          - windows-latest
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
           - 4.14.x

@@ -1,21 +1,20 @@
 val foo :
-  ('k
-   : immediate64) 'cmp.
+  ('k : immediate64) 'cmp.
      (module S
         with type Id_and_repr.t = 'k
          and type Id_and_repr.comparator_witness = 'cmp )
   -> 'k Jane_symbol.Map.t
   -> ('k, Sockaddr.t, 'cmp) Map.t
 
-type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt : value
+type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+  :
+  value
 
-type  t_value  :  value
+type t_value : value
 
-type t_imm
-     : immediate
+type t_imm : immediate
 
-type t_imm64 :
-       immediate64
+type t_imm64 : immediate64
 
 type t_float64 : float64
 

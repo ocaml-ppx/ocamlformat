@@ -31,36 +31,58 @@ let is_erasable_jane_syntax attr =
 
 (* Immediate layout annotations should be treated the same as their attribute
    counterparts *)
-let normalize_immediate_annot_and_attrs attr =
-  match (attr.attr_name.txt, attr.attr_payload) with
-  (* We also have to normalize "ocaml.immediate" into "immediate" for this to
-     work. Since if we rewrite [@@ocaml.immediate] into an annotation and
-     treat that as [@@immediate]. That's an attribute change we need to
-     accept. *)
-  | ( "jane.erasable.layouts.annot"
-    , PStr
-        [ { pstr_desc=
-              Pstr_eval
-                ({pexp_desc= Pexp_ident {txt= Lident "immediate"; _}; _}, _)
-          ; _ } ] )
-   |"ocaml.immediate", PStr [] ->
-      Some
-        { attr with
-          attr_name= {attr.attr_name with txt= "immediate"}
-        ; attr_payload= PStr [] }
-  | ( "jane.erasable.layouts.annot"
-    , PStr
-        [ { pstr_desc=
-              Pstr_eval
-                ({pexp_desc= Pexp_ident {txt= Lident "immediate64"; _}; _}, _)
-          ; _ } ] )
-   |"ocaml.immediate64", PStr [] ->
-      Some
-        { attr with
-          attr_name= {attr.attr_name with txt= "immediate64"}
-        ; attr_payload= PStr [] }
-  | "jane.erasable.layouts", PStr [] -> None
-  | _, _ -> Some attr
+let normalize_immediate_annot_and_attrs attrs =
+  let overwrite_attr_name attr new_name =
+    { attr with
+      attr_name= {attr.attr_name with txt= new_name}
+    ; attr_payload= PStr [] }
+  in
+  let attrs, _ =
+    List.fold attrs ~init:([], false)
+      ~f:(fun (new_attrs, deleted_layout_annot) attr ->
+        let new_attr, just_deleted_layout_annot =
+          match (attr.attr_name.txt, attr.attr_payload) with
+          (* We also have to normalize "ocaml.immediate" into "immediate" for
+             this to work. Since if we rewrite [@@ocaml.immediate] into an
+             annotation and treat that as [@@immediate]. That's an attribute
+             change we need to accept. *)
+          | ( "jane.erasable.layouts.annot"
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc= Pexp_ident {txt= Lident "immediate"; _}
+                          ; _ }
+                        , _ )
+                  ; _ } ] ) ->
+              (Some (overwrite_attr_name attr "immediate"), true)
+          | "ocaml.immediate", PStr [] ->
+              (Some (overwrite_attr_name attr "immediate"), false)
+          | ( "jane.erasable.layouts.annot"
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc=
+                              Pexp_ident {txt= Lident "immediate64"; _}
+                          ; _ }
+                        , _ )
+                  ; _ } ] ) ->
+              (Some (overwrite_attr_name attr "immediate64"), true)
+          | "ocaml.immediate64", PStr [] ->
+              (Some (overwrite_attr_name attr "immediate64"), false)
+          | "jane.erasable.layouts", PStr [] when deleted_layout_annot ->
+              (* Only remove [jane.erasable.layouts] if we previously rewrote
+                 an associated [jane.erasable.layouts.annot] *)
+              (None, false)
+          | _, _ -> (Some attr, false)
+        in
+        let new_attrs =
+          match new_attr with
+          | Some new_attr -> new_attr :: new_attrs
+          | None -> new_attrs
+        in
+        (new_attrs, deleted_layout_annot || just_deleted_layout_annot) )
+  in
+  List.rev attrs
 
 let dedup_cmts fragment ast comments =
   let of_ast ast =
@@ -339,8 +361,7 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   in
   let type_declaration (m : Ast_mapper.mapper) decl =
     let ptype_attributes =
-      decl.ptype_attributes
-      |> List.filter_map ~f:normalize_immediate_annot_and_attrs
+      decl.ptype_attributes |> normalize_immediate_annot_and_attrs
       (* CR jane-syntax: This ensures that jane syntax attributes are
          removed *)
       |> if erase_jane_syntax then map_attributes_no_sort m else Fn.id

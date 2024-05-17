@@ -3565,7 +3565,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/layout_annotation.ml layout_annotation.ml.stdout)))
+ (action (diff tests/layout_annotation.ml.ref layout_annotation.ml.stdout)))
 
 (rule
  (alias runtest)
