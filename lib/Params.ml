@@ -26,12 +26,6 @@ let is_labelled_arg args exp =
       | Labelled _, x | Optional _, x -> phys_equal x exp )
     args
 
-(** Like [is_labelled_arg] but look at an expression's context. *)
-let is_labelled_arg' xexp =
-  match xexp.Ast.ctx with
-  | Exp {pexp_desc= Pexp_apply (_, args); _} -> is_labelled_arg args xexp.ast
-  | _ -> false
-
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
@@ -686,32 +680,39 @@ module Align = struct
 end
 
 module Indent = struct
-  let function_ ?(default = 0) (c : Conf.t) ~parens xexp =
-    match c.fmt_opts.function_indent_nested.v with
-    | `Always -> c.fmt_opts.function_indent.v
-    | _ when ocp c && parens && not (is_labelled_arg' xexp) -> default + 1
-    | _ -> default
+  let ctx_is_infix = function
+    | Exp { pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _ } -> false
+    | Exp { pexp_desc= Pexp_infix _; _ } -> true
+    | _ -> false
 
-  let fun_ ?eol (c : Conf.t) =
-    match c.fmt_opts.function_indent_nested.v with
-    | `Always -> c.fmt_opts.function_indent.v
-    | _ ->
-        if Option.is_none eol then 2
-        else if c.fmt_opts.let_binding_deindent_fun.v then 1
-        else 0
+  let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
+    if ctx_is_infix ctx0 then
+      if has_label then 2 else 0
+    else
+      match c.fmt_opts.function_indent_nested.v with
+      | `Always -> c.fmt_opts.function_indent.v
+      | _ when ocp c && parens && not has_label -> default + 1
+      | _ -> default
+
+  let fun_ ?eol (c : Conf.t) ~ctx0 =
+    if ctx_is_infix ctx0 then
+      0
+    else
+        match c.fmt_opts.function_indent_nested.v with
+        | `Always -> c.fmt_opts.function_indent.v
+        | _ ->
+            if Option.is_none eol then 2
+            else if c.fmt_opts.let_binding_deindent_fun.v then 1
+            else 0
 
   let fun_type_annot c = if ocp c then 2 else 4
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function (c : Conf.t) ~parens xexp =
-    if ocp c then if parens then 3 else 2
-    else
-      let default = if c.fmt_opts.wrap_fun_args.v then 2 else 4 in
-      function_ ~default c ~parens:false xexp
-
-  let docked_function_after_fun (c : Conf.t) ~parens ~lbl =
-    if ocp c then if parens && Poly.equal lbl Nolabel then 3 else 2 else 0
+  let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens ~has_label =
+    if ctx_is_infix ctx0 then
+      0 else
+    if ocp c then if parens && not has_label then 3 else 2 else 0
 
   let fun_args_group (c : Conf.t) ~lbl exp =
     if not (ocp c) then 2

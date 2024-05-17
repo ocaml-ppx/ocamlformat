@@ -9924,8 +9924,7 @@ let bind t ~f =
             | Sequence { state = seed; next } ->
               (match next seed with
                | Done -> Done
-               | Skip { state = s } ->
-                 Skip { state = empty, Sequence { state = s; next } }
+               | Skip { state = s } -> Skip { state = empty, Sequence { state = s; next } }
                | Yield { value = a; state = s } ->
                  Skip { state = f a, Sequence { state = s; next } }))
          | Skip { state = s } -> Skip { state = Sequence { state = s; next }, rest }

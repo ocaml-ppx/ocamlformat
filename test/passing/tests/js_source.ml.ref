@@ -3674,7 +3674,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-        if Names.mem s used then data :: acc else acc)
+          if Names.mem s used then data :: acc else acc)
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
     then (
@@ -3912,7 +3912,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-            if Names.mem s used then data :: acc else acc)
+              if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4154,7 +4154,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-            if Names.mem s used then data :: acc else acc)
+              if Names.mem s used then data :: acc else acc)
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
         then (
@@ -4915,7 +4915,7 @@ module Common0 = struct
 
   let handle_msg =
     ref (function
-         | _ -> failwith "Unable to handle message")
+       | _ -> failwith "Unable to handle message")
   ;;
 
   let extend_handle f =
@@ -4935,7 +4935,7 @@ module Common = struct
 
   let handle_msg =
     ref (function
-         | _ -> failwith "Unable to handle message")
+       | _ -> failwith "Unable to handle message")
   ;;
 
   let extend_handle f =
@@ -9622,7 +9622,7 @@ let _ =
 
 let _ =
   List.map rows ~f:(fun row ->
-    Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
 
 module type T = sig
@@ -9815,7 +9815,7 @@ let _ =
   match x with
   | _
     when f ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
-             | _ -> .) -> y
+           | _ -> .) -> y
 ;;
 
 let[@a
@@ -9831,21 +9831,21 @@ let[@a
   | _
     when f
            ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
-             | _ -> .)
+           | _ -> .)
            ~f:
              (function[@ocaml.warning
                         (* ....................................... *)
                         (* ....................................... *)
                         "foooooooooooooooooooooooooooo \
                          fooooooooooooooooooooooooooooooooooooo"]
-             | _ -> .)
+           | _ -> .)
            ~f:
              (function[@ocaml.warning
                         (* ....................................... *)
                         let x = a
                         and y = b in
                         x + y]
-             | _ -> .) ->
+           | _ -> .) ->
     y
     [@attr
       (* ... *)
@@ -9855,22 +9855,22 @@ let[@a
 
 let x =
   foo (`A b) ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo (`A `b) ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ A; B ] ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
   foo [ [ A ]; B ] ~f:(fun thing ->
-    something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
+      something that reaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaally needs wrapping)
 ;;
 
 let x =
@@ -9884,9 +9884,9 @@ let x =
   some_fun________________________________
     some_arg______________________________
     (fun param ->
-       do_something ();
-       do_something_else ();
-       return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 ;;
 
 let x =
@@ -9901,36 +9901,35 @@ let x =
 let x =
   some_value
   |> some_fun (fun x ->
-    do_something ();
-    do_something_else ();
-    return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 ;;
 
 let x =
   some_value
   ^ some_fun (fun x ->
-    do_something ();
-    do_something_else ();
-    return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 ;;
 
 let bind t ~f =
   unfold_step
     ~f:(function
-      | Sequence { state = seed; next }, rest ->
-        (match next seed with
-         | Done ->
-           (match rest with
-            | Sequence { state = seed; next } ->
-              (match next seed with
-               | Done -> Done
-               | Skip { state = s } ->
-                 Skip { state = empty, Sequence { state = s; next } }
-               | Yield { value = a; state = s } ->
-                 Skip { state = f a, Sequence { state = s; next } }))
-         | Skip { state = s } -> Skip { state = Sequence { state = s; next }, rest }
-         | Yield { value = a; state = s } ->
-           Yield { value = a; state = Sequence { state = s; next }, rest }))
+    | Sequence { state = seed; next }, rest ->
+      (match next seed with
+       | Done ->
+         (match rest with
+          | Sequence { state = seed; next } ->
+            (match next seed with
+             | Done -> Done
+             | Skip { state = s } -> Skip { state = empty, Sequence { state = s; next } }
+             | Yield { value = a; state = s } ->
+               Skip { state = f a, Sequence { state = s; next } }))
+       | Skip { state = s } -> Skip { state = Sequence { state = s; next }, rest }
+       | Yield { value = a; state = s } ->
+         Yield { value = a; state = Sequence { state = s; next }, rest }))
     ~init:(empty, t)
 ;;
 
@@ -9992,7 +9991,7 @@ type t
 let pat =
   String.Search_pattern.create
     (String.init len ~f:(function
-         | 0 -> '\n'
+       | 0 -> '\n'
        | n when n < len - 1 -> ' '
        | _ -> '*'))
 ;;
@@ -10032,21 +10031,21 @@ let _ =
 let _ =
   foo
   |> List.map ~f:(fun x ->
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
 ;;
 
 let _ =
   foo
   |> List.map ~f:(fun x ->
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something ();
-    do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
   |> bar
 ;;
 
@@ -10066,17 +10065,17 @@ let _ =
 let _ =
   foo
   |> List.map (function
-       | A -> do_something ())
+     | A -> do_something ())
 ;;
 
 let _ =
   foo
   |> List.map (function
-       | A -> do_something ()
-    | A -> do_something ()
-    | A -> do_something ()
-    | A -> do_something ()
-    | A -> do_something_else ())
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something ()
+     | A -> do_something_else ())
   |> bar
 ;;
 
@@ -10212,7 +10211,7 @@ let _ =
     foooooooooooooooooooo
     (fun x -> function
        | Foooooooooooooooooooo -> foooooooooooooooooooo
-    | Foooooooooooooooooooo -> foooooooooooooooooooo)
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10221,7 +10220,7 @@ let _ =
     foooooooooooooooooooo
     ~x:(fun x -> function
       | Foooooooooooooooooooo -> foooooooooooooooooooo
-    | Foooooooooooooooooooo -> foooooooooooooooooooo)
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10229,9 +10228,9 @@ let _ =
     foooooooooooooooooooo
     foooooooooooooooooooo
     (fun x ->
-       match foo with
-       | Foooooooooooooooooooo -> foooooooooooooooooooo
-       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+      match foo with
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10442,9 +10441,9 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (fun foo ->
-    match bar with
-    | Some _ -> foo
-    | None -> baz)
+      match bar with
+      | Some _ -> foo
+      | None -> baz)
 ;;
 
 let _ =
@@ -10453,31 +10452,31 @@ let _ =
        ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo
        (fun foo ->
-          match bar with
-          | Some _ -> foo
-          | None -> baz)
+         match bar with
+         | Some _ -> foo
+         | None -> baz)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooofoooooooooo
        (fun foo ->
-          match bar with
-          | Some _ -> foo
-          | None -> baz)
+         match bar with
+         | Some _ -> foo
+         | None -> baz)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-       | foo -> bar)
+     | foo -> bar)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-       | Some _ -> foo
-    | None -> baz)
+     | Some _ -> foo
+     | None -> baz)
 ;;
 
 (* *)

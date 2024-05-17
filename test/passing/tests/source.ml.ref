@@ -9147,7 +9147,8 @@ f
   (fun _ -> function
     | true ->
         let () = () in
-        () | false -> () )
+        ()
+    | false -> () )
   ()
 ;;
 
@@ -9155,7 +9156,9 @@ f
   (fun _ -> function
     | true ->
         let () = () in
-        () (* comment *) | false -> () )
+        ()
+    (* comment *)
+    | false -> () )
   ()
 
 let xxxxxx =

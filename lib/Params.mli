@@ -191,11 +191,11 @@ module Indent : sig
   (** Expressions *)
 
   val function_ :
-    ?default:int -> Conf.t -> parens:bool -> expression Ast.xt -> int
+    ?default:int -> Conf.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
 
-  val fun_ : ?eol:Fmt.t -> Conf.t -> int
+  val fun_ : ?eol:Fmt.t -> Conf.t -> ctx0:Ast.t -> int
   (** Handle [function-indent-nested]. *)
 
   val fun_args : Conf.t -> int
@@ -205,10 +205,10 @@ module Indent : sig
   val docked_fun :
     Conf.t -> source:Source.t -> loc:Location.t -> lbl:arg_label -> int
 
-  val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int
+  (* val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int *)
 
   val docked_function_after_fun :
-    Conf.t -> parens:bool -> lbl:arg_label -> int
+    Conf.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
 
   val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
 
