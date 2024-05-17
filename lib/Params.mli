@@ -198,7 +198,7 @@ module Indent : sig
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
 
-  val fun_ : ?eol:Fmt.t -> Conf.t -> ctx0:Ast.t -> int
+  val fun_ : Conf.t -> ctx0:Ast.t -> int
   (** Handle [function-indent-nested]. *)
 
   val fun_args : Conf.t -> int

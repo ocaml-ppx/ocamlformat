@@ -1040,8 +1040,7 @@ let rec variantize : type t. t ty -> t -> variant =
   | Record { fields } ->
     VRecord
       (List.map
-         (fun (Field { field_type; label; get }) ->
-            label, variantize field_type (get x))
+         (fun (Field { field_type; label; get }) -> label, variantize field_type (get x))
          fields)
 ;;
 
@@ -1572,8 +1571,7 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
   | Ttip -> []
   | Tnode m -> if eq n m then [ Phere ] else []
   | Tfork (x, y) ->
-    List.map (fun x -> Pleft x) (find eq n x)
-    @ List.map (fun x -> Pright x) (find eq n y)
+    List.map (fun x -> Pleft x) (find eq n x) @ List.map (fun x -> Pright x) (find eq n y)
 ;;
 
 let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =

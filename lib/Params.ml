@@ -707,6 +707,10 @@ module Indent = struct
     | Exp { pexp_desc= Pexp_infix _; _ } -> true
     | _ -> false
 
+  let ctx_is_let = function
+    | Lb _ | Str _ -> true
+    | _ -> false
+
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
     if ctx_is_infix ctx0 then
       if has_label then 2 else 0
@@ -716,16 +720,18 @@ module Indent = struct
       | _ when ocp c && parens && not has_label -> default + 1
       | _ -> default
 
-  let fun_ ?eol (c : Conf.t) ~ctx0 =
+  let fun_ (c : Conf.t) ~ctx0 =
     if ctx_is_infix ctx0 then
       0
     else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
         | _ ->
-            if Option.is_none eol then 2
-            else if c.fmt_opts.let_binding_deindent_fun.v then 1
-            else 0
+            if ctx_is_let ctx0 then
+              if c.fmt_opts.let_binding_deindent_fun.v then 1
+              else 0
+            else
+              2
 
   let fun_type_annot c = if ocp c then 2 else 4
 
