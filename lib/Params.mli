@@ -46,6 +46,10 @@ module Exp : sig
     -> Fmt.t
   (** Box and assemble the parts [kw] (up to the arguments), [args] and
       [annot]. *)
+
+  val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
+  (** Whether a space should be added between the [function] keyword and the
+      attributes. *)
 end
 
 module Mod : sig

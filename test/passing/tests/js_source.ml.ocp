@@ -9814,8 +9814,10 @@ let xxxxxx =
 let _ =
   match x with
   | _
-    when f ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
-      | _ -> .) -> y
+    when f
+           ~f:
+             (function [@ocaml.warning (* ....................................... *) "-4"]
+               | _ -> .) -> y
 ;;
 
 let[@a

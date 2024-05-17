@@ -138,9 +138,9 @@ let ("" [@test]) = ()
 
 let _ = f x ~f:(fun [@test] x -> x)
 
-let _ = f x ~f:(function[@test] x -> x)
+let _ = f x ~f:(function [@test] x -> x)
 
-let _ = f x ~f:(function[@test] X -> x | X -> x)
+let _ = f x ~f:(function [@test] X -> x | X -> x)
 
 let () = ()
 
@@ -387,9 +387,9 @@ let _ =
   match x with
   | _
     when f
-           ~f:(function[@ocaml.warning
-                         (* ....................................... *)
-                         "-4"]
+           ~f:(function [@ocaml.warning
+                          (* ....................................... *)
+                          "-4"]
            | _ -> . ) ->
       y
 

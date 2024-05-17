@@ -1489,9 +1489,10 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
           | args, typ -> fmt_fun_args_typ args typ $ space_break, [], hvbox (Params.Indent.docked_function_after_fun c.conf ~ctx0 ~parens ~has_label)
         in
         let function_ =
+          let pre = if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank else None in
           str "function"
-          $ fmt_attributes c spilled_attrs
-          $ fmt_attributes c cs_attrs
+          $ fmt_attributes ?pre c spilled_attrs
+          $ fmt_attributes ?pre c cs_attrs
         in
         (fun_ $ function_, hvbox 0 (fmt_cases c ctx cs), box)
   in

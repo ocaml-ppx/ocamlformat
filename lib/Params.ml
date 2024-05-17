@@ -98,6 +98,22 @@ module Exp = struct
         , not c.fmt_opts.wrap_fun_args.v )
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+
+  (* if the function is the last argument of an apply and no other arguments
+     are "complex" (approximation). *)
+  let function_attrs_sp c ~ctx0 ~ctx =
+    let arg_is_simple_approx (_, exp) =
+      Ast.is_simple c (fun _ -> 0) (sub_exp ~ctx:ctx0 exp)
+    in
+    match ctx0, ctx with
+    | Exp { pexp_desc= Pexp_apply (_, args); _ }, Exp exp ->
+        (match List.rev args with
+         | [] -> false
+         | (_, last_arg) :: other_args ->
+             phys_equal exp last_arg
+             && List.for_all ~f:arg_is_simple_approx other_args
+        )
+    | _ -> false
 end
 
 module Mod = struct
