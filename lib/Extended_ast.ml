@@ -10,7 +10,6 @@
 (**************************************************************************)
 
 open Parser_extended
-module Extensions = Extensions
 include Parsetree
 
 (* Enable all language extensions *)

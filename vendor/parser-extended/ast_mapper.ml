@@ -485,6 +485,31 @@ module M = struct
     | Pstr_attribute x -> attribute ~loc (sub.attribute sub x)
 end
 
+module Comprehension = struct
+  (* List/array comprehensions *)
+
+  let map_iterator sub = function
+    | Range { start; stop; direction } ->
+      Range
+        { start = sub.expr sub start
+        ; stop = sub.expr sub stop
+        ; direction }
+    | In e -> In (sub.expr sub e)
+
+  let map_clause_binding sub {pattern; iterator; attributes} =
+    { pattern = sub.pat sub pattern
+    ; iterator = map_iterator sub iterator
+    ; attributes = sub.attributes sub attributes }
+
+  let map_clause sub = function
+    | For cbl -> For (List.map (map_clause_binding sub) cbl)
+    | When e -> When (sub.expr sub e)
+
+  let map sub {comp_body; clauses} =
+    { comp_body = sub.expr sub comp_body
+    ; clauses = List.map (map_clause sub) clauses }
+end
+
 module E = struct
   (* Value expressions for the core language *)
 
@@ -557,7 +582,8 @@ module E = struct
     | Pexp_setfield (e1, lid, e2) ->
         setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
           (sub.expr sub e2)
-    | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
+    | Pexp_array (mf, el) ->
+        array ~loc ~attrs (Flag.map_mutable sub mf) (List.map (sub.expr sub) el)
     | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_ifthenelse (eN, e2) ->
         ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)
@@ -627,6 +653,9 @@ module E = struct
         prefix ~loc ~attrs (map_loc sub op) (sub.expr sub e)
     | Pexp_infix (op, e1, e2) ->
         infix ~loc ~attrs (map_loc sub op) (sub.expr sub e1) (sub.expr sub e2)
+    | Pexp_list_comprehension c -> list_comp ~loc ~attrs (Comprehension.map sub c)
+    | Pexp_array_comprehension (f, c) ->
+        array_comp ~loc ~attrs (Flag.map_mutable sub f) (Comprehension.map sub c)
 
   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
@@ -678,7 +707,8 @@ module P = struct
             lpl
         in
         record ~loc ~attrs fields (Flag.map_obj_closed sub cf)
-    | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
+    | Ppat_array (mf, pl) ->
+        array ~loc ~attrs (Flag.map_mutable sub mf) (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_or pl -> or_ ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_constraint (p, t) ->

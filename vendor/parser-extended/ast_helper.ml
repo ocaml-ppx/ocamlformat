@@ -102,7 +102,7 @@ module Pat = struct
   let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
   let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
   let record ?loc ?attrs a b = mk ?loc ?attrs (Ppat_record (a, b))
-  let array ?loc ?attrs a = mk ?loc ?attrs (Ppat_array a)
+  let array ?loc ?attrs a b = mk ?loc ?attrs (Ppat_array (a, b))
   let list ?loc ?attrs a = mk ?loc ?attrs (Ppat_list a)
   let or_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_or a)
   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_constraint (a, b))
@@ -137,7 +137,7 @@ module Exp = struct
   let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
   let field ?loc ?attrs a b = mk ?loc ?attrs (Pexp_field (a, b))
   let setfield ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_setfield (a, b, c))
-  let array ?loc ?attrs a = mk ?loc ?attrs (Pexp_array a)
+  let array ?loc ?attrs a b = mk ?loc ?attrs (Pexp_array (a, b))
   let list ?loc ?attrs a = mk ?loc ?attrs (Pexp_list a)
   let ifthenelse ?loc ?attrs a b = mk ?loc ?attrs (Pexp_ifthenelse (a, b))
   let sequence ?loc ?attrs a b = mk ?loc ?attrs (Pexp_sequence (a, b))
@@ -171,6 +171,8 @@ module Exp = struct
   let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
   let prefix ?loc ?attrs a b = mk ?loc ?attrs (Pexp_prefix (a, b))
   let infix ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_infix (a, b, c))
+  let list_comp ?loc ?attrs a = mk ?loc ?attrs (Pexp_list_comprehension a)
+  let array_comp ?loc ?attrs a b = mk ?loc ?attrs (Pexp_array_comprehension (a, b))
 
   let case lhs ?guard rhs =
     {

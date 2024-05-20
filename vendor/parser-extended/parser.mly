@@ -411,11 +411,6 @@ module Generic_array = struct
   let pattern    : _ -> _ -> _ -> (pattern,    pattern_desc)    t -> _ = to_ast
 end
 
-let ppat_iarray loc elts =
-  (Extensions.Immutable_arrays.pat_of
-     ~loc:(make_loc loc)
-     (Iapat_immutable_array elts)).ppat_desc
-
 let expecting_loc (loc : Location.t) (nonterm : string) =
     raise Syntaxerr.(Error(Expecting(loc, nonterm)))
 let expecting (loc : Lexing.position * Lexing.position) nonterm =
@@ -2637,21 +2632,21 @@ simple_expr:
 
 comprehension_iterator:
   | EQUAL expr direction_flag expr
-      { Extensions.Comprehensions.Range { start = $2 ; stop = $4 ; direction = $3 } }
+      { Range { start = $2 ; stop = $4 ; direction = $3 } }
   | IN expr
-      { Extensions.Comprehensions.In $2 }
+      { In $2 }
 ;
 
 comprehension_clause_binding:
   | attributes pattern comprehension_iterator
-      { Extensions.Comprehensions.{ pattern = $2 ; iterator = $3 ; attributes = $1 } }
+      { { pattern = $2 ; iterator = $3 ; attributes = $1 } }
   (* We can't write [[e for local_ x = 1 to 10]], because the [local_] has to
      move to the RHS and there's nowhere for it to move to; besides, you never
      want that [int] to be [local_].  But we can parse [[e for local_ x in xs]].
      We have to have that as a separate rule here because it moves the [local_]
      over to the RHS of the binding, so we need everything to be visible. *)
   | attributes LOCAL pattern IN expr
-      { Extensions.Comprehensions.
+      {
           { pattern    = $3
           ; iterator   = In (mkexp_stack ~loc:$sloc (* ~kwd_loc:($loc($2)) *) $5)
           ; attributes = $1
@@ -2661,28 +2656,23 @@ comprehension_clause_binding:
 
 comprehension_clause:
   | FOR separated_nonempty_llist(AND, comprehension_clause_binding)
-      { Extensions.Comprehensions.For $2 }
+      { For $2 }
   | WHEN expr
-      { Extensions.Comprehensions.When $2 }
+      { When $2 }
 
 %inline comprehension(lbracket, rbracket):
   lbracket expr nonempty_llist(comprehension_clause) rbracket
-    { Extensions.Comprehensions.{ body = $2; clauses = $3 } }
-;
-
-%inline comprehension_ext_expr:
-  | comprehension(LBRACKET,RBRACKET)
-      { Extensions.Comprehensions.Cexp_list_comprehension  $1 }
-  | comprehension(LBRACKETBAR,BARRBRACKET)
-      { Extensions.Comprehensions.Cexp_array_comprehension
-          (Mutable Location.none, $1) }
-  | comprehension(LBRACKETCOLON,COLONRBRACKET)
-      { Extensions.Comprehensions.Cexp_array_comprehension (Immutable, $1) }
+    { { comp_body = $2; clauses = $3 } }
 ;
 
 %inline comprehension_expr:
-  comprehension_ext_expr
-    { (Extensions.Comprehensions.expr_of ~loc:(make_loc $sloc) $1).pexp_desc }
+  | comprehension(LBRACKET,RBRACKET)
+      { Pexp_list_comprehension  $1 }
+  | comprehension(LBRACKETBAR,BARRBRACKET)
+      { Pexp_array_comprehension
+          (Mutable Location.none, $1) }
+  | comprehension(LBRACKETCOLON,COLONRBRACKET)
+      { Pexp_array_comprehension (Immutable, $1) }
 ;
 
 %inline array_simple(ARR_OPEN, ARR_CLOSE, contents_semi_list):
@@ -2784,15 +2774,12 @@ comprehension_clause:
   | array_exprs(LBRACKETBAR, BARRBRACKET)
       { Generic_array.expression
           "[|" "|]"
-          (fun elts -> Pexp_array elts)
+          (fun elts -> Pexp_array (Mutable Location.none, elts))
           $1 }
   | array_exprs(LBRACKETCOLON, COLONRBRACKET)
       { Generic_array.expression
           "[:" ":]"
-          (fun elts ->
-            (Extensions.Immutable_arrays.expr_of
-               ~loc:(make_loc $sloc)
-               (Iaexp_immutable_array elts)).pexp_desc)
+          (fun elts -> Pexp_array (Immutable, elts))
           $1 }
   | LBRACKET expr_semi_list RBRACKET
       { Pexp_list $2 }
@@ -3365,12 +3352,12 @@ simple_delimited_pattern:
     | array_patterns(LBRACKETBAR, BARRBRACKET)
         { Generic_array.pattern
             "[|" "|]"
-            (fun elts -> Ppat_array elts)
+            (fun elts -> Ppat_array (Mutable Location.none, elts))
             $1 }
     | array_patterns(LBRACKETCOLON, COLONRBRACKET)
         { Generic_array.pattern
             "[:" ":]"
-            (ppat_iarray $sloc)
+            (fun elts -> Ppat_array (Immutable, elts))
             $1 }
   ) { $1 }
 
