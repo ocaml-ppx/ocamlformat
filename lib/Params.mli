@@ -50,6 +50,9 @@ module Exp : sig
   val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
+
+  val break_fun_decl_args : ctx:Ast.t -> Fmt.t
+
 end
 
 module Mod : sig

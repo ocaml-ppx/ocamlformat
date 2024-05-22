@@ -1475,7 +1475,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     and annot = Option.map ~f:fmt_typ typ
     in
     Params.Exp.box_fun_decl_args ~ctx:ctx0 c.conf ~parens ~kw ~args ~annot
-    $ break 1 (-2) $ str "->"
+    $ Params.Exp.break_fun_decl_args  ~ctx:ctx0 $ str "->"
   in
   (* [head] is [fun args ->] or [function]. [body] is an expression or the
      cases. *)
@@ -1507,6 +1507,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     else noop, noop
   in
   let box k = if should_box then box k else k in
+  let box = match ctx0   with Str _ -> hvbox_if should_box (Params.Indent.fun_ ~ctx0 c.conf) | _ ->  box in
   box
     ( wrap_intro
         (hvbox_if has_cmts_outer 0
@@ -1921,10 +1922,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let indent_wrap = if parens then -2 else 0 in
       pro
       $ wrap_fits_breaks_if c.conf parens "(" ")"
-          ( 
+          (
               (
                  (fmt_function
-                   ~ctx:(Exp r) ~ctx0:ctx ~parens:(parens_r) ~wrap_intro:(fun intro ->
+                   ~ctx:(Exp r) ~ctx0:ctx ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->
                  (
                      ( hvbox indent_wrap
                          (fmt_if has_attr (str "(") $ fmt_expression ~indent_wrap c (sub_exp ~ctx l)

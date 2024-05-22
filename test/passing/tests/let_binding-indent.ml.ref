@@ -108,8 +108,8 @@ let f aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
 
 let _ =
      fun aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb
-         cccccccccccccccccccccccc dddddddddddddddddd eeeeeeeeeeeeee
-     -> ()
+         cccccccccccccccccccccccc dddddddddddddddddd eeeeeeeeeeeeee ->
+      ()
 
 let _ =
       let (x : int) = x in

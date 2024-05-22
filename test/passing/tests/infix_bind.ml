@@ -13,12 +13,14 @@ f x >>= function
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
+|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx ->
+x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
-|> fun x -> x
+|> fun x ->
+x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -30,13 +32,15 @@ xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
+|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx ->
+x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
-|> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
+|> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx ->
+x
 ;;
 
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxxxxxx ->
@@ -124,7 +128,8 @@ let end_gen_implementation ?toplevel ~ppf_dump
   ( clambda
   ++ Profile.record "cmm" (Cmmgen.compunit ~ppf_dump)
   ++ Profile.record "compile_phrases" (List.iter (compile_phrase ~ppf_dump))
-  ++ fun () -> () ) ;
+  ++ fun () ->
+  () ) ;
   fooooooooooooooo
 
 let foo =

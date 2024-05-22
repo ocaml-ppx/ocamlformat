@@ -114,6 +114,11 @@ module Exp = struct
              && List.for_all ~f:arg_is_simple_approx other_args
         )
     | _ -> false
+  let break_fun_decl_args ~ctx =
+    match ctx with
+    Ast.Str _ ->
+       (* special case that break the arrow in [let _ = fun ... ->] *) (str " ") | _ -> break 1 (-2)
+
 end
 
 module Mod = struct
