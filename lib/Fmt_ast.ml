@@ -1925,7 +1925,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (
               (
                  (fmt_function
-                   ~ctx:(Exp r) ~ctx0:ctx ~box:false ~parens:(parens_r) ~wrap_intro:(fun intro ->
+                   ~ctx:(Exp r) ~ctx0:ctx (*~box:false to fix regression on infix *) ~parens:(parens_r) ~wrap_intro:(fun intro ->
                  (
                      ( hvbox indent_wrap
                          (fmt_if has_attr (str "(") $ fmt_expression ~indent_wrap c (sub_exp ~ctx l)
