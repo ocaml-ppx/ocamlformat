@@ -1483,7 +1483,8 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     match args, typ, body with
     | (_ :: _), _, Pfunction_body body ->
         (* Only [fun]. *)
-        fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body), hovbox (Params.Indent.fun_ c.conf ~ctx0)
+        fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body),
+     (Params.Exp.box_fun_expr c.conf ~ctx0)
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
@@ -1507,7 +1508,6 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     else noop, noop
   in
   let box k = if should_box then box k else k in
-  let box = match ctx0   with Str _ -> hvbox_if should_box (Params.Indent.fun_ ~ctx0 c.conf) | _ ->  box in
   box
     ( wrap_intro
         (hvbox_if has_cmts_outer 0

@@ -47,6 +47,8 @@ module Exp : sig
   (** Box and assemble the parts [kw] (up to the arguments), [args] and
       [annot]. *)
 
+  val box_fun_expr : Conf.t -> ctx0:Ast.t -> Fmt.t -> Fmt.t
+
   val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
@@ -200,9 +202,6 @@ module Indent : sig
     ?default:int -> Conf.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
-
-  val fun_ : Conf.t -> ctx0:Ast.t -> int
-  (** Handle [function-indent-nested]. *)
 
   val fun_args : Conf.t -> int
 

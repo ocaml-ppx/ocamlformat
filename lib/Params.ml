@@ -26,6 +26,15 @@ let is_labelled_arg args exp =
       | Labelled _, x | Optional _, x -> phys_equal x exp )
     args
 
+let ctx_is_infix = function
+| Exp { pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _ } -> false
+    | Exp { pexp_desc= Pexp_infix _; _ } -> true
+    | _ -> false
+
+  let ctx_is_let = function
+    | Lb _ | Str _ | Exp { pexp_desc= Pexp_let _; _ } | Bo _ -> true
+    | _ -> false
+
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
@@ -98,6 +107,23 @@ module Exp = struct
         , not c.fmt_opts.wrap_fun_args.v )
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+
+  let box_fun_expr (c: Conf.t) ~ctx0 =
+    let indent =
+    if ctx_is_infix ctx0 then
+      0
+    else
+        match c.fmt_opts.function_indent_nested.v with
+        | `Always -> c.fmt_opts.function_indent.v
+        | _ ->
+            if ctx_is_let ctx0 then
+              if c.fmt_opts.let_binding_deindent_fun.v then 1
+              else 0
+            else
+              2 in
+    ( match ctx0 with
+      | Str _ -> hvbox indent
+      | _ -> hovbox indent)
 
   (* if the function is the last argument of an apply and no other arguments
      are "complex" (approximation). *)
@@ -707,14 +733,7 @@ module Align = struct
 end
 
 module Indent = struct
-  let ctx_is_infix = function
-    | Exp { pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _ } -> false
-    | Exp { pexp_desc= Pexp_infix _; _ } -> true
-    | _ -> false
 
-  let ctx_is_let = function
-    | Lb _ | Str _ | Exp { pexp_desc= Pexp_let _; _ } | Bo _ -> true
-    | _ -> false
 
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
     if ctx_is_infix ctx0 then
@@ -725,18 +744,7 @@ module Indent = struct
       | _ when ocp c && parens && not has_label -> default + 1
       | _ -> default
 
-  let fun_ (c : Conf.t) ~ctx0 =
-    if ctx_is_infix ctx0 then
-      0
-    else
-        match c.fmt_opts.function_indent_nested.v with
-        | `Always -> c.fmt_opts.function_indent.v
-        | _ ->
-            if ctx_is_let ctx0 then
-              if c.fmt_opts.let_binding_deindent_fun.v then 1
-              else 0
-            else
-              2
+
 
   let fun_type_annot c = if ocp c then 2 else 4
 
