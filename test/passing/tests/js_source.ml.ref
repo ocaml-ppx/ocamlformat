@@ -1292,8 +1292,7 @@ let ty_abc =
   and inj
     : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
-    =
-    function
+    = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
     | Ttl (Ttl Thd), Noarg -> `C
@@ -1326,8 +1325,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj =
            (function
-             | `Nil -> "Nil", None
-             | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
+            | `Nil -> "Nil", None
+            | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) ->
@@ -1363,9 +1362,9 @@ let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-        | `A n -> "A", Some (Tdyn (Int, n))
-        | `B s -> "B", Some (Tdyn (String, s))
-        | `C -> "C", None)
+       | `A n -> "A", Some (Tdyn (Int, n))
+       | `B s -> "B", Some (Tdyn (String, s))
+       | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -1380,8 +1379,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-           | `Nil -> "Nil", None
-           | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+          | `Nil -> "Nil", None
+          | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
@@ -2019,8 +2018,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
 
 type assoc = Assoc : string * 'a rep * 'a -> assoc
 
-let rec assoc : type a. string -> a rep -> assoc list -> a =
-  fun x r -> function
+let rec assoc : type a. string -> a rep -> assoc list -> a = fun x r -> function
   | [] -> raise Not_found
   | Assoc (x', r', v) :: env ->
     if x = x'
@@ -2040,8 +2038,7 @@ type _ term =
   | Ap : ('a -> 'b) term * 'a term -> 'b term
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
-let rec eval_term : type a. assoc list -> a term -> a =
-  fun env -> function
+let rec eval_term : type a. assoc list -> a term -> a = fun env -> function
   | Var (x, r) -> assoc x r env
   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
   | Const x -> x
@@ -2680,8 +2677,7 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 
 let vexpr (type result) (type visit_action)
   : (unit, result, visit_action) context -> unit -> visit_action
-  =
-  function
+  = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -3660,8 +3656,8 @@ let map_lambda ~map_rec : _ lambda -> _ = function
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
@@ -3872,8 +3868,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -4117,8 +4113,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -8655,8 +8651,7 @@ type v =
 let f
   : type a b c d e f g.
     a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
-  =
-  function
+  = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;

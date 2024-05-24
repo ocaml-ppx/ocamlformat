@@ -31,9 +31,15 @@ let ctx_is_infix = function
     | Exp { pexp_desc= Pexp_infix _; _ } -> true
     | _ -> false
 
-  let ctx_is_let = function
-    | Lb _ | Str _ | Exp { pexp_desc= Pexp_let _; _ } | Bo _ -> true
-    | _ -> false
+(** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
+    [ctx]. *)
+let ctx_is_let ~ctx = function
+  | Lb _ | Str _ | Bo _ -> true
+  | Exp { pexp_desc= Pexp_let (_, rhs, _); _ } ->
+      (match ctx with
+       | Exp exp -> not (phys_equal rhs exp)
+       | _ -> false)
+  | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
@@ -108,15 +114,15 @@ module Exp = struct
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 
-  let box_fun_expr (c: Conf.t) ~ctx0 =
+  let box_fun_expr (c: Conf.t) ~ctx0 ~ctx =
     let indent =
-    if ctx_is_infix ctx0 then
-      0
-    else
+      if ctx_is_infix ctx0 then
+        0
+      else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
         | _ ->
-            if ctx_is_let ctx0 then
+            if ctx_is_let ~ctx ctx0 then
               if c.fmt_opts.let_binding_deindent_fun.v then 1
               else 0
             else
@@ -733,8 +739,6 @@ module Align = struct
 end
 
 module Indent = struct
-
-
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
     if ctx_is_infix ctx0 then
       if has_label then 2 else 0
@@ -743,8 +747,6 @@ module Indent = struct
       | `Always -> c.fmt_opts.function_indent.v
       | _ when ocp c && parens && not has_label -> default + 1
       | _ -> default
-
-
 
   let fun_type_annot c = if ocp c then 2 else 4
 

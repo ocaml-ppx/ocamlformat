@@ -1479,12 +1479,12 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
   in
   (* [head] is [fun args ->] or [function]. [body] is an expression or the
      cases. *)
-  let head, body, box =
+  let head, body, box, closing_paren_offset =
     match args, typ, body with
     | (_ :: _), _, Pfunction_body body ->
         (* Only [fun]. *)
         fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body),
-     (Params.Exp.box_fun_expr c.conf ~ctx0)
+     (Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx), ~-2
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
@@ -1498,13 +1498,16 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
         let function_ =
           let pre = if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank else None in
           str "function"
+          $ fmt_extension_suffix c ext
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
         in
-        (fun_ $ function_, hvbox 0 (fmt_cases c ctx cs), box)
+        (fun_ $ function_, hvbox 0 (fmt_cases c ctx cs), box, 0)
   in
+  (* TODO: Disambiguating parentheses in case of one-liner 'function'.
+     See 'Params.Exp.wrap c.conf ~parens ~disambiguate:true' *)
   let opn_paren, cls_paren =
-    if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:(-2)
+    if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:closing_paren_offset
     else noop, noop
   in
   let box k = if should_box then box k else k in
@@ -2166,30 +2169,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
-  | Pexp_function (args, typ, (Pfunction_body _ as body))
-  | Pexp_function ((_ :: _ as args), typ, body) ->
-      pro
-      $
-          (
-             (
-      fmt_function ~box ~ctx  ~ctx0
+  | Pexp_function (args, typ, body) ->
+      let wrap_intro intro = hovbox 2 (pro $ intro) $ space_break in
+      fmt_function ~wrap_intro ~box ~ctx  ~ctx0
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
-             ) )
-  | Pexp_function ([], None, Pfunction_cases (cs, cs_loc, cs_attrs)) ->
-      let indent = Params.Indent.function_ c.conf ~ctx0 ~parens ~has_label:false in
-      let outer_pro, inner_pro = if parens then pro, noop else noop, pro in
-      outer_pro
-      $ Params.Exp.wrap c.conf ~parens ~disambiguate:true ~fits_breaks:false
-        @@ Params.Align.function_ c.conf ~parens ~ctx0 ~self:exp
-        @@ ( Cmts.fmt_before c cs_loc $ hvbox 2
-               (inner_pro $ str "function"
-               $ fmt_extension_suffix c ext
-               $ fmt_attributes c pexp_attributes
-               $ fmt_attributes c cs_attrs )
-           $ break 1 indent
-           $ hvbox 0 (fmt_cases c ctx cs)
-           $ Cmts.fmt_after c cs_loc)
-  | Pexp_function ([], Some _, _) -> assert false
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
       pro
