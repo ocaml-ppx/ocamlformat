@@ -3660,8 +3660,8 @@ let map_lambda ~map_rec : _ lambda -> _ = function
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
@@ -3872,8 +3872,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -4117,8 +4117,8 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-  incr current;
-  !current
+    incr current;
+    !current
 ;;
 
 let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =

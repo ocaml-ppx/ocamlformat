@@ -1484,7 +1484,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     | (_ :: _), _, Pfunction_body body ->
         (* Only [fun]. *)
         fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body),
-     (Params.Exp.box_fun_expr c.conf ~ctx0)
+     (Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx)
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs

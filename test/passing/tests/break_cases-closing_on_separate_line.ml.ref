@@ -18,18 +18,18 @@ let f =
         3
   in
   fun x g t h y u ->
-   match x with
-   | E -> 4
-   | Z
-    |P
-    |M -> (
-     match y with
-     | O -> 5
-     | P when h x -> (
-         function
-         | A -> 6
-       )
-   )
+    match x with
+    | E -> 4
+    | Z
+     |P
+     |M -> (
+      match y with
+      | O -> 5
+      | P when h x -> (
+          function
+          | A -> 6
+        )
+    )
 
 let foo =
   List.map ~f:(fun x g t h y u ->
