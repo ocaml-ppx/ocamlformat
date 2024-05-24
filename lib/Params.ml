@@ -106,10 +106,11 @@ module Exp = struct
       Ast.Str _ ->
          (* special case than aligns the arguments of [let _ = fun ...] *) true | _ -> false
     in
+    let name = "Params.box_fun_decl_args" in
     let box_decl, should_box_args =
-      if ocp c then (hvbox (if parens then 1 else 2), false)
+      if ocp c then (hvbox ~name (if parens then 1 else 2), false)
       else
-        ( (if is_let_func then hovbox 4 else hvbox (if parens then 1 else 2))
+        ( (if is_let_func then hovbox ~name 4 else hvbox ~name (if parens then 1 else 2))
         , not c.fmt_opts.wrap_fun_args.v )
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
@@ -127,9 +128,10 @@ module Exp = struct
               else 0
             else
               2 in
+    let name = "Params.box_fun_expr" in
     ( match ctx0 with
-      | Str _ -> hvbox indent
-      | _ -> hovbox indent)
+      | Str _ -> hvbox ~name indent
+      | _ -> hovbox ~name indent)
 
   (* if the function is the last argument of an apply and no other arguments
      are "complex" (approximation). *)
