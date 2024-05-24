@@ -1292,11 +1292,10 @@ let ty_abc =
   and inj
     : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
-    =
-    function
-    | Thd, v -> `A v
-    | Ttl Thd, v -> `B v
-    | Ttl (Ttl Thd), Noarg -> `C
+    = function
+      | Thd, v -> `A v
+      | Ttl Thd, v -> `B v
+      | Ttl (Ttl Thd), Noarg -> `C
   in
   (* Coherence of sum_inj and sum_cases is checked by the typing *)
   Sum
@@ -2680,10 +2679,9 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 
 let vexpr (type result) (type visit_action)
   : (unit, result, visit_action) context -> unit -> visit_action
-  =
-  function
-  | Local -> fun _ -> raise Exit
-  | Global -> fun _ -> raise Exit
+  = function
+    | Local -> fun _ -> raise Exit
+    | Global -> fun _ -> raise Exit
 ;;
 
 module A = struct
@@ -8655,10 +8653,9 @@ type v =
 let f
   : type a b c d e f g.
     a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
-  =
-  function
-  | A, A, A, A, A, A, A, _, U, U -> 1
-  | _, _, _, _, _, _, _, G, _, _ -> 1
+  = function
+    | A, A, A, A, A, A, A, _, U, U -> 1
+    | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
 
 (*| _ -> _ *)

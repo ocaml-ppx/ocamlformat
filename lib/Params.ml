@@ -739,8 +739,6 @@ module Align = struct
 end
 
 module Indent = struct
-
-
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
     if ctx_is_infix ctx0 then
       if has_label then 2 else 0
@@ -749,8 +747,6 @@ module Indent = struct
       | `Always -> c.fmt_opts.function_indent.v
       | _ when ocp c && parens && not has_label -> default + 1
       | _ -> default
-
-
 
   let fun_type_annot c = if ocp c then 2 else 4
 

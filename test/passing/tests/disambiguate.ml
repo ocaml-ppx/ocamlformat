@@ -7,7 +7,7 @@ let () =
     fun () ->
       f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
 
-let () = r := (function () -> f () ; g ())
+let () = r := function () -> f () ; g ()
 
 let () =
   r :=
