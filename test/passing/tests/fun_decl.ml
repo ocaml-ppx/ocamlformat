@@ -70,3 +70,16 @@ let f ssssssssss =
     | '0' -> g accuuuuuuuuuum
     | '1' -> h accuuuuuuuuuum
     | _ -> i accuuuuuuuuuum )
+
+let f _ =
+  let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+  fun x ->
+    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+    x
+
+let f _ =
+  let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+  (* foo *)
+  fun x ->
+    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+    x

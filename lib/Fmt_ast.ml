@@ -1796,7 +1796,15 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
   Cmts.relocate_wrongfully_attached_cmts c.cmts c.source exp ;
-  let pro = pro $ Cmts.fmt_before c ?eol pexp_loc in
+  let pro =
+    (* Some expressions format the 'pro' and comments differently. *)
+    let cmts_in_pro =
+      match exp.pexp_desc with
+      | Pexp_function _ -> noop
+      | _ -> Cmts.fmt_before c ?eol pexp_loc
+    in
+    pro $ cmts_in_pro
+  in
   let fmt_cmts_after k = k $ Cmts.fmt_after c pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
