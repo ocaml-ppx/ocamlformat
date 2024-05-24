@@ -2169,20 +2169,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
-  | Pexp_function (args, typ, (Pfunction_body _ as body))
-  | Pexp_function ((_ :: _ as args), typ, body) ->
-      pro
-      $
-          (
-             (
-      fmt_function ~box ~ctx  ~ctx0
-        ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
-             ) )
-  | Pexp_function ([], None, (Pfunction_cases _ as body)) ->
+  | Pexp_function (args, typ, body) ->
       let wrap_intro intro = hovbox 2 (pro $ intro) $ space_break in
-      fmt_function ~wrap_intro ~box ~ctx ~ctx0 ~label:Nolabel ~parens ?ext
-        ~attrs:pexp_attributes ~loc:pexp_loc c ([], None, body)
-  | Pexp_function ([], Some _, _) -> assert false
+      fmt_function ~wrap_intro ~box ~ctx  ~ctx0
+        ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
       pro

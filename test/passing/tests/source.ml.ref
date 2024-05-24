@@ -1984,8 +1984,7 @@ type _ term =
   | Ap : ('a -> 'b) term * 'a term -> 'b term
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
-let rec eval_term : type a. assoc list -> a term -> a =
-  fun env -> function
+let rec eval_term : type a. assoc list -> a term -> a = fun env -> function
   | Var (x, r) -> assoc x r env
   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
   | Const x -> x
