@@ -35,7 +35,7 @@ let check_local_attr_and_reloc_cmts cmts attrs loc =
    this to pass some internal ocamlformat sanity checks. It's not the
    cleanest solution in a vacuum, but is perhaps the one that will cause the
    fewest merge conflicts in the future. *)
-let decompose_arrow cmts ctx ctl ct2 =
+let decompose_arrow cmts ctx ctl (ct2, m2) =
   let pull_out_local ap =
     let ptyp_attributes, local =
       check_local_attr_and_reloc_cmts cmts ap.pap_type.ptyp_attributes
@@ -51,11 +51,14 @@ let decompose_arrow cmts ctx ctl ct2 =
     let ap =
       { pap_label= Nolabel
       ; pap_loc= ct2.ptyp_loc
-      ; pap_type= {ct2 with ptyp_attributes} }
+      ; pap_type= {ct2 with ptyp_attributes}
+      ; pap_modes= m2 }
     in
     (ap, local)
   in
-  let ctx_typ = Ptyp_arrow (List.map ~f:fst args, res_ap.pap_type) in
+  let ctx_typ =
+    Ptyp_arrow (List.map ~f:fst args, res_ap.pap_type, res_ap.pap_modes)
+  in
   let ctx =
     match ctx with
     | Typ cty -> Typ {cty with ptyp_desc= ctx_typ}
@@ -275,12 +278,13 @@ module Let_binding = struct
     ; lb_pun: bool
     ; lb_attrs: attribute list
     ; lb_local: bool
+    ; lb_modes: mode loc list
     ; lb_loc: Location.t }
 
   let split_annot cmts xargs ({ast= body; _} as xbody) =
     let ctx = Exp body in
     match body.pexp_desc with
-    | Pexp_constraint (exp, typ)
+    | Pexp_constraint (exp, Some typ, [])
       when Source.type_constraint_is_first typ exp.pexp_loc ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
@@ -301,7 +305,7 @@ module Let_binding = struct
         , sub_exp ~ctx:exp_ctx exp )
     (* The type constraint is always printed before the declaration for
        functions, for other value bindings we preserve its position. *)
-    | Pexp_constraint (exp, typ) when not (List.is_empty xargs) ->
+    | Pexp_constraint (exp, Some typ, []) when not (List.is_empty xargs) ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
         ( xargs
@@ -390,8 +394,8 @@ module Let_binding = struct
              false )
        | _ -> false
 
-  let maybe_sugar_local cmts ~ctx pvb_pat pvb_expr pvb_is_pun pvb_constraint
-      =
+  let maybe_sugar_local cmts ~ctx pvb_pat pvb_modes pvb_expr pvb_is_pun
+      pvb_constraint =
     let is_local_pattern, ctx, pvb_pat, pvb_expr =
       match pvb_expr.pexp_desc with
       | Pexp_apply
@@ -421,13 +425,31 @@ module Let_binding = struct
           in
           let pat = {pvb_pat with ppat_attributes= pattrs} in
           let fake_ctx =
-            Lb
+            let pvb =
               { pvb_pat= pat
               ; pvb_expr= sbody
               ; pvb_is_pun
               ; pvb_attributes= []
               ; pvb_loc= Location.none
-              ; pvb_constraint= None }
+              ; pvb_constraint= None
+              ; pvb_modes }
+            in
+            match ctx with
+            | Str ({pstr_desc= Pstr_value pvbs; _} as str) ->
+                Str
+                  { str with
+                    pstr_desc= Pstr_value {pvbs with pvbs_bindings= [pvb]} }
+            | Exp ({pexp_desc= Pexp_let (pvbs, body); _} as exp) ->
+                Exp
+                  { exp with
+                    pexp_desc=
+                      Pexp_let ({pvbs with pvbs_bindings= [pvb]}, body) }
+            | Cl ({pcl_desc= Pcl_let (pvbs, body); _} as cl) ->
+                Cl
+                  { cl with
+                    pcl_desc= Pcl_let ({pvbs with pvbs_bindings= [pvb]}, body)
+                  }
+            | _ -> Lb pvb
           in
           (is_local_pattern, fake_ctx, pat, sbody)
       | _ -> (false, ctx, pvb_pat, pvb_expr)
@@ -437,27 +459,10 @@ module Let_binding = struct
 
   let type_cstr cmts ~ctx pvb_pat pvb_expr pvb_is_pun pvb_constraint =
     let is_local_pattern, lb_pat, lb_exp =
-      maybe_sugar_local cmts ~ctx pvb_pat pvb_expr pvb_is_pun pvb_constraint
+      maybe_sugar_local cmts ~ctx pvb_pat [] pvb_expr pvb_is_pun
+        pvb_constraint
     in
-    let ({ast= pat; _} as xpat) =
-      match (lb_pat.ast.ppat_desc, lb_exp.ast.pexp_desc) with
-      (* recognize and undo the pattern of code introduced by
-         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-         https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint
-            ( ({ppat_desc= Ppat_var _; _} as pat)
-            , {ptyp_desc= Ptyp_poly ([], typ1); _} )
-        , Pexp_constraint (_, typ2) )
-        when equal_core_type typ1 typ2 ->
-          Cmts.relocate cmts ~src:lb_pat.ast.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
-          sub_pat ~ctx:(Pat lb_pat.ast) pat
-      | ( Ppat_constraint (_, {ptyp_desc= Ptyp_poly (_, typ1); _})
-        , Pexp_coerce (_, _, typ2) )
-        when equal_core_type typ1 typ2 ->
-          sub_pat ~ctx lb_pat.ast
-      | _ -> sub_pat ~ctx lb_pat.ast
-    in
+    let ({ast= pat; _} as xpat) = sub_pat ~ctx lb_pat.ast in
     let pat_is_extension {ppat_desc; _} =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
@@ -470,7 +475,8 @@ module Let_binding = struct
       else
         let xpat =
           match xpat.ast.ppat_desc with
-          | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
+          | Ppat_constraint (p, Some {ptyp_desc= Ptyp_poly ([], _); _}, [])
+            ->
               sub_pat ~ctx:xpat.ctx p
           | _ -> xpat
         in
@@ -485,10 +491,16 @@ module Let_binding = struct
     | _ -> false
 
   let of_let_binding cmts ~ctx ~first
-      {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc}
-      =
+      { pvb_pat
+      ; pvb_expr
+      ; pvb_constraint
+      ; pvb_is_pun
+      ; pvb_attributes
+      ; pvb_loc
+      ; pvb_modes } =
     let islocal, lb_pat, lb_exp =
-      maybe_sugar_local cmts ~ctx pvb_pat pvb_expr pvb_is_pun pvb_constraint
+      maybe_sugar_local cmts ~ctx pvb_pat pvb_modes pvb_expr pvb_is_pun
+        pvb_constraint
     and lb_typ = pvb_constraint in
     let lb_args, lb_typ, lb_exp =
       if should_desugar_args lb_pat lb_typ then
@@ -503,6 +515,7 @@ module Let_binding = struct
     ; lb_pun= pvb_is_pun
     ; lb_attrs= pvb_attributes
     ; lb_local= islocal
+    ; lb_modes= pvb_modes
     ; lb_loc= pvb_loc }
 
   let of_let_bindings cmts ~ctx =
@@ -521,5 +534,6 @@ module Let_binding = struct
         ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= []
         ; lb_local= islocal
+        ; lb_modes= []
         ; lb_loc= bo.pbop_loc } )
 end

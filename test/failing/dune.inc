@@ -237,6 +237,19 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to modes_on_patterns.ml.output
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{dep:tests/modes_on_patterns.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_on_patterns.ml.broken-ref modes_on_patterns.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to module.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:tests/module.ml})))))

@@ -73,8 +73,8 @@ type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
 module Token = struct
   let is_infix = function
-    | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | BAR | BARBAR | COLON
-     |COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER
+    | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | AT | ATAT | BAR | BARBAR
+     |COLON | COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER
      |HASHOP _ | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
      |INFIXOP4 _ | LESS | LESSMINUS | LETOP _ | MINUS | MINUSDOT
      |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SLASH | STAR ->
@@ -929,7 +929,7 @@ end = struct
     let fst_f (tI, _) = typ == tI in
     let snd_f (_, tI) = typ == tI in
     let check_cstr = function
-      | Pcstr_tuple t1N -> List.exists t1N ~f
+      | Pcstr_tuple t1N -> List.exists t1N ~f:(fun carg -> f carg.pca_type)
       | Pcstr_record (_, ld1N) ->
           List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
     in
@@ -974,7 +974,7 @@ end = struct
       | Ptyp_extension _ -> ()
       | Ptyp_any | Ptyp_var _ -> assert false
       | Ptyp_alias (t1, _) | Ptyp_poly (_, t1) -> assert (typ == t1)
-      | Ptyp_arrow (t, t2) ->
+      | Ptyp_arrow (t, t2, _) ->
           assert (List.exists t ~f:(fun x -> typ == x.pap_type) || typ == t2)
       | Ptyp_tuple t1N | Ptyp_unboxed_tuple t1N ->
           assert (List.exists t1N ~f:(fun (_, t) -> f t))
@@ -1016,7 +1016,7 @@ end = struct
           | Pcty_signature {pcsig_self; _} -> Option.exists pcsig_self ~f )
     | Pat ctx -> (
       match ctx.ppat_desc with
-      | Ppat_constraint (_, t1) -> assert (typ == t1)
+      | Ppat_constraint (_, Some t1, _) -> assert (typ == t1)
       | Ppat_extension (_, PTyp t) -> assert (typ == t)
       | Ppat_unpack (_, Some (_, l)) ->
           assert (List.exists l ~f:(fun (_, t) -> typ == t))
@@ -1026,7 +1026,7 @@ end = struct
     | Exp ctx -> (
       match ctx.pexp_desc with
       | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
-      | Pexp_constraint (_, t1)
+      | Pexp_constraint (_, Some t1, _)
        |Pexp_coerce (_, None, t1)
        |Pexp_poly (_, Some t1)
        |Pexp_extension (_, PTyp t1) ->
@@ -1101,21 +1101,25 @@ end = struct
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
           | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
+              ( _
+              , _
+              , Cfk_concrete
+                  (_, {pexp_desc= Pexp_constraint (_, Some t, _); _}) ) ->
               typ == t
           | Pcf_val (_, _, Cfk_concrete _) -> false
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
           | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
-            ->
+              ( _
+              , _
+              , Cfk_concrete
+                  (_, {pexp_desc= Pexp_constraint (_, Some t, _); _}) ) ->
               typ == t
           | Pcf_method
               (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt); _}))
             ->
               let rec loop = function
                 | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (_, t); _} -> t == typ
+                | {pexp_desc= Pexp_constraint (_, Some t, _); _} -> t == typ
                 | {pexp_desc= Pexp_fun (_, e); _} -> loop e
                 | _ -> false
               in
@@ -1306,7 +1310,7 @@ end = struct
       ppat == pat
       ||
       match ppat.ppat_desc with
-      | Ppat_constraint (p, _) -> p == pat
+      | Ppat_constraint (p, _, _) -> p == pat
       | _ -> false
     in
     let check_bindings l =
@@ -1336,7 +1340,7 @@ end = struct
             assert (List.exists p1N ~f:(fun (_, _, x) -> Option.exists x ~f))
         | Ppat_or l -> assert (List.exists ~f:(fun p -> p == pat) l)
         | Ppat_alias (p1, _)
-         |Ppat_constraint (p1, _)
+         |Ppat_constraint (p1, _, _)
          |Ppat_construct (_, Some (_, p1))
          |Ppat_exception p1
          |Ppat_lazy p1
@@ -1493,7 +1497,7 @@ end = struct
         | Pexp_assert e
          |Pexp_beginend e
          |Pexp_parens e
-         |Pexp_constraint (e, _)
+         |Pexp_constraint (e, _, _)
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
          |Pexp_lazy e
@@ -1562,7 +1566,7 @@ end = struct
                 x == exp
                 ||
                 match x with
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+                | {pexp_desc= Pexp_constraint (e, _, _); _} -> loop e
                 | _ -> false
               in
               loop e
@@ -1575,7 +1579,7 @@ end = struct
                 ||
                 match x with
                 | {pexp_desc= Pexp_newtype (_, e); _} -> loop e
-                | {pexp_desc= Pexp_constraint (e, _); _} -> loop e
+                | {pexp_desc= Pexp_constraint (e, _, _); _} -> loop e
                 | {pexp_desc= Pexp_fun (_, e); _} -> loop e
                 | _ -> false
               in
@@ -1642,12 +1646,13 @@ end = struct
     let open Prec in
     let open Assoc in
     let is_tuple_lvl1_in_constructor ty = function
-      | {pcd_args= Pcstr_tuple t1N; _} -> List.exists t1N ~f:(phys_equal ty)
+      | {pcd_args= Pcstr_tuple t1N; _} ->
+          List.exists t1N ~f:(fun carg -> carg.pca_type |> phys_equal ty)
       | _ -> false
     in
     let is_tuple_lvl1_in_ext_constructor ty = function
       | {pext_kind= Pext_decl (_, Pcstr_tuple t1N, _); _} ->
-          List.exists t1N ~f:(phys_equal ty)
+          List.exists t1N ~f:(fun carg -> carg.pca_type |> phys_equal ty)
       | _ -> false
     in
     let constructor_cxt_prec_of_inner = function
@@ -1677,7 +1682,7 @@ end = struct
     | {ctx= Str _; ast= Typ _; _} -> None
     | {ctx= Typ {ptyp_desc; _}; ast= Typ typ; _} -> (
       match ptyp_desc with
-      | Ptyp_arrow (t, _) ->
+      | Ptyp_arrow (t, _, _) ->
           let assoc =
             if List.exists t ~f:(fun x -> x.pap_type == typ) then Left
             else Right
@@ -1935,7 +1940,9 @@ end = struct
       ; ctx= Td {ptype_kind= Ptype_variant l; _} }
       when List.exists l ~f:(fun c ->
                match c.pcd_args with
-               | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
+               | Pcstr_tuple l ->
+                   List.exists l ~f:(fun carg ->
+                       carg.pca_type |> phys_equal typ )
                | _ -> false ) ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _ | Ptyp_arrow _ | Ptyp_tuple _; _}
@@ -1953,7 +1960,7 @@ end = struct
     | {ast= {ptyp_desc= Ptyp_var (_, l); _}; ctx= _} when Option.is_some l ->
         true
     | { ast= {ptyp_desc= Ptyp_tuple ((Some _, _) :: _); _}
-      ; ctx= Typ {ptyp_desc= Ptyp_arrow (args, _); _} }
+      ; ctx= Typ {ptyp_desc= Ptyp_arrow (args, _, _); _} }
       when List.exists args ~f:(fun arg -> arg.pap_type == typ) ->
         true
     | _ -> (
@@ -2017,20 +2024,40 @@ end = struct
       | _ -> true )
     | Fp {pparam_desc= Pparam_val (_, _, _, _); _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
-    | Fp _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> true
-    | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
+    | Fp _, Ppat_constraint (_, Some {ptyp_desc= Ptyp_poly _; _}, _) -> true
+    | _, Ppat_constraint (_, Some {ptyp_desc= Ptyp_poly _; _}, _) -> false
     | ( Exp {pexp_desc= Pexp_letop _; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_cons _
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _
-        | Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ) ->
+        | Ppat_constraint ({ppat_desc= Ppat_any; _}, _, _)
+        | Ppat_constraint (_, _, _ :: _) ) ) ->
         true
-    | Lb _, Ppat_constraint ({ppat_desc= Ppat_any; _}, _) -> true
-    | Lb _, Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) -> false
+    | Lb _, Ppat_constraint ({ppat_desc= Ppat_any; _}, _, _) -> true
+    | Lb _, Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _, _) -> false
     | ( Exp {pexp_desc= Pexp_letop _; _}
-      , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
+      , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _, _) ) ->
         false
+    (* Modes on elements of let-bound tuple patterns require the tuple to be
+       parenthesized *)
+    | (Str _ | Exp _ | Cl _), Ppat_tuple (els, _)
+      when List.exists els ~f:(function
+             | _, {ppat_desc= Ppat_constraint (_, None, _ :: _); _} -> true
+             | _ -> false ) ->
+        true
+    (* Modes on let-bound tuple patterns require the tuple to be
+       parenthesized *)
+    | ( ( Str {pstr_desc= Pstr_value bindings; _}
+        | Exp {pexp_desc= Pexp_let (bindings, _); _}
+        | Cl {pcl_desc= Pcl_let (bindings, _); _} )
+      , Ppat_tuple _ )
+      when let binding =
+             List.find_exn bindings.pvbs_bindings ~f:(fun binding ->
+                 binding.pvb_pat == pat )
+           in
+           not (List.is_empty binding.pvb_modes) ->
+        true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -2329,7 +2356,7 @@ end = struct
          |Pexp_open (_, e)
          |Pexp_fun (_, e)
          |Pexp_newtype (_, e)
-         |Pexp_constraint (e, _)
+         |Pexp_constraint (e, _, _)
          |Pexp_coerce (e, _, _)
           when e == exp ->
             false
@@ -2433,7 +2460,7 @@ end = struct
     | Exp {pexp_desc= Pexp_indexop_access {pia_kind= Builtin idx; _}; _}, _
       when idx == exp ->
         false
-    | ( Exp {pexp_desc= Pexp_constraint (e, _) | Pexp_coerce (e, _, _); _}
+    | ( Exp {pexp_desc= Pexp_constraint (e, _, _) | Pexp_coerce (e, _, _); _}
       , {pexp_desc= Pexp_tuple _ | Pexp_match _ | Pexp_try _; _} )
       when e == exp && !ocp_indent_compat ->
         true

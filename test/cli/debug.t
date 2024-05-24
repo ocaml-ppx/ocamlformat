@@ -32,6 +32,8 @@
                   expression (a.ml[4,59+4]..[4,59+7])
                     Pexp_ident "A.x" (a.ml[4,59+4]..[4,59+7])
               ]
+            modes
+            []
         ]
     ]
   
@@ -60,6 +62,8 @@
                   expression (a.ml[4,59+4]..[4,59+7])
                     Pexp_ident "A.x" (a.ml[4,59+4]..[4,59+7])
               ]
+            modes
+            []
         ]
     ]
   
@@ -88,6 +92,8 @@
                   expression (a.ml[2,34+23]..[2,34+26])
                     Pexp_ident "A.x" (a.ml[2,34+23]..[2,34+26])
               ]
+            modes
+            []
         ]
     ]
   
@@ -115,6 +121,8 @@
                   expression (a.ml[2,34+23]..[2,34+26])
                     Pexp_ident "A.x" (a.ml[2,34+23]..[2,34+26])
               ]
+            modes
+            []
         ]
     ]
   
@@ -178,9 +186,13 @@
                       within: (* within unit #2 *)
                        after: (* after unit *)
                     None
+                  modes
+                  []
               ]
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
+            modes
+            []
         ]
     ]
   
@@ -231,9 +243,13 @@
                       within: (* within unit #2 *)
                        after: (* after unit *)
                     None
+                  modes
+                  []
               ]
               expression (a.ml[6,233+2]..[6,233+3])
                 Pexp_ident "x" (a.ml[6,233+2]..[6,233+3])
+            modes
+            []
         ]
     ]
   
@@ -284,9 +300,13 @@
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
                     None
+                  modes
+                  []
               ]
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
+            modes
+            []
         ]
     ]
   
@@ -336,9 +356,13 @@
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
                     None
+                  modes
+                  []
               ]
               expression (a.ml[13,265+2]..[13,265+3])
                 Pexp_ident "x" (a.ml[13,265+2]..[13,265+3])
+            modes
+            []
         ]
     ]
   

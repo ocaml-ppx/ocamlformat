@@ -143,25 +143,25 @@ type 'a r =
 
 type 'a r =
   | Foo of
-      global_ (* a *)
-              (* b *)
-              (* c *)
+      (* a *)
+      (* b *)
+      global_ (* c *)
               (* d *)
       'a
   | Bar of
       'a
-      * global_ (* e *)
-                (* f *)
-                (* g *)
-                (* h *)
+      * (* e *)
+        (* f *)
+      global_ (* g *)
+              (* h *)
       'a
   | Baz of
       global_ int
       * string
-      * global_ (* i *)
-                (* j *)
-                (* k *)
-                (* l *)
+      * (* i *)
+        (* j *)
+      global_ (* k *)
+              (* l *)
       'a
 
 let () =

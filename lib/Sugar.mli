@@ -17,7 +17,7 @@ val decompose_arrow :
      Cmts.t
   -> Ast.t
   -> arrow_param list
-  -> core_type
+  -> core_type * mode loc list
   -> (arrow_param * bool) list * (arrow_param * bool) * Ast.t
 (** [decompose_arrow ctl ct2] returns a list of arrow params, where the last
     is a dummy param corresponding to ct2 (the return type) and a bool
@@ -84,6 +84,7 @@ module Let_binding : sig
     ; lb_pun: bool
     ; lb_attrs: attribute list
     ; lb_local: bool
+    ; lb_modes: mode loc list
     ; lb_loc: Location.t }
 
   val of_let_binding :

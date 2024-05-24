@@ -226,6 +226,18 @@ let labeled_tuple_element f i ppf (l, ct) =
   option i string_loc ppf l;
   f i ppf ct
 
+let modalities i ppf modalities =
+  line i ppf "modalities\n";
+  list i string_loc ppf (
+    List.map (Location.map (fun (Modality x) -> x)) modalities
+  )
+
+let modes i ppf modes =
+  line i ppf "modes\n";
+  list i string_loc ppf (
+    List.map (Location.map (fun (Mode x) -> x)) modes
+  )
+
 let rec core_type i ppf x =
   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
   attributes i ppf x.ptyp_attributes;
@@ -234,10 +246,11 @@ let rec core_type i ppf x =
   | Ptyp_any -> line i ppf "Ptyp_any\n";
   | Ptyp_var (s) ->
     line i ppf "Ptyp_var %a\n" fmt_ty_var s;
-  | Ptyp_arrow (params, ct2) ->
+  | Ptyp_arrow (params, ct2, m2) ->
       line i ppf "Ptyp_arrow\n";
       list i arrow_param ppf params;
       core_type i ppf ct2;
+      modes i ppf m2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
       list i labeled_core_type ppf l;
@@ -276,10 +289,11 @@ let rec core_type i ppf x =
       list i core_type ppf l
   (* End Jane Street extension *)
 
-and arrow_param i ppf {pap_label; pap_loc; pap_type} =
+and arrow_param i ppf {pap_label; pap_loc; pap_type; pap_modes} =
   line i ppf "arrow_param %a\n" fmt_location pap_loc;
   arg_label i ppf pap_label;
-  core_type i ppf pap_type
+  core_type i ppf pap_type;
+  modes i ppf pap_modes
 
 and object_field i ppf x =
   line i ppf "object_field %a\n" fmt_location x.pof_loc;
@@ -355,10 +369,11 @@ and pattern i ppf x =
   | Ppat_lazy p ->
       line i ppf "Ppat_lazy\n";
       pattern i ppf p;
-  | Ppat_constraint (p, ct) ->
+  | Ppat_constraint (p, ct, m) ->
       line i ppf "Ppat_constraint\n";
       pattern i ppf p;
-      core_type i ppf ct;
+      option i core_type ppf ct;
+      modes i ppf m;
   | Ppat_type (li) ->
       line i ppf "Ppat_type\n";
       longident_loc i ppf li
@@ -469,10 +484,11 @@ and expression i ppf x =
       expression i ppf e1;
       expression i ppf e2;
       expression i ppf e3;
-  | Pexp_constraint (e, ct) ->
+  | Pexp_constraint (e, ct, m) ->
       line i ppf "Pexp_constraint\n";
       expression i ppf e;
-      core_type i ppf ct;
+      option i core_type ppf ct;
+      modes i ppf m;
   | Pexp_coerce (e, cto1, cto2) ->
       line i ppf "Pexp_coerce\n";
       expression i ppf e;
@@ -635,10 +651,11 @@ and type_constraint i ppf constraint_ =
 
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
-       x.pval_name fmt_location x.pval_loc;
+      x.pval_name fmt_location x.pval_loc;
   attributes i ppf x.pval_attributes;
   core_type (i+1) ppf x.pval_type;
-  list (i+1) string_loc ppf x.pval_prim
+  list (i+1) string_loc ppf x.pval_prim;
+  modalities (i+1) ppf x.pval_modalities
 
 and type_parameter i ppf (x, _variance) = core_type i ppf x
 
@@ -1159,14 +1176,20 @@ and constructor_decl i ppf
   constructor_arguments (i+1) ppf pcd_args;
   option (i+1) core_type ppf pcd_res
 
+and constructor_argument i ppf {pca_modalities; pca_type; pca_loc} =
+  line i ppf "%a\n" fmt_location pca_loc;
+  modalities (i+1) ppf pca_modalities;
+  core_type (i+1) ppf pca_type
+
 and constructor_arguments i ppf = function
-  | Pcstr_tuple l -> list i core_type ppf l
+  | Pcstr_tuple l -> list i constructor_argument ppf l
   | Pcstr_record (_, l) -> list i label_decl ppf l
 
-and label_decl i ppf {pld_name; pld_mutable; pld_type; pld_loc; pld_attributes}=
+and label_decl i ppf {pld_name; pld_mutable; pld_modalities; pld_type; pld_loc; pld_attributes}=
   line i ppf "%a\n" fmt_location pld_loc;
   attributes i ppf pld_attributes;
   line (i+1) ppf "%a\n" fmt_mutable_flag pld_mutable;
+  modalities (i+1) ppf pld_modalities;
   line (i+1) ppf "%a" fmt_string_loc pld_name;
   core_type (i+1) ppf pld_type
 
@@ -1189,7 +1212,8 @@ and value_binding i ppf x =
   attributes (i+1) ppf x.pvb_attributes;
   pattern (i+1) ppf x.pvb_pat;
   Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
-  expression (i+1) ppf x.pvb_expr
+  expression (i+1) ppf x.pvb_expr;
+  modes (i+1) ppf x.pvb_modes
 
 and value_constraint i ppf x =
   let pp_sep ppf () = Format.fprintf ppf "@ "; in

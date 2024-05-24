@@ -68,6 +68,10 @@ type constant = {
 
 type location_stack = Location.t list
 
+type modality = | Modality of string [@@unboxed]
+
+type mode = | Mode of string [@@unboxed]
+
 (** {1 Extension points} *)
 
 type attribute = {
@@ -118,18 +122,19 @@ and arrow_param =
     pap_label: arg_label;
     pap_loc: Location.t; (** Location also including the codomain. *)
     pap_type: core_type;
+    pap_modes: mode loc list;
   }
 
 and core_type_desc =
   | Ptyp_any  (** [_] *)
   | Ptyp_var of ty_var  (** A type variable such as ['a] *)
-  | Ptyp_arrow of arrow_param list * core_type
-      (** [Ptyp_arrow(lbl, T1, T2)] represents:
-            - [T1 -> T2]    when [lbl] is
+  | Ptyp_arrow of arrow_param list * core_type * mode loc list
+      (** [Ptyp_arrow([lbl, T1, M1], T2, M2)] represents:
+            - [T1 @ M1 -> T2 @ M2]    when [lbl] is
                                      {{!Asttypes.arg_label.Nolabel}[Nolabel]},
-            - [~l:T1 -> T2] when [lbl] is
+            - [~l:(T1 @ M1) -> T2 @ M2] when [lbl] is
                                      {{!Asttypes.arg_label.Labelled}[Labelled]},
-            - [?l:T1 -> T2] when [lbl] is
+            - [?l:(T1 @ M1) -> T2 @ M2] when [lbl] is
                                      {{!Asttypes.arg_label.Optional}[Optional]}.
          *)
   | Ptyp_tuple of (string loc option * core_type) list
@@ -327,7 +332,11 @@ and pattern_desc =
           Pattern [[: P1; ...; Pn :]] (flag = Immutable) *)
   | Ppat_list of pattern list  (** Pattern [[ P1; ...; Pn ]] *)
   | Ppat_or of pattern list  (** Pattern [P1 | ... | Pn] *)
-  | Ppat_constraint of pattern * core_type  (** Pattern [(P : T)] *)
+  | Ppat_constraint of pattern * core_type option * mode loc list
+      (** [Ppat_constraint(P, tyopt, modes)] represents:
+          - [(P : ty @@ modes)] when [tyopt] is [Some ty]
+          - [(P @ modes)] when [tyopt] is [None]
+      *)
   | Ppat_type of Longident.t loc  (** Pattern [#tconst] *)
   | Ppat_lazy of pattern  (** Pattern [lazy P] *)
   | Ppat_unpack of string option loc * package_type option
@@ -449,7 +458,7 @@ and expression_desc =
             - [for i = E1 downto E2 do E3 done]
                  when [direction] is {{!Asttypes.direction_flag.Downto}[Downto]}
          *)
-  | Pexp_constraint of expression * core_type  (** [(E : T)] *)
+  | Pexp_constraint of expression * core_type option * mode loc list  (** [(E : T @@ modes)] *)
   | Pexp_coerce of expression * core_type option * core_type
       (** [Pexp_coerce(E, from, T)] represents
             - [(E :> T)]      when [from] is [None],
@@ -623,6 +632,7 @@ and value_description =
     {
      pval_name: string loc;
      pval_type: core_type;
+     pval_modalities: modality loc list;
      pval_prim: string loc list;
      pval_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      pval_loc: Location.t;
@@ -686,6 +696,7 @@ and label_declaration =
     {
      pld_name: string loc;
      pld_mutable: mutable_flag;
+     pld_modalities: modality loc list;
      pld_type: core_type;
      pld_loc: Location.t;
      pld_attributes: attributes;  (** [l : T [\@id1] [\@id2]] *)
@@ -711,8 +722,15 @@ and constructor_declaration =
      pcd_attributes: attributes;  (** [C of ... [\@id1] [\@id2]] *)
     }
 
+and constructor_argument =
+  {
+    pca_modalities: modality loc list;
+    pca_type: core_type;
+    pca_loc: Location.t;
+  }
+
 and constructor_arguments =
-  | Pcstr_tuple of core_type list
+  | Pcstr_tuple of constructor_argument list
   | Pcstr_record of Location.t * label_declaration list
       (** Values of type {!constructor_declaration}
     represents the constructor arguments of:
@@ -1208,6 +1226,7 @@ and value_binding =
     pvb_pat: pattern;
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
+    pvb_modes: mode loc list;
     pvb_is_pun: bool;
     pvb_attributes: attributes;
     pvb_loc: Location.t;

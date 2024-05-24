@@ -8027,6 +8027,186 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to modes-ocaml_version.ml.stdout
+   (with-stderr-to modes-ocaml_version.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --ocaml-version=4.14.0 %{dep:tests/modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-ocaml_version.ml.ref modes-ocaml_version.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-ocaml_version.ml.err modes-ocaml_version.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes.ml.stdout
+   (with-stderr-to modes.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes.ml.ref modes.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes.ml.err modes.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes.ml.js-stdout
+   (with-stderr-to modes.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes.ml.js-ref modes.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes.ml.js-err modes.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_attrs.ml.stdout
+   (with-stderr-to modes_attrs.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/modes_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_attrs.ml.ref modes_attrs.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_attrs.ml.err modes_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_attrs.ml.js-stdout
+   (with-stderr-to modes_attrs.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modes_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_attrs.ml.js-ref modes_attrs.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_attrs.ml.js-err modes_attrs.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_cmts-break_separators_after.ml.stdout
+   (with-stderr-to modes_cmts-break_separators_after.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separators=after %{dep:tests/modes_cmts.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts-break_separators_after.ml.ref modes_cmts-break_separators_after.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts-break_separators_after.ml.err modes_cmts-break_separators_after.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_cmts.ml.stdout
+   (with-stderr-to modes_cmts.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/modes_cmts.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts.ml.ref modes_cmts.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts.ml.err modes_cmts.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_cmts.ml.js-stdout
+   (with-stderr-to modes_cmts.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modes_cmts.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts.ml.js-ref modes_cmts.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts.ml.js-err modes_cmts.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_cmts_move.ml.stdout
+   (with-stderr-to modes_cmts_move.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/modes_cmts_move.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts_move.ml.ref modes_cmts_move.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts_move.ml.err modes_cmts_move.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes_cmts_move.ml.js-stdout
+   (with-stderr-to modes_cmts_move.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modes_cmts_move.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts_move.ml.js-ref modes_cmts_move.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes_cmts_move.ml.js-err modes_cmts_move.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to module.ml.stdout
    (with-stderr-to module.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/module.ml})))))
@@ -9285,7 +9465,7 @@
  (action (diff tests/prefix_infix.ml.js-err prefix_infix.ml.js-stderr)))
 
 (rule
- (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
+ (deps tests/.ocamlformat tests/dir1/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -9306,7 +9486,7 @@
  (action (diff tests/print_config.ml.err print_config.ml.stderr)))
 
 (rule
- (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
+ (deps tests/.ocamlformat tests/dir1/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action

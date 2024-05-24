@@ -14,7 +14,7 @@ open Extended_ast
 module Left = struct
   let rec core_type typ =
     match typ.ptyp_desc with
-    | Ptyp_arrow (t :: _, _) -> core_type t.pap_type
+    | Ptyp_arrow (t :: _, _, _) -> core_type t.pap_type
     | Ptyp_tuple l -> (
       match List.hd_exn l with
       | Some _, _ -> false
@@ -31,7 +31,7 @@ module Right = struct
     | {ptyp_attributes= _ :: _; _} -> false
     | {ptyp_desc; _} -> (
       match ptyp_desc with
-      | Ptyp_arrow (_, t) -> core_type t
+      | Ptyp_arrow (_, t, []) -> core_type t
       | Ptyp_tuple l -> (
         match List.last_exn l with
         | Some _, _ -> false
@@ -43,12 +43,17 @@ module Right = struct
     | Pcstr_record _ -> false
     | Pcstr_tuple args -> (
       match List.last args with
-      | Some {ptyp_desc= Ptyp_arrow _; _} ->
+      | Some {pca_modalities= _ :: _; _} ->
+          (* Modalities are the right-most part of a construct argument:
+
+             type a = A of t * u @@ modality *)
+          false
+      | Some {pca_type= {ptyp_desc= Ptyp_arrow _; _}; _} ->
           (* Arrows are wrapped in parens in this position:
 
              type a = A of (t -> <..>) *)
           false
-      | Some last -> core_type last
+      | Some {pca_type; _} -> core_type pca_type
       | None -> false )
 
   let extension_constructor = function

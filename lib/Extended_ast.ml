@@ -80,7 +80,8 @@ module Parse = struct
                   ( { pexp_desc= Pexp_ident {txt= v_txt; _}
                     ; pexp_attributes= []
                     ; _ }
-                  , t1 )
+                  , Some t1
+                  , [] )
             ; pexp_attributes= []
             ; _ } )
         when enable_short_field_annot
@@ -94,7 +95,8 @@ module Parse = struct
                   ( { pexp_desc= Pexp_ident {txt= v_txt; _}
                     ; pexp_attributes= []
                     ; _ }
-                  , t1 )
+                  , Some t1
+                  , [] )
             ; pexp_attributes= []
             ; _ } )
         when enable_short_field_annot
@@ -147,7 +149,8 @@ module Parse = struct
                   ( { ppat_desc= Ppat_var {txt= v_txt; _}
                     ; ppat_attributes= []
                     ; _ }
-                  , t )
+                  , Some t
+                  , [] )
             ; ppat_attributes= []
             ; _ } )
         when enable_short_field_annot
@@ -182,7 +185,8 @@ module Parse = struct
       | { ppat_desc=
             Ppat_constraint
               ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
-              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
+              , Some {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _}
+              , [] )
         ; _ } as p ->
           {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | p -> Ast_mapper.default_mapper.pat m p
@@ -228,8 +232,12 @@ module Parse = struct
                 ; pexp_attributes= []
                 ; pexp_loc
                 ; _ }
-              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _}
-              )
+              , Some
+                  { ptyp_desc= Ptyp_package pt
+                  ; ptyp_attributes= []
+                  ; ptyp_loc
+                  ; _ }
+              , [] )
         ; _ } as p
         when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
           (* Match locations to differentiate between the two position for
