@@ -1343,16 +1343,14 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj=
            (function
-           | `Nil -> ("Nil", None)
-           | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
+             | `Nil -> ("Nil", None)
+             | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
-           (fun (type c) :
-                ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
-              function
-             | Thd, Noarg -> `Nil
-             | Ttl Thd, v -> `Cons v )
-           (* One can also write the type annotation directly *) } )
+           (fun (type c) ->
+               ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
+                 : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
+               (* One can also write the type annotation directly *) } )
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
 
@@ -1378,14 +1376,14 @@ let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-      | `A n -> ("A", Some (Tdyn (Int, n)))
-      | `B s -> ("B", Some (Tdyn (String, s)))
-      | `C -> ("C", None) )
+        | `A n -> ("A", Some (Tdyn (Int, n)))
+        | `B s -> ("B", Some (Tdyn (String, s)))
+        | `C -> ("C", None) )
     , function
-      | "A", Some (Tdyn (Int, n)) -> `A n
-      | "B", Some (Tdyn (String, s)) -> `B s
-      | "C", None -> `C
-      | _ -> invalid_arg "ty_abc" )
+        | "A", Some (Tdyn (Int, n)) -> `A n
+        | "B", Some (Tdyn (String, s)) -> `B s
+        | "C", None -> `C
+        | _ -> invalid_arg "ty_abc" )
 
 (* Breaks: no way to pattern-match on a full recursive type *)
 let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
@@ -1394,12 +1392,12 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
-         )
+           | `Nil -> ("Nil", None)
+           | `Cons p -> ("Cons", Some (Tdyn (targ, p))) )
        , function
-         | "Nil", None -> `Nil
-         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
-       ) )
+           | "Nil", None -> `Nil
+           | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) ->
+               `Cons p ) )
 
 (* Define Sum using object instead of record for first-class polymorphism *)
 
@@ -1434,9 +1432,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
     (object
        method proj =
          function
-         | `A n -> ("A", Some (Tdyn (Int, n)))
-         | `B s -> ("B", Some (Tdyn (String, s)))
-         | `C -> ("C", None)
+           | `A n -> ("A", Some (Tdyn (Int, n)))
+           | `B s -> ("B", Some (Tdyn (String, s)))
+           | `C -> ("C", None)
 
        method cases =
          [ ("A", TCarg (Thd, Int))
@@ -1447,7 +1445,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
               (int -> string -> noarg -> unit, c) ty_sel * c
            -> [`A of int | `B of string | `C] =
          function
-         | Thd, v -> `A v | Ttl Thd, v -> `B v | Ttl (Ttl Thd), Noarg -> `C
+           | Thd, v -> `A v
+           | Ttl Thd, v -> `B v
+           | Ttl (Ttl Thd), Noarg -> `C
     end )
 
 type 'a vlist = [`Nil | `Cons of 'a * 'a vlist]
@@ -1460,8 +1460,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        (object
           method proj =
             function
-            | `Nil -> ("Nil", None)
-            | `Cons p -> ("Cons", Some (Tdyn (tcons, p)))
+              | `Nil -> ("Nil", None)
+              | `Cons p -> ("Cons", Some (Tdyn (tcons, p)))
 
           method cases =
             [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
@@ -1977,7 +1977,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
 type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
- fun x r -> function
+  fun x r -> function
   | [] -> raise Not_found
   | Assoc (x', r', v) :: env ->
       if x = x' then
@@ -1995,8 +1995,7 @@ type _ term =
   | Ap : ('a -> 'b) term * 'a term -> 'b term
   | Pair : 'a term * 'b term -> ('a * 'b) term
 
-let rec eval_term : type a. assoc list -> a term -> a =
- fun env -> function
+let rec eval_term : type a. assoc list -> a term -> a = fun env -> function
   | Var (x, r) -> assoc x r env
   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
   | Const x -> x
@@ -2909,7 +2908,7 @@ let magic : 'a 'b. 'a -> 'b =
 type (_, +_) eq = Refl : ('a, 'a) eq
 
 let magic : 'a 'b. 'a -> 'b =
- fun (type a b) (x : a) ->
+ fun (type a) (type b) (x : a) ->
   let bad_proof (type a) =
     (Refl : (< m: a >, < m: a >) eq :> (< m: a >, < >) eq)
   in
@@ -3680,35 +3679,37 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method free =
       function
-      | #var as x -> var#free x
-      | `Abs (s, t) -> Names.remove s (!!free t)
-      | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
+        | #var as x -> var#free x
+        | `Abs (s, t) -> Names.remove s (!!free t)
+        | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
 
     method map ~f =
       function
-      | #var as x -> x
-      | `Abs (s, t) as l ->
-          let t' = f t in
-          if t == t' then l else `Abs (s, t')
-      | `App (t1, t2) as l ->
-          let t'1 = f t1 and t'2 = f t2 in
-          if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
+        | #var as x -> x
+        | `Abs (s, t) as l ->
+            let t' = f t in
+            if t == t' then l else `Abs (s, t')
+        | `App (t1, t2) as l ->
+            let t'1 = f t1 and t'2 = f t2 in
+            if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x
-      | `Abs (s, t) as l ->
-          let used = !!free t in
-          let used_expr =
-            Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-                if Names.mem s used then data :: acc else acc )
-          in
-          if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
-            let name = s ^ string_of_int (next_id ()) in
-            `Abs
-              (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
-          else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
-      | `App _ as l -> self#map ~f:(!!subst ~sub) l
+        | #var as x -> var#subst ~sub x
+        | `Abs (s, t) as l ->
+            let used = !!free t in
+            let used_expr =
+              Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
+                  if Names.mem s used then data :: acc else acc )
+            in
+            if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
+            then
+              let name = s ^ string_of_int (next_id ()) in
+              `Abs
+                ( name
+                , !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t )
+            else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
+        | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
     method eval l =
       match self#map ~f:!!eval l with
@@ -3740,30 +3741,30 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method free =
       function
-      | #var as x -> var#free x
-      | `Num _ -> Names.empty
-      | `Add (x, y) -> Names.union (!!free x) (!!free y)
-      | `Neg x -> !!free x
-      | `Mult (x, y) -> Names.union (!!free x) (!!free y)
+        | #var as x -> var#free x
+        | `Num _ -> Names.empty
+        | `Add (x, y) -> Names.union (!!free x) (!!free y)
+        | `Neg x -> !!free x
+        | `Mult (x, y) -> Names.union (!!free x) (!!free y)
 
     method map ~f =
       function
-      | #var as x -> x
-      | `Num _ as x -> x
-      | `Add (x, y) as e ->
-          let x' = f x and y' = f y in
-          if x == x' && y == y' then e else `Add (x', y')
-      | `Neg x as e ->
-          let x' = f x in
-          if x == x' then e else `Neg x'
-      | `Mult (x, y) as e ->
-          let x' = f x and y' = f y in
-          if x == x' && y == y' then e else `Mult (x', y')
+        | #var as x -> x
+        | `Num _ as x -> x
+        | `Add (x, y) as e ->
+            let x' = f x and y' = f y in
+            if x == x' && y == y' then e else `Add (x', y')
+        | `Neg x as e ->
+            let x' = f x in
+            if x == x' then e else `Neg x'
+        | `Mult (x, y) as e ->
+            let x' = f x and y' = f y in
+            if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x
-      | #expr as e -> self#map ~f:(!!subst ~sub) e
+        | #var as x -> var#subst ~sub x
+        | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
@@ -3792,7 +3793,8 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+        | #lambda as x -> lambda#subst ~sub x
+        | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -3890,35 +3892,37 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   object (self : ([> 'a lambda], 'a lambda) #ops)
     method free =
       function
-      | #var as x -> var#free x
-      | `Abs (s, t) -> Names.remove s (!!free t)
-      | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
+        | #var as x -> var#free x
+        | `Abs (s, t) -> Names.remove s (!!free t)
+        | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
 
     method private map ~f =
       function
-      | #var as x -> x
-      | `Abs (s, t) as l ->
-          let t' = f t in
-          if t == t' then l else `Abs (s, t')
-      | `App (t1, t2) as l ->
-          let t'1 = f t1 and t'2 = f t2 in
-          if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
+        | #var as x -> x
+        | `Abs (s, t) as l ->
+            let t' = f t in
+            if t == t' then l else `Abs (s, t')
+        | `App (t1, t2) as l ->
+            let t'1 = f t1 and t'2 = f t2 in
+            if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x
-      | `Abs (s, t) as l ->
-          let used = !!free t in
-          let used_expr =
-            Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-                if Names.mem s used then data :: acc else acc )
-          in
-          if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
-            let name = s ^ string_of_int (next_id ()) in
-            `Abs
-              (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
-          else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
-      | `App _ as l -> self#map ~f:(!!subst ~sub) l
+        | #var as x -> var#subst ~sub x
+        | `Abs (s, t) as l ->
+            let used = !!free t in
+            let used_expr =
+              Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
+                  if Names.mem s used then data :: acc else acc )
+            in
+            if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
+            then
+              let name = s ^ string_of_int (next_id ()) in
+              `Abs
+                ( name
+                , !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t )
+            else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
+        | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
     method eval l =
       match self#map ~f:!!eval l with
@@ -3947,30 +3951,30 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   object (self : ([> 'a expr], 'a expr) #ops)
     method free =
       function
-      | #var as x -> var#free x
-      | `Num _ -> Names.empty
-      | `Add (x, y) -> Names.union (!!free x) (!!free y)
-      | `Neg x -> !!free x
-      | `Mult (x, y) -> Names.union (!!free x) (!!free y)
+        | #var as x -> var#free x
+        | `Num _ -> Names.empty
+        | `Add (x, y) -> Names.union (!!free x) (!!free y)
+        | `Neg x -> !!free x
+        | `Mult (x, y) -> Names.union (!!free x) (!!free y)
 
     method private map ~f =
       function
-      | #var as x -> x
-      | `Num _ as x -> x
-      | `Add (x, y) as e ->
-          let x' = f x and y' = f y in
-          if x == x' && y == y' then e else `Add (x', y')
-      | `Neg x as e ->
-          let x' = f x in
-          if x == x' then e else `Neg x'
-      | `Mult (x, y) as e ->
-          let x' = f x and y' = f y in
-          if x == x' && y == y' then e else `Mult (x', y')
+        | #var as x -> x
+        | `Num _ as x -> x
+        | `Add (x, y) as e ->
+            let x' = f x and y' = f y in
+            if x == x' && y == y' then e else `Add (x', y')
+        | `Neg x as e ->
+            let x' = f x in
+            if x == x' then e else `Neg x'
+        | `Mult (x, y) as e ->
+            let x' = f x and y' = f y in
+            if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x
-      | #expr as e -> self#map ~f:(!!subst ~sub) e
+        | #var as x -> var#subst ~sub x
+        | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
@@ -3997,7 +4001,8 @@ let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+        | #lambda as x -> lambda#subst ~sub x
+        | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -4046,12 +4051,12 @@ let int_of_sexp _ = 42
 
 let t_of_sexp : 'a. (sexp -> 'a) -> sexp -> 'a t =
   let _tp_loc = "core_array.ml.t" in
-  fun _of_a t -> (array_of_sexp _of_a) t
+  fun _of_a -> fun t -> (array_of_sexp _of_a) t
 
 let _ = t_of_sexp
 
 let sexp_of_t : 'a. ('a -> sexp) -> 'a t -> sexp =
- fun _of_a v -> (sexp_of_array _of_a) v
+ fun _of_a -> fun v -> (sexp_of_array _of_a) v
 
 let _ = sexp_of_t
 
@@ -4105,13 +4110,13 @@ end = struct
   let t_of_sexp :
       'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
-    fun _of_a _of_perms t -> (array_of_sexp _of_a) t
+    fun _of_a -> fun _of_perms -> fun t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
   let sexp_of_t :
       'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
-   fun _of_a _of_perms v -> (sexp_of_array _of_a) v
+   fun _of_a -> fun _of_perms -> fun v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t
 
@@ -4124,12 +4129,12 @@ end = struct
 
     let t_of_sexp : 'perms. (sexp -> 'perms) -> sexp -> 'perms t =
       let _tp_loc = "core_array.ml.Permissioned.Int.t" in
-      fun _of_perms t -> t__of_sexp t
+      fun _of_perms -> fun t -> t__of_sexp t
 
     let _ = t_of_sexp
 
     let sexp_of_t : 'perms. ('perms -> sexp) -> 'perms t -> sexp =
-     fun _of_perms v -> sexp_of_t_ v
+     fun _of_perms -> fun v -> sexp_of_t_ v
 
     let _ = sexp_of_t
   end
@@ -5990,15 +5995,15 @@ class virtual ['a, 'cursor] storage_base =
 
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b =
       fun f a0 ->
-        let cur = self#first in
-        let rec loop count a =
-          if count >= self#len then a
-          else
-            let a' = f cur#get count a in
-            cur#incr () ;
-            loop (count + 1) a'
-        in
-        loop 0 a0
+          let cur = self#first in
+          let rec loop count a =
+            if count >= self#len then a
+            else
+              let a' = f cur#get count a in
+              cur#incr () ;
+              loop (count + 1) a'
+          in
+          loop 0 a0
 
     method iter proc =
       let p = self#first in
@@ -6508,7 +6513,7 @@ end =
   M1
 ;;
 
-fun (x : M1.t) : M2.t -> x
+fun (x : M1.t) -> (x : M2.t)
 
 (* fails *)
 
@@ -9040,9 +9045,9 @@ let f : type a'. a' = assert false
 
 let foo : type a' b'. a' -> b' = fun a -> assert false
 
-let foo : type t'. t' = fun (type t') : t' -> assert false
+let foo : type t'. t' = fun (type t') -> (assert false : t')
 
-let foo : 't. 't = fun (type t) : t -> assert false
+let foo : 't. 't = fun (type t) -> (assert false : t)
 
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
@@ -9159,14 +9164,13 @@ let formula_base x =
   #&& (x #<= (Expr.int 4))
   #&& ((Expr.int 0) #< x)
 
-let _ = call ~f:(fun pair : (a * b) -> pair) ;;
+let _ = call ~f:(fun pair -> (pair : a * b)) ;;
 
 f
   (fun _ -> function
     | true ->
         let () = () in
-        ()
-    | false -> () )
+        () | false -> () )
   ()
 ;;
 
@@ -9174,16 +9178,14 @@ f
   (fun _ -> function
     | true ->
         let () = () in
-        ()
-    (* comment *)
-    | false -> () )
+        () (* comment *) | false -> () )
   ()
 
 let xxxxxx =
   let%map (* _____________________________ __________ *) () = yyyyyyyy in
   {zzzzzzzzzzzzz}
 
-let _ = fun (x : int as 'a) : (int as 'a) -> x
+let _ = fun (x : int as 'a) -> (x : int as 'a)
 
 let eradicate_meta_class_is_nullsafe =
   register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
@@ -9193,10 +9195,10 @@ let eradicate_meta_class_is_nullsafe =
     ~user_documentation:""
 
 let eradicate_meta_class_is_nullsafe =
-  register
-    ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
+    ~hum:
       (* Should be enabled for special integrations *)
-    ~hum:"Class is marked @Nullsafe and has 0 issues"
+    "Class is marked @Nullsafe and has 0 issues"
       (* Should be enabled for special integrations *)
     ~enabled:false Info
 

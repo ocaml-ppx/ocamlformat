@@ -26,10 +26,23 @@ let is_labelled_arg args exp =
       | Labelled _, x | Optional _, x -> phys_equal x exp )
     args
 
-(** Like [is_labelled_arg] but look at an expression's context. *)
-let is_labelled_arg' xexp =
-  match xexp.Ast.ctx with
-  | Exp {pexp_desc= Pexp_apply (_, args); _} -> is_labelled_arg args xexp.ast
+let ctx_is_infix = function
+| Exp { pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _ } -> false
+    | Exp { pexp_desc= Pexp_infix _; _ } -> true
+    | _ -> false
+
+let ctx_is_apply = function
+    | Exp { pexp_desc= Pexp_apply _; _ } -> true
+    | _ -> false
+
+(** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
+    [ctx]. *)
+let ctx_is_let ~ctx = function
+  | Lb _ | Str _ | Bo _ -> true
+  | Exp { pexp_desc= Pexp_let (_, rhs, _); _ } ->
+      (match ctx with
+       | Exp exp -> not (phys_equal rhs exp)
+       | _ -> false)
   | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
@@ -70,7 +83,7 @@ module Exp = struct
         | Pexp_apply (_, args) -> (
           (* Rhs is an apply and it ends with a [fun]. *)
           match List.last_exn args with
-          | _, {pexp_desc= Pexp_fun _ | Pexp_function _; _} -> true
+          | _, {pexp_desc= Pexp_function _; _} -> true
           | _ -> false )
         | Pexp_match _ | Pexp_try _ -> true
         | _ -> false
@@ -91,12 +104,62 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let box_fun_decl_args c ~parens ~kw ~args ~annot =
+  let box_fun_decl_args ~ctx c ~parens ~kw ~args ~annot =
+    let is_let_func =
+      match ctx with
+      Ast.Str _ ->
+         (* special case than aligns the arguments of [let _ = fun ...] *) true | _ -> false
+    in
+    let name = "Params.box_fun_decl_args" in
     let box_decl, should_box_args =
-      if ocp c then (hvbox (if parens then 1 else 2), false)
-      else (hovbox 4, not c.fmt_opts.wrap_fun_args.v)
+      if ocp c then (hvbox ~name (if parens then 1 else 2), false)
+      else
+        ( (if is_let_func then hovbox ~name 4 else hvbox ~name (if parens then 1 else 2))
+        , not c.fmt_opts.wrap_fun_args.v )
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+
+  let box_fun_expr (c: Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
+    let indent =
+      if ctx_is_infix ctx0 then (
+        if ocp c && has_label then 2
+        else 0 )
+      else
+        match c.fmt_opts.function_indent_nested.v with
+        | `Always -> c.fmt_opts.function_indent.v
+        | _ ->
+            if ctx_is_let ~ctx ctx0 then
+              if c.fmt_opts.let_binding_deindent_fun.v then 1
+              else 0
+            else if ocp c && ctx_is_apply ctx0 && not has_label then 4
+            else if ocp c then 2
+            else
+              4 in
+    let name = "Params.box_fun_expr" in
+    ( match ctx0 with
+      | Str _ -> hvbox ~name indent
+      | _ -> hovbox ~name indent)
+
+  (* if the function is the last argument of an apply and no other arguments
+     are "complex" (approximation). *)
+  let function_attrs_sp c ~ctx0 ~ctx =
+    let arg_is_simple_approx (_, exp) =
+      Ast.is_simple c (fun _ -> 0) (sub_exp ~ctx:ctx0 exp)
+    in
+    match ctx0, ctx with
+    | Exp { pexp_desc= Pexp_apply (_, args); _ }, Exp exp ->
+        (match List.rev args with
+         | [] -> false
+         | (_, last_arg) :: other_args ->
+             phys_equal exp last_arg
+             && List.for_all ~f:arg_is_simple_approx other_args
+        )
+    | _ -> false
+  let break_fun_decl_args ~ctx =
+    match ctx with
+    Ast.Str _ ->
+       (* special case that break the arrow in [let _ = fun ... ->] *) (str " ") | _ -> break 1 (-2)
+
 end
 
 module Mod = struct
@@ -685,32 +748,36 @@ module Align = struct
 end
 
 module Indent = struct
-  let function_ ?(default = 0) (c : Conf.t) ~parens xexp =
-    match c.fmt_opts.function_indent_nested.v with
-    | `Always -> c.fmt_opts.function_indent.v
-    | _ when ocp c && parens && not (is_labelled_arg' xexp) -> default + 1
-    | _ -> default
+  let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
+    let r=
+    if ctx_is_infix ctx0 then
+      if has_label then 2 else 0
+    else
+      let extra = (if c.fmt_opts.wrap_fun_args.v then 2 else match ctx0 with Str _ -> 2 | _ -> 4) in
+      match c.fmt_opts.function_indent_nested.v with
+        | `Always -> c.fmt_opts.function_indent.v + extra
+        | _ when ocp c && ctx_is_apply ctx0 && not has_label -> default + 3
+        | _ when ocp c && parens && not has_label -> default + 1
+        | _ when ocp c -> default
+        | _ ->
+          default + extra in
+    r
 
-  let fun_ ?eol (c : Conf.t) =
-    match c.fmt_opts.function_indent_nested.v with
-    | `Always -> c.fmt_opts.function_indent.v
-    | _ ->
-        if Option.is_none eol then 2
-        else if c.fmt_opts.let_binding_deindent_fun.v then 1
-        else 0
 
   let fun_type_annot c = if ocp c then 2 else 4
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function (c : Conf.t) ~parens xexp =
-    if ocp c then if parens then 3 else 2
-    else
-      let default = if c.fmt_opts.wrap_fun_args.v then 2 else 4 in
-      function_ ~default c ~parens:false xexp
-
-  let docked_function_after_fun (c : Conf.t) ~parens ~lbl =
-    if ocp c then if parens && Poly.equal lbl Nolabel then 3 else 2 else 0
+  let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens ~has_label =
+    if ctx_is_infix ctx0 then
+      0
+   else
+      2 +
+      if ocp c then
+        if parens && not has_label then
+          3
+        else 2
+      else 2
 
   let fun_args_group (c : Conf.t) ~lbl exp =
     if not (ocp c) then 2

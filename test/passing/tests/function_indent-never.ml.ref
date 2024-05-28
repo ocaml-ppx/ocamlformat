@@ -14,6 +14,5 @@ let foooooooo =
   if fooooooooooo then function
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
-  else function
-    | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
+  else function fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo

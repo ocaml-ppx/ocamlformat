@@ -100,7 +100,7 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
-    )
+      )
   )
   else if cond2 then (
     arm2 ;
@@ -108,7 +108,7 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
-    )
+      )
   )
   else (
     arm3 ;
@@ -116,7 +116,7 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
-    )
+      )
   )
 
 let foo =
