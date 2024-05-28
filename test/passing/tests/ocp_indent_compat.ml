@@ -73,10 +73,10 @@ let ssmap
   ()
 
 let ssmap
-  : (module MapT
-       with type key = string
-        and type data = string
-        and type map = SSMap.map )
+  :  (module MapT
+        with type key = string
+         and type data = string
+         and type map = SSMap.map )
   -> unit
   =
   ()

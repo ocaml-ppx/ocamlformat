@@ -747,19 +747,18 @@ and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
 
 and fmt_type_cstr c ?(pro=":") ?constraint_ctx xtyp =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
-    let wrap, inner_pro, box =
-      if colon_before then
-        let wrap x =
-          fits_breaks " " ~hint:(1000, 0) "" $ cbox 0 (str pro $ str " " $ x)
-        in
+  let wrap, inner_pro, box =
+    match xtyp.ast.ptyp_desc with
+    | (Ptyp_poly (_, { ptyp_desc= Ptyp_arrow _; _ })
+    | Ptyp_arrow _) when colon_before ->
+        let outer_pro = fits_breaks (pro ^ " ") (pro ^ "  ") in
+        let pre_break = if colon_before then fits_breaks " " ~hint:(1000, 0) "" else break 0 ~-1 in
+        let wrap x = pre_break $ cbox 0 (outer_pro $ x) in
         wrap, None, false
-      else
-        let wrap x =
-          break 0 ~-1 $ x
-        in
-        wrap, Some pro, true
-    in
-    wrap (fmt_core_type c ?pro:inner_pro ?constraint_ctx ~box xtyp)
+    | _ ->
+        (fun k -> break 0 ~-1 $ k), Some pro, true
+  in
+  wrap (fmt_core_type c ?pro:inner_pro ?constraint_ctx ~box xtyp)
 
 and fmt_type_pcstr c ~ctx ?constraint_ctx cstr =
   let fmt_typ ~pro t = fmt_type_cstr c ~pro ?constraint_ctx (sub_typ ~ctx t) in
