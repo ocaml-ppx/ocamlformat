@@ -131,31 +131,31 @@ let remove_local_attrs cmts param =
       in
       Pparam_val (is_local, label, default, {pattern with ppat_attributes})
 
-let get_layout_of_legacy_attr attr =
+let get_jkind_of_legacy_attr attr =
   match (attr.attr_name.txt, attr.attr_payload) with
   | ("ocaml.immediate64" | "immediate64"), PStr [] ->
       Some (Layout "immediate64")
   | ("ocaml.immediate" | "immediate"), PStr [] -> Some (Layout "immediate")
   | _ -> None
 
-let rewrite_type_declaration_imm_attr_to_layout_annot cmts decl =
+let rewrite_type_declaration_imm_attr_to_jkind_annot cmts decl =
   let immediate_attrs, remaining_attrs =
     decl.ptype_attributes
     |> List.partition_map ~f:(fun attr ->
-           match get_layout_of_legacy_attr attr with
-           | Some layout -> First (layout, attr)
+           match get_jkind_of_legacy_attr attr with
+           | Some jkind -> First (jkind, attr)
            | None -> Second attr )
   in
-  match (decl.ptype_layout, immediate_attrs) with
-  | None, [(layout, attr)] ->
-      (* We only do this rewrite if (1.) there's no layout annotation already
+  match (decl.ptype_jkind, immediate_attrs) with
+  | None, [(jkind, attr)] ->
+      (* We only do this rewrite if (1.) there's no jkind annotation already
          present and (2.) only one immediate attribute is attached *)
-      let ptype_layout = Some Location.(mknoloc layout) in
+      let ptype_jkind = Some Location.(mknoloc jkind) in
       Cmts.relocate_all_to_before cmts ~src:attr.attr_name.loc
         ~before:decl.ptype_loc ;
       Cmts.relocate_all_to_before cmts ~src:attr.attr_loc
         ~before:decl.ptype_loc ;
-      {decl with ptype_attributes= remaining_attrs; ptype_layout}
+      {decl with ptype_attributes= remaining_attrs; ptype_jkind}
   | _ -> decl
 
 module Exp = struct

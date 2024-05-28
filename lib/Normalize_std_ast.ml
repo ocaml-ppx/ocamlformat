@@ -29,7 +29,7 @@ let is_erasable_jane_syntax attr =
      "erasable jane syntax" *)
   || String.equal "extension.curry" name
 
-(* Immediate layout annotations should be treated the same as their attribute
+(* Immediate jkind annotations should be treated the same as their attribute
    counterparts *)
 let normalize_immediate_annot_and_attrs attrs =
   let overwrite_attr_name attr new_name =
@@ -39,8 +39,8 @@ let normalize_immediate_annot_and_attrs attrs =
   in
   let attrs, _ =
     List.fold attrs ~init:([], false)
-      ~f:(fun (new_attrs, deleted_layout_annot) attr ->
-        let new_attr, just_deleted_layout_annot =
+      ~f:(fun (new_attrs, deleted_jkind_annot) attr ->
+        let new_attr, just_deleted_jkind_annot =
           match (attr.attr_name.txt, attr.attr_payload) with
           (* We also have to normalize "ocaml.immediate" into "immediate" for
              this to work. Since if we rewrite [@@ocaml.immediate] into an
@@ -49,10 +49,19 @@ let normalize_immediate_annot_and_attrs attrs =
           | ( "jane.erasable.layouts.annot"
             , PStr
                 [ { pstr_desc=
-                      Pstr_eval
-                        ( { pexp_desc= Pexp_ident {txt= Lident "immediate"; _}
-                          ; _ }
-                        , _ )
+                      Pstr_attribute
+                        { attr_name= {txt= "jane.erasable.layouts.prim"; _}
+                        ; attr_payload=
+                            PStr
+                              [ { pstr_desc=
+                                    Pstr_eval
+                                      ( { pexp_desc=
+                                            Pexp_ident
+                                              {txt= Lident "immediate"; _}
+                                        ; _ }
+                                      , _ )
+                                ; _ } ]
+                        ; _ }
                   ; _ } ] ) ->
               (Some (overwrite_attr_name attr "immediate"), true)
           | "ocaml.immediate", PStr [] ->
@@ -60,16 +69,24 @@ let normalize_immediate_annot_and_attrs attrs =
           | ( "jane.erasable.layouts.annot"
             , PStr
                 [ { pstr_desc=
-                      Pstr_eval
-                        ( { pexp_desc=
-                              Pexp_ident {txt= Lident "immediate64"; _}
-                          ; _ }
-                        , _ )
+                      Pstr_attribute
+                        { attr_name= {txt= "jane.erasable.layouts.prim"; _}
+                        ; attr_payload=
+                            PStr
+                              [ { pstr_desc=
+                                    Pstr_eval
+                                      ( { pexp_desc=
+                                            Pexp_ident
+                                              {txt= Lident "immediate64"; _}
+                                        ; _ }
+                                      , _ )
+                                ; _ } ]
+                        ; _ }
                   ; _ } ] ) ->
               (Some (overwrite_attr_name attr "immediate64"), true)
           | "ocaml.immediate64", PStr [] ->
               (Some (overwrite_attr_name attr "immediate64"), false)
-          | "jane.erasable.layouts", PStr [] when deleted_layout_annot ->
+          | "jane.erasable.layouts", PStr [] when deleted_jkind_annot ->
               (* Only remove [jane.erasable.layouts] if we previously rewrote
                  an associated [jane.erasable.layouts.annot] *)
               (None, false)
@@ -80,7 +97,7 @@ let normalize_immediate_annot_and_attrs attrs =
           | Some new_attr -> new_attr :: new_attrs
           | None -> new_attrs
         in
-        (new_attrs, deleted_layout_annot || just_deleted_layout_annot) )
+        (new_attrs, deleted_jkind_annot || just_deleted_jkind_annot) )
   in
   List.rev attrs
 

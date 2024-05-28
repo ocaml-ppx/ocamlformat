@@ -538,17 +538,16 @@ let fmt_quoted_string key ext s = function
         (str (Format_.sprintf "|%s}" delim))
         (str s)
 
-let type_var_has_layout_annot (_, layout_opt) = Option.is_some layout_opt
+let type_var_has_jkind_annot (_, jkind_opt) = Option.is_some jkind_opt
 
-let layout_to_string = function Layout s -> s
+let jkind_to_string = function Layout s -> s
 
-let fmt_layout_str ~c ~loc string =
-  fmt "@ :@ " $ Cmts.fmt c loc @@ str string
+let fmt_jkind_str ~c ~loc string = fmt "@ :@ " $ Cmts.fmt c loc @@ str string
 
-let fmt_layout c l = fmt_layout_str ~c ~loc:l.loc (layout_to_string l.txt)
+let fmt_jkind c l = fmt_jkind_str ~c ~loc:l.loc (jkind_to_string l.txt)
 
 let fmt_type_var ~have_tick c s =
-  let {txt= name_opt; loc= name_loc}, layout_opt = s in
+  let {txt= name_opt; loc= name_loc}, jkind_opt = s in
   ( Cmts.fmt c name_loc
   @@
   match name_opt with
@@ -562,10 +561,10 @@ let fmt_type_var ~have_tick c s =
             (String.length var_name > 1 && Char.equal var_name.[1] '\'')
             " " )
       $ str var_name )
-  $ Option.value_map layout_opt ~default:noop ~f:(fmt_layout c)
+  $ Option.value_map jkind_opt ~default:noop ~f:(fmt_jkind c)
 
 let fmt_type_var_with_parenze ~have_tick c s =
-  wrap_if (type_var_has_layout_annot s) "(" ")" (fmt_type_var ~have_tick c s)
+  wrap_if (type_var_has_jkind_annot s) "(" ")" (fmt_type_var ~have_tick c s)
 
 let split_global_flags_from_attrs atrs =
   match
@@ -3534,7 +3533,7 @@ and fmt_tydcl_params c ctx params =
     | [(p, _)] ->
         ( false
         , match p.ptyp_desc with
-          | Ptyp_var s -> type_var_has_layout_annot s
+          | Ptyp_var s -> type_var_has_jkind_annot s
           | _ -> false )
     | _ :: _ :: _ -> (false, true)
   in
@@ -3563,7 +3562,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
   @@
   let decl =
     if Erase_jane_syntax.should_erase () then decl
-    else Sugar.rewrite_type_declaration_imm_attr_to_layout_annot c.cmts decl
+    else Sugar.rewrite_type_declaration_imm_attr_to_jkind_annot c.cmts decl
   in
   let { ptype_name= {txt; loc}
       ; ptype_params
@@ -3573,7 +3572,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
       ; ptype_manifest= m
       ; ptype_attributes
       ; ptype_loc
-      ; ptype_layout } =
+      ; ptype_jkind } =
     decl
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
@@ -3602,7 +3601,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?name ?(eq = "=") {ast= decl; _}
           0
           ( fmt_tydcl_params c ctx ptype_params
           $ Option.value_map name ~default:(str txt) ~f:(fmt_longident_loc c)
-          $ fmt_opt (Option.map ~f:(fmt_layout c) ptype_layout) )
+          $ fmt_opt (Option.map ~f:(fmt_jkind c) ptype_jkind) )
       $ k )
   in
   let fmt_manifest_kind =

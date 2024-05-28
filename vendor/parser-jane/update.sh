@@ -18,8 +18,6 @@ cp "$parsing_dir"/asttypes.mli for-parser-standard/
 cp "$parsing_dir"/ast_helper.ml for-parser-standard/
 cp "$parsing_dir"/ast_mapper.ml for-parser-standard/
 cp "$parsing_dir"/docstrings.ml for-parser-standard/
-cp "$parsing_dir"/jane_asttypes.ml for-parser-standard/
-cp "$parsing_dir"/jane_asttypes.mli for-parser-standard/
 cp "$parsing_dir"/jane_syntax.ml for-parser-standard/
 cp "$parsing_dir"/jane_syntax.mli for-parser-standard/
 cp "$parsing_dir"/jane_syntax_parsing.ml for-parser-standard/

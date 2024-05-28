@@ -200,14 +200,14 @@ let paren_kind i ppf = function
   | Brace -> line i ppf "Brace\n"
   | Bracket -> line i ppf "Bracket\n"
 
-let layout_to_string = function
+let jkind_to_string = function
   | Layout s -> s
 
-let fmt_layout_opt ppf l = Format.fprintf ppf "%s"
-  (Option.value ~default:"none" (Option.map (fun l -> layout_to_string l.txt) l))
+let fmt_jkind_opt ppf l = Format.fprintf ppf "%s"
+  (Option.value ~default:"none" (Option.map (fun l -> jkind_to_string l.txt) l))
 
-let fmt_ty_var ppf (name, layout) =
-  Format.fprintf ppf "%a:%a" fmt_str_opt_loc name fmt_layout_opt layout
+let fmt_ty_var ppf (name, jkind) =
+  Format.fprintf ppf "%a:%a" fmt_str_opt_loc name fmt_jkind_opt jkind
 
 let tuple_component_label i ppf = function
   | None -> line i ppf "Label: None\n"
@@ -643,7 +643,7 @@ and type_declaration i ppf x =
   line i ppf "ptype_private = %a\n" fmt_private_flag x.ptype_private;
   line i ppf "ptype_manifest =\n";
   option (i+1) core_type ppf x.ptype_manifest;
-  line i ppf "ptype_layout = %a\n" fmt_layout_opt x.ptype_layout
+  line i ppf "ptype_jkind = %a\n" fmt_jkind_opt x.ptype_jkind
 
 and attribute i ppf k a =
   line i ppf "%s %a %a\n" k fmt_string_loc a.attr_name fmt_location a.attr_loc;

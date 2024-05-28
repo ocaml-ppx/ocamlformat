@@ -699,7 +699,7 @@ let mk_directive ~loc name arg =
       pdir_loc = make_loc loc;
     }
 
-let convert_layout_to_legacy_attr =
+let convert_jkind_to_legacy_attr =
   let mk ~loc name = [Attr.mk ~loc (mkloc name loc) (PStr [])] in
   function
   | {txt = Layout "immediate"; loc} -> mk ~loc "immediate"
@@ -2503,10 +2503,10 @@ expr:
     { let loc = $sloc in
       wrap_exp_attrs ~loc (mk_newtypes ~loc $5 $7) $2 }
   | FUN ext_attributes LPAREN TYPE
-    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
     RPAREN fun_def
     { let loc = $sloc in
-      wrap_exp_attrs ~loc (mk_newtypes ~loc:$sloc [name, layout] $9) $2 }
+      wrap_exp_attrs ~loc (mk_newtypes ~loc:$sloc [name, jkind] $9) $2 }
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
@@ -2942,9 +2942,9 @@ strict_binding:
   | LPAREN TYPE newtypes RPAREN fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
   | LPAREN TYPE
-    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
     RPAREN fun_binding
-      { mk_newtypes ~loc:$sloc [name, layout] $7 }
+      { mk_newtypes ~loc:$sloc [name, jkind] $7 }
 ;
 local_fun_binding:
     local_strict_binding
@@ -2963,9 +2963,9 @@ local_strict_binding:
   | LPAREN TYPE newtypes RPAREN local_fun_binding
       { mk_newtypes ~loc:$sloc $3 $5 }
   | LPAREN TYPE
-    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
     RPAREN fun_binding
-      { mk_newtypes ~loc:$sloc [name, layout] $7 }
+      { mk_newtypes ~loc:$sloc [name, jkind] $7 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
@@ -2996,9 +2996,9 @@ fun_def:
   | LPAREN TYPE newtypes RPAREN fun_def
       { mk_newtypes ~loc:$sloc $3 $5 }
   | LPAREN TYPE
-    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
     RPAREN fun_def
-      { mk_newtypes ~loc:$sloc [name, layout] $7 }
+      { mk_newtypes ~loc:$sloc [name, jkind] $7 }
 ;
 
 (* Parsing labeled tuple expressions
@@ -3128,16 +3128,16 @@ type_constraint:
 
 (* the thing between the [type] and the [.] in
    [let : type <<here>>. 'a -> 'a = ...] *)
-newtypes: (* : (string with_loc * layout_annotation option) list *)
+newtypes: (* : (string with_loc * jkind_annotation option) list *)
   newtype+
     { $1 }
 
-newtype: (* : string with_loc * layout_annotation option *)
+newtype: (* : string with_loc * jkind_annotation option *)
     mkrhs(LIDENT {Some $1}) { $1, None }
   | LPAREN
-    name=mkrhs(LIDENT {Some $1}) COLON layout=layout_annotation
+    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
     RPAREN
-      { name, layout }
+      { name, jkind }
 
 /* Patterns */
 
@@ -3463,18 +3463,18 @@ generic_type_declaration(flag, kind):
   flag = flag
   params = type_parameters
   id = mkrhs(LIDENT)
-  layout_and_attr = layout_attr_opt
+  jkind_and_attr = jkind_attr_opt
   kind_priv_manifest = kind
   cstrs = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
-      let (layout, attrs3) = layout_and_attr in
+      let (jkind, attrs3) = jkind_and_attr in
       let docs = symbol_docs $sloc in
       let attrs = attrs1 @ attrs2 @ attrs3 in
       let loc = make_loc $sloc in
       (flag, ext),
-      Type.mk id ~params ?layout ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
+      Type.mk id ~params ?jkind ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
 %inline generic_and_type_declaration(kind):
@@ -3482,18 +3482,18 @@ generic_type_declaration(flag, kind):
   attrs1 = attributes
   params = type_parameters
   id = mkrhs(LIDENT)
-  layout_and_attr = layout_attr_opt
+  jkind_and_attr = jkind_attr_opt
   kind_priv_manifest = kind
   cstrs = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
-      let (layout, attrs3) = layout_and_attr in
+      let (jkind, attrs3) = jkind_and_attr in
       let docs = symbol_docs $sloc in
       let attrs = attrs1 @ attrs2 @ attrs3 in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ?layout ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk id ~params ?jkind ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:
@@ -3546,44 +3546,44 @@ type_parameters:
       { ps }
 ;
 
-layout_annotation_gen:
+jkind_annotation_gen:
   ident
     {
       let loc = make_loc $sloc in
       (mkloc (Layout $1) loc)
     }
 
-layout_annotation: (* : layout_annotation *)
-  layout_annotation_gen
+jkind_annotation: (* : jkind_annotation *)
+  jkind_annotation_gen
     {
       if Erase_jane_syntax.should_erase () then None
       else Some $1
     }
 ;
 
-layout_attr_opt:
+jkind_attr_opt:
   /* empty */
     { None, [] }
-  | COLON layout_annotation_gen
+  | COLON jkind_annotation_gen
     {
       if Erase_jane_syntax.should_erase ()
-      then None, convert_layout_to_legacy_attr $2
+      then None, convert_jkind_to_legacy_attr $2
       else Some $2, []
     }
 ;
 
-%inline type_param_with_layout:
+%inline type_param_with_jkind:
   name=mkrhs(tyvar_name_or_underscore)
   attrs=attributes
   COLON
-  layout=layout_annotation
-  { let descr = Ptyp_var (name, layout) in
+  jkind=jkind_annotation
+  { let descr = Ptyp_var (name, jkind) in
     mktyp ~loc:$sloc ~attrs descr }
 ;
 
 parenthesized_type_parameter:
     type_parameter { $1 }
-  | type_variance type_param_with_layout
+  | type_variance type_param_with_jkind
     { $2, $1 }
 ;
 
@@ -3839,14 +3839,14 @@ with_type_binder:
 
 /* Polymorphic types */
 
-%inline typevar: (* : string with_loc * layout_annotation option *)
+%inline typevar: (* : string with_loc * jkind_annotation option *)
   QUOTE mkrhs(ident {Some $1})
     { $2, None }
-  | LPAREN QUOTE mkrhs(ident {Some $1})  COLON layout=layout_annotation RPAREN
-    { $3, layout }
+  | LPAREN QUOTE mkrhs(ident {Some $1})  COLON jkind=jkind_annotation RPAREN
+    { $3, jkind }
 ;
 %inline typevar_list:
-  (* : (string with_loc * layout_annotation option) list *)
+  (* : (string with_loc * jkind_annotation option) list *)
   nonempty_llist(typevar)
     { $1 }
 ;
@@ -3905,14 +3905,14 @@ alias_type:
       LPAREN
       name=mkrhs(tyvar_name_or_underscore)
       COLON
-      layout = layout_annotation
+      jkind = jkind_annotation
       RPAREN
-        { match layout, name.txt with
+        { match jkind, name.txt with
         | None, None ->
           assert (Erase_jane_syntax.should_erase ());
           aliased_type
         | _ ->
-          mktyp ~loc:$sloc (Ptyp_alias (aliased_type, (name, layout))) }
+          mktyp ~loc:$sloc (Ptyp_alias (aliased_type, (name, jkind))) }
 ;
 
 (* Function types include:
@@ -4169,10 +4169,10 @@ atomic_type:
         { Ptyp_variant($3, Closed, Some $5) }
     | extension
         { Ptyp_extension $1 }
-    | LPAREN QUOTE name=mkrhs(ident {Some $1}) COLON layout=layout_annotation RPAREN
-      { Ptyp_var (name, layout) }
-    | LPAREN mkrhs(UNDERSCORE {None}) COLON layout=layout_annotation RPAREN
-      { Ptyp_var ($2, layout) }
+    | LPAREN QUOTE name=mkrhs(ident {Some $1}) COLON jkind=jkind_annotation RPAREN
+      { Ptyp_var (name, jkind) }
+    | LPAREN mkrhs(UNDERSCORE {None}) COLON jkind=jkind_annotation RPAREN
+      { Ptyp_var ($2, jkind) }
 
   )
   { $1 } /* end mktyp group */
