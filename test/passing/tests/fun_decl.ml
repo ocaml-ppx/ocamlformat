@@ -19,18 +19,18 @@ let _ =
 let to_loc_trace
     ?(desc_of_source =
       fun source ->
-        let callsite = Source.call_site source in
-        Format.asprintf
-          "return from %a"
-          Typ.Procname.pp
-          (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
+          let callsite = Source.call_site source in
+          Format.asprintf
+            "return from %a"
+            Typ.Procname.pp
+            (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
     ?(desc_of_sink =
       fun sink ->
-        let callsite = Sink.call_site sink in
-        Format.asprintf
-          "call to %a"
-          Typ.Procname.pp
-          (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
+          let callsite = Sink.call_site sink in
+          Format.asprintf
+            "call to %a"
+            Typ.Procname.pp
+            (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
     (passthroughs, sources, sinks) =
   ()
 
@@ -46,14 +46,14 @@ let translate_captured
 let to_loc_trace
     ?(desc_of_source =
       fun source ->
-        let callsite = Source.call_site source in
-        Format.asprintf "return from %a" Typ.Procname.pp
-          (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
+          let callsite = Source.call_site source in
+          Format.asprintf "return from %a" Typ.Procname.pp
+            (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
     ?(desc_of_sink =
       fun sink ->
-        let callsite = Sink.call_site sink in
-        Format.asprintf "call to %a" Typ.Procname.pp
-          (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
+          let callsite = Sink.call_site sink in
+          Format.asprintf "call to %a" Typ.Procname.pp
+            (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
     (passthroughs, sources, sinks) =
   ()
 
@@ -67,19 +67,19 @@ let translate_captured
 let f ssssssssss =
   String.fold ssssssssss ~init:innnnnnnnnnit
     ~f:(fun accuuuuuuuuuum -> function
-    | '0' -> g accuuuuuuuuuum
-    | '1' -> h accuuuuuuuuuum
-    | _ -> i accuuuuuuuuuum )
+      | '0' -> g accuuuuuuuuuum
+      | '1' -> h accuuuuuuuuuum
+      | _ -> i accuuuuuuuuuum )
 
 let f _ =
   let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
   fun x ->
-    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
-    x
+      let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+      x
 
 let f _ =
   let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
   (* foo *)
   fun x ->
-    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
-    x
+      let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+      x

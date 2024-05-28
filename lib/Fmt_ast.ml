@@ -1444,7 +1444,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 2 x $ space_break) ?box:(should_box = true)
+and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = true)
       ~label ?(parens = false) ?ext ~attrs ~loc c (args, typ, body) =
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
@@ -1483,7 +1483,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
     | (_ :: _), _, Pfunction_body body ->
         (* Only [fun]. *)
         fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body),
-     (Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx), ~-2
+     (Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx ~parens ~has_label), ~-2
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
@@ -1492,7 +1492,11 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
           match args, typ with
           | [], None -> noop, attrs, hvbox (Params.Indent.function_ c.conf ~ctx0 ~parens ~has_label)
           | [], Some _ -> assert false
-          | args, typ -> fmt_fun_args_typ args typ $ space_break, [], hvbox (Params.Indent.docked_function_after_fun c.conf ~ctx0 ~parens ~has_label)
+          | args, typ ->
+              ( fmt_fun_args_typ args typ $ space_break,
+                [],
+                hvbox (Params.Indent.docked_function_after_fun c.conf ~ctx0 ~parens ~has_label)
+              )
         in
         let function_ =
           let pre = if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank else None in
@@ -1501,7 +1505,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?(wrap_intro = fun x -> hovbox 
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
         in
-        (fun_ $ function_, hvbox 0 (fmt_cases c ctx cs), box, 0)
+        (fun_ $ function_, (fmt_cases c ctx cs), box, 0)
   in
   (* TODO: Disambiguating parentheses in case of one-liner 'function'.
      See 'Params.Exp.wrap c.conf ~parens ~disambiguate:true' *)
@@ -1550,7 +1554,8 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
                ~box xarg )
         $ cmts_after )
   | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
-        fmt_function ~ctx:(Exp arg) ~ctx0:xarg.ctx ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
+        let wrap_intro x = hovbox 2 x $ space_break in
+        fmt_function ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c (args, typ, body)
   | _ ->
       let label_sep : t =
         if box || c.conf.fmt_opts.wrap_fun_args.v then str ":" $ cut_break
@@ -2042,15 +2047,15 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               wrap
                 ( intro_epi
                 $ fmt_args_grouped e0 args_before
-                $ space_break $ hvbox 0 x )
-              $ break 1 2
+                $ break 1 0 $ hvbox 0 x )
+              $ break 1 0
             in
             let force_closing_paren =
               if Location.is_single_line pexp_loc c.conf.fmt_opts.margin.v
               then Fit
               else Break
             in
-            fmt_function ~force_closing_paren ~ctx:inner_ctx  ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
+            fmt_function~force_closing_paren ~ctx:inner_ctx  ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))

@@ -1,19 +1,18 @@
 let () =
   fooooo
   |> List.iter (fun x ->
-         let x = x $ y in
-         fooooooooooo x )
+       let x = x $ y in
+       fooooooooooo x )
 
 let () =
   fooooo
   |> List.iter
        (fun some_really_really_really_long_name_that_doesn't_fit_on_the_line
        ->
-         let x =
-           some_really_really_really_long_name_that_doesn't_fit_on_the_line
-           $ y
-         in
-         fooooooooooo x )
+       let x =
+         some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+       in
+       fooooooooooo x )
 
 let foooooooooo =
   foooooooooooooooooooooo
@@ -73,19 +72,19 @@ let foooooooooooooooooooooooooooooooo =
 let x =
   some_fun________________________________
     some_arg______________________________ (fun param ->
-      do_something () ; do_something_else () ; return_this_value )
+    do_something () ; do_something_else () ; return_this_value )
 
 let x =
   some_fun________________________________
     some_arg______________________________ ~f:(fun param ->
-      do_something () ; do_something_else () ; return_this_value )
+    do_something () ; do_something_else () ; return_this_value )
 
 let x =
   some_value
   |> some_fun (fun x ->
-         do_something () ; do_something_else () ; return_this_value )
+       do_something () ; do_something_else () ; return_this_value )
 
 let x =
   some_value
   ^ some_fun (fun x ->
-        do_something () ; do_something_else () ; return_this_value )
+      do_something () ; do_something_else () ; return_this_value )

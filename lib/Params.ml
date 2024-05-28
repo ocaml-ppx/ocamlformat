@@ -31,6 +31,10 @@ let ctx_is_infix = function
     | Exp { pexp_desc= Pexp_infix _; _ } -> true
     | _ -> false
 
+let ctx_is_apply = function
+    | Exp { pexp_desc= Pexp_apply _; _ } -> true
+    | _ -> false
+
 (** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx]. *)
 let ctx_is_let ~ctx = function
@@ -115,10 +119,11 @@ module Exp = struct
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 
-  let box_fun_expr (c: Conf.t) ~ctx0 ~ctx =
+  let box_fun_expr (c: Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
     let indent =
-      if ctx_is_infix ctx0 then
-        0
+      if ctx_is_infix ctx0 then (
+        if ocp c && has_label then 2
+        else 0 )
       else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
@@ -126,8 +131,10 @@ module Exp = struct
             if ctx_is_let ~ctx ctx0 then
               if c.fmt_opts.let_binding_deindent_fun.v then 1
               else 0
+            else if ocp c && ctx_is_apply ctx0 && not has_label then 4
+            else if ocp c then 2
             else
-              2 in
+              4 in
     let name = "Params.box_fun_expr" in
     ( match ctx0 with
       | Str _ -> hvbox ~name indent
@@ -742,13 +749,20 @@ end
 
 module Indent = struct
   let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
+    let r=
     if ctx_is_infix ctx0 then
       if has_label then 2 else 0
     else
+      let extra = (if c.fmt_opts.wrap_fun_args.v then 2 else match ctx0 with Str _ -> 2 | _ -> 4) in
       match c.fmt_opts.function_indent_nested.v with
-      | `Always -> c.fmt_opts.function_indent.v
-      | _ when ocp c && parens && not has_label -> default + 1
-      | _ -> default
+        | `Always -> c.fmt_opts.function_indent.v + extra
+        | _ when ocp c && ctx_is_apply ctx0 && not has_label -> default + 3
+        | _ when ocp c && parens && not has_label -> default + 1
+        | _ when ocp c -> default
+        | _ ->
+          default + extra in
+    r
+
 
   let fun_type_annot c = if ocp c then 2 else 4
 
@@ -756,8 +770,14 @@ module Indent = struct
 
   let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens ~has_label =
     if ctx_is_infix ctx0 then
-      0 else
-    if ocp c then if parens && not has_label then 3 else 2 else 0
+      0
+   else
+      2 +
+      if ocp c then
+        if parens && not has_label then
+          3
+        else 2
+      else 2
 
   let fun_args_group (c : Conf.t) ~lbl exp =
     if not (ocp c) then 2

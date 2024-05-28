@@ -381,7 +381,8 @@ let _ = f ((* comments *) 'c' [@attributes])
 let _ = function ("foo" [@attr]) -> ("bar" [@attr2])
 
 let _ = function
-  | ('A' [@attr]) -> ('B' [@attr2]) | ('A' .. 'B' [@attr2]) -> ()
+  | ('A' [@attr]) -> ('B' [@attr2])
+  | ('A' .. 'B' [@attr2]) -> ()
 
 let _ =
   match x with
@@ -408,18 +409,18 @@ let[@a
     when f
            ~f:(function[@ocaml.warning
                          (* ....................................... *) "-4"]
-           | _ -> . )
+             | _ -> . )
            ~f:(function[@ocaml.warning
                          (* ....................................... *)
                          (* ....................................... *)
                          "foooooooooooooooooooooooooooo \
                           fooooooooooooooooooooooooooooooooooooo"]
-           | _ -> . )
+             | _ -> . )
            ~f:(function[@ocaml.warning
                          (* ....................................... *)
                          let x = a and y = b in
                          x + y]
-           | _ -> . ) ->
+             | _ -> . ) ->
       y
       [@attr
         (* ... *)
@@ -448,7 +449,9 @@ let () =
     @@ S.tok
          begin [@warning "-4"]
            fun ev ->
-             match ev with Cbor_event.Reserved int -> Some int | _ -> None
+               match ev with
+               | Cbor_event.Reserved int -> Some int
+               | _ -> None
          end
   in
   ()
