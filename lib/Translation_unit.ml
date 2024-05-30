@@ -321,13 +321,9 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
       in
       (* Ast not preserved ? *)
       ( if
-          (not
-             (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
-                ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
-          && not
-               (Normalize_extended_ast.equal ext_fg conf ext_t.ast
-                  ext_t_new.ast
-                  ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
+          not
+            (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
+               ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
           let old_ast =
             dump_ast std_fg ~suffix:".old"
