@@ -174,6 +174,10 @@ let normalize_cmt (conf : Conf.t) =
       normalize_code ~normalize_cmt conf mapper c
   end
 
+let normalize_code (conf : Conf.t) code =
+  let n = normalize_cmt conf in
+  n#code code
+
 let ast fragment ~ignore_doc_comments c =
   let normalize_cmt = normalize_cmt c in
   map fragment
