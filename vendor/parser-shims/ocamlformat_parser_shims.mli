@@ -33,7 +33,7 @@ module Misc : sig
   end
 
   module Style : sig
-  val as_inline_code: (Format.formatter -> 'a -> unit as 'printer) -> 'printer
+    val as_inline_code: (Format.formatter -> 'a -> unit as 'printer) -> 'printer
     (** @since ocaml-5.2 *)
 
     val inline_code: Format.formatter -> string -> unit
