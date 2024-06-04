@@ -63,6 +63,10 @@ profile. This started with version 0.26.0.
 
 - Compatible with OCaml 5.2.0 (#2510, @gpetiot, @Julow)
 
+### Added
+
+- New profile: `diff-friendly`, aiming to minimize the vertical diff (#2020, @gpetiot)
+
 ## 0.26.1 (2023-09-15)
 
 ### Changed

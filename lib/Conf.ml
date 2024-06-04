@@ -182,6 +182,72 @@ let ocamlformat_profile from =
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
 
+let diff_friendly_profile from =
+  let elt content = Elt.make content from in
+  { align_symbol_open_paren= elt false
+  ; assignment_operator= elt `End_line
+  ; break_before_in= elt `Fit_or_vertical
+  ; break_cases= elt `Vertical
+  ; break_collection_expressions= elt `Fit_or_vertical
+  ; break_colon= elt `After
+  ; break_infix= elt `Fit_or_vertical
+  ; break_infix_before_func= elt true
+  ; break_fun_decl= elt `Fit_or_vertical
+  ; break_fun_sig= elt `Fit_or_vertical
+  ; break_separators= elt `After
+  ; break_sequences= elt true
+  ; break_string_literals= elt `Auto
+  ; break_struct= elt true
+  ; cases_exp_indent= elt 4
+  ; cases_matching_exp_indent= elt `Compact
+  ; disambiguate_non_breaking_match= elt false
+  ; doc_comments= elt `Before_except_val
+  ; doc_comments_padding= elt 2
+  ; doc_comments_tag_only= elt `Default
+  ; dock_collection_brackets= elt true
+  ; exp_grouping= elt `Parens
+  ; extension_indent= elt 2
+  ; field_space= elt `Tight
+  ; function_indent= elt 2
+  ; function_indent_nested= elt `Never
+  ; if_then_else= elt `Vertical
+  ; indent_after_in= elt 0
+  ; indicate_multiline_delimiters= elt `Closing_on_separate_line
+  ; indicate_nested_or_patterns= elt `Unsafe_no
+  ; infix_precedence= elt `Indent
+  ; leading_nested_match_parens= elt false
+  ; let_and= elt `Sparse
+  ; let_binding_indent= elt 2
+  ; let_binding_deindent_fun= elt true
+  ; let_binding_spacing= elt `Compact
+  ; let_module= elt `Sparse
+  ; line_endings= elt `Lf
+  ; margin= elt 80
+  ; match_indent= elt 0
+  ; match_indent_nested= elt `Never
+  ; max_indent= elt None
+  ; module_item_spacing= elt `Sparse
+  ; nested_match= elt `Wrap
+  ; ocp_indent_compat= elt false
+  ; parens_ite= elt false
+  ; parens_tuple= elt `Always
+  ; parens_tuple_patterns= elt `Multi_line_only
+  ; parse_docstrings= elt false
+  ; parse_toplevel_phrases= elt false
+  ; sequence_blank_line= elt `Compact
+  ; sequence_style= elt `Separator
+  ; single_case= elt `Sparse
+  ; space_around_arrays= elt false
+  ; space_around_lists= elt false
+  ; space_around_records= elt false
+  ; space_around_variants= elt false
+  ; stritem_extension_indent= elt 0
+  ; type_decl= elt `Sparse
+  ; type_decl_indent= elt 2
+  ; wrap_comments= elt false
+  ; wrap_docstrings= elt true
+  ; wrap_fun_args= elt false }
+
 let janestreet_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt false
@@ -289,6 +355,8 @@ let profile =
     ; Decl.Value.make ~name:"conventional" `conventional
         "The $(b,conventional) profile aims to be as familiar and \
          \"conventional\" appearing as the available options allow."
+    ; Decl.Value.make ~name:"diff-friendly" `diff_friendly
+        "The $(b,diff_friendly) profile aims to minimize the vertical diff."
     ; Decl.Value.make ~name:"ocamlformat" `ocamlformat
         "The $(b,ocamlformat) profile aims to take advantage of the \
          strengths of a parsetree-based auto-formatter, and to limit the \
@@ -319,6 +387,7 @@ let profile =
         match p with
         | `default -> "default"
         | `conventional -> "conventional"
+        | `diff_friendly -> "diff-friendly"
         | `ocamlformat -> "ocamlformat"
         | `janestreet -> "janestreet"
       in
@@ -334,6 +403,7 @@ let profile =
         ( match p with
         | `default -> default_profile
         | `conventional -> conventional_profile
+        | `diff_friendly -> diff_friendly_profile
         | `ocamlformat -> ocamlformat_profile
         | `janestreet -> janestreet_profile )
           from_p
