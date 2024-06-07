@@ -1,0 +1,85 @@
+let _ =
+  match x with
+  | A -> (match B with A -> fooooooooooooo)
+  | A -> (match B with A -> fooooooooooooo | B -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo
+     | C -> fooooooooooooo
+     | D -> fooooooooooooo)
+[@@ocamlformat "break-cases=fit"]
+;;
+
+let _ =
+  match x with
+  | A ->
+    (match B with A -> fooooooooooooo)
+  | A ->
+    (match B with A -> fooooooooooooo | B -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A ->
+       fooooooooooooo
+     | B ->
+       fooooooooooooo
+     | C ->
+       fooooooooooooo
+     | D ->
+       fooooooooooooo)
+[@@ocamlformat "break-cases=nested"]
+;;
+
+let _ =
+  match x with
+  | A ->
+    (match B with
+     | A -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo
+     | C -> fooooooooooooo
+     | D -> fooooooooooooo)
+[@@ocamlformat "break-cases=toplevel"]
+;;
+
+let _ =
+  match x with
+  | A ->
+    (match B with
+     | A -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo
+     | C -> fooooooooooooo
+     | D -> fooooooooooooo)
+[@@ocamlformat "break-cases=fit-or-vertical"]
+;;
+
+let _ =
+  match x with
+  | A ->
+    (match B with
+     | A -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo)
+  | A ->
+    (match B with
+     | A -> fooooooooooooo
+     | B -> fooooooooooooo
+     | C -> fooooooooooooo
+     | D -> fooooooooooooo)
+[@@ocamlformat "break-cases=all"]
+;;

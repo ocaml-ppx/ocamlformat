@@ -1,0 +1,4 @@
+ocamlformat is currently broken on this file in the "janstreet" profile (does
+not stabilize after 10 iterations)
+
+someday: fix it

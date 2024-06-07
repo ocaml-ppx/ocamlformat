@@ -1,0 +1,2 @@
+the comments are malformed; the [.opts] file passes [--no-comment-check], but
+we ignore those when testing [js-ref]

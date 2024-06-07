@@ -1,0 +1,14 @@
+let _ = 'a'
+let _ = 'a'
+let _ = (* test *) "asd"
+let _ = "asd"
+let _ = (* te""st *) "asd"
+let _ = "asd"
+let _ = 'a'
+let _ = 'a'
+
+let _ = function
+  | 'a' .. 'z' -> ()
+;;
+
+let _ = "aaa\n\n         e"

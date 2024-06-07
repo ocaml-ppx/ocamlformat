@@ -1,0 +1,11 @@
+let () = _
+
+(** doc *)
+let () = (* A *) _ (* B *) [@attr] (* C *)
+
+module M = _
+
+(** doc *)
+module M = (* A *) _ (* B *) [@attr] (* C *)
+
+module M = _ (_) (_)

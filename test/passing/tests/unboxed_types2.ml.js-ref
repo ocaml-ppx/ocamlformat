@@ -1,0 +1,17 @@
+(* this one is purposefully misformatted *)
+
+let x = #3.14
+let x = #3.14 + #5.82
+let x = #3l - #4n
+let x = #4n + -#5.0
+let x = f #3n #4l #5.0 - #6L +- #7.0z #3n
+let x = f #3n #4l #5.0 - #6L +- #7.0 z#m #3n
+
+type t = float# float
+type t = float #float
+type t = float# float
+type t = float# float#
+type t = #float float# #float
+type ('a : float64) t = 'a
+type ('b, 'a : float64) t
+type ('b : float64, 'a : immediate) t = 'a

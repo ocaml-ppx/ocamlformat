@@ -1,0 +1,43 @@
+(* Legacy immediate attributes are rewritten into layout annotations *)
+
+type old_imm : immediate
+type old_imm64 : immediate64
+type old_imm : immediate = p
+type old_imm64 : immediate64 = q
+type old_imm : immediate
+type old_imm64 : immediate64
+type old_imm : immediate = p
+type old_imm64 : immediate64 = q
+
+(* Comments are not dropped *)
+
+(* a *)
+(* b *)
+type old_imm : immediate (* c *)
+
+(* b *)
+type old_imm64 : immediate64 = (* a *) s (* c *)
+
+(* b *)
+type old_imm64' : immediate64 = (* a *) s (* c *) [@@abc] (* d *)
+
+(* Do nothing if there are more than one attribute *)
+
+type old_imm [@@immediate] [@@immediate]
+type old_imm [@@immediate] [@@immediate64]
+type old_imm64 [@@immediate64] [@@immediate64]
+type old_imm64 [@@immediate64] [@@immediate]
+
+(* Do nothing if there's already a layout annotation *)
+
+type old_imm : immediate [@@immediate]
+type old_imm : immediate64 [@@immediate]
+type old_imm64 : immediate64 [@@immediate64]
+type old_imm64 : immediate [@@immediate64]
+
+(* Do nothing if there's unexpected payload *)
+
+type old_imm [@@immediate "abc"]
+type old_imm [@@immediate "abc"]
+type old_imm64 [@@immediate64 "abc"]
+type old_imm64 [@@immediate64 "abc"]

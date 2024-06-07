@@ -1,0 +1,4 @@
+this tests runs only in the "janestreet" profile (as configured via opts),
+because it currently broken in the "ocamlformat" profile
+
+someday: fix it in the "ocamlformat" profile and return this test to [source.ml]
