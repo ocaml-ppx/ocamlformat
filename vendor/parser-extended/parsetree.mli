@@ -372,7 +372,10 @@ and expression_desc =
   | Pexp_list of expression list  (** [[ E1; ...; En ]] *)
   | Pexp_ifthenelse of if_branch list * expression option
       (** [if E1 then E2 else E3] *)
-  | Pexp_sequence of expression * expression  (** [E1; E2] *)
+  | Pexp_sequence of (expression * string loc option) list
+      (** [Pexp_sequence [(E1, None); (E2, Some ext); (E3, None)] ] represents
+          [E1 ; E2 ;%ext E3].
+          The last expression always has a [None] extension. *)
   | Pexp_while of expression * expression  (** [while E1 do E2 done] *)
   | Pexp_for of pattern * expression * expression * direction_flag * expression
       (** [Pexp_for(i, E1, E2, direction, E3)] represents:

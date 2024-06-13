@@ -33,11 +33,6 @@ module Exp : sig
       precedence of the infix operator. *)
 end
 
-val sequence :
-  Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
-(** [sequence cmts exp] returns the list of expressions (with the optional
-    extension) from a sequence of expressions [exp]. *)
-
 val mod_with :
      module_type Ast.xt
   -> (with_constraint list * Warnings.loc * attributes) list

@@ -2108,16 +2108,19 @@ class_type_declarations:
 
 /* Core expressions */
 
+seq_expr_aux:
+  | expr        %prec below_SEMI  { [ $1, None ] }
+  | expr SEMI                     { [ $1, None ] }
+  | expr SEMI seq_expr_aux
+      { ($1, None) :: $3 }
+  | expr SEMI PERCENT attr_id seq_expr_aux
+      { ($1, Some $4) :: $5 }
+;
 seq_expr:
-  | expr        %prec below_SEMI  { $1 }
-  | expr SEMI                     { $1 }
-  | mkexp(expr SEMI seq_expr
-    { Pexp_sequence($1, $3) })
-    { $1 }
-  | expr SEMI PERCENT attr_id seq_expr
-    { let seq = mkexp ~loc:$sloc (Pexp_sequence ($1, $5)) in
-      let payload = PStr [mkstrexp seq []] in
-      mkexp ~loc:$sloc (Pexp_extension ($4, payload)) }
+  seq_expr_aux
+    { match $1 with
+      | [ x, _ ] -> x
+      | xx -> mkexp ~loc:$sloc (Pexp_sequence xx) }
 ;
 labeled_simple_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
