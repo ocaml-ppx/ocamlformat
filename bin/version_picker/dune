@@ -1,0 +1,38 @@
+(executable
+ (name version_picker)
+ (public_name ocamlformat)
+ (package ocamlformat)
+ (link_deps
+  (package
+   ; enable release renaming
+   ocamlformat-dev
+   ; disable release renaming
+   ))
+ (libraries ocamlformat-lib ocamlformat-lib.bin_conf unix)
+ (flags
+  (:standard
+   -open
+   ; enable release renaming
+   Ocamlformat_ocaml_common
+   -open
+   Ocamlformat_parser_extended
+   -open
+   Ocamlformat_stdlib
+   -open
+   Ocamlformat_format
+   ; disable release renaming
+   )))
+
+(rule
+ (with-stdout-to
+  ocamlformat.1
+  (run
+   ; enable release renaming
+   ocamlformat
+   ; disable release renaming
+   --help=groff)))
+
+(install
+ (section man)
+ (files ocamlformat.1)
+ (package ocamlformat))

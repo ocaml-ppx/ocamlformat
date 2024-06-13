@@ -22,7 +22,7 @@ depends: [
   "alcotest" {with-test & >= "1.3.0"}
   "base" {>= "v0.12.0"}
   "cmdliner" {>= "1.1.0"}
-  "dune" {>= "2.8"}
+  "dune" {>= "3.14"}
   "dune-build-info"
   "either"
   "fix"

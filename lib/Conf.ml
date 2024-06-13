@@ -16,12 +16,16 @@ let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
 
-let warn_raw, collect_warnings =
+let enable_warnings, warn_raw, collect_warnings =
   let delay_warning = ref false in
   let delayed_warning_list = ref [] in
+  let enabled = ref true in
+  let enable b = enabled := b in
   let warn_ s =
-    if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s%!" s
+    if !enabled then
+      if !delay_warning then
+        delayed_warning_list := s :: !delayed_warning_list
+      else Format.eprintf "%s%!" s
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
@@ -33,7 +37,7 @@ let warn_raw, collect_warnings =
     delayed_warning_list := old_list ;
     (res, fun () -> List.iter ~f:warn_ collected)
   in
-  (warn_, collect_warnings)
+  (enable, warn_, collect_warnings)
 
 let warn ~loc fmt =
   Format.kasprintf
@@ -263,7 +267,8 @@ let default =
       ; ocaml_version= elt Ocaml_version.Releases.v4_04_0
       ; quiet= elt false
       ; disable_conf_attrs= elt false
-      ; version_check= elt true } }
+      ; version_check= elt true
+      ; required_version= elt None } }
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
@@ -1472,18 +1477,23 @@ end
 
 let options = Operational.options @ Formatting.options @ options
 
-let parse_line config ?(version_check = config.opr_opts.version_check.v)
+let parse_line config
     ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs.v) ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
     match (name, from) with
-    | "version", `File _ ->
-        if String.equal Version.current value || not version_check then
-          Ok config
-        else
-          Error
-            (Error.Version_mismatch {read= value; installed= Version.current})
+    | "version", `File x ->
+        Ok
+          { config with
+            opr_opts=
+              { config.opr_opts with
+                required_version=
+                  Elt.make (Some value)
+                    (`Updated
+                       ( `Parsed (`File x)
+                       , Some (Elt.from config.opr_opts.required_version) )
+                    ) } }
     | name, `File x ->
         Decl.update options ~config
           ~from:(`Parsed (`File x))

@@ -9,7 +9,7 @@ type setup =
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
   ; mutable ocp_opts: string list
-  ; mutable base_file: string option
+  ; base_file: string option
   ; mutable extra_deps: string list
   ; mutable should_fail: bool
   ; mutable enabled_if: string option }

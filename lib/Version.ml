@@ -19,7 +19,3 @@ let to_string = function
       Format.sprintf "%i.%i.%i" major minor patch
 
 let pp fs v = Format.fprintf fs "%s" (to_string v)
-
-let current =
-  let open Build_info.V1 in
-  version () |> Option.value_map ~f:Version.to_string ~default:"unknown"

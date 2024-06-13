@@ -13,6 +13,15 @@
 
 (ocamllex Toplevel_lexer)
 
+(rule
+ (action
+  (write-file
+   current_version.ml
+   ; enable release renaming
+   "let v = \"dev\" |> String.split ~on:'_' |> String.concat ~sep:\".\""
+   ; disable release renaming
+   )))
+
 (library
  (name ocamlformat_lib)
  (public_name ocamlformat-lib)

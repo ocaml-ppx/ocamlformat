@@ -37,3 +37,23 @@ type action =
 
 val action :
   unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
+
+open Ocamlformat_lib
+
+type t =
+  { lib_conf: Conf.t
+  ; enable_outside_detected_project: bool
+  ; inplace: bool
+  ; check: bool
+  ; kind: Syntax.t option
+  ; inputs: file list
+  ; name: string option
+  ; output: string option
+  ; print_config: bool
+  ; root: string option
+  ; disable_conf_files: bool
+  ; ignore_invalid_options: bool
+  ; ocp_indent_config: bool
+  ; config: (string * string) list }
+
+val global_conf : t ref

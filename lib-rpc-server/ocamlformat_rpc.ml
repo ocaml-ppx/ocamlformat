@@ -126,6 +126,8 @@ let handle_error e output =
 
 let rec rpc_main = function
   | Waiting_for_version -> (
+    (* The version mentionned here is the version of the protocol : not the
+       version of OCamlformat. *)
     match Protocol.Init.read_input stdin with
     | `Halt -> Ok ()
     | `Unknown -> Ok ()

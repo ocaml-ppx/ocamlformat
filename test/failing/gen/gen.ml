@@ -4,7 +4,7 @@ type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable has_ocp: bool
-  ; mutable base_file: string option
+  ; base_file: string option
   ; mutable extra_deps: string list
   ; mutable enabled_if: string option }
 

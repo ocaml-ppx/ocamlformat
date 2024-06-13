@@ -1,5 +1,5 @@
 (library
- (public_name ocamlformat.bin_conf)
+ (public_name ocamlformat-lib.bin_conf)
  (name bin_conf)
  (flags
   (:standard -open Ocamlformat_ocaml_common -open Ocamlformat_stdlib))

@@ -3,5 +3,5 @@
  (public_name ocamlformat.rpc)
  (libraries
   ocamlformat-lib
-  ocamlformat.bin_conf
+  ocamlformat-lib.bin_conf
   ocamlformat.rpc_lib_protocol))
