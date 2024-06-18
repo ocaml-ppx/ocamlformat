@@ -3763,6 +3763,9 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
       in
       pre $ vars $ typs
   | Pcstr_record (loc, lds) ->
+      let vars =
+        match vars with Some vars -> fmt "@ " $ vars | None -> noop
+      in
       let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
@@ -3772,7 +3775,7 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
             " "
         $ fmt_if_k (not last) p.sep_after
       in
-      pre
+      pre $ vars
       $ Cmts.fmt c loc ~pro:(break 1 0) ~epi:noop
         @@ wrap_k p.docked_before p.docked_after
         @@ wrap_k p.break_before p.break_after

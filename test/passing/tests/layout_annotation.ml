@@ -332,3 +332,17 @@ let _ : _ =
     let%lpoly rec fold (type (a : poly) acc) (xs : a list) ~(init : acc) ~f =
       match xs with [] -> init | x :: xs -> fold xs ~init:(f init x) ~f
     [@@layout (poly : value bits64), (acc : value bits64)]]
+
+(**********************************************)
+(* Test 12: annotated quantification in gadts *)
+
+type t = T : ('a : value) 'b ('c : float64) 'd . 'a * 'b * 'c * 'd -> t
+
+type t = T : ('a : value) 'b ('c : float64) 'd . { x : 'a * 'b * 'c * 'd } -> t
+
+type t =
+  | T : (* 1 *) ('a : value) 'b (* 2 *) ('c : (* 3 *) float64) 'd . (* 4 *) 'a * 'b * 'c * 'd -> t
+
+type t =
+  | T : (* 1 *) ('a : value) 'b (* 2 *) ('c : (* 3 *) float64) 'd . (* 4 *) { x : 'a * 'b * 'c * 'd } -> t
+
