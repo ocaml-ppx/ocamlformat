@@ -7420,7 +7420,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/let_punning.ml let_punning.ml.stdout)))
+ (action (diff tests/let_punning.ml.ref let_punning.ml.stdout)))
 
 (rule
  (alias runtest)
