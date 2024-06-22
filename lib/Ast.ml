@@ -1239,6 +1239,7 @@ end = struct
          |Ppat_open (_, p1)
          |Ppat_variant (_, Some p1) ->
             assert (p1 == pat)
+        | Ppat_effect (p1, p2) -> assert (p1 == pat || p2 == pat)
         | Ppat_extension (_, ext) -> assert (check_extensions ext)
         | Ppat_any | Ppat_constant _
          |Ppat_construct (_, None)
@@ -1898,8 +1899,9 @@ end = struct
       , Ppat_tuple _ )
      |( ( Pat
             { ppat_desc=
-                ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
+                ( Ppat_construct _ | Ppat_exception _ | Ppat_effect _
+                | Ppat_or _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _
+                | Ppat_list _ )
             ; _ }
         | Exp {pexp_desc= Pexp_fun _; _} )
       , Ppat_alias _ )
@@ -1909,14 +1911,15 @@ end = struct
         | Ppat_or _ ) )
      |( Pat
           { ppat_desc=
-              ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
-              | Ppat_variant _ | Ppat_list _ )
+              ( Ppat_construct _ | Ppat_exception _ | Ppat_effect _
+              | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
           ; _ }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_lazy _; _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
+     |Pat _, Ppat_effect _
      |Exp {pexp_desc= Pexp_fun _; _}, Ppat_or _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
@@ -1924,6 +1927,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
+     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_effect _
      |( Exp {pexp_desc= Pexp_fun _; _}
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
         | Ppat_variant _ ) ) ->
@@ -1931,7 +1935,7 @@ end = struct
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
       , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
-        | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
+        | Ppat_lazy _ | Ppat_exception _ | Ppat_effect _ | Ppat_or _ ) )
      |( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->

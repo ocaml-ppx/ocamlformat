@@ -1284,10 +1284,21 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            $ fmt_extension_suffix c ext
            $ space_break
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
+  | Ppat_effect (pat1, pat2) ->
+      cbox 2
+        (Params.parens_if parens c.conf
+           ( str "effect"
+           $ fmt_extension_suffix c ext
+           $ space_break
+           $ fmt_pattern c (sub_pat ~ctx pat1)
+           $ str ", "
+           $ fmt_pattern c (sub_pat ~ctx pat2) ) )
   | Ppat_extension
       ( ext
       , PPat
-          ( ( { ppat_desc= Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
+          ( ( { ppat_desc=
+                  ( Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
+                  | Ppat_effect _ )
               ; ppat_loc
               ; ppat_attributes= []
               ; _ } as pat )
