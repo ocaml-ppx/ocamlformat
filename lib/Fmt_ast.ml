@@ -578,7 +578,16 @@ let split_global_flags_from_attrs atrs =
   | _ -> (None, atrs)
 
 let let_binding_can_be_punned ~binding ~parsed_ext =
-  let ({lb_op; lb_pat; lb_exp; lb_typ; lb_args; _} : Sugar.Let_binding.t) =
+  let ({ lb_op
+       ; lb_pat
+       ; lb_args
+       ; lb_typ
+       ; lb_exp
+       ; lb_pun= _
+       ; lb_attrs= _
+       ; lb_local
+       ; lb_loc= _ }
+        : Sugar.Let_binding.t ) =
     binding
   in
   match
@@ -587,7 +596,8 @@ let let_binding_can_be_punned ~binding ~parsed_ext =
       , lb_exp.ast.pexp_desc
       , lb_typ
       , lb_args
-      , (lb_pat.ast.ppat_attributes, lb_exp.ast.pexp_attributes) ) )
+      , (lb_pat.ast.ppat_attributes, lb_exp.ast.pexp_attributes)
+      , lb_local ) )
   with
   (* There must be either an operator or an extension *)
   | (("let" | "and"), None), _ -> false
@@ -601,7 +611,9 @@ let let_binding_can_be_punned ~binding ~parsed_ext =
       , (* This cannot be a lambda *)
         []
       , (* There must be no attrs on either side *)
-        ([], []) ) )
+        ([], [])
+      , (* This must not be a [let local_] binding *)
+        false ) )
     when (* LHS and RHS variable names must be the same *)
          String.equal left right ->
       true

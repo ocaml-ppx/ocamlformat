@@ -86,6 +86,12 @@ let r =
   (* 6666666666 *)
   x + y + z + w + q
 
+(* Attribute on let binding *)
+
+let w_attr x y =
+  let%foo[@bar] x = x and[@baz] y = y in
+  x + y
+
 (* Non-standard syntax *)
 
 let s =
@@ -105,4 +111,8 @@ let u =
 
 let v =
   let%foo (x [@bar]) = x and y = y [@baz] in
+  ()
+
+let w =
+  let%foo local_ x = x and local_ y = y in
   ()
