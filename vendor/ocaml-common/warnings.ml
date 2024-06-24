@@ -34,6 +34,14 @@ type constructor_usage_warning =
   | Not_constructed
   | Only_exported_private
 
+type upstream_compat_warning =
+  | Immediate_erasure of string (* example: annotation in
+      [type ('a : immediate) t = int] can't be erased. *)
+  | Non_value_sort of string (* example: abstract type
+      [t : float64] is marked as unboxed. *)
+  | Unboxed_attribute of string (* example: unboxed attribute
+      on an external declaration with float# is missing. *)
+
 type t =
   | Comment_start                           (*  1 *)
   | Comment_not_end                         (*  2 *)
@@ -109,6 +117,7 @@ type t =
   | Unused_tmc_attribute                    (* 71 *)
   | Tmc_breaks_tailcall                     (* 72 *)
   | Generative_application_expects_unit     (* 73 *)
+  | Incompatible_with_upstream of upstream_compat_warning (* 187 *)
   | Unerasable_position_argument            (* 188 *)
   | Unnecessarily_partial_tuple_pattern     (* 189 *)
   | Probe_name_too_long of string           (* 190 *)
@@ -196,6 +205,7 @@ let number = function
   | Unused_tmc_attribute -> 71
   | Tmc_breaks_tailcall -> 72
   | Generative_application_expects_unit -> 73
+  | Incompatible_with_upstream _ -> 187
   | Unerasable_position_argument -> 188
   | Unnecessarily_partial_tuple_pattern -> 189
   | Probe_name_too_long _ -> 190
@@ -547,6 +557,10 @@ let descriptions = [
     description = "A generative functor is applied to an empty structure \
                    (struct end) rather than to ().";
     since = since 5 1 };
+  { number = 187;
+    names = ["incompatible-with-upstream"];
+    description = "Extension usage is incompatible with upstream.";
+    since = since 5 1 };
   { number = 188;
     names = ["unerasable-position-argument"];
     description = "Unerasable position argument.";
@@ -779,7 +793,7 @@ let letter_alert tokens =
       let nowhere = ghost_loc_in_file "_none_" in
       let spelling_hint ppf =
         let max_seq_len =
-          List.fold_left (fun l x -> Int.max l (List.length x))
+          List.fold_left (fun l x -> Misc.Stdlib.Int.max l (List.length x))
             0 consecutive_letters
         in
         if max_seq_len >= 5 then
@@ -874,7 +888,7 @@ let parse_opt error active errflag s =
         in
         List.iter (action modifier) (letter lc)
     | Num(n1,n2,modifier) ->
-        for n = n1 to Int.min n2 last_warning_number do action modifier n done
+        for n = n1 to Misc.Stdlib.Int.min n2 last_warning_number do action modifier n done
   in
   let parse_and_eval s =
     let tokens = parse_warnings s in
@@ -910,12 +924,6 @@ let () = ignore @@ parse_options false defaults_w
 let () = ignore @@ parse_options true defaults_warn_error
 let () =
   List.iter (set_alert ~error:false ~enable:false) default_disabled_alerts
-
-let print_see_manual ppf manual_section =
-  let open Format in
-  fprintf ppf "(see manual section %a)"
-    (pp_print_list ~pp_sep:(fun f () -> pp_print_char f '.') pp_print_int)
-    manual_section
 
 let message = function
   | Comment_start ->
@@ -1084,7 +1092,7 @@ let message = function
         "Code should not depend on the actual values of\n\
          this constructor's arguments. They are only for information\n\
          and may change in future versions. %a"
-        print_see_manual ref_manual
+        Misc.print_see_manual ref_manual
   | Unreachable_case ->
       "this match case is unreachable.\n\
        Consider replacing it with a refutation case '<pat> -> .'"
@@ -1115,7 +1123,7 @@ let message = function
          %s.\n\
          Only the first match will be used to evaluate the guard expression.\n\
          %a"
-        vars_explanation print_see_manual ref_manual
+        vars_explanation Misc.print_see_manual ref_manual
   | No_cmx_file name ->
       Printf.sprintf
         "no cmx file was found in path for module %s, \
@@ -1180,6 +1188,23 @@ let message = function
   | Generative_application_expects_unit ->
       "A generative functor\n\
        should be applied to '()'; using '(struct end)' is deprecated."
+  | Incompatible_with_upstream (Immediate_erasure id)  ->
+      Printf.sprintf
+      "Usage of layout immediate/immediate64 in %s \n\
+       can't be erased for compatibility with upstream OCaml."
+      id
+  | Incompatible_with_upstream (Non_value_sort layout) ->
+      Printf.sprintf
+      "External declaration here is not upstream compatible. \n\
+       The only types with non-value layouts allowed are float#, \n\
+       int32#, int64#, and nativeint#. Unknown type with layout \n\
+       %s encountered."
+      layout
+  | Incompatible_with_upstream (Unboxed_attribute layout) ->
+      Printf.sprintf
+      "[@unboxed] attribute must be added to external declaration \n\
+       argument type with layout %s for upstream compatibility."
+      layout
   | Unerasable_position_argument -> "this position argument cannot be erased."
   | Unnecessarily_partial_tuple_pattern ->
       "This tuple pattern\n\

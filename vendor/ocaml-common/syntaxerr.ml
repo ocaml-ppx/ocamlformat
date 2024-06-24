@@ -38,7 +38,7 @@ let location_of_error = function
   | Not_expecting (l, _)
   | Ill_formed_ast (l, _)
   | Invalid_package_type (l, _)
-  | Expecting (l, _) -> l
+  | Expecting (l, _)
   | Removed_string_set l -> l
   | Missing_unboxed_literal_suffix l -> l
 

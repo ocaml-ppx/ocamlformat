@@ -5,16 +5,6 @@ module List : sig
   (** @since ocaml-4.10 *)
 end
 
-module Int : sig
-  include module type of struct include Int end
-
-  val min : int -> int -> int
-  (** @since ocaml-4.13.0 *)
-
-  val max : int -> int -> int
-  (** @since ocaml-4.13.0 *)
-end
-
 module Misc : sig
   include module type of struct include Misc end
 
@@ -32,8 +22,24 @@ module Misc : sig
     (** @since ocaml-4.09 *)
   end
 
+  module Stdlib : sig
+    include module type of struct include Stdlib end
+
+    module Int : sig
+      include module type of struct include Int end
+
+      val min : int -> int -> int
+      (** @since ocaml-4.13.0 *)
+
+      val max : int -> int -> int
+      (** @since ocaml-4.13.0 *)
+    end
+  end
+
   (** Propositional equality *)
   type (_, _) eq = Refl : ('a, 'a) eq
+
+  val print_see_manual : Format.formatter -> int list -> unit
 end
 
 module Clflags : sig
