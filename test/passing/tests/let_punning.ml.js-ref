@@ -6,9 +6,9 @@ and y = 2
 and z = 3
 
 let p =
-  let* x
-  and* y
-  and* z in
+  let* x = x
+  and* y = y
+  and* z = z in
   x, y, z
 ;;
 
@@ -20,9 +20,9 @@ let q =
 ;;
 
 let p =
-  let* x
-  and* y
-  and* z in
+  let* x = x
+  and* y = y
+  and* z = z in
   x, y, z
 ;;
 
@@ -34,7 +34,7 @@ let q =
 ;;
 
 let p =
-  let* x
+  let* x = x
   and* y = z in
   x, y
 ;;
@@ -47,7 +47,7 @@ let q =
 
 let p =
   let* x = y
-  and* z in
+  and* z = z in
   x, z
 ;;
 
@@ -60,23 +60,25 @@ let q =
 (* Comments *)
 
 let r =
-  let* (* 11111 *) w in
-  let* x (* 22222 *) in
-  let* y (* 33333 *) in
-  let* z (* 44444 *) in
+  let* (* 11111 *) w = w in
+  let* x (* 22222 *) = x in
+  let* y = (* 33333 *) y in
+  let* z = z (* 44444 *) in
   let*
     (* 55555 *)
     (* 66666 *) x
     (* 77777 *)
     (* 88888 *)
+    =
     (* 99999 *)
+    x
     (* 00000 *)
   in
-  let* (* 1111111111 *) x
-  and* (* 2222222222 *) y
-  and* z (* 3333333333 *)
-  and* w (* 4444444444 *)
-  and* q (* 5555555555 *) in
+  let* (* 1111111111 *) x = x
+  and* (* 2222222222 *) y = y
+  and* z (* 3333333333 *) = z
+  and* w = (* 4444444444 *) w
+  and* q = q (* 5555555555 *) in
   (* 6666666666 *)
   x + y + z + w + q
 ;;

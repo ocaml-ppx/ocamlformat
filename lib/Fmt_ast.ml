@@ -578,7 +578,7 @@ let split_global_flags_from_attrs atrs =
   | _ -> (None, atrs)
 
 let let_binding_can_be_punned ~binding ~parsed_ext =
-  let ({ lb_op
+  let ({ lb_op= _
        ; lb_pat
        ; lb_args
        ; lb_typ
@@ -591,29 +591,28 @@ let let_binding_can_be_punned ~binding ~parsed_ext =
     binding
   in
   match
-    ( (lb_op.txt, parsed_ext)
-    , ( lb_pat.ast.ppat_desc
-      , lb_exp.ast.pexp_desc
-      , lb_typ
-      , lb_args
-      , (lb_pat.ast.ppat_attributes, lb_exp.ast.pexp_attributes)
-      , lb_local ) )
+    ( parsed_ext
+    , lb_pat.ast.ppat_desc
+    , lb_exp.ast.pexp_desc
+    , lb_typ
+    , lb_args
+    , (lb_pat.ast.ppat_attributes, lb_exp.ast.pexp_attributes)
+    , lb_local )
   with
-  (* There must be either an operator or an extension *)
-  | (("let" | "and"), None), _ -> false
-  | ( _
-    , ( (* LHS must be just a variable *)
-        Ppat_var {txt= left; _}
-      , (* RHS must be just an identifier with no dots *)
-        Pexp_ident {txt= Lident right; _}
-      , (* There cannot be a type annotation on the [let] *)
-        None
-      , (* This cannot be a lambda *)
-        []
-      , (* There must be no attrs on either side *)
-        ([], [])
-      , (* This must not be a [let local_] binding *)
-        false ) )
+  | ( (* Binding must be inside an extension node (we do not pun operators) *)
+      Some _
+      (* LHS must be just a variable *)
+    , Ppat_var {txt= left; _}
+    , (* RHS must be just an identifier with no dots *)
+      Pexp_ident {txt= Lident right; _}
+    , (* There cannot be a type annotation on the [let] *)
+      None
+    , (* This cannot be a lambda *)
+      []
+    , (* There must be no attrs on either side *)
+      ([], [])
+    , (* This must not be a [let local_] binding *)
+      false )
     when (* LHS and RHS variable names must be the same *)
          String.equal left right ->
       true
