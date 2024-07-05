@@ -290,12 +290,8 @@ type a =
   b (* comment 0 *)
   as
   ((* comment 1 *)
-  'k
-  (* comment 2 *)
-  :
-  (* comment 3 *)
-  immediate64
-  (* comment 4 *))
+  'k (* comment 2 *) : (* comment 3 *)
+  immediate64 (* comment 4 *))
 (* comment 5 *)
 
 let f (type a : immediate) x = x

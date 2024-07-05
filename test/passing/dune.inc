@@ -3837,6 +3837,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to explicitly_quantified_value_descriptions.mli.stdout
+   (with-stderr-to explicitly_quantified_value_descriptions.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/explicitly_quantified_value_descriptions.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/explicitly_quantified_value_descriptions.mli explicitly_quantified_value_descriptions.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/explicitly_quantified_value_descriptions.mli.err explicitly_quantified_value_descriptions.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to explicitly_quantified_value_descriptions.mli.js-stdout
+   (with-stderr-to explicitly_quantified_value_descriptions.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/explicitly_quantified_value_descriptions.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/explicitly_quantified_value_descriptions.mli.js-ref explicitly_quantified_value_descriptions.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/explicitly_quantified_value_descriptions.mli.js-err explicitly_quantified_value_descriptions.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to extensions-indent.ml.stdout
    (with-stderr-to extensions-indent.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 --extension-indent=5 --stritem-extension-indent=3 %{dep:tests/extensions.ml})))))

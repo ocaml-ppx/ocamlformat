@@ -1,8 +1,5 @@
 val foo
-  : ('k
-  :
-  immediate64)
-  'cmp.
+  : ('k : immediate64) 'cmp.
   (module S with type Id_and_repr.t = 'k and type Id_and_repr.comparator_witness = 'cmp)
   -> 'k Jane_symbol.Map.t
   -> ('k, Sockaddr.t, 'cmp) Map.t
@@ -221,15 +218,9 @@ let f_gadt : ('a : value). 'a -> 'a g -> 'a = fun x MkG -> f_imm x
 
 (* comments *)
 val foo
-  : ((* comment 1 *)
-  'k
-  (* comment 2 *)
-  :
-  (* comment 3 *)
-  immediate64
-  (* comment 4 *))
-  (* comment 5 *)
-  'cmp.
+  : ((* comment 1 *) 'k (* comment 2 *) : (* comment 3 *) immediate64 (* comment 4 *))
+    (* comment 5 *)
+    'cmp.
   (module S with type Id_and_repr.t = 'k and type Id_and_repr.comparator_witness = 'cmp)
   -> 'k Jane_symbol.Map.t
   -> ('k, Sockaddr.t, 'cmp) Map.t
@@ -238,12 +229,8 @@ type a =
   b (* comment 0 *)
   as
   ((* comment 1 *)
-  'k
-  (* comment 2 *)
-  :
-  (* comment 3 *)
-  immediate64
-  (* comment 4 *))
+  'k (* comment 2 *) : (* comment 3 *)
+  immediate64 (* comment 4 *))
 (* comment 5 *)
 
 let f (type a : immediate) x = x
@@ -254,12 +241,7 @@ let f (type (a : immediate) (b : immediate)) x = x
 
 module type S = sig
   val init_with_immediates
-    : ('a
-    :
-    immediate)
-    ('b
-    :
-    immediate).
+    : ('a : immediate) ('b : immediate).
     int -> f:local_ (int -> local_ 'a) -> local_ 'a t
 end
 

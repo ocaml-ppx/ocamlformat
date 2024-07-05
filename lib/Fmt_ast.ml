@@ -564,7 +564,9 @@ let fmt_type_var ~have_tick c s =
   $ Option.value_map jkind_opt ~default:noop ~f:(fmt_jkind c)
 
 let fmt_type_var_with_parenze ~have_tick c s =
-  wrap_if (type_var_has_jkind_annot s) "(" ")" (fmt_type_var ~have_tick c s)
+  let jkind_annot = type_var_has_jkind_annot s in
+  cbox_if jkind_annot 0
+    (wrap_if jkind_annot "(" ")" (fmt_type_var ~have_tick c s))
 
 let split_global_flags_from_attrs atrs =
   match
@@ -1005,7 +1007,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
-        ( list a1N "@ " (fmt_type_var_with_parenze ~have_tick:true c)
+        ( hovbox_if (not box) 0
+            (list a1N "@ " (fmt_type_var_with_parenze ~have_tick:true c))
         $ fmt ".@ "
         $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
