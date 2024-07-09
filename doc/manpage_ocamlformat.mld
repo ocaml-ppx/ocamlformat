@@ -243,10 +243,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Nested match parens formatting. The flag is unset by default.
            Cannot be set in attributes.
 
-       --let-and={compact|sparse}
+       --let-and={compact|sparse|compact-puns}
            Style of let_and. compact will try to format `let p = e and p = e`
-           in a single line. sparse will always break between them. The
-           default value is compact.
+           in a single line. sparse will always break between them.
+           compact-puns will only try to format `let p and p` in a single
+           line. The default value is compact.
 
        --let-binding-indent=COLS
            Indentation of let binding expressions (COLS columns) if they do

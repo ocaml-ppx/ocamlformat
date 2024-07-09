@@ -217,7 +217,7 @@ let janestreet_profile from =
   ; indicate_nested_or_patterns= elt `Unsafe_no
   ; infix_precedence= elt `Parens
   ; leading_nested_match_parens= elt true
-  ; let_and= elt `Sparse
+  ; let_and= elt `Compact_only_in_let_pun
   ; let_binding_indent= elt 2
   ; let_binding_deindent_fun= elt false
   ; let_binding_spacing= elt `Double_semicolon
@@ -943,7 +943,10 @@ module Formatting = struct
           "$(b,compact) will try to format `let p = e and p = e` in a \
            single line."
       ; Decl.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break between them." ]
+          "$(b,sparse) will always break between them."
+      ; Decl.Value.make ~name:"compact-puns" `Compact_only_in_let_pun
+          "$(b,compact-puns) will only try to format `let p and p` in a \
+           single line." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with let_and= elt}))

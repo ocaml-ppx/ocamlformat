@@ -40,6 +40,58 @@ let q =
   let%foo x = y and z = z in
   (x, z)
 
+(* Line breaks *)
+
+let mixed =
+  let%foo a = a
+  and b = b
+  and c = c
+  and d = e + f
+  in 
+  ()
+
+let long =
+  let%foo a = a
+  and b = b
+  and c = c
+  and d = d
+  and e = e
+  and f = f
+  and g = g
+  and h = h
+  and i = i
+  and j = j
+  and k = k
+  and l = l
+  in
+  ()
+
+let looong =
+  let%foo a = a
+  and b = b
+  and c = c
+  and d = d
+  and e = e
+  and f = f
+  and g = g
+  and h = h
+  and i = i
+  and j = j
+  and k = k
+  and l = l
+  and m = m
+  and n = n
+  and o = o
+  and p = p
+  and q = q
+  and r = r
+  and s = s
+  and t = t
+  and u = u
+  and v = v
+  in
+  ()
+
 (* Comments *)
 
 let r =

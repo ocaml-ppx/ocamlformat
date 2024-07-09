@@ -579,7 +579,7 @@ let split_global_flags_from_attrs atrs =
   | [global_attr], atrs -> (Some global_attr, atrs)
   | _ -> (None, atrs)
 
-let let_binding_can_be_punned ~binding ~parsed_ext =
+let let_binding_can_be_punned ~binding ~is_ext =
   let ({ lb_op= _
        ; lb_pat
        ; lb_args
@@ -594,7 +594,7 @@ let let_binding_can_be_punned ~binding ~parsed_ext =
     binding
   in
   match
-    ( parsed_ext
+    ( is_ext
     , lb_pat.ast.ppat_desc
     , lb_exp.ast.pexp_desc
     , lb_typ
@@ -604,7 +604,7 @@ let let_binding_can_be_punned ~binding ~parsed_ext =
     , lb_modes )
   with
   | ( (* Binding must be inside an extension node (we do not pun operators) *)
-      Some _
+      true
       (* LHS must be just a variable *)
     , Ppat_var {txt= left; _}
     , (* RHS must be just an identifier with no dots *)
@@ -4842,25 +4842,39 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
 
 and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
     ~has_attr ~indent_after_in =
+  let is_ext = Option.is_some ext in
   let parens = parens || has_attr in
   let fmt_in indent =
     match c.conf.fmt_opts.break_before_in.v with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
     | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
   in
-  let fmt_binding ~first ~last binding =
-    let parsed_ext = ext in
+  let bindings =
+    List.map bindings ~f:(fun (binding : Sugar.Let_binding.t) ->
+        let punned_in_output =
+          match c.conf.fmt_opts.let_punning.v with
+          | `Preserve_existing_puns ->
+              Ocaml_version.(
+                compare c.conf.opr_opts.ocaml_version.v Releases.v4_13_0 >= 0 )
+              && binding.lb_pun
+          | `Always_pun_if_possible ->
+              let_binding_can_be_punned ~binding ~is_ext
+        in
+        (binding, punned_in_output) )
+  in
+  let all_punned = List.for_all bindings ~f:snd in
+  let fmt_binding ~first ~last (binding, punned_in_output) =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (fmt_in indent) in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ?ext ?parsed_ext ~in_ binding
+    fmt_value_binding c ~rec_flag ~punned_in_output ?ext ~in_ binding
     $ fmt_if (not last)
-        ( match c.conf.fmt_opts.let_and.v with
-        | `Sparse -> "@;<1000 0>"
-        | `Compact -> "@ " )
+        ( match (c.conf.fmt_opts.let_and.v, all_punned) with
+        | `Sparse, _ | `Compact_only_in_let_pun, false -> "@;<1000 0>"
+        | `Compact, _ | `Compact_only_in_let_pun, true -> "@ " )
   in
   let blank_line_after_in =
-    let last_bind = List.last_exn bindings in
+    let last_bind, _ = List.last_exn bindings in
     sequence_blank_line c last_bind.lb_loc body_loc
   in
   Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
@@ -4910,28 +4924,19 @@ and fmt_value_constraint c vc_opt =
             $ fmt_core_type c (sub_typ ~ctx coercion) ) )
   | None -> (noop, noop)
 
-and fmt_value_binding c ~rec_flag ?ext ?parsed_ext ?in_ ?epi
-    ( { lb_op
-      ; lb_pat
-      ; lb_args
-      ; lb_typ
-      ; lb_exp
-      ; lb_attrs
-      ; lb_local
-      ; lb_modes
-      ; lb_loc
-      ; lb_pun= punned_in_source } as binding ) =
+and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
+    { lb_op
+    ; lb_pat
+    ; lb_args
+    ; lb_typ
+    ; lb_exp
+    ; lb_attrs
+    ; lb_local
+    ; lb_modes
+    ; lb_loc
+    ; lb_pun= punned_in_source } =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
-  let punned_in_output =
-    match c.conf.fmt_opts.let_punning.v with
-    | `Preserve_existing_puns ->
-        Ocaml_version.(
-          compare c.conf.opr_opts.ocaml_version.v Releases.v4_13_0 >= 0 )
-        && punned_in_source
-    | `Always_pun_if_possible ->
-        let_binding_can_be_punned ~binding ~parsed_ext
-  in
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
   let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in

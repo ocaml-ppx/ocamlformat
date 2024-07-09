@@ -13,9 +13,7 @@ let p =
 ;;
 
 let q =
-  let%foo x
-  and y
-  and z in
+  let%foo x and y and z in
   x, y, z
 ;;
 
@@ -27,9 +25,7 @@ let p =
 ;;
 
 let q =
-  let%foo x
-  and y
-  and z in
+  let%foo x and y and z in
   x, y, z
 ;;
 
@@ -55,6 +51,47 @@ let q =
   let%foo x = y
   and z in
   x, z
+;;
+
+(* Line breaks *)
+
+let mixed =
+  let%foo a
+  and b
+  and c
+  and d = e + f in
+  ()
+;;
+
+let long =
+  let%foo a and b and c and d and e and f and g and h and i and j and k and l in
+  ()
+;;
+
+let looong =
+  let%foo a
+  and b
+  and c
+  and d
+  and e
+  and f
+  and g
+  and h
+  and i
+  and j
+  and k
+  and l
+  and m
+  and n
+  and o
+  and p
+  and q
+  and r
+  and s
+  and t
+  and u
+  and v in
+  ()
 ;;
 
 (* Comments *)
@@ -108,8 +145,7 @@ let r =
 (* Attribute on let binding *)
 
 let w_attr x y =
-  let%foo[@bar] x
-  and[@baz] y in
+  let%foo[@bar] x and[@baz] y in
   x + y
 ;;
 
