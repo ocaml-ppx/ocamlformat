@@ -10,3 +10,9 @@ let () =
 let _ = lazy (a.b <- 1)
 
 let _ = match x with (lazy (Some _ as x)), x -> x
+
+let _ =
+  lazy
+    ((let () = () in
+      () )
+    [@attr] )
