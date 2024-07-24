@@ -1507,22 +1507,31 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
         in
         (fun_ $ function_, (fmt_cases c ctx cs), box, 0)
   in
-  (* TODO: Disambiguating parentheses in case of one-liner 'function'.
-     See 'Params.Exp.wrap c.conf ~parens ~disambiguate:true' *)
   let opn_paren, cls_paren =
     if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:closing_paren_offset
     else noop, noop
   in
+ (* When the option disambiguate_non_breaking_match is set, if the function
+    fits on one line it has to have parens. [fit_breaks] is used for that. It
+   cannot be used directly with [opn_paren] because its deep inside other boxes
+   that will not be broken. Because of this we wrap the whole with another pair
+   of parens, although only if the regular one are absent. *)
+  let disambiguate_parens_wrap =
+    if not parens && c.conf.fmt_opts.disambiguate_non_breaking_match.v then
+      wrap (fits_breaks "(" "") (fits_breaks ")" "")
+    else Fn.id
+  in
   let box k = if should_box then box k else k in
   box
-    ( wrap_intro
-        (hvbox_if has_cmts_outer 0
-           ( cmts_outer
-           $ hvbox 2
-               ( fmt_label label label_sep $ cmts_inner
-               $ opn_paren
-               $ head ) ) )
-    $ body $ cls_paren
+    ( disambiguate_parens_wrap
+      ( wrap_intro
+          (hvbox_if has_cmts_outer 0
+             ( cmts_outer
+             $ hvbox 2
+                 ( fmt_label label label_sep $ cmts_inner
+                 $ opn_paren
+                 $ head ) ) )
+      $ body $ cls_paren )
     $ Cmts.fmt_after c loc )
 
 and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
@@ -2183,6 +2192,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_function (args, typ, body) ->
       let wrap_intro intro = hovbox 2 (pro $ intro) $ space_break in
+
       fmt_function ~wrap_intro ~box ~ctx  ~ctx0
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
   | Pexp_ident {txt; loc} ->
