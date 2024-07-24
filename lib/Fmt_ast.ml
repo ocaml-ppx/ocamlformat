@@ -161,11 +161,13 @@ let box_fun_sig_args c =
   | `Fit_or_vertical -> hvbox
   | `Wrap | `Smart -> hovbox
 
-let closing_paren ?force ?(offset = 0) c =
-  match c.conf.fmt_opts.indicate_multiline_delimiters.v with
-  | `No -> str ")"
-  | `Space -> fits_breaks ")" " )" ?force
-  | `Closing_on_separate_line -> fits_breaks ")" ")" ~hint:(1000, offset)
+let closing_paren ?(force_space=false) ?force ?(offset = 0) c =
+  if force_space then str " )"
+  else
+    match c.conf.fmt_opts.indicate_multiline_delimiters.v with
+    | `No -> str ")"
+    | `Space -> fits_breaks ")" " )" ?force
+    | `Closing_on_separate_line -> fits_breaks ")" ")" ~hint:(1000, offset)
 
 let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   if not c.conf.opr_opts.disable.v then f c
@@ -1476,6 +1478,9 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
     Params.Exp.box_fun_decl_args ~ctx:ctx0 c.conf ~parens ~kw ~args ~annot
     $ Params.Exp.break_fun_decl_args  ~ctx:ctx0 $ str "->"
   in
+  let lead_with_function_kw =
+    match args, body with | [], Pfunction_cases _  -> true | _ -> false
+  in
   (* [head] is [fun args ->] or [function]. [body] is an expression or the
      cases. *)
   let head, body, box, closing_paren_offset =
@@ -1507,10 +1512,20 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
         in
         (fun_ $ function_, (fmt_cases c ctx cs), box, 0)
   in
+  let space_opn_parens, space_cls_parens =
+    match ctx0 with
+    | Exp ({pexp_desc=Pexp_infix _; _})
+      when lead_with_function_kw && not c.conf.fmt_opts.break_infix_before_func.v ->
+        str " ", true
+    | _ -> noop,false
+  in
   let opn_paren, cls_paren =
-    if parens then str "(", closing_paren c ?force:force_closing_paren ~offset:closing_paren_offset
+    if parens then
+      ( str "(" $ space_opn_parens
+      , closing_paren c ~force_space:space_cls_parens ?force:force_closing_paren ~offset:closing_paren_offset)
     else noop, noop
   in
+
  (* When the option disambiguate_non_breaking_match is set, if the function
     fits on one line it has to have parens. [fit_breaks] is used for that. It
    cannot be used directly with [opn_paren] because its deep inside other boxes
