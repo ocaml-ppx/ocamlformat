@@ -787,17 +787,6 @@ module Indent = struct
       | Pexp_function _ -> 2
       | _ -> ( match lbl with Nolabel -> 3 | _ -> 2 )
 
-  let docked_fun (c : Conf.t) ~source ~loc ~lbl =
-    if not (ocp c) then 2
-    else
-      let loc, if_breaks =
-        match lbl with
-        | Nolabel -> (loc, 3)
-        | Optional x | Labelled x -> (x.loc, 2)
-      in
-      if Source.begins_line ~ignore_spaces:true source loc then if_breaks
-      else 0
-
   let record_docstring (c : Conf.t) =
     if ocp c then
       match c.fmt_opts.break_separators.v with `Before -> 0 | `After -> 2

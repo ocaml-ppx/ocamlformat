@@ -208,11 +208,6 @@ module Indent : sig
 
   val fun_type_annot : Conf.t -> int
 
-  val docked_fun :
-    Conf.t -> source:Source.t -> loc:Location.t -> lbl:arg_label -> int
-
-  (* val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int *)
-
   val docked_function_after_fun :
     Conf.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
 
