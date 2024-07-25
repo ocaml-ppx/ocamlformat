@@ -774,16 +774,11 @@ module Indent = struct
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens ~has_label =
+  let docked_function_after_fun (_c : Conf.t) ~ctx0 ~parens:_ ~has_label:_ =
     if ctx_is_infix ctx0 then
       0
    else
-      2 +
-      if ocp c then
-        if parens && not has_label then
-          3
-        else 2
-      else 2
+     2
 
   let fun_args_group (c : Conf.t) ~lbl exp =
     if not (ocp c) then 2

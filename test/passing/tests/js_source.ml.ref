@@ -10203,8 +10203,8 @@ let _ =
     foooooooooooooooooooo
     foooooooooooooooooooo
     (fun x -> function
-       | Foooooooooooooooooooo -> foooooooooooooooooooo
-       | Foooooooooooooooooooo -> foooooooooooooooooooo)
+    | Foooooooooooooooooooo -> foooooooooooooooooooo
+    | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10212,8 +10212,8 @@ let _ =
     foooooooooooooooooooo
     foooooooooooooooooooo
     ~x:(fun x -> function
-      | Foooooooooooooooooooo -> foooooooooooooooooooo
-      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+    | Foooooooooooooooooooo -> foooooooooooooooooooo
+    | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
