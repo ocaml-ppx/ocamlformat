@@ -449,9 +449,7 @@ let () =
     @@ S.tok
          begin [@warning "-4"]
            fun ev ->
-               match ev with
-               | Cbor_event.Reserved int -> Some int
-               | _ -> None
+             match ev with Cbor_event.Reserved int -> Some int | _ -> None
          end
   in
   ()

@@ -43,6 +43,10 @@ let ctx_is_apply = function
   | Exp {pexp_desc= Pexp_apply _; _} -> true
   | _ -> false
 
+let ctx_is_beginend = function
+| Exp {pexp_desc= Pexp_beginend _; _} -> true
+| _ -> false
+
 let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
@@ -136,6 +140,7 @@ module Exp = struct
   let box_fun_expr (c : Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
     let indent =
       if ctx_is_infix ctx0 then if ocp c && has_label then 2 else 0
+    else if ctx_is_beginend ctx0 then 2
       else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
