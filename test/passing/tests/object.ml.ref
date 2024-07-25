@@ -219,7 +219,7 @@ let o =
         -> bool tttttttttttttttt rrrrrrrrrrrrrrrrrrrrr rrrrrrrrrrrrrrrrrrrrr
            rrrrrrrrrrrrrrrrrrrrrrr =
       fun (a, op, b) ->
-          Int_bin_comparison (self#expression a, op, self#expression b)
+        Int_bin_comparison (self#expression a, op, self#expression b)
   end
 
 class f = fun [@inline] (b [@inline]) -> object end
@@ -299,9 +299,9 @@ class a x = object (self) end
 let x =
  fun [@foo] x ->
   fun [@foo] y ->
-      object
-        method x = y
-      end
+    object
+      method x = y
+    end
 
 class x =
   fun [@foo] x ->

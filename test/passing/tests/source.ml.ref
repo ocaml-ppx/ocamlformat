@@ -1348,9 +1348,9 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
            (fun (type c) ->
-               ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
-                 : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
-               (* One can also write the type annotation directly *) } )
+             ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
+             (* One can also write the type annotation directly *) } )
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
 
@@ -5995,15 +5995,15 @@ class virtual ['a, 'cursor] storage_base =
 
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b =
       fun f a0 ->
-          let cur = self#first in
-          let rec loop count a =
-            if count >= self#len then a
-            else
-              let a' = f cur#get count a in
-              cur#incr () ;
-              loop (count + 1) a'
-          in
-          loop 0 a0
+        let cur = self#first in
+        let rec loop count a =
+          if count >= self#len then a
+          else
+            let a' = f cur#get count a in
+            cur#incr () ;
+            loop (count + 1) a'
+        in
+        loop 0 a0
 
     method iter proc =
       let p = self#first in
