@@ -153,7 +153,6 @@ module Exp = struct
   let box_fun_expr (c : Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
     let indent =
       if ctx_is_infix ctx0 then if ocp c && has_label then 2 else 0
-      else if ctx_is_beginend ctx0 then 2
       else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
