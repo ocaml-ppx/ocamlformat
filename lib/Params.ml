@@ -41,6 +41,13 @@ let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
         args
   | _ -> None
 
+let ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 =
+  match (ctx, ctx0) with
+  | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
+      let _, last_arg = List.last_exn args in
+      Poly.equal last_arg exp
+  | _ -> false
+
 (** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx]. *)
 let ctx_is_let ~ctx = function
@@ -128,21 +135,20 @@ module Exp = struct
   let box_fun_expr (c : Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
     let indent =
       if ctx_is_infix ctx0 then if ocp c && has_label then 2 else 0
+      else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
+        c.fmt_opts.function_indent.v
+      else if ctx_is_let ~ctx ctx0 then
+        if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
       else
-        match c.fmt_opts.function_indent_nested.v with
-        | `Always -> c.fmt_opts.function_indent.v
-        | _ ->
-            if ctx_is_let ~ctx ctx0 then
-              if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
-            else
-              match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-              | Some Nolabel when ocp c -> 4
-              | _ when ocp c -> 2
-              | Some _ -> 4
-              | None -> 2
+        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+        | Some Nolabel when ocp c -> 4
+        | _ when ocp c -> 2
+        | Some _ when ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 -> 4
+        | _ -> 2
     in
     let name = "Params.box_fun_expr" in
-    (match ctx0 with Str _ -> hvbox ~name indent | _ -> hovbox ~name indent), (~- indent)
+    let mkbox = match ctx0 with Str _ -> hvbox | _ -> hovbox in
+    (mkbox ~name indent, ~-indent)
 
   (* if the function is the last argument of an apply and no other arguments
      are "complex" (approximation). *)
