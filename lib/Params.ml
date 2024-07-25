@@ -34,6 +34,13 @@ let is_unlabelled_arg args exp =
       | Labelled _, _ | Optional _, _ -> false )
     args
 
+let is_arg args exp =
+  List.exists
+    ~f:(function
+      | Nolabel, x -> phys_equal x exp
+      | Labelled _, x | Optional _, x -> phys_equal x exp  )
+    args
+
 let ctx_is_infix = function
   | Exp {pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _} -> false
   | Exp {pexp_desc= Pexp_infix _; _} -> true
@@ -47,11 +54,17 @@ let ctx_is_beginend = function
 | Exp {pexp_desc= Pexp_beginend _; _} -> true
 | _ -> false
 
-let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
+let ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
       is_unlabelled_arg args exp
   | _ -> false
+
+  let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
+    match (ctx, ctx0) with
+    | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
+        is_arg args exp
+    | _ -> false
 
 (** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx]. *)
@@ -140,7 +153,7 @@ module Exp = struct
   let box_fun_expr (c : Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
     let indent =
       if ctx_is_infix ctx0 then if ocp c && has_label then 2 else 0
-    else if ctx_is_beginend ctx0 then 2
+      else if ctx_is_beginend ctx0 then 2
       else
         match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v
@@ -148,8 +161,9 @@ module Exp = struct
             if ctx_is_let ~ctx ctx0 then
               if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
             else if ocp c then
-              if ctx_is_apply_and_exp_is_arg ~ctx ctx0 then 4 else 2
-            else 4
+              if ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 then 4 else 2
+            else if ctx_is_apply_and_exp_is_arg ~ctx ctx0 then 4
+            else  2
     in
     let name = "Params.box_fun_expr" in
     match ctx0 with Str _ -> hvbox ~name indent | _ -> hovbox ~name indent
