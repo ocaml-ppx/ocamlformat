@@ -50,10 +50,6 @@ let ctx_is_apply = function
   | Exp {pexp_desc= Pexp_apply _; _} -> true
   | _ -> false
 
-let ctx_is_beginend = function
-| Exp {pexp_desc= Pexp_beginend _; _} -> true
-| _ -> false
-
 let ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
