@@ -1603,9 +1603,6 @@ and expression_width c xe =
 and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   let fmt_arg c ~first:_ ~last (lbl, arg) =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
-    let box =
-      match ast.pexp_desc with Pexp_function _ -> Some false | _ -> None
-    in
     let break_after =
       match (ast.pexp_desc, c.conf.fmt_opts.break_string_literals.v) with
       | Pexp_constant _, `Auto when not last ->
@@ -1614,7 +1611,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     in
     hovbox
       (Params.Indent.fun_args_group c.conf ~lbl ast)
-      (fmt_label_arg c ?box (lbl, xarg) $ break_after)
+      (fmt_label_arg c (lbl, xarg) $ break_after)
     $ fmt_if (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =

@@ -1081,8 +1081,8 @@ let rec devariantize : type t. t ty -> variant -> t =
     let builder = create_builder () in
     List.iter2
       (fun (Field { label; field_type; set }) (lab, v) ->
-        if label <> lab then raise VariantMismatch;
-        set builder (devariantize field_type v))
+          if label <> lab then raise VariantMismatch;
+          set builder (devariantize field_type v))
       fields
       fl;
     of_builder builder
