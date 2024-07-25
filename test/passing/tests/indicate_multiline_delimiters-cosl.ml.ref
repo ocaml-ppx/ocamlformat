@@ -42,13 +42,13 @@ let contrived =
   List.map
     ~f:(fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
         f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-      )
+    )
     l
 
 let contrived =
   List.map l ~f:(fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
       f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    )
+  )
 
 let x =
   match y with

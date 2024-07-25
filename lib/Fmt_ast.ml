@@ -1487,8 +1487,15 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
     match args, typ, body with
     | (_ :: _), _, Pfunction_body body ->
         (* Only [fun]. *)
-        fmt_fun_args_typ args typ, fmt_expression c (sub_exp ~ctx body),
-     (Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx ~parens ~has_label), ~-2
+       let head =  fmt_fun_args_typ args typ in
+       let body = fmt_expression c (sub_exp ~ctx body) in
+       let box, closing_paren_offset =
+         Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx ~parens ~has_label
+       in
+       let closing_paren_offset =
+         if should_box then closing_paren_offset else ~-2
+       in
+       head, body, box, closing_paren_offset
     | [], _, Pfunction_body _ -> assert false
     | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
@@ -2206,8 +2213,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ( fmt_expression c (sub_exp ~ctx exp)
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_function (args, typ, body) ->
-      let wrap_intro intro = hovbox 2 (pro $ intro) $ space_break in
-
+      let wrap_intro intro = hovbox ~name:"fmt_expression | Pexp_function" 2 (pro $ intro) $ space_break in
       fmt_function ~wrap_intro ~box ~ctx  ~ctx0
         ~label:Nolabel ~parens ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
   | Pexp_ident {txt; loc} ->

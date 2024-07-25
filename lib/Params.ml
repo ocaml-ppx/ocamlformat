@@ -157,7 +157,7 @@ module Exp = struct
             else  2
     in
     let name = "Params.box_fun_expr" in
-    match ctx0 with Str _ -> hvbox ~name indent | _ -> hovbox ~name indent
+    (match ctx0 with Str _ -> hvbox ~name indent | _ -> hovbox ~name indent), (~- indent)
 
   (* if the function is the last argument of an apply and no other arguments
      are "complex" (approximation). *)
