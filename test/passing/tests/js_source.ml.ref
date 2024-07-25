@@ -4906,7 +4906,7 @@ module Common0 = struct
 
   let handle_msg =
     ref (function
-       | _ -> failwith "Unable to handle message")
+      | _ -> failwith "Unable to handle message")
   ;;
 
   let extend_handle f =
@@ -4926,7 +4926,7 @@ module Common = struct
 
   let handle_msg =
     ref (function
-       | _ -> failwith "Unable to handle message")
+      | _ -> failwith "Unable to handle message")
   ;;
 
   let extend_handle f =
@@ -10057,17 +10057,17 @@ let _ =
 let _ =
   foo
   |> List.map (function
-     | A -> do_something ())
+    | A -> do_something ())
 ;;
 
 let _ =
   foo
   |> List.map (function
-     | A -> do_something ()
-     | A -> do_something ()
-     | A -> do_something ()
-     | A -> do_something ()
-     | A -> do_something_else ())
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
   |> bar
 ;;
 
@@ -10461,14 +10461,14 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-     | foo -> bar)
+    | foo -> bar)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-     | Some _ -> foo
-     | None -> baz)
+    | Some _ -> foo
+    | None -> baz)
 ;;
 
 (* *)

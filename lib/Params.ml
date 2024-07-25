@@ -46,10 +46,6 @@ let ctx_is_infix = function
   | Exp {pexp_desc= Pexp_infix _; _} -> true
   | _ -> false
 
-let ctx_is_apply = function
-  | Exp {pexp_desc= Pexp_apply _; _} -> true
-  | _ -> false
-
 let ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
@@ -771,7 +767,7 @@ module Align = struct
 end
 
 module Indent = struct
-  let function_ ?(default = 0) (c : Conf.t) ~ctx0 ~parens ~has_label =
+  let function_ ?(default = 0) (c : Conf.t) ~ctx ~ctx0 ~parens ~has_label =
     let r=
     if ctx_is_infix ctx0 then
       if has_label then 2 else 0
@@ -779,7 +775,7 @@ module Indent = struct
       let extra = (if c.fmt_opts.wrap_fun_args.v then 2 else match ctx0 with Str _ -> 2 | _ -> 4) in
       match c.fmt_opts.function_indent_nested.v with
         | `Always -> c.fmt_opts.function_indent.v + extra
-        | _ when ocp c && ctx_is_apply ctx0 && not has_label -> default + 3
+        | _ when ocp c && ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 -> default + 2
         | _ when ocp c && parens && not has_label -> default + 1
         | _ when ocp c -> default
         | _ ->

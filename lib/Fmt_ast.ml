@@ -1495,7 +1495,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
            to add to the [function] keyword. *)
         let fun_, spilled_attrs, box =
           match args, typ with
-          | [], None -> noop, attrs, hvbox (Params.Indent.function_ c.conf ~ctx0 ~parens ~has_label)
+          | [], None -> noop, attrs, hvbox (Params.Indent.function_ c.conf ~ctx ~ctx0 ~parens ~has_label)
           | [], Some _ -> assert false
           | args, typ ->
               ( fmt_fun_args_typ args typ $ space_break,
