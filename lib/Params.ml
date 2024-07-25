@@ -132,19 +132,25 @@ module Exp = struct
     in
     box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 
-  let box_fun_expr (c : Conf.t) ~ctx0 ~ctx ~parens:_ ~has_label =
+  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens ~has_label:_ =
     let indent =
-      if ctx_is_infix ctx0 then if ocp c && has_label then 2 else 0
+      if ctx_is_infix ctx0 then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
         c.fmt_opts.function_indent.v
       else if ctx_is_let ~ctx ctx0 then
         if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
       else
+      if ocp c then
+        let begins_line loc = Source.begins_line ~ignore_spaces:true source loc in
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some Nolabel when ocp c -> 4
-        | _ when ocp c -> 2
-        | Some _ when ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 -> 4
-        | _ -> 2
+        | Some Nolabel ->
+            if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 5 else 3
+        | Some (Labelled x | Optional x) ->
+            (* if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 2 else *)
+            if begins_line x.loc then 4 else 2
+        | None -> if parens then 3 else 2
+      else
+        if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 4 else 2
     in
     let name = "Params.box_fun_expr" in
     let mkbox = match ctx0 with Str _ -> hvbox | _ -> hovbox in

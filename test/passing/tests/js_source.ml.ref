@@ -932,8 +932,8 @@ let id x = x
 
 let idb1 =
   (fun id ->
-    let _ = id true in
-    id)
+     let _ = id true in
+     id)
     id
 ;;
 
@@ -1081,8 +1081,8 @@ let rec devariantize : type t. t ty -> variant -> t =
     let builder = create_builder () in
     List.iter2
       (fun (Field { label; field_type; set }) (lab, v) ->
-          if label <> lab then raise VariantMismatch;
-          set builder (devariantize field_type v))
+         if label <> lab then raise VariantMismatch;
+         set builder (devariantize field_type v))
       fields
       fl;
     of_builder builder
@@ -1330,11 +1330,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) ->
-             (function
-              | Thd, Noarg -> `Nil
-              | Ttl Thd, v -> `Cons v
-              : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist))
-             (* One can also write the type annotation directly *)
+              (function
+               | Thd, Noarg -> `Nil
+               | Ttl Thd, v -> `Cons v
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist))
+              (* One can also write the type annotation directly *)
        })
 ;;
 
@@ -9876,34 +9876,34 @@ let x =
   some_fun________________________________
     some_arg______________________________
     (fun param ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+       do_something ();
+       do_something_else ();
+       return_this_value)
 ;;
 
 let x =
   some_fun________________________________
     some_arg______________________________
     ~f:(fun param ->
-    do_something ();
-    do_something_else ();
-    return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 ;;
 
 let x =
   some_value
   |> some_fun (fun x ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+       do_something ();
+       do_something_else ();
+       return_this_value)
 ;;
 
 let x =
   some_value
   ^ some_fun (fun x ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+       do_something ();
+       do_something_else ();
+       return_this_value)
 ;;
 
 let bind t ~f =
@@ -10016,9 +10016,9 @@ let _ =
     fooooooooooooooooooooooooooooooooooooooo
     fooooooooooooooooooooooooooooooooooooooo
     ~f:(fun (type a) foooooooooooooooooooooooooooooooooo : 'a ->
-    match fooooooooooooooooooooooooooooooooooooooo with
-    | Fooooooooooooooooooooooooooooooooooooooo -> x
-    | Fooooooooooooooooooooooooooooooooooooooo -> x)
+      match fooooooooooooooooooooooooooooooooooooooo with
+      | Fooooooooooooooooooooooooooooooooooooooo -> x
+      | Fooooooooooooooooooooooooooooooooooooooo -> x)
 ;;
 
 let _ =
@@ -10076,17 +10076,17 @@ let _ =
   foo
   |> List.double_map
        ~f1:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+           do_something ();
+           do_something ();
+           do_something ();
+           do_something ();
+           do_something_else ())
        ~f2:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+           do_something ();
+           do_something ();
+           do_something ();
+           do_something ();
+           do_something_else ())
   |> bar
 ;;
 
@@ -10221,9 +10221,9 @@ let _ =
     foooooooooooooooooooo
     foooooooooooooooooooo
     (fun x ->
-      match foo with
-      | Foooooooooooooooooooo -> foooooooooooooooooooo
-      | Foooooooooooooooooooo -> foooooooooooooooooooo)
+       match foo with
+       | Foooooooooooooooooooo -> foooooooooooooooooooo
+       | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10231,9 +10231,9 @@ let _ =
     foooooooooooooooooooo
     foooooooooooooooooooo
     ~x:(fun x ->
-    match foo with
-    | Foooooooooooooooooooo -> foooooooooooooooooooo
-    | Foooooooooooooooooooo -> foooooooooooooooooooo)
+      match foo with
+      | Foooooooooooooooooooo -> foooooooooooooooooooo
+      | Foooooooooooooooooooo -> foooooooooooooooooooo)
 ;;
 
 let _ =
@@ -10388,8 +10388,8 @@ let () =
   match () with
   | _ ->
     (fun _ : _ ->
-      (match () with
-       | _ -> ()))
+       (match () with
+        | _ -> ()))
   | _ -> ()
 ;;
 
@@ -10421,9 +10421,9 @@ let _ =
   |> fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo:(fun foo ->
-       match bar with
-       | Some _ -> foo
-       | None -> baz)
+         match bar with
+         | Some _ -> foo
+         | None -> baz)
 ;;
 
 let _ =
@@ -10434,9 +10434,9 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (fun foo ->
-      match bar with
-      | Some _ -> foo
-      | None -> baz)
+       match bar with
+       | Some _ -> foo
+       | None -> baz)
 ;;
 
 let _ =
@@ -10445,18 +10445,18 @@ let _ =
        ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo
        (fun foo ->
-         match bar with
-         | Some _ -> foo
-         | None -> baz)
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
 ;;
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooofoooooooooo
        (fun foo ->
-         match bar with
-         | Some _ -> foo
-         | None -> baz)
+          match bar with
+          | Some _ -> foo
+          | None -> baz)
 ;;
 
 let _ =

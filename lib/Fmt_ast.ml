@@ -1490,7 +1490,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
        let head =  fmt_fun_args_typ args typ in
        let body = fmt_expression c (sub_exp ~ctx body) in
        let box, closing_paren_offset =
-         Params.Exp.box_fun_expr c.conf ~ctx0 ~ctx ~parens ~has_label
+         Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx ~parens ~has_label
        in
        let closing_paren_offset =
          if should_box then closing_paren_offset else ~-2
