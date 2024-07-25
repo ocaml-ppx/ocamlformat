@@ -12,8 +12,8 @@ let () = r := (function () -> f () ; g ())
 let () =
   r :=
     function
-      | () ->
-          f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
+    | () ->
+        f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
 
 let () = r := (match () with () -> f () ; g ())
 

@@ -27,8 +27,8 @@ let f =
       | O -> 5
       | P when h x ->
           (function
-            | A -> 6
-            )
+          | A -> 6
+          )
       )
 
 let foo =
@@ -42,8 +42,8 @@ let foo =
         | O -> 5
         | P when h x ->
             (function
-              | A -> 6
-              )
+            | A -> 6
+            )
         )
   ) ;
   List.map ~f:(fun x g t h y u ->

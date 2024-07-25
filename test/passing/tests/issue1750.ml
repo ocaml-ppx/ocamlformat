@@ -27,66 +27,55 @@ let _ =
 let _ = function
   | [%p
       function
-        | [%p
-            function
+      | [%p
+          function
+          | [%p
+              function
               | [%p
                   function
-                    | [%p
-                        function
+                  | [%p
+                      function
+                      | [%p
+                          function
                           | [%p
                               function
-                                | [%p
-                                    function
+                              | [%p
+                                  function
+                                  | [%p
+                                      function
                                       | [%p
                                           function
-                                            | [%p
-                                                function
+                                          | [%p
+                                              function
+                                              | [%p
+                                                  function
                                                   | [%p
                                                       function
-                                                        | [%p
-                                                            function
+                                                      | [%p
+                                                          function
+                                                          | [%p
+                                                              function
                                                               | [%p
                                                                   function
-                                                                    | [%p
-                                                                        function
-                                                                          | [%p
-                                                                             function
-                                                                             | 
-                                                                             [%p
-                                                                             function
-                                                                             | 
-                                                                             [%p
-                                                                             function
-                                                                             | 
-                                                                             [%p
-                                                                             function
-                                                                             | 
-                                                                             [%p
-                                                                             function
-                                                                             | _
-                                                                             ->
-                                                                             ()]
-                                                                             ->
-                                                                             ()]
-                                                                             ->
-                                                                             ()]
-                                                                             ->
-                                                                             ()]
-                                                                             ->
-                                                                             ()]
-                                                                            ->
-                                                                             ()]
-                                                                      ->
-                                                                        ()]
-                                                                ->
+                                                                  | [%p
+                                                                      function
+                                                                      | _ ->
+                                                                          ()]
+                                                                    ->
+                                                                      ()] ->
                                                                   ()] ->
-                                                            ()] ->
+                                                              ()] ->
+                                                          ()] ->
                                                       ()] ->
-                                                ()] ->
+                                                  ()] ->
+                                              ()] ->
                                           ()] ->
-                                    ()] ->
+                                      ()] ->
+                                  ()] ->
                               ()] ->
-                        ()] ->
+                          ()] ->
+                      ()] ->
                   ()] ->
-            ()] ->
+              ()] ->
+          ()] ->
       ()

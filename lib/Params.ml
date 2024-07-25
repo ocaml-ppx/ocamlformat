@@ -26,37 +26,20 @@ let is_labelled_arg args exp =
       | Labelled _, x | Optional _, x -> phys_equal x exp )
     args
 
-(** Whether [exp] occurs in [args] as a labelled argument. *)
-let is_unlabelled_arg args exp =
-  List.exists
-    ~f:(function
-      | Nolabel, x -> phys_equal x exp
-      | Labelled _, _ | Optional _, _ -> false )
-    args
-
-let is_arg args exp =
-  List.exists
-    ~f:(function
-      | Nolabel, x -> phys_equal x exp
-      | Labelled _, x | Optional _, x -> phys_equal x exp  )
-    args
-
 let ctx_is_infix = function
   | Exp {pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _} -> false
   | Exp {pexp_desc= Pexp_infix _; _} -> true
   | _ -> false
 
-let ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 =
+(** Return [None] if [ctx0] is not an application or [ctx] is not one of its
+    argument. *)
+let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
-      is_unlabelled_arg args exp
-  | _ -> false
-
-  let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
-    match (ctx, ctx0) with
-    | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
-        is_arg args exp
-    | _ -> false
+      List.find_map
+        ~f:(fun (lbl, x) -> if phys_equal x exp then Some lbl else None)
+        args
+  | _ -> None
 
 (** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx]. *)
@@ -151,10 +134,12 @@ module Exp = struct
         | _ ->
             if ctx_is_let ~ctx ctx0 then
               if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
-            else if ocp c then
-              if ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 then 4 else 2
-            else if ctx_is_apply_and_exp_is_arg ~ctx ctx0 then 4
-            else  2
+            else
+              match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+              | Some Nolabel when ocp c -> 4
+              | _ when ocp c -> 2
+              | Some _ -> 4
+              | None -> 2
     in
     let name = "Params.box_fun_expr" in
     (match ctx0 with Str _ -> hvbox ~name indent | _ -> hovbox ~name indent), (~- indent)
@@ -768,20 +753,22 @@ end
 
 module Indent = struct
   let function_ ?(default = 0) (c : Conf.t) ~ctx ~ctx0 ~parens ~has_label =
-    let r=
-    if ctx_is_infix ctx0 then
-      if has_label then 2 else 0
+    if ctx_is_infix ctx0 then if has_label then 2 else 0
     else
-      let extra = (if c.fmt_opts.wrap_fun_args.v then 2 else match ctx0 with Str _ -> 2 | _ -> 4) in
-      match c.fmt_opts.function_indent_nested.v with
-        | `Always -> c.fmt_opts.function_indent.v + extra
-        | _ when ocp c && ctx_is_apply_and_exp_is_unlabelled_arg ~ctx ctx0 -> default + 2
-        | _ when ocp c && parens && not has_label -> default + 1
-        | _ when ocp c -> default
-        | _ ->
-          default + extra in
-    r
-
+      let extra =
+        if c.fmt_opts.wrap_fun_args.v then 0
+        else match ctx0 with Str _ -> 2 | _ -> 0
+      in
+      if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
+        c.fmt_opts.function_indent.v + extra
+      else
+        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+        | Some _ -> default + 2
+        | None ->
+            if parens && not has_label then
+              if ocp c then default + 1 else default
+            else if ocp c then default
+            else default + extra
 
   let fun_type_annot c = if ocp c then 2 else 4
 
