@@ -1517,7 +1517,14 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
         in
-        (fun_ $ function_, (fmt_cases c ctx cs), box, 0)
+        let box_cases =
+          match ctx0 with
+          | Exp ({pexp_desc = Pexp_ifthenelse _; _})
+            when Stdlib.(c.conf.fmt_opts.if_then_else.v = `Compact) ->
+              hvbox ~name:"cases box" 0
+          | _ -> Fn.id
+        in
+        (fun_ $ function_, box_cases (fmt_cases c ctx cs), box, 0)
   in
   let space_opn_parens, space_cls_parens =
     match ctx0 with

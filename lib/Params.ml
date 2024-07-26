@@ -604,7 +604,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
   let branch_pro = fmt_or (beginend || parens_bch) (str " ") (break 1 2) in
   match c.fmt_opts.if_then_else.v with
   | `Compact ->
-      { box_branch= hovbox 2
+      { box_branch= hovbox ~name:"Params.get_if_then_else `Compact" 2
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or (beginend || parens_bch) (str " ") space_break
