@@ -1401,7 +1401,9 @@ module Operational = struct
   let debug =
     let doc = "Generate debugging output." in
     Decl.flag ~default ~names:["g"; "debug"] ~doc ~kind
-      (fun conf elt -> update conf ~f:(fun f -> {f with debug= elt}))
+      (fun conf elt ->
+        if elt.v then Box_debug.enable_stacktraces := true ;
+        update conf ~f:(fun f -> {f with debug= elt}) )
       (fun conf -> conf.opr_opts.debug)
 
   let disable =
