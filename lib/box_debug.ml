@@ -132,6 +132,12 @@ let force_newline ?stack fs =
   debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
     stack_tooltip stack
 
+let start_str fs =
+  debugf fs "<span class='string'>"
+
+let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
+
+
 let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
 let _pp_format_lit fs =
