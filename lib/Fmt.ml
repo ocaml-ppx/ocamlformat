@@ -140,9 +140,15 @@ let char c = with_pp (fun fs -> Format_.pp_print_char fs c)
 let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
-let str_as n s = with_pp (fun fs -> Format_.pp_print_as fs n s)
+let str_as n s =
+  let stack = Box_debug.get_stack () in
+  with_pp (fun fs ->
+    Box_debug.start_str fs;
+    Format_.pp_print_as fs n s;
+    Box_debug.end_str ~stack fs)
 
-let str s = if String.is_empty s then noop else str_as (utf8_length s) s
+let str s =
+  if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
   | Blank -> char ' '
