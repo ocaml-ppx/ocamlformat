@@ -94,11 +94,20 @@ let break n o =
 
 let force_break = break 1000 0
 
-let space_break = with_pp (fun fs -> Format_.pp_print_space fs ())
+let space_break =
+  with_pp (fun fs ->
+      Box_debug.space_break fs ;
+      Format_.pp_print_space fs () )
 
-let cut_break = with_pp (fun fs -> Format_.pp_print_cut fs ())
+let cut_break =
+  with_pp (fun fs ->
+      Box_debug.cut_break fs ;
+      Format_.pp_print_cut fs () )
 
-let force_newline = with_pp (fun fs -> Format_.pp_force_newline fs ())
+let force_newline =
+  with_pp (fun fs ->
+      Box_debug.force_newline fs ;
+      Format_.pp_force_newline fs () )
 
 let cbreak ~fits ~breaks =
   with_pp (fun fs ->

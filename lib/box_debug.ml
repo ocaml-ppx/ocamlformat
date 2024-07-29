@@ -105,6 +105,14 @@ let break fs n o =
      %i</span></div>"
     n o n o
 
+let space_break fs =
+  debugf fs "<div class=\"break space_break\">space_break</div>"
+
+let cut_break fs = debugf fs "<div class=\"break cut_break\">cut_break</div>"
+
+let force_newline fs =
+  debugf fs "<div class=\"break force_newline\">force_newline</div>"
+
 let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
 let _pp_format_lit fs =
