@@ -53,6 +53,7 @@ let css =
     border-radius: 6px;
     position: absolute;
     z-index: 1;
+    font-size: 10px;
   }
 
   div:hover>.tooltiptext, span:hover>.tooltiptext {
@@ -130,6 +131,12 @@ let cut_break ?stack fs =
 let force_newline ?stack fs =
   debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
     stack_tooltip stack
+
+let start_str fs =
+  debugf fs "<span class='string'>"
+
+let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
+
 
 let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
