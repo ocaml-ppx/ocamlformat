@@ -88,30 +88,36 @@ let with_box_debug k = with_pp (Box_debug.with_box (fun fs -> eval fs k))
 (** Break hints and format strings --------------------------------------*)
 
 let break n o =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.break fs n o ;
+      Box_debug.break fs n o ~stack ;
       Format_.pp_print_break fs n o )
 
 let force_break = break 1000 0
 
 let space_break =
+  (* a stack is useless here, this would require adding a unit parameter *)
+  let stack = "" in
   with_pp (fun fs ->
-      Box_debug.space_break fs ;
+      Box_debug.space_break ~stack fs ;
       Format_.pp_print_space fs () )
 
 let cut_break =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.cut_break fs ;
+      Box_debug.cut_break ~stack fs ;
       Format_.pp_print_cut fs () )
 
 let force_newline =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.force_newline fs ;
+      Box_debug.force_newline ~stack fs ;
       Format_.pp_force_newline fs () )
 
 let cbreak ~fits ~breaks =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.cbreak fs ~fits ~breaks ;
+      Box_debug.cbreak fs ~stack ~fits ~breaks ;
       Format_.pp_print_custom_break fs ~fits ~breaks )
 
 let noop = with_pp (fun _ -> ())
@@ -245,27 +251,31 @@ let wrap_fits_breaks ?(space = true) conf x =
 let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n
 
 let open_box ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "b" n fs ;
+      Box_debug.box_open ~stack ?name "b" n fs ;
       Format_.pp_open_box fs n )
 
 and open_vbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "v" n fs ;
+      Box_debug.box_open ~stack ?name "v" n fs ;
       Format_.pp_open_vbox fs n )
 
 and open_hvbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "hv" n fs ;
+      Box_debug.box_open ~stack ?name "hv" n fs ;
       Format_.pp_open_hvbox fs n )
 
 and open_hovbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "hov" n fs ;
+      Box_debug.box_open ~stack ?name "hov" n fs ;
       Format_.pp_open_hovbox fs n )
 
 and close_box =
