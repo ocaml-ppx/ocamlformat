@@ -97,13 +97,15 @@ let force_break = break 1000 0
 
 let space_break =
   (* a stack is useless here, this would require adding a unit parameter *)
+  let stack = "" in
   with_pp (fun fs ->
-      Box_debug.space_break fs ;
+      Box_debug.space_break ~stack fs ;
       Format_.pp_print_space fs () )
 
 let cut_break =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.cut_break fs ;
+      Box_debug.cut_break ~stack fs ;
       Format_.pp_print_cut fs () )
 
 let force_newline =

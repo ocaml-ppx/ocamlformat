@@ -104,11 +104,9 @@ let pp_box_name fs = function
 let pp_box_indent fs = function 0 -> () | i -> Format_.fprintf fs "(%d)" i
 
 let stack_tooltip fs stack =
-  match stack with
-  | Some stack -> debugf fs "<span class=\"tooltiptext\">%s</span>" stack
-  | None -> ()
+  debugf fs "<span class=\"tooltiptext\">%s</span>" stack
 
-let box_open ?name ?stack box_kind n fs =
+let box_open ?name ~stack box_kind n fs =
   debugf fs "<div class=\"box\"><p class=\"name\"><span>%s%a%a</span>%a</p>"
     box_kind pp_box_name name stack_tooltip stack pp_box_indent n
 
@@ -120,23 +118,29 @@ let break fs n o ~stack =
      %s</span></div>"
     n o n o stack
 
-let space_break ?stack fs =
+let space_break fs ~stack =
   debugf fs "<div class=\"break space_break\">space_break%a</div>"
     stack_tooltip stack
 
-let cut_break ?stack fs =
+let cut_break fs ~stack =
   debugf fs "<div class=\"break cut_break\">cut_break%a</div>" stack_tooltip
     stack
 
-let force_newline ?stack fs =
+let force_newline fs ~stack =
   debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
     stack_tooltip stack
 
-let start_str fs =
-  debugf fs "<span class='string'>"
+let space_break fs ~stack =
+  debugf fs "<div class=\"break space_break\">space_break%a</div>"
+    stack_tooltip stack
 
-let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
+let cut_break fs ~stack =
+  debugf fs "<div class=\"break cut_break\">cut_break%a</div>" stack_tooltip
+    stack
 
+let force_newline fs ~stack =
+  debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
+    stack_tooltip stack
 
 let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
