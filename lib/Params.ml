@@ -117,7 +117,7 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let box_fun_decl_args ~ctx c ~parens ~kw ~args ~annot =
+  let box_fun_decl_args ~ctx ?(kw_in_box=true) c ~parens ~kw  ~args ~annot =
     let is_let_func =
       match ctx with
       Ast.Str _ ->
@@ -127,10 +127,18 @@ module Exp = struct
     let box_decl, should_box_args =
       if ocp c then (hvbox ~name (if parens then 1 else 2), false)
       else
-        ( (if is_let_func then hovbox ~name 4 else hvbox ~name (if parens then 1 else 2))
+        (
+          ( if is_let_func
+            then hovbox ~name 4
+            else hvbox ~name (if parens then 1 else 2) )
         , not c.fmt_opts.wrap_fun_args.v )
     in
-    box_decl (kw $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+    let box_decl =
+      if not kw_in_box then hvbox ~name 0
+      else box_decl
+    in
+    let kw_out_of_box, kw_in_box = if kw_in_box then noop, kw else kw, noop in
+    kw_out_of_box $ box_decl (kw_in_box $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens ~has_label:_ =
     let indent =
@@ -171,10 +179,12 @@ module Exp = struct
              && List.for_all ~f:arg_is_simple_approx other_args
         )
     | _ -> false
-  let break_fun_decl_args ~ctx =
+  let break_fun_decl_args ~ctx ~last_arg =
     match ctx with
-    Ast.Str _ ->
-       (* special case that break the arrow in [let _ = fun ... ->] *) (str " ") | _ -> break 1 (-2)
+    | Ast.Str _ ->
+       (* special case that break the arrow in [let _ = fun ... ->] *)
+       (str " ")
+    | _ -> break 1 (if last_arg then 0 else (-2))
 
 end
 

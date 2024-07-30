@@ -101,9 +101,9 @@ let _ =
 let _ =
   f
     (fun
-      (module Store : Irmin.Generic_key.S with type repo = repo)
-      (module Store : Irmin.Generic_key.S with type repo = repo)
-    -> body )
+        (module Store : Irmin.Generic_key.S with type repo = repo)
+        (module Store : Irmin.Generic_key.S with type repo = repo)
+      -> body )
 
 let f (module Store : Irmin.Generic_key.S with type repo = repo)
     (module Store : Irmin.Generic_key.S with type repo = repo) =

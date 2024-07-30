@@ -38,6 +38,7 @@ module Exp : sig
 
   val box_fun_decl_args :
        ctx:Ast.t
+    -> ?kw_in_box:bool
     -> Conf.t
     -> parens:bool
     -> kw:Fmt.t
@@ -54,7 +55,7 @@ module Exp : sig
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
 
-  val break_fun_decl_args : ctx:Ast.t -> Fmt.t
+  val break_fun_decl_args : ctx:Ast.t -> last_arg:bool -> Fmt.t
 
 end
 

@@ -1446,7 +1446,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = true)
+and fmt_function ?(last_arg=false) ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = true)
       ~label ?(parens = false) ?ext ~attrs ~loc c (args, typ, body) =
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
@@ -1471,12 +1471,13 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ~wrap_intro ?box:(should_box = 
   in
   let fmt_fun_args_typ args typ =
     let kw =
-    str "fun" $ fmt_extension_suffix c ext $ fmt_attributes c ~pre:Blank attrs $ space_break
+    str "fun" $ fmt_extension_suffix c ext $ fmt_attributes c ~pre:Blank attrs
+    $ (if last_arg then break 1 2 else break 1 0)
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     in
-    Params.Exp.box_fun_decl_args ~ctx:ctx0 c.conf ~parens ~kw ~args ~annot
-    $ Params.Exp.break_fun_decl_args  ~ctx:ctx0 $ str "->"
+    Params.Exp.box_fun_decl_args ~kw_in_box:(not last_arg) ~ctx:ctx0 c.conf ~parens ~kw ~args ~annot
+    $ Params.Exp.break_fun_decl_args ~ctx:ctx0 ~last_arg $ str "->"
   in
   let lead_with_function_kw =
     match args, body with | [], Pfunction_cases _  -> true | _ -> false
@@ -2090,7 +2091,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               then Fit
               else Break
             in
-            fmt_function~force_closing_paren ~ctx:inner_ctx  ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
+            fmt_function ~last_arg:true ~force_closing_paren ~ctx:inner_ctx  ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))
