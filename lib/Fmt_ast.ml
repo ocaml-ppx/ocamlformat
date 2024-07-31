@@ -753,7 +753,12 @@ and fmt_type_cstr c ?(pro=":") ?constraint_ctx xtyp =
     match xtyp.ast.ptyp_desc with
     | (Ptyp_poly (_, { ptyp_desc= Ptyp_arrow _; _ })
     | Ptyp_arrow _) when colon_before ->
-        let outer_pro = fits_breaks (pro ^ " ") (pro ^ "  ") in
+        let outer_pro =
+          if c.conf.fmt_opts.ocp_indent_compat.v then
+            fits_breaks (pro ^ " ") (pro ^ "  ")
+          else
+            str pro $ str " "
+        in
         let pre_break = if colon_before then fits_breaks " " ~hint:(1000, 0) "" else break 0 ~-1 in
         let wrap x = pre_break $ cbox 0 (outer_pro $ x) in
         wrap, None, false
