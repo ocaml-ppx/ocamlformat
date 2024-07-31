@@ -284,6 +284,7 @@ and pattern_desc =
             - [(module _ : S)] when [p] is [None] and [s] is [Some "S"]
          *)
   | Ppat_exception of pattern  (** Pattern [exception P] *)
+  | Ppat_effect of pattern * pattern (* Pattern [effect P P] *)
   | Ppat_extension of extension  (** Pattern [[%id]] *)
   | Ppat_open of Longident.t loc * pattern  (** Pattern [M.(P)] *)
   | Ppat_cons of pattern list  (** Pattern [P1 :: ... :: Pn] *)
