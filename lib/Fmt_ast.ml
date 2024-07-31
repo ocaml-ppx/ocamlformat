@@ -2089,10 +2089,11 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                    let inner_ctx = Exp (last_arg) in
           let args =
             let wrap_intro x =
-              wrap
-                ( intro_epi
-                $ fmt_args_grouped e0 args_before
-                $ break 1 0 $ hvbox 0 x )
+              hvbox 0 (
+                intro_epi
+                $ wrap
+                  (  fmt_args_grouped e0 args_before
+                     $ break 1 0 $ hvbox 0 x ))
               $ break 1 0
             in
             let force_closing_paren =

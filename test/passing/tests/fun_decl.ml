@@ -89,3 +89,9 @@ let f _ =
   fun x ->
     let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
     x
+
+let space_break =
+  (* a stack is useless here, this would require adding a unit parameter *)
+  with_pp (fun fs ->
+      Box_debug.space_break fs ;
+      Format_.pp_print_space fs () )
