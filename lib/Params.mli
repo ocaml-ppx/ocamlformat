@@ -55,7 +55,7 @@ module Exp : sig
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
 
-  val break_fun_decl_args : ctx:Ast.t -> last_arg:bool -> Fmt.t
+  val break_fun_decl_args : ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
 
 end
 

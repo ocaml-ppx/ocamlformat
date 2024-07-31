@@ -179,12 +179,12 @@ module Exp = struct
              && List.for_all ~f:arg_is_simple_approx other_args
         )
     | _ -> false
-  let break_fun_decl_args ~ctx ~last_arg =
+  let break_fun_decl_args ~ctx ~last_arg ~has_label =
     match ctx with
     | Ast.Str _ ->
        (* special case that break the arrow in [let _ = fun ... ->] *)
        (str " ")
-    | _ -> break 1 (if last_arg then 0 else (-2))
+    | _ -> break 1 (if last_arg && has_label then 0 else (-2))
 
 end
 
