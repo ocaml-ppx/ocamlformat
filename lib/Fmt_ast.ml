@@ -2005,7 +2005,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let indent_wrap = if parens then -2 else 0 in
       let followed_by_infix_op =
         match body with
-        | Pfunction_body {pexp_desc=Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _} ->
+        | Pfunction_body
+            {pexp_desc= Pexp_infix (_, _, {pexp_desc= Pexp_function _; _}); _}
+          ->
             true
         | _ -> false
       in
@@ -2020,7 +2022,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   $ fmt_expression ~indent_wrap c (sub_exp ~ctx l)
                   $ space_break
                   $ hovbox 0 (fmt_str_loc c op $ space_break $ intro) )
-                $ (fmt_or followed_by_infix_op force_break space_break) )
+                $ fmt_or followed_by_infix_op force_break space_break )
               ~label:Nolabel ~attrs:r.pexp_attributes ~loc:r.pexp_loc c
               (args, typ, body)
           $ fmt_if has_attr (str ")")
