@@ -1,13 +1,19 @@
 f x >>= fun y ->
 g y >>= fun () ->
-f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
+f x >>= fun y ->
+g y >>= fun () ->
+f x >>= fun y ->
+g y >>= fun () -> y ()
 ;;
 
 f x >>= function
 | A -> (
     g y >>= fun () ->
     f x >>= fun y ->
-    g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
+    g y >>= function
+    | x -> (
+        f x >>= fun y ->
+        g y >>= function _ -> y () ) )
 ;;
 
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
