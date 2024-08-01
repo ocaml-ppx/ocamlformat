@@ -48,15 +48,22 @@ module Exp : sig
   (** Box and assemble the parts [kw] (up to the arguments), [args] and
       [annot]. *)
 
+  val box_fun_expr :
+       Conf.t
+    -> source:Source.t
+    -> ctx0:Ast.t
+    -> ctx:Ast.t
+    -> parens:bool
+    -> has_label:bool
+    -> (Fmt.t -> Fmt.t) * int
   (** return a box with an indent and minus the value of the indent to be used for a closing parenthesis *)
-  val box_fun_expr : Conf.t -> source:Source.t -> ctx0:Ast.t -> ctx:Ast.t -> parens:bool -> has_label:bool -> (Fmt.t -> Fmt.t) * int
 
   val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
 
-  val break_fun_decl_args : ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
-
+  val break_fun_decl_args :
+    ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
 end
 
 module Mod : sig
@@ -201,7 +208,13 @@ module Indent : sig
   (** Expressions *)
 
   val function_ :
-    ?default:int -> Conf.t -> ctx:Ast.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
+       ?default:int
+    -> Conf.t
+    -> ctx:Ast.t
+    -> ctx0:Ast.t
+    -> parens:bool
+    -> has_label:bool
+    -> int
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
 

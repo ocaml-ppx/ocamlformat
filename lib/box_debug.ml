@@ -132,11 +132,9 @@ let force_newline ?stack fs =
   debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
     stack_tooltip stack
 
-let start_str fs =
-  debugf fs "<span class='string'>"
+let start_str fs = debugf fs "<span class='string'>"
 
 let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
-
 
 let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
@@ -188,17 +186,20 @@ let cbreak fs ~stack ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
 let if_newline fs ~stack s =
   debugf fs
     "<div class=\"break if_newline\">(%s)<span \
-     class=\"tooltiptext\">if_newline %S\n%s</span></div>"
+     class=\"tooltiptext\">if_newline %S\n\
+     %s</span></div>"
     s s stack
 
 let break_unless_newline fs ~stack n o =
   debugf fs
     "<div class=\"break break_unless_newline\">(%i,%i)<span \
-     class=\"tooltiptext\">break_unless_newline %i %i\n%s</span></div>"
+     class=\"tooltiptext\">break_unless_newline %i %i\n\
+     %s</span></div>"
     n o n o stack
 
 let fits_or_breaks fs ~stack fits n o breaks =
   debugf fs
     "<div class=\"break fits_or_breaks\">(%s,%i,%i,%s)<span \
-     class=\"tooltiptext\">fits_or_breaks %S %i %i %S\n%s</span></div>"
+     class=\"tooltiptext\">fits_or_breaks %S %i %i %S\n\
+     %s</span></div>"
     fits n o breaks fits n o breaks stack
