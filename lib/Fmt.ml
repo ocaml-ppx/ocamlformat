@@ -196,13 +196,15 @@ let fmt_opt o = Option.value o ~default:noop
 (** Conditional on immediately following a line break -------------------*)
 
 let if_newline s =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.if_newline fs s ;
+      Box_debug.if_newline fs ~stack s ;
       Format_.pp_print_string_if_newline fs s )
 
 let break_unless_newline n o =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.break_unless_newline fs n o ;
+      Box_debug.break_unless_newline fs ~stack n o ;
       Format_.pp_print_or_newline fs n o "" "" )
 
 (** Conditional on breaking of enclosing box ----------------------------*)
@@ -210,8 +212,9 @@ let break_unless_newline n o =
 type behavior = Fit | Break
 
 let fits_or_breaks ~level fits nspaces offset breaks =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.fits_or_breaks fs fits nspaces offset breaks ;
+      Box_debug.fits_or_breaks fs ~stack fits nspaces offset breaks ;
       Format_.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks )
 
 let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
