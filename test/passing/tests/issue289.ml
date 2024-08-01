@@ -3,31 +3,31 @@
 let foo =
   let open Gql in
   [ field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid) ~resolve:(function
-      | _ctx -> x.id )
+        | _ctx -> x.id )
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppp ~resolve:(function
-      | _ctx -> x.id )
+        | _ctx -> x.id )
   ; field
       "id"
       ~doc:"Toy ID."
       ~args:[]
       ~typ:(non_null guid)
       ~resolve:(function
-      | A -> x.id
-      | B -> c )
+        | A -> x.id
+        | B -> c )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-      | A -> x.id
-      | B -> c )
+        | A -> x.id
+        | B -> c )
   ; field
       "id"
       ~doc:"Toy ID."
       ~args:[]
       ~typppppppppppppppppppp
       ~resolve:(function
-      | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
+        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
-      | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
+        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
   ; field
       "id"
       ~doc:"Toy ID."

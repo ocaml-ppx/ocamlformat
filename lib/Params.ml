@@ -794,13 +794,13 @@ module Indent = struct
     else
       let extra =
         if c.fmt_opts.wrap_fun_args.v then 0
-        else match ctx0 with Str _ -> 2 | _ -> 0
+        else match ctx0 with Str _ -> 2 | _ -> 2
       in
       if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
         c.fmt_opts.function_indent.v + extra
       else
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> default + 2
+        | Some _ -> default + 2 + if ocp c then 0 else extra
         | None ->
             if parens && not has_label then
               if ocp c then default + 1 else default
