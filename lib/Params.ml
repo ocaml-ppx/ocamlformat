@@ -48,6 +48,21 @@ let ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 =
       Poly.equal last_arg exp
   | _ -> false
 
+  let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
+    match (ctx, ctx0) with
+    | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
+        let (_lbl, last_arg), args_before =
+          match List.rev args with
+          | [] -> assert false
+          | hd :: tl -> (hd, List.rev tl)
+        in
+        let args_are_simple =
+          List.for_all args_before ~f:(fun (_, eI) ->
+            is_simple c (fun _ -> 0) (sub_exp ~ctx:ctx0 eI) )
+        in
+        Poly.equal last_arg exp && args_are_simple
+    | _ -> false
+
 (** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx]. *)
 let ctx_is_let ~ctx = function
@@ -157,8 +172,10 @@ module Exp = struct
             (* if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 2 else *)
             if begins_line x.loc then 4 else 2
         | None -> if parens then 3 else 2
-      else
-        if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 4 else 2
+      else if ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0
+        then 4
+      else 2
+
     in
     let name = "Params.box_fun_expr" in
     let mkbox = match ctx0 with Str _ -> hvbox | _ -> hovbox in
