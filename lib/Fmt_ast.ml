@@ -1864,7 +1864,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       | Pexp_function _ -> noop
       | _ -> Cmts.fmt_before c ?eol pexp_loc
     in
-    pro $ cmts_in_pro
+    cmts_in_pro $ pro
   in
   let fmt_cmts_after k = k $ Cmts.fmt_after c pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space pexp_attributes in
