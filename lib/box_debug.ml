@@ -185,20 +185,20 @@ let cbreak fs ~stack ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
      %s</span></div>"
     s1 i s2 s3 j s4 s1 i s2 s3 j s4 stack
 
-let if_newline fs s =
+let if_newline fs ~stack s =
   debugf fs
     "<div class=\"break if_newline\">(%s)<span \
-     class=\"tooltiptext\">if_newline %S</span></div>"
-    s s
+     class=\"tooltiptext\">if_newline %S\n%s</span></div>"
+    s s stack
 
-let break_unless_newline fs n o =
+let break_unless_newline fs ~stack n o =
   debugf fs
     "<div class=\"break break_unless_newline\">(%i,%i)<span \
-     class=\"tooltiptext\">break_unless_newline %i %i</span></div>"
-    n o n o
+     class=\"tooltiptext\">break_unless_newline %i %i\n%s</span></div>"
+    n o n o stack
 
-let fits_or_breaks fs fits n o breaks =
+let fits_or_breaks fs ~stack fits n o breaks =
   debugf fs
     "<div class=\"break fits_or_breaks\">(%s,%i,%i,%s)<span \
-     class=\"tooltiptext\">fits_or_breaks %S %i %i %S</span></div>"
-    fits n o breaks fits n o breaks
+     class=\"tooltiptext\">fits_or_breaks %S %i %i %S\n%s</span></div>"
+    fits n o breaks fits n o breaks stack
