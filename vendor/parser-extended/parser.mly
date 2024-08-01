@@ -3474,13 +3474,14 @@ primitive_declaration:
   id = mkrhs(val_ident)
   COLON
   ty = possibly_poly(core_type)
+  modalities = optional_atat_modalities_expr
   EQUAL
   prim = mkrhs(raw_string)+
   attrs2 = post_item_attributes
     { let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in
       let docs = symbol_docs $sloc in
-      Val.mk id ty ~prim ~attrs ~loc ~docs,
+      Val.mk id ty ~prim ~attrs ~modalities ~loc ~docs,
       ext }
 ;
 

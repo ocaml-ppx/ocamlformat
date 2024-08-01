@@ -39,6 +39,11 @@ module Let_bindings = struct
     and z : typ @@ mode = z in
     ()
   ;;
+
+  external x : typ @@ mode1 mode2 = ""
+  external x : typ1 typ2 @@ mode1 mode2 = ""
+  external x : typ1 -> typ2 @@ mode1 mode2 = ""
+  external x : typ1 * typ2 @@ mode1 mode2 = ""
 end
 
 module Expressions = struct
@@ -254,6 +259,10 @@ module type Value_descriptions = sig
   val x : typ1 typ2 @@ mode1 mode2
   val x : typ1 -> typ2 @@ mode1 mode2
   val x : typ1 * typ2 @@ mode1 mode2
+  external x : typ @@ mode1 mode2 = ""
+  external x : typ1 typ2 @@ mode1 mode2 = ""
+  external x : typ1 -> typ2 @@ mode1 mode2 = ""
+  external x : typ1 * typ2 @@ mode1 mode2 = ""
 end
 
 module Let_bound_functions = struct

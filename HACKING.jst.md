@@ -83,7 +83,7 @@ Before building
 You will need to install several libraries. This command may work:
 
 ```
-opam install menhir.20210419 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version
+opam install menhir.20210419 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version stdio
 ```
 
 Building
