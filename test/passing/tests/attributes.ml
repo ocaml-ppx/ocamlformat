@@ -388,9 +388,10 @@ let _ =
   match x with
   | _
     when f
-             ~f:(function [@ocaml.warning
-                            (* ....................................... *)
-                            "-4"] _ -> . ) ->
+           ~f:(function [@ocaml.warning
+                          (* ....................................... *)
+                          "-4"]
+           | _ -> . ) ->
       y
 
 let[@a
@@ -413,11 +414,13 @@ let[@a
                          (* ....................................... *)
                          (* ....................................... *)
                          "foooooooooooooooooooooooooooo \
-                          fooooooooooooooooooooooooooooooooooooo"] _ -> . )
+                          fooooooooooooooooooooooooooooooooooooo"]
+             | _ -> . )
            ~f:(function[@ocaml.warning
                          (* ....................................... *)
                          let x = a and y = b in
-                         x + y] _ -> . ) ->
+                         x + y]
+             | _ -> . ) ->
       y
       [@attr
         (* ... *)

@@ -115,15 +115,15 @@ let map_value_constraint sub = function
       Pvc_coercion { ground; coercion }
 
 module FP = struct
-  let map_param_val sub ((lab, def, p) : param_val) : param_val =
+  let map_param_val sub ((lab, def, p) : pparam_val) : pparam_val =
     (sub.arg_label sub lab, map_opt (sub.expr sub) def, sub.pat sub p)
 
-  let map_param_newtype sub (ty : param_newtype) : param_newtype =
+  let map_param_newtype sub (ty : string loc list) : string loc list =
     List.map (map_loc sub) ty
 
   let map_expr sub = function
-    | Param_val x -> Param_val (map_param_val sub x)
-    | Param_newtype x -> Param_newtype (map_param_newtype sub x)
+    | Pparam_val x -> Pparam_val (map_param_val sub x)
+    | Pparam_newtype x -> Pparam_newtype (map_param_newtype sub x)
 
   let map_class sub x = map_param_val sub x
 
@@ -498,6 +498,30 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
+  let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
+    let loc = sub.location sub loc in
+    let desc =
+      match desc with
+      | Pparam_val (lab, def, p) ->
+          Pparam_val
+            (lab,
+             map_opt (sub.expr sub) def,
+             sub.pat sub p)
+      | Pparam_newtype ty ->
+          Pparam_newtype (List.map (map_loc sub) ty)
+    in
+    { pparam_loc = loc; pparam_desc = desc }
+
+  let map_function_body sub body =
+    match body with
+    | Pfunction_body e ->
+        Pfunction_body (sub.expr sub e)
+    | Pfunction_cases (cases, loc, attributes) ->
+        let cases = sub.cases sub cases in
+        let loc = sub.location sub loc in
+        let attributes = sub.attributes sub attributes in
+        Pfunction_cases (cases, loc, attributes)
+
   let map_constraint sub c =
     match c with
     | Pconstraint ty -> Pconstraint (sub.typ sub ty)
@@ -520,11 +544,11 @@ module E = struct
       let loc_in = sub.location sub loc_in in
         let_ ~loc ~loc_in ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
-    | Pexp_fun (p, e) ->
-        fun_ ~loc ~attrs
-          (FP.map sub FP.map_expr p)
-          (sub.expr sub e)
-    | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
+    | Pexp_function (ps, c, b) ->
+      function_ ~loc ~attrs
+        (List.map (map_function_param sub) ps)
+        (map_opt (map_constraint sub) c)
+        (map_function_body sub b)
     | Pexp_apply (e, l) ->
         apply ~loc ~attrs
           (sub.expr sub e)

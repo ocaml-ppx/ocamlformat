@@ -10,6 +10,11 @@ let foo =
       | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
       | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo)
 
+let foo =
+  fooooooooo foooooooo foooooooo foooooooo foooooooo foooooooo ~foooooooo:(function
+      | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
+      | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo )
+
 let foooooooo =
   if fooooooooooo then
     function
