@@ -63,12 +63,14 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
       Poly.equal last_arg exp && args_are_simple
   | _ -> false
 
-(** [ctx_is_let ~ctx ctx0] checks whether [ctx0] is a let binding containing
-    [ctx]. *)
-let ctx_is_let ~ctx = function
+(** [ctx_is_let_or_fun ~ctx ctx0] checks whether [ctx0] is a let binding containing
+    [ctx] or a [fun] with [ctx] on the RHS. *)
+let ctx_is_let_or_fun ~ctx = function
   | Lb _ | Str _ | Bo _ -> true
-  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} -> (
-    match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
+  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} ->
+      ( match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
+  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} ->
+      ( match ctx with Exp exp -> phys_equal rhs exp | _ -> false )
   | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
@@ -158,7 +160,7 @@ module Exp = struct
       if ctx_is_infix ctx0 then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
         c.fmt_opts.function_indent.v
-      else if ctx_is_let ~ctx ctx0 then
+      else if ctx_is_let_or_fun ~ctx ctx0 then
         if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
       else if ocp c then
         let begins_line loc =

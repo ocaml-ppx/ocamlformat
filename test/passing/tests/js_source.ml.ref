@@ -10279,9 +10279,9 @@ type input =
 let x =
   fun [@foo] x ->
   fun [@foo] y ->
-    object
-      method x = y
-    end
+  object
+    method x = y
+  end
 ;;
 
 class x =

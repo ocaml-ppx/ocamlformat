@@ -14,6 +14,13 @@ let _ =
      fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
   some_large_computation
 
+let () =
+ fun x : int ->
+  fun r : int ->
+   fun u ->
+    foooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
 [@@@ocamlformat "wrap-fun-args=false"]
 
 let to_loc_trace
