@@ -67,10 +67,10 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
     [ctx] or a [fun] with [ctx] on the RHS. *)
 let ctx_is_let_or_fun ~ctx = function
   | Lb _ | Str _ | Bo _ -> true
-  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} ->
-      ( match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
-  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} ->
-      ( match ctx with Exp exp -> phys_equal rhs exp | _ -> false )
+  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} -> (
+    match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
+  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} -> (
+    match ctx with Exp exp -> phys_equal rhs exp | _ -> false )
   | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
