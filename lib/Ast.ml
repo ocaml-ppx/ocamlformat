@@ -2398,6 +2398,20 @@ end = struct
              ~test:extension_exclave ->
         false
     | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
+    | ( Exp {pexp_desc= Pexp_infix (_, e1, _); _}
+      , { pexp_desc=
+            Pexp_apply
+              ( { pexp_desc=
+                    Pexp_extension ({txt= extension_local; _}, PStr [])
+                ; _ }
+              , [(Nolabel, _)] )
+        ; _ } )
+      when e1 == exp
+           && ( Conf.is_jane_street_local_annotation "local"
+                  ~test:extension_local
+              || Conf.is_jane_street_local_annotation "exclave"
+                   ~test:extension_local ) ->
+        true
     | ( Str
           { pstr_desc=
               Pstr_value

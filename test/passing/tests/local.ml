@@ -118,3 +118,13 @@ let () =
   ()
 
 type t : value
+
+let _ = (local_ x) + y
+let _ = (local_ x) |> f
+let _ = local_ x + y
+let _ = local_ x |> f
+
+let _ = (exclave_ x) + y
+let _ = (exclave_ x) |> f
+let _ = exclave_ x + y
+let _ = exclave_ x |> f
