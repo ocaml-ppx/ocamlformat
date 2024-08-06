@@ -4305,6 +4305,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to function_constraint.ml.stdout
+   (with-stderr-to function_constraint.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=5 %{dep:tests/function_constraint.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/function_constraint.ml.ref function_constraint.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/function_constraint.ml.err function_constraint.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to function_constraint.ml.js-stdout
+   (with-stderr-to function_constraint.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/function_constraint.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/function_constraint.ml.js-ref function_constraint.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/function_constraint.ml.js-err function_constraint.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to function_indent-never.ml.stdout
    (with-stderr-to function_indent-never.ml.stderr
      (run %{bin:ocamlformat} --margin-check --function-indent=4 --function-indent-nested=never %{dep:tests/function_indent.ml})))))

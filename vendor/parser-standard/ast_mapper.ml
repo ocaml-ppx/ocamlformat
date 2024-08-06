@@ -29,8 +29,8 @@ module String = Misc.Stdlib.String
 type mapper = {
   attribute: mapper -> attribute -> attribute;
   attributes: mapper -> attribute list -> attribute list;
-  modes : mapper -> mode loc list -> mode loc list;
-  modalities : mapper -> modality loc list -> modality loc list;
+  modes : mapper -> modes -> modes;
+  modalities : mapper -> modalities -> modalities;
   binding_op: mapper -> binding_op -> binding_op;
   case: mapper -> case -> case;
   cases: mapper -> case list -> case list;
@@ -572,7 +572,39 @@ module E = struct
   module C = Jane_syntax.Comprehensions
   module IA = Jane_syntax.Immutable_arrays
   module L = Jane_syntax.Layouts
-  module N_ary = Jane_syntax.N_ary_functions
+  module LT = Jane_syntax.Labeled_tuples
+
+  let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
+    let loc = sub.location sub loc in
+    let desc =
+      match desc with
+      | Pparam_val (label, def, pat) ->
+          Pparam_val (label, Option.map (sub.expr sub) def, sub.pat sub pat)
+      | Pparam_newtype (newtype, jkind) ->
+          Pparam_newtype
+            ( map_loc sub newtype
+            , map_opt (map_loc_txt sub sub.jkind_annotation) jkind
+            )
+    in
+    { pparam_loc = loc; pparam_desc = desc }
+
+  let map_function_body sub body =
+    match body with
+    | Pfunction_body exp -> Pfunction_body (sub.expr sub exp)
+    | Pfunction_cases (cases, loc, attrs) ->
+        Pfunction_cases
+          (sub.cases sub cases, sub.location sub loc, sub.attributes sub attrs)
+
+  let map_type_constraint sub constraint_ =
+    match constraint_ with
+    | Pconstraint ty -> Pconstraint (sub.typ sub ty)
+    | Pcoerce (ty1, ty2) ->
+        Pcoerce (Option.map (sub.typ sub) ty1, sub.typ sub ty2)
+
+  let map_function_constraint sub { mode_annotations; type_constraint } =
+    { mode_annotations = sub.modes sub mode_annotations;
+      type_constraint = map_type_constraint sub type_constraint;
+    }
 
   let map_iterator sub : C.iterator -> C.iterator = function
     | Range { start; stop; direction } ->
@@ -619,49 +651,6 @@ module E = struct
       let inner_expr = sub.expr sub inner_expr in
       Lexp_newtype (str, jkind, inner_expr)
 
-  let map_function_param sub : N_ary.function_param -> N_ary.function_param =
-    fun { pparam_loc = loc; pparam_desc = desc } ->
-      let loc = sub.location sub loc in
-      let desc : N_ary.function_param_desc =
-        match desc with
-        | Pparam_val (label, def, pat) ->
-            Pparam_val (label, Option.map (sub.expr sub) def, sub.pat sub pat)
-        | Pparam_newtype (newtype, jkind) ->
-            Pparam_newtype
-              ( map_loc sub newtype
-              , map_opt (map_loc_txt sub sub.jkind_annotation) jkind
-              )
-      in
-      { pparam_loc = loc; pparam_desc = desc }
-
-  let map_type_constraint sub : N_ary.type_constraint -> N_ary.type_constraint =
-    function
-    | Pconstraint ty -> Pconstraint (sub.typ sub ty)
-    | Pcoerce (ty1, ty2) ->
-        Pcoerce (Option.map (sub.typ sub) ty1, sub.typ sub ty2)
-
-  let map_function_constraint sub
-      : N_ary.function_constraint -> N_ary.function_constraint =
-    function
-    | { mode_annotations; type_constraint } ->
-      { mode_annotations = sub.modes sub mode_annotations;
-        type_constraint = map_type_constraint sub type_constraint;
-      }
-
-  let map_function_body sub : N_ary.function_body -> N_ary.function_body =
-    function
-    | Pfunction_body exp -> Pfunction_body (sub.expr sub exp)
-    | Pfunction_cases (cases, loc, attrs) ->
-      Pfunction_cases
-        (sub.cases sub cases, sub.location sub loc, sub.attributes sub attrs)
-
-  let map_n_ary_exp sub : N_ary.expression -> N_ary.expression = function
-    | (params, constraint_, body) ->
-      let params = List.map (map_function_param sub) params in
-      let constraint_ = Option.map (map_function_constraint sub) constraint_ in
-      let body = map_function_body sub body in
-      params, constraint_, body
-
   let map_ltexp sub el = List.map (map_snd (sub.expr sub)) el
     (* CR labeled tuples: Eventually mappers may want to see the labels. *)
 
@@ -670,7 +659,6 @@ module E = struct
     | Jexp_comprehension x -> Jexp_comprehension (map_cexp sub x)
     | Jexp_immutable_array x -> Jexp_immutable_array (map_iaexp sub x)
     | Jexp_layout x -> Jexp_layout (map_layout_exp sub x)
-    | Jexp_n_ary_function x -> Jexp_n_ary_function (map_n_ary_exp sub x)
     | Jexp_tuple ltexp -> Jexp_tuple (map_ltexp sub ltexp)
 
   let map sub
@@ -691,12 +679,11 @@ module E = struct
     | Pexp_let (r, vbs, e) ->
         let_ ~loc ~attrs r (List.map (sub.value_binding sub) vbs)
           (sub.expr sub e)
-    | Pexp_fun (lab, def, p, e) ->
-        (fun_ ~loc ~attrs lab (map_opt (sub.expr sub) def) (sub.pat sub p)
-          (sub.expr sub e) [@alert "-prefer_jane_syntax"])
-    | Pexp_function pel ->
-        (function_ ~loc ~attrs (sub.cases sub pel)
-           [@alert "-prefer_jane_syntax"])
+    | Pexp_function (ps, c, b) ->
+      function_ ~loc ~attrs
+        (List.map (map_function_param sub) ps)
+        (map_opt (map_function_constraint sub) c)
+        (map_function_body sub b)
     | Pexp_apply (e, l) ->
         apply ~loc ~attrs (sub.expr sub e) (List.map (map_snd (sub.expr sub)) l)
     | Pexp_match (e, pel) ->
@@ -942,7 +929,7 @@ let default_mapper =
     type_exception = T.map_type_exception;
     extension_constructor = T.map_extension_constructor;
     value_description =
-      (fun this {pval_name; pval_type; pval_prim; pval_loc; pval_modalities;
+      (fun this {pval_name; pval_type; pval_modalities; pval_prim; pval_loc;
                  pval_attributes} ->
         Val.mk
           (map_loc this pval_name)
@@ -1114,11 +1101,11 @@ let default_mapper =
       let open Jane_syntax in
       function
       | Default -> Default
-      | Primitive_layout_or_abbreviation s ->
+      | Abbreviation s ->
         let {txt; loc} =
-          map_loc this (s : Jkind.Const.t :> _ loc)
+          map_loc this s
         in
-        Primitive_layout_or_abbreviation (Jkind.Const.mk txt loc)
+        Abbreviation (Jkind.Const.mk txt loc)
       | Mod (t, mode_list) ->
         Mod (this.jkind_annotation this t, this.modes this mode_list)
       | With (t, ty) ->
