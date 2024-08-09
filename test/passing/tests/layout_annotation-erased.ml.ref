@@ -94,6 +94,14 @@ let f : _ -> _ = fun _ -> assert false
 
 let g : _ -> _ = fun _ -> assert false
 
+type ('a, 'b, 'c) t4
+
+type 'a t5 = ('a, int, bool) t4
+
+let f : ('a, _, bool) t4 -> int = fun _ -> 42
+
+type ('a, 'b, 'c) t6 = ('a, 'b, 'c) t4
+
 (********************************************)
 (* Test 3: Annotation on types in functions *)
 

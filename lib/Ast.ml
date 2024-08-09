@@ -1957,6 +1957,13 @@ end = struct
     | { ast= {ptyp_desc= Ptyp_poly _; _}
       ; ctx= Typ {ptyp_desc= Ptyp_arrow _; _} } ->
         true
+    | { ast= {ptyp_desc= Ptyp_var (_, _); _}
+      ; ctx= Typ {ptyp_desc= Ptyp_constr (_, args); _} }
+      when List.length args > 1 ->
+        (* Type variables and _ do not need parens when they appear as an
+           argument to a multi-parameter type constructor, even if they have
+           layout annotations. *)
+        false
     | {ast= {ptyp_desc= Ptyp_var (_, l); _}; ctx= _} when Option.is_some l ->
         true
     | { ast= {ptyp_desc= Ptyp_tuple ((Some _, _) :: _); _}

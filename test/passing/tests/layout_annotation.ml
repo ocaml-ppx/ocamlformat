@@ -97,6 +97,14 @@ let f : (_ : immediate) -> (_ : value) = fun _ -> assert false
 
 let g : (_ : value) -> (_ : immediate) = fun _ -> assert false
 
+type ('a : any, 'b : any, 'c : any) t4
+
+type 'a t5 = ('a : float64, int, bool) t4
+
+let f : ('a, _ : value, bool) t4 -> int = fun _ -> 42;;
+
+type ('a, 'b, 'c) t6 = ('a, 'b, 'c : bits32) t4;;
+
 (********************************************)
 (* Test 3: Annotation on types in functions *)
 
