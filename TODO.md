@@ -32,19 +32,6 @@
 ### Janestreet
 
 ```diff
- let x =
-   some_value
-   |> some_fun (fun x ->
--    do_something ();
--    do_something_else ();
--    return_this_value)
-+       do_something ();
-+       do_something_else ();
-+       return_this_value)
- ;;
-```
-
-```diff
    foo
    |> List.double_map
         ~f1:(fun x ->

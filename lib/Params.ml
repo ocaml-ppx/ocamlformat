@@ -36,17 +36,14 @@ let ctx_is_infix = function
 let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
+      let last_lbl, last_arg = List.last_exn args in
+      if phys_equal last_arg exp then
+        Some (last_lbl, exp, true)
+      else
       List.find_map
-        ~f:(fun (lbl, x) -> if phys_equal x exp then Some lbl else None)
+        ~f:(fun (lbl, x) -> if phys_equal x exp then Some (lbl, exp, false) else None)
         args
   | _ -> None
-
-let ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 =
-  match (ctx, ctx0) with
-  | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
-      let _, last_arg = List.last_exn args in
-      Poly.equal last_arg exp
-  | _ -> false
 
 let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
   match (ctx, ctx0) with
@@ -167,10 +164,9 @@ module Exp = struct
           Source.begins_line ~ignore_spaces:true source loc
         in
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some Nolabel ->
-            if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 5 else 3
-        | Some (Labelled x | Optional x) ->
-            (* if ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 then 2 else *)
+        | Some (Nolabel, fun_exp, is_last_arg) ->
+            if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3 else 2
+        | Some ((Labelled x | Optional x), _, _) ->
             if begins_line x.loc then 4 else 2
         | None -> if parens then 3 else 2
       else if
@@ -206,7 +202,9 @@ module Exp = struct
     | _ -> break 1 (if last_arg && has_label then 0 else -2)
 
   let single_line_function ~ctx ~ctx0 ~args =
-    ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 && List.is_empty args
+    match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+    | Some (_, _, true) -> List.is_empty args
+    | _ -> false
 end
 
 module Mod = struct

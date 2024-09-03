@@ -9886,17 +9886,17 @@ let x =
 let x =
   some_value
   |> some_fun (fun x ->
-       do_something ();
-       do_something_else ();
-       return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
 ;;
 
 let x =
   some_value
   ^ some_fun (fun x ->
-       do_something ();
-       do_something_else ();
-       return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
 ;;
 
 let bind t ~f =
@@ -10423,9 +10423,9 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (fun foo ->
-       match bar with
-       | Some _ -> foo
-       | None -> baz)
+    match bar with
+    | Some _ -> foo
+    | None -> baz)
 ;;
 
 let _ =
