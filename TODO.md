@@ -32,19 +32,6 @@
 ### Janestreet
 
 ```diff
-   Sum
-     ( (function
--        | `A n -> "A", Some (Tdyn (Int, n))
--        | `B s -> "B", Some (Tdyn (String, s))
--        | `C -> "C", None)
-+       | `A n -> "A", Some (Tdyn (Int, n))
-+       | `B s -> "B", Some (Tdyn (String, s))
-+       | `C -> "C", None)
-     , function
-```
-
-
-```diff
  let x =
    some_value
    |> some_fun (fun x ->

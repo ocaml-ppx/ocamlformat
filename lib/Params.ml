@@ -809,7 +809,7 @@ module Indent = struct
         | Some _ -> default + 2 + if ocp c then 0 else extra
         | None ->
             if parens && not has_label then
-              if ocp c then default + 1 else default
+              if ocp c then default + 2 else default
             else if ocp c then default
             else default + extra
 
