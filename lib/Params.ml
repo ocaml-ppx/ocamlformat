@@ -204,6 +204,9 @@ module Exp = struct
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
     | _ -> break 1 (if last_arg && has_label then 0 else -2)
+
+  let single_line_function ~ctx ~ctx0 ~args =
+    ctx_is_apply_and_exp_is_last_arg ~ctx ctx0 && List.is_empty args
 end
 
 module Mod = struct
@@ -719,7 +722,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_keyword_and_expr=
           (fun k ->
             hvbox 2
-              (fmt_or (Option.is_some xcond) (str "then") (str "else") $ k) )
+              (fmt_or (Option.is_some xcond) (str "then") (str "else") $ k)
+            )
       ; branch_pro= fmt_or (beginend || parens_bch) (str " ") space_break
       ; wrap_parens=
           wrap_parens

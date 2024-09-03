@@ -4904,10 +4904,7 @@ type t = F(M).t
 module Common0 = struct
   type msg = Msg
 
-  let handle_msg =
-    ref (function
-      | _ -> failwith "Unable to handle message")
-  ;;
+  let handle_msg = ref (function _ -> failwith "Unable to handle message")
 
   let extend_handle f =
     let old = !handle_msg in
@@ -4924,10 +4921,7 @@ let q' : Common0.msg Queue.t = Common0.q
 module Common = struct
   type msg = ..
 
-  let handle_msg =
-    ref (function
-      | _ -> failwith "Unable to handle message")
-  ;;
+  let handle_msg = ref (function _ -> failwith "Unable to handle message")
 
   let extend_handle f =
     let old = !handle_msg in
@@ -9807,7 +9801,7 @@ let _ =
     when f
            ~f:
              (function [@ocaml.warning (* ....................................... *) "-4"]
-           | _ -> .) -> y
+             | _ -> .) -> y
 ;;
 
 let[@a
@@ -9836,8 +9830,7 @@ let[@a
                         (* ....................................... *)
                         let x = a
                         and y = b in
-                        x + y]
-             | _ -> .) ->
+                        x + y] _ -> .) ->
     y
     [@attr
       (* ... *)
@@ -10055,11 +10048,7 @@ let _ =
        fooooooooooo
 ;;
 
-let _ =
-  foo
-  |> List.map (function
-    | A -> do_something ())
-;;
+let _ = foo |> List.map (function A -> do_something ())
 
 let _ =
   foo
@@ -10461,8 +10450,7 @@ let _ =
 
 let _ =
   fooooooooooooooooooooooooooooooo
-  |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-    | foo -> bar)
+  |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function foo -> bar)
 ;;
 
 let _ =

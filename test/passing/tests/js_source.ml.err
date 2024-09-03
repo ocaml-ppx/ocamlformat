@@ -1,7 +1,7 @@
 Warning: tests/js_source.ml:161 exceeds the margin
 Warning: tests/js_source.ml:2670 exceeds the margin
-Warning: tests/js_source.ml:9567 exceeds the margin
-Warning: tests/js_source.ml:9671 exceeds the margin
-Warning: tests/js_source.ml:9730 exceeds the margin
-Warning: tests/js_source.ml:9813 exceeds the margin
-Warning: tests/js_source.ml:10320 exceeds the margin
+Warning: tests/js_source.ml:9561 exceeds the margin
+Warning: tests/js_source.ml:9665 exceeds the margin
+Warning: tests/js_source.ml:9724 exceeds the margin
+Warning: tests/js_source.ml:9807 exceeds the margin
+Warning: tests/js_source.ml:10309 exceeds the margin

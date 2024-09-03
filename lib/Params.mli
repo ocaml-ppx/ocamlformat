@@ -64,6 +64,8 @@ module Exp : sig
 
   val break_fun_decl_args :
     ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
+
+    val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
 end
 
 module Mod : sig
