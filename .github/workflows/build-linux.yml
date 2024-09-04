@@ -57,6 +57,7 @@ jobs:
           path: _build/install/default/bin/ocamlformat
 
   test-branch:
+    if: ${{ github.ref != 'refs/heads/main' }}
     needs: build-linux
     runs-on: ubuntu-latest
     strategy:
