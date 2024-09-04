@@ -3468,6 +3468,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to let_binding-deindent-fun.ml.stdout
+   (with-stderr-to let_binding-deindent-fun.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-let-binding-deindent-fun %{dep:tests/let_binding.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.ref let_binding-deindent-fun.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.err let_binding-deindent-fun.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to let_binding-in_indent.ml.stdout
    (with-stderr-to let_binding-in_indent.ml.stderr
      (run %{bin:ocamlformat} --margin-check --indent-after-in=4 %{dep:tests/let_binding.ml})))))

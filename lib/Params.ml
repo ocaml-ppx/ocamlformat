@@ -37,12 +37,12 @@ let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
       let last_lbl, last_arg = List.last_exn args in
-      if phys_equal last_arg exp then
-        Some (last_lbl, exp, true)
+      if phys_equal last_arg exp then Some (last_lbl, exp, true)
       else
-      List.find_map
-        ~f:(fun (lbl, x) -> if phys_equal x exp then Some (lbl, exp, false) else None)
-        args
+        List.find_map
+          ~f:(fun (lbl, x) ->
+            if phys_equal x exp then Some (lbl, exp, false) else None )
+          args
   | _ -> None
 
 let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
@@ -63,7 +63,9 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
 (** [ctx_is_let_or_fun ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx] or a [fun] with [ctx] on the RHS. *)
 let ctx_is_let_or_fun ~ctx = function
-  | Lb _ | Str _ | Bo _ -> true
+  | Str {pstr_desc= Pstr_value _; _} -> true
+  | Str _ -> false
+  | Lb _ | Bo _ -> true
   | Exp {pexp_desc= Pexp_let (_, rhs, _); _} -> (
     match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
   | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} -> (
@@ -165,7 +167,8 @@ module Exp = struct
         in
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
         | Some (Nolabel, fun_exp, is_last_arg) ->
-            if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3 else 2
+            if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3
+            else 2
         | Some ((Labelled x | Optional x), _, _) ->
             if begins_line x.loc then 4 else 2
         | None -> if parens then 3 else 2
@@ -720,8 +723,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       ; box_keyword_and_expr=
           (fun k ->
             hvbox 2
-              (fmt_or (Option.is_some xcond) (str "then") (str "else") $ k)
-            )
+              (fmt_or (Option.is_some xcond) (str "then") (str "else") $ k) )
       ; branch_pro= fmt_or (beginend || parens_bch) (str " ") space_break
       ; wrap_parens=
           wrap_parens

@@ -1547,13 +1547,13 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
           match cs with
           | [{pc_lhs; pc_guard= _; pc_rhs}]
             when Params.Exp.single_line_function ~ctx ~ctx0 ~args ->
-              hovbox 4 ,
-              hvbox 0
-                ( fmt_pattern c ~pro:(if_newline "| ") (sub_pat ~ctx pc_lhs)
-                $ space_break $ str "->" )
-              $ space_break
-              $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-          | _ -> box, fmt_cases c ctx cs
+              ( hovbox 4
+              , hvbox 0
+                  ( fmt_pattern c ~pro:(if_newline "| ") (sub_pat ~ctx pc_lhs)
+                  $ space_break $ str "->" )
+                $ space_break
+                $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs)) )
+          | _ -> (box, fmt_cases c ctx cs)
         in
         (fun_ $ function_, box_cases cases, box, 0)
   in
