@@ -61,18 +61,6 @@
 ```
 
 ```diff
-   match () with
-   | _ ->
-     (fun _ : _ ->
--      match () with
--      | _ -> ())
-+       (match () with
-+        | _ -> ()))
-   | _ -> ()
- ;;
-```
-
-```diff
  let _ =
    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
      ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:

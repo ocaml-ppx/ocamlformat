@@ -45,6 +45,11 @@ let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
           args
   | _ -> None
 
+let ctx_is_apply_and_exp_is_func ~ctx ctx0 =
+  match (ctx, ctx0) with
+  | Exp exp, Exp {pexp_desc= Pexp_apply (func, _); _} -> phys_equal func exp
+  | _ -> false
+
 let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
@@ -154,7 +159,7 @@ module Exp = struct
     kw_out_of_box
     $ box_decl (kw_in_box $ hvbox_if should_box_args 0 args $ fmt_opt annot)
 
-  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens ~has_label:_ =
+  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ =
     let indent =
       if ctx_is_infix ctx0 then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
@@ -171,7 +176,7 @@ module Exp = struct
             else 2
         | Some ((Labelled x | Optional x), _, _) ->
             if begins_line x.loc then 4 else 2
-        | None -> if parens then 3 else 2
+        | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
       else if
         ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
           ctx0
