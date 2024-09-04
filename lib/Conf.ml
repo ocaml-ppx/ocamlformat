@@ -1285,12 +1285,11 @@ module Formatting = struct
 
   let wrap_comments =
     let doc =
-      "Wrap comments and docstrings. Comments and docstrings are divided \
-       into paragraphs by open lines (two or more consecutive newlines), \
-       and each paragraph is wrapped at the margin. Multi-line comments \
-       with vertically-aligned asterisks on the left margin are not \
-       wrapped. Consecutive comments with both left and right margin \
-       aligned are not wrapped either."
+      "Comments are divided into paragraphs by open lines (two or more \
+       consecutive newlines), and each paragraph is wrapped at the margin. \
+       Multi-line comments with vertically-aligned asterisks on the left \
+       margin are not wrapped. Consecutive comments with both left and \
+       right margin aligned are not wrapped either."
     in
     Decl.flag ~default ~names:["wrap-comments"] ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with wrap_comments= elt}))
