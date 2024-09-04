@@ -98,7 +98,7 @@ jobs:
           path: ocamlformat-a
 
       - name: Fetch new build of ocamlformat
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-b
