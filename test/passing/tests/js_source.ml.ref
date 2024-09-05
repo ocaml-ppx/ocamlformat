@@ -10065,17 +10065,17 @@ let _ =
   foo
   |> List.double_map
        ~f1:(fun x ->
-           do_something ();
-           do_something ();
-           do_something ();
-           do_something ();
-           do_something_else ())
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something_else ())
        ~f2:(fun x ->
-           do_something ();
-           do_something ();
-           do_something ();
-           do_something ();
-           do_something_else ())
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something ();
+         do_something_else ())
   |> bar
 ;;
 

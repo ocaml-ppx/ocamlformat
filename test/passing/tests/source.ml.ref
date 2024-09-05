@@ -1392,8 +1392,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> ("Nil", None)
-         | `Cons p -> ("Cons", Some (Tdyn (targ, p))) )
+         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p))) )
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
@@ -1445,9 +1444,7 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
               (int -> string -> noarg -> unit, c) ty_sel * c
            -> [`A of int | `B of string | `C] =
          function
-         | Thd, v -> `A v
-         | Ttl Thd, v -> `B v
-         | Ttl (Ttl Thd), Noarg -> `C
+         | Thd, v -> `A v | Ttl Thd, v -> `B v | Ttl (Ttl Thd), Noarg -> `C
     end )
 
 type 'a vlist = [`Nil | `Cons of 'a * 'a vlist]
@@ -3791,8 +3788,7 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x
-      | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -3997,8 +3993,7 @@ let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x
-      | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x

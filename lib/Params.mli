@@ -57,6 +57,9 @@ module Exp : sig
     -> (Fmt.t -> Fmt.t) * int
   (** return a box with an indent and minus the value of the indent to be used for a closing parenthesis *)
 
+  val box_function_cases :
+    Conf.t -> ctx:Ast.t -> ctx0:Ast.t -> Fmt.t -> Fmt.t
+
   val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)

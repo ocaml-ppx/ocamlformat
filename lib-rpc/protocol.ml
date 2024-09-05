@@ -49,8 +49,7 @@ module Make (IO : IO.S) = struct
     let to_sexp =
       let open Csexp in
       function
-      | `Version v -> List [Atom "Version"; Atom v]
-      | _ -> assert false
+      | `Version v -> List [Atom "Version"; Atom v] | _ -> assert false
 
     let output oc t = IO.write oc [to_sexp t]
   end
@@ -110,8 +109,7 @@ module Make (IO : IO.S) = struct
       let csexp_to_config csexpl =
         List.filter_map
           (function
-            | List [Atom name; Atom value] -> Some (name, value)
-            | _ -> None )
+            | List [Atom name; Atom value] -> Some (name, value) | _ -> None )
           csexpl
       in
       read ic

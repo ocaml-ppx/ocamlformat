@@ -1455,6 +1455,13 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     ~wrap_intro ?box:(should_box = true) ~label ?(parens = false) ?ext ~attrs
     ~loc c (args, typ, body) =
+  let should_box =
+    should_box
+    ||
+    match (args, typ, body) with
+    | _ :: _, _, Pfunction_cases _ -> true
+    | _ -> false
+  in
   let has_label = match label with Nolabel -> false | _ -> true in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
@@ -1536,13 +1543,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
         in
-        let box_cases =
-          match ctx0 with
-          | Exp {pexp_desc= Pexp_ifthenelse _; _}
-            when Stdlib.(c.conf.fmt_opts.if_then_else.v = `Compact) ->
-              hvbox ~name:"cases box" 0
-          | _ -> Fn.id
-        in
+        let box_cases = Params.Exp.box_function_cases c.conf ~ctx ~ctx0 in
         let box, cases =
           match cs with
           | [{pc_lhs; pc_guard= _; pc_rhs}]
@@ -1625,7 +1626,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
         $ cmts_after )
   | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
       let wrap_intro x = hovbox 2 x $ space_break in
-      fmt_function ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl
+      fmt_function ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl
         ~parens:true ~attrs:arg.pexp_attributes ~loc:arg.pexp_loc c
         (args, typ, body)
   | _ ->
@@ -1644,6 +1645,9 @@ and expression_width c xe =
 and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   let fmt_arg c ~first:_ ~last (lbl, arg) =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
+    let box =
+      match ast.pexp_desc with Pexp_function _ -> Some false | _ -> None
+    in
     let break_after =
       match (ast.pexp_desc, c.conf.fmt_opts.break_string_literals.v) with
       | Pexp_constant _, `Auto when not last ->
@@ -1652,7 +1656,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     in
     hovbox
       (Params.Indent.fun_args_group c.conf ~lbl ast)
-      (fmt_label_arg c (lbl, xarg) $ break_after)
+      (fmt_label_arg c ?box (lbl, xarg) $ break_after)
     $ fmt_if (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =

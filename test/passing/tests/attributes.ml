@@ -413,8 +413,7 @@ let[@a
                          (* ....................................... *)
                          (* ....................................... *)
                          "foooooooooooooooooooooooooooo \
-                          fooooooooooooooooooooooooooooooooooooo"]
-             | _ -> . )
+                          fooooooooooooooooooooooooooooooooooooo"] _ -> . )
            ~f:(function[@ocaml.warning
                          (* ....................................... *)
                          let x = a and y = b in

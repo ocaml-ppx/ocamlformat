@@ -213,6 +213,19 @@ module Exp = struct
     match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
     | Some (_, _, true) -> List.is_empty args
     | _ -> false
+
+  let box_function_cases c ~ctx ~ctx0 =
+    match ctx0 with
+    | Exp {pexp_desc= Pexp_ifthenelse _; _}
+      when Stdlib.(Conf.(c.fmt_opts.if_then_else.v) = `Compact) ->
+        hvbox ~name:"cases box" 0
+    | _ ->
+        if
+          ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
+            ctx0
+          || ctx_is_let_or_fun ~ctx ctx0
+        then Fn.id
+        else hvbox 0
 end
 
 module Mod = struct
@@ -829,7 +842,7 @@ module Indent = struct
     if not (ocp c) then 2
     else
       match exp.pexp_desc with
-      | Pexp_function _ -> 2
+      | Pexp_function ([], None, Pfunction_cases _) -> 2
       | _ -> ( match lbl with Nolabel -> 3 | _ -> 2 )
 
   let record_docstring (c : Conf.t) =
