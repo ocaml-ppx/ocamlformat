@@ -20,6 +20,21 @@
    foo
 ```
 
+```diff
+let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
+ fun t ->
+  let targ = Pair (Pop t, Var) in
+  Rec
+    (Sum
+       ( (function
+         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
+         )
+       , function
+         | "Nil", None -> `Nil
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
+       ) )
+```
+
 ### Janestreet
 
 ```diff
