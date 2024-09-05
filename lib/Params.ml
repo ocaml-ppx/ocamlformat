@@ -178,8 +178,14 @@ module Exp = struct
         | Some (Nolabel, fun_exp, is_last_arg) ->
             if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3
             else 2
-        | Some ((Labelled x | Optional x), _, _) ->
-            if begins_line x.loc then 4 else 2
+        | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
+            if begins_line fun_exp.pexp_loc then
+              (* The [fun] had to break after the label, nested boxes must be
+                 indented less. The last argument is special as the box
+                 structure is different. *)
+              if is_last_arg then 4 else 2
+            else if begins_line x.loc then 4
+            else 2
         | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
       else if
         ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
