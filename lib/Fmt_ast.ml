@@ -4518,10 +4518,10 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
   let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in
   let indent, intro_as_pro =
     match lb_exp.ast.pexp_desc with
-    | Pexp_function (_, _, Pfunction_cases _) ->
+    | Pexp_function ([], None, Pfunction_cases _) ->
         (c.conf.fmt_opts.function_indent.v, true)
-    | Pexp_function (_, _, Pfunction_body _)
-      when c.conf.fmt_opts.let_binding_deindent_fun.v ->
+    | Pexp_function (_, _, _) when c.conf.fmt_opts.let_binding_deindent_fun.v
+      ->
         (max (c.conf.fmt_opts.let_binding_indent.v - 1) 0, false)
     | _ -> (c.conf.fmt_opts.let_binding_indent.v, false)
   in

@@ -20,15 +20,6 @@
    foo
 ```
 
-```diff
--let rec assoc : type a. string -> a rep -> assoc list -> a =
--  fun x r -> function
-+let rec assoc : type a. string -> a rep -> assoc list -> a = fun x r -> function
-   | [] -> raise Not_found
-   | Assoc (x', r', v) :: env ->
-     if x = x'
-```
-
 ### Janestreet
 
 ```diff

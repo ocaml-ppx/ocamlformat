@@ -236,6 +236,7 @@ module Exp = struct
           || ctx_is_let_or_fun ~ctx ctx0
         then Fn.id
         else hvbox 0
+
   let box_fun_decl c k = if ocp c then hvbox 2 k else hvbox 2 k
 end
 
@@ -846,8 +847,14 @@ module Indent = struct
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function_after_fun (_c : Conf.t) ~ctx0 ~parens:_ ~has_label:_ =
-    if ctx_is_infix ctx0 then 0 else 2
+  let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens:_ ~has_label:_ =
+    match ctx0 with
+    | Str _ ->
+        (* Cases must be 2-indented relative to the [let], even when
+           [let_binding_deindent_fun] is on. *)
+        if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
+    | _ when ctx_is_infix ctx0 -> 0
+    | _ -> 2
 
   let fun_args_group (c : Conf.t) ~lbl exp =
     if not (ocp c) then 2
