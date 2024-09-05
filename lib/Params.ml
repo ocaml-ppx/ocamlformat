@@ -136,7 +136,8 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let box_fun_decl_args ~ctx ?(kw_in_box = true) c ~parens ~kw ~args ~annot =
+  let box_fun_decl_args ~ctx ?(kw_in_box = true) ?epi c ~parens ~kw ~args
+      ~annot =
     let is_let_func =
       match ctx with
       | Ast.Str _ ->
@@ -157,7 +158,10 @@ module Exp = struct
       if kw_in_box then (noop, kw) else (kw, noop)
     in
     kw_out_of_box
-    $ box_decl (kw_in_box $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+    $ box_decl
+        ( kw_in_box
+        $ hvbox_if should_box_args 0 args
+        $ fmt_opt annot $ fmt_opt epi )
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ =
     let indent =
@@ -213,6 +217,8 @@ module Exp = struct
     match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
     | Some (_, _, true) -> List.is_empty args
     | _ -> false
+
+  let box_fun_decl c k = if ocp c then hvbox 2 k else hvbox 2 k
 end
 
 module Mod = struct
