@@ -5042,6 +5042,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to source-conventional.ml.stdout
+   (with-stderr-to source-conventional.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=default --max-iters=3 %{dep:tests/source.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.ref source-conventional.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.err source-conventional.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to source.ml.stdout
    (with-stderr-to source.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/source.ml})))))
