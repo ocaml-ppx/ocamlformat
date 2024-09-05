@@ -1481,6 +1481,14 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     else (str ":", if has_label then break 1 2 else break 1 0)
   in
   let fmt_typ typ = fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ in
+  let arrow_in_head, arrow_in_body =
+    let arrow =
+      Params.Exp.break_fun_decl_args ~ctx:ctx0 ~last_arg ~has_label
+      $ str "->"
+    in
+    if c.conf.fmt_opts.ocp_indent_compat.v then (noop, arrow)
+    else (arrow, noop)
+  in
   let fmt_fun_args_typ args typ =
     let kw =
       str "fun"
@@ -1490,9 +1498,8 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ in
     Params.Exp.box_fun_decl_args ~kw_in_box:(not last_arg) ~ctx:ctx0 c.conf
-      ~parens ~kw ~args ~annot
-    $ Params.Exp.break_fun_decl_args ~ctx:ctx0 ~last_arg ~has_label
-    $ str "->"
+      ~parens ~kw ~args ~annot ~epi:arrow_in_body
+    $ arrow_in_head
   in
   let lead_with_function_kw =
     match (args, body) with [], Pfunction_cases _ -> true | _ -> false
@@ -1590,7 +1597,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
         ( wrap_intro
             (hvbox_if has_cmts_outer 0
                ( cmts_outer
-               $ hvbox 2
+               $ Params.Exp.box_fun_decl c.conf
                    (fmt_label label label_sep $ cmts_inner $ opn_paren $ head)
                ) )
         $ body $ cls_paren )

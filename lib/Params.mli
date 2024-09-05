@@ -39,6 +39,7 @@ module Exp : sig
   val box_fun_decl_args :
        ctx:Ast.t
     -> ?kw_in_box:bool
+    -> ?epi:Fmt.t
     -> Conf.t
     -> parens:bool
     -> kw:Fmt.t
@@ -68,6 +69,9 @@ module Exp : sig
     ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
 
   val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
+
+  val box_fun_decl : Conf.t -> Fmt.t -> Fmt.t
+  (** Box a function decl from the label to the arrow. *)
 end
 
 module Mod : sig

@@ -51,12 +51,13 @@ jobs:
         run: opam exec -- dune build @gen_manpage --auto-promote
 
       - name: Upload binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: _build/install/default/bin/ocamlformat
 
   test-branch:
+    if: ${{ github.ref != 'refs/heads/main' }}
     needs: build-linux
     runs-on: ubuntu-latest
     strategy:
@@ -98,7 +99,7 @@ jobs:
           path: ocamlformat-a
 
       - name: Fetch new build of ocamlformat
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-b

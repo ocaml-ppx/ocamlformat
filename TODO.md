@@ -59,15 +59,3 @@
    |> bar
  ;;
 ```
-
-```diff
- let _ =
-   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-     ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
--      (fun
--        (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee) -> FFFFFFFFF gg)
-+      (fun (_ : (ccccccccccccc * ddddddddddddddddddddddddddddd) eeee)
-+    -> FFFFFFFFF gg)
-     ~h
- ;;
-```

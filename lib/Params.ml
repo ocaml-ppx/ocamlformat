@@ -136,7 +136,8 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let box_fun_decl_args ~ctx ?(kw_in_box = true) c ~parens ~kw ~args ~annot =
+  let box_fun_decl_args ~ctx ?(kw_in_box = true) ?epi c ~parens ~kw ~args
+      ~annot =
     let is_let_func =
       match ctx with
       | Ast.Str _ ->
@@ -157,7 +158,10 @@ module Exp = struct
       if kw_in_box then (noop, kw) else (kw, noop)
     in
     kw_out_of_box
-    $ box_decl (kw_in_box $ hvbox_if should_box_args 0 args $ fmt_opt annot)
+    $ box_decl
+        ( kw_in_box
+        $ hvbox_if should_box_args 0 args
+        $ fmt_opt annot $ fmt_opt epi )
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ =
     let indent =
@@ -174,8 +178,14 @@ module Exp = struct
         | Some (Nolabel, fun_exp, is_last_arg) ->
             if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3
             else 2
-        | Some ((Labelled x | Optional x), _, _) ->
-            if begins_line x.loc then 4 else 2
+        | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
+            if begins_line fun_exp.pexp_loc then
+              (* The [fun] had to break after the label, nested boxes must be
+                 indented less. The last argument is special as the box
+                 structure is different. *)
+              if is_last_arg then 4 else 2
+            else if begins_line x.loc then 4
+            else 2
         | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
       else if
         ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
@@ -226,6 +236,7 @@ module Exp = struct
           || ctx_is_let_or_fun ~ctx ctx0
         then Fn.id
         else hvbox 0
+  let box_fun_decl c k = if ocp c then hvbox 2 k else hvbox 2 k
 end
 
 module Mod = struct
