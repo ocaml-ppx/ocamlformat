@@ -1477,13 +1477,13 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
        If a label is present, arguments should be indented more than the
        arrow and the eventually breaking [fun] keyword. *)
     if c.conf.fmt_opts.ocp_indent_compat.v then
-      (str ":" $ cut_break, break 1 2)
-    else (str ":", if has_label then break 1 2 else break 1 0)
+      (str ":" $ cut_break, if last_arg then break 1 2 else str " ")
+    else (str ":", if last_arg && has_label then break 1 2 else break 1 0)
   in
   let fmt_typ typ = fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ in
   let arrow_in_head, arrow_in_body =
     let arrow =
-      Params.Exp.break_fun_decl_args ~ctx:ctx0 ~last_arg ~has_label
+      Params.Exp.break_fun_decl_args c.conf ~ctx:ctx0 ~last_arg ~has_label
       $ str "->"
     in
     if c.conf.fmt_opts.ocp_indent_compat.v then (noop, arrow)
@@ -1494,7 +1494,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
       str "fun"
       $ fmt_extension_suffix c ext
       $ fmt_attributes c ~pre:Blank attrs
-      $ if last_arg then break_fun else break 1 0
+      $ break_fun
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ in
     Params.Exp.box_fun_decl_args ~kw_in_box:(not last_arg) ~ctx:ctx0 c.conf

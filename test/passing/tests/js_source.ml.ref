@@ -9928,7 +9928,7 @@ let () =
         very_long_argument_name_one
         very_long_argument_name_two
         very_long_argument_name_three
-        -> ())
+      -> ())
 ;;
 
 let () =
@@ -10228,14 +10228,12 @@ let _ =
 
 let _ =
   let x = x in
-  fun
+  fun foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
-    foooooooooooooooooo
-    foooooooooooooooooo
-  -> ()
+    foooooooooooooooooo -> ()
 ;;
 
 module type For_let_syntax_local =
@@ -10289,11 +10287,9 @@ module M =
 
 let _ =
   Some
-    (fun
+    (fun fooooooooooooooooooooooooooooooo
       fooooooooooooooooooooooooooooooo
-      fooooooooooooooooooooooooooooooo
-      fooooooooooooooooooooooooooooooo
-    -> foo)
+      fooooooooooooooooooooooooooooooo -> foo)
 ;;
 
 type t =

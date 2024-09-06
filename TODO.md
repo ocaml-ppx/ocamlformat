@@ -40,7 +40,7 @@ let eval
 ;;
 ```
 
-```
+```ocaml
 let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
   = function
   | Local -> fun _ -> raise Exit
@@ -48,7 +48,7 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 ;;
 ```
 
-```
+```ocaml
 let () =
   very_long_function_name
     ~very_long_argument_label:
@@ -60,7 +60,7 @@ let () =
 ;;
 ```
 
-```
+```ocaml
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
@@ -70,7 +70,7 @@ let _ =
 ;;
 ```
 
-```
+```ocaml
 let _ =
   let x = x in
   fun foooooooooooooooooo
@@ -83,17 +83,7 @@ let _ =
 ;;
 ```
 
-```
-let _ =
-  Some
-    (fun fooooooooooooooooooooooooooooooo
-      fooooooooooooooooooooooooooooooo
-      fooooooooooooooooooooooooooooooo ->
-      foo)
-;;
-```
-
-```
+```ocaml
 let () =
   match () with
   | _ ->
