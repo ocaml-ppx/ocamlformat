@@ -214,12 +214,11 @@ module Exp = struct
 
   let break_fun_decl_args c ~ctx ~last_arg ~has_label =
     match ctx with
-    | _ when not last_arg && ocp c -> str " "
+    | _ when (not last_arg) && ocp c -> str " "
     | Ast.Str _ ->
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
-    | _ ->
-      break 1 (if last_arg && has_label && not (ocp c) then 0 else -2)
+    | _ -> break 1 (if last_arg && has_label && not (ocp c) then 0 else -2)
 
   let single_line_function ~ctx ~ctx0 ~args =
     match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with

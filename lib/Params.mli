@@ -66,7 +66,7 @@ module Exp : sig
       attributes. *)
 
   val break_fun_decl_args :
-  Conf.t -> ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
+    Conf.t -> ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
 
   val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
 
