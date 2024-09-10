@@ -37,32 +37,6 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 
 ### Janestreet
 
-```diff
-let eval
-      (type a)
-      (type b)
-      (type c)
-      (bop : (a, b, c) binop)
-      (x : a constant)
-      (y : b constant)
-  : c constant
-  =
-  match bop, x, y with
-  | Eq, Bool x, Bool y -> Bool (if x then y else not y)
-  | Leq, Int x, Int y -> Bool (x <= y)
-  | Leq, Bool x, Bool y -> Bool (x <= y)
-  | Add, Int x, Int y -> Int (x + y)
-;;
-```
-
-```ocaml
-let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
-  = function
-  | Local -> fun _ -> raise Exit
-  | Global -> fun _ -> raise Exit
-;;
-```
-
 ```ocaml
 let () =
   very_long_function_name

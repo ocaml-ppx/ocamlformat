@@ -4569,12 +4569,15 @@ and fmt_value_binding c ~rec_flag ?in_ ?epi
     if lb_pun then decl
     else
       let pro =
-        hovbox 2
-          ( decl
-          $ fmt_or c.conf.fmt_opts.ocp_indent_compat.v
-              (fits_breaks " =" ~hint:(1000, 0) "=")
-              (break 1 2 $ str "=") )
-        $ space_break
+        if c.conf.fmt_opts.ocp_indent_compat.v then
+          let box =
+            match lb_exp.ast.pexp_desc with
+            | Pexp_function ([], None, Pfunction_cases _) -> false
+            | _ -> true
+          in
+          hvbox_if box 2 (decl $ fits_breaks " =" ~hint:(1000, 0) "=")
+          $ space_break
+        else hovbox 2 (decl $ break 1 2 $ str "=") $ space_break
       in
       if intro_as_pro then fmt_expression c ~pro ~box:false lb_exp
       else pro $ fmt_expression c lb_exp
