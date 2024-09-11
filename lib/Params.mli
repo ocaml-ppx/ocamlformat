@@ -55,6 +55,7 @@ module Exp : sig
     -> ctx0:Ast.t
     -> ctx:Ast.t
     -> has_label:bool
+    -> parens:bool
     -> (Fmt.t -> Fmt.t) * int
   (** return a box with an indent and minus the value of the indent to be used for a closing parenthesis *)
 

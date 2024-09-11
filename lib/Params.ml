@@ -163,7 +163,7 @@ module Exp = struct
         $ hvbox_if should_box_args 0 args
         $ fmt_opt annot $ fmt_opt epi )
 
-  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ =
+  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ ~parens =
     let indent =
       if ctx_is_infix ctx0 then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
@@ -194,7 +194,14 @@ module Exp = struct
       else 2
     in
     let name = "Params.box_fun_expr" in
-    let mkbox = match ctx0 with Str _ -> hvbox | _ -> hovbox in
+    let mkbox =
+      match ctx0 with
+      | Str _ -> hvbox
+      | _ ->
+          (* JS: The body of a [fun] must break if the intro is too large,
+             except if the [fun] is small and parenthesed. *)
+          if ocp c && not parens then hvbox else hovbox
+    in
     (mkbox ~name indent, ~-indent)
 
   (* if the function is the last argument of an apply and no other arguments
