@@ -38,6 +38,7 @@ module Exp : sig
 
   val box_fun_decl_args :
        ctx:Ast.t
+       -> ctx0:Ast.t 
     -> ?kw_in_box:bool
     -> ?epi:Fmt.t
     -> Conf.t
@@ -49,6 +50,12 @@ module Exp : sig
   (** Box and assemble the parts [kw] (up to the arguments), [args] and
       [annot]. *)
 
+  val break_fun_kw : Conf_t.t ->
+    ctx:Ast.t ->
+  ctx0: Ast.t ->
+        last_arg:bool ->
+        has_label:bool ->
+        Fmt.t
   val box_fun_expr :
        Conf.t
     -> source:Source.t
