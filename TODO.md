@@ -38,18 +38,6 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 ### Janestreet
 
 ```ocaml
-let () =
-  very_long_function_name
-    ~very_long_argument_label:
-      (fun
-        very_long_argument_name_one
-        very_long_argument_name_two
-        very_long_argument_name_three
-      -> ())
-;;
-```
-
-```ocaml
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     ~bbbbbbbbbbbbbbbbbbbbbbbbbbbb:
