@@ -136,19 +136,19 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label =
-  let is_labelled_arg =
-    match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-    | Some (( (Labelled _) | (Optional _) ), _, _ ) ->
-        true
-    | _ -> false
-  in
-  if Conf.(c.fmt_opts.ocp_indent_compat.v) then
-    ( if last_arg || is_labelled_arg then break 1 2 else str " ")
-  else ( if last_arg && has_label then break 1 2 else break 1 0)
+  let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label =
+    let is_labelled_arg =
+      match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+      | Some ((Labelled _ | Optional _), _, _) -> true
+      | _ -> false
+    in
+    if Conf.(c.fmt_opts.ocp_indent_compat.v) then
+      if last_arg || is_labelled_arg then break 1 2 else str " "
+    else if last_arg && has_label then break 1 2
+    else break 1 0
 
-  let box_fun_decl_args ~ctx ~ctx0 ?(kw_in_box = true) ?epi c ~parens ~kw ~args
-      ~annot =
+  let box_fun_decl_args ~ctx ~ctx0 ?(kw_in_box = true) ?epi c ~parens ~kw
+      ~args ~annot =
     let is_let_func =
       match ctx0 with
       | Ast.Str _ ->
@@ -158,14 +158,14 @@ let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label =
     in
     let is_labelled_arg =
       match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-      | Some (( (Labelled _) | (Optional _) ), _, _ ) ->
-          true
+      | Some ((Labelled _ | Optional _), _, _) -> true
       | _ -> false
     in
     let name = "Params.box_fun_decl_args" in
     let box_decl, should_box_args =
-      if ocp c then (
-        if is_labelled_arg then Fn.id, false else hvbox ~name (if parens then 1 else 2), false)
+      if ocp c then
+        if is_labelled_arg then (Fn.id, false)
+        else (hvbox ~name (if parens then 1 else 2), false)
       else
         ( ( if is_let_func then hovbox ~name 4
             else hvbox ~name (if parens then 1 else 2) )

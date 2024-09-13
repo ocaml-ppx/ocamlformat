@@ -407,10 +407,10 @@ let virtual_or_override = function
   | Cfk_concrete (Fresh, _, _) -> noop
 
 (** Format the [:] before a type constraint. *)
-let fmt_constraint_sep c sep =
+let fmt_constraint_sep ?(pro_space = true) c sep =
   match c.conf.fmt_opts.break_colon.v with
-  | `Before -> space_break $ str sep $ char ' '
-  | `After -> char ' ' $ str sep $ space_break
+  | `Before -> fmt_if pro_space space_break $ str sep $ str " "
+  | `After -> fmt_if pro_space (str " ") $ str sep $ space_break
 
 let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
   assert (not (String.is_empty input)) ;
@@ -764,9 +764,18 @@ and fmt_type_cstr c ?(pro = ":") ?constraint_ctx xtyp =
         in
         let wrap x = pre_break $ cbox 0 (outer_pro $ x) in
         (wrap, None, false)
-    | _ -> ((fun k -> break 0 ~-1 $ k), Some pro, true)
+    | _ ->
+        ( (fun k ->
+            fmt_or colon_before
+              (fits_breaks " " ~hint:(1000, 0) "")
+              (break 0 (-1))
+            $ cbox_if colon_before 0 k )
+        , Some pro
+        , true )
   in
-  wrap (fmt_core_type c ?pro:inner_pro ?constraint_ctx ~box xtyp)
+  wrap
+    (fmt_core_type c ?pro:inner_pro ~pro_space:(not colon_before)
+       ?constraint_ctx ~box xtyp )
 
 and fmt_type_pcstr c ~ctx ?constraint_ctx cstr =
   let fmt_typ ~pro t =
@@ -821,14 +830,16 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
-and fmt_core_type c ?(box = true) ?pro ?constraint_ctx
+and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
     ({ast= typ; ctx} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
-  (match pro with Some pro -> fmt_constraint_sep c pro | None -> noop)
+  ( match pro with
+  | Some pro -> fmt_constraint_sep ~pro_space c pro
+  | None -> noop )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c ptyp_loc
@@ -1472,14 +1483,15 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     let cmts = Cmts.fmt_before ?eol c loc in
     if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
   in
-  let break_fun = Params.Exp.break_fun_kw c.conf ~ctx ~ctx0 ~last_arg ~has_label in
+  let break_fun =
+    Params.Exp.break_fun_kw c.conf ~ctx ~ctx0 ~last_arg ~has_label
+  in
   let (label_sep : t) =
     (* Break between the label and the fun to avoid ocp-indent's alignment.
        If a label is present, arguments should be indented more than the
        arrow and the eventually breaking [fun] keyword. *)
-    if c.conf.fmt_opts.ocp_indent_compat.v then
-      (str ":" $ cut_break)
-    else (str ":")
+    if c.conf.fmt_opts.ocp_indent_compat.v then str ":" $ cut_break
+    else str ":"
   in
   let fmt_typ typ = fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ in
   let arrow_in_head, arrow_in_body =
