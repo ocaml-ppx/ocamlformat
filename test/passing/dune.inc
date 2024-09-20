@@ -2753,7 +2753,7 @@
  (action
   (with-stdout-to issue289.ml.stdout
    (with-stderr-to issue289.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/issue289.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/issue289.ml})))))
 
 (rule
  (alias runtest)
