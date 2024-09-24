@@ -11,6 +11,7 @@ profile. This started with version 0.26.0.
 - Support OCaml 5.2 syntax (#2519, @Julow)
   This includes:
   + Local open in types.
+- Allow a custom command to be used to run ocamlformat in the emacs plugin (#2577, @gridbugs)
 
 ### Changed
 
