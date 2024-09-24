@@ -136,7 +136,7 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label =
+  let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label:_ =
     let is_labelled_arg =
       match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
       | Some ((Labelled _ | Optional _), _, _) -> true
@@ -144,10 +144,10 @@ module Exp = struct
     in
     if Conf.(c.fmt_opts.ocp_indent_compat.v) then
       if last_arg || is_labelled_arg then break 1 2 else str " "
-    else if last_arg && has_label then break 1 2
+    else if is_labelled_arg then break 1 2
     else break 1 0
 
-  let box_fun_decl_args ~ctx ~ctx0 ?(kw_in_box = true) ?epi c ~parens ~kw
+  let box_fun_decl_args ~ctx ~ctx0 ?(last_arg = false) ?epi c ~parens ~kw
       ~args ~annot =
     let is_let_func =
       match ctx0 with
@@ -156,30 +156,36 @@ module Exp = struct
           true
       | _ -> false
     in
-    let is_labelled_arg =
-      match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-      | Some ((Labelled _ | Optional _), _, _) -> true
-      | _ -> false
-    in
+    let kw_in_box = (not last_arg) && ocp c in
     let name = "Params.box_fun_decl_args" in
     let box_decl, should_box_args =
       if ocp c then
+        let is_labelled_arg =
+          match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+          | Some ((Labelled _ | Optional _), _, _) -> true
+          | _ -> false
+        in
         if is_labelled_arg then (Fn.id, false)
         else (hvbox ~name (if parens then 1 else 2), false)
       else
-        ( ( if is_let_func then hovbox ~name 4
-            else hvbox ~name (if parens then 1 else 2) )
-        , not c.fmt_opts.wrap_fun_args.v )
+        (* The box for the arguments after [let _ = fun] is different than
+           for other [fun] expressions. *)
+        let box =
+          if is_let_func then if kw_in_box then hovbox ~name 4 else Fn.id
+          else
+            match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+            | Some _ -> hvbox ~name (if parens then 0 else 2)
+            | None -> Fn.id
+        in
+        (box, not c.fmt_opts.wrap_fun_args.v)
     in
-    let box_decl = if not kw_in_box then hvbox ~name 0 else box_decl in
     let kw_out_of_box, kw_in_box =
       if kw_in_box then (noop, kw) else (kw, noop)
     in
     kw_out_of_box
     $ box_decl
         ( kw_in_box
-        $ hvbox_if should_box_args 0 args
-        $ fmt_opt annot $ fmt_opt epi )
+        $ hvbox_if should_box_args 0 (args $ fmt_opt annot $ fmt_opt epi) )
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ ~parens =
     let indent =
@@ -237,13 +243,13 @@ module Exp = struct
           && List.for_all ~f:arg_is_simple_approx other_args )
     | _ -> false
 
-  let break_fun_decl_args c ~ctx ~last_arg ~has_label =
+  let break_fun_decl_args c ~ctx ~last_arg ~has_label:_ =
     match ctx with
     | _ when (not last_arg) && ocp c -> str " "
     | Ast.Str _ ->
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
-    | _ -> break 1 (if last_arg && has_label && not (ocp c) then 0 else -2)
+    | _ -> break 1 ~-2
 
   let single_line_function ~ctx ~ctx0 ~args =
     match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
@@ -263,7 +269,11 @@ module Exp = struct
         then Fn.id
         else hvbox 0
 
-  let box_fun_decl c k = if ocp c then hvbox 2 k else hvbox 2 k
+  let box_fun_decl ~ctx0 c k =
+    match ctx0 with
+    | _ when ocp c -> hvbox 2 k
+    | Str _ -> hovbox 4 k
+    | _ -> hovbox 2 k
 end
 
 module Mod = struct

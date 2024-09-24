@@ -1499,8 +1499,9 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
       Params.Exp.break_fun_decl_args c.conf ~ctx:ctx0 ~last_arg ~has_label
       $ str "->"
     in
-    if c.conf.fmt_opts.ocp_indent_compat.v then (noop, arrow)
-    else (arrow, noop)
+    (* if c.conf.fmt_opts.ocp_indent_compat.v then *)
+    (noop, arrow)
+    (* else (arrow, noop) *)
   in
   let fmt_fun_args_typ args typ =
     let kw =
@@ -1510,8 +1511,8 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
       $ break_fun
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ in
-    Params.Exp.box_fun_decl_args ~kw_in_box:(not last_arg) ~ctx ~ctx0 c.conf
-      ~parens ~kw ~args ~annot ~epi:arrow_in_body
+    Params.Exp.box_fun_decl_args ~last_arg ~ctx ~ctx0 c.conf ~parens ~kw
+      ~args ~annot ~epi:arrow_in_body
     $ arrow_in_head
   in
   let lead_with_function_kw =
@@ -1610,7 +1611,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
         ( wrap_intro
             (hvbox_if has_cmts_outer 0
                ( cmts_outer
-               $ Params.Exp.box_fun_decl c.conf
+               $ Params.Exp.box_fun_decl ~ctx0 c.conf
                    (fmt_label label label_sep $ cmts_inner $ opn_paren $ head)
                ) )
         $ body $ cls_paren )

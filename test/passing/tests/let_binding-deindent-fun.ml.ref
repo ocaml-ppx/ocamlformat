@@ -263,7 +263,8 @@ let a, b = (raise Exit : int * int)
 let a, b = (raise Exit : int * int)
 
 let _ =
-  fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : _ ->
+  fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :
+      _ ->
   match () with _ -> ()
 ;;
 
