@@ -1,18 +1,5 @@
 ## Conventional
 
-Disambiguating parentheses not needed for `function` after infix:
-
-```
-   let print_merlin_conf ~selected_context file =
-     to_local ~selected_context file
--    >>| (function
-+    >>| ( function
-           | Error s -> Merlin_conf.make_error s
--          | Ok file -> load_merlin_file file)
-+          | Ok file -> load_merlin_file file )
-     >>| Merlin_conf.to_stdout
-```
-
 Function cases started wrapping after infix:
 
 ```

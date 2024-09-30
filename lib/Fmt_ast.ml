@@ -2140,6 +2140,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let inner_ctx = Exp last_arg in
           let inner_parens, outer_parens =
+            (* Don't disambiguate parentheses in some cases, also affect
+               indentation. *)
             match lbody with
             | Pfunction_cases _ when not c.conf.fmt_opts.ocp_indent_compat.v
               ->
