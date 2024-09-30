@@ -165,7 +165,7 @@ module Exp = struct
           | Some ((Labelled _ | Optional _), _, _) -> true
           | _ -> false
         in
-        if is_labelled_arg then (Fn.id, false)
+        if is_labelled_arg then (Fn.id, true)
         else (hvbox ~name (if parens then 1 else 2), false)
       else
         (* The box for the arguments after [let _ = fun] is different than
