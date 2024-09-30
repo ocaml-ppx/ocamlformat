@@ -218,14 +218,7 @@ module Indent : sig
 
   (** Expressions *)
 
-  val function_ :
-       ?default:int
-    -> Conf.t
-    -> ctx:Ast.t
-    -> ctx0:Ast.t
-    -> parens:bool
-    -> has_label:bool
-    -> int
+  val function_ : Conf.t -> ctx:Ast.t -> ctx0:Ast.t -> parens:bool -> int
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
 

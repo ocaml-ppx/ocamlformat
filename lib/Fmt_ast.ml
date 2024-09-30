@@ -1533,9 +1533,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
           | [], None ->
               ( noop
               , attrs
-              , hvbox
-                  (Params.Indent.function_ c.conf ~ctx ~ctx0 ~parens
-                     ~has_label ) )
+              , hvbox (Params.Indent.function_ c.conf ~ctx ~ctx0 ~parens) )
           | [], Some _ -> assert false
           | args, typ ->
               ( fmt_fun_args_typ args typ $ space_break

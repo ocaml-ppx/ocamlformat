@@ -861,23 +861,20 @@ module Align = struct
 end
 
 module Indent = struct
-  let function_ ?(default = 0) (c : Conf.t) ~ctx ~ctx0 ~parens ~has_label =
-    if ctx_is_infix ctx0 then if has_label then 2 else 0
+  let function_ (c : Conf.t) ~ctx ~ctx0 ~parens =
+    if ctx_is_infix ctx0 then 0
     else
-      let extra =
-        if c.fmt_opts.wrap_fun_args.v then 0
-        else match ctx0 with Str _ -> 2 | _ -> 2
-      in
+      let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
       if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
         c.fmt_opts.function_indent.v + extra
+      else if ocp c then
+        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+        | Some _ -> 2
+        | None -> if parens then 2 else 0
       else
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> default + 2 + if ocp c then 0 else extra
-        | None ->
-            if parens && not has_label then
-              if ocp c then default + 2 else default
-            else if ocp c then default
-            else default + extra
+        | Some _ -> 2 + extra
+        | None -> extra
 
   let fun_type_annot c = if ocp c then 2 else 4
 
