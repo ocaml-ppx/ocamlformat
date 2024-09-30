@@ -273,7 +273,7 @@ module Exp = struct
     match ctx0 with
     | _ when ocp c -> hvbox 2 k
     | Str _ -> hovbox 4 k
-    | _ -> hovbox 2 k
+    | _ -> hvbox 2 k
 end
 
 module Mod = struct
