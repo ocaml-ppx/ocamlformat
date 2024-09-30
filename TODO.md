@@ -1,21 +1,5 @@
 ## Conventional
 
-Arrow changed position:
-
-```
-   let sorted_values =
-     List.sort
-       ~compare:(fun
--          { Diagnostic.location = loc1 } { Diagnostic.location = loc2 } ->
--        Option.compare Location.compare loc1 loc2)
-+                 { Diagnostic.location = loc1 }
-+                 { Diagnostic.location = loc2 }
-+      -> Option.compare Location.compare loc1 loc2)
-       values
-   in
-   List.map
-```
-
 Function cases changed indentation
 
 ```
