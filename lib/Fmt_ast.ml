@@ -2139,13 +2139,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let inner_ctx = Exp last_arg in
+          let inner_parens, outer_parens =
+            match lbody with
+            | Pfunction_cases _ when not c.conf.fmt_opts.ocp_indent_compat.v
+              ->
+                (parens, false)
+            | _ -> (false, parens)
+          in
           let args =
             let wrap_intro x =
-              hvbox 0
-                ( intro_epi
-                $ wrap
-                    (fmt_args_grouped e0 args_before $ break 1 0 $ hvbox 0 x)
-                )
+              fmt_if inner_parens (str "(")
+              $ hvbox 0
+                  ( intro_epi
+                  $ wrap
+                      ( fmt_args_grouped e0 args_before
+                      $ break 1 0 $ hvbox 0 x ) )
               $ break 1 0
             in
             let force_closing_paren =
@@ -2159,7 +2167,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
-            (expr_epi $ Params.parens_if parens c.conf (args $ fmt_atrs))
+            ( expr_epi
+            $ Params.parens_if outer_parens c.conf
+                (args $ fmt_atrs $ fmt_if inner_parens (str ")")) )
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes

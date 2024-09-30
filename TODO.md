@@ -1,19 +1,5 @@
 ## Conventional
 
-Function cases changed indentation
-
-```
-          | EArr l ->
-   EArr
-     (List.map l ~f:(function
--              | ElementHole -> ElementHole
--              | Element e -> Element (m#expression e)
--              | ElementSpread e -> ElementSpread (m#expression e)))
-+               | ElementHole -> ElementHole
-+               | Element e -> Element (m#expression e)
-+               | ElementSpread e -> ElementSpread (m#expression e)))
-```
-
 Disambiguating parentheses not needed for `function` after infix:
 
 ```
