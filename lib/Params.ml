@@ -136,7 +136,7 @@ module Exp = struct
           $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
       | `No -> wrap (str "(") (str ")") k
 
-  let break_fun_kw c ~ctx ~ctx0 ~last_arg ~has_label:_ =
+  let break_fun_kw c ~ctx ~ctx0 ~last_arg =
     let is_labelled_arg =
       match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
       | Some ((Labelled _ | Optional _), _, _) -> true
@@ -187,7 +187,7 @@ module Exp = struct
         ( kw_in_box
         $ hvbox_if should_box_args 0 (args $ fmt_opt annot $ fmt_opt epi) )
 
-  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~has_label:_ ~parens =
+  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens =
     let indent =
       if ctx_is_infix ctx0 then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
@@ -243,7 +243,7 @@ module Exp = struct
           && List.for_all ~f:arg_is_simple_approx other_args )
     | _ -> false
 
-  let break_fun_decl_args c ~ctx ~last_arg ~has_label:_ =
+  let break_fun_decl_args c ~ctx ~last_arg =
     match ctx with
     | _ when (not last_arg) && ocp c -> str " "
     | Ast.Str _ ->
@@ -883,7 +883,7 @@ module Indent = struct
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function_after_fun (c : Conf.t) ~ctx0 ~parens:_ ~has_label:_ =
+  let docked_function_after_fun (c : Conf.t) ~ctx0 =
     match ctx0 with
     | Str _ ->
         (* Cases must be 2-indented relative to the [let], even when

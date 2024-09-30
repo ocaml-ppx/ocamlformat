@@ -51,19 +51,13 @@ module Exp : sig
       [annot]. *)
 
   val break_fun_kw :
-       Conf_t.t
-    -> ctx:Ast.t
-    -> ctx0:Ast.t
-    -> last_arg:bool
-    -> has_label:bool
-    -> Fmt.t
+    Conf_t.t -> ctx:Ast.t -> ctx0:Ast.t -> last_arg:bool -> Fmt.t
 
   val box_fun_expr :
        Conf.t
     -> source:Source.t
     -> ctx0:Ast.t
     -> ctx:Ast.t
-    -> has_label:bool
     -> parens:bool
     -> (Fmt.t -> Fmt.t) * int
   (** return a box with an indent and minus the value of the indent to be used for a closing parenthesis *)
@@ -75,8 +69,7 @@ module Exp : sig
   (** Whether a space should be added between the [function] keyword and the
       attributes. *)
 
-  val break_fun_decl_args :
-    Conf.t -> ctx:Ast.t -> last_arg:bool -> has_label:bool -> Fmt.t
+  val break_fun_decl_args : Conf.t -> ctx:Ast.t -> last_arg:bool -> Fmt.t
 
   val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
 
@@ -240,8 +233,7 @@ module Indent : sig
 
   val fun_type_annot : Conf.t -> int
 
-  val docked_function_after_fun :
-    Conf.t -> ctx0:Ast.t -> parens:bool -> has_label:bool -> int
+  val docked_function_after_fun : Conf.t -> ctx0:Ast.t -> int
 
   val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
 
