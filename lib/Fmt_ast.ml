@@ -1603,7 +1603,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   in
   list_fl groups fmt_args
 
-and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
+and fmt_sequence c ctx ~has_attr parens width elts fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
@@ -1614,38 +1614,43 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
       then break 1 (-2)
       else break 1 0
     in
-    match c.conf.fmt_opts.sequence_style.v with
-    | `Before ->
-        break $ str ";"
-        $ fmt_extension_suffix c ext
-        $ fmt_or (Option.is_some ext)
-            (fmt_or parens space_break (Fmt.break 1 2))
-            (str " ")
-    | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
-    | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break
+    match xe1.ast with
+    (* special case for Meta/Facebook *)
+    | { pexp_desc=
+          Pexp_extension
+            ( {txt= "Trace.call"; _}
+            , PStr
+                [ { pstr_desc= Pstr_eval ({pexp_desc= Pexp_fun _; _}, [])
+                  ; pstr_loc= _ } ] )
+      ; _ } ->
+        space_break $ str ";" $ space_break
+    | _ -> (
+      match c.conf.fmt_opts.sequence_style.v with
+      | `Before ->
+          break $ str ";"
+          $ fmt_extension_suffix c ext
+          $ fmt_or (Option.is_some ext)
+              (fmt_or parens space_break (Fmt.break 1 2))
+              (str " ")
+      | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
+      | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break )
   in
   let is_simple x = is_simple c.conf width x in
-  let break (_, xexp1) (_, xexp2) =
+  let break (xexp1, _) (xexp2, _) =
     not (is_simple xexp1 && is_simple xexp2)
   in
-  let elts = Sugar.sequence c.cmts xexp in
-  ( match elts with
-  | (None, _) :: (first_ext, _) :: _ ->
-      let compare {txt= x; _} {txt= y; _} = String.compare x y in
-      assert (Option.compare compare first_ext ext = 0)
-  | _ -> impossible "at least two elements" ) ;
+  let elts = List.map elts ~f:(fun (e, ext) -> (sub_exp ~ctx e, ext)) in
   let grps = List.group elts ~break in
-  let fmt_seq ~prev (ext, curr) ~next:_ =
-    let f (_, prev) = fmt_sep c prev ext curr in
-    opt prev f $ fmt_expression c curr
+  let fmt_seq ~prev:_ (curr, ext) ~next =
+    fmt_expression c curr
+    $ opt next (fun (next, _) -> fmt_sep c curr ext next)
   in
-  let fmt_seq_list ~prev x ~next:_ =
-    let f prev =
-      let prev = snd (List.last_exn prev) in
-      let ext, curr = List.hd_exn x in
-      fmt_sep c ~force_break:true prev ext curr
-    in
-    opt prev f $ list_pn x fmt_seq
+  let fmt_seq_list ~prev:_ x ~next =
+    list_pn x fmt_seq
+    $ opt next (fun next ->
+          let curr, ext = List.last_exn x in
+          let next, _ = List.hd_exn next in
+          fmt_sep c ~force_break:true curr ext next )
   in
   hvbox 0
     (Params.Exp.wrap c.conf ~parens
@@ -1802,42 +1807,6 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
-  | Pexp_sequence
-      ( { pexp_desc=
-            Pexp_extension
-              ( name
-              , PStr
-                  [ ( { pstr_desc=
-                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as call), [])
-                      ; pstr_loc= _ } as pld ) ] )
-        ; _ }
-      , e2 ) ->
-      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
-      let fmt_cstr, xbody = type_constr_and_body c xbody in
-      let is_simple x = is_simple c.conf (expression_width c) x in
-      let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
-      let grps =
-        List.group
-          (List.map ~f:snd (Sugar.sequence c.cmts (sub_exp ~ctx e2)))
-          ~break
-      in
-      let fmt_grp grp =
-        list grp (str " ;" $ space_break) (fmt_expression c)
-      in
-      pro
-      $ hvbox 0
-          (Params.parens_if parens c.conf
-             ( hvbox c.conf.fmt_opts.extension_indent.v
-                 (wrap (str "[") (str "]")
-                    ( str "%"
-                    $ hovbox 2
-                        ( fmt_str_loc c name $ str " fun "
-                        $ fmt_attributes c ~suf:" " call.pexp_attributes
-                        $ fmt_expr_fun_args c xargs $ fmt_opt fmt_cstr
-                        $ space_break $ str "->" )
-                    $ space_break $ fmt_expression c xbody ) )
-             $ space_break $ str ";" $ space_break
-             $ list grps (str " ;" $ force_break) fmt_grp ) )
   | Pexp_infix
       ( {txt= "|>"; loc}
       , e0
@@ -2625,24 +2594,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     $ str "with" $ p2.break_after_with )
               $ fmt_fields )
           $ fmt_atrs )
-  | Pexp_extension
-      ( ext
-      , PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( ( {pexp_desc= Pexp_sequence _; pexp_attributes= []; _} as
-                      e1 )
-                  , _ )
-            ; pstr_loc= _ } ] )
-    when Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
-         && List.length (Sugar.sequence c.cmts xexp) > 1 ->
+  | Pexp_sequence l ->
       pro
-      $ fmt_sequence ~has_attr c parens (expression_width c) xexp fmt_atrs
-          ~ext
-  | Pexp_sequence _ ->
-      pro
-      $ fmt_sequence ~has_attr c parens (expression_width c) xexp fmt_atrs
-          ?ext
+      $ fmt_sequence ~has_attr c ctx parens (expression_width c) l fmt_atrs
   | Pexp_setfield (e1, lid, e2) ->
       pro
       $ hvbox 0

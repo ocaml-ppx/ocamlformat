@@ -131,17 +131,7 @@ module Exp = struct
   let is_symbol = test_id ~f:Std_longident.is_symbol
 
   let is_sequence exp =
-    match exp.pexp_desc with
-    | Pexp_sequence _ -> true
-    | Pexp_extension
-        ( ext
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
-              ; _ } ] )
-      when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
-        true
-    | _ -> false
+    match exp.pexp_desc with Pexp_sequence _ -> true | _ -> false
 
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
@@ -1343,6 +1333,7 @@ end = struct
     | Pld _ -> assert false
     | Exp ctx -> (
         let f eI = eI == exp in
+        let fst_f (eI, _) = eI == exp in
         let snd_f (_, eI) = eI == exp in
         match ctx.pexp_desc with
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
@@ -1404,7 +1395,7 @@ end = struct
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
-        | Pexp_sequence (e1, e2) -> assert (e1 == exp || e2 == exp)
+        | Pexp_sequence eN -> assert (List.exists eN ~f:fst_f)
         | Pexp_setfield (e1, _, e2) | Pexp_while (e1, e2) ->
             assert (e1 == exp || e2 == exp)
         | Pexp_ifthenelse (eN, e) ->
@@ -1983,11 +1974,11 @@ end = struct
          |Pexp_lazy e
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
-         |Pexp_sequence (_, e)
          |Pexp_setfield (_, _, e)
          |Pexp_setinstvar (_, e)
          |Pexp_variant (_, Some e) ->
             continue e
+        | Pexp_sequence l -> continue (fst @@ List.last_exn l)
         | Pexp_cons l -> continue (List.last_exn l)
         | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
         | Pexp_extension
@@ -2058,11 +2049,11 @@ end = struct
        |Pexp_open (_, e)
        |Pexp_letopen (_, e)
        |Pexp_fun (_, e)
-       |Pexp_sequence (_, e)
        |Pexp_setfield (_, _, e)
        |Pexp_setinstvar (_, e)
        |Pexp_variant (_, Some e) ->
           continue e
+      | Pexp_sequence l -> continue (fst @@ List.last_exn l)
       | Pexp_cons l -> continue (List.last_exn l)
       | Pexp_let (_, e, _)
        |Pexp_letop {body= e; _}
@@ -2133,21 +2124,13 @@ end = struct
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
     in
-    let exp_in_sequence lhs rhs exp =
-      match (lhs.pexp_desc, exp.pexp_attributes) with
-      | (Pexp_match _ | Pexp_try _), _ :: _ when lhs == exp -> true
+    let exp_in_sequence l exp =
+      let last, _ = List.last_exn l in
+      match (exp.pexp_desc, exp.pexp_attributes) with
+      | (Pexp_match _ | Pexp_try _), _ :: _ when not (last == exp) -> true
       | _, _ :: _ -> false
-      | ( Pexp_extension
-            ( _
-            , PStr
-                [ { pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _; _}, [])
-                  ; _ } ] )
-        , _ )
-        when lhs == exp ->
-          true
-      | _ when lhs == exp -> exposed_right_exp Let_match exp
-      | _ when rhs == exp -> false
-      | _ -> failwith "exp must be lhs or rhs from the parent expression"
+      | _, [] ->
+          if last == exp then false else exposed_right_exp Let_match exp
     in
     assert_check_exp xexp ;
     Hashtbl.find marked_parenzed_inner_nested_match exp
@@ -2309,7 +2292,7 @@ end = struct
       | Pexp_override fields
         when List.exists fields ~f:(fun (_, e0) -> e0 == exp) ->
           exposed_right_exp Sequence exp
-      | Pexp_sequence (lhs, rhs) -> exp_in_sequence lhs rhs exp
+      | Pexp_sequence l -> exp_in_sequence l exp
       | Pexp_apply (_, args)
         when List.exists args ~f:(fun (_, e0) ->
                  match (e0.pexp_desc, e0.pexp_attributes) with
