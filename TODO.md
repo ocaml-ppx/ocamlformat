@@ -5,16 +5,11 @@ Function cases started wrapping after infix:
 Argument list of a `fun` started breaking:
 
 ```
-       let new_specialised_args =
-         Variable.Map.mapi
--          (fun new_inner_var (definition : Definition.t) :
--               Flambda.specialised_to ->
-+          (fun
-+            new_inner_var
-+            (definition : Definition.t)
-+            :
-+            Flambda.specialised_to
-+          ->
+let new_specialised_args =
+  Variable.Map.mapi
+    (fun new_inner_var______ (definition : Definition.t) :
+         Flambda.specialised_to -> ())
+    foo
 ```
 
 Argument list of a `fun` changed indentation:
