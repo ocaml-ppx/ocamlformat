@@ -2,14 +2,6 @@
 
 Function cases started wrapping after infix:
 
-```
-     let try_run_and_capture ?cwd prog args =
-       run_process ?cwd prog args ~split:true >>| function
--      | Ok x -> Some x
--      | Error _ -> None
-+      | Ok x -> Some x | Error _ -> None
-```
-
 Argument list of a `fun` started breaking:
 
 ```

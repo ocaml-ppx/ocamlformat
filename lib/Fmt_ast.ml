@@ -1516,7 +1516,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     | _ :: _, _, Pfunction_body body ->
         (* Only [fun]. *)
         let head = fmt_fun_args_typ args typ in
-        let body = fmt_expression c (sub_exp ~ctx body) in
+        let body ~pro = pro $ fmt_expression c (sub_exp ~ctx body) in
         let box, closing_paren_offset =
           Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx ~parens
         in
@@ -1551,7 +1551,17 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
         in
-        let box_cases = Params.Exp.box_function_cases c.conf ~ctx ~ctx0 in
+        let box_cases ~pro cases =
+          let pro_inner, pro_outer, indent =
+            (* Formatting of if-then-else relies on the ~box argument. *)
+            match (args, should_box) with
+            | [], true -> (pro, noop, None)
+            | _ -> (noop, pro, Some 0)
+          in
+          pro_outer
+          $ Params.Exp.box_function_cases c.conf ?indent ~ctx ~ctx0 ~parens
+              (pro_inner $ cases)
+        in
         let box, cases =
           match cs with
           | [{pc_lhs; pc_guard= _; pc_rhs}]
@@ -1592,17 +1602,18 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
       wrap (fits_breaks "(" "") (fits_breaks ")" "")
     else Fn.id
   in
+  let body =
+    let pro =
+      wrap_intro
+        (hvbox_if has_cmts_outer 0
+           ( cmts_outer
+           $ Params.Exp.box_fun_decl ~ctx0 c.conf
+               (fmt_label label label_sep $ cmts_inner $ opn_paren $ head) ) )
+    in
+    body ~pro $ cls_paren
+  in
   let box k = if should_box then box k else k in
-  box
-    ( disambiguate_parens_wrap
-        ( wrap_intro
-            (hvbox_if has_cmts_outer 0
-               ( cmts_outer
-               $ Params.Exp.box_fun_decl ~ctx0 c.conf
-                   (fmt_label label label_sep $ cmts_inner $ opn_paren $ head)
-               ) )
-        $ body $ cls_paren )
-    $ Cmts.fmt_after c loc )
+  box (disambiguate_parens_wrap body $ Cmts.fmt_after c loc)
 
 and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
@@ -1796,15 +1807,16 @@ and fmt_infix_op_args c ~parens xexp op_args =
       (* Indentation of docked fun or function start before the operator. *)
       hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
     else
-      let expr_box =
-        match xarg.ast.pexp_desc with
-        | Pexp_function _ -> Some false
-        | _ -> None
-      in
-      hvbox 0
-        ( pro
-        $ hovbox_if (not very_last) 2
-            (fmt_expression c ?box:expr_box ~parens xarg) )
+      match xarg.ast.pexp_desc with
+      | Pexp_function _ ->
+          let pro = pro $ fmt_if parens (str "(") in
+          hvbox 0
+            ( fmt_expression c ~pro ~parens:false xarg
+            $ fmt_if parens (str ")") )
+      | _ ->
+          hvbox 0
+            ( pro
+            $ hovbox_if (not very_last) 2 (fmt_expression c ~parens xarg) )
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
@@ -3091,9 +3103,9 @@ and fmt_class_field c {ast= cf; _} =
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
   let ctx = Clf cf in
   (fun k ->
-    fmt_cmts_before
-    $ hvbox 0 ~name:"clf"
-        (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after) )
+  fmt_cmts_before
+  $ hvbox 0 ~name:"clf"
+      (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
   @@
   match cf.pcf_desc with
   | Pcf_inherit (override, cl, parent) ->
@@ -3150,10 +3162,10 @@ and fmt_class_type_field c {ast= cf; _} =
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
   let ctx = Ctf cf in
   (fun k ->
-    fmt_cmts_before
-    $ hvbox 0 ~name:"ctf"
-        ( hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
-        $ fmt_cmts_after ) )
+  fmt_cmts_before
+  $ hvbox 0 ~name:"ctf"
+      ( hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
+      $ fmt_cmts_after ))
   @@
   match cf.pctf_desc with
   | Pctf_inherit ct ->
@@ -4364,9 +4376,9 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
   (fun k ->
-    fmt_cmts_before
-    $ hvbox 0 ~name:"stri"
-        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)) )
+  fmt_cmts_before
+  $ hvbox 0 ~name:"stri"
+      (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)))
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]

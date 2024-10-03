@@ -241,7 +241,7 @@ let default =
   command
   ## hasPermission
   #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)

@@ -256,18 +256,38 @@ module Exp = struct
     | Some (_, _, true) -> List.is_empty args
     | _ -> false
 
-  let box_function_cases c ~ctx ~ctx0 =
+  let indent_function (c : Conf.t) ~ctx ~ctx0 ~parens =
+    if ctx_is_infix ctx0 then 0
+    else
+      let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
+      if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
+        c.fmt_opts.function_indent.v + extra
+      else if ocp c then
+        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+        | Some _ -> 2
+        | None -> if parens then 2 else 0
+      else
+        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+        | Some _ -> 2 + extra
+        | None -> extra
+
+  let box_function_cases c ?indent ~ctx ~ctx0 ~parens =
+    let indent =
+      match indent with
+      | Some i -> i
+      | None -> indent_function c ~ctx ~ctx0 ~parens
+    in
     match ctx0 with
     | Exp {pexp_desc= Pexp_ifthenelse _; _}
       when Stdlib.(Conf.(c.fmt_opts.if_then_else.v) = `Compact) ->
-        hvbox ~name:"cases box" 0
+        hvbox ~name:"cases box" indent
     | _ ->
         if
           ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
             ctx0
           || ctx_is_let_or_fun ~ctx ctx0
         then Fn.id
-        else hvbox 0
+        else hvbox indent
 
   let box_fun_decl ~ctx0 c k =
     match ctx0 with
@@ -861,20 +881,7 @@ module Align = struct
 end
 
 module Indent = struct
-  let function_ (c : Conf.t) ~ctx ~ctx0 ~parens =
-    if ctx_is_infix ctx0 then 0
-    else
-      let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
-      if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
-        c.fmt_opts.function_indent.v + extra
-      else if ocp c then
-        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> 2
-        | None -> if parens then 2 else 0
-      else
-        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> 2 + extra
-        | None -> extra
+  let function_ = Exp.indent_function
 
   let fun_type_annot c = if ocp c then 2 else 4
 
