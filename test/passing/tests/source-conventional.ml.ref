@@ -8650,9 +8650,7 @@ let x = A (B).a
 
 let formula_base x =
   let open Formula.Infix in
-  (Expr.typeof x) #== (Lit (Type IntType))
-  #&& (x #<= (Expr.int 4))
-  #&& ((Expr.int 0) #< x)
+  (Expr.typeof x)#==(Lit (Type IntType))#&&(x#<=(Expr.int 4))#&&((Expr.int 0)#<x)
 
 let _ = call ~f:(fun pair : (a * b) -> pair);;
 
