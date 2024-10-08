@@ -24,6 +24,9 @@
 
 %{
 
+[@@@ocaml.warning "-60"] module Str = Ast_helper.Str (* For ocamldep *)
+[@@@ocaml.warning "+60"]
+
 open Asttypes
 open Longident
 open Parsetree
@@ -163,6 +166,10 @@ let mkuplus ~oploc name arg =
   | ("+" | "+."), Pexp_constant(Pconst_float _) -> desc
   | _ ->
       Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
+
+let mk_attr ~loc name payload =
+  Builtin_attributes.(register_attr Parser name);
+  Attr.mk ~loc name payload
 
 (* TODO define an abstraction boundary between locations-as-pairs
    and locations-as-Location.t; it should be clear when we move from
@@ -998,6 +1005,27 @@ reversed_nonempty_llist(X):
 
 %inline nonempty_llist(X):
   xs = rev(reversed_nonempty_llist(X))
+    { xs }
+
+(* [reversed_nonempty_concat(X)] recognizes a nonempty sequence of [X]s (each of
+   which is a list), and produces an OCaml list of their concatenation in
+   reverse order -- that is, the last element of the last list in the input text
+   appears first in the list.
+*)
+reversed_nonempty_concat(X):
+  x = X
+    { List.rev x }
+| xs = reversed_nonempty_concat(X) x = X
+    { List.rev_append x xs }
+
+(* [nonempty_concat(X)] recognizes a nonempty sequence of [X]s
+   (each of which is a list), and produces an OCaml list of their concatenation
+   in direct order -- that is, the first element of the first list in the input
+   text appears first in the list.
+*)
+
+%inline nonempty_concat(X):
+  xs = rev(reversed_nonempty_concat(X))
     { xs }
 
 (* [reversed_separated_nonempty_llist(separator, X)] recognizes a nonempty list
@@ -3291,8 +3319,8 @@ with_type_binder:
 /* Polymorphic types */
 
 %inline typevar:
-  QUOTE mkrhs(ident)
-    { $2 }
+  QUOTE ident
+    { mkrhs $2 $sloc }
 ;
 %inline typevar_list:
   nonempty_llist(typevar)
@@ -3346,7 +3374,7 @@ alias_type:
     function_type
       { $1 }
   | mktyp(
-      ty = alias_type AS QUOTE tyvar = ident
+      ty = alias_type AS tyvar = typevar
         { Ptyp_alias(ty, tyvar) }
     )
     { $1 }
@@ -3927,17 +3955,17 @@ attr_id:
   ) { $1 }
 ;
 attribute:
-  LBRACKETAT attr_id payload RBRACKET
-    { Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+  LBRACKETAT attr_id attr_payload RBRACKET
+    { mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 post_item_attribute:
-  LBRACKETATAT attr_id payload RBRACKET
-    { Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+  LBRACKETATAT attr_id attr_payload RBRACKET
+    { mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 floating_attribute:
-  LBRACKETATATAT attr_id payload RBRACKET
+  LBRACKETATATAT attr_id attr_payload RBRACKET
     { mark_symbol_docs $sloc;
-      Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+      mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 %inline post_item_attributes:
   post_item_attribute*
@@ -3976,5 +4004,11 @@ payload:
   | COLON core_type { PTyp $2 }
   | QUESTION pattern { PPat ($2, None) }
   | QUESTION pattern WHEN seq_expr { PPat ($2, Some $4) }
+;
+attr_payload:
+  payload
+    { Builtin_attributes.mark_payload_attrs_used $1;
+      $1
+    }
 ;
 %%
