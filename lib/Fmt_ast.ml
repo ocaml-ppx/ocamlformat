@@ -413,7 +413,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
   let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~offset ~input parsed in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
-       (fmt_opt pro $ wrap (str "(**") (str "*)") doc $ epi)
+       (fmt_opt pro $ hovbox 0 (str "(**" $ doc $ str "*)") $ epi)
 
 let docstring_epi ~standalone ~next ~epi ~floating =
   let epi = if Option.is_some next then force_newline else fmt_opt epi in
@@ -1141,25 +1141,31 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         in
         hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
-      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
       let last_sep, fmt_underscore =
         match closed_flag with
         | OClosed -> (true, noop)
-        | OOpen loc -> (false, Cmts.fmt ~pro:(break 1 2) c loc p2.wildcard)
+        | OOpen loc ->
+            let underscore =
+              p.sep_before
+              $ hvbox 0 (Cmts.fmt c loc (str "_"))
+              $ p.sep_after_final
+            in
+            (false, underscore)
       in
-      let last_loc (lid, t, p) =
-        match (t, p) with
-        | _, Some p -> p.ppat_loc
+      let last_loc (lid, t, pat) =
+        match (t, pat) with
+        | _, Some pat -> pat.ppat_loc
         | Some t, _ -> t.ptyp_loc
         | _ -> lid.loc
       in
       let fmt_fields =
-        fmt_elements_collection c ~last_sep p1 last_loc ppat_loc fmt_field
+        fmt_elements_collection c ~last_sep p last_loc ppat_loc fmt_field
           flds
       in
       hvbox_if parens 0
         (Params.parens_if parens c.conf
-           (p1.box (fmt_fields $ fmt_underscore)) )
+           (p.box (fmt_fields $ fmt_underscore)) )
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
@@ -1649,6 +1655,9 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
 
 and fmt_infix_op_args c ~parens xexp op_args =
   let op_prec = prec_ast (Exp xexp.ast) in
+  let op_prec_higher_than_apply =
+    match op_prec with Some p -> Prec.compare p Apply > 0 | None -> false
+  in
   let groups =
     let width xe = expression_width c xe in
     let not_simple arg = not (is_simple c.conf width arg) in
@@ -1718,7 +1727,10 @@ and fmt_infix_op_args c ~parens xexp op_args =
            let pro, before_arg =
              let break =
                if very_last && is_not_indented xarg then space_break
-               else fmt_if (not very_first) (str " ")
+               else
+                 fmt_if
+                   ((not very_first) && not op_prec_higher_than_apply)
+                   (str " ")
              in
              match cmts_after with
              | Some c -> (noop, hovbox 0 (op $ space_break $ c))
@@ -1726,8 +1738,9 @@ and fmt_infix_op_args c ~parens xexp op_args =
            in
            fmt_opt cmts_before $ before_arg
            $ fmt_arg ~pro ~very_last xarg
-           $ fmt_if (not last) (break 1 0) ) )
-    $ fmt_if (not last_grp) (break 1 0)
+           $ fmt_if ((not last) && not op_prec_higher_than_apply) (break 1 0) )
+      )
+    $ fmt_if ((not last_grp) && not op_prec_higher_than_apply) (break 1 0)
   in
   Params.Exp.Infix_op_arg.wrap c.conf ~parens
     ~parens_nested:(Ast.parenze_nested_exp xexp)
@@ -2543,7 +2556,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  ( match c.conf.fmt_opts.indicate_multiline_delimiters.v with
                  | `No -> str ")"
                  | `Space -> str " )"
-                 | `Closing_on_separate_line -> break 1000 (-2) ) ) )
+                 | `Closing_on_separate_line -> break 1000 (-2) $ str ")" )
+             ) )
   | Pexp_match (e0, cs) ->
       fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"
@@ -2844,9 +2858,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend e ->
       let wrap_beginend k =
-        let opn = str "begin" $ fmt_extension_suffix c ext
+        let opn =
+          hvbox 0 (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs)
         and cls = str "end" in
-        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k) $ fmt_atrs)
+        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k))
       in
       pro
       $ wrap_beginend
@@ -3213,10 +3228,10 @@ and fmt_case c ctx ~first ~last case =
     | Ppat_or _ when Option.is_some pc_guard -> true
     | _ -> parenze_pat xlhs
   in
-  let eol =
-    Option.some_if (Cmts.has_before c.cmts pc_rhs.pexp_loc) force_break
+  let cmts_before = Cmts.has_before c.cmts pc_rhs.pexp_loc in
+  let p =
+    Params.get_cases c.conf ~ctx ~first ~last ~cmts_before ~xbch:xrhs
   in
-  let p = Params.get_cases c.conf ~ctx ~first ~last ~xbch:xrhs in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
@@ -3229,7 +3244,8 @@ and fmt_case c ctx ~first ~last case =
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
-          ( fmt_expression ?eol c ?parens:p.expr_parens p.branch_expr
+          ( fmt_expression ?eol:p.expr_eol c ?parens:p.expr_parens
+              p.branch_expr
           $ p.close_paren_branch ) )
 
 and fmt_value_description c ctx vd =

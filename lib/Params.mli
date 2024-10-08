@@ -80,6 +80,7 @@ type cases =
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
   ; expr_parens: bool option
+  ; expr_eol: Fmt.t option
   ; branch_expr: expression Ast.xt  (** Expression on the RHS of the [->]. *)
   ; close_paren_branch: Fmt.t }
 
@@ -88,6 +89,7 @@ val get_cases :
   -> ctx:Ast.t
   -> first:bool
   -> last:bool
+  -> cmts_before:bool
   -> xbch:expression Ast.xt
   -> cases
 
@@ -115,8 +117,6 @@ type elements_collection =
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
 
-type elements_collection_record_pat = {wildcard: Fmt.t}
-
 val get_record_expr :
   Conf.t -> elements_collection * elements_collection_record_expr
 
@@ -124,8 +124,7 @@ val get_list_expr : Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 
-val get_record_pat :
-  Conf.t -> ctx:Ast.t -> elements_collection * elements_collection_record_pat
+val get_record_pat : Conf.t -> ctx:Ast.t -> elements_collection
 
 val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
 

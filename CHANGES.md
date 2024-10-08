@@ -11,6 +11,7 @@ profile. This started with version 0.26.0.
 - Support OCaml 5.2 syntax (#2519, @Julow)
   This includes:
   + Local open in types.
+- Allow a custom command to be used to run ocamlformat in the emacs plugin (#2577, @gridbugs)
 
 ### Changed
 
@@ -48,9 +49,21 @@ profile. This started with version 0.26.0.
 - Fix formatting of type vars in GADT constructors (#2518, @Julow)
 - Fix `[@ocamlformat "disable"]` inside `class type` constructs. (#2525, @EmileTrotignon)
 - Fix the formatting of the `in` keyword when `[@ocamlformat disable]` is attached to a let-binding (#2242, @EmileTrotignon)
+- Fix comments around underscore in record patterns (#2540, @Julow)
+- Fix dropped comments before `begin .. end` in a match case (#2541, @Julow)
+- Fix closing `*)` in doc-comments exceeding the margin (#2550, @Julow)
+- Fix invalid syntax geneated for begin..end attributes (#2551, @Julow)
+  The attribute is moved from `begin .. end [@attr]` to `begin [@attr] .. end`.
+- Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
+
+## 0.26.2 (2024-04-18)
+
+### Changed
+
+- Compatible with OCaml 5.2.0 (#2510, @gpetiot, @Julow)
 
 ## 0.26.1 (2023-09-15)
 

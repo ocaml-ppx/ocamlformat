@@ -334,6 +334,24 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_cases-closing_on_separate_line_fit_or_vertical.ml.stdout
+   (with-stderr-to break_cases-closing_on_separate_line_fit_or_vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-cases=fit-or-vertical --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/break_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_cases-closing_on_separate_line_fit_or_vertical.ml.ref break_cases-closing_on_separate_line_fit_or_vertical.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_cases-closing_on_separate_line_fit_or_vertical.ml.err break_cases-closing_on_separate_line_fit_or_vertical.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -1237,6 +1255,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/comments_in_local_let.ml.err comments_in_local_let.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to comments_in_record-break_separator-after.ml.stdout
+   (with-stderr-to comments_in_record-break_separator-after.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separator=after %{dep:tests/comments_in_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-after.ml.ref comments_in_record-break_separator-after.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-after.ml.err comments_in_record-break_separator-after.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to comments_in_record-break_separator-before.ml.stdout
+   (with-stderr-to comments_in_record-break_separator-before.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-separator=before %{dep:tests/comments_in_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-before.ml.ref comments_in_record-break_separator-before.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/comments_in_record-break_separator-before.ml.err comments_in_record-break_separator-before.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -2699,7 +2753,7 @@
  (action
   (with-stdout-to issue289.ml.stdout
    (with-stderr-to issue289.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/issue289.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/issue289.ml})))))
 
 (rule
  (alias runtest)
@@ -3409,6 +3463,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/lazy.ml.err lazy.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_binding-deindent-fun.ml.stdout
+   (with-stderr-to let_binding-deindent-fun.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-let-binding-deindent-fun %{dep:tests/let_binding.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.ref let_binding-deindent-fun.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.err let_binding-deindent-fun.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -4965,6 +5037,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/skip.ml.err skip.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to source-conventional.ml.stdout
+   (with-stderr-to source-conventional.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=default --max-iters=3 %{dep:tests/source.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.ref source-conventional.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.err source-conventional.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

@@ -21,8 +21,7 @@ let [| fooooooooooooooooooooooooooooooo; fooooooooooooooooooooooooooooooo
 let { fooooooooooooooooooooooooooooooo
     ; fooooooooooooooooooooooooooooooo
     ; fooooooooooooooooooooooooooooooo
-    ; _
-      (* xxx *) } =
+    ; _ (* xxx *) } =
   { fooooooooooooooooooooooooooooooo= x
   ; fooooooooooooooooooooooooooooooo= y
   ; fooooooooooooooooooooooooooooooo= z (* after all fields *) }

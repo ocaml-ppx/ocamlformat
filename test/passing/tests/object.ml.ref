@@ -205,7 +205,7 @@ class x =
     (** floatting3 *)
   end
 
-let _ = f ##= (fun x -> x)
+let _ = f##=(fun x -> x)
 
 let o =
   object
