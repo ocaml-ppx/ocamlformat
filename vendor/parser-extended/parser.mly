@@ -572,6 +572,7 @@ let mk_directive ~loc name arg =
 %token DOTDOT                 ".."
 %token DOWNTO                 "downto"
 %token ELSE                   "else"
+%token EFFECT                 "effect"
 %token END                    "end"
 %token EOF                    ""
 %token EQUAL                  "="
@@ -2668,6 +2669,8 @@ pattern:
       { $1 }
   | EXCEPTION ext_attributes pattern %prec prec_constr_appl
       { mkpat_attrs ~loc:$sloc (Ppat_exception $3) $2}
+  | EFFECT pattern_gen COMMA simple_pattern
+      { mkpat ~loc:$sloc (Ppat_effect($2,$4)) }
 ;
 
 pattern_no_exn:
@@ -2720,6 +2723,7 @@ pattern_gen:
   | LAZY ext_attributes simple_pattern
       { mkpat_attrs ~loc:$sloc (Ppat_lazy $3) $2}
 ;
+
 simple_pattern:
     mkpat(mkrhs(val_ident) %prec below_EQUAL
       { Ppat_var ($1) })
