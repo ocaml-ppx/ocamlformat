@@ -145,7 +145,8 @@ module Exp = struct
     if Conf.(c.fmt_opts.ocp_indent_compat.v) then
       if last_arg || is_labelled_arg then break 1 2 else str " "
     else if is_labelled_arg then break 1 2
-    else break 1 0
+    else if last_arg then break 1 0
+    else str " "
 
   let box_fun_decl_args ~ctx ~ctx0 ?(last_arg = false) ?epi c ~parens ~kw
       ~args ~annot =
@@ -174,7 +175,12 @@ module Exp = struct
           if is_let_func then if kw_in_box then hovbox ~name 4 else Fn.id
           else
             match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-            | Some _ -> hvbox ~name (if parens then 0 else 2)
+            | Some (_, _, true) ->
+                (* Is last arg. *) hvbox ~name (if parens then 0 else 2)
+            | Some (Nolabel, _, false) ->
+                (* TODO: Inconsistent formatting of fun args. *)
+                hovbox ~name 0
+            | Some ((Labelled _ | Optional _), _, false) -> hvbox ~name 0
             | None -> Fn.id
         in
         (box, not c.fmt_opts.wrap_fun_args.v)
