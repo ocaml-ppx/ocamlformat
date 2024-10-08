@@ -255,6 +255,9 @@ module Exp = struct
     | Ast.Str _ ->
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
+    | Clf _ ->
+        (* special case for methods. *)
+        str " "
     | _ -> break 1 ~-2
 
   let single_line_function ~ctx ~ctx0 ~args =
@@ -299,6 +302,7 @@ module Exp = struct
     match ctx0 with
     | _ when ocp c -> hvbox 2 k
     | Str _ -> hovbox 4 k
+    | Clf _ -> hovbox 4 k
     | _ -> hvbox 2 k
 end
 

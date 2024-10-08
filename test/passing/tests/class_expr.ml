@@ -5,3 +5,13 @@ class c `I = x
 class c i = x
 
 class c (* xx *) i (* yy *) = x
+
+class c =
+  object
+    method class_infos : 'a. ('a -> 'res) -> 'a class_infos -> 'res =
+      fun _a
+          {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes} ->
+        let pci_virt = self#virtual_flag pci_virt in
+        let pci_params = self#list in
+        ()
+  end
