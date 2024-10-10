@@ -1538,8 +1538,9 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
           | args, typ ->
               ( fmt_fun_args_typ args typ $ space_break
               , []
-              , hvbox (Params.Indent.docked_function_after_fun c.conf ~ctx0)
-              )
+              , hvbox
+                  (Params.Indent.docked_function_after_fun c.conf ~parens
+                     ~ctx0 ~ctx ) )
         in
         let function_ =
           let pre =

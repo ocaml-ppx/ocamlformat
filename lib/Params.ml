@@ -905,13 +905,17 @@ module Indent = struct
 
   let fun_args c = if ocp c then 6 else 4
 
-  let docked_function_after_fun (c : Conf.t) ~ctx0 =
+  let docked_function_after_fun (c : Conf.t) ~parens ~ctx0 ~ctx =
     match ctx0 with
     | Str _ ->
         (* Cases must be 2-indented relative to the [let], even when
            [let_binding_deindent_fun] is on. *)
         if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
     | _ when ctx_is_infix ctx0 -> 0
+    | _ when ocp c -> (
+      match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+      | Some (_, _, false) when parens -> (* Not last argument *) 3
+      | _ -> 2 )
     | _ -> 2
 
   let fun_args_group (c : Conf.t) ~lbl exp =

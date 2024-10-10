@@ -232,7 +232,8 @@ module Indent : sig
 
   val fun_type_annot : Conf.t -> int
 
-  val docked_function_after_fun : Conf.t -> ctx0:Ast.t -> int
+  val docked_function_after_fun :
+    Conf.t -> parens:bool -> ctx0:Ast.t -> ctx:Ast.t -> int
 
   val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
 

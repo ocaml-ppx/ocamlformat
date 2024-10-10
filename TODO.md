@@ -73,17 +73,3 @@ Argument-list wrapping at toplevel
      in
      aux versions
 ```
-
-`fun -> function` argument
-
-```
-           List.fold_left
-             (fun acc -> function
--               | List [ Atom name; Atom value ] -> (name, value) :: acc
--               | _ -> acc)
-+              | List [ Atom name; Atom value ] -> (name, value) :: acc
-+              | _ -> acc)
-             []
-             l
-           |> List.rev
-```
