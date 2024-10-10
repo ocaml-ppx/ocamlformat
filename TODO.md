@@ -54,41 +54,6 @@ Argument-list wrapping at toplevel
      let build_js = build_js ~sctx ~mode ~module_systems:mel.module_systems in
 ```
 
-Indentation of `fun` in a match clause
-
-```
-let rec expression : Typedtree.expression -> term_judg =
-  fun exp -> match exp.exp_desc with
-    | Texp_ident (pth, _, _) ->
-      path pth
-    | Texp_let (rec_flag, bindings, body) ->
-      (*
-         G  |- <bindings> : m -| G'
-         G' |- body : m
-         -------------------------------
-         G |- let <bindings> in body : m
-      *)
-      value_bindings rec_flag bindings >> expression body
-    | Texp_letmodule (x, _, _, mexp, e) ->
-      module_binding (x, mexp) >> expression e
-    | Texp_match (e, cases, eff_cases, _) ->
-      (* TODO: update comment below for eff_cases
-         (Gi; mi |- pi -> ei : m)^i
-         G |- e : sum(mi)^i
-         ----------------------------------------------
-         G + sum(Gi)^i |- match e with (pi -> ei)^i : m
-       *)
-      (fun mode ->
-        let pat_envs, pat_modes =
-          List.split (List.map (fun c -> case c mode) cases) in
-        let env_e = expression e (List.fold_left Mode.join Ignore pat_modes) in
-        let eff_envs, eff_modes =
-          List.split (List.map (fun c -> case c mode) eff_cases) in
-        let eff_e = expression e (List.fold_left Mode.join Ignore eff_modes) in
-        Env.join_list
-          ((Env.join_list (env_e :: pat_envs)) :: (eff_e :: eff_envs)))
-```
-
 ## Janestreet profile
 
 `function` after infix indentation
@@ -179,12 +144,4 @@ let rec expression : Typedtree.expression -> term_judg =
 +        t
 +        acc ->
        let env = t.info.env in
-```
-
-Break after `->` at toplevel
-
-```
--  fun s m -> List.fold_right (fun it env -> structure_item it m env) s.str_items Env.empty
-+  fun s m ->
-+  List.fold_right (fun it env -> structure_item it m env) s.str_items Env.empty
 ```
