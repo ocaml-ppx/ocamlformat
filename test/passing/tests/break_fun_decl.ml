@@ -108,3 +108,20 @@ let _ =
 let f (module Store : Irmin.Generic_key.S with type repo = repo)
     (module Store : Irmin.Generic_key.S with type repo = repo) =
   body
+
+(* Inconsistent formatting of fun arguments. *)
+
+let new_specialised_args =
+  Variable.Map.mapi
+    (fun new_inner_var______ (definition : Definition.t) :
+         Flambda.specialised_to -> () )
+    foo
+
+let new_specialised_args =
+  Variable.Map.mapi
+    (fun
+      new_inner_var______
+      (definition : Definition.t)
+      :
+      Flambda.specialised_to
+    -> () )

@@ -457,7 +457,7 @@ let break_comment_group source a b =
     Location.line_difference a b = 0
     && List.is_empty
          (Source.tokens_between source a.loc_end b.loc_start
-              ~filter:(function _ -> true) )
+            ~filter:(function _ -> true ))
   in
   not (vertical_align || horizontal_align)
 

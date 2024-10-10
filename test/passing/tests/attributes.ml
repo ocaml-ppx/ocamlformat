@@ -388,9 +388,9 @@ let _ =
   match x with
   | _
     when f
-             ~f:(function [@ocaml.warning
-                            (* ....................................... *)
-                            "-4"] _ -> . ) ->
+           ~f:(function [@ocaml.warning
+                          (* ....................................... *)
+                          "-4"] _ -> . ) ->
       y
 
 let[@a
