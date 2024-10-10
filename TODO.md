@@ -122,26 +122,3 @@ Argument-list wrapping at toplevel
 +      (hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
    @@
 ```
-
-`fun` argument-list unwrapped at toplevel
-
-```
-         -> acc
-         -> acc Lwt.t
-       =
--      fun ~order ~force ~cache ~uniq ~pre ~post ~path ?depth ~node ~contents ~tree t acc ->
-+      fun ~order
-+        ~force
-+        ~cache
-+        ~uniq
-+        ~pre
-+        ~post
-+        ~path
-+        ?depth
-+        ~node
-+        ~contents
-+        ~tree
-+        t
-+        acc ->
-       let env = t.info.env in
-```
