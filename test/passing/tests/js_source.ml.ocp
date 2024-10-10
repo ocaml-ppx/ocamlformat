@@ -10482,3 +10482,13 @@ module type M = sig
 end
 
 (*$ let _ = [ x (* *); y ] *)
+
+let _ =
+  { foo =
+      (fun _ -> function
+         | _ ->
+           let _ = 42 in
+           ()
+         | () -> ())
+  }
+;;

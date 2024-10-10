@@ -24,3 +24,13 @@ let foooooooo =
     function
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
+
+let _ =
+  { foo =
+      (fun _ -> function
+         | _ ->
+           let _ = 42 in
+           ()
+         | () -> ())
+  }
+;;
