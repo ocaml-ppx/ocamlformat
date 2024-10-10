@@ -3110,9 +3110,9 @@ and fmt_class_field c {ast= cf; _} =
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
   let ctx = Clf cf in
   (fun k ->
-  fmt_cmts_before
-  $ hvbox 0 ~name:"clf"
-      (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
+    fmt_cmts_before
+    $ hvbox 0 ~name:"clf"
+        (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
   @@
   match cf.pcf_desc with
   | Pcf_inherit (override, cl, parent) ->
@@ -3169,10 +3169,10 @@ and fmt_class_type_field c {ast= cf; _} =
   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
   let ctx = Ctf cf in
   (fun k ->
-  fmt_cmts_before
-  $ hvbox 0 ~name:"ctf"
-      ( hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
-      $ fmt_cmts_after ))
+    fmt_cmts_before
+    $ hvbox 0 ~name:"ctf"
+        ( hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
+        $ fmt_cmts_after ))
   @@
   match cf.pctf_desc with
   | Pctf_inherit ct ->
@@ -4383,9 +4383,9 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
   (fun k ->
-  fmt_cmts_before
-  $ hvbox 0 ~name:"stri"
-      (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)))
+    fmt_cmts_before
+    $ hvbox 0 ~name:"stri"
+        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)))
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]

@@ -102,3 +102,9 @@ let space_break =
   with_pp (fun fs ->
       Box_debug.space_break fs ;
       Format_.pp_print_space fs () )
+
+let _ =
+  (fun k ->
+    let _ = 42 in
+    ())
+  @@ ()

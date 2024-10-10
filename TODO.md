@@ -1,21 +1,5 @@
 ## Conventional profile
 
-`fun` indent at toplevel but not at tail
-
-```
-   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
-   let ctx = Ctf cf in
-   (fun k ->
--    fmt_cmts_before
--    $ hvbox 0 ~name:"ctf"
--        (hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
--        $ fmt_cmts_after))
-+  fmt_cmts_before
-+  $ hvbox 0 ~name:"ctf"
-+      (hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
-   @@
-```
-
 Argument-list indentation at toplevel
 
 ```
@@ -102,23 +86,4 @@ Argument-list wrapping at toplevel
              []
              l
            |> List.rev
-```
-
-`fun` at toplevel but not tail
-
-```
-   let fmt_atrs = fmt_item_attributes c ~pre:(Break (1, 0)) atrs in
-   let ctx = Ctf cf in
-   (fun k ->
--    fmt_cmts_before
--    $ hvbox
--        0
--        ~name:"ctf"
--        (hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
-+  fmt_cmts_before
-+  $ hvbox
-+      0
-+      ~name:"ctf"
-+      (hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
-   @@
 ```

@@ -31,6 +31,14 @@ let ctx_is_infix = function
   | Exp {pexp_desc= Pexp_infix _; _} -> true
   | _ -> false
 
+let ctx_is_rhs_of_infix ~ctx0 ~ctx =
+  match (ctx0, ctx) with
+  | Exp {pexp_desc= Pexp_infix ({txt= ":="; _}, _, _); _}, _ -> false
+  | Exp {pexp_desc= Pexp_infix (_, _, rhs); _}, Exp ctx
+    when phys_equal rhs ctx ->
+      true
+  | _ -> false
+
 (** Return [None] if [ctx0] is not an application or [ctx] is not one of its
     argument. *)
 let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
@@ -195,7 +203,7 @@ module Exp = struct
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens =
     let indent =
-      if ctx_is_infix ctx0 then 0
+      if ctx_is_rhs_of_infix ~ctx0 ~ctx then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
         c.fmt_opts.function_indent.v
       else if ctx_is_let_or_fun ~ctx ctx0 then
@@ -266,7 +274,7 @@ module Exp = struct
     | _ -> false
 
   let indent_function (c : Conf.t) ~ctx ~ctx0 ~parens =
-    if ctx_is_infix ctx0 then 0
+    if ctx_is_rhs_of_infix ~ctx0 ~ctx then 0
     else
       let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
       if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
