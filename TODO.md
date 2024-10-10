@@ -39,37 +39,3 @@ Argument-list wrapping at toplevel
 ```
 
 ## Janestreet profile
-
-`function` after infix indentation
-
-```
-         Protocol.Init.read_input ic
-         >>= (function
--         | `Version v when v = latest -> return (get_client ~pid ic oc v)
--         | `Version v ->
--           (match others with
--            | h :: _ when v = h -> return (get_client ~pid ic oc v)
--            | _ -> aux others)
--         | `Unknown -> aux others
--         | `Halt ->
--           return
--             (Error
--                (`Msg
--                    "OCamlFormat-RPC did not respond. Check that a compatible version of \
--                     the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is \
--                     installed.")))
-+        | `Version v when v = latest -> return (get_client ~pid ic oc v)
-+        | `Version v ->
-+          (match others with
-+           | h :: _ when v = h -> return (get_client ~pid ic oc v)
-+           | _ -> aux others)
-+        | `Unknown -> aux others
-+        | `Halt ->
-+          return
-+            (Error
-+               (`Msg
-+                   "OCamlFormat-RPC did not respond. Check that a compatible version of \
-+                    the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is installed.")))
-     in
-     aux versions
-```

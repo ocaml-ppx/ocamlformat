@@ -8203,3 +8203,12 @@ let _ =
          | () -> ())
   }
 ;;
+
+let _ =
+  match () with
+  | _ ->
+    f
+    >>= (function
+     | `Fooooooooooooooooooooooooooooooooooooooo -> 1
+     | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2)
+;;
