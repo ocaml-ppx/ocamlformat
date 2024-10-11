@@ -88,21 +88,34 @@ let with_box_debug k = with_pp (Box_debug.with_box (fun fs -> eval fs k))
 (** Break hints and format strings --------------------------------------*)
 
 let break n o =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.break fs n o ;
+      Box_debug.break fs n o ~stack ;
       Format_.pp_print_break fs n o )
 
 let force_break = break 1000 0
 
-let space_break = with_pp (fun fs -> Format_.pp_print_space fs ())
+let space_break =
+  (* a stack is useless here, this would require adding a unit parameter *)
+  with_pp (fun fs ->
+      Box_debug.space_break fs ;
+      Format_.pp_print_space fs () )
 
-let cut_break = with_pp (fun fs -> Format_.pp_print_cut fs ())
+let cut_break =
+  with_pp (fun fs ->
+      Box_debug.cut_break fs ;
+      Format_.pp_print_cut fs () )
 
-let force_newline = with_pp (fun fs -> Format_.pp_force_newline fs ())
+let force_newline =
+  let stack = Box_debug.get_stack () in
+  with_pp (fun fs ->
+      Box_debug.force_newline ~stack fs ;
+      Format_.pp_force_newline fs () )
 
 let cbreak ~fits ~breaks =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.cbreak fs ~fits ~breaks ;
+      Box_debug.cbreak fs ~stack ~fits ~breaks ;
       Format_.pp_print_custom_break fs ~fits ~breaks )
 
 let noop = with_pp (fun _ -> ())
@@ -127,7 +140,12 @@ let char c = with_pp (fun fs -> Format_.pp_print_char fs c)
 let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
-let str_as n s = with_pp (fun fs -> Format_.pp_print_as fs n s)
+let str_as n s =
+  let stack = Box_debug.get_stack () in
+  with_pp (fun fs ->
+      Box_debug.start_str fs ;
+      Format_.pp_print_as fs n s ;
+      Box_debug.end_str ~stack fs )
 
 let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
@@ -177,13 +195,15 @@ let fmt_opt o = Option.value o ~default:noop
 (** Conditional on immediately following a line break -------------------*)
 
 let if_newline s =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.if_newline fs s ;
+      Box_debug.if_newline fs ~stack s ;
       Format_.pp_print_string_if_newline fs s )
 
 let break_unless_newline n o =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.break_unless_newline fs n o ;
+      Box_debug.break_unless_newline fs ~stack n o ;
       Format_.pp_print_or_newline fs n o "" "" )
 
 (** Conditional on breaking of enclosing box ----------------------------*)
@@ -191,8 +211,9 @@ let break_unless_newline n o =
 type behavior = Fit | Break
 
 let fits_or_breaks ~level fits nspaces offset breaks =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.fits_or_breaks fs fits nspaces offset breaks ;
+      Box_debug.fits_or_breaks fs ~stack fits nspaces offset breaks ;
       Format_.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks )
 
 let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
@@ -236,27 +257,31 @@ let wrap_fits_breaks ?(space = true) conf x =
 let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n
 
 let open_box ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "b" n fs ;
+      Box_debug.box_open ~stack ?name "b" n fs ;
       Format_.pp_open_box fs n )
 
 and open_vbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "v" n fs ;
+      Box_debug.box_open ~stack ?name "v" n fs ;
       Format_.pp_open_vbox fs n )
 
 and open_hvbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "hv" n fs ;
+      Box_debug.box_open ~stack ?name "hv" n fs ;
       Format_.pp_open_hvbox fs n )
 
 and open_hovbox ?name n =
+  let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      Box_debug.box_open ?name "hov" n fs ;
+      Box_debug.box_open ~stack ?name "hov" n fs ;
       Format_.pp_open_hovbox fs n )
 
 and close_box =

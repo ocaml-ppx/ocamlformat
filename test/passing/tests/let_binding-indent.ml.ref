@@ -261,3 +261,12 @@ let ({x; y} : foo) = bar
 let a, b = (raise Exit : int * int)
 
 let a, b = (raise Exit : int * int)
+
+let _ =
+     fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :
+         _ ->
+      match () with _ -> ()
+;;
+
+fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : _ ->
+  match () with _ -> ()

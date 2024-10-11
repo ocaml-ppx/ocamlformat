@@ -48,7 +48,9 @@
 
 (defcustom ocamlformat-command "ocamlformat"
   "The `ocamlformat' command."
-  :type 'string
+  :type '(choice
+	  (string :tag "The name of the ocamlformat executable")
+	  (repeat :tag "The prefix of the command to run to run ocamlformat" string))
   :group 'ocamlformat)
 
 (defcustom ocamlformat-enable 'enable
@@ -266,15 +268,23 @@ is nil."
            ((eq ocamlformat-file-kind 'implementation)
             (list "--impl"))
            ((eq ocamlformat-file-kind 'interface)
-            (list "--intf")))))
+            (list "--intf"))))
+	 (ocamlformat-exe
+	  (if (listp ocamlformat-command)
+	      (car ocamlformat-command)
+	    ocamlformat-command))
+	 (ocamlformat-prefix-args
+	  (if (listp ocamlformat-command)
+	      (cdr ocamlformat-command)
+	    '())))
     (unwind-protect
         (save-restriction
           (widen)
           (write-region nil nil bufferfile)
           (if (zerop
                (apply #'call-process
-                      ocamlformat-command nil (list :file errorfile) nil
-                      (append margin-args enable-args extension-args
+                      ocamlformat-exe nil (list :file errorfile) nil
+                      (append ocamlformat-prefix-args margin-args enable-args extension-args
                               (list
                                "--name" buffer-file-name
                                "--output" outputfile bufferfile))))

@@ -232,10 +232,10 @@ let encoder f =
   stagged @@ fun x k : t -> field_encode (f.fget x) k
 
 let default =
-  command ## hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
-  command ## hasPermission
-  #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
+  command##hasPermission#=(fun ctx -> foooooooooooooooooo fooooooooooo) ;
+  command##hasPermission#=(fun ctx ->
+                        foooooooooooooooooo fooooooooooo foooooo fooooooooo
+                          foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)

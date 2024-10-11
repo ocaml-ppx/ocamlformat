@@ -398,10 +398,9 @@ let _ =
   ||
   (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo
-    fooooooooooooooo
-    #=
-    (* convert from foos to bars blah blah blah blah blah blah blah blah *)
-    foooooooooooooooooooooooo
+    fooooooooooooooo#=
+                    (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+                    foooooooooooooooooooooooo
     foooooooooooooooo fooooooooooooooo
 
 let _ =
