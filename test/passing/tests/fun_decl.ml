@@ -14,6 +14,13 @@ let _ =
      fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
   some_large_computation
 
+let () =
+ fun x : int ->
+  fun r : int ->
+   fun u ->
+    foooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
 [@@@ocamlformat "wrap-fun-args=false"]
 
 let to_loc_trace
@@ -70,3 +77,28 @@ let f ssssssssss =
     | '0' -> g accuuuuuuuuuum
     | '1' -> h accuuuuuuuuuum
     | _ -> i accuuuuuuuuuum )
+
+let f ssssssssss =
+  String.fold ssssssssss ~init:innnnnnnnnnit ~f:(function
+    | '0' -> g accuuuuuuuuuum
+    | '1' -> h accuuuuuuuuuum
+    | _ -> i accuuuuuuuuuum )
+
+let f _ =
+  let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+  fun x ->
+    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+    x
+
+let f _ =
+  let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+  (* foo *)
+  fun x ->
+    let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
+    x
+
+let space_break =
+  (* a stack is useless here, this would require adding a unit parameter *)
+  with_pp (fun fs ->
+      Box_debug.space_break fs ;
+      Format_.pp_print_space fs () )

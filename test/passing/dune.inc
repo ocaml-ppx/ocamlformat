@@ -2753,7 +2753,7 @@
  (action
   (with-stdout-to issue289.ml.stdout
    (with-stderr-to issue289.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/issue289.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/issue289.ml})))))
 
 (rule
  (alias runtest)
@@ -3463,6 +3463,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/lazy.ml.err lazy.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_binding-deindent-fun.ml.stdout
+   (with-stderr-to let_binding-deindent-fun.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-let-binding-deindent-fun %{dep:tests/let_binding.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.ref let_binding-deindent-fun.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_binding-deindent-fun.ml.err let_binding-deindent-fun.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -5019,6 +5037,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/skip.ml.err skip.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to source-conventional.ml.stdout
+   (with-stderr-to source-conventional.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=default --max-iters=3 %{dep:tests/source.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.ref source-conventional.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/source-conventional.ml.err source-conventional.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

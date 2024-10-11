@@ -11,6 +11,7 @@ profile. This started with version 0.26.0.
 - Support OCaml 5.2 syntax (#2519, @Julow)
   This includes:
   + Local open in types.
+- Allow a custom command to be used to run ocamlformat in the emacs plugin (#2577, @gridbugs)
 
 ### Changed
 
@@ -53,6 +54,7 @@ profile. This started with version 0.26.0.
 - Fix closing `*)` in doc-comments exceeding the margin (#2550, @Julow)
 - Fix invalid syntax geneated for begin..end attributes (#2551, @Julow)
   The attribute is moved from `begin .. end [@attr]` to `begin [@attr] .. end`.
+- Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)

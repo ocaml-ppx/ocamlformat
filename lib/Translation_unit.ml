@@ -233,6 +233,7 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
 let format (type ext std) (ext_fg : ext Extended_ast.t)
     (std_fg : std Std_ast.t) ?output_file ~input_name ~prev_source
     ~ext_parsed ~std_parsed (conf : Conf.t) =
+  Box_debug.enable_stacktraces := conf.opr_opts.debug.v ;
   let dump_ast fg ~suffix ast =
     if conf.opr_opts.debug.v then
       Some

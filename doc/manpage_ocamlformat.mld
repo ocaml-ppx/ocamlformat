@@ -456,12 +456,12 @@ OPTIONS (CODE FORMATTING STYLE)
            attributes.
 
        --wrap-comments
-           Wrap comments and docstrings. Comments and docstrings are divided
-           into paragraphs by open lines (two or more consecutive newlines),
-           and each paragraph is wrapped at the margin. Multi-line comments
-           with vertically-aligned asterisks on the left margin are not
-           wrapped. Consecutive comments with both left and right margin
-           aligned are not wrapped either. The flag is unset by default.
+           Comments are divided into paragraphs by open lines (two or more
+           consecutive newlines), and each paragraph is wrapped at the
+           margin. Multi-line comments with vertically-aligned asterisks on
+           the left margin are not wrapped. Consecutive comments with both
+           left and right margin aligned are not wrapped either. The flag is
+           unset by default.
 
        --wrap-fun-args
            Style for function call. The flag is set by default.

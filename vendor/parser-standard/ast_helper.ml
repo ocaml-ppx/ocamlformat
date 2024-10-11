@@ -103,9 +103,9 @@ module Typ = struct
             Ptyp_object (List.map loop_object_field lst, o)
         | Ptyp_class (longident, lst) ->
             Ptyp_class (longident, List.map loop lst)
-        | Ptyp_alias(core_type, string) ->
-            check_variable var_names t.ptyp_loc string;
-            Ptyp_alias(loop core_type, string)
+        | Ptyp_alias(core_type, alias) ->
+            check_variable var_names alias.loc alias.txt;
+            Ptyp_alias(loop core_type, alias)
         | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
             Ptyp_variant(List.map loop_row_field row_field_list,
                          flag, lbl_lst_option)
@@ -216,7 +216,9 @@ module Exp = struct
     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
-  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+  (* Added *)
+  let hole ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+  (* *)
 
   let case lhs ?guard rhs =
     {
@@ -262,7 +264,9 @@ module Mod = struct
   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
+  (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+  (* *)
 end
 
 module Sig = struct

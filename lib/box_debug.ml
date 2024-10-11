@@ -44,26 +44,42 @@ let css =
   }
   .tooltiptext {
     visibility: hidden;
-    width: 120px;
+    width: min-content;
+    white-space: pre;
     background-color: black;
     color: #fff;
-    text-align: center;
-    padding: 5px 0;
+    text-align: left;
+    padding: 5px 5px;
     border-radius: 6px;
     position: absolute;
     z-index: 1;
+    font-size: 10px;
   }
-  .break:hover .tooltiptext {
+
+  div:hover>.tooltiptext, span:hover>.tooltiptext {
     visibility: visible;
   }
 |}
 
 let debug = ref false
 
+let enable_stacktraces = ref false
+
+let get_stack () =
+  if !enable_stacktraces then
+    Stdlib.Printexc.(30 |> get_callstack |> raw_backtrace_to_string)
+  else ""
+
+let fprintf_as_0 fs fmt = Format_.kasprintf (Format_.pp_print_as fs 0) fmt
+
+let debugf fs fmt =
+  (* Print the debug as length 0 to not disturb complex breaks. *)
+  if !debug then fprintf_as_0 fs fmt else Format_.ifprintf fs fmt
+
 let with_box k fs =
   let g = !debug in
   debug := true ;
-  fprintf fs
+  fprintf_as_0 fs
     {|
 <html>
   <head>
@@ -72,39 +88,55 @@ let with_box k fs =
     </style>
   </head>
   <body>
-    %t
+|}
+    css ;
+  k fs ;
+  fprintf_as_0 fs {|
   </body>
 </html>
-|}
-    css k ;
+|} ;
   debug := g
 
-let box_open ?name box_kind n fs =
-  if !debug then (
-    let name =
-      match name with
-      | Some s -> sprintf "%s:%s" box_kind s
-      | None -> box_kind
-    in
-    let name = if n = 0 then name else sprintf "%s(%d)" name n in
-    open_vbox 0 ;
-    fprintf fs "<div class=\"box\">" ;
-    pp_print_break fs 1 2 ;
-    fprintf fs "<p class=\"name\">%s</p>" name ;
-    pp_print_break fs 1 2 )
+let pp_box_name fs = function
+  | Some n -> Format_.fprintf fs ":%s" n
+  | None -> ()
 
-let box_close fs =
-  if !debug then (
-    pp_close_box fs () ; pp_print_break fs 0 0 ; fprintf fs "</div>" )
+let pp_box_indent fs = function 0 -> () | i -> Format_.fprintf fs "(%d)" i
 
-let break fs n o =
-  if !debug then
-    fprintf fs
-      "<div class=\"break\">(%i,%i)<span class=\"tooltiptext\">break %i \
-       %i</span></div>"
-      n o n o
+let stack_tooltip fs stack =
+  match stack with
+  | Some stack -> debugf fs "<span class=\"tooltiptext\">%s</span>" stack
+  | None -> ()
 
-let pp_keyword fs s = fprintf fs "<span class=\"keyword\">%s</span>" s
+let box_open ?name ?stack box_kind n fs =
+  debugf fs "<div class=\"box\"><p class=\"name\"><span>%s%a%a</span>%a</p>"
+    box_kind pp_box_name name stack_tooltip stack pp_box_indent n
+
+let box_close fs = debugf fs "</div>"
+
+let break fs n o ~stack =
+  debugf fs
+    "<div class=\"break\">(%i,%i)<span class=\"tooltiptext\">break %i %i\n\
+     %s</span></div>"
+    n o n o stack
+
+let space_break ?stack fs =
+  debugf fs "<div class=\"break space_break\">space_break%a</div>"
+    stack_tooltip stack
+
+let cut_break ?stack fs =
+  debugf fs "<div class=\"break cut_break\">cut_break%a</div>" stack_tooltip
+    stack
+
+let force_newline ?stack fs =
+  debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
+    stack_tooltip stack
+
+let start_str fs = debugf fs "<span class='string'>"
+
+let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
+
+let pp_keyword fs s = fprintf_as_0 fs "<span class=\"keyword\">%s</span>" s
 
 let _pp_format_lit fs =
   let open CamlinternalFormatBasics in
@@ -144,31 +176,30 @@ let fmt fs f =
     _format_string fs fmt ; true )
   else false
 
-let cbreak fs ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
-  if !debug then
-    fprintf fs
-      "<div class=\"break cbreak\">(%s,%i,%s) (%s,%i,%s)<span \
-       class=\"tooltiptext\">cbreak ~fits:(%S, %i, %S) ~breaks:(%S, %i, \
-       %S)</span></div>"
-      s1 i s2 s3 j s4 s1 i s2 s3 j s4
+let cbreak fs ~stack ~fits:(s1, i, s2) ~breaks:(s3, j, s4) =
+  debugf fs
+    "<div class=\"break cbreak\">(%s,%i,%s) (%s,%i,%s)<span \
+     class=\"tooltiptext\">cbreak ~fits:(%S, %i, %S) ~breaks:(%S, %i, %S)\n\
+     %s</span></div>"
+    s1 i s2 s3 j s4 s1 i s2 s3 j s4 stack
 
-let if_newline fs s =
-  if !debug then
-    fprintf fs
-      "<div class=\"break if_newline\">(%s)<span \
-       class=\"tooltiptext\">if_newline %S</span></div>"
-      s s
+let if_newline fs ~stack s =
+  debugf fs
+    "<div class=\"break if_newline\">(%s)<span \
+     class=\"tooltiptext\">if_newline %S\n\
+     %s</span></div>"
+    s s stack
 
-let break_unless_newline fs n o =
-  if !debug then
-    fprintf fs
-      "<div class=\"break break_unless_newline\">(%i,%i)<span \
-       class=\"tooltiptext\">break_unless_newline %i %i</span></div>"
-      n o n o
+let break_unless_newline fs ~stack n o =
+  debugf fs
+    "<div class=\"break break_unless_newline\">(%i,%i)<span \
+     class=\"tooltiptext\">break_unless_newline %i %i\n\
+     %s</span></div>"
+    n o n o stack
 
-let fits_or_breaks fs fits n o breaks =
-  if !debug then
-    fprintf fs
-      "<div class=\"break fits_or_breaks\">(%s,%i,%i,%s)<span \
-       class=\"tooltiptext\">fits_or_breaks %S %i %i %S</span></div>"
-      fits n o breaks fits n o breaks
+let fits_or_breaks fs ~stack fits n o breaks =
+  debugf fs
+    "<div class=\"break fits_or_breaks\">(%s,%i,%i,%s)<span \
+     class=\"tooltiptext\">fits_or_breaks %S %i %i %S\n\
+     %s</span></div>"
+    fits n o breaks fits n o breaks stack

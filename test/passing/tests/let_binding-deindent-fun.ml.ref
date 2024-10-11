@@ -107,8 +107,8 @@ let f aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
   ()
 
 let _ =
- fun aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
-     dddddddddddddddddd eeeeeeeeeeeeee ->
+  fun aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
+      dddddddddddddddddd eeeeeeeeeeeeee ->
   ()
 
 let _ =
@@ -236,7 +236,7 @@ let _ =
 
 module A = struct
   let f : int S.t ab -> float S.t ab -> string =
-   fun (l : int S.t ab) (r : float S.t ab) ->
+    fun (l : int S.t ab) (r : float S.t ab) ->
     match (l, r) with A, B -> "f A B"
   ;;
 end
@@ -263,7 +263,7 @@ let a, b = (raise Exit : int * int)
 let a, b = (raise Exit : int * int)
 
 let _ =
- fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : _ ->
+  fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : _ ->
   match () with _ -> ()
 ;;
 
