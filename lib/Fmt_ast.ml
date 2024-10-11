@@ -1812,11 +1812,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
     else
       match xarg.ast.pexp_desc with
-      | Pexp_function _ ->
-          let pro = pro $ fmt_if parens (str "(") in
-          hvbox 0
-            ( fmt_expression c ~pro ~parens:false xarg
-            $ fmt_if parens (str ")") )
+      | Pexp_function _ -> hvbox 0 (fmt_expression c ~pro ~parens xarg)
       | _ ->
           hvbox 0
             ( pro
@@ -3113,7 +3109,7 @@ and fmt_class_field c {ast= cf; _} =
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"clf"
-        (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after))
+        (hvbox 0 (doc_before $ k $ fmt_atrs $ doc_after) $ fmt_cmts_after) )
   @@
   match cf.pcf_desc with
   | Pcf_inherit (override, cl, parent) ->
@@ -3173,7 +3169,7 @@ and fmt_class_type_field c {ast= cf; _} =
     fmt_cmts_before
     $ hvbox 0 ~name:"ctf"
         ( hvbox 0 (doc_before $ hvbox 0 k $ fmt_atrs $ doc_after)
-        $ fmt_cmts_after ))
+        $ fmt_cmts_after ) )
   @@
   match cf.pctf_desc with
   | Pctf_inherit ct ->
@@ -4386,7 +4382,7 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"
-        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)))
+        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)) )
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]

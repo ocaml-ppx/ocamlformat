@@ -274,8 +274,7 @@ module Exp = struct
     | _ -> false
 
   let indent_function (c : Conf.t) ~ctx ~ctx0 ~parens =
-    if ctx_is_rhs_of_infix ~ctx0 ~ctx then
-      if ocp c then (* Assume parentheses will be outputed *) 1 else 0
+    if ctx_is_rhs_of_infix ~ctx0 ~ctx then if ocp c && parens then 1 else 0
     else
       let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
       if Poly.equal c.fmt_opts.function_indent_nested.v `Always then

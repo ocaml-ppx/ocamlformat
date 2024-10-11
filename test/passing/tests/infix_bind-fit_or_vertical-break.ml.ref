@@ -240,7 +240,7 @@ let default =
   command##hasPermission#=(fun ctx -> foooooooooooooooooo fooooooooooo) ;
   command##hasPermission#=(fun ctx ->
                         foooooooooooooooooo fooooooooooo foooooo fooooooooo
-                          foooooooooo) ;
+                          foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)

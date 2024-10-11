@@ -106,5 +106,5 @@ let space_break =
 let _ =
   (fun k ->
     let _ = 42 in
-    ())
+    () )
   @@ ()

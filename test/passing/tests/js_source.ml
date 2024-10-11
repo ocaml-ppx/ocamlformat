@@ -8212,3 +8212,21 @@ let _ =
      | `Fooooooooooooooooooooooooooooooooooooooo -> 1
      | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2)
 ;;
+
+let _ =
+  match () with
+  | _ ->
+    f
+    >>= (function
+     | `Fooooooooooooooooooooooooooooooooooooooo -> 1
+     | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2)
+    >>= foo
+;;
+
+let exists t key =
+  S.Tree.kind t.tree (path key)
+  >|= function
+  | Some `Contents -> Ok (Some `Value)
+  | Some `Node -> Ok (Some `Dictionary)
+  | None -> Ok None
+;;
