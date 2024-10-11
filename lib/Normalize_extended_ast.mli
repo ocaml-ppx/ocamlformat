@@ -20,3 +20,6 @@ val equal : 'a t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 val diff_cmts :
   Conf.t -> Cmt.t list -> Cmt.t list -> (unit, Cmt.error list) Result.t
 (** Difference between two lists of comments. *)
+
+val normalize_code : Conf.t -> string -> string
+(** Normalize a code block in docstrings. *)

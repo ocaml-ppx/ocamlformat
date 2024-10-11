@@ -18,49 +18,10 @@ let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
   | _ -> false
 
-let dedup_cmts fragment ast comments =
-  let of_ast ast =
-    let docs = ref (Set.empty (module Cmt)) in
-    let attribute m atr =
-      match atr with
-      | { attr_payload=
-            PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, _, None))
-                        ; pexp_loc
-                        ; _ }
-                      , [] )
-                ; _ } ]
-        ; _ }
-        when is_doc atr ->
-          docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
-          atr
-      | _ -> Ast_mapper.default_mapper.attribute m atr
-    in
-    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
-    !docs
-  in
-  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
-
-let normalize_code conf (m : Ast_mapper.mapper) txt =
-  let input_name = "<output>" in
-  match
-    Parse_with_comments.parse Parse.ast Structure conf ~input_name
-      ~source:txt
-  with
-  | {ast; comments; _} ->
-      let comments = dedup_cmts Structure ast comments in
-      let print_comments fmt (l : Cmt.t list) =
-        List.sort l ~compare:(fun a b ->
-            Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
-        |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (Cmt.txt cmt))
-      in
-      let ast = m.structure m ast in
-      Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation ast
-        print_comments comments
-  | exception _ -> txt
+let normalize_code conf txt =
+  (* Normalize code blocks in docstrings using the extended AST. This
+     correctly handles repl phrases. *)
+  Normalize_extended_ast.normalize_code conf txt
 
 let docstring (c : Conf.t) =
   Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings.v
@@ -83,7 +44,7 @@ let make_mapper conf ~ignore_doc_comments =
                   , [] )
             ; _ } as pstr ) ]
       when is_doc attr ->
-        let normalize_code = normalize_code conf m in
+        let normalize_code = normalize_code conf in
         let doc' = docstring conf ~normalize_code doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
@@ -239,8 +200,7 @@ let docstrings (type a) (fragment : a t) s =
   !docstrings
 
 let docstring conf =
-  let mapper = make_mapper conf ~ignore_doc_comments:false in
-  let normalize_code = normalize_code conf mapper in
+  let normalize_code = normalize_code conf in
   docstring conf ~normalize_code
 
 let moved_docstrings fragment c s1 s2 =
