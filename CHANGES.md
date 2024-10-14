@@ -8,9 +8,10 @@ profile. This started with version 0.26.0.
 
 ### Added
 
-- Support OCaml 5.2 syntax (#2519, @Julow)
-  This includes:
-  + Local open in types.
+- \* Support OCaml 5.2 syntax (#2519, #2544, @Julow, @EmileTrotignon)
+  This includes local open in types and changed syntax for functions.
+  This might change the formatting of some functions due to the formatting code
+  being completely rewritten.
 - Allow a custom command to be used to run ocamlformat in the emacs plugin (#2577, @gridbugs)
 
 ### Changed
