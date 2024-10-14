@@ -67,10 +67,11 @@ jobs:
           - conventional
           - ocamlformat
           - janestreet
-        include:
-          - ocp_indent: true
-            ocp_indent_config: JaneStreet
-            profile: janestreet
+        # To enable comparing with ocp-indent:
+        # include:
+        #   - ocp_indent: true
+        #     ocp_indent_config: JaneStreet
+        #     profile: janestreet
 
     steps:
       - name: Install ocp-indent
