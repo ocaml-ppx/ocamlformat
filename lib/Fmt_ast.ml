@@ -4460,7 +4460,6 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
 
 and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
     ~body_loc ~has_attr ~indent_after_in =
-  let parens = parens || has_attr in
   let fmt_in indent =
     match c.conf.fmt_opts.break_before_in.v with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
@@ -4479,13 +4478,14 @@ and fmt_let c ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc_in
         | `Compact -> space_break )
   in
   let blank_line_after_in = sequence_blank_line c loc_in body_loc in
-  Params.Exp.wrap c.conf ~parens:(parens || has_attr) ~fits_breaks:false
-    (vbox 0
-       ( hvbox 0 (list_fl bindings fmt_binding)
-       $ ( if blank_line_after_in then str "\n" $ cut_break
-           else break 1000 indent_after_in )
-       $ hvbox 0 fmt_expr ) )
-  $ fmt_atrs
+  Params.Exp.wrap c.conf ~parens ~fits_breaks:false
+    ( Params.Exp.wrap c.conf ~parens:has_attr ~fits_breaks:false
+        (vbox 0
+           ( hvbox 0 (list_fl bindings fmt_binding)
+           $ ( if blank_line_after_in then str "\n" $ cut_break
+               else break 1000 indent_after_in )
+           $ hvbox 0 fmt_expr ) )
+    $ fmt_atrs )
 
 and fmt_value_constraint c vc_opt =
   match vc_opt with

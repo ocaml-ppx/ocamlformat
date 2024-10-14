@@ -53,8 +53,9 @@ profile. This started with version 0.26.0.
 - Fix comments around underscore in record patterns (#2540, @Julow)
 - Fix dropped comments before `begin .. end` in a match case (#2541, @Julow)
 - Fix closing `*)` in doc-comments exceeding the margin (#2550, @Julow)
-- Fix invalid syntax geneated for begin..end attributes (#2551, @Julow)
+- Fix invalid syntax generated for begin..end attributes (#2551, @Julow)
   The attribute is moved from `begin .. end [@attr]` to `begin [@attr] .. end`.
+- Fix missing parentheses around `let .. in [@attr]` (#2564, @Julow)
 - Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 
 ### Changes
