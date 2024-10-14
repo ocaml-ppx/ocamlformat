@@ -108,3 +108,10 @@ let _ =
     let _ = 42 in
     () )
   @@ ()
+
+let _ =
+  let _ = () in
+  fun (context : Context.t)
+      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t) ->
+    let _ = () in
+    ()
