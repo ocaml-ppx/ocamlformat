@@ -7423,3 +7423,12 @@ let () =
      | _ -> ())
   | _ -> ()
 ;;
+
+let f = function
+  | Foo -> bar
+  | EArr l ->
+      EArr
+        (List.map l ~f:(function
+          | ElementHole -> ElementHole
+          | Element e -> Element (m#expression e)
+          | ElementSpread e -> ElementSpread (m#expression e)))
