@@ -1,3 +1,0 @@
-## Conventional profile
-
-## Janestreet profile
