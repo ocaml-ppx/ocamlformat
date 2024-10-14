@@ -102,3 +102,16 @@ let space_break =
   with_pp (fun fs ->
       Box_debug.space_break fs ;
       Format_.pp_print_space fs () )
+
+let _ =
+  (fun k ->
+    let _ = 42 in
+    () )
+  @@ ()
+
+let _ =
+  let _ = () in
+  fun (context : Context.t)
+      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t) ->
+    let _ = () in
+    ()
