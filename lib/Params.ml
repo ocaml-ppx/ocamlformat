@@ -309,8 +309,7 @@ module Exp = struct
   let box_fun_decl ~ctx0 c k =
     match ctx0 with
     | _ when ocp c -> hvbox 2 k
-    | Str _ | Lb _ | Clf _
-    | Exp {pexp_desc=Pexp_let _;_} -> hovbox 4 k
+    | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
 end
 
