@@ -69,9 +69,9 @@ let f ssssssssss =
 
 let f ssssssssss =
   String.fold ssssssssss ~init:innnnnnnnnnit ~f:(function
-      | '0' -> g accuuuuuuuuuum
-      | '1' -> h accuuuuuuuuuum
-      | _ -> i accuuuuuuuuuum )
+    | '0' -> g accuuuuuuuuuum
+    | '1' -> h accuuuuuuuuuum
+    | _ -> i accuuuuuuuuuum )
 
 let f _ =
   let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
@@ -110,8 +110,8 @@ class traverse_labels h =
   object
     method statement =
       function
-        | Labelled_statement (L l, (s, _)) ->
-            let m = {<ldepth = ldepth + 1>} in
-            Hashtbl.add h l ldepth ; m#statement s
-        | s -> super#statement s
+      | Labelled_statement (L l, (s, _)) ->
+          let m = {<ldepth = ldepth + 1>} in
+          Hashtbl.add h l ldepth ; m#statement s
+      | s -> super#statement s
   end

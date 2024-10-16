@@ -275,18 +275,12 @@ module Exp = struct
 
   let indent_function (c : Conf.t) ~ctx ~ctx0 ~parens =
     if ctx_is_rhs_of_infix ~ctx0 ~ctx then if ocp c && parens then 1 else 0
+    else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
+      c.fmt_opts.function_indent.v
     else
-      let extra = if c.fmt_opts.wrap_fun_args.v then 0 else 2 in
-      if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
-        c.fmt_opts.function_indent.v + extra
-      else if ocp c then
-        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> 2
-        | None -> if parens then 2 else 0
-      else
-        match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some _ -> 2 + extra
-        | None -> extra
+      match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
+      | Some _ -> 2
+      | None -> if ocp c && parens then 2 else 0
 
   let box_function_cases c ?indent ~ctx ~ctx0 ~parens =
     let indent =
