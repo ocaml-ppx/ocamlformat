@@ -5,12 +5,24 @@ let _ = fun (x : int) : int -> (some_large_computation : int)
 let fooo = List.foooo ~f:(fun foooo foooo : bool -> foooooooooooooooooooooo)
 
 let _ =
- fun (x : int) (x : int) (x : int) (x : int) (x : int) :
+ fun (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     :
      fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
   some_large_computation
 
 let _ =
- fun (x : int) (x : int) (x : int) (x : int) (x : int) (x : int) (x : int) :
+ fun (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     (x : int)
+     :
      fooooooooooooooooooooooooooo foooooooooooooo foooooooooo ->
   some_large_computation
 
@@ -25,12 +37,16 @@ let to_loc_trace
     ?(desc_of_source =
       fun source ->
         let callsite = Source.call_site source in
-        Format.asprintf "return from %a" Typ.Procname.pp
+        Format.asprintf
+          "return from %a"
+          Typ.Procname.pp
           (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
     ?(desc_of_sink =
       fun sink ->
         let callsite = Sink.call_site sink in
-        Format.asprintf "call to %a" Typ.Procname.pp
+        Format.asprintf
+          "call to %a"
+          Typ.Procname.pp
           (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
     (passthroughs, sources, sinks) =
   ()
@@ -43,7 +59,9 @@ let translate_captured
   ()
 
 let f ssssssssss =
-  String.fold ssssssssss ~init:innnnnnnnnnit
+  String.fold
+    ssssssssss
+    ~init:innnnnnnnnnit
     ~f:(fun accuuuuuuuuuum -> function
     | '0' -> g accuuuuuuuuuum
     | '1' -> h accuuuuuuuuuum
@@ -51,9 +69,9 @@ let f ssssssssss =
 
 let f ssssssssss =
   String.fold ssssssssss ~init:innnnnnnnnnit ~f:(function
-    | '0' -> g accuuuuuuuuuum
-    | '1' -> h accuuuuuuuuuum
-    | _ -> i accuuuuuuuuuum )
+      | '0' -> g accuuuuuuuuuum
+      | '1' -> h accuuuuuuuuuum
+      | _ -> i accuuuuuuuuuum )
 
 let f _ =
   let foooooooooooooooooooooooooooo = foooooooooooooooooooooooooooo in
@@ -83,7 +101,8 @@ let _ =
 let _ =
   let _ = () in
   fun (context : Context.t)
-      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t) ->
+      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t)
+    ->
     let _ = () in
     ()
 
@@ -91,8 +110,8 @@ class traverse_labels h =
   object
     method statement =
       function
-      | Labelled_statement (L l, (s, _)) ->
-          let m = {<ldepth = ldepth + 1>} in
-          Hashtbl.add h l ldepth ; m#statement s
-      | s -> super#statement s
+        | Labelled_statement (L l, (s, _)) ->
+            let m = {<ldepth = ldepth + 1>} in
+            Hashtbl.add h l ldepth ; m#statement s
+        | s -> super#statement s
   end
