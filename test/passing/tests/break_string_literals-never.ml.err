@@ -1,7 +1,7 @@
-Warning: tests/break_string_literals.ml:4 exceeds the margin
-Warning: tests/break_string_literals.ml:7 exceeds the margin
-Warning: tests/break_string_literals.ml:11 exceeds the margin
-Warning: tests/break_string_literals.ml:48 exceeds the margin
-Warning: tests/break_string_literals.ml:51 exceeds the margin
-Warning: tests/break_string_literals.ml:63 exceeds the margin
-Warning: tests/break_string_literals.ml:68 exceeds the margin
+Warning: tests/break_string_literals.ml:3 exceeds the margin
+Warning: tests/break_string_literals.ml:6 exceeds the margin
+Warning: tests/break_string_literals.ml:10 exceeds the margin
+Warning: tests/break_string_literals.ml:47 exceeds the margin
+Warning: tests/break_string_literals.ml:50 exceeds the margin
+Warning: tests/break_string_literals.ml:62 exceeds the margin
+Warning: tests/break_string_literals.ml:67 exceeds the margin

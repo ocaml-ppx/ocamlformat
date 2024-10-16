@@ -153,3 +153,14 @@ let _ =
   else if (* bar *)
     bar then 1
   else 2
+
+let compare s1 s2 =
+  if String.equal s1 s2 then (* this simplifies the next two cases *)
+    0
+  else if String.equal s1 Cmdliner.Manpage.s_options then
+    (* ensure OPTIONS section is last (hence first in the manual) *)
+    1
+  else if String.equal s2 Cmdliner.Manpage.s_options then (* same as above *)
+    -1
+  else (* reverse order *)
+    String.compare s2 s1

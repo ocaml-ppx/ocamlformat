@@ -698,7 +698,8 @@ type if_then_else =
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
-    ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
+    ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond
+    ~keyword_comments ~has_keyword_comments =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
   let beginend, branch_expr =
     let ast = xbch.Ast.ast in
@@ -727,22 +728,28 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
   let cond () =
     match xcond with
     | Some xcnd ->
-        hvbox 0
-          ( hvbox 2
-              ( fmt_if (not first) (str "else ")
-              $ str "if"
-              $ fmt_if first (fmt_opt fmt_extension_suffix)
-              $ fmt_attributes $ space_break $ fmt_cond xcnd )
-          $ space_break $ str "then" )
-    | None -> str "else"
+        hvbox 2
+          ( hvbox 0
+              ( hvbox 2
+                  ( fmt_if (not first) (str "else ")
+                  $ str "if"
+                  $ fmt_if first (fmt_opt fmt_extension_suffix)
+                  $ fmt_attributes $ space_break $ fmt_cond xcnd )
+              $ space_break $ str "then" )
+          $ keyword_comments )
+    | None -> hvbox 2 (str "else" $ keyword_comments)
   in
-  let branch_pro = fmt_or (beginend || parens_bch) (str " ") (break 1 2) in
+  let branch_pro ?(indent = 2) () =
+    if has_keyword_comments then break 1000 indent
+    else if beginend || parens_bch then str " "
+    else break 1 indent
+  in
   match c.fmt_opts.if_then_else.v with
   | `Compact ->
       { box_branch= hovbox ~name:"Params.get_if_then_else `Compact" 2
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro= fmt_or (beginend || parens_bch) (str " ") space_break
+      ; branch_pro= branch_pro ~indent:0 ()
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
@@ -758,7 +765,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       { box_branch= Fn.id
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro
+      ; branch_pro= branch_pro ()
       ; wrap_parens= wrap_parens ~wrap_breaks:(wrap (break 1000 2) noop)
       ; box_expr= Some false
       ; expr_pro= None
@@ -775,7 +782,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
             | _ -> 0 )
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro
+      ; branch_pro= branch_pro ()
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
@@ -798,7 +805,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       { box_branch= Fn.id
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro
+      ; branch_pro= branch_pro ()
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
@@ -814,6 +821,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
           | `Closing_on_separate_line when parens_bch -> str " "
           | _ -> space_break ) }
   | `Keyword_first ->
+      let keyword =
+        hvbox 2
+          ( fmt_or (Option.is_some xcond) (str "then") (str "else")
+          $ keyword_comments )
+      in
       { box_branch= Fn.id
       ; cond=
           opt xcond (fun xcnd ->
@@ -823,11 +835,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
                     (str "else if")
                 $ fmt_attributes $ space_break $ fmt_cond xcnd )
               $ space_break )
-      ; box_keyword_and_expr=
-          (fun k ->
-            hvbox 2
-              (fmt_or (Option.is_some xcond) (str "then") (str "else") $ k) )
-      ; branch_pro= fmt_or (beginend || parens_bch) (str " ") space_break
+      ; box_keyword_and_expr= (fun k -> hovbox 2 (keyword $ k))
+      ; branch_pro= branch_pro ~indent:0 ()
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
@@ -890,8 +899,7 @@ module Align = struct
 
   let module_pack (c : Conf.t) ~me =
     if not c.fmt_opts.ocp_indent_compat.v then false
-    else
-      (* Align when the constraint is not desugared. *)
+    else (* Align when the constraint is not desugared. *)
       match me.pmod_desc with
       | Pmod_structure _ | Pmod_ident _ -> false
       | _ -> true

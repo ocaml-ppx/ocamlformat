@@ -2354,6 +2354,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         parenze_exp xbch && not symbol_parens
                       in
                       let parens_exp = false in
+                      let keyword_comments, has_keyword_comments =
+                        let exp_loc = xbch.ast.pexp_loc in
+                        let has = Cmts.has_before c.cmts exp_loc in
+                        let pro = break 1 0 in
+                        ( Cmts.fmt_before ~pro ~epi:noop ~eol:noop c exp_loc
+                        , has )
+                      in
                       let p =
                         Params.get_if_then_else c.conf ~first ~last
                           ~parens_bch ~parens_prev_bch:!parens_prev_bch
@@ -2364,6 +2371,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                           ~fmt_attributes:
                             (fmt_attributes c ~pre:Blank pexp_attributes)
                           ~fmt_cond:(fmt_expression ~box:false c)
+                          ~keyword_comments ~has_keyword_comments
                       in
                       parens_prev_bch := parens_bch ;
                       p.box_branch
@@ -2924,8 +2932,7 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then
-      (* Side effect order is important. *)
+    if List.is_empty fields then (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in
