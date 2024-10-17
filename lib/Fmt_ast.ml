@@ -2326,7 +2326,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_ifthenelse (if_branches, else_) ->
       let last_loc =
         match else_ with
-        | Some e -> e.pexp_loc
+        | Some (e, _) -> e.pexp_loc
         | None -> (List.last_exn if_branches).if_body.pexp_loc
       in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:pexp_loc ~after:last_loc ;
@@ -2335,12 +2335,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         let with_conds =
           List.map if_branches ~f:(fun x ->
               ( Some (sub_exp ~ctx x.if_cond)
+              , x.if_loc_then
               , sub_exp ~ctx x.if_body
               , x.if_attrs ) )
         in
         match else_ with
-        | Some x ->
-            List.rev ((None, sub_exp ~ctx x, []) :: List.rev with_conds)
+        | Some (x, loc_else) ->
+            List.rev
+              ((None, loc_else, sub_exp ~ctx x, []) :: List.rev with_conds)
         | None -> with_conds
       in
       pro
@@ -2348,12 +2350,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           ( Params.Exp.wrap c.conf ~parens:(parens || has_attr)
               (hvbox 0
                  (list_fl cnd_exps
-                    (fun ~first ~last (xcond, xbch, pexp_attributes) ->
+                    (fun
+                      ~first
+                      ~last
+                      (xcond, keyword_loc, xbch, pexp_attributes)
+                    ->
                       let symbol_parens = Exp.is_symbol xbch.ast in
                       let parens_bch =
                         parenze_exp xbch && not symbol_parens
                       in
-                      let parens_exp = false in
+                      let cmts_before_kw = Cmts.fmt_before c keyword_loc in
+                      let cmts_after_kw =
+                        if Cmts.has_after c.cmts keyword_loc then
+                          Some (Cmts.fmt_after c keyword_loc)
+                        else None
+                      in
                       let p =
                         Params.get_if_then_else c.conf ~first ~last
                           ~parens_bch ~parens_prev_bch:!parens_prev_bch
@@ -2364,6 +2375,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                           ~fmt_attributes:
                             (fmt_attributes c ~pre:Blank pexp_attributes)
                           ~fmt_cond:(fmt_expression ~box:false c)
+                          ~cmts_before_kw ~cmts_after_kw
                       in
                       parens_prev_bch := parens_bch ;
                       p.box_branch
@@ -2372,7 +2384,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                             ( p.branch_pro
                             $ p.wrap_parens
                                 ( fmt_expression c ?box:p.box_expr
-                                    ~parens:parens_exp ?pro:p.expr_pro
+                                    ~parens:false ?pro:p.expr_pro
                                     ?eol:p.expr_eol p.branch_expr
                                 $ p.break_end_branch ) ) )
                       $ fmt_if (not last) p.space_between_branches ) ) )
@@ -2924,8 +2936,7 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then
-      (* Side effect order is important. *)
+    if List.is_empty fields then (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in

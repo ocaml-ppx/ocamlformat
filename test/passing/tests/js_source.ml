@@ -8230,3 +8230,6 @@ let exists t key =
   | Some `Node -> Ok (Some `Dictionary)
   | None -> Ok None
 ;;
+
+let _ = if x then 42 (* dummy *) else y
+let _ = if x then 42 (* dummy *) else if y then z else w

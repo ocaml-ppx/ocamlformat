@@ -527,11 +527,12 @@ module E = struct
     | Pconstraint ty -> Pconstraint (sub.typ sub ty)
     | Pcoerce (ty1, ty2) -> Pcoerce (map_opt (sub.typ sub) ty1, sub.typ sub ty2)
 
-  let map_if_branch sub {if_cond; if_body; if_attrs} =
+  let map_if_branch sub {if_cond; if_body; if_attrs; if_loc_then} =
     let if_cond = sub.expr sub if_cond in
     let if_body = sub.expr sub if_body in
     let if_attrs = sub.attributes sub if_attrs in
-    { if_cond; if_body; if_attrs }
+    let if_loc_then = sub.location sub if_loc_then in
+    { if_cond; if_body; if_attrs; if_loc_then }
 
   let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} =
     let open Exp in
@@ -579,8 +580,11 @@ module E = struct
     | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_ifthenelse (eN, e2) ->
+        let map_else (exp, loc_else) =
+          sub.expr sub exp, sub.location sub loc_else
+        in
         ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)
-          (map_opt (sub.expr sub) e2)
+          (map_opt map_else e2)
     | Pexp_sequence (e1, e2) ->
         sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
     | Pexp_while (e1, e2) ->
