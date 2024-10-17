@@ -699,7 +699,7 @@ type if_then_else =
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
     ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond
-    ~keyword_comments ~has_keyword_comments =
+    ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
   let beginend, branch_expr =
     let ast = xbch.Ast.ast in
@@ -735,12 +735,12 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
                   $ str "if"
                   $ fmt_if first (fmt_opt fmt_extension_suffix)
                   $ fmt_attributes $ space_break $ fmt_cond xcnd )
-              $ space_break $ str "then" )
-          $ keyword_comments )
-    | None -> hvbox 2 (str "else" $ keyword_comments)
+              $ space_break $ cmts_before_kw $ str "then" )
+          $ opt cmts_after_kw Fn.id )
+    | None -> cmts_before_kw $ hvbox 2 (str "else" $ opt cmts_after_kw Fn.id)
   in
   let branch_pro ?(indent = 2) () =
-    if has_keyword_comments then break 1000 indent
+    if Option.is_some cmts_after_kw then break 1000 indent
     else if beginend || parens_bch then str " "
     else break 1 indent
   in
@@ -824,7 +824,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
       let keyword =
         hvbox 2
           ( fmt_or (Option.is_some xcond) (str "then") (str "else")
-          $ keyword_comments )
+          $ opt cmts_after_kw Fn.id )
       in
       { box_branch= Fn.id
       ; cond=
@@ -833,7 +833,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
                 ( fmt_or first
                     (str "if" $ fmt_opt fmt_extension_suffix)
                     (str "else if")
-                $ fmt_attributes $ space_break $ fmt_cond xcnd )
+                $ fmt_attributes $ space_break $ fmt_cond xcnd
+                $ cmts_before_kw )
               $ space_break )
       ; box_keyword_and_expr= (fun k -> hovbox 2 (keyword $ k))
       ; branch_pro= branch_pro ~indent:0 ()

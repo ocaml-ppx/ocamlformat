@@ -131,6 +131,8 @@ let foo =
     else some other action
   else some default action
 
+let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
+
 let foo =
   if cmp < 0
   then (* foo *)
@@ -189,7 +191,8 @@ let compare s1 s2 =
   then (* this simplifies the next two cases *)
     0
   else if String.equal s1 Cmdliner.Manpage.s_options
-  then (* ensure OPTIONS section is last (hence first in the manual) *)
+  then
+    (* ensure OPTIONS section is last (hence first in the manual) *)
     1
   else if String.equal s2 Cmdliner.Manpage.s_options
   then (* same as above *)

@@ -1424,7 +1424,7 @@ end = struct
         | Pexp_ifthenelse (eN, e) ->
             assert (
               List.exists eN ~f:(fun x -> f x.if_cond || f x.if_body)
-              || Option.exists e ~f )
+              || Option.exists e ~f:(fun (x, _) -> f x) )
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
@@ -1991,7 +1991,7 @@ end = struct
         | Pexp_assert e
          |Pexp_construct (_, Some e)
          |Pexp_function (_, _, Pfunction_body e)
-         |Pexp_ifthenelse (_, Some e)
+         |Pexp_ifthenelse (_, Some (e, _))
          |Pexp_prefix (_, e)
          |Pexp_infix (_, _, e)
          |Pexp_lazy e
@@ -2066,7 +2066,7 @@ end = struct
       match exp.pexp_desc with
       | Pexp_assert e
        |Pexp_construct (_, Some e)
-       |Pexp_ifthenelse (_, Some e)
+       |Pexp_ifthenelse (_, Some (e, _))
        |Pexp_prefix (_, e)
        |Pexp_infix (_, _, e)
        |Pexp_lazy e
@@ -2204,7 +2204,7 @@ end = struct
            && List.exists eN ~f:(fun x -> x.if_body == exp)
            && ifthenelse pexp_desc ->
         true
-    | Exp {pexp_desc= Pexp_ifthenelse (_, Some e); _}, {pexp_desc; _}
+    | Exp {pexp_desc= Pexp_ifthenelse (_, Some (e, _)); _}, {pexp_desc; _}
       when !parens_ite && e == exp && ifthenelse pexp_desc ->
         true
     | ( Exp {pexp_desc= Pexp_infix (_, _, e1); _}
@@ -2294,7 +2294,8 @@ end = struct
       | Pexp_ifthenelse (eN, _)
         when List.exists eN ~f:(fun x -> x.if_body == exp) ->
           exposed_right_exp ThenElse exp
-      | Pexp_ifthenelse (_, Some els) when els == exp -> Exp.is_sequence exp
+      | Pexp_ifthenelse (_, Some (els, _)) when els == exp ->
+          Exp.is_sequence exp
       | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _) when exp2 == exp
         ->
           false

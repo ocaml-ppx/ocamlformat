@@ -393,9 +393,13 @@ and expression i ppf x =
       line i ppf "Pexp_list\n";
       list i expression ppf l;
   | Pexp_ifthenelse (eN, eo) ->
+      let pp_else i ppf (exp, loc_else) =
+        line i ppf "else %a\n" fmt_location loc_else;
+        expression (i+1) ppf exp
+      in
       line i ppf "Pexp_ifthenelse\n";
       list i if_branch ppf eN;
-      option i expression ppf eo;
+      option i pp_else ppf eo;
   | Pexp_sequence (e1, e2) ->
       line i ppf "Pexp_sequence\n";
       expression i ppf e1;
@@ -502,9 +506,10 @@ and expression i ppf x =
       expression i ppf e1;
       expression i ppf e2
 
-and if_branch i ppf { if_cond; if_body } =
+and if_branch i ppf { if_cond; if_body; if_loc_then } =
   line i ppf "if_branch\n";
   expression i ppf if_cond;
+  line i ppf "then %a\n" fmt_location if_loc_then;
   expression i ppf if_body
 
 and pparam_val i ppf ~loc (l, eo, p) =

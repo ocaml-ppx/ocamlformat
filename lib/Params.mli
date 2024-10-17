@@ -191,8 +191,8 @@ val get_if_then_else :
   -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(expression Ast.xt -> Fmt.t)
-  -> keyword_comments:Fmt.t
-  -> has_keyword_comments:bool
+  -> cmts_before_kw:Fmt.t
+  -> cmts_after_kw:Fmt.t option
   -> if_then_else
 
 val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int

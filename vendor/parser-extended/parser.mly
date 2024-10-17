@@ -2371,16 +2371,19 @@ fun_expr:
       { syntax_error() }
   | IF ext_attributes seq_expr THEN expr ELSE else_=expr
       { let ext, attrs = $2 in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        let if_loc_then = make_loc $loc($4)
+        and loc_else = make_loc $loc($6) in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
         let ite =
           match else_.pexp_desc with
           | Pexp_ifthenelse(brs, else_) -> Pexp_ifthenelse(br :: brs, else_)
-          | _ -> Pexp_ifthenelse([br], Some else_)
+          | _ -> Pexp_ifthenelse([br], Some (else_, loc_else))
         in
         ite, (ext, []) }
   | IF ext_attributes seq_expr THEN expr
       { let ext, attrs = $2 in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        let if_loc_then = make_loc $loc($4) in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
         Pexp_ifthenelse ([br], None), (ext, []) }
   | WHILE ext_attributes seq_expr do_done_expr
       { Pexp_while($3, $4), $2 }

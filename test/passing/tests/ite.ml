@@ -117,6 +117,11 @@ let foo =
   else some default action
 
 let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
+let foo =
+  if cmp < 0 then (* foo *)
+    a + b
+  else (* foo *)
+    a - b
 
 let foo =
   if cmp < 0 then (* ast higher precedence than context: no parens *)
