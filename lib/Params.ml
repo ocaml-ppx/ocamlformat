@@ -825,17 +825,20 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
         hvbox 2
           ( fmt_or (Option.is_some xcond) (str "then") (str "else")
           $ opt cmts_after_kw Fn.id )
+      and cond =
+        match xcond with
+        | Some xcond ->
+            hvbox 2
+              ( fmt_or first
+                  (str "if" $ fmt_opt fmt_extension_suffix)
+                  (str "else if")
+              $ fmt_attributes $ space_break $ fmt_cond xcond
+              $ cmts_before_kw )
+            $ space_break
+        | None -> cmts_before_kw
       in
       { box_branch= Fn.id
-      ; cond=
-          opt xcond (fun xcnd ->
-              hvbox 2
-                ( fmt_or first
-                    (str "if" $ fmt_opt fmt_extension_suffix)
-                    (str "else if")
-                $ fmt_attributes $ space_break $ fmt_cond xcnd
-                $ cmts_before_kw )
-              $ space_break )
+      ; cond
       ; box_keyword_and_expr= (fun k -> hovbox 2 (keyword $ k))
       ; branch_pro= branch_pro ~indent:0 ()
       ; wrap_parens=

@@ -169,3 +169,6 @@ let compare s1 s2 =
     -1
   else (* reverse order *)
     String.compare s2 s1
+
+let _ = if x then 42 (* dummy *) else y
+let _ = if x then 42 (* dummy *) else if y then z else w
