@@ -2208,6 +2208,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to fun_decl-no-wrap-fun-args.ml.stdout
+   (with-stderr-to fun_decl-no-wrap-fun-args.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --no-wrap-fun-args %{dep:tests/fun_decl.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/fun_decl-no-wrap-fun-args.ml.ref fun_decl-no-wrap-fun-args.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/fun_decl-no-wrap-fun-args.ml.err fun_decl-no-wrap-fun-args.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to fun_decl.ml.stdout
    (with-stderr-to fun_decl.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/fun_decl.ml})))))
@@ -2215,7 +2233,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/fun_decl.ml fun_decl.ml.stdout)))
+ (action (diff tests/fun_decl.ml.ref fun_decl.ml.stdout)))
 
 (rule
  (alias runtest)
