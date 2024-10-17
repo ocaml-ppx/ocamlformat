@@ -504,7 +504,7 @@ module E = struct
       match desc with
       | Pparam_val (lab, def, p) ->
           Pparam_val
-            (lab,
+            (sub.arg_label sub lab,
              map_opt (sub.expr sub) def,
              sub.pat sub p)
       | Pparam_newtype ty ->
