@@ -201,7 +201,7 @@ module Exp = struct
         ( kw_in_box
         $ hvbox_if should_box_args 0 (args $ fmt_opt annot $ fmt_opt epi) )
 
-  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx ~parens:_ =
+  let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx =
     let indent =
       if ctx_is_rhs_of_infix ~ctx0 ~ctx then 0
       else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
