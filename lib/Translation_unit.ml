@@ -370,8 +370,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
         Error
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
           ) )
-      else
-        (* All good, continue *)
+      else (* All good, continue *)
         print_check ~i:(i + 1) ~conf ~prev_source:fmted ext_t_new std_t_new
   in
   try print_check ~i:1 ~conf ~prev_source ext_parsed std_parsed with

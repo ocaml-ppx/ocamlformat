@@ -1,6 +1,5 @@
 let () =
-  if true then
-    (* Shrinking the margin a bit *)
+  if true then (* Shrinking the margin a bit *)
     Format.printf
       "@[<v 2>@{<warning>@{<title>Warning@}@}@,\
        @,\
