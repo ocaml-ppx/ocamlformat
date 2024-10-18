@@ -1614,7 +1614,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
     body ~pro $ cls_paren
   in
   let box k = if should_box then box k else k in
-  box (disambiguate_parens_wrap body $ Cmts.fmt_after c loc)
+  box (disambiguate_parens_wrap body) $ Cmts.fmt_after c loc
 
 and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
