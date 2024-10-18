@@ -18,11 +18,13 @@
         [
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
-            before: (* Intentionally not formatted *)
+            before: (* Intentionally not formatted *) is_pun=false
                 None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
+            args
+            []
             expression (a.ml[3,43+2]..[4,59+7])
               Pexp_apply
               expression (a.ml[3,43+2]..[3,43+15])
@@ -47,11 +49,13 @@
         [
           <def> (a.ml[2,34+0]..[4,59+7])
           comments
-            before: (* Intentionally not formatted *)
+            before: (* Intentionally not formatted *) is_pun=false
                 None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
+            args
+            []
             expression (a.ml[3,43+2]..[4,59+7])
               Pexp_apply
               expression (a.ml[3,43+2]..[3,43+15])
@@ -76,11 +80,13 @@
         [
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
-            before: (* Intentionally not formatted *)
+            before: (* Intentionally not formatted *) is_pun=false
                 None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
+            args
+            []
             expression (a.ml[2,34+9]..[2,34+26])
               Pexp_apply
               expression (a.ml[2,34+9]..[2,34+22])
@@ -104,11 +110,13 @@
         [
           <def> (a.ml[2,34+0]..[2,34+26])
           comments
-            before: (* Intentionally not formatted *)
+            before: (* Intentionally not formatted *) is_pun=false
                 None
             pattern (a.ml[2,34+4]..[2,34+6])
               Ppat_construct "()" (a.ml[2,34+4]..[2,34+6])
               None
+            args
+            []
             expression (a.ml[2,34+9]..[2,34+26])
               Pexp_apply
               expression (a.ml[2,34+9]..[2,34+22])
@@ -148,11 +156,13 @@
           <def> (a.ml[2,25+0]..[6,233+3])
           comments
             before: (* before let-binding *)
-             after: (* after let-binding *)
+             after: (* after let-binding *) is_pun=false
                 None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
+            args
+            []
             expression (a.ml[5,90+2]..[6,233+3])
             comments
               before: (* before x binding #1 *)
@@ -162,7 +172,7 @@
                 comments
                   before: (* after unit *)
               [
-                <def> (a.ml[5,90+2]..[5,90+122])
+                <def> (a.ml[5,90+2]..[5,90+122]) is_pun=false
                       None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
@@ -174,6 +184,8 @@
                       before: (* before x *)
                        after: (* after x #1 *)
                        after: (* after x #2 *)
+                  args
+                  []
                   expression (a.ml[5,90+77]..[5,90+122])
                   comments
                     before: (* before unit *)
@@ -204,11 +216,13 @@
           <def> (a.ml[2,25+0]..[6,233+3])
           comments
             before: (* before let-binding *)
-             after: (* after let-binding *)
+             after: (* after let-binding *) is_pun=false
                 None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
+            args
+            []
             expression (a.ml[5,90+2]..[6,233+3])
             comments
               before: (* before x binding #1 *)
@@ -218,7 +232,7 @@
                 comments
                   before: (* after unit *)
               [
-                <def> (a.ml[5,90+2]..[5,90+122])
+                <def> (a.ml[5,90+2]..[5,90+122]) is_pun=false
                       None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
@@ -230,6 +244,8 @@
                       before: (* before x *)
                        after: (* after x #1 *)
                        after: (* after x #2 *)
+                  args
+                  []
                   expression (a.ml[5,90+77]..[5,90+122])
                   comments
                     before: (* before unit *)
@@ -260,11 +276,13 @@
           <def> (a.ml[2,25+0]..[13,265+3])
           comments
             before: (* before let-binding *)
-             after: (* after let-binding *)
+             after: (* after let-binding *) is_pun=false
                 None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
+            args
+            []
             expression (a.ml[5,90+2]..[13,265+3])
             comments
               before: (* before x binding #1 *)
@@ -274,7 +292,7 @@
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
-                   after: (* after unit *)
+                   after: (* after unit *) is_pun=false
                       None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
@@ -286,6 +304,8 @@
                       before: (* before x *)
                        after: (* after x #1 *)
                        after: (* after x #2 *)
+                  args
+                  []
                   expression (a.ml[9,183+4]..[10,210+28])
                   comments
                     before: (* before unit *)
@@ -315,11 +335,13 @@
           <def> (a.ml[2,25+0]..[13,265+3])
           comments
             before: (* before let-binding *)
-             after: (* after let-binding *)
+             after: (* after let-binding *) is_pun=false
                 None
             pattern (a.ml[2,25+4]..[2,25+6])
               Ppat_construct "()" (a.ml[2,25+4]..[2,25+6])
               None
+            args
+            []
             expression (a.ml[5,90+2]..[13,265+3])
             comments
               before: (* before x binding #1 *)
@@ -329,7 +351,7 @@
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
-                   after: (* after unit *)
+                   after: (* after unit *) is_pun=false
                       None
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
@@ -341,6 +363,8 @@
                       before: (* before x *)
                        after: (* after x #1 *)
                        after: (* after x #2 *)
+                  args
+                  []
                   expression (a.ml[9,183+4]..[10,210+28])
                   comments
                     before: (* before unit *)
