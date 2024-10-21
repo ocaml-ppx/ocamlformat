@@ -160,7 +160,7 @@ module Exp = struct
       ~args ~annot =
     let is_let_func =
       match ctx0 with
-      | Ast.Str _ ->
+      | Ast.Str _ | Lb _ ->
           (* special case than aligns the arguments of [let _ = fun ...] *)
           true
       | _ -> false
@@ -234,7 +234,7 @@ module Exp = struct
     let name = "Params.box_fun_expr" in
     let mkbox =
       match ctx0 with
-      | Str _ -> hvbox
+      | Str _ | Lb _ -> hvbox
       | _ ->
           (* JS: The body of a [fun] must break if the intro is too large,
              except if the [fun] is small and parenthesed. *)
@@ -260,7 +260,7 @@ module Exp = struct
   let break_fun_decl_args c ~ctx ~last_arg =
     match ctx with
     | _ when (not last_arg) && ocp c -> str " "
-    | Ast.Str _ ->
+    | Ast.Str _ | Lb _ ->
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
     | Clf _ ->
@@ -912,7 +912,7 @@ module Indent = struct
 
   let docked_function_after_fun (c : Conf.t) ~parens ~ctx0 ~ctx =
     match ctx0 with
-    | Str _ ->
+    | Str _ | Lb _ ->
         (* Cases must be 2-indented relative to the [let], even when
            [let_binding_deindent_fun] is on. *)
         if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0

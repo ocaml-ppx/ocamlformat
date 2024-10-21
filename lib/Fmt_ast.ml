@@ -213,16 +213,17 @@ let box_semisemi c ~parent_ctx b k =
 
 let fmt_hole () = str "_"
 
-let fmt_item_list c ctx update_config ast fmt_item items =
+let fmt_item_list c ctx0 update_config ast fmt_item items =
   let items = update_items_config c items update_config in
-  let break_struct = c.conf.fmt_opts.break_struct.v || is_top ctx in
+  let break_struct = c.conf.fmt_opts.break_struct.v || is_top ctx0 in
   hvbox 0 @@ list_pn items
   @@ fun ~prev (itm, c) ~next ->
-  let loc = Ast.location (ast itm) in
+  let ctx = ast itm in
+  let loc = Ast.location ctx in
   maybe_disabled c loc [] (fun c -> fmt_item c ctx ~prev ~next itm)
   $ opt next (fun (i_n, c_n) ->
         fmt_or
-          (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
+          (break_between c (ctx, c.conf) (ast i_n, c_n.conf))
           (str "\n" $ force_break)
           (fmt_or break_struct force_break space_break) )
 
@@ -2081,6 +2082,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             ; _ }
           when not (Std_longident.is_infix id) ->
             has_attr && parens
+        | Lb _ -> has_attr && parens
         | _ -> has_attr && not parens
       in
       let infix_op_args =
@@ -2559,7 +2561,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_pro = pro in
-      let outer_parens = parens && has_attr in
+      let outer_parens =
+        match ctx with Lb _ -> false | _ -> parens && has_attr
+      in
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       let align = Params.Align.module_pack c.conf ~me in
       let opn_paren =

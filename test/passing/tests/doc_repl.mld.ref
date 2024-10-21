@@ -21,7 +21,8 @@ A toplevel phrase with no output:
 
 {[
   # let x = 2 and y = 3 in
-    x + y ;;
+    x + y
+    ;;
 ]}
 
 A toplevel phrase with output:
@@ -37,7 +38,8 @@ Many toplevel phrases without output:
   # let x = 2 ;;
   # x + 2 ;;
   # let x = 2 and y = 3 in
-    x + y ;;
+    x + y
+    ;;
 ]}
 
 Many toplevel phrases with output:
@@ -48,7 +50,8 @@ Many toplevel phrases with output:
   # x + 2 ;;
   - : int = 4
   # let x = 2 and y = 3 in
-    x + y ;;
+    x + y
+    ;;
 ]}
 
 Output are printed after a newline:
@@ -63,17 +66,20 @@ Excessive linebreaks are removed:
 
 {[
   # let x = 2 in
-    x + 1 ;;
+    x + 1
+    ;;
   output
   # let y = 3 in
-    y + 1 ;;
+    y + 1
+    ;;
 ]}
 
 Linebreak after `#`:
 
 {[
   # let x = 2 in
-    x + 1 ;;
+    x + 1
+    ;;
 ]}
 
 Invalid toplevel phrase/ocaml block:

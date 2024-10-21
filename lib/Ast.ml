@@ -1951,23 +1951,26 @@ end = struct
       ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
+    | ( ( Lb _
+        | Exp {pexp_desc= Pexp_let _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
+      , ( Ppat_construct (_, Some _)
+        | Ppat_variant (_, Some _)
+        | Ppat_cons _ | Ppat_alias _ | Ppat_lazy _ | Ppat_or _ ) ) ->
+        (* Add disambiguation parentheses that are not necessary. *)
+        true
     | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
-      , pat_desc ) -> (
-      match pat_desc with
-      | Ppat_construct (_, Some _)
-       |Ppat_variant (_, Some _)
-       |Ppat_cons _ | Ppat_alias _ | Ppat_constraint _ | Ppat_lazy _
-       |Ppat_or _ ->
-          (* Add disambiguation parentheses that are not necessary. *)
-          true
-      | _ when exposed_right_colon pat ->
-          (* Some patterns must be parenthesed when followed by a colon. *)
-          let pvb =
-            List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
-          in
-          Option.is_some pvb.pvb_constraint
-      | _ -> false )
+      , _ )
+      when exposed_right_colon pat ->
+        (* Some patterns must be parenthesed when followed by a colon. *)
+        let pvb =
+          List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
+        in
+        Option.is_some pvb.pvb_constraint
+    | Lb {pvb_pat; pvb_constraint= Some _; _}, _
+      when pvb_pat == pat && exposed_right_colon pat ->
+        true
     | _ -> false
 
   let marked_parenzed_inner_nested_match =
@@ -2173,6 +2176,7 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
+    | Lb {pvb_expr; _}, _ when pvb_expr == exp -> false
     | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
     | ( Str
           { pstr_desc=
