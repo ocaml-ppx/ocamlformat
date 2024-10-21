@@ -1124,7 +1124,7 @@ and value_binding =
   {
     pvb_pat: pattern;
     pvb_args: expr_function_param list;
-    pvb_expr: expression;
+    pvb_body: function_body; (** For bindings that are not functions, this is [Pfunction_body expr]. *)
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
     pvb_attributes: ext_attrs;

@@ -1101,7 +1101,7 @@ and value_binding i ppf x =
   line i ppf "args\n";
   list i expr_function_param ppf x.pvb_args;
   Option.iter (value_constraint i ppf) x.pvb_constraint;
-  expression i ppf x.pvb_expr
+  function_body i ppf x.pvb_body
 
 and value_constraint i ppf x =
   let pp_sep ppf () = Format.fprintf ppf "@ "; in

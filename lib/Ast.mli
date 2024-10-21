@@ -188,6 +188,8 @@ val sub_sig : ctx:t -> signature_item -> signature_item xt
 val sub_str : ctx:t -> structure_item -> structure_item xt
 (** Construct a structure_item-in-context. *)
 
+val sub_fun_body : ctx:t -> function_body -> function_body xt
+
 val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
 (** Holds of "simple" expressions: constants and constructor and function
     applications of other simple expressions. *)

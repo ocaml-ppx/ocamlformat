@@ -360,7 +360,7 @@ let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
   let nspaces = if cmts_before then 1000 else 1 in
   match ctx with
-  | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} -> (
+  | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} | Lb {pvb_body=Pfunction_cases _;_} -> (
     match c.fmt_opts.break_cases.v with
     | `Nested -> break nspaces 0 $ str "| "
     | _ -> (
@@ -395,7 +395,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
-      , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+      , (( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} | Lb _)
         , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
         2
     | _, _ -> c.fmt_opts.cases_exp_indent.v

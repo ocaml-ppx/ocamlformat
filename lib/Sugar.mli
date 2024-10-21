@@ -42,7 +42,7 @@ module Let_binding : sig
     ; lb_pat: pattern Ast.xt
     ; lb_args: expr_function_param list
     ; lb_typ: value_constraint option
-    ; lb_exp: expression Ast.xt
+    ; lb_body: function_body Ast.xt
     ; lb_pun: bool
     ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }

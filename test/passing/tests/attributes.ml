@@ -322,7 +322,7 @@ let _ =
 
 [@@@a (**b*)]
 
-let (Foo ((A | B) [@attr])) = ()
+let Foo ((A | B) [@attr]) = ()
 
 let ([(A | B) [@attr]; b; c] [@attr]) = ()
 
@@ -330,7 +330,7 @@ let ([|a; (A | B) [@attr]; c|] [@attr]) = ()
 
 let {b= (A | B) [@attr]} = ()
 
-let (`Foo ((`A | `B) [@attr])) = ()
+let `Foo ((`A | `B) [@attr]) = ()
 
 let (A | B) [@attr], (A | B) [@attr] = ()
 
@@ -378,10 +378,10 @@ let _ = f ((* comments *) "c" [@attributes])
 
 let _ = f ((* comments *) 'c' [@attributes])
 
-let _ = function ("foo" [@attr]) -> ("bar" [@attr2])
+let _ = function ("foo" [@attr]) -> ( ("bar" [@attr2]) )
 
 let _ = function
-  | ('A' [@attr]) -> ('B' [@attr2])
+  | ('A' [@attr]) -> ( ('B' [@attr2]) )
   | ('A' .. 'B' [@attr2]) -> ()
 
 let _ =

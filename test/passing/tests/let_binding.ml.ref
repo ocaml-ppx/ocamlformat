@@ -241,7 +241,7 @@ module A = struct
   ;;
 end
 
-let (A (a, _, b) | B (b, a)) = A (1, 2, 3)
+let A (a, _, b) | B (b, a) = A (1, 2, 3)
 
 let copy from ~into : unit =
   let ({ pulse_captured_vars_length_contradictions
