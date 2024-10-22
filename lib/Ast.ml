@@ -1995,6 +1995,26 @@ end = struct
         true
     | _ -> false
 
+  (* Whether to parenze a function on the RHS of a let binding. *)
+  let parenze_function_in_bindings bindings exp =
+    match exp.pexp_desc with
+    | Pexp_function (_, _, fun_body) ->
+        List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
+            if pvb_body == fun_body then
+              (* [fun_body] is the body of the let binding and shouldn't be
+                 parenthesed. [exp] is a synthetic expression constructed in
+                 the formatting code. *)
+              false
+            else
+              match pvb_body with
+              | Pfunction_body let_body when let_body == exp ->
+                  (* Function is in the body of a binding, parentheses are
+                     needed if the binding also defines arguments. *)
+                  not (List.is_empty pvb_args)
+              | _ -> false
+          )
+    | _ -> false
+
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
@@ -2203,6 +2223,7 @@ end = struct
       when body == pvb_body -> (* Let binding defining a function with cases. *)
         false
     | ( Lb {pvb_args=_::_;pvb_body=Pfunction_body body;_}, {pexp_desc= Pexp_function (_,_,Pfunction_cases _);_}) when body == exp-> true
+    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _) when parenze_function_in_bindings pvbs_bindings  exp -> true
     | Lb {pvb_body=Pfunction_body body; _}, _ when body == exp -> false
     | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
     | ( Str

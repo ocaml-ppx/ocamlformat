@@ -4,23 +4,61 @@ let s =
     | Bconstructor bvalue -> bfunction bvalue )
 
 let f _ = (function x -> x + 1)
-let f _ = function x -> x + 1
-let f _ = fun _ -> (function x -> x + 1)
-let f _ = fun _ -> function x -> x + 1
-let f _ = (fun _ -> (function x -> x + 1))
-let f _ = (fun _ -> function x -> x + 1)
-let f _ = (fun _ -> fun x -> x + 1)
-let f _ = fun _ -> fun x -> x + 1
-let f _ = (fun _ -> (fun x -> x + 1))
-let f _ = fun _ -> (fun x -> x + 1)
 
-let _ = let f _ = (function x -> x + 1) in ()
-let _ = let f _ = function x -> x + 1 in ()
-let _ = let f _ = fun _ -> (function x -> x + 1) in ()
-let _ = let f _ = fun _ -> function x -> x + 1 in ()
-let _ = let f _ = (fun _ -> (function x -> x + 1)) in ()
-let _ = let f _ = (fun _ -> function x -> x + 1) in ()
-let _ = let f _ = (fun _ -> fun x -> x + 1) in ()
-let _ = let f _ = fun _ -> fun x -> x + 1 in ()
-let _ = let f _ = (fun _ -> (fun x -> x + 1)) in ()
-let _ = let f _ = fun _ -> (fun x -> x + 1) in ()
+let f _ = function x -> x + 1
+
+let f _ = fun _ -> (function x -> x + 1)
+
+let f _ = (fun _ -> function x -> x + 1)
+
+let f _ = fun _ -> (function x -> x + 1)
+
+let f _ = (fun _ -> function x -> x + 1)
+
+let f _ = fun _ -> fun x -> x + 1
+
+let f _ = fun _ -> fun x -> x + 1
+
+let f _ = fun _ -> fun x -> x + 1
+
+let f _ = fun _ -> fun x -> x + 1
+
+let _ =
+  let f _ = (function x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = function x -> x + 1 in
+  ()
+
+let _ =
+  let f _ = (fun _ -> (function x -> x + 1)) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> function x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> (function x -> x + 1)) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> function x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> fun x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> fun x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> fun x -> x + 1) in
+  ()
+
+let _ =
+  let f _ = (fun _ -> fun x -> x + 1) in
+  ()
