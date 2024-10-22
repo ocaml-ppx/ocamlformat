@@ -1309,8 +1309,8 @@ let v = variantize Enil (triple String Int Int) ("A", 2, 3)
 let ty_abc =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   let proj = function
-    | `A n -> ("A", Some (Tdyn (Int, n)))
-    | `B s -> ("B", Some (Tdyn (String, s)))
+    | (`A n) -> ("A", Some (Tdyn (Int, n)))
+    | (`B s) -> ("B", Some (Tdyn (String, s)))
     | `C -> ("C", None)
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj : type c.
@@ -1790,7 +1790,7 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
   function
   | Node (Less, Leaf, x, r) -> (x, Inl r)
   | Node (Same, Leaf, x, r) -> (x, Inl r)
-  | Node (bal, (Node _ as l), x, r) -> (
+  | Node (bal, (Node _ as l), x, r) ->
     match del_min l with
     | y, Inr l -> (y, Inr (Node (bal, l, x, r)))
     | y, Inl l ->
@@ -1798,7 +1798,7 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
         , match bal with
           | Same -> Inr (Node (Less, l, x, r))
           | More -> Inl (Node (Same, l, x, r))
-          | Less -> rotl l x r ) )
+          | Less -> rotl l x r )
 
 type _ avl_del =
   | Dsame : 'n avl -> 'n avl_del
@@ -2239,7 +2239,7 @@ let rec rule : type a b.
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Lam (v, body) -> Inr (Lam (v, body))
   | Const (r, v) -> Inr (Const (r, v))
-  | App (e1, e2) -> (
+  | App (e1, e2) ->
     match (mode e1, mode e2) with
     | Pexp, _ -> (
       match onestep e1 with
@@ -2249,7 +2249,7 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
       match onestep e2 with
       | Inl e -> Inl (App (e1, e))
       | Inr v -> Inl (App (e1, v)) )
-    | Pval, Pval -> rule e1 e2 )
+    | Pval, Pval -> rule e1 e2
 
 type ('env, 'a) var =
   | Zero : ('a * 'env, 'a) var
@@ -2279,10 +2279,10 @@ type _ inline_t =
 
 let uppercase seq =
   let rec process : type a. a inline_t -> a inline_t = function
-    | Text txt -> Text (String.uppercase_ascii txt)
-    | Bold xs -> Bold (List.map process xs)
-    | Link lnk -> Link lnk
-    | Mref (lnk, xs) -> Mref (lnk, List.map process xs)
+    | (Text txt) -> Text (String.uppercase_ascii txt)
+    | (Bold xs) -> Bold (List.map process xs)
+    | (Link lnk) -> Link lnk
+    | (Mref (lnk, xs)) -> Mref (lnk, List.map process xs)
   in
   List.map process seq
 
@@ -2294,15 +2294,15 @@ type ast_t =
 
 let inlineseq_from_astseq seq =
   let rec process_nonlink = function
-    | Ast_Text txt -> Text txt
-    | Ast_Bold xs -> Bold (List.map process_nonlink xs)
+    | (Ast_Text txt) -> Text txt
+    | (Ast_Bold xs) -> Bold (List.map process_nonlink xs)
     | _ -> assert false
   in
   let rec process_any = function
-    | Ast_Text txt -> Text txt
-    | Ast_Bold xs -> Bold (List.map process_any xs)
-    | Ast_Link lnk -> Link lnk
-    | Ast_Mref (lnk, xs) -> Mref (lnk, List.map process_nonlink xs)
+    | (Ast_Text txt) -> Text txt
+    | (Ast_Bold xs) -> Bold (List.map process_any xs)
+    | (Ast_Link lnk) -> Link lnk
+    | (Ast_Mref (lnk, xs)) -> Mref (lnk, List.map process_nonlink xs)
   in
   List.map process_any seq
 
@@ -3457,7 +3457,7 @@ end)
 type var = [`Var of string]
 
 let subst_var ~subst : var -> _ = function
-  | `Var s as x -> ( try Subst.find s subst with Not_found -> x )
+  | `Var s as x -> try Subst.find s subst with Not_found -> x
 
 let free_var : var -> _ = function `Var s -> Names.singleton s
 
@@ -7416,14 +7416,14 @@ module Bootstrap
 
   let deleteMin = function
     | BE.E -> raise Not_found
-    | BE.H (x, p) -> (
+    | BE.H (x, p) ->
         if PrimH.isEmpty p then BE.E
         else
           match PrimH.findMin p with
           | BE.H (y, p1) ->
               let p2 = PrimH.deleteMin p in
               BE.H (y, PrimH.merge p1 p2)
-          | BE.E -> assert false )
+          | BE.E -> assert false
 end
 
 module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element =
@@ -9027,8 +9027,8 @@ let _ =
   end in
   let f M.(x) = () in
   let g M.{x} = () in
-  let h = function M.[] | M.[a] | M.(a :: q) -> () in
-  let i = function M.[||] | M.[|x|] -> true | _ -> false in
+  let h = function (M.[] | M.[a] | M.(a :: q)) -> () in
+  let i = function (M.[||] | M.[|x|]) -> true | _ -> false in
   ()
 
 class ['a] c () =

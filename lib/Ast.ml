@@ -1971,10 +1971,10 @@ end = struct
       , _ )
       when exposed_right_colon pat ->
         (* Some patterns must be parenthesed when followed by a colon. *)
-        let pvb =
-          List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
-        in
+        List.exists pvbs_bindings ~f:(fun pvb ->
+            pvb.pvb_pat == pat &&
         Option.is_some pvb.pvb_constraint
+          )
     | ( Lb {pvb_pat; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
