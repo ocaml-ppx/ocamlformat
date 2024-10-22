@@ -1527,7 +1527,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
         in
         (head, body, box, closing_paren_offset)
     | [], _, Pfunction_body _ -> assert false
-    | args, typ, Pfunction_cases (cs, _loc, cs_attrs) ->
+    | args, typ, Pfunction_cases (cs, function_loc, cs_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
            to add to the [function] keyword. *)
         let fun_, spilled_attrs, box =
@@ -1549,6 +1549,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
             if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank
             else None
           in
+          Cmts.fmt_before c function_loc $
           str "function"
           $ fmt_extension_suffix c ext
           $ fmt_attributes ?pre c spilled_attrs
