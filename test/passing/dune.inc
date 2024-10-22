@@ -2251,7 +2251,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/fun_function.ml fun_function.ml.stdout)))
+ (action (diff tests/fun_function.ml.ref fun_function.ml.stdout)))
 
 (rule
  (alias runtest)
