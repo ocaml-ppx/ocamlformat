@@ -1874,6 +1874,27 @@ end = struct
     | Ppat_tuple _ -> true
     | _ -> false
 
+  let parenze_pat_in_bindings bindings pat =
+    (* [pat] appears on the left side of a binding. *)
+    List.exists bindings ~f:(fun {pvb_pat; _} ->
+        pvb_pat == pat
+      ) &&
+    (* Some patterns must be parenthesed when followed by a colon. *)
+    if exposed_right_colon pat && 
+        List.exists bindings ~f:(fun pvb ->
+            pvb.pvb_pat == pat &&
+        Option.is_some pvb.pvb_constraint
+          )
+    then true
+    else
+    match pat.ppat_desc with
+        Ppat_construct (_, Some _)
+        | Ppat_variant (_, Some _)
+        | Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
+        (* Add disambiguation parentheses that are not necessary. *)
+              true
+    | _ -> false
+
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
@@ -1910,6 +1931,10 @@ end = struct
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
     | Bo {pbop_typ= Some _; _}, (Ppat_any | Ppat_tuple _) -> true
+    | Exp {pexp_desc= (Pexp_function (_, _, Pfunction_body _)); _}, Ppat_or _
+     |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
+      , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
+        | Ppat_variant _ ) ) -> true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -1923,7 +1948,8 @@ end = struct
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
                 | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _ }
-        | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _} )
+        | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
+        )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _; _}
       , ( Ppat_construct _ | Ppat_cons _
@@ -1939,16 +1965,13 @@ end = struct
      |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
-    | Exp {pexp_desc= (Pexp_function (_, _, Pfunction_body _)); _}, Ppat_or _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
-     |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
-      , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
-        | Ppat_variant _ ) ) ->
+                      ->
         true
     | (Str _ | Exp _ | Lb _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
@@ -1959,22 +1982,11 @@ end = struct
       ) ->
         true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
-    | ( ( Exp {pexp_desc= Pexp_let _; _}
-        | Str {pstr_desc= Pstr_value _; _} )
-      , ( Ppat_construct (_, Some _)
-        | Ppat_variant (_, Some _)
-        | Ppat_cons _ | Ppat_alias _ | Ppat_or _ ) ) ->
-        (* Add disambiguation parentheses that are not necessary. *)
-        true
     | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
       , _ )
-      when exposed_right_colon pat ->
-        (* Some patterns must be parenthesed when followed by a colon. *)
-        List.exists pvbs_bindings ~f:(fun pvb ->
-            pvb.pvb_pat == pat &&
-        Option.is_some pvb.pvb_constraint
-          )
+      when parenze_pat_in_bindings pvbs_bindings pat ->
+        true
     | ( Lb {pvb_pat; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)

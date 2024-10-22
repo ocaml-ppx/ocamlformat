@@ -1185,8 +1185,8 @@ let v = variantize Enil (triple String Int Int) ("A", 2, 3)
 let ty_abc =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   let proj = function
-    | (`A n) -> ("A", Some (Tdyn (Int, n)))
-    | (`B s) -> ("B", Some (Tdyn (String, s)))
+    | `A n -> ("A", Some (Tdyn (Int, n)))
+    | `B s -> ("B", Some (Tdyn (String, s)))
     | `C -> ("C", None)
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj : type c.
@@ -2114,10 +2114,10 @@ type _ inline_t =
 
 let uppercase seq =
   let rec process : type a. a inline_t -> a inline_t = function
-    | (Text txt) -> Text (String.uppercase_ascii txt)
-    | (Bold xs) -> Bold (List.map process xs)
-    | (Link lnk) -> Link lnk
-    | (Mref (lnk, xs)) -> Mref (lnk, List.map process xs)
+    | Text txt -> Text (String.uppercase_ascii txt)
+    | Bold xs -> Bold (List.map process xs)
+    | Link lnk -> Link lnk
+    | Mref (lnk, xs) -> Mref (lnk, List.map process xs)
   in
   List.map process seq
 
@@ -2129,15 +2129,15 @@ type ast_t =
 
 let inlineseq_from_astseq seq =
   let rec process_nonlink = function
-    | (Ast_Text txt) -> Text txt
-    | (Ast_Bold xs) -> Bold (List.map process_nonlink xs)
+    | Ast_Text txt -> Text txt
+    | Ast_Bold xs -> Bold (List.map process_nonlink xs)
     | _ -> assert false
   in
   let rec process_any = function
-    | (Ast_Text txt) -> Text txt
-    | (Ast_Bold xs) -> Bold (List.map process_any xs)
-    | (Ast_Link lnk) -> Link lnk
-    | (Ast_Mref (lnk, xs)) -> Mref (lnk, List.map process_nonlink xs)
+    | Ast_Text txt -> Text txt
+    | Ast_Bold xs -> Bold (List.map process_any xs)
+    | Ast_Link lnk -> Link lnk
+    | Ast_Mref (lnk, xs) -> Mref (lnk, List.map process_nonlink xs)
   in
   List.map process_any seq
 
@@ -8544,8 +8544,8 @@ let _ =
   end in
   let f M.(x) = () in
   let g M.{ x } = () in
-  let h = function (M.[] | M.[ a ] | M.(a :: q)) -> () in
-  let i = function (M.[||] | M.[| x |]) -> true | _ -> false in
+  let h = function M.[] | M.[ a ] | M.(a :: q) -> () in
+  let i = function M.[||] | M.[| x |] -> true | _ -> false in
   ()
 
 class ['a] c () =
