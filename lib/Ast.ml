@@ -1875,25 +1875,21 @@ end = struct
     | _ -> false
 
   let parenze_pat_in_bindings bindings pat =
-    (* [pat] appears on the left side of a binding. *)
-    List.exists bindings ~f:(fun {pvb_pat; _} ->
-        pvb_pat == pat
-      ) &&
-    (* Some patterns must be parenthesed when followed by a colon. *)
-    if exposed_right_colon pat && 
-        List.exists bindings ~f:(fun pvb ->
-            pvb.pvb_pat == pat &&
-        Option.is_some pvb.pvb_constraint
-          )
-    then true
-    else
-    match pat.ppat_desc with
-        Ppat_construct (_, Some _)
-        | Ppat_variant (_, Some _)
-        | Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
-        (* Add disambiguation parentheses that are not necessary. *)
-              true
-    | _ -> false
+    let parenze_pat_in_binding ~pvb_constraint =
+      (* Some patterns must be parenthesed when followed by a colon. *)
+      (exposed_right_colon pat && Option.is_some pvb_constraint)
+      ||
+      match pat.ppat_desc with
+      | Ppat_construct (_, Some _)
+       |Ppat_variant (_, Some _)
+       |Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
+          (* Add disambiguation parentheses that are not necessary. *)
+          true
+      | _ -> false
+    in
+    List.exists bindings ~f:(fun {pvb_pat; pvb_constraint; _} ->
+        (* [pat] appears on the left side of a binding. *)
+        pvb_pat == pat && parenze_pat_in_binding ~pvb_constraint )
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
