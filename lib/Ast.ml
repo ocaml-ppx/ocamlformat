@@ -1975,6 +1975,13 @@ end = struct
           List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
         in
         Option.is_some pvb.pvb_constraint
+    | ( Lb {pvb_pat; _}
+      , ( Ppat_construct (_, Some _)
+        | Ppat_variant (_, Some _)
+        | Ppat_cons _ | Ppat_alias _ | Ppat_or _ ) )
+      when pvb_pat == pat ->
+        (* Disambiguation parentheses *)
+        true
     | Lb {pvb_pat; pvb_constraint= Some _; _}, _
       when pvb_pat == pat && exposed_right_colon pat ->
         true
