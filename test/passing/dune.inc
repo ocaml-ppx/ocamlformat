@@ -2246,7 +2246,7 @@
  (action
   (with-stdout-to fun_function.ml.stdout
    (with-stderr-to fun_function.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/fun_function.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/fun_function.ml})))))
 
 (rule
  (alias runtest)

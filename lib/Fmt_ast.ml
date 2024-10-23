@@ -2563,9 +2563,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack (me, pt) ->
       let outer_pro = pro in
-      let outer_parens =
-        match ctx with Lb _ -> false | _ -> parens && has_attr
-      in
+      let outer_parens = parens && has_attr in
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       let align = Params.Align.module_pack c.conf ~me in
       let opn_paren =

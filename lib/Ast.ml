@@ -1995,25 +1995,36 @@ end = struct
         true
     | _ -> false
 
-  (* Whether to parenze a function on the RHS of a let binding. *)
-  let parenze_function_in_bindings bindings exp =
+  (* Whether an expression in a let binding shouldn't be parenthesed, bypassing
+     the other Ast rules. *)
+  let dont_parenze_exp_in_bindings bindings exp =
     match exp.pexp_desc with
-    | Pexp_function (_, _, fun_body) ->
+    | Pexp_function ([], None, (Pfunction_cases _ as fun_body)) ->
+        (* [fun_body] is the body of the let binding and shouldn't be
+           parenthesed. [exp] is a synthetic expression constructed in
+           the formatting code. *)
+        List.exists bindings ~f:(fun {pvb_body; _} -> pvb_body == fun_body)
+    | _ -> false
+
+  (* Whether to parenze an expr on the RHS of a let binding.
+     [dont_parenze_exp_in_bindings] must have been checked before. *)
+  let parenze_exp_in_bindings bindings exp =
+    match exp.pexp_desc with
+    | Pexp_function ([], None, Pfunction_cases _) ->
         List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
-            if pvb_body == fun_body then
-              (* [fun_body] is the body of the let binding and shouldn't be
-                 parenthesed. [exp] is a synthetic expression constructed in
-                 the formatting code. *)
-              false
-            else
               match pvb_body with
               | Pfunction_body let_body when let_body == exp ->
-                  (* Function is in the body of a binding, parentheses are
-                     needed if the binding also defines arguments. *)
+                  (* Function with cases and no 'fun' keyword is in the body of
+                     a binding, parentheses are needed if the binding also
+                     defines arguments. *)
                   not (List.is_empty pvb_args)
               | _ -> false
           )
     | _ -> false
+
+  let ctx_sensitive_to_trailing_attributes = function
+    | Lb _ -> false
+    | _ -> true
 
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
@@ -2218,14 +2229,16 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
-    | ( Lb {pvb_body=Pfunction_cases _ as pvb_body;_}
-      , {pexp_desc= Pexp_function (_, _, (Pfunction_cases _ as body)); _} )
-      when body == pvb_body -> (* Let binding defining a function with cases. *)
+    | ( Lb pvb, _) when dont_parenze_exp_in_bindings [pvb] exp -> false
+    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
+      when dont_parenze_exp_in_bindings pvbs_bindings exp ->
         false
-    | ( Lb {pvb_args=_::_;pvb_body=Pfunction_body body;_}, {pexp_desc= Pexp_function (_,_,Pfunction_cases _);_}) when body == exp-> true
-    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _) when parenze_function_in_bindings pvbs_bindings  exp -> true
-    | Lb {pvb_body=Pfunction_body body; _}, _ when body == exp -> false
-    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
+    | ( Lb pvb, _) when parenze_exp_in_bindings [pvb] exp ->
+        true
+    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
+      when parenze_exp_in_bindings pvbs_bindings exp ->
+        true
+    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} when ctx_sensitive_to_trailing_attributes ctx -> true
     | ( Str
           { pstr_desc=
               Pstr_value
@@ -2312,7 +2325,7 @@ end = struct
       when e == exp ->
         true
     | ( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body e); _}
-      , {pexp_desc= Pexp_function (_, _, Pfunction_cases _); _} )
+      , {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} )
       when e == exp ->
         true
     | Exp {pexp_desc; _}, _ -> (
@@ -2399,7 +2412,7 @@ end = struct
         | _ -> Exp.has_trailing_attributes exp || parenze () ) )
     | _, {pexp_desc= Pexp_list _; _} -> false
     | _, {pexp_desc= Pexp_array _; _} -> false
-    | _, exp when Exp.has_trailing_attributes exp -> true
+    | _, exp when ctx_sensitive_to_trailing_attributes ctx && Exp.has_trailing_attributes exp -> true
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
