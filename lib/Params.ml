@@ -411,7 +411,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
-      , (( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} | Lb _)
+      , (( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_let _; _} | Lb {pvb_body = Pfunction_cases _;_})
         , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
         2
     | _, _ -> c.fmt_opts.cases_exp_indent.v
