@@ -1202,18 +1202,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_or pats ->
       Cmts.relocate c.cmts ~src:ppat_loc ~before:(List.hd_exn pats).ppat_loc
         ~after:(List.last_exn pats).ppat_loc ;
-      let nested =
-        match ctx0 with
-        | Pat {ppat_desc= Ppat_or _; _}
-        | Lb {pvb_body=Pfunction_cases _;_}
-         |Exp
-            { pexp_desc=
-                ( Pexp_match _ | Pexp_try _
-                | Pexp_function ([], None, Pfunction_cases _) )
-            ; _ } ->
-            List.is_empty xpat.ast.ppat_attributes
-        | _ -> false
-      in
+      let nested = Params.get_or_pattern_is_nested ~ctx:ctx0 pat in
       let xpats = List.map ~f:(sub_pat ~ctx) pats in
       let space p =
         match p.ppat_desc with
@@ -1254,20 +1243,21 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                       fmt_opt pro
                       $ fits_breaks
                           (if parens then "(" else "")
-                          (if nested then "" else "( ")
+                          (if nested then "( " else "")
                       $ open_box (-2)
                     else if first then
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
+                      Params.get_or_pattern_sep c.conf ~nested ~cmts_before
                       $ open_box (-2)
                     else
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
+                      Params.get_or_pattern_sep c.conf ~nested ~cmts_before
                         ~space:(space xpat.ast)
                   in
                   leading_cmt $ fmt_pattern c ~box:true ~pro xpat )
               $ close_box )
         $ fmt_or nested
+            (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")")
             (fits_breaks (if parens then ")" else "") "")
-            (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )
+      )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (Params.parens_if parens c.conf

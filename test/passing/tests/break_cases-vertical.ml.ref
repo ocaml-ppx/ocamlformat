@@ -13,7 +13,9 @@ let f =
   let g = function
     | H when x y <> k ->
         2
-    | T | P | U ->
+    | T
+     |P
+     |U ->
         3
   in
   fun x g t h y u ->
@@ -143,7 +145,8 @@ let mod_int c1 c2 is_safe dbg =
 
 let merge_columns l old_table =
   let rec aux = function
-    | [] | [None] ->
+    | []
+     |[None] ->
         ([], [])
   in
   foooooooooooooooooooooooooo fooooooooooooooooooooo
