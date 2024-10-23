@@ -4715,6 +4715,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to record-default.ml.stdout
+   (with-stderr-to record-default.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=default --max-iter=3 %{dep:tests/record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-default.ml.ref record-default.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-default.ml.err record-default.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to record-loose.ml.stdout
    (with-stderr-to record-loose.ml.stderr
      (run %{bin:ocamlformat} --margin-check --field-space=loose %{dep:tests/record.ml})))))

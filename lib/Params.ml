@@ -663,44 +663,48 @@ let get_list_expr (c : Conf.t) =
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[|" "|]"
 
-let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
+let box_pattern_docked (c : Conf.t) ~ctx ~space_around ~pat opn cls k =
   let space = if space_around then 1 else 0 in
   let indent_opn, indent_cls =
     match (ctx, c.fmt_opts.break_separators.v) with
     | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `Before ->
         (String.length opn - 3, 1 - String.length opn)
     | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `After -> (-3, 1)
-    | Ast.Exp {pexp_desc= Pexp_let _; _}, _ -> (-4, 0)
+    | Ast.Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+      when List.exists pvbs_bindings ~f:(fun b -> phys_equal b.pvb_pat pat)
+      ->
+        (-4, 0)
     | _ -> (0, 0)
   in
   hvbox indent_opn
     (wrap (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
 
-let get_record_pat (c : Conf.t) ~ctx =
+let get_record_pat (c : Conf.t) ~ctx pat =
   let params, _ = get_record_expr c in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
       box_pattern_docked c ~ctx
-        ~space_around:c.fmt_opts.space_around_records.v "{" "}"
+        ~space_around:c.fmt_opts.space_around_records.v ~pat "{" "}"
     else params.box
   in
   {params with box}
 
-let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
+let collection_pat (c : Conf.t) ~ctx ~space_around ~pat opn cls =
   let params = collection_expr c ~space_around opn cls in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
-      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
+      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around ~pat opn cls
     else params.box
   in
   {params with box}
 
-let get_list_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_lists.v "[" "]"
+let get_list_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_lists.v ~pat
+    "[" "]"
 
-let get_array_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v "[|"
-    "|]"
+let get_array_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v ~pat
+    "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

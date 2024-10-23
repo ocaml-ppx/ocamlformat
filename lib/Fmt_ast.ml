@@ -1159,7 +1159,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         in
         hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
-      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p = Params.get_record_pat c.conf ~ctx:ctx0 pat in
       let last_sep, fmt_underscore =
         match closed_flag with
         | OClosed -> (true, noop)
@@ -1188,13 +1188,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
-      let p = Params.get_array_pat c.conf ~ctx:ctx0 in
+      let p = Params.get_array_pat c.conf ~ctx:ctx0 pat in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_list pats ->
-      let p = Params.get_list_pat c.conf ~ctx:ctx0 in
+      let p = Params.get_list_pat c.conf ~ctx:ctx0 pat in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
