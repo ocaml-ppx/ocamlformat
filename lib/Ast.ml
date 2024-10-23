@@ -2231,11 +2231,13 @@ end = struct
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
     | ( Lb pvb, _) when dont_parenze_exp_in_bindings [pvb] exp -> false
     | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
+    | ( Cl {pcl_desc= Pcl_let ({ pvbs_bindings; _ }, _,_);_}, _)
       when dont_parenze_exp_in_bindings pvbs_bindings exp ->
         false
     | ( Lb pvb, _) when parenze_exp_in_bindings [pvb] exp ->
         true
     | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
+    | ( Cl {pcl_desc= Pcl_let ({ pvbs_bindings; _ }, _,_);_}, _)
       when parenze_exp_in_bindings pvbs_bindings exp ->
         true
     | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} when ctx_sensitive_to_trailing_attributes ctx -> true

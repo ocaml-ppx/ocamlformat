@@ -24,3 +24,14 @@ let _ = let f _ = (fun _ -> fun x -> x + 1) in ()
 let _ = let f _ = fun _ -> fun x -> x + 1 in ()
 let _ = let f _ = (fun _ -> (fun x -> x + 1)) in ()
 let _ = let f _ = fun _ -> (fun x -> x + 1) in ()
+
+class c = let f _ = (function x -> x + 1) in object end
+class c = let f _ = function x -> x + 1 in object end
+class c = let f _ = fun _ -> (function x -> x + 1) in object end
+class c = let f _ = fun _ -> function x -> x + 1 in object end
+class c = let f _ = (fun _ -> (function x -> x + 1)) in object end
+class c = let f _ = (fun _ -> function x -> x + 1) in object end
+class c = let f _ = (fun _ -> fun x -> x + 1) in object end
+class c = let f _ = fun _ -> fun x -> x + 1 in object end
+class c = let f _ = (fun _ -> (fun x -> x + 1)) in object end
+class c = let f _ = fun _ -> (fun x -> x + 1) in object end
