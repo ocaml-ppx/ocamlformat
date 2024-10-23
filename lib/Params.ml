@@ -358,24 +358,28 @@ end
 
 (* Whether [pat] appears in [ctx] as a match/function/try case. *)
 let get_or_pattern_is_nested ~ctx pat =
-  let check_cases =List.exists ~f:(fun c -> phys_equal c.pc_lhs pat) in
+  let check_cases = List.exists ~f:(fun c -> phys_equal c.pc_lhs pat) in
   match ctx with
   | _ when not (List.is_empty pat.ppat_attributes) -> true
-  | Ast.Exp {pexp_desc= Pexp_function (_,_,Pfunction_cases (cases,_,_)) | Pexp_match (_,cases) | Pexp_try (_,cases); _}
-  | Lb {pvb_body=Pfunction_cases (cases,_,_);_} ->
+  | Ast.Exp
+      { pexp_desc=
+          ( Pexp_function (_, _, Pfunction_cases (cases, _, _))
+          | Pexp_match (_, cases)
+          | Pexp_try (_, cases) )
+      ; _ }
+   |Lb {pvb_body= Pfunction_cases (cases, _, _); _} ->
       not (check_cases cases)
-  | Exp {pexp_desc= Pexp_let (bindings, _,_); _}
-  | Cl {pcl_desc= Pcl_let (bindings, _,_); _}
-  | Str {pstr_desc= Pstr_value (bindings); _}
-    ->
-      not (List.exists bindings.pvbs_bindings ~f:(function
-          |{pvb_body=Pfunction_cases (cases,_,_);_} -> check_cases cases
-          | _ -> false
-        ))
+  | Exp {pexp_desc= Pexp_let (bindings, _, _); _}
+   |Cl {pcl_desc= Pcl_let (bindings, _, _); _}
+   |Str {pstr_desc= Pstr_value bindings; _} ->
+      not
+        (List.exists bindings.pvbs_bindings ~f:(function
+          | {pvb_body= Pfunction_cases (cases, _, _); _} -> check_cases cases
+          | _ -> false ))
   | _ -> true
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
-      ~nested =
+    ~nested =
   let nspaces = if cmts_before then 1000 else 1 in
   match c.fmt_opts.break_cases.v with
   | _ when nested -> break nspaces 0 $ str "| "
@@ -411,7 +415,11 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
-      , (( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_let _; _} | Lb {pvb_body = Pfunction_cases _;_})
+      , ( ( Exp
+              { pexp_desc=
+                  Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_let _
+              ; _ }
+          | Lb {pvb_body= Pfunction_cases _; _} )
         , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
         2
     | _, _ -> c.fmt_opts.cases_exp_indent.v

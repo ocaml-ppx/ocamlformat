@@ -103,8 +103,9 @@ module Pcty : sig
   val break_let_open : Conf.t -> rhs:class_type -> Fmt.t
 end
 
-(** Whether an or-pattern should be disambiguated. *)
 val get_or_pattern_is_nested : ctx:Ast.t -> pattern -> bool
+(** Whether an or-pattern should be disambiguated. *)
+
 val get_or_pattern_sep :
   ?cmts_before:bool -> ?space:bool -> Conf.t -> nested:bool -> Fmt.t
 

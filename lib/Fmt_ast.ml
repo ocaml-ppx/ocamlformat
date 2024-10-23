@@ -1256,8 +1256,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
               $ close_box )
         $ fmt_or nested
             (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")")
-            (fits_breaks (if parens then ")" else "") "")
-      )
+            (fits_breaks (if parens then ")" else "") "") )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (Params.parens_if parens c.conf
@@ -1539,8 +1538,8 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
             if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank
             else None
           in
-          Cmts.fmt_before c function_loc $
-          str "function"
+          Cmts.fmt_before c function_loc
+          $ str "function"
           $ fmt_extension_suffix c ext
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
@@ -2074,7 +2073,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             ; _ }
           when not (Std_longident.is_infix id) ->
             has_attr && parens
-        | Lb {pvb_body=Pfunction_body body;_} when phys_equal body exp -> has_attr && parens
+        | Lb {pvb_body= Pfunction_body body; _} when phys_equal body exp ->
+            has_attr && parens
         | _ -> has_attr && not parens
       in
       let infix_op_args =
@@ -2389,14 +2389,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ~ctx0:ctx ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
-          lbs.pvbs_rec bindings body
+      $ fmt_let_bindings c ~ctx0:ctx ~parens ~fmt_atrs ~fmt_expr ~has_attr
+          ~loc_in lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body; loc_in} ->
       let bd = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
-      $ fmt_let_bindings c ~ctx0:ctx ~parens ~fmt_atrs ~fmt_expr ~has_attr ~loc_in
-          Nonrecursive bd body
+      $ fmt_let_bindings c ~ctx0:ctx ~parens ~fmt_atrs ~fmt_expr ~has_attr
+          ~loc_in Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ space_break
@@ -2864,8 +2864,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_flag
-    bindings body =
+and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
+    rec_flag bindings body =
   let indent_after_in =
     match body.pexp_desc with
     | Pexp_let _ | Pexp_letmodule _
@@ -2882,8 +2882,8 @@ and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in rec_f
         0
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
-  fmt_let c ~ctx0 ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
-    ~body_loc:body.pexp_loc ~indent_after_in
+  fmt_let c ~ctx0 ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
+    ~loc_in ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
@@ -3055,8 +3055,8 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~ctx0:ctx ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in ~has_attr
-        ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~ctx0:ctx ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~loc_in
+        ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4525,7 +4525,7 @@ and fmt_value_constraint c vc_opt =
   | None -> (noop, noop)
 
 and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
-      {lb_op; lb_pat; lb_args; lb_typ; lb_body; lb_attrs; lb_loc; lb_pun} =
+    {lb_op; lb_pat; lb_args; lb_typ; lb_body; lb_attrs; lb_loc; lb_pun} =
   let in_, loc_in =
     match in_ with
     | None -> (None, None)
@@ -4552,10 +4552,9 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
   let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in
   let indent, intro_as_pro =
     match lb_body.ast with
-    | Pfunction_cases _ ->
-        (c.conf.fmt_opts.function_indent.v, true)
-    | Pfunction_body { pexp_desc = Pexp_function (_, _, _); _ } when c.conf.fmt_opts.let_binding_deindent_fun.v
-      ->
+    | Pfunction_cases _ -> (c.conf.fmt_opts.function_indent.v, true)
+    | Pfunction_body {pexp_desc= Pexp_function (_, _, _); _}
+      when c.conf.fmt_opts.let_binding_deindent_fun.v ->
         (max (c.conf.fmt_opts.let_binding_indent.v - 1) 0, false)
     | _ -> (c.conf.fmt_opts.let_binding_indent.v, false)
   in
@@ -4608,15 +4607,15 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
             let wrap_intro intro =
               hovbox 2 (fmt_opt pro $ intro) $ space_break
             in
-            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~label:Nolabel ~attrs:[] ~loc:lb_loc c ([], None, body)
-        | Pfunction_body body -> fmt_expression c ?pro ?box (sub_exp ~ctx body)
+            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~label:Nolabel ~attrs:[]
+              ~loc:lb_loc c ([], None, body)
+        | Pfunction_body body ->
+            fmt_expression c ?pro ?box (sub_exp ~ctx body)
       in
       let pro =
         if c.conf.fmt_opts.ocp_indent_compat.v then
           let box =
-            match lb_body.ast with
-            | Pfunction_cases _ -> false
-            | _ -> true
+            match lb_body.ast with Pfunction_cases _ -> false | _ -> true
           in
           hvbox_if box 2 (decl $ fits_breaks " =" ~hint:(1000, 0) "=")
           $ space_break

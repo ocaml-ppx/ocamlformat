@@ -1208,13 +1208,13 @@ end = struct
     in
     let check_cases = List.exists ~f:(fun c -> c.pc_lhs == pat) in
     let check_binding {pvb_pat; pvb_body; _} =
-          check_subpat pvb_pat || match pvb_body with
-          | Pfunction_body _ -> false
-                                | Pfunction_cases (cases, _, _) ->
-        check_cases cases in
-    let check_bindings l =
-      List.exists l ~f:check_binding
+      check_subpat pvb_pat
+      ||
+      match pvb_body with
+      | Pfunction_body _ -> false
+      | Pfunction_cases (cases, _, _) -> check_cases cases
     in
+    let check_bindings l = List.exists l ~f:check_binding in
     let check_param_val (_, _, p) = p == pat in
     let check_expr_function_param param =
       match param.pparam_desc with
@@ -1389,7 +1389,8 @@ end = struct
             assert (check_cases cases)
         | Pexp_function (params, _, body) ->
             assert (
-              List.exists ~f:check_expr_function_param params || check_fun_body body )
+              List.exists ~f:check_expr_function_param params
+              || check_fun_body body )
         | Pexp_indexop_access {pia_lhs; pia_kind= Builtin idx; pia_rhs; _} ->
             assert (
               pia_lhs == exp || idx == exp
@@ -1927,10 +1928,11 @@ end = struct
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
     | Bo {pbop_typ= Some _; _}, (Ppat_any | Ppat_tuple _) -> true
-    | Exp {pexp_desc= (Pexp_function (_, _, Pfunction_body _)); _}, Ppat_or _
+    | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}, Ppat_or _
      |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
       , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
-        | Ppat_variant _ ) ) -> true
+        | Ppat_variant _ ) ) ->
+        true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -1944,8 +1946,7 @@ end = struct
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
                 | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _ }
-        | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
-        )
+        | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _; _}
       , ( Ppat_construct _ | Ppat_cons _
@@ -1966,8 +1967,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
-     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
-                      ->
+     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _ ->
         true
     | (Str _ | Exp _ | Lb _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
@@ -1995,14 +1995,14 @@ end = struct
         true
     | _ -> false
 
-  (* Whether an expression in a let binding shouldn't be parenthesed, bypassing
-     the other Ast rules. *)
+  (* Whether an expression in a let binding shouldn't be parenthesed,
+     bypassing the other Ast rules. *)
   let dont_parenze_exp_in_bindings bindings exp =
     match exp.pexp_desc with
     | Pexp_function ([], None, (Pfunction_cases _ as fun_body)) ->
         (* [fun_body] is the body of the let binding and shouldn't be
-           parenthesed. [exp] is a synthetic expression constructed in
-           the formatting code. *)
+           parenthesed. [exp] is a synthetic expression constructed in the
+           formatting code. *)
         List.exists bindings ~f:(fun {pvb_body; _} -> pvb_body == fun_body)
     | _ -> false
 
@@ -2170,16 +2170,19 @@ end = struct
   (* Whether to parenze an expr on the RHS of a let binding.
      [dont_parenze_exp_in_bindings] must have been checked before. *)
   and parenze_exp_in_bindings bindings exp =
-        List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
-              match pvb_body with
-                | Pfunction_body ({pexp_desc = Pexp_function ([],None,Pfunction_cases _);_} as let_body) when let_body == exp ->
-                  (* Function with cases and no 'fun' keyword is in the body of
-                     a binding, parentheses are needed if the binding also
-                     defines arguments. *)
-                  not (List.is_empty pvb_args)
-                | Pfunction_cases (cases,_,_) -> parenze_exp_in_match_case cases exp
-              | _ -> false
-          )
+    List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
+        match pvb_body with
+        | Pfunction_body
+            ( {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} as
+              let_body )
+          when let_body == exp ->
+            (* Function with cases and no 'fun' keyword is in the body of a
+               binding, parentheses are needed if the binding also defines
+               arguments. *)
+            not (List.is_empty pvb_args)
+        | Pfunction_cases (cases, _, _) ->
+            parenze_exp_in_match_case cases exp
+        | _ -> false )
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
@@ -2235,18 +2238,19 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
-    | ( Lb pvb, _) when dont_parenze_exp_in_bindings [pvb] exp -> false
-    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
-    | ( Cl {pcl_desc= Pcl_let ({ pvbs_bindings; _ }, _,_);_}, _)
+    | Lb pvb, _ when dont_parenze_exp_in_bindings [pvb] exp -> false
+    | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+     |Cl {pcl_desc= Pcl_let ({pvbs_bindings; _}, _, _); _}, _
       when dont_parenze_exp_in_bindings pvbs_bindings exp ->
         false
-    | ( Lb pvb, _) when parenze_exp_in_bindings [pvb] exp ->
-        true
-    | ( Exp {pexp_desc=Pexp_let ({ pvbs_bindings; _ }, _, _);_}, _)
-    | ( Cl {pcl_desc= Pcl_let ({ pvbs_bindings; _ }, _,_);_}, _)
+    | Lb pvb, _ when parenze_exp_in_bindings [pvb] exp -> true
+    | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+     |Cl {pcl_desc= Pcl_let ({pvbs_bindings; _}, _, _); _}, _
       when parenze_exp_in_bindings pvbs_bindings exp ->
         true
-    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} when ctx_sensitive_to_trailing_attributes ctx -> true
+    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _}
+      when ctx_sensitive_to_trailing_attributes ctx ->
+        true
     | ( Str
           { pstr_desc=
               Pstr_value
@@ -2336,24 +2340,27 @@ end = struct
       , {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} )
       when e == exp ->
         true
-    | Exp {pexp_desc=
-       Pexp_extension
-          ( _
-          , PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            ( Pexp_function
-                                (_, _, Pfunction_cases (cases, _, _))
-                            | Pexp_match (_, cases)
-                            | Pexp_try (_, cases) )
-                        ; _ }
-                      , _ )
-                ; _ } ] )
-       |Pexp_function (_, _, Pfunction_cases (cases, _, _))
-       |Pexp_match (_, cases)
-       |Pexp_try (_, cases)
-             ; _}, _ -> parenze_exp_in_match_case cases exp
+    | ( Exp
+          { pexp_desc=
+              ( Pexp_extension
+                  ( _
+                  , PStr
+                      [ { pstr_desc=
+                            Pstr_eval
+                              ( { pexp_desc=
+                                    ( Pexp_function
+                                        (_, _, Pfunction_cases (cases, _, _))
+                                    | Pexp_match (_, cases)
+                                    | Pexp_try (_, cases) )
+                                ; _ }
+                              , _ )
+                        ; _ } ] )
+              | Pexp_function (_, _, Pfunction_cases (cases, _, _))
+              | Pexp_match (_, cases)
+              | Pexp_try (_, cases) )
+          ; _ }
+      , _ ) ->
+        parenze_exp_in_match_case cases exp
     | Exp {pexp_desc; _}, _ -> (
       match pexp_desc with
       | Pexp_ifthenelse (eN, _)
@@ -2417,7 +2424,10 @@ end = struct
         | _ -> Exp.has_trailing_attributes exp || parenze () ) )
     | _, {pexp_desc= Pexp_list _; _} -> false
     | _, {pexp_desc= Pexp_array _; _} -> false
-    | _, exp when ctx_sensitive_to_trailing_attributes ctx && Exp.has_trailing_attributes exp -> true
+    | _, exp
+      when ctx_sensitive_to_trailing_attributes ctx
+           && Exp.has_trailing_attributes exp ->
+        true
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
