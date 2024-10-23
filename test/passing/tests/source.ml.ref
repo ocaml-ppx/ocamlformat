@@ -1790,7 +1790,7 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
   function
   | Node (Less, Leaf, x, r) -> (x, Inl r)
   | Node (Same, Leaf, x, r) -> (x, Inl r)
-  | Node (bal, (Node _ as l), x, r) ->
+  | Node (bal, (Node _ as l), x, r) -> (
     match del_min l with
     | y, Inr l -> (y, Inr (Node (bal, l, x, r)))
     | y, Inl l ->
@@ -1798,7 +1798,7 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
         , match bal with
           | Same -> Inr (Node (Less, l, x, r))
           | More -> Inl (Node (Same, l, x, r))
-          | Less -> rotl l x r )
+          | Less -> rotl l x r ) )
 
 type _ avl_del =
   | Dsame : 'n avl -> 'n avl_del
@@ -2239,7 +2239,7 @@ let rec rule : type a b.
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Lam (v, body) -> Inr (Lam (v, body))
   | Const (r, v) -> Inr (Const (r, v))
-  | App (e1, e2) ->
+  | App (e1, e2) -> (
     match (mode e1, mode e2) with
     | Pexp, _ -> (
       match onestep e1 with
@@ -2249,7 +2249,7 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
       match onestep e2 with
       | Inl e -> Inl (App (e1, e))
       | Inr v -> Inl (App (e1, v)) )
-    | Pval, Pval -> rule e1 e2
+    | Pval, Pval -> rule e1 e2 )
 
 type ('env, 'a) var =
   | Zero : ('a * 'env, 'a) var
@@ -3457,7 +3457,7 @@ end)
 type var = [`Var of string]
 
 let subst_var ~subst : var -> _ = function
-  | `Var s as x -> try Subst.find s subst with Not_found -> x
+  | `Var s as x -> ( try Subst.find s subst with Not_found -> x )
 
 let free_var : var -> _ = function `Var s -> Names.singleton s
 
@@ -7416,14 +7416,14 @@ module Bootstrap
 
   let deleteMin = function
     | BE.E -> raise Not_found
-    | BE.H (x, p) ->
+    | BE.H (x, p) -> (
         if PrimH.isEmpty p then BE.E
         else
           match PrimH.findMin p with
           | BE.H (y, p1) ->
               let p2 = PrimH.deleteMin p in
               BE.H (y, PrimH.merge p1 p2)
-          | BE.E -> assert false
+          | BE.E -> assert false )
 end
 
 module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element =

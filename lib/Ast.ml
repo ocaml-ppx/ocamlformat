@@ -2006,22 +2006,6 @@ end = struct
         List.exists bindings ~f:(fun {pvb_body; _} -> pvb_body == fun_body)
     | _ -> false
 
-  (* Whether to parenze an expr on the RHS of a let binding.
-     [dont_parenze_exp_in_bindings] must have been checked before. *)
-  let parenze_exp_in_bindings bindings exp =
-    match exp.pexp_desc with
-    | Pexp_function ([], None, Pfunction_cases _) ->
-        List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
-              match pvb_body with
-              | Pfunction_body let_body when let_body == exp ->
-                  (* Function with cases and no 'fun' keyword is in the body of
-                     a binding, parentheses are needed if the binding also
-                     defines arguments. *)
-                  not (List.is_empty pvb_args)
-              | _ -> false
-          )
-    | _ -> false
-
   let ctx_sensitive_to_trailing_attributes = function
     | Lb _ -> false
     | _ -> true
@@ -2174,6 +2158,28 @@ end = struct
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
       ~default:exposed_
     |> (ignore : bool -> _)
+
+  (* Whether to parenze an expr on the RHS of a match/try/function case. *)
+  and parenze_exp_in_match_case cases exp =
+    if !leading_nested_match_parens then
+      List.iter cases ~f:(fun {pc_rhs; _} ->
+          mark_parenzed_inner_nested_match pc_rhs ) ;
+    List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
+    && exposed_right_exp Match exp
+
+  (* Whether to parenze an expr on the RHS of a let binding.
+     [dont_parenze_exp_in_bindings] must have been checked before. *)
+  and parenze_exp_in_bindings bindings exp =
+        List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
+              match pvb_body with
+                | Pfunction_body ({pexp_desc = Pexp_function ([],None,Pfunction_cases _);_} as let_body) when let_body == exp ->
+                  (* Function with cases and no 'fun' keyword is in the body of
+                     a binding, parentheses are needed if the binding also
+                     defines arguments. *)
+                  not (List.is_empty pvb_args)
+                | Pfunction_cases (cases,_,_) -> parenze_exp_in_match_case cases exp
+              | _ -> false
+          )
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
@@ -2330,9 +2336,8 @@ end = struct
       , {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} )
       when e == exp ->
         true
-    | Exp {pexp_desc; _}, _ -> (
-      match pexp_desc with
-      | Pexp_extension
+    | Exp {pexp_desc=
+       Pexp_extension
           ( _
           , PStr
               [ { pstr_desc=
@@ -2347,12 +2352,10 @@ end = struct
                 ; _ } ] )
        |Pexp_function (_, _, Pfunction_cases (cases, _, _))
        |Pexp_match (_, cases)
-       |Pexp_try (_, cases) ->
-          if !leading_nested_match_parens then
-            List.iter cases ~f:(fun {pc_rhs; _} ->
-                mark_parenzed_inner_nested_match pc_rhs ) ;
-          List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
-          && exposed_right_exp Match exp
+       |Pexp_try (_, cases)
+             ; _}, _ -> parenze_exp_in_match_case cases exp
+    | Exp {pexp_desc; _}, _ -> (
+      match pexp_desc with
       | Pexp_ifthenelse (eN, _)
         when List.exists eN ~f:(fun x -> x.if_cond == exp) ->
           false

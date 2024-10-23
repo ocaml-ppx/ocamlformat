@@ -1811,14 +1811,14 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum = function
   | Node (Less, Leaf, x, r) -> x, Inl r
   | Node (Same, Leaf, x, r) -> x, Inl r
   | Node (bal, (Node _ as l), x, r) ->
-    match del_min l with
-    | y, Inr l -> y, Inr (Node (bal, l, x, r))
-    | y, Inl l ->
-      ( y
-      , (match bal with
-         | Same -> Inr (Node (Less, l, x, r))
-         | More -> Inl (Node (Same, l, x, r))
-         | Less -> rotl l x r) )
+    (match del_min l with
+     | y, Inr l -> y, Inr (Node (bal, l, x, r))
+     | y, Inl l ->
+       ( y
+       , (match bal with
+          | Same -> Inr (Node (Less, l, x, r))
+          | More -> Inl (Node (Same, l, x, r))
+          | Less -> rotl l x r) ))
 ;;
 
 type _ avl_del =
@@ -2277,16 +2277,16 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Lam (v, body) -> Inr (Lam (v, body))
   | Const (r, v) -> Inr (Const (r, v))
   | App (e1, e2) ->
-    match mode e1, mode e2 with
-    | Pexp, _ ->
-      (match onestep e1 with
-       | Inl e -> Inl (App (e, e2))
-       | Inr v -> Inl (App (v, e2)))
-    | Pval, Pexp ->
-      (match onestep e2 with
-       | Inl e -> Inl (App (e1, e))
-       | Inr v -> Inl (App (e1, v)))
-    | Pval, Pval -> rule e1 e2
+    (match mode e1, mode e2 with
+     | Pexp, _ ->
+       (match onestep e1 with
+        | Inl e -> Inl (App (e, e2))
+        | Inr v -> Inl (App (v, e2)))
+     | Pval, Pexp ->
+       (match onestep e2 with
+        | Inl e -> Inl (App (e1, e))
+        | Inr v -> Inl (App (e1, v)))
+     | Pval, Pval -> rule e1 e2)
 ;;
 
 type ('env, 'a) var =
@@ -3622,8 +3622,8 @@ type var = [ `Var of string ]
 
 let subst_var ~subst : var -> _ = function
   | `Var s as x ->
-    try Subst.find s subst with
-    | Not_found -> x
+    (try Subst.find s subst with
+     | Not_found -> x)
 ;;
 
 let free_var : var -> _ = function
