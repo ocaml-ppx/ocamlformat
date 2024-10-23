@@ -2084,7 +2084,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             ; _ }
           when not (Std_longident.is_infix id) ->
             has_attr && parens
-        | Lb _ -> has_attr && parens
+        | Lb {pvb_body=Pfunction_body body;_} when phys_equal body exp -> has_attr && parens
         | _ -> has_attr && not parens
       in
       let infix_op_args =
