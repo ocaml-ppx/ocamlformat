@@ -1094,11 +1094,14 @@ and case i ppf {pc_lhs; pc_guard; pc_rhs} =
   expression (i+1) ppf pc_rhs;
 
 and value_binding i ppf x =
-  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  ext_attrs (i+1) ppf x.pvb_attributes;
-  pattern (i+1) ppf x.pvb_pat;
-  Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
-  expression (i+1) ppf x.pvb_expr
+  line i ppf "<def> %a is_pun=%b\n" fmt_location x.pvb_loc x.pvb_is_pun;
+  let i = i + 1 in
+  ext_attrs i ppf x.pvb_attributes;
+  pattern i ppf x.pvb_pat;
+  line i ppf "args\n";
+  list i expr_function_param ppf x.pvb_args;
+  Option.iter (value_constraint i ppf) x.pvb_constraint;
+  function_body i ppf x.pvb_body
 
 and value_constraint i ppf x =
   let pp_sep ppf () = Format.fprintf ppf "@ "; in

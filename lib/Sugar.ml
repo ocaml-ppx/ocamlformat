@@ -127,7 +127,7 @@ module Let_binding = struct
     ; lb_pat: pattern xt
     ; lb_args: expr_function_param list
     ; lb_typ: value_constraint option
-    ; lb_exp: expression xt
+    ; lb_body: function_body xt
     ; lb_pun: bool
     ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }
@@ -137,7 +137,7 @@ module Let_binding = struct
     ; lb_pat= sub_pat ~ctx vb.pvb_pat
     ; lb_args= vb.pvb_args
     ; lb_typ= vb.pvb_constraint
-    ; lb_exp= sub_exp ~ctx vb.pvb_expr
+    ; lb_body= sub_fun_body ~ctx vb.pvb_body
     ; lb_pun= vb.pvb_is_pun
     ; lb_attrs= vb.pvb_attributes
     ; lb_loc= vb.pvb_loc }
@@ -152,7 +152,7 @@ module Let_binding = struct
         ; lb_pat= sub_pat ~ctx bo.pbop_pat
         ; lb_args= bo.pbop_args
         ; lb_typ= bo.pbop_typ
-        ; lb_exp= sub_exp ~ctx bo.pbop_exp
+        ; lb_body= sub_fun_body ~ctx (Pfunction_body bo.pbop_exp)
         ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= Ast_helper.Attr.empty_ext_attrs
         ; lb_loc= bo.pbop_loc } )

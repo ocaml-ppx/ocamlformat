@@ -75,14 +75,26 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
 
 (** [ctx_is_let_or_fun ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx] or a [fun] with [ctx] on the RHS. *)
-let ctx_is_let_or_fun ~ctx = function
-  | Str {pstr_desc= Pstr_value _; _} -> true
-  | Str _ -> false
-  | Lb _ | Bo _ -> true
-  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} -> (
-    match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
-  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} -> (
-    match ctx with Exp exp -> phys_equal rhs exp | _ -> false )
+let ctx_is_let_or_fun ~ctx ctx0 =
+  match (ctx0, ctx) with
+  | Str {pstr_desc= Pstr_value _; _}, _ -> true
+  | _, Lb {pvb_body= Pfunction_cases _; _} ->
+      (* This happens when a synthetic expression is constructed while
+         formatting let bindings. *)
+      true
+  | Lb {pvb_body= Pfunction_body body; _}, Exp exp -> phys_equal body exp
+  | Bo _, _ -> true
+  | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, Exp exp
+    when List.exists pvbs_bindings ~f:(fun pvb ->
+             match (pvb.pvb_body, exp) with
+             | Pfunction_body body, _ -> phys_equal body exp
+             | Pfunction_cases _, {pexp_desc= Pexp_let _; _} ->
+                 (* This also happens while formatting let bindings. *)
+                 true
+             | _ -> false ) ->
+      true
+  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _}, Exp exp ->
+      phys_equal rhs exp
   | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
@@ -160,7 +172,7 @@ module Exp = struct
       ~args ~annot =
     let is_let_func =
       match ctx0 with
-      | Ast.Str _ ->
+      | Ast.Str _ | Lb _ ->
           (* special case than aligns the arguments of [let _ = fun ...] *)
           true
       | _ -> false
@@ -234,7 +246,7 @@ module Exp = struct
     let name = "Params.box_fun_expr" in
     let mkbox =
       match ctx0 with
-      | Str _ -> hvbox
+      | Str _ | Lb _ -> hvbox
       | _ ->
           (* JS: The body of a [fun] must break if the intro is too large,
              except if the [fun] is small and parenthesed. *)
@@ -260,7 +272,7 @@ module Exp = struct
   let break_fun_decl_args c ~ctx ~last_arg =
     match ctx with
     | _ when (not last_arg) && ocp c -> str " "
-    | Ast.Str _ ->
+    | Ast.Str _ | Lb _ ->
         (* special case that break the arrow in [let _ = fun ... ->] *)
         str " "
     | Clf _ ->
@@ -356,25 +368,45 @@ module Pcty = struct
   let break_let_open _conf ~rhs = break 1000 (if is_sig rhs then ~-2 else 0)
 end
 
-let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
-    ~ctx =
-  let nspaces = if cmts_before then 1000 else 1 in
+(* Whether [pat] appears in [ctx] as a match/function/try case. *)
+let get_or_pattern_is_nested ~ctx pat =
+  let check_cases = List.exists ~f:(fun c -> phys_equal c.pc_lhs pat) in
   match ctx with
-  | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} -> (
-    match c.fmt_opts.break_cases.v with
-    | `Nested -> break nspaces 0 $ str "| "
-    | _ -> (
-        let nspaces =
-          match c.fmt_opts.break_cases.v with
-          | `All | `Vertical -> 1000
-          | _ -> nspaces
-        in
-        match c.fmt_opts.indicate_nested_or_patterns.v with
-        | `Space ->
-            cbreak ~fits:("", nspaces, "| ")
-              ~breaks:("", 0, if space then " | " else " |")
-        | `Unsafe_no -> break nspaces 0 $ str "| " ) )
-  | _ -> break nspaces 0 $ str "| "
+  | _ when not (List.is_empty pat.ppat_attributes) -> true
+  | Ast.Exp
+      { pexp_desc=
+          ( Pexp_function (_, _, Pfunction_cases (cases, _, _))
+          | Pexp_match (_, cases)
+          | Pexp_try (_, cases) )
+      ; _ }
+   |Lb {pvb_body= Pfunction_cases (cases, _, _); _} ->
+      not (check_cases cases)
+  | Exp {pexp_desc= Pexp_let (bindings, _, _); _}
+   |Cl {pcl_desc= Pcl_let (bindings, _, _); _}
+   |Str {pstr_desc= Pstr_value bindings; _} ->
+      not
+        (List.exists bindings.pvbs_bindings ~f:(function
+          | {pvb_body= Pfunction_cases (cases, _, _); _} -> check_cases cases
+          | _ -> false ))
+  | _ -> true
+
+let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
+    ~nested =
+  let nspaces = if cmts_before then 1000 else 1 in
+  match c.fmt_opts.break_cases.v with
+  | _ when nested -> break nspaces 0 $ str "| "
+  | `Nested -> break nspaces 0 $ str "| "
+  | _ -> (
+      let nspaces =
+        match c.fmt_opts.break_cases.v with
+        | `All | `Vertical -> 1000
+        | _ -> nspaces
+      in
+      match c.fmt_opts.indicate_nested_or_patterns.v with
+      | `Space ->
+          cbreak ~fits:("", nspaces, "| ")
+            ~breaks:("", 0, if space then " | " else " |")
+      | `Unsafe_no -> break nspaces 0 $ str "| " )
 
 type cases =
   { leading_space: Fmt.t
@@ -395,7 +427,11 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
-      , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+      , ( ( Exp
+              { pexp_desc=
+                  Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_let _
+              ; _ }
+          | Lb {pvb_body= Pfunction_cases _; _} )
         , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
         2
     | _, _ -> c.fmt_opts.cases_exp_indent.v
@@ -639,44 +675,48 @@ let get_list_expr (c : Conf.t) =
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[|" "|]"
 
-let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
+let box_pattern_docked (c : Conf.t) ~ctx ~space_around ~pat opn cls k =
   let space = if space_around then 1 else 0 in
   let indent_opn, indent_cls =
     match (ctx, c.fmt_opts.break_separators.v) with
     | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `Before ->
         (String.length opn - 3, 1 - String.length opn)
     | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `After -> (-3, 1)
-    | Ast.Exp {pexp_desc= Pexp_let _; _}, _ -> (-4, 0)
+    | Ast.Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+      when List.exists pvbs_bindings ~f:(fun b -> phys_equal b.pvb_pat pat)
+      ->
+        (-4, 0)
     | _ -> (0, 0)
   in
   hvbox indent_opn
     (wrap (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
 
-let get_record_pat (c : Conf.t) ~ctx =
+let get_record_pat (c : Conf.t) ~ctx pat =
   let params, _ = get_record_expr c in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
       box_pattern_docked c ~ctx
-        ~space_around:c.fmt_opts.space_around_records.v "{" "}"
+        ~space_around:c.fmt_opts.space_around_records.v ~pat "{" "}"
     else params.box
   in
   {params with box}
 
-let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
+let collection_pat (c : Conf.t) ~ctx ~space_around ~pat opn cls =
   let params = collection_expr c ~space_around opn cls in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
-      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
+      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around ~pat opn cls
     else params.box
   in
   {params with box}
 
-let get_list_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_lists.v "[" "]"
+let get_list_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_lists.v ~pat
+    "[" "]"
 
-let get_array_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v "[|"
-    "|]"
+let get_array_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx ~space_around:c.fmt_opts.space_around_arrays.v ~pat
+    "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
@@ -912,7 +952,7 @@ module Indent = struct
 
   let docked_function_after_fun (c : Conf.t) ~parens ~ctx0 ~ctx =
     match ctx0 with
-    | Str _ ->
+    | Str _ | Lb _ ->
         (* Cases must be 2-indented relative to the [let], even when
            [let_binding_deindent_fun] is on. *)
         if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0

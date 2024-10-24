@@ -438,11 +438,11 @@ end
 
 module Vb = struct
   let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs)  ?(docs = empty_docs)
-        ?(text = []) ?value_constraint ~is_pun pat args expr =
+        ?(text = []) ?value_constraint ~is_pun pat args body =
     {
      pvb_pat = pat;
      pvb_args = args;
-     pvb_expr = expr;
+     pvb_body = body;
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;
      pvb_attributes =
