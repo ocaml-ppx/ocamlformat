@@ -57,6 +57,7 @@ profile. This started with version 0.26.0.
   The attribute is moved from `begin .. end [@attr]` to `begin [@attr] .. end`.
 - Fix missing parentheses around `let .. in [@attr]` (#2564, @Julow)
 - Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
+- Fix formatting of short `fun` expressions with the janestreet profile (#2593, @Julow)
 
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
