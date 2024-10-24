@@ -1538,8 +1538,10 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
             if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank
             else None
           in
-          Cmts.fmt_before c function_loc
-          $ str "function"
+          hvbox_if
+            (Cmts.has_before c.cmts function_loc)
+            0
+            (Cmts.fmt_before c function_loc $ str "function")
           $ fmt_extension_suffix c ext
           $ fmt_attributes ?pre c spilled_attrs
           $ fmt_attributes ?pre c cs_attrs
