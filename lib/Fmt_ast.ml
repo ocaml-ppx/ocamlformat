@@ -1509,7 +1509,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
         let head = fmt_fun_args_typ args typ in
         let body ~pro = pro $ fmt_expression c (sub_exp ~ctx body) in
         let box, closing_paren_offset =
-          Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx ~parens
+          Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx
         in
         let closing_paren_offset =
           if should_box then closing_paren_offset else ~-2
