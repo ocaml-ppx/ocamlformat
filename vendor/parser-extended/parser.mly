@@ -429,7 +429,7 @@ let extra_rhs_core_type ct ~pos =
 type let_binding =
   { lb_pattern: pattern;
     lb_args: expr_function_param list;
-    lb_expression: expression;
+    lb_body: function_body;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
     lb_attributes: ext_attrs;
@@ -440,11 +440,11 @@ type let_bindings' =
     lbs_rec: rec_flag;
     lbs_has_ext: bool }
 
-let mklb ?(text=[]) ~docs ~loc (p, args, typ, e, is_pun) attrs =
+let mklb ?(text=[]) ~docs ~loc (p, args, typ, body, is_pun) attrs =
   {
     lb_pattern = p;
     lb_args = args;
-    lb_expression = e;
+    lb_body = body;
     lb_constraint=typ;
     lb_is_pun = is_pun;
     lb_attributes = add_text_attrs' text (add_docs_attrs' docs attrs);
@@ -470,7 +470,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext=_ } =
       (fun lb ->
          Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
-           lb.lb_pattern lb.lb_args lb.lb_expression)
+           lb.lb_pattern lb.lb_args lb.lb_body)
       lbs_bindings
   in
   { pvbs_bindings; pvbs_rec = lbs_rec }
@@ -1998,7 +1998,7 @@ method_:
     private_ = virtual_with_private_flag
     label = mkrhs(label) COLON ty = poly_type
       { (label, private_, Cfk_virtual ty), attrs }
-  | override_flag attributes private_flag mkrhs(label) strict_binding
+  | override_flag attributes private_flag mkrhs(label) strict_binding(seq_expr)
       { let args, tc, exp = $5 in
         ($4, pv_of_priv $3, Cfk_concrete ($1, (args, tc), exp)), $2 }
   | override_flag attributes private_flag mkrhs(label)
@@ -2573,10 +2573,10 @@ labeled_simple_expr:
     val_ident { mkpatvar ~loc:$sloc $1 }
 ;
 let_binding_body_no_punning:
-    let_ident strict_binding
+    let_ident strict_binding(fun_body)
       { let args, tc, exp = $2 in
         ($1, args, tc, exp) }
-  | let_ident type_constraint EQUAL seq_expr
+  | let_ident type_constraint EQUAL fun_body
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
@@ -2586,19 +2586,19 @@ let_binding_body_no_punning:
         in
         (v, [], Some t, $4)
       }
-  | let_ident COLON poly(core_type) EQUAL seq_expr
+  | let_ident COLON poly(core_type) EQUAL fun_body
     {
       let t = ghtyp ~loc:($loc($3)) $3 in
       ($1, [], Some (Pvc_constraint { locally_abstract_univars = []; typ=t }), $5)
     }
-  | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
+  | let_ident COLON TYPE lident_list DOT core_type EQUAL fun_body
     { let constraint' =
         Pvc_constraint { locally_abstract_univars=$4; typ = $6}
       in
       ($1, [], Some constraint', $8) }
-  | pattern_no_exn EQUAL seq_expr
+  | pattern_no_exn EQUAL fun_body
       { ($1, [], None, $3) }
-  | simple_pattern_not_ident COLON core_type EQUAL seq_expr
+  | simple_pattern_not_ident COLON core_type EQUAL fun_body
       { ($1, [], Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 }), $5) }
 ;
 let_binding_body:
@@ -2606,7 +2606,7 @@ let_binding_body:
       { let p,args,tc,e = $1 in (p,args,tc,e,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, Pfunction_body (mkexpvar ~loc:$loc $1), true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the
@@ -2645,12 +2645,12 @@ and_let_binding:
     }
 ;
 letop_binding_body:
-    pat = let_ident strict_binding
+    pat = let_ident strict_binding(seq_expr)
       { let args, tc, exp = $2 in
         (pat, args, tc, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, (mkexpvar ~loc:$loc $1), true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
       { (pat, [], Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
@@ -2667,10 +2667,10 @@ letop_bindings:
         let and_ = {pbop_op; pbop_args; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
         let_pat, let_args, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
 ;
-strict_binding:
-    EQUAL seq_expr
+strict_binding(body):
+    EQUAL body
       { [], None, $2 }
-  | nonempty_llist(expr_fun_param) type_constraint? EQUAL seq_expr
+  | nonempty_llist(expr_fun_param) type_constraint? EQUAL body
       { let tc =
           match $2 with
           | Some (Pconstraint typ) ->

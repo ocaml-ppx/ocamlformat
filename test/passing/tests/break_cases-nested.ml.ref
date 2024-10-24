@@ -250,3 +250,13 @@ let _ = try () with _ -> ( match () with _ -> () )
 let _ =
   let _ = try () with _ -> ( try () with _ -> () ) in
   ()
+
+let _ = function _ -> ( x >>= function `Halt -> return x ) | _ -> ()
+
+let _ =
+  let _ = function _ -> ( x >>= function `Halt -> return x ) | _ -> () in
+  ()
+
+class c =
+  let _ = function _ -> ( x >>= function `Halt -> return x ) | _ -> () in
+  object end
