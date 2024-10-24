@@ -102,8 +102,11 @@ module Pcty : sig
   val break_let_open : Conf.t -> rhs:class_type -> Fmt.t
 end
 
+val get_or_pattern_is_nested : ctx:Ast.t -> pattern -> bool
+(** Whether an or-pattern should be disambiguated. *)
+
 val get_or_pattern_sep :
-  ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
+  ?cmts_before:bool -> ?space:bool -> Conf.t -> nested:bool -> Fmt.t
 
 type cases =
   { leading_space: Fmt.t
@@ -159,11 +162,11 @@ val get_list_expr : Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 
-val get_record_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_record_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
-val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_list_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
-val get_array_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_array_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

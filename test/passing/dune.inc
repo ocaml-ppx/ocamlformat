@@ -2246,12 +2246,12 @@
  (action
   (with-stdout-to fun_function.ml.stdout
    (with-stderr-to fun_function.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/fun_function.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iter=3 %{dep:tests/fun_function.ml})))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/fun_function.ml fun_function.ml.stdout)))
+ (action (diff tests/fun_function.ml.ref fun_function.ml.stdout)))
 
 (rule
  (alias runtest)
@@ -4710,6 +4710,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/record-402.ml.err record-402.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to record-default.ml.stdout
+   (with-stderr-to record-default.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=default --max-iter=3 %{dep:tests/record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-default.ml.ref record-default.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/record-default.ml.err record-default.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

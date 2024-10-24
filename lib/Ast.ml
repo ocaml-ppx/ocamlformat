@@ -812,6 +812,8 @@ module rec In_ctx : sig
   val sub_sig : ctx:T.t -> signature_item -> signature_item xt
 
   val sub_str : ctx:T.t -> structure_item -> structure_item xt
+
+  val sub_fun_body : ctx:T.t -> function_body -> function_body xt
 end = struct
   open Requires_sub_terms
 
@@ -846,6 +848,8 @@ end = struct
   let sub_sig ~ctx sig_ = {ctx; ast= sig_}
 
   let sub_str ~ctx str = {ctx; ast= str}
+
+  let sub_fun_body ~ctx ast = {ctx; ast}
 end
 
 (** Operations determining precedence and necessary parenthesization of terms
@@ -1202,9 +1206,15 @@ end = struct
       | Ppat_constraint (p, _) -> p == pat
       | _ -> false
     in
-    let check_bindings l =
-      List.exists l ~f:(fun {pvb_pat; _} -> check_subpat pvb_pat)
+    let check_cases = List.exists ~f:(fun c -> c.pc_lhs == pat) in
+    let check_binding {pvb_pat; pvb_body; _} =
+      check_subpat pvb_pat
+      ||
+      match pvb_body with
+      | Pfunction_body _ -> false
+      | Pfunction_cases (cases, _, _) -> check_cases cases
     in
+    let check_bindings l = List.exists l ~f:check_binding in
     let check_param_val (_, _, p) = p == pat in
     let check_expr_function_param param =
       match param.pparam_desc with
@@ -1217,7 +1227,6 @@ end = struct
     let check_class_function_params =
       List.exists ~f:check_class_function_param
     in
-    let check_cases = List.exists ~f:(fun c -> c.pc_lhs == pat) in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
     | Pld _ -> assert false
@@ -1283,7 +1292,7 @@ end = struct
     | Fpe ctx -> assert (check_expr_function_param ctx)
     | Fpc ctx -> assert (check_class_function_param ctx)
     | Vc _ -> assert false
-    | Lb x -> assert (x.pvb_pat == pat)
+    | Lb x -> assert (check_binding x)
     | Bo x -> assert (x.pbop_pat == pat)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1351,6 +1360,10 @@ end = struct
         | {pc_rhs; _} when pc_rhs == exp -> true
         | _ -> false )
     in
+    let check_fun_body = function
+      | Pfunction_body body -> body == exp
+      | Pfunction_cases (cases, _, _) -> check_cases cases
+    in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -1365,8 +1378,8 @@ end = struct
         | Pexp_object _ -> assert false
         | Pexp_let ({pvbs_bindings; _}, e, _) ->
             assert (
-              List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
-                  pvb_expr == exp )
+              List.exists pvbs_bindings ~f:(fun {pvb_body; _} ->
+                  check_fun_body pvb_body )
               || e == exp )
         | Pexp_letop {let_; ands; body; loc_in= _} ->
             let f {pbop_exp; _} = pbop_exp == exp in
@@ -1375,13 +1388,9 @@ end = struct
         | Pexp_match (_, cases) | Pexp_try (_, cases) ->
             assert (check_cases cases)
         | Pexp_function (params, _, body) ->
-            let check_body =
-              match body with
-              | Pfunction_body body -> body == exp
-              | Pfunction_cases (cases, _, _) -> check_cases cases
-            in
             assert (
-              List.exists ~f:check_expr_function_param params || check_body )
+              List.exists ~f:check_expr_function_param params
+              || check_fun_body body )
         | Pexp_indexop_access {pia_lhs; pia_kind= Builtin idx; pia_rhs; _} ->
             assert (
               pia_lhs == exp || idx == exp
@@ -1431,7 +1440,7 @@ end = struct
     | Fpe ctx -> assert (check_expr_function_param ctx)
     | Fpc ctx -> assert (check_class_function_param ctx)
     | Vc _ -> assert false
-    | Lb x -> assert (x.pvb_expr == exp)
+    | Lb x -> assert (check_fun_body x.pvb_body)
     | Bo x -> assert (x.pbop_exp == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -1440,8 +1449,8 @@ end = struct
       | Pstr_eval (e0, _) -> assert (e0 == exp)
       | Pstr_value {pvbs_bindings; _} ->
           assert (
-            List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
-                pvb_expr == exp ) )
+            List.exists pvbs_bindings ~f:(fun {pvb_body; _} ->
+                check_fun_body pvb_body ) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
@@ -1457,8 +1466,8 @@ end = struct
           | Pcl_structure _ -> false
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
           | Pcl_let ({pvbs_bindings; _}, _, _) ->
-              List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
-                  pvb_expr == exp )
+              List.exists pvbs_bindings ~f:(fun {pvb_body; _} ->
+                  check_fun_body pvb_body )
           | Pcl_constraint _ -> false
           | Pcl_extension _ -> false
           | Pcl_open _ -> false
@@ -1866,6 +1875,23 @@ end = struct
     | Ppat_tuple _ -> true
     | _ -> false
 
+  let parenze_pat_in_bindings bindings pat =
+    let parenze_pat_in_binding ~pvb_constraint =
+      (* Some patterns must be parenthesed when followed by a colon. *)
+      (exposed_right_colon pat && Option.is_some pvb_constraint)
+      ||
+      match pat.ppat_desc with
+      | Ppat_construct (_, Some _)
+       |Ppat_variant (_, Some _)
+       |Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
+          (* Add disambiguation parentheses that are not necessary. *)
+          true
+      | _ -> false
+    in
+    List.exists bindings ~f:(fun {pvb_pat; pvb_constraint; _} ->
+        (* [pat] appears on the left side of a binding. *)
+        pvb_pat == pat && parenze_pat_in_binding ~pvb_constraint )
+
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
@@ -1902,6 +1928,11 @@ end = struct
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
     | Bo {pbop_typ= Some _; _}, (Ppat_any | Ppat_tuple _) -> true
+    | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}, Ppat_or _
+     |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
+      , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
+        | Ppat_variant _ ) ) ->
+        true
     | _, Ppat_constraint _
      |_, Ppat_unpack _
      |( Pat
@@ -1931,18 +1962,14 @@ end = struct
      |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
-     |Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}, Ppat_or _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
-     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _
-     |( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _}
-      , ( Ppat_construct _ | Ppat_cons _ | Ppat_lazy _ | Ppat_tuple _
-        | Ppat_variant _ ) ) ->
+     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _ ->
         true
-    | (Str _ | Exp _), Ppat_lazy _ -> true
+    | (Str _ | Exp _ | Lb _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
       , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
         | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
@@ -1953,22 +1980,35 @@ end = struct
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
     | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )
-      , pat_desc ) -> (
-      match pat_desc with
-      | Ppat_construct (_, Some _)
-       |Ppat_variant (_, Some _)
-       |Ppat_cons _ | Ppat_alias _ | Ppat_constraint _ | Ppat_lazy _
-       |Ppat_or _ ->
-          (* Add disambiguation parentheses that are not necessary. *)
-          true
-      | _ when exposed_right_colon pat ->
-          (* Some patterns must be parenthesed when followed by a colon. *)
-          let pvb =
-            List.find_exn pvbs_bindings ~f:(fun pvb -> pvb.pvb_pat == pat)
-          in
-          Option.is_some pvb.pvb_constraint
-      | _ -> false )
+      , _ )
+      when parenze_pat_in_bindings pvbs_bindings pat ->
+        true
+    | ( Lb {pvb_pat; _}
+      , ( Ppat_construct (_, Some _)
+        | Ppat_variant (_, Some _)
+        | Ppat_cons _ | Ppat_alias _ | Ppat_or _ ) )
+      when pvb_pat == pat ->
+        (* Disambiguation parentheses *)
+        true
+    | Lb {pvb_pat; pvb_constraint= Some _; _}, _
+      when pvb_pat == pat && exposed_right_colon pat ->
+        true
     | _ -> false
+
+  (* Whether an expression in a let binding shouldn't be parenthesed,
+     bypassing the other Ast rules. *)
+  let dont_parenze_exp_in_bindings bindings exp =
+    match exp.pexp_desc with
+    | Pexp_function ([], None, (Pfunction_cases _ as fun_body)) ->
+        (* [fun_body] is the body of the let binding and shouldn't be
+           parenthesed. [exp] is a synthetic expression constructed in the
+           formatting code. *)
+        List.exists bindings ~f:(fun {pvb_body; _} -> pvb_body == fun_body)
+    | _ -> false
+
+  let ctx_sensitive_to_trailing_attributes = function
+    | Lb _ -> false
+    | _ -> true
 
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
@@ -2119,6 +2159,31 @@ end = struct
       ~default:exposed_
     |> (ignore : bool -> _)
 
+  (* Whether to parenze an expr on the RHS of a match/try/function case. *)
+  and parenze_exp_in_match_case cases exp =
+    if !leading_nested_match_parens then
+      List.iter cases ~f:(fun {pc_rhs; _} ->
+          mark_parenzed_inner_nested_match pc_rhs ) ;
+    List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
+    && exposed_right_exp Match exp
+
+  (* Whether to parenze an expr on the RHS of a let binding.
+     [dont_parenze_exp_in_bindings] must have been checked before. *)
+  and parenze_exp_in_bindings bindings exp =
+    List.exists bindings ~f:(fun {pvb_body; pvb_args; _} ->
+        match pvb_body with
+        | Pfunction_body
+            ( {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} as
+              let_body )
+          when let_body == exp ->
+            (* Function with cases and no 'fun' keyword is in the body of a
+               binding, parentheses are needed if the binding also defines
+               arguments. *)
+            not (List.is_empty pvb_args)
+        | Pfunction_cases (cases, _, _) ->
+            parenze_exp_in_match_case cases exp
+        | _ -> false )
+
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_exp ({ctx; ast= exp} as xexp) =
@@ -2173,7 +2238,19 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
-    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _} -> true
+    | Lb pvb, _ when dont_parenze_exp_in_bindings [pvb] exp -> false
+    | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+     |Cl {pcl_desc= Pcl_let ({pvbs_bindings; _}, _, _); _}, _
+      when dont_parenze_exp_in_bindings pvbs_bindings exp ->
+        false
+    | Lb pvb, _ when parenze_exp_in_bindings [pvb] exp -> true
+    | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
+     |Cl {pcl_desc= Pcl_let ({pvbs_bindings; _}, _, _); _}, _
+      when parenze_exp_in_bindings pvbs_bindings exp ->
+        true
+    | _, {pexp_desc= Pexp_infix _; pexp_attributes= _ :: _; _}
+      when ctx_sensitive_to_trailing_attributes ctx ->
+        true
     | ( Str
           { pstr_desc=
               Pstr_value
@@ -2260,32 +2337,32 @@ end = struct
       when e == exp ->
         true
     | ( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body e); _}
-      , {pexp_desc= Pexp_function (_, _, Pfunction_cases _); _} )
+      , {pexp_desc= Pexp_function ([], None, Pfunction_cases _); _} )
       when e == exp ->
         true
+    | ( Exp
+          { pexp_desc=
+              ( Pexp_extension
+                  ( _
+                  , PStr
+                      [ { pstr_desc=
+                            Pstr_eval
+                              ( { pexp_desc=
+                                    ( Pexp_function
+                                        (_, _, Pfunction_cases (cases, _, _))
+                                    | Pexp_match (_, cases)
+                                    | Pexp_try (_, cases) )
+                                ; _ }
+                              , _ )
+                        ; _ } ] )
+              | Pexp_function (_, _, Pfunction_cases (cases, _, _))
+              | Pexp_match (_, cases)
+              | Pexp_try (_, cases) )
+          ; _ }
+      , _ ) ->
+        parenze_exp_in_match_case cases exp
     | Exp {pexp_desc; _}, _ -> (
       match pexp_desc with
-      | Pexp_extension
-          ( _
-          , PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            ( Pexp_function
-                                (_, _, Pfunction_cases (cases, _, _))
-                            | Pexp_match (_, cases)
-                            | Pexp_try (_, cases) )
-                        ; _ }
-                      , _ )
-                ; _ } ] )
-       |Pexp_function (_, _, Pfunction_cases (cases, _, _))
-       |Pexp_match (_, cases)
-       |Pexp_try (_, cases) ->
-          if !leading_nested_match_parens then
-            List.iter cases ~f:(fun {pc_rhs; _} ->
-                mark_parenzed_inner_nested_match pc_rhs ) ;
-          List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
-          && exposed_right_exp Match exp
       | Pexp_ifthenelse (eN, _)
         when List.exists eN ~f:(fun x -> x.if_cond == exp) ->
           false
@@ -2347,7 +2424,10 @@ end = struct
         | _ -> Exp.has_trailing_attributes exp || parenze () ) )
     | _, {pexp_desc= Pexp_list _; _} -> false
     | _, {pexp_desc= Pexp_array _; _} -> false
-    | _, exp when Exp.has_trailing_attributes exp -> true
+    | _, exp
+      when ctx_sensitive_to_trailing_attributes ctx
+           && Exp.has_trailing_attributes exp ->
+        true
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be

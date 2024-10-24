@@ -8,7 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Added
 
-- \* Support OCaml 5.2 syntax (#2519, #2544, #2590, @Julow, @EmileTrotignon)
+- \* Support OCaml 5.2 syntax (#2519, #2544, #2590, #2596, @Julow, @EmileTrotignon)
   This includes local open in types and changed syntax for functions.
   This might change the formatting of some functions due to the formatting code
   being completely rewritten.
