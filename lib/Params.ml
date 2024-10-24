@@ -75,14 +75,26 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
 
 (** [ctx_is_let_or_fun ~ctx ctx0] checks whether [ctx0] is a let binding containing
     [ctx] or a [fun] with [ctx] on the RHS. *)
-let ctx_is_let_or_fun ~ctx = function
-  | Str {pstr_desc= Pstr_value _; _} -> true
-  | Str _ -> false
-  | Lb _ | Bo _ -> true
-  | Exp {pexp_desc= Pexp_let (_, rhs, _); _} -> (
-    match ctx with Exp exp -> not (phys_equal rhs exp) | _ -> false )
-  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _} -> (
-    match ctx with Exp exp -> phys_equal rhs exp | _ -> false )
+let ctx_is_let_or_fun ~ctx ctx0 =
+  match (ctx0, ctx) with
+  | Str {pstr_desc= Pstr_value _; _}, _ -> true
+  | _, Lb {pvb_body= Pfunction_cases _; _} ->
+      (* This happens when a synthetic expression is constructed while
+         formatting let bindings. *)
+      true
+  | Lb {pvb_body= Pfunction_body body; _}, Exp exp -> phys_equal body exp
+  | Bo _, _ -> true
+  | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, Exp exp
+    when List.exists pvbs_bindings ~f:(fun pvb ->
+             match (pvb.pvb_body, exp) with
+             | Pfunction_body body, _ -> phys_equal body exp
+             | Pfunction_cases _, {pexp_desc= Pexp_let _; _} ->
+                 (* This also happens while formatting let bindings. *)
+                 true
+             | _ -> false ) ->
+      true
+  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _}, Exp exp ->
+      phys_equal rhs exp
   | _ -> false
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =

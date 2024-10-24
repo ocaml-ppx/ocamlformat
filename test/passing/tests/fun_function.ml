@@ -35,3 +35,24 @@ class c = let f _ = (fun _ -> fun x -> x + 1) in object end
 class c = let f _ = fun _ -> fun x -> x + 1 in object end
 class c = let f _ = (fun _ -> (fun x -> x + 1)) in object end
 class c = let f _ = fun _ -> (fun x -> x + 1) in object end
+
+open struct
+  [@@@ocamlformat "let-binding-deindent-fun=true"]
+
+  let _ =
+    let _ = function
+      | Partial _ -> (
+          fun {target} ->
+            match target with
+            | Lazy key -> Val_ref.of_key key
+            | Lazy_loaded {v_ref; _} | Dirty {v_ref; _} -> v_ref )
+    in
+    ()
+
+  let _ = function
+    | Partial _ -> (
+        fun {target} ->
+          match target with
+          | Lazy key -> Val_ref.of_key key
+          | Lazy_loaded {v_ref; _} | Dirty {v_ref; _} -> v_ref )
+end
