@@ -30,6 +30,7 @@ profile. This started with version 0.26.0.
 - \* Undo let-bindings normalizations (#2523, @gpetiot)
 - \* Undo method parameters normalizations (#2529, @gpetiot)
 - \* The `break-colon` option is now taken into account for method type constraints (#2529, @gpetiot)
+- Improve indentation of comments after a `fun` (#2592, @Julow)
 
 ### Fixed
 

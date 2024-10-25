@@ -8235,6 +8235,14 @@ let _ = if x then 42 (* dummy *) else y
 let _ = if x then 42 (* dummy *) else if y then z else w
 
 let _ =
+  if x
+  then
+    fun _ -> true
+    (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+  else f
+;;
+
+let _ =
   match ids_queue with
   | Some q ->
     (* this is more efficient than a linear scan of [ids] *)
