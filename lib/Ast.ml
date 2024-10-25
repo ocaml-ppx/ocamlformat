@@ -1777,6 +1777,7 @@ end = struct
       match c.pcl_desc with
       | Pcl_apply _ -> Some Apply
       | Pcl_structure _ -> Some Apply
+      | Pcl_let _ -> Some Low
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
      |Rep | Mb _ | Md _ | Cd _ | Ctd _ ->
