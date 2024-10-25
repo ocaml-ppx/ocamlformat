@@ -8241,3 +8241,11 @@ let _ =
     (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
   else f
 ;;
+
+let _ =
+  match ids_queue with
+  | Some q ->
+    (* this is more efficient than a linear scan of [ids] *)
+    fun id -> not (Ident.HashQueue.mem q id)
+  | None -> fun id -> not (List.mem ~equal:Ident.equal ids id)
+;;
