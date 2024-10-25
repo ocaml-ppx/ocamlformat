@@ -752,18 +752,19 @@ and fmt_type_cstr c ?(pro = ":") ?constraint_ctx xtyp =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
   let wrap, inner_pro, box =
     match xtyp.ast.ptyp_desc with
-    | (Ptyp_poly (_, {ptyp_desc= Ptyp_arrow _; _}) | Ptyp_arrow _)
-      when colon_before ->
+    | (Ptyp_poly _ | Ptyp_arrow _) when colon_before ->
         let outer_pro =
-          if c.conf.fmt_opts.ocp_indent_compat.v then
-            fits_breaks (pro ^ " ") (pro ^ "  ")
-          else str pro $ str " "
+          match (xtyp.ast.ptyp_desc, c.conf.fmt_opts.break_separators.v) with
+          | ( (Ptyp_poly (_, {ptyp_desc= Ptyp_arrow _; _}) | Ptyp_arrow _)
+            , `Before ) ->
+              fits_breaks (pro ^ " ") (pro ^ "  ")
+          | _ -> str pro $ str " "
         in
         let pre_break =
           if colon_before then fits_breaks " " ~hint:(1000, 0) ""
           else break 0 ~-1
         in
-        let wrap x = pre_break $ cbox 0 (outer_pro $ x) in
+        let wrap x = pre_break $ hvbox 0 (outer_pro $ x) in
         (wrap, None, false)
     | _ ->
         ( (fun k ->
@@ -921,10 +922,23 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
+      let break, pro =
+        match
+          (c.conf.fmt_opts.break_separators.v, c.conf.fmt_opts.break_colon.v)
+        with
+        | `Before, `Before ->
+            let indent =
+              match t.ptyp_desc with Ptyp_arrow _ -> 3 | _ -> 2
+            in
+            (break 1 indent, None)
+        | _ -> (space_break, None)
+      in
       hovbox_if box 0
-        ( list a1N space_break (fun {txt; _} -> fmt_type_var txt)
-        $ str "." $ space_break
-        $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
+        ( hovbox 0
+            ( list a1N space_break (fun {txt; _} -> fmt_type_var txt)
+            $ str "." )
+        $ break
+        $ fmt_core_type c ~box ?pro ~pro_space:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
         (wrap_if parenze_constraint_ctx (str "(") (str ")")
