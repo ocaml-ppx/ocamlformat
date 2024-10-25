@@ -1334,7 +1334,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
               | Thd, Noarg -> `Nil
               | Ttl Thd, v -> `Cons v
               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist))
-             (* One can also write the type annotation directly *)
+           (* One can also write the type annotation directly *)
        })
 ;;
 
@@ -10522,3 +10522,11 @@ let exists t key =
 
 let _ = if x then 42 (* dummy *) else y
 let _ = if x then 42 (* dummy *) else if y then z else w
+
+let _ =
+  if x
+  then
+    fun _ -> true
+    (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+  else f
+;;

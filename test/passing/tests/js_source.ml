@@ -8233,3 +8233,11 @@ let exists t key =
 
 let _ = if x then 42 (* dummy *) else y
 let _ = if x then 42 (* dummy *) else if y then z else w
+
+let _ =
+  if x
+  then
+    fun _ -> true
+    (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+  else f
+;;
