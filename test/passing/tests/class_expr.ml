@@ -15,3 +15,8 @@ class c =
         let pci_params = self#list in
         ()
   end
+
+class c =
+  (let () = print_endline "Class init" in
+   with_param )
+    ()

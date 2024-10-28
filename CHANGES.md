@@ -60,6 +60,7 @@ profile. This started with version 0.26.0.
 - Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix formatting of short `fun` expressions with the janestreet profile (#2593, @Julow)
+- Fix missing parentheses around a let in class expressions (#2599, @Julow)
 
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
