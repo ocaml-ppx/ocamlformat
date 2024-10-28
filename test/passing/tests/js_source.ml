@@ -8249,3 +8249,13 @@ let _ =
     fun id -> not (Ident.HashQueue.mem q id)
   | None -> fun id -> not (List.mem ~equal:Ident.equal ids id)
 ;;
+
+type callbacks =
+  { html_debug_new_node_session_f :
+      'a.
+      ?kind:[ `ComputePre | `ExecNode | `ExecNodeNarrowing | `WTO ]
+      -> pp_name:(Format.formatter -> unit)
+      -> Procdesc.Node.t
+      -> f:(unit -> 'a)
+      -> 'a
+  }
