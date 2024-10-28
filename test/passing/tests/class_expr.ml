@@ -18,5 +18,5 @@ class c =
 
 class c =
   (let () = print_endline "Class init" in
-   with_param)
+   with_param )
     ()
