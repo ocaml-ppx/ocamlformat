@@ -752,18 +752,19 @@ and fmt_type_cstr c ?(pro = ":") ?constraint_ctx xtyp =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
   let wrap, inner_pro, box =
     match xtyp.ast.ptyp_desc with
-    | (Ptyp_poly (_, {ptyp_desc= Ptyp_arrow _; _}) | Ptyp_arrow _)
-      when colon_before ->
+    | (Ptyp_poly _ | Ptyp_arrow _) when colon_before ->
         let outer_pro =
-          if c.conf.fmt_opts.ocp_indent_compat.v then
-            fits_breaks (pro ^ " ") (pro ^ "  ")
-          else str pro $ str " "
+          match (xtyp.ast.ptyp_desc, c.conf.fmt_opts.break_separators.v) with
+          | ( (Ptyp_poly (_, {ptyp_desc= Ptyp_arrow _; _}) | Ptyp_arrow _)
+            , `Before ) ->
+              fits_breaks (pro ^ " ") (pro ^ "  ")
+          | _ -> str pro $ str " "
         in
         let pre_break =
           if colon_before then fits_breaks " " ~hint:(1000, 0) ""
           else break 0 ~-1
         in
-        let wrap x = pre_break $ cbox 0 (outer_pro $ x) in
+        let wrap x = pre_break $ hvbox 0 (outer_pro $ x) in
         (wrap, None, false)
     | _ ->
         ( (fun k ->
@@ -832,7 +833,7 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
 and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
-    ({ast= typ; ctx} as xtyp) =
+    ({ast= typ; ctx= ctx0} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -857,7 +858,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
        c.conf
   @@
   let in_type_declaration =
-    match ctx with
+    match ctx0 with
     | Td {ptype_manifest= Some t; _} -> phys_equal t typ
     | _ -> false
   in
@@ -921,10 +922,26 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
+      let ctx_is_value_constraint = function Vc _ -> true | _ -> false in
+      let break, box_core_type =
+        match
+          (c.conf.fmt_opts.break_separators.v, c.conf.fmt_opts.break_colon.v)
+        with
+        | `Before, `Before when ctx_is_value_constraint ctx0 ->
+            (* Special formatting for leading [->] in let bindings. *)
+            let indent =
+              match t.ptyp_desc with Ptyp_arrow _ -> 3 | _ -> 2
+            in
+            (break 1 indent, Some false)
+        | _ -> (space_break, None)
+      in
       hovbox_if box 0
-        ( list a1N space_break (fun {txt; _} -> fmt_type_var txt)
-        $ str "." $ space_break
-        $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
+        ( hovbox 0
+            ( list a1N space_break (fun {txt; _} -> fmt_type_var txt)
+            $ str "." )
+        $ break
+        $ fmt_core_type c ?box:box_core_type ~pro_space:false
+            (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
         (wrap_if parenze_constraint_ctx (str "(") (str ")")
@@ -1509,7 +1526,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
         let head = fmt_fun_args_typ args typ in
         let body ~pro = pro $ fmt_expression c (sub_exp ~ctx body) in
         let box, closing_paren_offset =
-          Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx ~parens
+          Params.Exp.box_fun_expr c.conf ~source:c.source ~ctx0 ~ctx
         in
         let closing_paren_offset =
           if should_box then closing_paren_offset else ~-2
