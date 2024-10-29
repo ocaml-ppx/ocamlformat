@@ -1698,21 +1698,23 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
       (list_fl args (fmt_arg c) $ fmt_if last global_epi)
     $ fmt_if (not last) (break 1 0)
   in
-  let is_simple (lbl, x) =
+  let is_simple (_lbl, x) =
     let xexp = sub_exp ~ctx x in
-    let output =
-      Cmts.preserve
-        ~cache_key:(Arg (lbl, x))
-        (fun () ->
-          let cmts = Cmts.drop_before c.cmts x.pexp_loc in
-          fmt_arg ~first:false ~last:false {c with cmts} (lbl, x) )
-        c.cmts
-    in
-    let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
-    is_simple c.conf (expression_width c) xexp && not breaks
+    is_simple c.conf (expression_width c) xexp
+  in
+  let should_break_before x = not (is_simple x)
+  and should_break_after ((_lbl, exp) as y) =
+    match exp.pexp_desc with
+    (* Heavy syntax strings are not grouped. *)
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, Some _); _} -> true
+    (* Non-simple strings are grouped but end a group. *)
+    | Pexp_constant {pconst_desc= Pconst_string (str, _, None); _} ->
+        String.length str * 3 > c.conf.fmt_opts.margin.v
+    | _ -> not (is_simple y)
   in
   let break x y =
-    Cmts.has_after c.cmts (snd x).pexp_loc || not (is_simple x && is_simple y)
+    Cmts.has_after c.cmts (snd x).pexp_loc
+    || should_break_after x || should_break_before y
   in
   let groups =
     if c.conf.fmt_opts.wrap_fun_args.v then List.group args ~break

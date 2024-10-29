@@ -72,6 +72,9 @@ module Location : sig
 
   val width : t -> int
 
+  (* Number of line spanned by a location. *)
+  val height : t -> int
+
   val is_single_line : t -> int -> bool
 
   val of_lexbuf : Lexing.lexbuf -> t

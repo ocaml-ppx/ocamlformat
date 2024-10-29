@@ -405,14 +405,14 @@ end
       #use "import.cinaps" ;;
 
       List.iter all_fields ~f:(fun (name, type_) ->
-          printf "\nexternal get_%s\n: unit -> %s = \"get_%s\"" name type_
-            name )
+          printf "\nexternal get_%s\n: unit -> %s = \"get_%s\""
+            name type_ name )
     ]} *)
 
 (** {[
       List.iter all_fields ~f:(fun (name, type_) ->
-          printf "\nexternal get_%s\n: unit -> %s = \"get_%s\"" name type_
-            name )
+          printf "\nexternal get_%s\n: unit -> %s = \"get_%s\""
+            name type_ name )
     ]} *)
 
 (** {[

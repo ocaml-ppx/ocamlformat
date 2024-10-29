@@ -30,9 +30,11 @@ let tests_string =
   in
   List.concat
     [ [test_opt "string: not a string" {|hello|} `Preserve ~expected:None]
-    ; test "simple" {|"hello"|} ~expected_preserve:"hello"
-        ~expected_normalize:"hello"
-    ; test "numeric escapes" {|"\123 \xff \o234"|}
+    ; test "simple"
+        {|"hello"|}
+        ~expected_preserve:"hello" ~expected_normalize:"hello"
+    ; test "numeric escapes"
+        {|"\123 \xff \o234"|}
         ~expected_preserve:{|\123 \xff \o234|}
         ~expected_normalize:{|\123 \xff \o234|}
     ; test "raw tab"
