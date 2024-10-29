@@ -909,10 +909,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ space_break $ fmt_longident_loc c lid )
   | Ptyp_extension ext ->
       hvbox c.conf.fmt_opts.extension_indent.v (fmt_extension c ctx ext)
-  | Ptyp_package (id, cnstrs) ->
+  | Ptyp_package (id, cnstrs, attrs) ->
       hvbox 2
         ( hovbox 0 (str "module" $ space_break $ fmt_longident_loc c id)
-        $ fmt_package_type c ctx cnstrs )
+        $ fmt_package_type c ctx cnstrs
+        $ fmt_attributes c attrs )
   | Ptyp_open (lid, typ) ->
       hvbox 2
         ( hvbox 0 (fmt_longident_loc c lid $ str ".(")
@@ -1293,13 +1294,14 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_unpack (name, pt) ->
       let fmt_constraint_opt pt k =
         match pt with
-        | Some (id, cnstrs) ->
+        | Some (id, cnstrs, attrs) ->
             hovbox 0
               (Params.parens_if parens c.conf
                  (hvbox 1
                     ( hovbox 0
                         (k $ space_break $ str ": " $ fmt_longident_loc c id)
-                    $ fmt_package_type c ctx cnstrs ) ) )
+                    $ fmt_package_type c ctx cnstrs
+                    $ fmt_attributes c attrs ) ) )
         | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
       in
       fmt_constraint_opt pt
@@ -2594,10 +2596,11 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       and epi = cls_paren in
       let fmt_mod m =
         match pt with
-        | Some (id, cnstrs) ->
+        | Some (id, cnstrs, attrs) ->
             hvbox 2
               ( hovbox 0 (m $ space_break $ str ": " $ fmt_longident_loc c id)
-              $ fmt_package_type c ctx cnstrs )
+              $ fmt_package_type c ctx cnstrs
+              $ fmt_attributes c attrs )
         | None -> m
       in
       outer_pro
@@ -4330,11 +4333,12 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                 (str "end" $ fmt_attributes_and_docstrings c pmod_attributes)
             $ after ) }
   | Pmod_unpack (e, ty1, ty2) ->
-      let package_type sep (lid, cstrs) =
+      let package_type sep (lid, cstrs, attrs) =
         break 1 (Params.Indent.mod_unpack_annot c.conf)
         $ hovbox 0
             ( hovbox 0 (str sep $ fmt_longident_loc c lid)
-            $ fmt_package_type c ctx cstrs )
+            $ fmt_package_type c ctx cstrs
+            $ fmt_attributes c attrs )
       in
       { empty with
         opn= Some (open_hvbox 2)

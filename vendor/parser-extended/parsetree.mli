@@ -181,7 +181,8 @@ and core_type_desc =
   | Ptyp_open of Longident.t loc * core_type (** [M.(T)] *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
-and package_type = Longident.t loc * (Longident.t loc * core_type) list
+and package_type =
+  Longident.t loc * (Longident.t loc * core_type) list * attributes
 (** As {!package_type} typed values:
          - [(S, [])] represents [(module S)],
          - [(S, [(t1, T1) ; ... ; (tn, Tn)])]

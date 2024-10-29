@@ -968,7 +968,7 @@ end = struct
               | {prf_desc= Rtag (_, _, t1N); _} -> List.exists t1N ~f
               | {prf_desc= Rinherit t1; _} -> typ == t1 ) )
       | Ptyp_open (_, t1) -> assert (t1 == typ)
-      | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
+      | Ptyp_package (_, it1N, _) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
             List.exists fields ~f:(function
@@ -1001,14 +1001,14 @@ end = struct
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
       | Ppat_extension (_, PTyp t) -> assert (typ == t)
-      | Ppat_unpack (_, Some (_, l)) ->
+      | Ppat_unpack (_, Some (_, l, _)) ->
           assert (List.exists l ~f:(fun (_, t) -> typ == t))
       | Ppat_record (l, _) ->
           assert (List.exists l ~f:(fun (_, t, _) -> Option.exists t ~f))
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
+      | Pexp_pack (_, Some (_, it1N, _)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
        |Pexp_extension (_, PTyp t1) ->
@@ -1046,7 +1046,7 @@ end = struct
     | Mod ctx -> (
       match ctx.pmod_desc with
       | Pmod_unpack (_, ty1, ty2) ->
-          let f (_, cstrs) = List.exists cstrs ~f:(fun (_, x) -> f x) in
+          let f (_, cstrs, _) = List.exists cstrs ~f:(fun (_, x) -> f x) in
           assert (Option.exists ty1 ~f || Option.exists ty2 ~f)
       | _ -> assert false )
     | Sig ctx -> (
