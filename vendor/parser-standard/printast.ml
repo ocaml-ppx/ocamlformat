@@ -149,6 +149,10 @@ let mode i ppf mode =
 let modes i ppf modes =
   List.iter (fun m -> mode i ppf m) modes
 
+let include_kind i ppf = function
+  | Structure -> line i ppf "Structure\n"
+  | Functor -> line i ppf "Functor\n"
+
 let labeled_tuple_element f i ppf (l, ct) =
   option i string ppf l;
   f i ppf ct
@@ -413,6 +417,9 @@ and expression i ppf x =
       line i ppf "Pexp_unreachable"
   | Pexp_hole ->
       line i ppf "Pexp_hole"
+  | Pexp_stack e ->
+      line i ppf "Pexp_stack\n";
+      expression i ppf e
 
 and jkind_annotation i ppf (jkind : jkind_annotation) =
   match jkind with
@@ -430,6 +437,9 @@ and jkind_annotation i ppf (jkind : jkind_annotation) =
   | Kind_of type_ ->
       line i ppf "Kind_of\n";
       core_type (i+1) ppf type_
+  | Product jkinds ->
+      line i ppf "Product\n";
+      list i jkind_annotation ppf jkinds
 
 and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   match desc with
@@ -809,9 +819,11 @@ and signature_item i ppf x =
       line i ppf "Psig_open %a %a\n" fmt_override_flag od.popen_override
         fmt_longident_loc od.popen_expr;
       attributes i ppf od.popen_attributes
-  | Psig_include incl ->
+  | Psig_include (incl, m) ->
       line i ppf "Psig_include\n";
+      include_kind i ppf incl.pincl_kind;
       module_type i ppf incl.pincl_mod;
+      modalities i ppf m;
       attributes i ppf incl.pincl_attributes
   | Psig_class (l) ->
       line i ppf "Psig_class\n";
@@ -938,6 +950,7 @@ and structure_item i ppf x =
       list i class_type_declaration ppf l;
   | Pstr_include incl ->
       line i ppf "Pstr_include";
+      include_kind i ppf incl.pincl_kind;
       attributes i ppf incl.pincl_attributes;
       module_expr i ppf incl.pincl_mod
   | Pstr_extension ((s, arg), attrs) ->

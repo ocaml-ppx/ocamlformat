@@ -6,13 +6,25 @@ val foo :
   -> 'k Jane_symbol.Map.t
   -> ('k, Sockaddr.t, 'cmp) Map.t
 
-type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
-  :
+type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt :
   value
 
 type t_value : value
 
 type t_imm : immediate
+
+type t_imm : immediate =
+  | Aaaaaaaaaaaaaaaaaaaaa
+  | Bbbbbbbbbbbbbbbbbbbbb
+  | Ccccccccccccccccccccc
+
+type t_imm : immediate =
+  [`Aaaaaaaaaaaaaaaaaaaaa | `Bbbbbbbbbbbbbbbbbbbbb | `Ccccccccccccccccccccc]
+
+type t_imm : immediate =
+  { aaaaaaaaaaaaaaaaaaaa: rrrrrrrrrrrrrrrrrrrr
+  ; bbbbbbbbbbbbbbbbbbbb: ssssssssssssssssssss
+  ; cccccccccccccccccccc: tttttttttttttttttttt }
 
 type t_imm64 : immediate64
 
@@ -285,8 +297,8 @@ let f_gadt : ('a : value). 'a -> 'a g -> 'a = fun x MkG -> f_imm x
 
 (* comments *)
 val foo :
-  ((* comment 1 *) 'k (* comment 2 *) : (* comment 3 *) immediate64
-  (* comment 4 *)) (* comment 5 *)
+  ((* comment 1 *) 'k (* comment 2 *) :
+  (* comment 3 *) immediate64 (* comment 4 *)) (* comment 5 *)
   'cmp.
      (module S
         with type Id_and_repr.t = 'k
@@ -299,7 +311,7 @@ type a =
   as
   ((* comment 1 *)
   'k (* comment 2 *) : (* comment 3 *)
-  immediate64 (* comment 4 *))
+                       immediate64 (* comment 4 *))
 (* comment 5 *)
 
 let f (type a : immediate) x = x
@@ -353,6 +365,5 @@ type t =
   | T :
       ((* 1 *) 'a : value) 'b (* 2 *) ('c : (* 3 *) float64) 'd.
       (* 4 *)
-      
       {x: 'a * 'b * 'c * 'd}
       -> t

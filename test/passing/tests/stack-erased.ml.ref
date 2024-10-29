@@ -1,0 +1,115 @@
+(* These tests from the campiler test suite *)
+
+let f = ref (fun x -> x)
+
+let f = ref (2, 3)
+
+let f = ignore_local (2, 3)
+
+let f = ref Foo
+
+let f = ref (Bar 42)
+
+let f = ignore_local (Bar 42)
+
+let f = ref `Foo
+
+let f = ref (`Bar 42)
+
+let f = ignore_local (`Bar 42)
+
+let f = ref {x= "hello"}
+
+let f = ref {x= "hello"}
+
+let f = ignore_local {x= "hello"}
+
+let f (r : r) = ref r.x
+
+let f (r : r) = ref r.x
+
+let f (r : r) = ignore_local r.x [@nontail]
+
+let f = ref [|42; 56|]
+
+let f = ignore_local [|42; 56|]
+
+let f () = (3, 5)
+
+let f () = (3, 5)
+
+let f () =
+  let g x = x in
+  g 42
+
+let f () = (fun x -> x) 42
+
+let f () = List.length [1; 2; 3]
+
+let f () = [i for i = 0 to 9]
+
+let f () = [|i for i = 0 to 9|]
+
+let f () = new cla
+
+class foo cla =
+  object
+    method bar = {<>}
+  end
+
+let f () = object end
+
+let f () = lazy "hello"
+
+module M = struct end
+
+module type S = sig end
+
+let f () = (module M : S)
+
+let f () =
+  let r = ref "hello" in
+  let _ = (r.contents, r.contents) in
+  r.contents
+
+let f () =
+  let r = "hello" in
+  let _ = (r, r) in
+  r
+
+let mk () =
+  let r = {x= [1; 2; 3]; y= [4; 5; 6]} in
+  r.y
+
+let mk () =
+  let r = {x= [1; 2; 3]; y= [4; 5; 6]} in
+  r.x
+
+(* More tests *)
+
+let f = ref (function x -> x)
+
+let f = ref (function x -> x | y -> y)
+
+let f =
+  (* 1 *)
+  ref (* 2 *) (function
+      (* 3 *)
+      (* 4 *)
+      (* 5 *)
+      (* 6 *) x -> x )
+
+let x = ((2, "hello"), ~x:(Foo x))
+
+let x =
+  (* 1 *)
+  (* 2 *)
+  ( (* 3 *)
+    (* 4 *)
+    ((* 5 *) 1 (* 6 *), (* 7 *) "hello" (* 8 *))
+    (* 9 *)
+  , (* 10 *)
+  ~x:((* 11 *)
+      (* 12 *)
+        Foo
+        x ) )

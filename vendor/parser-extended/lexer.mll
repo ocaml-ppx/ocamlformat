@@ -63,6 +63,8 @@ let keyword_table =
     "include", INCLUDE;
     "inherit", INHERIT;
     "initializer", INITIALIZER;
+    "kind_abbrev_", KIND_ABBREV;
+    "kind_of_", KIND_OF;
     "lazy", LAZY;
     "let", LET;
     "local_", LOCAL;
@@ -80,6 +82,7 @@ let keyword_table =
     "private", PRIVATE;
     "rec", REC;
     "sig", SIG;
+    "stack_", STACK;
     "struct", STRUCT;
     "then", THEN;
     "to", TO;
@@ -94,7 +97,7 @@ let keyword_table =
 
     "lor", INFIXOP3("lor"); (* Should be INFIXOP2 *)
     "lxor", INFIXOP3("lxor"); (* Should be INFIXOP2 *)
-    "mod", INFIXOP3("mod");
+    "mod", MOD;
     "land", INFIXOP3("land");
     "lsl", INFIXOP4("lsl");
     "lsr", INFIXOP4("lsr");

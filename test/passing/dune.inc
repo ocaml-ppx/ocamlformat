@@ -4809,6 +4809,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to include_at.ml.stdout
+   (with-stderr-to include_at.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/include_at.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/include_at.ml.ref include_at.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/include_at.ml.err include_at.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to include_at.ml.js-stdout
+   (with-stderr-to include_at.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/include_at.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/include_at.ml.js-ref include_at.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/include_at.ml.js-err include_at.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to include_functor.ml.stdout
    (with-stderr-to include_functor.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/include_functor.ml})))))
@@ -7017,6 +7053,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to layout_abbreviation-erased.ml.stdout
+   (with-stderr-to layout_abbreviation-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=5 %{dep:tests/layout_abbreviation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation-erased.ml.ref layout_abbreviation-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation-erased.ml.err layout_abbreviation-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_abbreviation-erased.ml.js-stdout
+   (with-stderr-to layout_abbreviation-erased.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/layout_abbreviation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation-erased.ml.js-ref layout_abbreviation-erased.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation-erased.ml.js-err layout_abbreviation-erased.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_abbreviation.ml.stdout
+   (with-stderr-to layout_abbreviation.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=5 %{dep:tests/layout_abbreviation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation.ml.ref layout_abbreviation.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation.ml.err layout_abbreviation.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_abbreviation.ml.js-stdout
+   (with-stderr-to layout_abbreviation.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/layout_abbreviation.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation.ml.js-ref layout_abbreviation.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_abbreviation.ml.js-err layout_abbreviation.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to layout_annotation-erased.ml.stdout
    (with-stderr-to layout_annotation-erased.ml.stderr
      (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=4 %{dep:tests/layout_annotation.ml})))))
@@ -7089,9 +7197,45 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to layout_annotation_composed.ml.stdout
+   (with-stderr-to layout_annotation_composed.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters 3 %{dep:tests/layout_annotation_composed.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_composed.ml.ref layout_annotation_composed.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_composed.ml.err layout_annotation_composed.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_composed.ml.js-stdout
+   (with-stderr-to layout_annotation_composed.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/layout_annotation_composed.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_composed.ml.js-ref layout_annotation_composed.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_composed.ml.js-err layout_annotation_composed.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to layout_annotation_immediate_rewrite.ml.stdout
    (with-stderr-to layout_annotation_immediate_rewrite.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iter 4 %{dep:tests/layout_annotation_immediate_rewrite.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters 3 %{dep:tests/layout_annotation_immediate_rewrite.ml})))))
 
 (rule
  (alias runtest)
@@ -7120,6 +7264,78 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/layout_annotation_immediate_rewrite.ml.js-err layout_annotation_immediate_rewrite.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_mod.ml.stdout
+   (with-stderr-to layout_annotation_mod.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters 3 %{dep:tests/layout_annotation_mod.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_mod.ml.ref layout_annotation_mod.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_mod.ml.err layout_annotation_mod.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_mod.ml.js-stdout
+   (with-stderr-to layout_annotation_mod.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/layout_annotation_mod.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_mod.ml.js-ref layout_annotation_mod.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_mod.ml.js-err layout_annotation_mod.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_with.ml.stdout
+   (with-stderr-to layout_annotation_with.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters 3 %{dep:tests/layout_annotation_with.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_with.ml.ref layout_annotation_with.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_with.ml.err layout_annotation_with.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to layout_annotation_with.ml.js-stdout
+   (with-stderr-to layout_annotation_with.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/layout_annotation_with.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_with.ml.js-ref layout_annotation_with.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/layout_annotation_with.ml.js-err layout_annotation_with.ml.js-stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -8094,6 +8310,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/mod_type_subst.ml.js-err mod_type_subst.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes-erased.ml.stdout
+   (with-stderr-to modes-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-erased.ml.ref modes-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-erased.ml.err modes-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modes-erased.ml.js-stdout
+   (with-stderr-to modes-erased.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-erased.ml.js-ref modes-erased.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modes-erased.ml.js-err modes-erased.ml.js-stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -10501,6 +10753,78 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/source.ml.js-err source.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to stack-erased.ml.stdout
+   (with-stderr-to stack-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/stack.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack-erased.ml.ref stack-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack-erased.ml.err stack-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to stack-erased.ml.js-stdout
+   (with-stderr-to stack-erased.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/stack.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack-erased.ml.js-ref stack-erased.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack-erased.ml.js-err stack-erased.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to stack.ml.stdout
+   (with-stderr-to stack.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/stack.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack.ml.ref stack.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack.ml.err stack.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to stack.ml.js-stdout
+   (with-stderr-to stack.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/stack.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack.ml.js-ref stack.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/stack.ml.js-err stack.ml.js-stderr)))
 
 (rule
  (deps tests/.ocamlformat )

@@ -168,6 +168,7 @@ module Exp = struct
     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
+  let stack ?loc ?attrs e = mk ?loc ?attrs (Pexp_stack e)
   let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
   let parens ?loc ?attrs a = mk ?loc ?attrs (Pexp_parens a)
@@ -234,6 +235,7 @@ module Sig = struct
   let type_ ?loc rec_flag a = mk ?loc (Psig_type (rec_flag, a))
   let type_subst ?loc a = mk ?loc (Psig_typesubst a)
   let type_extension ?loc a = mk ?loc (Psig_typext a)
+  let kind_abbreviation ?loc a b = mk ?loc (Psig_kind_abbrev (a, b))
   let exception_ ?loc a = mk ?loc (Psig_exception a)
   let module_ ?loc a = mk ?loc (Psig_module a)
   let mod_subst ?loc a = mk ?loc (Psig_modsubst a)
@@ -241,7 +243,7 @@ module Sig = struct
   let modtype ?loc a = mk ?loc (Psig_modtype a)
   let modtype_subst ?loc a = mk ?loc (Psig_modtypesubst a)
   let open_ ?loc a = mk ?loc (Psig_open a)
-  let include_ ?loc a = mk ?loc (Psig_include a)
+  let include_ ?loc ?(modalities = []) a = mk ?loc (Psig_include (a, modalities))
   let class_ ?loc a = mk ?loc (Psig_class a)
   let class_type ?loc a = mk ?loc (Psig_class_type a)
   let extension ?loc ?(attrs = []) a = mk ?loc (Psig_extension (a, attrs))
@@ -261,6 +263,7 @@ module Str = struct
   let primitive ?loc a = mk ?loc (Pstr_primitive a)
   let type_ ?loc rec_flag a = mk ?loc (Pstr_type (rec_flag, a))
   let type_extension ?loc a = mk ?loc (Pstr_typext a)
+  let kind_abbreviation ?loc a b = mk ?loc (Pstr_kind_abbrev (a, b))
   let exception_ ?loc a = mk ?loc (Pstr_exception a)
   let module_ ?loc a = mk ?loc (Pstr_module a)
   let rec_module ?loc a = mk ?loc (Pstr_recmodule a)
@@ -438,8 +441,10 @@ module Opn = struct
 end
 
 module Incl = struct
-  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs) mexpr =
+  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+    ?(kind = Structure) mexpr =
     {
+     pincl_kind = kind;
      pincl_mod = mexpr;
      pincl_loc = loc;
      pincl_attributes = add_docs_attrs docs attrs;

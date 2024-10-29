@@ -69,8 +69,12 @@ type constant = {
 type location_stack = Location.t list
 
 type modality = | Modality of string [@@unboxed]
+type modalities = modality loc list
 
 type mode = | Mode of string [@@unboxed]
+type modes = mode loc list
+
+type include_kind = Structure | Functor
 
 (** {1 Extension points} *)
 
@@ -499,6 +503,7 @@ and expression_desc =
             - [let* P0 = E00 and* P1 = E01 in E1] *)
   | Pexp_extension of extension  (** [[%id]] *)
   | Pexp_unreachable  (** [.] *)
+  | Pexp_stack of expression (** stack_ exp *)
   | Pexp_hole  (** [_] *)
   | Pexp_beginend of expression  (** [begin E end] *)
   | Pexp_parens of expression  (** [(E)] *)
@@ -658,7 +663,7 @@ and type_declaration =
      ptype_manifest: core_type option;  (** represents [= T] *)
      ptype_attributes: attributes;  (** [... [\@\@id1] [\@\@id2]] *)
      ptype_loc: Location.t;
-     ptype_jkind: jkind_annotation option;
+     ptype_jkind: jkind_annotation loc option;
     }
 (**
    Here are type declarations and their representation,
@@ -1037,6 +1042,7 @@ and signature_item_desc =
   | Psig_typesubst of type_declaration list
       (** [type t1 := ... and ... and tn := ...]  *)
   | Psig_typext of type_extension  (** [type t1 += ...] *)
+  | Psig_kind_abbrev of kind_abbreviation
   | Psig_exception of type_exception  (** [exception C of T] *)
   | Psig_module of module_declaration  (** [module X = M] and [module X : MT] *)
   | Psig_modsubst of module_substitution  (** [module X := M] *)
@@ -1047,7 +1053,7 @@ and signature_item_desc =
   | Psig_modtypesubst of module_type_declaration
       (** [module type S :=  ...]  *)
   | Psig_open of open_description  (** [open X] *)
-  | Psig_include of include_description  (** [include MT] *)
+  | Psig_include of include_description * modalities (** [include MT] *)
   | Psig_class of class_description list
       (** [class c1 : ... and ... and cn : ...] *)
   | Psig_class_type of class_type_declaration list
@@ -1115,6 +1121,7 @@ and open_declaration = module_expr open_infos
 
 and 'a include_infos =
     {
+     pincl_kind : include_kind;
      pincl_mod: 'a;
      pincl_loc: Location.t;
      pincl_attributes: attributes;
@@ -1189,6 +1196,7 @@ and structure_item_desc =
   | Pstr_type of rec_flag * type_declaration list
       (** [type t1 = ... and ... and tn = ...] *)
   | Pstr_typext of type_extension  (** [type t1 += ...] *)
+  | Pstr_kind_abbrev of kind_abbreviation
   | Pstr_exception of type_exception
       (** - [exception C of T]
             - [exception C = M.X] *)
@@ -1248,6 +1256,20 @@ and module_binding =
      pmb_loc: Location.t;
     }
 (** Values of type [module_binding] represents [module X = ME] *)
+
+and jkind_const_annotation  = string Location.loc
+
+and jkind_annotation =
+  | Default
+  | Abbreviation of jkind_const_annotation
+  | Mod of jkind_annotation loc * modes
+  | With of jkind_annotation loc * core_type
+  | Kind_of of core_type
+  | Product of jkind_annotation loc list
+
+and ty_var = string option loc * jkind_annotation loc option
+
+and kind_abbreviation = string loc * jkind_annotation loc
 
 (** {1 Toplevel} *)
 

@@ -218,21 +218,28 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
             (Lexp_newtype
               (l, jkind, {pexp_desc= Pexp_constraint (exp1, Some ty, []); _})
               )
-        , attrs ) ->
-        (* CR jane-syntax: Special case where we transform a jane syntax
+        , attrs ) -> (
+      match (Jane_syntax.Expression.of_ast exp1, exp1.pexp_desc) with
+      | Some (Jexp_layout (Lexp_newtype _), _), _
+       |None, (Pexp_function _ | Pexp_newtype _) ->
+          (* We can only perform the rewrite if the newtype isn't the only
+             "function argument" *)
+          (* CR jane-syntax: Special case where we transform a jane syntax
            expression into a non-jane syntax expression, since jkind
            annotations are in the parsetree for [Pparam_newtype] but not
            [Pexp_newtype] *)
-        (* See comment on [Pexp_newtype] below *)
-        m.expr m
-          { exp with
-            pexp_attributes= attrs
-          ; pexp_desc=
-              Pexp_function
-                ( [ { pparam_loc= l.loc
-                    ; pparam_desc= Pparam_newtype (l, Some jkind) } ]
-                , Some {mode_annotations= []; type_constraint= Pconstraint ty}
-                , Pfunction_body exp1 ) }
+          (* See comment on [Pexp_newtype] below *)
+          m.expr m
+            { exp with
+              pexp_attributes= attrs
+            ; pexp_desc=
+                Pexp_function
+                  ( [ { pparam_loc= l.loc
+                      ; pparam_desc= Pparam_newtype (l, Some jkind) } ]
+                  , Some
+                      {mode_annotations= []; type_constraint= Pconstraint ty}
+                  , Pfunction_body exp1 ) }
+      | _ -> Ast_mapper.default_mapper.expr m exp )
     | _ -> (
       match pexp_desc with
       | Pexp_apply
@@ -265,29 +272,37 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
           , Pfunction_body {pexp_desc= Pexp_function (ps', None, b'); _} ) ->
           m.expr m {exp with pexp_desc= Pexp_function (ps @ ps', c, b')}
       | Pexp_newtype (l, {pexp_desc= Pexp_constraint (exp1, Some ty, []); _})
-        ->
-          (* This is a hack. Our version of ocamlformat rewrites [fun (type
-             a) -> (function x -> x)] into [fun (type a) -> function x -> x],
-             but these two things parse differently by design. We shouldn't
-             do this, but have decided to avoid making ocamlformat work
-             sanely for syntactic function arity until upstream does. We
-             should delete this, and other similar bits of normalization,
-             when we merge with 5.2 ocamlforamt. *)
-          m.expr m
-            { exp with
-              pexp_desc=
-                Pexp_function
-                  ( [ { pparam_loc= l.loc
-                      ; pparam_desc= Pparam_newtype (l, None) } ]
-                  , Some
-                      {mode_annotations= []; type_constraint= Pconstraint ty}
-                  , Pfunction_body exp1 ) }
+        -> (
+        (* This is a hack. Our version of ocamlformat rewrites [fun (type a)
+           -> (function x -> x)] into [fun (type a) -> function x -> x], but
+           these two things parse differently by design. We shouldn't do
+           this, but have decided to avoid making ocamlformat work sanely for
+           syntactic function arity until upstream does. We should delete
+           this, and other similar bits of normalization, when we merge with
+           5.2 ocamlforamt. *)
+        match (Jane_syntax.Expression.of_ast exp1, exp1.pexp_desc) with
+        | Some (Jexp_layout (Lexp_newtype _), _), _
+         |None, (Pexp_function _ | Pexp_newtype _) ->
+            (* We can only perform the rewrite if the newtype isn't the only
+               "function argument" *)
+            m.expr m
+              { exp with
+                pexp_desc=
+                  Pexp_function
+                    ( [ { pparam_loc= l.loc
+                        ; pparam_desc= Pparam_newtype (l, None) } ]
+                    , Some
+                        { mode_annotations= []
+                        ; type_constraint= Pconstraint ty }
+                    , Pfunction_body exp1 ) }
+        | _ -> Ast_mapper.default_mapper.expr m exp )
       | Pexp_function
           ( ps
           , c
-          , Pfunction_body {pexp_desc= Pexp_constraint (exp1, Some ty, []); _}
-          )
-        when Option.is_none c ->
+          , Pfunction_body
+              {pexp_desc= Pexp_constraint (exp1, Some ty, modes); _} )
+        when Option.is_none c
+             && (List.is_empty modes || Erase_jane_syntax.should_erase ()) ->
           let c =
             Some {mode_annotations= []; type_constraint= Pconstraint ty}
           in
@@ -321,6 +336,7 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
             {exp with pexp_desc= Pexp_function (ps, c, b)}
       | Pexp_extension ({txt= "src_pos"; loc}, _) when erase_jane_syntax ->
           m.expr m (dummy_position ~loc)
+      | Pexp_stack expr when erase_jane_syntax -> m.expr m expr
       | _ -> Ast_mapper.default_mapper.expr m exp )
   in
   let pat (m : Ast_mapper.mapper) pat =
@@ -392,20 +408,36 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     Ast_mapper.default_mapper.typ m typ
   in
   let structure =
+    let structure m str =
+      List.filter str ~f:(fun stri ->
+          match Jane_syntax.Structure_item.of_ast stri with
+          | Some (Jstr_layout (Lstr_kind_abbrev _)) when erase_jane_syntax ->
+              false
+          | _ -> true )
+      |> Ast_mapper.default_mapper.structure m
+    in
     if ignore_doc_comments then fun (m : Ast_mapper.mapper) l ->
       List.filter l ~f:(function
         | {pstr_desc= Pstr_attribute a; _} -> not (is_doc a)
         | _ -> true )
-      |> Ast_mapper.default_mapper.structure m
-    else Ast_mapper.default_mapper.structure
+      |> structure m
+    else structure
   in
   let signature =
+    let signature m sig_ =
+      List.filter sig_ ~f:(fun sigi ->
+          match Jane_syntax.Signature_item.of_ast sigi with
+          | Some (Jsig_layout (Lsig_kind_abbrev _)) when erase_jane_syntax ->
+              false
+          | _ -> true )
+      |> Ast_mapper.default_mapper.signature m
+    in
     if ignore_doc_comments then fun (m : Ast_mapper.mapper) l ->
       List.filter l ~f:(function
         | {psig_desc= Psig_attribute a; _} -> not (is_doc a)
         | _ -> true )
-      |> Ast_mapper.default_mapper.signature m
-    else Ast_mapper.default_mapper.signature
+      |> signature m
+    else signature
   in
   let class_structure =
     if ignore_doc_comments then fun (m : Ast_mapper.mapper) x ->

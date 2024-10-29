@@ -200,23 +200,10 @@ let paren_kind i ppf = function
   | Brace -> line i ppf "Brace\n"
   | Bracket -> line i ppf "Bracket\n"
 
-let jkind_to_string = function
-  | Layout s -> s
-
-let fmt_jkind_opt ppf l = Format.fprintf ppf "%s"
-  (Option.value ~default:"none" (Option.map (fun l -> jkind_to_string l.txt) l))
-
-let fmt_ty_var ppf (name, jkind) =
-  Format.fprintf ppf "%a:%a" fmt_str_opt_loc name fmt_jkind_opt jkind
-
 let tuple_component_label i ppf = function
   | None -> line i ppf "Label: None\n"
   | Some s -> line i ppf "Label: Some %a\n" fmt_string_loc s
 ;;
-
-let typevars ppf vs =
-  List.iter (fun x ->
-      fprintf ppf " %a" fmt_ty_var x) vs
 
 let variant_var i ppf (x : variant_var) =
   line i ppf "variant_var %a\n" fmt_location x.loc;
@@ -238,6 +225,10 @@ let modes i ppf modes =
     List.map (Location.map (fun (Mode x) -> x)) modes
   )
 
+let include_kind i ppf = function
+  | Structure -> line i ppf "Structure\n"
+  | Functor -> line i ppf "Functor\n"
+
 let rec core_type i ppf x =
   line i ppf "core_type %a\n" fmt_location x.ptyp_loc;
   attributes i ppf x.ptyp_attributes;
@@ -245,7 +236,8 @@ let rec core_type i ppf x =
   match x.ptyp_desc with
   | Ptyp_any -> line i ppf "Ptyp_any\n";
   | Ptyp_var (s) ->
-    line i ppf "Ptyp_var %a\n" fmt_ty_var s;
+      line i ppf "Ptyp_var\n";
+      typevar i ppf s;
   | Ptyp_arrow (params, ct2, m2) ->
       line i ppf "Ptyp_arrow\n";
       list i arrow_param ppf params;
@@ -271,10 +263,12 @@ let rec core_type i ppf x =
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
       list i core_type ppf l
   | Ptyp_alias (ct, s) ->
-      line i ppf "Ptyp_alias \"%a\"\n" fmt_ty_var s;
+      line i ppf "Ptyp_alias\n";
+      typevar i ppf s;
       core_type i ppf ct;
   | Ptyp_poly (sl, ct) ->
-      line i ppf "Ptyp_poly%a\n" typevars sl;
+      line i ppf "Ptyp_poly";
+      typevars i ppf sl;
       core_type i ppf ct;
   | Ptyp_package pt ->
       line i ppf "Ptyp_package\n";
@@ -527,7 +521,8 @@ and expression i ppf x =
       line i ppf "Pexp_object\n";
       class_structure i ppf s
   | Pexp_newtype (s, e) ->
-      line i ppf "Pexp_newtype %a\n" fmt_ty_var s;
+      line i ppf "Pexp_newtype\n";
+      typevar i ppf s;
       expression i ppf e
   | Pexp_pack (me, pt) ->
       line i ppf "Pexp_pack\n";
@@ -553,6 +548,9 @@ and expression i ppf x =
       line i ppf "Pexp_unreachable\n"
   | Pexp_hole ->
       line i ppf "Pexp_hole\n"
+  | Pexp_stack e ->
+      line i ppf "Pexp_stack\n";
+      expression i ppf e
   | Pexp_beginend e ->
       line i ppf "Pexp_beginend\n";
       expression i ppf e
@@ -627,6 +625,37 @@ and if_branch i ppf { if_cond; if_body } =
   expression i ppf if_cond;
   expression i ppf if_body
 
+and kind_abbreviation i ppf (a, k) =
+      line i ppf "kind_abbreviation %s\n" a.txt;
+      jkind_annotation_loc i ppf k
+
+and jkind_annotation ?loc i ppf jkind =
+  let fmt_loc_opt ppf = function
+    | None -> ()
+    | Some loc -> fmt_location ppf loc
+  in 
+  match jkind with
+  | Default -> line i ppf "Default %a\n" fmt_loc_opt loc
+  | Abbreviation jkind ->
+      line i ppf "Abbreviation \"%s\" %a\n" jkind.txt fmt_loc_opt loc
+  | Mod (jkind, m) ->
+      line i ppf "Mod %a\n"  fmt_loc_opt loc;
+      jkind_annotation_loc (i+1) ppf jkind;
+      modes (i+1) ppf m
+  | With (jkind, type_) ->
+      line i ppf "With %a\n"  fmt_loc_opt loc;
+      jkind_annotation_loc (i+1) ppf jkind;
+      core_type (i+1) ppf type_
+  | Kind_of type_ ->
+      line i ppf "Kind_of %a\n"  fmt_loc_opt loc;
+      core_type (i+1) ppf type_
+  | Product jkinds ->
+      line i ppf "Product %a\n"  fmt_loc_opt loc;
+      list i jkind_annotation_loc ppf jkinds
+
+and jkind_annotation_loc i ppf { txt; loc } =
+  jkind_annotation ~loc i ppf txt
+
 and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   match desc with
   | Pparam_val (_islocal, l, eo, p) ->
@@ -636,8 +665,7 @@ and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
       pattern (i+1) ppf p
   | Pparam_newtype ty ->
       line i ppf "Pparam_newtype %a\n" fmt_location loc;
-      list i (fun i ppf x ->
-        line (i+1) ppf "type %a" fmt_ty_var x ) ppf ty
+      typevars i ppf ty
 
 and type_constraint i ppf constraint_ =
   match constraint_ with
@@ -673,7 +701,8 @@ and type_declaration i ppf x =
   line i ppf "ptype_private = %a\n" fmt_private_flag x.ptype_private;
   line i ppf "ptype_manifest =\n";
   option (i+1) core_type ppf x.ptype_manifest;
-  line i ppf "ptype_jkind = %a\n" fmt_jkind_opt x.ptype_jkind
+  line i ppf "ptype_jkind = \n";
+  option (i+1) jkind_annotation_loc ppf x.ptype_jkind
 
 and attribute i ppf k a =
   line i ppf "%s %a %a\n" k fmt_string_loc a.attr_name fmt_location a.attr_loc;
@@ -704,7 +733,6 @@ and payload i ppf = function
     pattern i ppf x;
     line i ppf "<when>\n";
     expression (i + 1) ppf g
-
 
 and type_kind i ppf x =
   match x with
@@ -750,7 +778,7 @@ and extension_constructor_kind i ppf x =
   match x with
       Pext_decl(v, a, r) ->
         line i ppf "Pext_decl\n";
-        if v <> [] then line (i+1) ppf "vars%a\n" typevars v;
+        if v <> [] then typevars (i+1) ppf v;
         constructor_arguments (i+1) ppf a;
         option (i+1) core_type ppf r;
     | Pext_rebind li ->
@@ -984,6 +1012,8 @@ and signature_item i ppf x =
   | Psig_typext te ->
       line i ppf "Psig_typext\n";
       type_extension i ppf te
+  | Psig_kind_abbrev ab ->
+      line i ppf "Psig_kind_abbrev %a\n" (kind_abbreviation i) ab
   | Psig_exception te ->
       line i ppf "Psig_exception\n";
       type_exception i ppf te
@@ -1008,9 +1038,12 @@ and signature_item i ppf x =
   | Psig_open od ->
       line i ppf "Psig_open\n";
       open_description i ppf od
-  | Psig_include incl ->
+  | Psig_include (incl, m) ->
       line i ppf "Psig_include\n";
-      include_description i ppf incl
+      include_kind i ppf incl.pincl_kind;
+      module_type i ppf incl.pincl_mod;
+      modalities i ppf m;
+      attributes i ppf incl.pincl_attributes
   | Psig_class (l) ->
       line i ppf "Psig_class\n";
       list i class_description ppf l;
@@ -1111,6 +1144,8 @@ and structure_item i ppf x =
   | Pstr_typext te ->
       line i ppf "Pstr_typext\n";
       type_extension i ppf te
+  | Pstr_kind_abbrev ab ->
+      line i ppf "Pstr_kind_abbrev %a\n" (kind_abbreviation i) ab
   | Pstr_exception te ->
       line i ppf "Pstr_exception\n";
       type_exception i ppf te
@@ -1171,7 +1206,10 @@ and constructor_decl i ppf
      {pcd_name; pcd_vars; pcd_args; pcd_res; pcd_loc; pcd_attributes} =
   line i ppf "%a\n" fmt_location pcd_loc;
   line (i+1) ppf "%a\n" fmt_string_loc pcd_name;
-  if pcd_vars <> [] then line (i+1) ppf "pcd_vars =%a\n" typevars pcd_vars;
+  if pcd_vars <> [] then (
+    line (i+1) ppf "pcd_vars =\n";
+    typevars (i+1) ppf pcd_vars
+  );
   attributes i ppf pcd_attributes;
   constructor_arguments (i+1) ppf pcd_args;
   option (i+1) core_type ppf pcd_res
@@ -1216,14 +1254,13 @@ and value_binding i ppf x =
   modes (i+1) ppf x.pvb_modes
 
 and value_constraint i ppf x =
-  let pp_sep ppf () = Format.fprintf ppf "@ "; in
-  let pp_newtypes = Format.pp_print_list fmt_ty_var ~pp_sep in
   match x with
   | Pvc_constraint { locally_abstract_univars = []; typ } ->
       core_type i ppf typ
   | Pvc_constraint { locally_abstract_univars=newtypes; typ} ->
-      line i ppf "<type> %a.\n" pp_newtypes newtypes;
-      core_type i ppf  typ
+      line i ppf "<type>\n";
+      typevars i ppf newtypes;
+      core_type i ppf typ
   | Pvc_coercion { ground; coercion} ->
       line i ppf "<coercion>\n";
       option i core_type ppf ground;
@@ -1289,6 +1326,13 @@ and row_field i ppf x =
   | Rinherit (ct) ->
       line i ppf "Rinherit\n";
       core_type i ppf ct
+
+and typevar i ppf (var, jkind) =
+  option i (fun _ ppf -> line (i+1) ppf "%s\n") ppf var.txt;
+  option i jkind_annotation_loc ppf jkind;
+
+and typevars i ppf vs =
+  List.iter (typevar i ppf) vs
 
 let rec toplevel_phrase i ppf x =
   match x with

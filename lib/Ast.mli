@@ -107,6 +107,8 @@ type t =
   | Pld of payload
   | Typ of core_type
   | Td of type_declaration
+  | Kab of kind_abbreviation
+  | Tyv of ty_var
   | Cty of class_type
   | Pat of pattern
   | Exp of expression
@@ -123,6 +125,7 @@ type t =
   | Clf of class_field
   | Ctf of class_type_field
   | Tli of toplevel_item
+  | Jkd of jkind_annotation
   | Top
   | Rep  (** Repl phrase *)
 

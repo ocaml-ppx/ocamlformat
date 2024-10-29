@@ -393,6 +393,7 @@ module Structure_item = struct
         || List.exists ~f:Attr.is_doc pmod_attributes
     | Pstr_value {pvbs_bindings= []; _}
      |Pstr_type (_, [])
+     |Pstr_kind_abbrev _
      |Pstr_recmodule []
      |Pstr_class_type []
      |Pstr_class [] ->
@@ -480,7 +481,8 @@ module Signature_item = struct
      |Psig_modsubst {pms_ext_attrs= ea; _} ->
         Ext_attrs.has_doc ea
     | Psig_include
-        {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
+        ( {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
+        , _ )
      |Psig_exception
         { ptyexn_attributes= atrs1
         ; ptyexn_constructor= {pext_attributes= atrs2; _}
@@ -493,6 +495,7 @@ module Signature_item = struct
         Ext_attrs.has_doc ea || (List.exists ~f:Attr.is_doc) atrs
     | Psig_type (_, [])
      |Psig_typesubst []
+     |Psig_kind_abbrev (_, _)
      |Psig_recmodule []
      |Psig_class_type []
      |Psig_class [] ->
@@ -678,6 +681,8 @@ module T = struct
     | Pld of payload
     | Typ of core_type
     | Td of type_declaration
+    | Kab of kind_abbreviation
+    | Tyv of ty_var
     | Cty of class_type
     | Pat of pattern
     | Exp of expression
@@ -694,6 +699,7 @@ module T = struct
     | Clf of class_field
     | Ctf of class_type_field
     | Tli of toplevel_item
+    | Jkd of jkind_annotation
     | Top
     | Rep
 
@@ -701,6 +707,8 @@ module T = struct
     | Pld l -> Format.fprintf fs "Pld:@\n%a" Printast.payload l
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Printast.core_type t
     | Td t -> Format.fprintf fs "Td:@\n%a" Printast.type_declaration t
+    | Kab k -> Format.fprintf fs "Kab:@\n%a" (Printast.kind_abbreviation 0) k
+    | Tyv v -> Format.fprintf fs "Tyv:@\n%a" (Printast.typevar 0) v
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
@@ -720,6 +728,8 @@ module T = struct
         Format.fprintf fs "Ctf:@\n%a@\n" Printast.class_type_field ctf
     | Tli (`Directive d) ->
         Format.fprintf fs "Dir:@\n%a" Printast.top_phrase (Ptop_dir d)
+    | Jkd jkd ->
+        Format.fprintf fs "Jkd:@\n%a" (Printast.jkind_annotation 0) jkd
     | Top -> Format.pp_print_string fs "Top"
     | Rep -> Format.pp_print_string fs "Rep"
 end
@@ -734,6 +744,8 @@ let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
   | Td x -> x.ptype_attributes
+  | Kab _ -> []
+  | Tyv _ -> []
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
@@ -751,12 +763,15 @@ let attributes = function
   | Ctf x -> x.pctf_attributes
   | Top -> []
   | Tli _ -> []
+  | Jkd _ -> []
   | Rep -> []
 
 let location = function
   | Pld _ -> Location.none
   | Typ x -> x.ptyp_loc
   | Td x -> x.ptype_loc
+  | Kab _ -> Location.none
+  | Tyv _ -> Location.none
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
@@ -774,6 +789,7 @@ let location = function
   | Ctf x -> x.pctf_loc
   | Tli (`Item x) -> x.pstr_loc
   | Tli (`Directive x) -> x.pdir_loc
+  | Jkd _ -> Location.none
   | Top -> Location.none
   | Rep -> Location.none
 
@@ -1005,6 +1021,8 @@ end = struct
                  List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
              | _ -> false )
           || Option.exists ptype_manifest ~f )
+    | Kab _ -> assert false
+    | Tyv _ -> assert false
     | Cty {pcty_desc; _} ->
         assert (
           match pcty_desc with
@@ -1137,6 +1155,11 @@ end = struct
           | Pctf_inherit _ -> false
           | Pctf_attribute _ -> false
           | Pctf_extension _ -> false )
+    | Jkd j ->
+        assert (
+          match j with
+          | Kind_of t | With (_, t) -> t == typ
+          | Default | Abbreviation _ | Mod _ | Product _ -> false )
     | Top | Tli _ | Rep -> assert false
 
   let assert_check_typ xtyp =
@@ -1191,6 +1214,8 @@ end = struct
     | Tli _ -> assert false
     | Typ _ -> assert false
     | Td _ -> assert false
+    | Kab _ -> assert false
+    | Tyv _ -> assert false
     | Pat _ -> assert false
     | Cl ctx ->
         assert (
@@ -1213,6 +1238,7 @@ end = struct
           | Pctf_constraint _ -> false
           | Pctf_attribute _ -> false
           | Pctf_extension _ -> false )
+    | Jkd _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
     | Rep -> assert false
@@ -1251,6 +1277,8 @@ end = struct
     | Tli _ -> assert false
     | Typ _ -> assert false
     | Td _ -> assert false
+    | Kab _ -> assert false
+    | Tyv _ -> assert false
     | Pat _ -> assert false
     | Cl {pcl_desc; _} ->
         assert (
@@ -1270,6 +1298,7 @@ end = struct
     | Mty _ -> assert false
     | Mod _ -> assert false
     | Rep -> assert false
+    | Jkd _ -> assert false
 
   let assert_check_cl xcl =
     let dump {ctx; ast= cl} = dump ctx (Cl cl) in
@@ -1329,6 +1358,8 @@ end = struct
       | Ptyp_extension (_, ext) -> assert (check_extensions ext)
       | _ -> assert false )
     | Td _ -> assert false
+    | Kab _ -> assert false
+    | Tyv _ -> assert false
     | Pat ctx -> (
         let f pI = pI == pat in
         match ctx.ppat_desc with
@@ -1367,7 +1398,7 @@ end = struct
        |Pexp_unboxed_tuple _ | Pexp_unreachable | Pexp_variant _
        |Pexp_while _ | Pexp_hole | Pexp_beginend _ | Pexp_parens _
        |Pexp_cons _ | Pexp_letopen _ | Pexp_indexop_access _
-       |Pexp_prefix _ | Pexp_infix _ ->
+       |Pexp_prefix _ | Pexp_infix _ | Pexp_stack _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1420,7 +1451,7 @@ end = struct
           | Pcf_constraint _ -> false
           | Pcf_attribute _ -> false )
     | Ctf _ -> assert false
-    | Top | Tli _ | Rep -> assert false
+    | Jkd _ | Top | Tli _ | Rep -> assert false
 
   let assert_check_pat xpat =
     let dump {ctx; ast= pat} = dump ctx (Pat pat) in
@@ -1498,6 +1529,7 @@ end = struct
          |Pexp_beginend e
          |Pexp_parens e
          |Pexp_constraint (e, _, _)
+         |Pexp_stack e
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
          |Pexp_lazy e
@@ -1533,10 +1565,10 @@ end = struct
             List.exists pvbs_bindings ~f:(fun {pvb_expr; _} ->
                 pvb_expr == exp ) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
-      | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
-       |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
-       |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
-        ->
+      | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_kind_abbrev _
+       |Pstr_exception _ | Pstr_module _ | Pstr_recmodule _
+       |Pstr_modtype _ | Pstr_open _ | Pstr_class _ | Pstr_class_type _
+       |Pstr_include _ | Pstr_attribute _ ->
           assert false )
     | Mod {pmod_desc= Pmod_unpack (e1, _, _); _} -> assert (e1 == exp)
     | Cl ctx ->
@@ -1589,7 +1621,8 @@ end = struct
           | Pcf_inherit _ -> false
           | Pcf_constraint _ -> false
           | Pcf_attribute _ -> false )
-    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ | Rep ->
+    | Jkd _ | Mod _ | Top | Tli _ | Typ _ | Tyv _ | Pat _ | Mty _ | Sig _
+     |Td _ | Kab _ | Rep ->
         assert false
 
   let assert_check_exp xexp =
@@ -1790,8 +1823,9 @@ end = struct
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
       ; ast=
-          ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
-          | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+          ( Pld _ | Top | Tli _ | Kab _ | Tyv _ | Pat _ | Cl _ | Mty _
+          | Mod _ | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ | Jkd _
+            ) }
      |{ctx= Fp _; ast= _}
      |{ctx= _; ast= Fp _}
      |{ctx= Vc _; ast= _}
@@ -1802,14 +1836,16 @@ end = struct
      |{ctx= _; ast= Td _}
      |{ ctx= Cl _
       ; ast=
-          ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
-          | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+          ( Pld _ | Top | Tli _ | Tyv _ | Kab _ | Pat _ | Mty _ | Mod _
+          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ | Jkd _ ) }
      |{ ctx=
-          ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
+          ( Pld _ | Top | Tli _ | Typ _ | Tyv _ | Kab _ | Cty _ | Pat _
+          | Mty _ | Mod _ | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _
+          | Jkd _ )
       ; ast=
-          ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) } ->
+          ( Pld _ | Top | Tli _ | Tyv _ | Kab _ | Pat _ | Exp _ | Cl _
+          | Mty _ | Mod _ | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _
+          | Jkd _ ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1829,6 +1865,8 @@ end = struct
           None
       | Ptyp_constr_unboxed _ -> None )
     | Td _ -> None
+    | Tyv _ -> None
+    | Kab _ -> None
     | Cty {pcty_desc; _} -> (
       match pcty_desc with Pcty_arrow _ -> Some MinusGreater | _ -> None )
     | Exp {pexp_desc; _} -> (
@@ -1895,7 +1933,7 @@ end = struct
       | Pcl_structure _ -> Some Apply
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
-     |Rep | Mb _ | Md _ ->
+     |Rep | Mb _ | Md _ | Jkd _ ->
         None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
@@ -2164,6 +2202,7 @@ end = struct
         in
         match exp.pexp_desc with
         | Pexp_assert e
+         |Pexp_stack e
          |Pexp_construct (_, Some e)
          |Pexp_fun (_, e)
          |Pexp_ifthenelse (_, Some e)
@@ -2249,6 +2288,7 @@ end = struct
       in
       match exp.pexp_desc with
       | Pexp_assert e
+       |Pexp_stack e
        |Pexp_construct (_, Some e)
        |Pexp_ifthenelse (_, Some e)
        |Pexp_prefix (_, e)
@@ -2419,6 +2459,15 @@ end = struct
               || Conf.is_jane_street_local_annotation "exclave"
                    ~test:extension_local ) ->
         true
+    | ( Exp {pexp_desc= Pexp_stack _; _}
+      , { pexp_desc=
+            ( Pexp_apply _ | Pexp_fun _ | Pexp_function _ | Pexp_lazy _
+            | Pexp_new _ | Pexp_tuple _
+            | Pexp_construct (_, Some _)
+            | Pexp_variant (_, Some _) )
+        ; _ } ) ->
+        true
+    | Exp {pexp_desc= Pexp_apply _; _}, {pexp_desc= Pexp_stack _; _} -> true
     | ( Str
           { pstr_desc=
               Pstr_value

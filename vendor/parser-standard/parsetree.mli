@@ -51,6 +51,8 @@ type modalities = modality loc list
 type mode = | Mode of string [@@unboxed]
 type modes = mode loc list
 
+type include_kind = Structure | Functor
+
 (** {1 Extension points} *)
 
 type attribute = {
@@ -460,6 +462,7 @@ and expression_desc =
   | Pexp_extension of extension  (** [[%id]] *)
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
+  | Pexp_stack of expression (** stack_ exp *)
 
 and case =
     {
@@ -982,7 +985,7 @@ and signature_item_desc =
   | Psig_modtypesubst of module_type_declaration
       (** [module type S :=  ...]  *)
   | Psig_open of open_description  (** [open X] *)
-  | Psig_include of include_description  (** [include MT] *)
+  | Psig_include of include_description * modalities (** [include MT] *)
   | Psig_class of class_description list
       (** [class c1 : ... and ... and cn : ...] *)
   | Psig_class_type of class_type_declaration list
@@ -1049,6 +1052,7 @@ and open_declaration = module_expr open_infos
 
 and 'a include_infos =
     {
+     pincl_kind : include_kind;
      pincl_mod: 'a;
      pincl_loc: Location.t;
      pincl_attributes: attributes;
@@ -1180,6 +1184,7 @@ and jkind_annotation =
   | Mod of jkind_annotation * modes
   | With of jkind_annotation * core_type
   | Kind_of of core_type
+  | Product of jkind_annotation list
 
 (** {1 Toplevel} *)
 

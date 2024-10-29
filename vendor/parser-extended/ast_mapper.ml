@@ -53,6 +53,7 @@ type mapper = {
                          -> extension_constructor;
   include_declaration: mapper -> include_declaration -> include_declaration;
   include_description: mapper -> include_description -> include_description;
+  jkind_annotation: mapper -> jkind_annotation -> jkind_annotation;
   label_declaration: mapper -> label_declaration -> label_declaration;
   location: mapper -> Location.t -> Location.t;
   module_binding: mapper -> module_binding -> module_binding;
@@ -73,6 +74,7 @@ type mapper = {
   typ: mapper -> core_type -> core_type;
   type_declaration: mapper -> type_declaration -> type_declaration;
   type_extension: mapper -> type_extension -> type_extension;
+  kind_abbreviation: mapper -> kind_abbreviation -> kind_abbreviation;
   type_exception: mapper -> type_exception -> type_exception;
   type_kind: mapper -> type_kind -> type_kind;
   value_binding: mapper -> value_binding -> value_binding;
@@ -92,8 +94,10 @@ let map_tuple3 f1 f2 f3 (x, y, z) = (f1 x, f2 y, f3 z)
 let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
+let map_loc_txt sub f {loc; txt} = {loc = sub.location sub loc; txt = f sub txt}
 
-let map_type_var sub (n, l) = map_loc sub n, map_opt (map_loc sub) l
+let map_type_var sub (n, l) =
+  map_loc sub n, map_opt (map_loc_txt sub sub.jkind_annotation) l
 
 let variant_var sub x =
   {loc = sub.location sub x.loc; txt= map_loc sub x.txt}
@@ -419,6 +423,9 @@ module MT = struct
     | Psig_typesubst l ->
         type_subst ~loc (List.map (sub.type_declaration sub) l)
     | Psig_typext te -> type_extension ~loc (sub.type_extension sub te)
+    | Psig_kind_abbrev (name, jkind) ->
+        let name, jkind = sub.kind_abbreviation sub (name, jkind) in
+        kind_abbreviation ~loc name jkind
     | Psig_exception ed -> exception_ ~loc (sub.type_exception sub ed)
     | Psig_module x -> module_ ~loc (sub.module_declaration sub x)
     | Psig_modsubst x -> mod_subst ~loc (sub.module_substitution sub x)
@@ -428,7 +435,9 @@ module MT = struct
     | Psig_modtypesubst x ->
         modtype_subst ~loc (sub.module_type_declaration sub x)
     | Psig_open x -> open_ ~loc (sub.open_description sub x)
-    | Psig_include x -> include_ ~loc (sub.include_description sub x)
+    | Psig_include (x, moda) ->
+        include_ ~loc ~modalities:(sub.modalities sub moda)
+          (sub.include_description sub x)
     | Psig_class l -> class_ ~loc (List.map (sub.class_description sub) l)
     | Psig_class_type l ->
         class_type ~loc (List.map (sub.class_type_declaration sub) l)
@@ -479,6 +488,9 @@ module M = struct
     | Pstr_primitive vd -> primitive ~loc (sub.value_description sub vd)
     | Pstr_type (rf, l) -> type_ ~loc rf (List.map (sub.type_declaration sub) l)
     | Pstr_typext te -> type_extension ~loc (sub.type_extension sub te)
+    | Pstr_kind_abbrev (name, jkind) ->
+        let name, jkind = sub.kind_abbreviation sub (name, jkind) in
+        kind_abbreviation ~loc name jkind
     | Pstr_exception ed -> exception_ ~loc (sub.type_exception sub ed)
     | Pstr_module x -> module_ ~loc (sub.module_binding sub x)
     | Pstr_recmodule l -> rec_module ~loc (List.map (sub.module_binding sub) l)
@@ -657,6 +669,7 @@ module E = struct
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
     | Pexp_hole -> hole ~loc ~attrs ()
+    | Pexp_stack e -> stack ~loc ~attrs (sub.expr sub e)
     | Pexp_beginend e -> beginend ~loc ~attrs (sub.expr sub e)
     | Pexp_parens e -> parens ~loc ~attrs (sub.expr sub e)
     | Pexp_cons l -> cons ~loc ~attrs (List.map (sub.expr sub) l)
@@ -839,6 +852,8 @@ let default_mapper =
     typ = T.map;
     type_extension = T.map_type_extension;
     type_exception = T.map_type_exception;
+    kind_abbreviation =
+      (fun this (a, k) -> (map_loc this a, map_loc_txt this this.jkind_annotation k));
     extension_constructor = T.map_extension_constructor;
     value_description =
       (fun this {pval_name; pval_type; pval_prim; pval_loc;
@@ -912,15 +927,15 @@ let default_mapper =
       );
 
     include_description =
-      (fun this {pincl_mod; pincl_attributes; pincl_loc} ->
-         Incl.mk (this.module_type this pincl_mod)
+      (fun this {pincl_mod; pincl_attributes; pincl_loc; pincl_kind} ->
+         Incl.mk ~kind:pincl_kind (this.module_type this pincl_mod)
            ~loc:(this.location this pincl_loc)
            ~attrs:(this.attributes this pincl_attributes)
       );
 
     include_declaration =
-      (fun this {pincl_mod; pincl_attributes; pincl_loc} ->
-         Incl.mk (this.module_expr this pincl_mod)
+      (fun this {pincl_mod; pincl_attributes; pincl_loc; pincl_kind} ->
+         Incl.mk ~kind:pincl_kind (this.module_expr this pincl_mod)
            ~loc:(this.location this pincl_loc)
            ~attrs:(this.attributes this pincl_attributes)
       );
@@ -1009,6 +1024,21 @@ let default_mapper =
          | PTyp x -> PTyp (this.typ this x)
          | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
       );
+
+    jkind_annotation = (fun this ->
+      function
+      | Default -> Default
+      | Abbreviation s ->
+        let {txt; loc} =
+          map_loc this s
+        in
+        Abbreviation ({ txt; loc })
+      | Mod (t, mode_list) ->
+        Mod (map_loc_txt this this.jkind_annotation t, this.modes this mode_list)
+      | With (t, ty) ->
+        With (map_loc_txt this this.jkind_annotation t, this.typ this ty)
+      | Kind_of ty -> Kind_of (this.typ this ty)
+      | Product ts -> Product (List.map (map_loc_txt this this.jkind_annotation) ts));
 
     directive_argument =
       (fun this a ->

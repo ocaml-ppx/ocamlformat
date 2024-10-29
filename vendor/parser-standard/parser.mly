@@ -30,6 +30,7 @@ open Parsetree
 open Ast_helper
 open Docstrings
 open Docstrings.WithMenhir
+open Parser_types
 
 let mkloc = Location.mkloc
 let mknoloc = Location.mknoloc
@@ -658,22 +659,6 @@ let extra_rhs_core_type ct ~pos =
   let docs = rhs_info pos in
   { ct with ptyp_attributes = add_info_attrs docs ct.ptyp_attributes }
 
-type let_binding =
-  { lb_pattern: pattern;
-    lb_expression: expression;
-    lb_constraint: value_constraint option;
-    lb_is_pun: bool;
-    lb_modes: modes;
-    lb_attributes: attributes;
-    lb_docs: docs Lazy.t;
-    lb_text: text Lazy.t;
-    lb_loc: Location.t; }
-
-type let_bindings =
-  { lbs_bindings: let_binding list;
-    lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option }
-
 let mklb first ~loc (p, e, typ, modes, is_pun) attrs =
   {
     lb_pattern = p;
@@ -851,41 +836,6 @@ let mk_directive ~loc name arg =
    may also get re-inlined at that point *)
 let unboxed_literals_extension = Language_extension.Layouts
 
-module Constant : sig
-  type t = private
-    | Value of constant
-    | Unboxed of Jane_syntax.Layouts.constant
-
-  type loc := Lexing.position * Lexing.position
-
-  val value : Parsetree.constant -> t
-  val unboxed : Jane_syntax.Layouts.constant -> t
-  val to_expression : loc:loc -> t -> expression
-  val to_pattern : loc:loc -> t -> pattern
-end = struct
-  type t =
-    | Value of constant
-    | Unboxed of Jane_syntax.Layouts.constant
-
-  let value x = Value x
-
-  let unboxed x = Unboxed x
-
-  let to_expression ~loc : t -> expression = function
-    | Value const_value ->
-        mkexp ~loc (Pexp_constant const_value)
-    | Unboxed const_unboxed ->
-      Jane_syntax.Layouts.expr_of ~loc:(make_loc loc)
-        (Lexp_constant const_unboxed)
-
-  let to_pattern ~loc : t -> pattern = function
-    | Value const_value ->
-        mkpat ~loc (Ppat_constant const_value)
-    | Unboxed const_unboxed ->
-      Jane_syntax.Layouts.pat_of
-        ~loc:(make_loc loc) (Lpat_constant const_unboxed)
-end
-
 type sign = Positive | Negative
 
 let with_sign sign num =
@@ -1043,6 +993,7 @@ let unboxed_type sloc lident tys =
 %token <string> HASHOP        "##" (* just an example *)
 %token SIG                    "sig"
 %token SLASH                  "/"
+%token STACK                  "stack_"
 %token STAR                   "*"
 %token <string * Location.t * string option>
        STRING                 "\"hello\"" (* just an example *)
@@ -1114,6 +1065,7 @@ The precedences must be listed from low to high.
 %nonassoc FUNCTOR                       /* include functor M */
 %right    MINUSGREATER                  /* function_type (t -> t -> t) */
 %right    OR BARBAR                     /* expr (e || e || e) */
+%nonassoc below_AMPERSAND
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
 %nonassoc below_EQUAL
 %left     INFIXOP0 EQUAL LESS GREATER   /* expr (e OP e OP e) */
@@ -1124,6 +1076,7 @@ The precedences must be listed from low to high.
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
 %left     PERCENT SLASH INFIXOP3 MOD STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
+%nonassoc prec_unboxed_product_kind
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
@@ -1136,7 +1089,7 @@ The precedences must be listed from low to high.
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
-          LBRACKETPERCENT QUOTED_STRING_EXPR HASHLPAREN
+          LBRACKETPERCENT QUOTED_STRING_EXPR STACK HASHLPAREN
 
 
 /* Entry points */
@@ -1775,13 +1728,8 @@ structure_item:
     )
     { $1 }
   | include_statement(module_expr)
-      { let is_functor, incl, ext = $1 in
-        let item =
-          if is_functor
-          then Jane_syntax.Include_functor.str_item_of ~loc:(make_loc $sloc)
-                (Ifstr_include_functor incl)
-          else mkstr ~loc:$sloc (Pstr_include incl)
-        in
+      { let incl, ext = $1 in
+        let item = mkstr ~loc:$sloc (Pstr_include incl) in
         wrap_str_ext ~loc:$sloc item ext
       }
   | kind_abbreviation_decl
@@ -1867,17 +1815,17 @@ module_binding_body:
 
 (* Shared material between structures and signatures. *)
 
-include_maybe_functor:
+include_kind:
   | INCLUDE %prec below_FUNCTOR
-      { false }
+      { Structure }
   | INCLUDE FUNCTOR
-      { true }
+      { Functor }
 ;
 
 (* An [include] statement can appear in a structure or in a signature,
    which is why this definition is parameterized. *)
 %inline include_statement(thing):
-  is_functor = include_maybe_functor
+  kind = include_kind
   ext = ext
   attrs1 = attributes
   thing = thing
@@ -1886,8 +1834,8 @@ include_maybe_functor:
     let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    let incl = Incl.mk thing ~attrs ~loc ~docs in
-    is_functor, incl, ext
+    let incl = Incl.mk ~kind thing ~attrs ~loc ~docs in
+    incl, ext
   }
 ;
 
@@ -2053,14 +2001,9 @@ signature_item:
         { let (ext, l) = $1 in (Psig_class_type l, ext) }
     )
     { $1 }
-  | include_statement(module_type)
-      { let is_functor, incl, ext = $1 in
-        let item =
-          if is_functor
-          then Jane_syntax.Include_functor.sig_item_of ~loc:(make_loc $sloc)
-                 (Ifsig_include_functor incl)
-          else mksig ~loc:$sloc (Psig_include incl)
-        in
+  | include_statement(module_type) modalities = optional_atat_modalities_expr
+      { let incl, ext = $1 in
+        let item = mksig ~loc:$sloc (Psig_include (incl, modalities)) in
         wrap_sig_ext ~loc:$sloc item ext
       }
   | kind_abbreviation_decl
@@ -2864,6 +2807,8 @@ fun_expr:
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
       { mkexp ~loc:$sloc (Pexp_apply($1, $2)) }
+  | STACK simple_expr
+      { mkexp ~loc:$sloc (Pexp_stack $2) }
   | labeled_tuple %prec below_COMMA
       { pexp_ltuple $sloc $1 }
   | mkrhs(constr_longident) simple_expr %prec below_HASH
@@ -3950,7 +3895,21 @@ jkind:
   | UNDERSCORE {
       Jane_syntax.Jkind.Default
     }
+  | reverse_product_jkind %prec below_AMPERSAND {
+      Jane_syntax.Jkind.Product (List.rev $1)
+    }
+  | LPAREN jkind RPAREN {
+      $2
+    }
 ;
+
+reverse_product_jkind :
+  | jkind1 = jkind AMPERSAND jkind2 = jkind %prec prec_unboxed_product_kind
+      { [jkind2; jkind1] }
+  | jkinds = reverse_product_jkind
+    AMPERSAND
+    jkind = jkind %prec prec_unboxed_product_kind
+    { jkind :: jkinds }
 
 jkind_annotation: (* : jkind_annotation *)
   mkrhs(jkind) { $1 }
@@ -4530,9 +4489,9 @@ tuple_type:
       { ty, ltys }
 
 (* In the case of an unboxed tuple, we don't need the nonsense above because
-the [#( ... )] disambiguates.  However, we still must write out
-the first element explicitly because [labeled_tuple_typ_element] is
-restricted to tail position by its %prec annotation. *)
+   the [#( ... )] disambiguates.  However, we still must write out
+   the first element explicitly because [labeled_tuple_typ_element] is
+   restricted to tail position by its %prec annotation. *)
 %inline unboxed_tuple_type_body:
   | ty1 = atomic_type
     STAR

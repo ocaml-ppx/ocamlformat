@@ -77,8 +77,6 @@ let pstr_type ((nr, ext), tys) =
   (Pstr_type (nr, tys), ext)
 let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
-let pstr_include (body, ext) =
-  (Pstr_include body, ext)
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
@@ -91,8 +89,6 @@ let psig_typesubst ((nr, ext), tys) =
   (Psig_typesubst tys, ext)
 let psig_exception (te, ext) =
   (Psig_exception te, ext)
-let psig_include (body, ext) =
-  (Psig_include body, ext)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -216,11 +212,6 @@ let local_attr =
 
 let local_extension =
   Exp.mk ~loc:Location.none (Pexp_extension(local_ext_loc, PStr []))
-
-let include_functor_ext_loc = mknoloc "extension.include_functor"
-
-let include_functor_attr =
-  Attr.mk ~loc:Location.none include_functor_ext_loc (PStr [])
 
 let mkexp_stack ~loc exp =
   if Erase_jane_syntax.should_erase () then exp else
@@ -358,6 +349,37 @@ let mkexp_desc_constraint ~modes e t =
 
 let mkexp_constraint ~loc ~modes e t =
   mkexp ~loc (mkexp_desc_constraint ~modes e t)
+
+let erase_str_items str =
+  if not (Erase_jane_syntax.should_erase ())
+  then str
+  else (
+    List.filter
+      (function
+        | { pstr_desc = Pstr_kind_abbrev _; _ } -> false
+        | _ -> true)
+      str
+  )
+
+let erase_sig_items sig_ =
+  if not (Erase_jane_syntax.should_erase ())
+  then sig_
+  else
+    List.filter
+      (function
+        | { psig_desc = Psig_kind_abbrev _; _ } -> false
+        | _ -> true)
+      sig_
+
+let erase_toplevel_phrases phrases =
+  if not (Erase_jane_syntax.should_erase ())
+  then phrases
+  else
+    List.map
+      (function
+        | Ptop_def str -> Ptop_def (erase_str_items str)
+        | Ptop_dir _ as phrase -> phrase)
+      phrases
 
 (*
 let mkexp_opt_constraint ~loc e = function
@@ -709,8 +731,8 @@ let mk_directive ~loc name arg =
 let convert_jkind_to_legacy_attr =
   let mk ~loc name = [Attr.mk ~loc (mkloc name loc) (PStr [])] in
   function
-  | {txt = Layout "immediate"; loc} -> mk ~loc "immediate"
-  | {txt = Layout "immediate64"; loc} -> mk ~loc "immediate64"
+  | {txt = Abbreviation {txt = "immediate"; loc}; loc = _} -> mk ~loc "immediate"
+  | {txt = Abbreviation {txt = "immediate64"; loc}; loc = _} -> mk ~loc "immediate64"
   | _ -> []
 
 (* NOTE: An alternate approach for performing the erasure of %call_pos and %src_pos
@@ -804,6 +826,8 @@ let transl_label ~pattern ~arg_label ~loc =
 %token INHERIT                "inherit"
 %token INITIALIZER            "initializer"
 %token <string * char option> INT "42"  (* just an example *)
+%token KIND_ABBREV            "kind_abbrev_"
+%token KIND_OF                "kind_of_"
 %token <string> LABEL         "~label:" (* just an example *)
 %token LAZY                   "lazy"
 %token LBRACE                 "{"
@@ -829,6 +853,7 @@ let transl_label ~pattern ~arg_label ~loc =
 %token MINUS                  "-"
 %token MINUSDOT               "-."
 %token MINUSGREATER           "->"
+%token MOD                    "mod"
 %token MODULE                 "module"
 %token MUTABLE                "mutable"
 %token NEW                    "new"
@@ -857,6 +882,7 @@ let transl_label ~pattern ~arg_label ~loc =
 %token <string> HASHOP        "##" (* just an example *)
 %token SIG                    "sig"
 %token SLASH                  "/"
+%token STACK                  "stack_"
 %token STAR                   "*"
 %token <string * Location.t * string option>
        STRING                 "\"hello\"" (* just an example *)
@@ -933,6 +959,7 @@ The precedences must be listed from low to high.
 %nonassoc FUNCTOR                       /* include functor M */
 %right    MINUSGREATER                  /* function_type (t -> t -> t) */
 %right    OR BARBAR                     /* expr (e || e || e) */
+%nonassoc below_AMPERSAND
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
 %nonassoc below_EQUAL
 %left     INFIXOP0 EQUAL LESS GREATER   /* expr (e OP e OP e) */
@@ -941,8 +968,9 @@ The precedences must be listed from low to high.
 %nonassoc LBRACKETAT
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT SLASH INFIXOP3 STAR                 /* expr (e OP e OP e) */
+%left     PERCENT SLASH INFIXOP3 MOD STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
+%nonassoc prec_unboxed_product_kind
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
@@ -955,7 +983,7 @@ The precedences must be listed from low to high.
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
-          LBRACKETPERCENT QUOTED_STRING_EXPR HASHLPAREN
+          LBRACKETPERCENT QUOTED_STRING_EXPR STACK HASHLPAREN
 
 
 /* Entry points */
@@ -1287,7 +1315,7 @@ toplevel_phrase:
 | (* A list of structure items, ended by a double semicolon. *)
   extra_str(flatten(text_str(structure_item)*))
   SEMISEMI
-    { Ptop_def $1 }
+    { Ptop_def (erase_str_items $1) }
 | (* A directive, ended by a double semicolon. *)
   toplevel_directive
   SEMISEMI
@@ -1307,7 +1335,7 @@ use_file:
     flatten(use_file_element*)
   ))
   EOF
-    { $1 }
+    { erase_toplevel_phrases $1 }
 ;
 
 (* An optional standalone expression is just an expression with attributes
@@ -1516,7 +1544,7 @@ structure:
     optional_structure_standalone_expression,
     flatten(structure_element*)
   ))
-  { $1 }
+  { erase_str_items $1 }
 ;
 
 (* An optional standalone expression is just an expression with attributes
@@ -1576,10 +1604,15 @@ structure_item:
         { let (ext, l) = $1 in (Pstr_class l, ext) }
     | class_type_declarations
         { let (ext, l) = $1 in (Pstr_class_type l, ext) }
-    | include_statement(module_expr)
-        { pstr_include $1 }
     )
     { $1 }
+  | include_statement(module_expr)
+      { let incl, ext = $1 in
+        let item = mkstr ~loc:$sloc (Pstr_include incl) in
+        wrap_str_ext ~loc:$sloc item ext }
+  | kind_abbreviation_decl
+      { let name, jkind = $1 in
+        mkstr ~loc:$sloc (Pstr_kind_abbrev (name, jkind)) }
 ;
 
 (* A single module binding. *)
@@ -1659,26 +1692,26 @@ module_binding_body:
 
 (* Shared material between structures and signatures. *)
 
-include_and_functor_attr:
+include_kind:
   | INCLUDE %prec below_FUNCTOR
-      { [] }
+      { Structure }
   | INCLUDE FUNCTOR
-      { [include_functor_attr] }
+      { Functor }
 ;
 
 (* An [include] statement can appear in a structure or in a signature,
    which is why this definition is parameterized. *)
 %inline include_statement(thing):
-  attrs0 = include_and_functor_attr
+  include_kind
   ext = ext
   attrs1 = attributes
   thing = thing
   attrs2 = post_item_attributes
   {
-    let attrs = attrs0 @ attrs1 @ attrs2 in
+    let attrs = attrs1 @ attrs2 in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Incl.mk thing ~attrs ~loc ~docs, ext
+    Incl.mk thing ~kind:$1 ~attrs ~loc ~docs, ext
   }
 ;
 
@@ -1792,7 +1825,7 @@ module_type:
    is a list of signature elements. *)
 signature:
   extra_sig(flatten(signature_element*))
-    { $1 }
+    { erase_sig_items $1 }
 ;
 
 (* A signature element is one of the following:
@@ -1841,14 +1874,20 @@ signature_item:
         { psig_exception $1 }
     | open_description
         { let (body, ext) = $1 in (Psig_open body, ext) }
-    | include_statement(module_type)
-        { psig_include $1 }
     | class_descriptions
         { let (ext, l) = $1 in (Psig_class l, ext) }
     | class_type_declarations
         { let (ext, l) = $1 in (Psig_class_type l, ext) }
     )
     { $1 }
+  | include_statement(module_type) modalities = optional_atat_modalities_expr
+      { let incl, ext = $1 in
+        let item = mksig ~loc:$sloc (Psig_include (incl, modalities)) in
+        wrap_sig_ext ~loc:$sloc item ext
+      }
+  | kind_abbreviation_decl
+      { let name, jkind = $1 in
+        mksig ~loc:$sloc (Psig_kind_abbrev (name, jkind)) }
 
 (* A module declaration. *)
 %inline module_declaration:
@@ -2598,6 +2637,10 @@ expr:
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
       { mkexp ~loc:$sloc (Pexp_apply($1, $2)) }
+  | STACK simple_expr
+      { if Erase_jane_syntax.should_erase ()
+        then $2
+        else mkexp ~loc:$sloc (Pexp_stack $2) }
   | labeled_tuple %prec below_COMMA
       { mkexp ~loc:$sloc (Pexp_tuple $1) }
   | mkrhs(constr_longident) simple_expr %prec below_HASH
@@ -3392,8 +3435,12 @@ simple_pattern_not_ident:
       { unclosed "(" $loc($1) ")" $loc($7) }
   | extension
       { Ppat_extension $1 }
-  | LPAREN pattern modes=at_mode_expr RPAREN
-      { Ppat_constraint($2, None, modes) }
+  | LPAREN sub_pat=pattern modes=at_mode_expr RPAREN
+      { match modes with
+        | [] ->
+          (* This is possible when we are erasing jane syntax *)
+          sub_pat.ppat_desc
+        | modes -> Ppat_constraint(sub_pat, None, modes) }
   | LPAREN pattern COLON core_type modes=optional_atat_mode_expr RPAREN
       { Ppat_constraint($2, Some $4, modes) }
 ;
@@ -3611,12 +3658,41 @@ type_parameters:
       { ps }
 ;
 
-jkind_annotation_gen:
-  ident
-    {
-      let loc = make_loc $sloc in
-      (mkloc (Layout $1) loc)
-    }
+jkind:
+    mkrhs(jkind) MOD mkrhs(LIDENT)+
+      { (* LIDENTs here are for modes *) let modes =
+          List.map
+            (fun {txt; loc} -> {txt = Mode txt; loc})
+            $3
+        in
+        Mod ($1, modes) }
+  | mkrhs(jkind) WITH core_type
+      { With ($1, $3) }
+  | mkrhs(ident)
+      { let {txt; loc} = $1 in
+        Abbreviation ({ txt; loc }) }
+  | KIND_OF ty=core_type
+      { Kind_of ty }
+  | UNDERSCORE
+      { Default }
+  | reverse_product_jkind %prec below_AMPERSAND
+      { Product (List.rev $1) }
+  | LPAREN jkind RPAREN
+      { $2 }
+;
+
+reverse_product_jkind :
+  | jkind1 = mkrhs(jkind) AMPERSAND jkind2 = mkrhs(jkind) %prec prec_unboxed_product_kind
+      { [jkind2; jkind1] }
+  | jkinds = reverse_product_jkind
+    AMPERSAND
+    jkind = mkrhs(jkind) %prec prec_unboxed_product_kind
+    { jkind :: jkinds }
+;
+
+jkind_annotation_gen: (* : jkind_annotation *)
+  mkrhs(jkind) { $1 }
+;
 
 jkind_annotation: (* : jkind_annotation *)
   jkind_annotation_gen
@@ -3635,6 +3711,12 @@ jkind_attr_opt:
       then None, convert_jkind_to_legacy_attr $2
       else Some $2, []
     }
+;
+
+kind_abbreviation_decl:
+  KIND_ABBREV abbrev=mkrhs(LIDENT) EQUAL jkind=jkind_annotation_gen {
+    (abbrev, jkind)
+  }
 ;
 
 %inline type_param_with_jkind:
@@ -4172,7 +4254,7 @@ strict_function_or_labeled_tuple_type:
 ;
 
 %inline mode_expr:
-  | mode+ { $1 }
+  | mode+ { if Erase_jane_syntax.should_erase () then [] else $1 }
 ;
 
 at_mode_expr:
@@ -4207,7 +4289,7 @@ atat_mode_expr:
   | LIDENT { mkloc (Modality $1) (make_loc $sloc) }
 
 %inline modalities:
-  | modality+ { $1 }
+  | modality+ { if Erase_jane_syntax.should_erase () then [] else $1 }
 
 optional_atat_modalities_expr:
   | %prec below_HASH
@@ -4520,6 +4602,10 @@ operator:
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
+%inline infixop3:
+  | op = INFIXOP3 { op }
+  | MOD           { "mod" }
+;
 %inline infix_operator:
   | op = INFIXOP0 { op }
   /* Still support the two symbols as infix operators */
@@ -4527,7 +4613,7 @@ operator:
   | ATAT           {"@@"}
   | op = INFIXOP1 { op }
   | op = INFIXOP2 { op }
-  | op = INFIXOP3 { op }
+  | op = infixop3 { op }
   | op = INFIXOP4 { op }
   | PLUS           {"+"}
   | PLUSDOT       {"+."}

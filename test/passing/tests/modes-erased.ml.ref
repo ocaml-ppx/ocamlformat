@@ -1,0 +1,405 @@
+(* The first half of this file tests basic formatting of the [@]-based mode
+   syntax in various positions to make sure we are able to handle them all,
+   and that they are correctly parenthesized. The second half more thoroughly
+   checks formatting when there are line breaks in various positions. *)
+
+(* Modes on arbitrary patterns were supported in the parser during
+   development of ocamlformat support for modes, but were later unsupported
+   in the parser. Tests of modes on patterns have thus been moved to
+   [test/failing/tests/modes_on_patterns.ml]. If patterns are ever again
+   supported in the parser, move those tests back to this file (and other
+   [modes*.ml] files in this directory). *)
+
+module Let_bindings = struct
+  let x = y
+
+  let x = y
+
+  let x : typ = y
+
+  let x : typ1 typ2 = y
+
+  let x : typ1 -> typ2 = y
+
+  let x : typ1 * typ2 = y
+
+  let x = x
+
+  and y = y
+
+  and z : typ = z
+
+  let () =
+    let x = y in
+    let x : typ = y in
+    let x = x and y = y and z : typ = z in
+    ()
+
+  let () =
+    let%bind x = y in
+    let%map x = y in
+    let%ext x : typ = y in
+    let%ext x = x and y = y and z : typ = z in
+    ()
+
+  external x : typ = ""
+
+  external x : typ1 typ2 = ""
+
+  external x : typ1 -> typ2 = ""
+
+  external x : typ1 * typ2 = ""
+end
+
+module Expressions = struct
+  let x = (expr : typ)
+
+  let x = (expr : typ1 typ2)
+
+  let x = (expr : typ1 -> typ2)
+
+  let x = (expr : typ1 * typ2)
+
+  (* mode constraints in expressions *)
+  let x =
+    { let1=
+        (let x = (x : _) and y = (y : _) in
+         (z : _) )
+    ; function1= (function x -> (x : _) | y -> (y : _))
+    ; fun1= (fun ?(x = (x : _)) () : _ -> y)
+    ; apply1= (x : _) (y : _)
+    ; apply2= f ~lbl:(x : _)
+    ; apply3= f ~x:(x : _)
+    ; apply4= f ?lbl:(x : _)
+    ; apply5= f ?x:(x : _)
+    ; match1= (match (x : _) with y -> (y : _) | z -> (z : _))
+    ; try1= (try (x : _) with y -> (y : _))
+    ; tuple1= ((x : _), (y : _))
+    ; tuple2= (~(x : _), ~y:(z : _))
+    ; construct1= A (x : _)
+    ; construct2= A ((x : _), (y : _))
+    ; variant1= `A (x : _)
+    ; variant2= `A ((x : _), (y : _))
+    ; field1= (x : _).x
+    ; setfield1= (x : _).x <- (y : _)
+    ; array1= [|(x : _); (y : _)|]
+    ; array2= [:(x : _); (y : _):]
+    ; list1= [(x : _); (y : _)]
+    ; ite1= (if (x : _) then (y : _) else (z : _))
+    ; sequence1=
+        ( (x : _) ;
+          (y : _) )
+    ; while1=
+        while (x : _) do
+          (y : _)
+        done
+    ; for1=
+        for i = (x : _) to (y : _) do
+          (z : _)
+        done
+    ; constraint1= ((x : _) : _)
+    ; coerce1= ((x : _) :> _)
+    ; send1= (x : _)#y
+    ; setinstvar1= x <- (x : _)
+    ; override1= {<x = (x : _); y = (y : _)>}
+    ; letmodule1=
+        (let module M = ME in
+        (x : _) )
+    ; letexception1=
+        (let exception E in
+        (x : _) )
+    ; assert1= assert (x : _)
+    ; lazy1= lazy (x : _)
+    ; newtype1= (fun (type t) : _ -> x)
+    ; open1= M.((x : _))
+    ; letopen1=
+        (let open M in
+         (x : _) )
+    ; letop1=
+        (let* x = (x : _) in
+         (y : _) )
+    ; extension1= [%ext (x : _)]
+    ; cons1= (x : _) :: (y : _) :: (z : _)
+    ; prefix1= !(x : _)
+    ; infix1= (x : _) + (y : _) }
+
+  (* expressions in mode constraints *)
+  let x =
+    { ident1= (x : _)
+    ; constant1= ("" : _)
+    ; let1=
+        ( let x = y in
+          z
+          : _ )
+    ; function1= (function x -> x | y -> y : _)
+    ; fun1= (fun x -> y : _)
+    ; apply1= (f x : _)
+    ; match1= (match x with y -> y | z -> z : _)
+    ; try1= (try x with y -> y | z -> z : _)
+    ; tuple1= ((x, y) : _)
+    ; tuple2= ((~x, ~y) : _)
+    ; construct1= (A : _)
+    ; construct2= (A x : _)
+    ; construct3= (A (x, y) : _)
+    ; construct4= (A {x} : _)
+    ; variant1= (`A : _)
+    ; variant2= (`A x : _)
+    ; record1= ({x} : _)
+    ; field1= (x.y : _)
+    ; setfield1= (x.y <- z : _)
+    ; array1= ([|x|] : _)
+    ; array2= ([:x:] : _)
+    ; list1= ([x] : _)
+    ; ite1= (if x then y else z : _)
+    ; sequence1= (x ; y : _)
+    ; while1=
+        while x do
+          y
+        done
+        @@ mode
+    ; for1=
+        for x = y to z do
+          a
+        done
+        @@ mode
+    ; constraint1= ((x : _) : _)
+    ; coerce1= ((x :> _) : _)
+    ; send1= (x#y : _)
+    ; new1= (new x : _)
+    ; setinstvar1= (x <- 2 : _)
+    ; override1= ({<y = z>} : _)
+    ; letmodule1=
+        ( let module M = ME in
+          x
+          : _ )
+    ; letexception1=
+        ( let exception E in
+          x
+          : _ )
+    ; assert1= (assert x : _)
+    ; lazy1= (lazy x : _)
+    ; object1= (object end : _)
+    ; newtype1= (fun (type t) -> x : _)
+    ; pack1= ((module M) : _)
+    ; pack2= ((module M : S) : _)
+    ; open1= (M.(x y) : _)
+    ; letopen1=
+        ( let open M in
+          x
+          : _ )
+    ; letop1=
+        ( let* x = y in
+          z
+          : _ )
+    ; extension1= ([%ext] : _)
+    ; hole1= (_ : _)
+    ; cons1= (x :: y :: z : _)
+    ; prefix1= (!x : _)
+    ; infix1= (x + y : _) }
+end
+
+module Arrow_params = struct
+  type t = lhs -> rhs
+
+  type t = arg1 -> lbl:arg2 -> ?lbl:arg3 -> res
+
+  let x : lhs -> rhs = y
+
+  let x = (expr : lhs -> rhs)
+end
+
+module Modalities_on_record_fields = struct
+  type t = {x: t; mutable x: t}
+
+  type t = A of {x: t}
+end
+
+module Modalities_on_construct_arguments = struct
+  type t = A of typ | B of typ1 * typ2
+
+  type t = A : typ -> t | B : typ1 * typ2 -> t
+end
+
+module type Value_descriptions = sig
+  val x : typ
+
+  val x : typ1 typ2
+
+  val x : typ1 -> typ2
+
+  val x : typ1 * typ2
+
+  external x : typ = ""
+
+  external x : typ1 typ2 = ""
+
+  external x : typ1 -> typ2 = ""
+
+  external x : typ1 * typ2 = ""
+end
+
+module Let_bound_functions = struct
+  let f arg1 arg2 = x
+
+  let f arg1 arg2 : typ = x
+
+  let f arg1 arg2 = x
+
+  let f arg (arg : typ) ~lbl:arg ~lbl:(arg : typ) ~arg ~(arg : typ) ?lbl:arg
+      ?lbl:(arg : typ) ?lbl:(arg = value) ?lbl:(arg : typ = value) ?arg
+      ?(arg : typ) ?(arg = value) ?(arg : typ = value) : typ =
+    value
+end
+
+module No_illegal_sugaring = struct
+  let y = {x: t}
+
+  let y = {x: t :> t}
+end
+
+module Line_breaking = struct
+  module Let_bindings = struct
+    let long_value_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 1
+
+    let long_value_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa : t = 1
+
+    let long_value_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa :
+        long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
+      1
+  end
+
+  module Expressions = struct
+    let x = (long_expr_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa : t)
+
+    let x =
+      ( long_expr_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        : long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa )
+  end
+
+  module Arrow_params = struct
+    type t = arg -> arg -> arg -> arg -> arg -> arg -> arg
+
+    type t =
+         long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      -> label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      -> ?label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      -> long_result_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+    let x : arg -> arg -> arg -> arg -> arg -> arg -> arg = y
+
+    let x :
+           long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        -> label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        -> ?label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        -> long_result_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
+      y
+
+    let x = (expr : arg -> arg -> arg -> arg -> arg -> arg -> arg)
+
+    let x =
+      ( expr
+        :    long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          -> label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          -> ?label:long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          -> long_result_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa )
+  end
+
+  module Modalities_on_record_fields = struct
+    type t =
+      { long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: t
+      ; mutable long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: t
+      ; long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:
+          long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa }
+
+    type t =
+      | A of
+          { long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: t
+          ; mutable long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: t
+          ; long_field_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:
+              long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa }
+  end
+
+  module Modalities_on_constructor_arguments = struct
+    type t =
+      | A of
+          long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * short_type
+
+    type t =
+      | A :
+          long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          * short_type
+          -> t
+  end
+
+  module type Value_descriptions = sig
+    val long_value_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa : t
+
+    val long_value_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa :
+      long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  end
+
+  module Let_bound_functions = struct
+    let long_fun_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        (long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa : t)
+        (long_arg_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa :
+          long_type_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ) =
+      a
+  end
+end
+
+module Interaction_with_existing_syntax = struct
+  (* let bindings *)
+
+  let x = y
+
+  let x : typ1 typ2 = y
+
+  (* lhs/rhs of arrows *)
+
+  type t = lhs -> mhs -> rhs
+
+  let x : lhs -> rhs = y
+
+  let x = (expr : lhs -> rhs)
+
+  (* modalities on record fields *)
+
+  type t = {x: t}
+
+  type t = A of {x: t}
+
+  (* modalities on constructor arguments *)
+
+  type t = A of typ | B of typ1 * typ2
+
+  type t = A : typ -> t | B : typ1 * typ2 -> t
+end
+
+module Regressions = struct
+  let x =
+    a_long_expression_that_has_its_own_line
+    @ (* a long comment that comes after the [@] *)
+    a_long_expression_that_comes_after_the_comment
+
+  let x, y =
+    let x, y = (x, y) in
+    (x, y)
+
+  let (t as t) =
+    let (t as t) = t in
+    t
+
+  let x, y =
+    let x, y = t in
+    t
+
+  class t =
+    let x, y = x in
+    object end
+end

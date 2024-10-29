@@ -12,6 +12,22 @@ type t_value
 
 type t_imm [@@immediate]
 
+type t_imm =
+  | Aaaaaaaaaaaaaaaaaaaaa
+  | Bbbbbbbbbbbbbbbbbbbbb
+  | Ccccccccccccccccccccc
+[@@immediate]
+
+type t_imm =
+  [`Aaaaaaaaaaaaaaaaaaaaa | `Bbbbbbbbbbbbbbbbbbbbb | `Ccccccccccccccccccccc]
+[@@immediate]
+
+type t_imm =
+  { aaaaaaaaaaaaaaaaaaaa: rrrrrrrrrrrrrrrrrrrr
+  ; bbbbbbbbbbbbbbbbbbbb: ssssssssssssssssssss
+  ; cccccccccccccccccccc: tttttttttttttttttttt }
+[@@immediate]
+
 type t_imm64 [@@immediate64]
 
 type t_float64
@@ -347,6 +363,5 @@ type t =
   | T :
       (* 1 *) 'a 'b (* 2 *) 'c (* 3 *) 'd.
       (* 4 *)
-      
       {x: 'a * 'b * 'c * 'd}
       -> t

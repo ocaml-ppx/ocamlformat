@@ -84,6 +84,7 @@ let keyword_table =
     "private", PRIVATE;
     "rec", REC;
     "sig", SIG;
+    "stack_", STACK;
     "struct", STRUCT;
     "then", THEN;
     "to", TO;
@@ -704,6 +705,7 @@ rule token = parse
   | "\'" { QUOTE }
   | "("  { LPAREN }
   | ")"  { RPAREN }
+  | "#(" { HASHLPAREN }
   | "*"  { STAR }
   | ","  { COMMA }
   | "->" { MINUSGREATER }

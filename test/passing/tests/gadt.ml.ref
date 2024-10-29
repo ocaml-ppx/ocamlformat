@@ -24,7 +24,6 @@ type t =
   | T :
       (* this comment is too long to fix on same line as the
          record......... *)
-      
       {x: 'a * 'b * 'c * 'd}
       -> t
 

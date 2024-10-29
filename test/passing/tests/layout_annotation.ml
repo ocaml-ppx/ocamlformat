@@ -14,6 +14,29 @@ type  t_value  :  value
 type t_imm
      : immediate
 
+type t_imm
+     : immediate =
+  | Aaaaaaaaaaaaaaaaaaaaa
+  | Bbbbbbbbbbbbbbbbbbbbb
+  | Ccccccccccccccccccccc
+
+
+type t_imm
+     : immediate =
+  [
+  | `Aaaaaaaaaaaaaaaaaaaaa
+  | `Bbbbbbbbbbbbbbbbbbbbb
+  | `Ccccccccccccccccccccc
+  ]
+
+
+type t_imm
+     : immediate =
+  { aaaaaaaaaaaaaaaaaaaa : rrrrrrrrrrrrrrrrrrrr
+  ; bbbbbbbbbbbbbbbbbbbb : ssssssssssssssssssss
+  ; cccccccccccccccccccc : tttttttttttttttttttt
+  }
+
 type t_imm64 :
        immediate64
 
