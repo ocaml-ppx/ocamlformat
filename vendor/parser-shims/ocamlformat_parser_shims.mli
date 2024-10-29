@@ -90,3 +90,9 @@ module Builtin_attributes : sig
 
   val mark_payload_attrs_used : 'a -> unit
 end
+
+module Format_doc : sig
+  type 'a t
+  val compat : 'a t -> Format.formatter -> 'a -> unit
+  val pp_two_columns : ?sep : string -> ?max_lines:int -> (string * string) list t
+end
