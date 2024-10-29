@@ -3612,12 +3612,11 @@ atomic_type:
 
 %inline package_core_type: module_type
       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
-        let descr = Ptyp_package (lid, cstrs) in
+        let descr = Ptyp_package (lid, cstrs, []) in
         mktyp ~loc:$sloc ~attrs descr }
 ;
 %inline package_type: module_type
-      { let (lid, cstrs, _attrs) = package_type_of_module_type $1 in
-        (lid, cstrs) }
+      { package_type_of_module_type $1 }
 ;
 %inline row_field_list:
   separated_nonempty_llist(BAR, row_field)

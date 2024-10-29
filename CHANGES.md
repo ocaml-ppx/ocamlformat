@@ -61,6 +61,7 @@ profile. This started with version 0.26.0.
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix formatting of short `fun` expressions with the janestreet profile (#2593, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
+- Fix dropped attribute in `(module M : S [@attr])` (#2602, @Julow)
 - Build on OCaml 5.3 (#2603, @adamchol, @Julow)
 
 ### Changes

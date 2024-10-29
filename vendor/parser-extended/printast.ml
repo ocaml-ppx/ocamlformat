@@ -259,8 +259,9 @@ and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
 
-and package_type i ppf (s, l) =
+and package_type i ppf (s, l, attrs) =
   line i ppf "package_type %a\n" fmt_longident_loc s;
+  attributes (i+1) ppf attrs;
   list i package_with ppf l
 
 and pattern i ppf x =
