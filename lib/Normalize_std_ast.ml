@@ -25,77 +25,22 @@ let is_erasable_jane_syntax attr =
      "erasable jane syntax" *)
   || String.equal "extension.curry" name
 
-(* Immediate jkind annotations should be treated the same as their attribute
-   counterparts *)
-let normalize_immediate_annot_and_attrs attrs =
+(* We rewrite both "[@immediate]" and "[@ocaml.immediate]" into ":
+   immediate", which is then turned into just "[@immediate]" if we are
+   erasing jane syntax. This means "[@ocaml.immediate]" get rewritten to
+   "[@immediate]" in that mode, so we normalize these attributes. *)
+let normalize_immediate_attr attrs =
   let overwrite_attr_name attr new_name =
     { attr with
       attr_name= {attr.attr_name with txt= new_name}
     ; attr_payload= PStr [] }
   in
-  let attrs, _ =
-    List.fold attrs ~init:([], false)
-      ~f:(fun (new_attrs, deleted_jkind_annot) attr ->
-        let new_attr, just_deleted_jkind_annot =
-          match (attr.attr_name.txt, attr.attr_payload) with
-          (* We also have to normalize "ocaml.immediate" into "immediate" for
-             this to work. Since if we rewrite [@@ocaml.immediate] into an
-             annotation and treat that as [@@immediate]. That's an attribute
-             change we need to accept. *)
-          | ( "jane.erasable.layouts.annot"
-            , PStr
-                [ { pstr_desc=
-                      Pstr_attribute
-                        { attr_name= {txt= "jane.erasable.layouts.abbrev"; _}
-                        ; attr_payload=
-                            PStr
-                              [ { pstr_desc=
-                                    Pstr_eval
-                                      ( { pexp_desc=
-                                            Pexp_ident
-                                              {txt= Lident "immediate"; _}
-                                        ; _ }
-                                      , _ )
-                                ; _ } ]
-                        ; _ }
-                  ; _ } ] ) ->
-              (Some (overwrite_attr_name attr "immediate"), true)
-          | "ocaml.immediate", PStr [] ->
-              (Some (overwrite_attr_name attr "immediate"), false)
-          | ( "jane.erasable.layouts.annot"
-            , PStr
-                [ { pstr_desc=
-                      Pstr_attribute
-                        { attr_name= {txt= "jane.erasable.layouts.abbrev"; _}
-                        ; attr_payload=
-                            PStr
-                              [ { pstr_desc=
-                                    Pstr_eval
-                                      ( { pexp_desc=
-                                            Pexp_ident
-                                              {txt= Lident "immediate64"; _}
-                                        ; _ }
-                                      , _ )
-                                ; _ } ]
-                        ; _ }
-                  ; _ } ] ) ->
-              (Some (overwrite_attr_name attr "immediate64"), true)
-          | "ocaml.immediate64", PStr [] ->
-              (Some (overwrite_attr_name attr "immediate64"), false)
-          | "jane.erasable.layouts", PStr [] when deleted_jkind_annot ->
-              (* Only remove [jane.erasable.layouts] if we previously rewrote
-                 an associated [jane.erasable.layouts.annot] *)
-              (None, false)
-          | _, _ -> (Some attr, false)
-        in
-        let new_attrs =
-          match new_attr with
-          | Some new_attr -> new_attr :: new_attrs
-          | None -> new_attrs
-        in
-        (new_attrs, deleted_jkind_annot || just_deleted_jkind_annot) )
-  in
-  List.rev attrs
+  List.map attrs ~f:(fun attr ->
+      match (attr.attr_name.txt, attr.attr_payload) with
+      | "ocaml.immediate", PStr [] -> overwrite_attr_name attr "immediate"
+      | "ocaml.immediate64", PStr [] ->
+          overwrite_attr_name attr "immediate64"
+      | _, _ -> attr )
 
 let dedup_cmts fragment ast comments =
   let of_ast ast =
@@ -212,67 +157,37 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
       }
     in
     let {pexp_desc; pexp_loc= loc1; pexp_attributes= attrs1; _} = exp in
-    match Jane_syntax.Expression.of_ast exp with
-    | Some
-        ( Jexp_layout
-            (Lexp_newtype
-              (l, jkind, {pexp_desc= Pexp_constraint (exp1, Some ty, []); _})
-              )
-        , attrs ) -> (
-      match (Jane_syntax.Expression.of_ast exp1, exp1.pexp_desc) with
-      | Some (Jexp_layout (Lexp_newtype _), _), _
-       |None, (Pexp_function _ | Pexp_newtype _) ->
-          (* We can only perform the rewrite if the newtype isn't the only
-             "function argument" *)
-          (* CR jane-syntax: Special case where we transform a jane syntax
-           expression into a non-jane syntax expression, since jkind
-           annotations are in the parsetree for [Pparam_newtype] but not
-           [Pexp_newtype] *)
-          (* See comment on [Pexp_newtype] below *)
-          m.expr m
-            { exp with
-              pexp_attributes= attrs
-            ; pexp_desc=
-                Pexp_function
-                  ( [ { pparam_loc= l.loc
-                      ; pparam_desc= Pparam_newtype (l, Some jkind) } ]
-                  , Some
-                      {mode_annotations= []; type_constraint= Pconstraint ty}
-                  , Pfunction_body exp1 ) }
-      | _ -> Ast_mapper.default_mapper.expr m exp )
-    | _ -> (
-      match pexp_desc with
-      | Pexp_apply
-          ( {pexp_desc= Pexp_extension ({txt= "extension.exclave"; _}, _); _}
-          , [(Nolabel, expr)] )
-        when erase_jane_syntax ->
-          m.expr m expr
-      | Pexp_poly ({pexp_desc= Pexp_constraint (e, Some t, []); _}, None) ->
-          m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
-      | Pexp_constraint (exp1, None, _ :: _) when erase_jane_syntax ->
-          (* When erasing jane syntax, if [Pexp_constraint] was only
-             constraining based on modes, remove the node entirely instead of
-             just making the modes list empty *)
-          m.expr m exp1
-      | Pexp_constraint (e, Some {ptyp_desc= Ptyp_poly ([], _t); _}, []) ->
-          m.expr m e
-      | Pexp_sequence
-          ( exp1
-          , { pexp_desc= Pexp_sequence (exp2, exp3)
-            ; pexp_loc= loc2
-            ; pexp_attributes= attrs2
-            ; _ } ) ->
-          m.expr m
-            (Exp.sequence ~loc:loc1 ~attrs:attrs1
-               (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
-               exp3 )
-      | Pexp_function
-          ( ps
-          , c
-          , Pfunction_body {pexp_desc= Pexp_function (ps', None, b'); _} ) ->
-          m.expr m {exp with pexp_desc= Pexp_function (ps @ ps', c, b')}
-      | Pexp_newtype (l, {pexp_desc= Pexp_constraint (exp1, Some ty, []); _})
-        -> (
+    match pexp_desc with
+    | Pexp_apply
+        ( {pexp_desc= Pexp_extension ({txt= "extension.exclave"; _}, _); _}
+        , [(Nolabel, expr)] )
+      when erase_jane_syntax ->
+        m.expr m expr
+    | Pexp_poly ({pexp_desc= Pexp_constraint (e, Some t, []); _}, None) ->
+        m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
+    | Pexp_constraint (exp1, None, _ :: _) when erase_jane_syntax ->
+        (* When erasing jane syntax, if [Pexp_constraint] was only
+           constraining based on modes, remove the node entirely instead of
+           just making the modes list empty *)
+        m.expr m exp1
+    | Pexp_constraint (e, Some {ptyp_desc= Ptyp_poly ([], _t); _}, []) ->
+        m.expr m e
+    | Pexp_sequence
+        ( exp1
+        , { pexp_desc= Pexp_sequence (exp2, exp3)
+          ; pexp_loc= loc2
+          ; pexp_attributes= attrs2
+          ; _ } ) ->
+        m.expr m
+          (Exp.sequence ~loc:loc1 ~attrs:attrs1
+             (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
+             exp3 )
+    | Pexp_function
+        (ps, c, Pfunction_body {pexp_desc= Pexp_function (ps', None, b'); _})
+      ->
+        m.expr m {exp with pexp_desc= Pexp_function (ps @ ps', c, b')}
+    | Pexp_newtype
+        (l, jkind, {pexp_desc= Pexp_constraint (exp1, Some ty, []); _}) -> (
         (* This is a hack. Our version of ocamlformat rewrites [fun (type a)
            -> (function x -> x)] into [fun (type a) -> function x -> x], but
            these two things parse differently by design. We shouldn't do
@@ -280,9 +195,9 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
            syntactic function arity until upstream does. We should delete
            this, and other similar bits of normalization, when we merge with
            5.2 ocamlforamt. *)
-        match (Jane_syntax.Expression.of_ast exp1, exp1.pexp_desc) with
-        | Some (Jexp_layout (Lexp_newtype _), _), _
-         |None, (Pexp_function _ | Pexp_newtype _) ->
+        let jkind = if erase_jane_syntax then None else jkind in
+        match exp1.pexp_desc with
+        | Pexp_function _ | Pexp_newtype _ ->
             (* We can only perform the rewrite if the newtype isn't the only
                "function argument" *)
             m.expr m
@@ -290,54 +205,57 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
                 pexp_desc=
                   Pexp_function
                     ( [ { pparam_loc= l.loc
-                        ; pparam_desc= Pparam_newtype (l, None) } ]
+                        ; pparam_desc= Pparam_newtype (l, jkind) } ]
                     , Some
                         { mode_annotations= []
                         ; type_constraint= Pconstraint ty }
                     , Pfunction_body exp1 ) }
         | _ -> Ast_mapper.default_mapper.expr m exp )
-      | Pexp_function
-          ( ps
-          , c
-          , Pfunction_body
-              {pexp_desc= Pexp_constraint (exp1, Some ty, modes); _} )
-        when Option.is_none c
-             && (List.is_empty modes || Erase_jane_syntax.should_erase ()) ->
-          let c =
-            Some {mode_annotations= []; type_constraint= Pconstraint ty}
-          in
-          m.expr m
-            {exp with pexp_desc= Pexp_function (ps, c, Pfunction_body exp1)}
-      | Pexp_function (ps, c, b) when erase_jane_syntax ->
-          let ps =
-            List.map ps ~f:(fun param ->
-                match param.pparam_desc with
-                | Pparam_newtype (x, Some _) ->
-                    {param with pparam_desc= Pparam_newtype (x, None)}
-                | Pparam_val
-                    ( Labelled l
-                    , None
-                    , { ppat_desc=
-                          Ppat_constraint
-                            ( pat
-                            , Some
-                                { ptyp_desc=
-                                    Ptyp_extension ({txt= "call_pos"; loc}, _)
-                                ; _ }
-                            , _ )
-                      ; _ } ) ->
-                    let default_pos = dummy_position ~loc in
-                    { param with
-                      pparam_desc=
-                        Pparam_val (Optional l, Some default_pos, pat) }
-                | _ -> param )
-          in
-          Ast_mapper.default_mapper.expr m
-            {exp with pexp_desc= Pexp_function (ps, c, b)}
-      | Pexp_extension ({txt= "src_pos"; loc}, _) when erase_jane_syntax ->
-          m.expr m (dummy_position ~loc)
-      | Pexp_stack expr when erase_jane_syntax -> m.expr m expr
-      | _ -> Ast_mapper.default_mapper.expr m exp )
+    | Pexp_newtype (l, _, ty) when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m
+          {exp with pexp_desc= Pexp_newtype (l, None, ty)}
+    | Pexp_function
+        ( ps
+        , c
+        , Pfunction_body
+            {pexp_desc= Pexp_constraint (exp1, Some ty, modes); _} )
+      when Option.is_none c
+           && (List.is_empty modes || Erase_jane_syntax.should_erase ()) ->
+        let c =
+          Some {mode_annotations= []; type_constraint= Pconstraint ty}
+        in
+        m.expr m
+          {exp with pexp_desc= Pexp_function (ps, c, Pfunction_body exp1)}
+    | Pexp_function (ps, c, b) when erase_jane_syntax ->
+        let ps =
+          List.map ps ~f:(fun param ->
+              match param.pparam_desc with
+              | Pparam_newtype (x, Some _) ->
+                  {param with pparam_desc= Pparam_newtype (x, None)}
+              | Pparam_val
+                  ( Labelled l
+                  , None
+                  , { ppat_desc=
+                        Ppat_constraint
+                          ( pat
+                          , Some
+                              { ptyp_desc=
+                                  Ptyp_extension ({txt= "call_pos"; loc}, _)
+                              ; _ }
+                          , _ )
+                    ; _ } ) ->
+                  let default_pos = dummy_position ~loc in
+                  { param with
+                    pparam_desc=
+                      Pparam_val (Optional l, Some default_pos, pat) }
+              | _ -> param )
+        in
+        Ast_mapper.default_mapper.expr m
+          {exp with pexp_desc= Pexp_function (ps, c, b)}
+    | Pexp_extension ({txt= "src_pos"; loc}, _) when erase_jane_syntax ->
+        m.expr m (dummy_position ~loc)
+    | Pexp_stack expr when erase_jane_syntax -> m.expr m expr
+    | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
     let pat = {pat with ppat_loc_stack= []} in
@@ -403,6 +321,19 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
             Ptyp_arrow (Optional l, lexing_position_type, return_type, [], [])
           in
           {typ with ptyp_desc= desc}
+      | {ptyp_desc= Ptyp_any _; _} when erase_jane_syntax ->
+          {typ with ptyp_desc= Ptyp_any None}
+      | {ptyp_desc= Ptyp_var (n, _); _} when erase_jane_syntax ->
+          {typ with ptyp_desc= Ptyp_var (n, None)}
+      | {ptyp_desc= Ptyp_alias (t, n, _); _} when erase_jane_syntax -> (
+        match n with
+        | Some _ -> {typ with ptyp_desc= Ptyp_alias (t, n, None)}
+        | None ->
+            {t with ptyp_attributes= typ.ptyp_attributes @ t.ptyp_attributes}
+        )
+      | {ptyp_desc= Ptyp_poly (l, t); _} when erase_jane_syntax ->
+          let l = List.map l ~f:(fun (n, _) -> (n, None)) in
+          {typ with ptyp_desc= Ptyp_poly (l, t)}
       | _ -> typ
     in
     Ast_mapper.default_mapper.typ m typ
@@ -410,9 +341,8 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   let structure =
     let structure m str =
       List.filter str ~f:(fun stri ->
-          match Jane_syntax.Structure_item.of_ast stri with
-          | Some (Jstr_layout (Lstr_kind_abbrev _)) when erase_jane_syntax ->
-              false
+          match stri.pstr_desc with
+          | Pstr_kind_abbrev _ when erase_jane_syntax -> false
           | _ -> true )
       |> Ast_mapper.default_mapper.structure m
     in
@@ -424,18 +354,25 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     else structure
   in
   let signature =
-    let signature m sig_ =
-      List.filter sig_ ~f:(fun sigi ->
-          match Jane_syntax.Signature_item.of_ast sigi with
-          | Some (Jsig_layout (Lsig_kind_abbrev _)) when erase_jane_syntax ->
-              false
-          | _ -> true )
-      |> Ast_mapper.default_mapper.signature m
+    let signature m {psg_modalities; psg_items; psg_loc} =
+      let psg_items =
+        List.filter psg_items ~f:(fun sigi ->
+            match sigi.psig_desc with
+            | Psig_kind_abbrev _ when erase_jane_syntax -> false
+            | _ -> true )
+      in
+      let psg_modalities =
+        if erase_jane_syntax then [] else psg_modalities
+      in
+      Ast_mapper.default_mapper.signature m
+        {psg_modalities; psg_items; psg_loc}
     in
-    if ignore_doc_comments then fun (m : Ast_mapper.mapper) l ->
-      List.filter l ~f:(function
-        | {psig_desc= Psig_attribute a; _} -> not (is_doc a)
-        | _ -> true )
+    if ignore_doc_comments then fun (m : Ast_mapper.mapper) sig_ ->
+      { sig_ with
+        psg_items=
+          List.filter sig_.psg_items ~f:(function
+            | {psig_desc= Psig_attribute a; _} -> not (is_doc a)
+            | _ -> true ) }
       |> signature m
     else signature
   in
@@ -460,13 +397,29 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     else Ast_mapper.default_mapper.class_signature
   in
   let type_declaration (m : Ast_mapper.mapper) decl =
+    let ptype_jkind_annotation, extra_attributes =
+      match decl.ptype_jkind_annotation with
+      | Some {pjkind_desc= Abbreviation "immediate"; _} ->
+          ( None
+          , [ Ast_helper.Attr.mk
+                {txt= "immediate"; loc= Location.none}
+                (PStr []) ] )
+      | Some {pjkind_desc= Abbreviation "immediate64"; _} ->
+          ( None
+          , [ Ast_helper.Attr.mk
+                {txt= "immediate64"; loc= Location.none}
+                (PStr []) ] )
+      | ann -> ((if erase_jane_syntax then None else ann), [])
+    in
     let ptype_attributes =
-      decl.ptype_attributes |> normalize_immediate_annot_and_attrs
+      extra_attributes @ decl.ptype_attributes
+      |> normalize_immediate_attr
       (* CR jane-syntax: This ensures that jane syntax attributes are
          removed *)
       |> if erase_jane_syntax then map_attributes_no_sort m else Fn.id
     in
-    Ast_mapper.default_mapper.type_declaration m {decl with ptype_attributes}
+    Ast_mapper.default_mapper.type_declaration m
+      {decl with ptype_attributes; ptype_jkind_annotation}
   in
   let modes (m : Ast_mapper.mapper) ms =
     Ast_mapper.default_mapper.modes m (if erase_jane_syntax then [] else ms)
@@ -496,16 +449,24 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     (* CR jane-syntax: This ensures that jane syntax attributes are
        removed *)
     ( if erase_jane_syntax then
-        {cd with pcd_attributes= map_attributes_no_sort m cd.pcd_attributes}
+        { cd with
+          pcd_attributes= map_attributes_no_sort m cd.pcd_attributes
+        ; pcd_vars= List.map cd.pcd_vars ~f:(fun (s, _) -> (s, None)) }
       else cd )
     |> Ast_mapper.default_mapper.constructor_declaration m
+  in
+  let extension_constructor_kind = function
+    | Pext_decl (l, cargs, t) when erase_jane_syntax ->
+        Pext_decl (List.map l ~f:(fun (n, _) -> (n, None)), cargs, t)
+    | k -> k
   in
   let extension_constructor (m : Ast_mapper.mapper) ext =
     (* CR jane-syntax: This ensures that jane syntax attributes are
        removed *)
     ( if erase_jane_syntax then
         { ext with
-          pext_attributes= map_attributes_no_sort m ext.pext_attributes }
+          pext_attributes= map_attributes_no_sort m ext.pext_attributes
+        ; pext_kind= extension_constructor_kind ext.pext_kind }
       else ext )
     |> Ast_mapper.default_mapper.extension_constructor m
   in

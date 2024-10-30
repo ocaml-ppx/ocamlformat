@@ -85,9 +85,6 @@ type mapper = {
   value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
-  directive_argument: mapper -> directive_argument -> directive_argument;
-  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
-  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
 
   expr_jane_syntax:
     mapper -> Jane_syntax.Expression.t -> Jane_syntax.Expression.t;
@@ -1016,22 +1013,6 @@ let default_mapper =
         | Product ts -> Product (List.map (this.jkind_annotation this) ts)
       in
       { pjkind_loc; pjkind_desc });
-
-    directive_argument =
-      (fun this a ->
-         { pdira_desc= a.pdira_desc
-         ; pdira_loc= this.location this a.pdira_loc} );
-
-    toplevel_directive =
-      (fun this d ->
-         { pdir_name= map_loc this d.pdir_name
-         ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
-         ; pdir_loc= this.location this d.pdir_loc } );
-
-    toplevel_phrase =
-      (fun this -> function
-         | Ptop_def s -> Ptop_def (this.structure this s)
-         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
 
     expr_jane_syntax = E.map_jst;
     module_type_jane_syntax = MT.map_jane_syntax;

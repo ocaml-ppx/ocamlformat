@@ -2,16 +2,6 @@ open Asttypes
 open Parsetree
 open Jane_syntax_parsing
 
-let option_all opts 
-  = 
-  let rec aux rev_acc opts =
-  match opts with
-  | [] -> Some (List.rev rev_acc)
-  | Some x :: opts -> aux ( x :: rev_acc) opts
-  | None :: _ -> None
-  in aux [] opts
-
-
 (** We carefully regulate which bindings we import from [Language_extension]
     to ensure that we can import this file into the Jane Street internal
     repo with no changes.
