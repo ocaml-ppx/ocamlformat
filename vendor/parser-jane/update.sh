@@ -8,9 +8,9 @@ else
     exit 1
 fi
 
-parsing_dir="${flambda_backend_dir}/ocaml/parsing"
-utils_dir="${flambda_backend_dir}/ocaml/utils"
-lex_dir="${flambda_backend_dir}/ocaml/lex"
+parsing_dir="${flambda_backend_dir}/parsing"
+utils_dir="${flambda_backend_dir}/utils"
+lex_dir="${flambda_backend_dir}/lex"
 
 cd $(dirname $0)
 # parser-standard
@@ -31,6 +31,8 @@ cp "$parsing_dir"/parse.ml for-parser-standard/
 cp "$parsing_dir"/parser.mly for-parser-standard/
 cp "$parsing_dir"/parsetree.mli for-parser-standard/
 cp "$parsing_dir"/printast.ml for-parser-standard/
+cp "$parsing_dir"/parser_types.ml for-parser-standard/
+cp "$parsing_dir"/parser_types.mli for-parser-standard/
 
 # ocaml-common
 cp "$parsing_dir"/location.ml for-ocaml-common/

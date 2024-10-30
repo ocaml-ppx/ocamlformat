@@ -24,6 +24,7 @@ commands=(
     "rm -rf parser-standard/ ocaml-common/"
     "cp -r parser-jane/for-parser-standard parser-standard/"
     "cp -r parser-jane/for-ocaml-common ocaml-common/"
+    "git restore ocaml-common/dune"
     "patch -p1 -d parser-standard/ < changes-parser.patch"
     "patch -p1 -d ocaml-common/ < changes-common.patch"
 )
