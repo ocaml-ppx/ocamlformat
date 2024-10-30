@@ -20,6 +20,9 @@
   (* Ensure that record patterns don't miss any field. *)
 *)
 
+[@@@ocaml.warning "-60"] module Str = Ast_helper.Str (* For ocamldep *)
+[@@@ocaml.warning "+60"]
+
 open Parsetree
 open Ast_helper
 open Location
@@ -47,14 +50,14 @@ type mapper = {
   constant: mapper -> constant -> constant;
   constructor_declaration: mapper -> constructor_declaration
                            -> constructor_declaration;
+  directive_argument: mapper -> directive_argument -> directive_argument;
   expr: mapper -> expression -> expression;
   extension: mapper -> extension -> extension;
   extension_constructor: mapper -> extension_constructor
                          -> extension_constructor;
   include_declaration: mapper -> include_declaration -> include_declaration;
   include_description: mapper -> include_description -> include_description;
-  jkind_annotation:
-    mapper -> Jane_syntax.Jkind.t -> Jane_syntax.Jkind.t;
+  jkind_annotation: mapper -> jkind_annotation -> jkind_annotation;
   label_declaration: mapper -> label_declaration -> label_declaration;
   location: mapper -> Location.t -> Location.t;
   module_binding: mapper -> module_binding -> module_binding;
@@ -72,6 +75,8 @@ type mapper = {
   signature_item: mapper -> signature_item -> signature_item;
   structure: mapper -> structure -> structure;
   structure_item: mapper -> structure_item -> structure_item;
+  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
+  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
   typ: mapper -> core_type -> core_type;
   type_declaration: mapper -> type_declaration -> type_declaration;
   type_extension: mapper -> type_extension -> type_extension;
@@ -83,17 +88,11 @@ type mapper = {
 
   expr_jane_syntax:
     mapper -> Jane_syntax.Expression.t -> Jane_syntax.Expression.t;
-  extension_constructor_jane_syntax:
-    mapper ->
-    Jane_syntax.Extension_constructor.t -> Jane_syntax.Extension_constructor.t;
   module_type_jane_syntax: mapper
     -> Jane_syntax.Module_type.t -> Jane_syntax.Module_type.t;
+  module_expr_jane_syntax: mapper
+    -> Jane_syntax.Module_expr.t -> Jane_syntax.Module_expr.t;
   pat_jane_syntax: mapper -> Jane_syntax.Pattern.t -> Jane_syntax.Pattern.t;
-  signature_item_jane_syntax: mapper ->
-    Jane_syntax.Signature_item.t -> Jane_syntax.Signature_item.t;
-  structure_item_jane_syntax: mapper ->
-    Jane_syntax.Structure_item.t -> Jane_syntax.Structure_item.t;
-  typ_jane_syntax: mapper -> Jane_syntax.Core_type.t -> Jane_syntax.Core_type.t;
 }
 
 let map_fst f (x, y) = (f x, y)
@@ -103,16 +102,16 @@ let map_tuple3 f1 f2 f3 (x, y, z) = (f1 x, f2 y, f3 z)
 let map_opt f = function None -> None | Some x -> Some (f x)
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
-let map_loc_txt sub f {loc; txt} =
-  {loc = sub.location sub loc; txt = f sub txt}
 
 module C = struct
   (* Constants *)
 
   let map sub c = match c with
     | Pconst_integer _
+    | Pconst_unboxed_integer _
     | Pconst_char _
     | Pconst_float _
+    | Pconst_unboxed_float _
       -> c
     | Pconst_string (s, loc, quotation_delimiter) ->
         let loc = sub.location sub loc in
@@ -151,53 +150,28 @@ module T = struct
   let var_jkind sub (name, jkind_opt) =
     let name = map_loc sub name in
     let jkind_opt =
-      map_opt (map_loc_txt sub sub.jkind_annotation) jkind_opt
+      map_opt (sub.jkind_annotation sub) jkind_opt
     in
     (name, jkind_opt)
 
   let map_bound_vars sub bound_vars = List.map (var_jkind sub) bound_vars
 
-  let map_jst_layouts sub :
-        Jane_syntax.Layouts.core_type -> Jane_syntax.Layouts.core_type =
-    function
-    | Ltyp_var { name; jkind } ->
-      let jkind = map_loc_txt sub sub.jkind_annotation jkind in
-      Ltyp_var { name; jkind }
-    | Ltyp_poly { bound_vars; inner_type } ->
-      let bound_vars = map_bound_vars sub bound_vars in
-      let inner_type = sub.typ sub inner_type in
-      Ltyp_poly { bound_vars; inner_type }
-    | Ltyp_alias { aliased_type; name; jkind } ->
-      let aliased_type = sub.typ sub aliased_type in
-      let jkind = map_loc_txt sub sub.jkind_annotation jkind in
-      Ltyp_alias { aliased_type; name; jkind }
-
   let map_labeled_tuple sub tl = List.map (map_snd (sub.typ sub)) tl
-    (* CR labeled tuples: Eventually mappers may want to see the labels. *)
 
-  let map_jst sub : Jane_syntax.Core_type.t -> Jane_syntax.Core_type.t =
-    function
-    | Jtyp_layout typ -> Jtyp_layout (map_jst_layouts sub typ)
-    | Jtyp_tuple x -> Jtyp_tuple (map_labeled_tuple sub x)
-
-  let map sub ({ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs}
-                 as typ) =
+  let map sub {ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs} =
     let open Typ in
     let loc = sub.location sub loc in
-    match Jane_syntax.Core_type.of_ast typ with
-    | Some (jtyp, attrs) -> begin
-        let attrs = sub.attributes sub attrs in
-        let jtyp = sub.typ_jane_syntax sub jtyp in
-        Jane_syntax.Core_type.core_type_of jtyp ~loc ~attrs
-    end
-    | None ->
     let attrs = sub.attributes sub attrs in
     match desc with
-    | Ptyp_any -> any ~loc ~attrs ()
-    | Ptyp_var s -> var ~loc ~attrs s
+    | Ptyp_any jkind ->
+        let jkind = map_opt (sub.jkind_annotation sub) jkind in
+        any ~loc ~attrs jkind
+    | Ptyp_var (s, jkind) ->
+        let jkind = map_opt (sub.jkind_annotation sub) jkind in
+        var ~loc ~attrs s jkind
     | Ptyp_arrow (lab, t1, t2, m1, m2) ->
         arrow ~loc ~attrs lab (sub.typ sub t1) (sub.typ sub t2) (sub.modes sub m1) (sub.modes sub m2)
-    | Ptyp_tuple tyl -> tuple ~loc ~attrs (List.map (sub.typ sub) tyl)
+    | Ptyp_tuple tyl -> tuple ~loc ~attrs (map_labeled_tuple sub tyl)
     | Ptyp_unboxed_tuple tyl ->
         unboxed_tuple ~loc ~attrs (map_labeled_tuple sub tyl)
     | Ptyp_constr (lid, tl) ->
@@ -206,43 +180,51 @@ module T = struct
         object_ ~loc ~attrs (List.map (object_field sub) l) o
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
-    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+    | Ptyp_alias (t, s, jkind) ->
+        let s = map_opt (map_loc sub) s in
+        let jkind = map_opt (sub.jkind_annotation sub) jkind in
+        alias ~loc ~attrs (sub.typ sub t) s jkind
     | Ptyp_variant (rl, b, ll) ->
         variant ~loc ~attrs (List.map (row_field sub) rl) b ll
-    | Ptyp_poly (sl, t) -> poly ~loc ~attrs
-                             (List.map (map_loc sub) sl) (sub.typ sub t)
+    | Ptyp_poly (sl, t) ->
+        let sl =
+          List.map (fun (var, jkind) ->
+              map_loc sub var,
+              map_opt (sub.jkind_annotation sub) jkind)
+            sl
+        in
+        let t = sub.typ sub t in
+        poly ~loc ~attrs sl t
     | Ptyp_package (lid, l) ->
         package ~loc ~attrs (map_loc sub lid)
           (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+    | Ptyp_open (mod_ident, t) ->
+        open_ ~loc ~attrs (map_loc sub mod_ident) (sub.typ sub t)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
   let map_type_declaration sub
-     ({ptype_name; ptype_params; ptype_cstrs;
+      {ptype_name; ptype_params; ptype_cstrs;
        ptype_kind;
        ptype_private;
        ptype_manifest;
        ptype_attributes;
-       ptype_loc} as tyd) =
+       ptype_jkind_annotation;
+       ptype_loc} =
     let loc = sub.location sub ptype_loc in
-    let jkind, ptype_attributes =
-      match Jane_syntax.Layouts.of_type_declaration tyd with
-      | None -> None, ptype_attributes
-      | Some (jkind, attributes) ->
-          let jkind = map_loc_txt sub sub.jkind_annotation jkind in
-          Some jkind, attributes
+    let ptype_jkind_annotation =
+      map_opt (sub.jkind_annotation sub) ptype_jkind_annotation
     in
     let attrs = sub.attributes sub ptype_attributes in
-    Jane_syntax.Layouts.type_declaration_of ~loc ~attrs (map_loc sub ptype_name)
+    Type.mk ~loc ~attrs (map_loc sub ptype_name)
       ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
       ~priv:ptype_private
       ~cstrs:(List.map
                 (map_tuple3 (sub.typ sub) (sub.typ sub) (sub.location sub))
                 ptype_cstrs)
       ~kind:(sub.type_kind sub ptype_kind)
-      ~manifest:(map_opt (sub.typ sub) ptype_manifest)
-      ~jkind
+      ?manifest:(map_opt (sub.typ sub) ptype_manifest)
       ~docs:Docstrings.empty_docs
-      ~text:None
+      ?jkind_annotation:ptype_jkind_annotation
 
   let map_type_kind sub = function
     | Ptype_abstract -> Ptype_abstract
@@ -283,37 +265,21 @@ module T = struct
     Te.mk_exception ~loc ~attrs
       (sub.extension_constructor sub ptyexn_constructor)
 
-  let map_extension_constructor_jst sub :
-    Jane_syntax.Extension_constructor.t -> Jane_syntax.Extension_constructor.t =
-    function
-    | Jext_layout (Lext_decl(vars, args, res)) ->
-      let vars = map_bound_vars sub vars in
-      let args = map_constructor_arguments sub args in
-      let res = map_opt (sub.typ sub) res in
-      Jext_layout (Lext_decl(vars, args, res))
-
   let map_extension_constructor_kind sub = function
       Pext_decl(vars, ctl, cto) ->
-        Pext_decl(List.map (map_loc sub) vars,
+        Pext_decl(map_bound_vars sub vars,
                   map_constructor_arguments sub ctl,
                   map_opt (sub.typ sub) cto)
     | Pext_rebind li ->
         Pext_rebind (map_loc sub li)
 
   let map_extension_constructor sub
-     ({pext_name;
+      {pext_name;
        pext_kind;
        pext_loc;
-       pext_attributes} as ext) =
+       pext_attributes} =
     let loc = sub.location sub pext_loc in
     let name = map_loc sub pext_name in
-    match Jane_syntax.Extension_constructor.of_ast ext with
-    | Some (jext, attrs) ->
-      let attrs = sub.attributes sub attrs in
-      let jext = sub.extension_constructor_jane_syntax sub jext in
-      Jane_syntax.Extension_constructor.extension_constructor_of
-        ~loc ~name ~attrs jext
-    | None ->
     let attrs = sub.attributes sub pext_attributes in
     Te.constructor ~loc ~attrs
       name
@@ -407,32 +373,9 @@ module MT = struct
     | Pwith_modtypesubst (lid, mty) ->
         Pwith_modtypesubst (map_loc sub lid, sub.module_type sub mty)
 
-  module L = Jane_syntax.Layouts
-
-  let map_sig_layout sub : L.signature_item -> L.signature_item =
-    function
-    | Lsig_kind_abbrev (name, jkind) ->
-        Lsig_kind_abbrev (
-          map_loc sub name,
-          map_loc_txt sub sub.jkind_annotation jkind
-        )
-
-  let map_signature_item_jst sub :
-    Jane_syntax.Signature_item.t -> Jane_syntax.Signature_item.t =
-    function
-    | Jsig_layout sigi ->
-        Jsig_layout (map_sig_layout sub sigi)
-
-  let map_signature_item sub ({psig_desc = desc; psig_loc = loc} as sigi) =
+  let map_signature_item sub {psig_desc = desc; psig_loc = loc} =
     let open Sig in
     let loc = sub.location sub loc in
-    match Jane_syntax.Signature_item.of_ast sigi with
-    | Some jsigi -> begin
-        match sub.signature_item_jane_syntax sub jsigi with
-        | Jsig_layout sigi ->
-            Jane_syntax.Layouts.sig_item_of ~loc sigi
-    end
-    | None ->
     match desc with
     | Psig_value vd -> value ~loc (sub.value_description sub vd)
     | Psig_type (rf, l) ->
@@ -459,6 +402,11 @@ module MT = struct
         let attrs = sub.attributes sub attrs in
         extension ~loc ~attrs (sub.extension sub x)
     | Psig_attribute x -> attribute ~loc (sub.attribute sub x)
+    | Psig_kind_abbrev (name, jkind) ->
+        kind_abbrev
+          ~loc
+          (map_loc sub name)
+          (sub.jkind_annotation sub jkind)
 
   let map_jane_syntax sub :
         Jane_syntax.Module_type.t -> Jane_syntax.Module_type.t = function
@@ -470,12 +418,33 @@ end
 
 
 module M = struct
-  (* Value expressions for the module language *)
+  module I = Jane_syntax.Instances
 
-  let map sub {pmod_loc = loc; pmod_desc = desc; pmod_attributes = attrs} =
+  (* Value expressions for the module language *)
+  let map_instance _sub : I.instance -> I.instance = function
+    | i ->
+      (* CR lmaurer: Implement this. Might want to change the [instance] type to have
+        Ids with locations in them rather than just raw strings. *)
+      i
+
+  let map_instance_expr sub : I.module_expr -> I.module_expr = function
+    | Imod_instance i -> Imod_instance (map_instance sub i)
+
+  let map_ext sub : Jane_syntax.Module_expr.t -> Jane_syntax.Module_expr.t =
+    function
+    | Emod_instance i -> Emod_instance (map_instance_expr sub i)
+
+  let map sub
+        ({pmod_loc = loc; pmod_desc = desc; pmod_attributes = attrs} as mexpr) =
     let open Mod in
     let loc = sub.location sub loc in
     let attrs = sub.attributes sub attrs in
+    match Jane_syntax.Module_expr.of_ast mexpr with
+    | Some ext -> begin
+        match sub.module_expr_jane_syntax sub ext with
+        | Emod_instance i -> Jane_syntax.Instances.module_expr_of ~loc i
+      end
+    | None ->
     match desc with
     | Pmod_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pmod_structure str -> structure ~loc ~attrs (sub.structure sub str)
@@ -493,32 +462,9 @@ module M = struct
     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
-  module L = Jane_syntax.Layouts
-
-  let map_str_layout sub : L.structure_item -> L.structure_item =
-    function
-    | Lstr_kind_abbrev (name, jkind) ->
-        Lstr_kind_abbrev (
-          map_loc sub name,
-          map_loc_txt sub sub.jkind_annotation jkind
-        )
-
-  let map_structure_item_jst sub :
-    Jane_syntax.Structure_item.t -> Jane_syntax.Structure_item.t =
-    function
-    | Jstr_layout stri ->
-        Jstr_layout (map_str_layout sub stri)
-
-  let map_structure_item sub ({pstr_loc = loc; pstr_desc = desc} as stri) =
+  let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
     let open Str in
     let loc = sub.location sub loc in
-    match Jane_syntax.Structure_item.of_ast stri with
-    | Some jstri -> begin
-        match sub.structure_item_jane_syntax sub jstri with
-        | Jstr_layout stri ->
-            Jane_syntax.Layouts.str_item_of ~loc stri
-    end
-    | None ->
     match desc with
     | Pstr_eval (x, attrs) ->
         let attrs = sub.attributes sub attrs in
@@ -540,6 +486,11 @@ module M = struct
         let attrs = sub.attributes sub attrs in
         extension ~loc ~attrs (sub.extension sub x)
     | Pstr_attribute x -> attribute ~loc (sub.attribute sub x)
+    | Pstr_kind_abbrev (name, jkind) ->
+        kind_abbrev
+          ~loc
+          (map_loc sub name)
+          (sub.jkind_annotation sub jkind)
 end
 
 module E = struct
@@ -547,7 +498,6 @@ module E = struct
 
   module C = Jane_syntax.Comprehensions
   module IA = Jane_syntax.Immutable_arrays
-  module L = Jane_syntax.Layouts
 
   let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
     let loc = sub.location sub loc in
@@ -558,7 +508,7 @@ module E = struct
       | Pparam_newtype (newtype, jkind) ->
           Pparam_newtype
             ( map_loc sub newtype
-            , map_opt (map_loc_txt sub sub.jkind_annotation) jkind
+            , map_opt (sub.jkind_annotation sub) jkind
             )
     in
     { pparam_loc = loc; pparam_desc = desc }
@@ -612,29 +562,12 @@ module E = struct
     | Iaexp_immutable_array elts ->
       Iaexp_immutable_array (List.map (sub.expr sub) elts)
 
-  let map_unboxed_constant_exp _sub : L.constant -> L.constant = function
-    (* We can't reasonably call [sub.constant] because it might return a kind
-       of constant we don't know how to unbox.
-    *)
-    | (Float _ | Integer _) as x -> x
-
-  let map_layout_exp sub : L.expression -> L.expression = function
-    | Lexp_constant x -> Lexp_constant (map_unboxed_constant_exp sub x)
-    | Lexp_newtype (str, jkind, inner_expr) ->
-      let str = map_loc sub str in
-      let jkind = map_loc_txt sub sub.jkind_annotation jkind in
-      let inner_expr = sub.expr sub inner_expr in
-      Lexp_newtype (str, jkind, inner_expr)
-
   let map_ltexp sub el = List.map (map_snd (sub.expr sub)) el
-    (* CR labeled tuples: Eventually mappers may want to see the labels. *)
 
   let map_jst sub : Jane_syntax.Expression.t -> Jane_syntax.Expression.t =
     function
     | Jexp_comprehension x -> Jexp_comprehension (map_cexp sub x)
     | Jexp_immutable_array x -> Jexp_immutable_array (map_iaexp sub x)
-    | Jexp_layout x -> Jexp_layout (map_layout_exp sub x)
-    | Jexp_tuple ltexp -> Jexp_tuple (map_ltexp sub ltexp)
 
   let map sub
         ({pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} as exp) =
@@ -664,7 +597,8 @@ module E = struct
     | Pexp_match (e, pel) ->
         match_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
     | Pexp_try (e, pel) -> try_ ~loc ~attrs (sub.expr sub e) (sub.cases sub pel)
-    | Pexp_tuple el -> tuple ~loc ~attrs (List.map (sub.expr sub) el)
+    | Pexp_tuple el ->
+        tuple ~loc ~attrs (map_ltexp sub el)
     | Pexp_unboxed_tuple el ->
         unboxed_tuple ~loc ~attrs (map_ltexp sub el)
     | Pexp_construct (lid, arg) ->
@@ -715,8 +649,10 @@ module E = struct
     | Pexp_poly (e, t) ->
         poly ~loc ~attrs (sub.expr sub e) (map_opt (sub.typ sub) t)
     | Pexp_object cls -> object_ ~loc ~attrs (sub.class_structure sub cls)
-    | Pexp_newtype (s, e) ->
-        newtype ~loc ~attrs (map_loc sub s) (sub.expr sub e)
+    | Pexp_newtype (s, jkind, e) ->
+        newtype ~loc ~attrs (map_loc sub s)
+          (map_opt (sub.jkind_annotation sub) jkind)
+          (sub.expr sub e)
     | Pexp_pack me -> pack ~loc ~attrs (sub.module_expr sub me)
     | Pexp_open (o, e) ->
         open_ ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
@@ -741,26 +677,15 @@ module P = struct
   (* Patterns *)
 
   module IA = Jane_syntax.Immutable_arrays
-  module L = Jane_syntax.Layouts
 
   let map_iapat sub : IA.pattern -> IA.pattern = function
     | Iapat_immutable_array elts ->
       Iapat_immutable_array (List.map (sub.pat sub) elts)
 
-  let map_unboxed_constant_pat _sub : L.constant -> L.constant = function
-    (* We can't reasonably call [sub.constant] because it might return a kind
-       of constant we don't know how to unbox.
-    *)
-    | Float _ | Integer _ as x -> x
-
   let map_ltpat sub pl = List.map (map_snd (sub.pat sub)) pl
-    (* CR labeled tuples: Eventually mappers may want to see the labels. *)
 
   let map_jst sub : Jane_syntax.Pattern.t -> Jane_syntax.Pattern.t = function
     | Jpat_immutable_array x -> Jpat_immutable_array (map_iapat sub x)
-    | Jpat_layout (Lpat_constant x) ->
-        Jpat_layout (Lpat_constant (map_unboxed_constant_pat sub x))
-    | Jpat_tuple (ltpat, c) -> Jpat_tuple (map_ltpat sub ltpat, c)
 
   let map sub
         ({ppat_desc = desc; ppat_loc = loc; ppat_attributes = attrs} as pat) =
@@ -780,7 +705,7 @@ module P = struct
     | Ppat_constant c -> constant ~loc ~attrs (sub.constant sub c)
     | Ppat_interval (c1, c2) ->
         interval ~loc ~attrs (sub.constant sub c1) (sub.constant sub c2)
-    | Ppat_tuple pl -> tuple ~loc ~attrs (List.map (sub.pat sub) pl)
+    | Ppat_tuple (pl, c) -> tuple ~loc ~attrs (map_ltpat sub pl) c
     | Ppat_unboxed_tuple (pl, c) ->
         unboxed_tuple ~loc ~attrs (map_ltpat sub pl) c
     | Ppat_construct (l, p) ->
@@ -881,7 +806,14 @@ let default_mapper =
     structure = (fun this l -> List.map (this.structure_item this) l);
     structure_item = M.map_structure_item;
     module_expr = M.map;
-    signature = (fun this l -> List.map (this.signature_item this) l);
+    module_expr_jane_syntax = M.map_ext;
+    signature =
+      (fun this {psg_items; psg_modalities; psg_loc} ->
+        let psg_modalities = this.modalities this psg_modalities in
+        let psg_items = List.map (this.signature_item this) psg_items in
+        let psg_loc = this.location this psg_loc in
+        {psg_items; psg_modalities; psg_loc}
+      );
     signature_item = MT.map_signature_item;
     module_type = MT.map;
     with_constraint = MT.map_with_constraint;
@@ -1010,23 +942,16 @@ let default_mapper =
 
 
     constructor_declaration =
-      (fun this ({pcd_name; pcd_vars; pcd_args;
-                  pcd_res; pcd_loc; pcd_attributes} as pcd) ->
+      (fun this  {pcd_name; pcd_vars; pcd_args;
+                  pcd_res; pcd_loc; pcd_attributes} ->
         let name = map_loc this pcd_name in
         let args = T.map_constructor_arguments this pcd_args in
         let res = map_opt (this.typ this) pcd_res in
         let loc = this.location this pcd_loc in
-        match Jane_syntax.Layouts.of_constructor_declaration pcd with
-        | None ->
-          let vars = List.map (map_loc this) pcd_vars in
-          let attrs = this.attributes this pcd_attributes in
-          Type.constructor name ~vars ~args ?res ~loc ~attrs
-        | Some (vars_jkinds, attributes) ->
-          let vars_jkinds = List.map (T.var_jkind this) vars_jkinds in
-          let attrs = this.attributes this attributes in
-          Jane_syntax.Layouts.constructor_declaration_of
-            name ~vars_jkinds ~args ~res ~loc ~attrs
-            ~info:Docstrings.empty_info
+        let vars = List.map (T.var_jkind this) pcd_vars in
+        let attrs = this.attributes this pcd_attributes in
+        Type.constructor name ~vars ~args ?res ~loc ~attrs
+          ~info:Docstrings.empty_info
       );
 
     label_declaration =
@@ -1072,35 +997,46 @@ let default_mapper =
          | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
       );
 
-    jkind_annotation = (fun this ->
-      let open Jane_syntax in
-      function
-      | Default -> Default
-      | Abbreviation s ->
-        let {txt; loc} =
-          map_loc this s
-        in
-        Abbreviation (Jkind.Const.mk txt loc)
-      | Mod (t, mode_list) ->
-        Mod (this.jkind_annotation this t, this.modes this mode_list)
-      | With (t, ty) ->
-        With (this.jkind_annotation this t, this.typ this ty)
-      | Kind_of ty -> Kind_of (this.typ this ty)
-      | Product ts -> Product (List.map (this.jkind_annotation this) ts));
+    jkind_annotation = (fun this { pjkind_loc; pjkind_desc } ->
+      let pjkind_loc = this.location this pjkind_loc in
+      let pjkind_desc =
+        match pjkind_desc with
+        | Default -> Default
+        | Abbreviation (s : string) -> Abbreviation s
+        | Mod (t, mode_list) ->
+          Mod (this.jkind_annotation this t, this.modes this mode_list)
+        | With (t, ty) ->
+          With (this.jkind_annotation this t, this.typ this ty)
+        | Kind_of ty -> Kind_of (this.typ this ty)
+        | Product ts -> Product (List.map (this.jkind_annotation this) ts)
+      in
+      { pjkind_loc; pjkind_desc });
 
     expr_jane_syntax = E.map_jst;
-    extension_constructor_jane_syntax = T.map_extension_constructor_jst;
     module_type_jane_syntax = MT.map_jane_syntax;
     pat_jane_syntax = P.map_jst;
-    signature_item_jane_syntax = MT.map_signature_item_jst;
-    structure_item_jane_syntax = M.map_structure_item_jst;
-    typ_jane_syntax = T.map_jst;
 
     modes = (fun this m ->
       List.map (map_loc this) m);
 
     modalities = (fun this m ->
       List.map (map_loc this) m);
+
+    directive_argument =
+      (fun this a ->
+         { pdira_desc= a.pdira_desc
+         ; pdira_loc= this.location this a.pdira_loc} );
+
+    toplevel_directive =
+      (fun this d ->
+         { pdir_name= map_loc this d.pdir_name
+         ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
+         ; pdir_loc= this.location this d.pdir_loc } );
+
+    toplevel_phrase =
+      (fun this -> function
+         | Ptop_def s -> Ptop_def (this.structure this s)
+         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
   }
 
 let extension_of_error {kind; main; sub} =
@@ -1153,12 +1089,12 @@ module PpxContext = struct
   let rec make_list f lst =
     match lst with
     | x :: rest ->
-      Exp.construct (lid "::") (Some (Exp.tuple [f x; make_list f rest]))
+      Exp.construct (lid "::") (Some (Exp.tuple [None, f x; None, make_list f rest]))
     | [] ->
       Exp.construct (lid "[]") None
 
   let make_pair f1 f2 (x1, x2) =
-    Exp.tuple [f1 x1; f2 x2]
+    Exp.tuple [None, f1 x1; None, f2 x2]
 
   let make_option f opt =
     match opt with
@@ -1170,6 +1106,7 @@ module PpxContext = struct
     make_list (make_pair make_string (fun x -> x))
       (String.Map.bindings !cookies)
 
+  (* CR zqian: add [psg_attributes] to `Parsetree.signature`, and use that. *)
   let mk fields =
     {
       attr_name = { txt = "ocaml.ppx.context"; loc = Location.none };
@@ -1229,7 +1166,7 @@ module PpxContext = struct
       and get_list elem = function
         | {pexp_desc =
              Pexp_construct ({txt = Longident.Lident "::"},
-                             Some {pexp_desc = Pexp_tuple [exp; rest]}) } ->
+                             Some {pexp_desc = Pexp_tuple [None, exp; None, rest]}) } ->
             elem exp :: get_list elem rest
         | {pexp_desc =
              Pexp_construct ({txt = Longident.Lident "[]"}, None)} ->
@@ -1237,7 +1174,7 @@ module PpxContext = struct
         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
                              { %s }] list syntax" name
       and get_pair f1 f2 = function
-        | {pexp_desc = Pexp_tuple [e1; e2]} ->
+        | {pexp_desc = Pexp_tuple [None, e1; None, e2]} ->
             (f1 e1, f2 e2)
         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
                              { %s }] pair syntax" name
@@ -1342,26 +1279,28 @@ let apply_lazy ~source ~target mapper =
     let fields = PpxContext.update_cookies fields in
     Str.attribute (PpxContext.mk fields) :: ast
   in
-  let iface ast =
-    let fields, ast =
-      match ast with
+  let iface {psg_items; psg_modalities; psg_loc} =
+    let fields, psg_items =
+      match psg_items with
       | {psig_desc = Psig_attribute ({attr_name = {txt = "ocaml.ppx.context"};
                                       attr_payload = x;
                                       attr_loc = _})} :: l ->
           PpxContext.get_fields x, l
-      | _ -> [], ast
+      | _ -> [], psg_items
     in
     PpxContext.restore fields;
-    let ast =
+    let {psg_items; psg_modalities; psg_loc} =
       try
         let mapper = mapper () in
-        mapper.signature mapper ast
+        mapper.signature mapper {psg_items; psg_modalities; psg_loc}
       with exn ->
-        [{psig_desc = Psig_extension (extension_of_exn exn, []);
-          psig_loc  = Location.none}]
+        { psg_items = [{psig_desc = Psig_extension (extension_of_exn exn, []);
+          psig_loc = Location.none}];
+          psg_modalities = []; psg_loc = Location.none }
     in
     let fields = PpxContext.update_cookies fields in
-    Sig.attribute (PpxContext.mk fields) :: ast
+    let psg_items = Sig.attribute (PpxContext.mk fields) :: psg_items in
+    {psg_items; psg_modalities; psg_loc}
   in
 
   let ic = open_in_bin source in
@@ -1401,7 +1340,7 @@ let drop_ppx_context_str ~restore = function
       items
   | items -> items
 
-let drop_ppx_context_sig ~restore = function
+let drop_ppx_context_sig_items ~restore = function
   | {psig_desc = Psig_attribute
                    {attr_name = {Location.txt = "ocaml.ppx.context"};
                     attr_payload = a;
@@ -1412,12 +1351,19 @@ let drop_ppx_context_sig ~restore = function
       items
   | items -> items
 
+let drop_ppx_context_sig ~restore {psg_items; psg_modalities; psg_loc} =
+  let psg_items = drop_ppx_context_sig_items ~restore psg_items in
+  {psg_items; psg_modalities; psg_loc}
+
 let add_ppx_context_str ~tool_name ast =
   Ast_helper.Str.attribute (ppx_context ~tool_name ()) :: ast
 
-let add_ppx_context_sig ~tool_name ast =
-  Ast_helper.Sig.attribute (ppx_context ~tool_name ()) :: ast
+let add_ppx_context_sig_items ~tool_name ast =
+    Ast_helper.Sig.attribute (ppx_context ~tool_name ()) :: ast
 
+let add_ppx_context_sig ~tool_name {psg_items; psg_modalities; psg_loc} =
+  let psg_items = add_ppx_context_sig_items ~tool_name psg_items in
+  {psg_items; psg_modalities; psg_loc}
 
 let apply ~source ~target mapper =
   apply_lazy ~source ~target (fun () -> mapper)

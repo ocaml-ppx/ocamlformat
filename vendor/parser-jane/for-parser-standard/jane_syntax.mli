@@ -111,82 +111,6 @@ module Arrow_curry : sig
   val curry_attr : Location.t -> Parsetree.attribute
 end
 
-module Jkind : sig
-  module Const : sig
-    (** Constant jkind *)
-
-    (** Represent a user-written kind primitive/abbreviation,
-        containing a string and its location *)
-    type t = Parsetree.jkind_const_annotation
-
-    (** Constructs a jkind constant *)
-    val mk : string -> Location.t -> t
-  end
-
-  type t = Parsetree.jkind_annotation =
-    | Default
-    | Abbreviation of Const.t
-    | Mod of t * Parsetree.modes
-    | With of t * Parsetree.core_type
-    | Kind_of of Parsetree.core_type
-    | Product of t list
-
-  type annotation = t Location.loc
-end
-
-(** The ASTs for labeled tuples. When we merge this upstream, we'll replace
-    existing [P{typ,exp,pat}_tuple] constructors with these. *)
-module Labeled_tuples : sig
-  (** [tl] represents a product type:
-          - [T1 * ... * Tn]       when [tl] is [(None,T1);...;(None,Tn)]
-          - [L1:T1 * ... * Ln:Tn] when [tl] is [(Some L1,T1);...;(Some Ln,Tn)]
-          - A mix, e.g. [L1:T1,T2] when [tl] is [(Some L1,T1);(None,T2)]
-
-          Invariant: [n >= 2].
-      *)
-  type core_type = (string option * Parsetree.core_type) list
-
-  (** [el] represents
-          - [(E1, ..., En)]
-              when [el] is [(None, E1);...;(None, En)]
-          - [(~L1:E1, ..., ~Ln:En)]
-              when [el] is [(Some L1, E1);...;(Some Ln, En)]
-          - A mix, e.g.:
-              [(~L1:E1, E2)] when [el] is [(Some L1, E1); (None, E2)]
-
-          Invariant: [n >= 2].
-      *)
-  type expression = (string option * Parsetree.expression) list
-
-  (** [(pl, Closed)] represents
-          - [(P1, ..., Pn)]       when [pl] is [(None, P1);...;(None, Pn)]
-          - [(L1:P1, ..., Ln:Pn)] when [pl] is
-                                              [(Some L1, P1);...;(Some Ln, Pn)]
-          - A mix, e.g. [(L1:P1, P2)] when [pl] is [(Some L1, P1);(None, P2)]
-          - If pattern is open, then it also ends in a [..]
-
-        Invariant:
-        - If Closed, [n >= 2].
-        - If Open, [n >= 1].
-      *)
-  type pattern = (string option * Parsetree.pattern) list * Asttypes.closed_flag
-
-  (** Embeds the core type in Jane Syntax only if there are any labels.
-      Otherwise, returns a normal [Ptyp_tuple].
-  *)
-  val typ_of : loc:Location.t -> core_type -> Parsetree.core_type
-
-  (** Embeds the expression in Jane Syntax only if there are any labels.
-      Otherwise, returns a normal [Pexp_tuple].
-  *)
-  val expr_of : loc:Location.t -> expression -> Parsetree.expression
-
-  (** Embeds the pattern in Jane Syntax only if there are any labels or
-      if the pattern is open. Otherwise, returns a normal [Ppat_tuple].
-  *)
-  val pat_of : loc:Location.t -> pattern -> Parsetree.pattern
-end
-
 (** The ASTs for module type strengthening. *)
 module Strengthen : sig
   type module_type =
@@ -197,136 +121,17 @@ module Strengthen : sig
   val mty_of : loc:Location.t -> module_type -> Parsetree.module_type
 end
 
-(** The ASTs for jkinds and other unboxed-types features *)
-module Layouts : sig
-  type constant =
-    | Float of string * char option
-    | Integer of string * char
+module Instances : sig
+  (** The name of an instance module. Gets converted to [Global.Name.t] in the
+      flambda-backend compiler. *)
+  type instance =
+    { head : string;
+      args : (string * instance) list
+    }
 
-  type nonrec expression =
-    (* examples: [ #2.0 ] or [ #42L ] *)
-    (* This is represented as an attribute wrapping a [Pexp_constant] node. *)
-    | Lexp_constant of constant
-    (* [fun (type a : immediate) -> ...] *)
-    (* This is represented as an attribute wrapping a [Pexp_newtype] node. *)
-    | Lexp_newtype of
-        string Location.loc * Jkind.annotation * Parsetree.expression
+  type module_expr = Imod_instance of instance
 
-  type nonrec pattern =
-    (* examples: [ #2.0 ] or [ #42L ] *)
-    (* This is represented as an attribute wrapping a [Ppat_constant] node. *)
-    | Lpat_constant of constant
-
-  type nonrec core_type =
-    (* ['a : immediate] or [_ : float64] *)
-    (* This is represented by an attribute wrapping either a [Ptyp_any] or
-       a [Ptyp_var] node. *)
-    | Ltyp_var of
-        { name : string option;
-          jkind : Jkind.annotation
-        }
-    (* [('a : immediate) 'b 'c ('d : value). 'a -> 'b -> 'c -> 'd] *)
-    (* This is represented by an attribute wrapping a [Ptyp_poly] node. *)
-    (* This is used instead of [Ptyp_poly] only where there is at least one
-       actual jkind annotation. If there is a polytype with no jkind
-       annotations at all, [Ptyp_poly] is used instead. This saves space in the
-       parsed representation and guarantees that we don't accidentally try to
-       require the layouts extension. *)
-    | Ltyp_poly of
-        { bound_vars : (string Location.loc * Jkind.annotation option) list;
-          inner_type : Parsetree.core_type
-        }
-    (* [ty as ('a : immediate)] *)
-    (* This is represented by an attribute wrapping either a [Ptyp_alias] node
-       or, in the [ty as (_ : jkind)] case, the annotated type itself, with no
-       intervening [type_desc]. *)
-    | Ltyp_alias of
-        { aliased_type : Parsetree.core_type;
-          name : string option;
-          jkind : Jkind.annotation
-        }
-
-  type nonrec extension_constructor =
-    (* [ 'a ('b : immediate) ('c : float64). 'a * 'b * 'c -> exception ] *)
-    (* This is represented as an attribute on a [Pext_decl] node. *)
-    (* Like [Ltyp_poly], this is used only when there is at least one jkind
-       annotation. Otherwise, we will have a [Pext_decl]. *)
-    | Lext_decl of
-        (string Location.loc * Jkind.annotation option) list
-        * Parsetree.constructor_arguments
-        * Parsetree.core_type option
-
-  type signature_item =
-    | Lsig_kind_abbrev of string Location.loc * Jkind.annotation
-
-  type structure_item =
-    | Lstr_kind_abbrev of string Location.loc * Jkind.annotation
-
-  val expr_of : loc:Location.t -> expression -> Parsetree.expression
-
-  val pat_of : loc:Location.t -> pattern -> Parsetree.pattern
-
-  val type_of : loc:Location.t -> core_type -> Parsetree.core_type
-
-  val extension_constructor_of :
-    loc:Location.t ->
-    name:string Location.loc ->
-    ?info:Docstrings.info ->
-    ?docs:Docstrings.docs ->
-    extension_constructor ->
-    Parsetree.extension_constructor
-
-  (** See also [Ast_helper.Type.constructor], which is a direct inspiration for
-      the interface here. *)
-  val constructor_declaration_of :
-    loc:Location.t ->
-    attrs:Parsetree.attributes ->
-    info:Docstrings.info ->
-    vars_jkinds:(string Location.loc * Jkind.annotation option) list ->
-    args:Parsetree.constructor_arguments ->
-    res:Parsetree.core_type option ->
-    string Location.loc ->
-    Parsetree.constructor_declaration
-
-  (** Extract the jkinds from a [constructor_declaration]; returns leftover
-      attributes along with the annotated variables. Unlike other pieces
-      of jane-syntax, users of this function will still have to process
-      the remaining pieces of the original [constructor_declaration]. *)
-  val of_constructor_declaration :
-    Parsetree.constructor_declaration ->
-    ((string Location.loc * Jkind.annotation option) list
-    * Parsetree.attributes)
-    option
-
-  (** See also [Ast_helper.Type.mk], which is a direct inspiration for
-      the interface here. *)
-  val type_declaration_of :
-    loc:Location.t ->
-    attrs:Parsetree.attributes ->
-    docs:Docstrings.docs ->
-    text:Docstrings.text option ->
-    params:
-      (Parsetree.core_type * (Asttypes.variance * Asttypes.injectivity)) list ->
-    cstrs:(Parsetree.core_type * Parsetree.core_type * Location.t) list ->
-    kind:Parsetree.type_kind ->
-    priv:Asttypes.private_flag ->
-    manifest:Parsetree.core_type option ->
-    jkind:Jkind.annotation option ->
-    string Location.loc ->
-    Parsetree.type_declaration
-
-  val sig_item_of : loc:Location.t -> signature_item -> Parsetree.signature_item
-
-  val str_item_of : loc:Location.t -> structure_item -> Parsetree.structure_item
-
-  (** Extract the jkind annotation from a [type_declaration]; returns
-      leftover attributes. Similar to [of_constructor_declaration] in the
-      sense that users of this function will have to process the remaining
-      pieces of the original [type_declaration].
-  *)
-  val of_type_declaration :
-    Parsetree.type_declaration ->
-    (Jkind.annotation * Parsetree.attributes) option
+  val module_expr_of : loc:Location.t -> module_expr -> Parsetree.module_expr
 end
 
 (******************************************)
@@ -405,39 +210,11 @@ end
 (******************************************)
 (* Individual syntactic categories *)
 
-(** Novel syntax in types *)
-module Core_type : sig
-  type t =
-    | Jtyp_layout of Layouts.core_type
-    | Jtyp_tuple of Labeled_tuples.core_type
-
-  include
-    AST
-      with type t := t * Parsetree.attributes
-       and type ast := Parsetree.core_type
-
-  val core_type_of :
-    loc:Location.t -> attrs:Parsetree.attributes -> t -> Parsetree.core_type
-end
-
-(** Novel syntax in constructor arguments; this isn't a core AST type,
-    but captures where [global_] lives *)
-module Constructor_argument : sig
-  type t = |
-
-  include
-    AST
-      with type t := t * Parsetree.attributes
-       and type ast := Parsetree.core_type
-end
-
 (** Novel syntax in expressions *)
 module Expression : sig
   type t =
     | Jexp_comprehension of Comprehensions.expression
     | Jexp_immutable_array of Immutable_arrays.expression
-    | Jexp_layout of Layouts.expression
-    | Jexp_tuple of Labeled_tuples.expression
 
   include
     AST
@@ -450,10 +227,7 @@ end
 
 (** Novel syntax in patterns *)
 module Pattern : sig
-  type t =
-    | Jpat_immutable_array of Immutable_arrays.pattern
-    | Jpat_layout of Layouts.pattern
-    | Jpat_tuple of Labeled_tuples.pattern
+  type t = Jpat_immutable_array of Immutable_arrays.pattern
 
   include
     AST
@@ -477,35 +251,9 @@ module Module_type : sig
     loc:Location.t -> attrs:Parsetree.attributes -> t -> Parsetree.module_type
 end
 
-(** Novel syntax in signature items *)
-module Signature_item : sig
-  type t = Jsig_layout of Layouts.signature_item
+(** Novel syntax in module expressions *)
+module Module_expr : sig
+  type t = Emod_instance of Instances.module_expr
 
-  include AST with type t := t and type ast := Parsetree.signature_item
-end
-
-(** Novel syntax in structure items *)
-module Structure_item : sig
-  type t = Jstr_layout of Layouts.structure_item
-
-  include AST with type t := t and type ast := Parsetree.structure_item
-end
-
-(** Novel syntax in extension constructors *)
-module Extension_constructor : sig
-  type t = Jext_layout of Layouts.extension_constructor
-
-  include
-    AST
-      with type t := t * Parsetree.attributes
-       and type ast := Parsetree.extension_constructor
-
-  val extension_constructor_of :
-    loc:Location.t ->
-    name:string Location.loc ->
-    attrs:Parsetree.attributes ->
-    ?info:Docstrings.info ->
-    ?docs:Docstrings.docs ->
-    t ->
-    Parsetree.extension_constructor
+  include AST with type t := t and type ast := Parsetree.module_expr
 end
