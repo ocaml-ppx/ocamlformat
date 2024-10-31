@@ -268,7 +268,7 @@ let rec fmt_inline_elements c elements =
 
 and fmt_nestable_block_element c elm =
   match elm.Loc.value with
-  | `Paragraph elems -> fmt_inline_elements c elems
+  | `Paragraph elems -> hovbox 0 (fmt_inline_elements c elems)
   | `Code_block (s1, s2) -> fmt_code_block c s1 s2
   | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
