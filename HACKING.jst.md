@@ -80,10 +80,12 @@ time.
 Before building
 ---------------
 
-You will need to install several libraries. This command may work:
+You will need a switch that is on OCaml 5. Most jane street devs use different
+switches for working on ocamlformat and working on the compiler. You will need
+to install several libraries in your switch. This command may work:
 
 ```
-opam install menhir.20210419 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version stdio
+opam install menhir.20231231 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version stdio
 ```
 
 Building
@@ -96,17 +98,30 @@ How to update `ocamlformat`
 
 The base branch to work from is called `jane`. Create a branch off of `jane`.
 
-1. Take the patch you wish to support (i.e. some PR in `flambda-backend`).
-   Apply any changes to the `ocaml/parsing` directory to the files in
-   `vendor/parser-standard`. Remember: this "standard" parser should be as
-   close as possible to the compiler's.
+1. Apply the parsing changes you need from `flambda-backend` to
+   `vendor/parser-standard`.
 
-    Note that some files used by both parsers are stored in
-   `vendor/ocaml-common` and may need to be updated.  Further, when
-   incorporating new support files from the compiler, consider whether than can
-   be shared in that directory rather than copied into each of the parser
-   directories.  This is typically the case if the support module doesn't depend
-   on the parsetree.
+   In either case, when incorporating new support files from the compiler,
+   consider whether than can be shared in `vendor/ocaml-common` rather than
+   copied into each of the parser directories.  This is typically the case if
+   the support module doesn't depend on the parsetree.
+
+   * Option 1 (preferred): Use the `vendor/parser-jane/repatch.sh` script to
+     import all changes from the latest version of `flambda-backend` (presumably
+     including the changes you are interested in).
+
+     This may pull in additional parser changes, which you can see by looking at
+     the diff it creates. You aren't obligated to add styling for all new
+     things, but it might be good to point out to the author of the relevant
+     features that they have work to do here eventually, or make tickets.
+
+   * Option 2: Manually apply the relevant changes to `vendor/parser-standard`.
+     This option is worse because it means `parser-standard` no longer tracks a
+     specific revision of the compiler's parser, and is likely to create
+     conflicts when using Option 1 in the future. Remember: this "standard"
+     parser should be as close as possible to the compiler's. Note that some
+     files used by both parsers are stored in `vendor/ocaml-common` and may need
+     to be updated.
 
 2. Get `ocamlformat` compiled and passing the tests. If the patch to
    `flambda-backend` was backward compatible, then this should be

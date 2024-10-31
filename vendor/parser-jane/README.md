@@ -1,10 +1,24 @@
 # parser-jane
+
 This directory contains a direct copy of files from Jane Street's compiler's
 parser. The code is not used in `ocamlformat` at all; it only exists as a base
 to perform a merge off of.
 
 ## How to merge changes from the compiler's parser
-### "Manually"
+
+### Using the script (recommended)
+
+Just run:
+```
+./parser-jane/repatch.sh {path-to-flambda-backend}
+```
+Additional steps may be necessary if you are adding or removing files - see the
+top-level HACKING.jst.md
+
+### Manually
+
+These are the steps the script does for you:
+
 First, in the `vendor/` directory, generate patchfiles
 ```
 diff -ruN parser-jane/for-parser-standard/ parser-standard/ > changes-parser.patch
@@ -24,10 +38,4 @@ patch -p1 -d parser-standard/ < changes-parser.patch
 patch -p1 -d ocaml-common/ < changes-common.patch
 rm changes-parser.patch
 rm changes-common.patch
-```
-
-### With [repatch.sh]
-You can also just run the repatch script to do all the above steps automatically.
-```
-./parser-jane/repatch.sh {path-to-flambda-backend}
 ```
