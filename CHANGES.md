@@ -105,6 +105,7 @@ profile. This started with version 0.26.0.
 - Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
+- Fix formatting of paragraphs in lists in documentation (#2607, @Julow)
 
 ## 0.26.2 (2024-04-18)
 
