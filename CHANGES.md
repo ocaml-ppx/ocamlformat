@@ -87,8 +87,9 @@ profile. This started with version 0.26.0.
   Some comments were being moved or causing OCamlformat to crash.
   OCamlformat refuses to format if a comment would be missing in its output, to avoid loosing code.
 
-- Fix attributes being dropped or moved (#2459, #2551, #2564, #2602, @tdelvecchio-jsc, @Julow)
+- Fix attributes being dropped or moved (#2247, #2459, #2551, #2564, #2602, @EmileTrotignon, @tdelvecchio-jsc, @Julow)
   OCamlformat refuses to format if the formatted code has a different meaning than the original code, for example, if an attribute is removed.
+  We also try to avoid moving attributes even if that doesn't change the original code, for example we no longer format `open[@attr] M` as `open M [@@attr]`.
 
 - Remove trailing space inside a wrapping empty signature (#2443, @Julow)
 - Fix extension-point spacing in structures (#2450, @Julow)
@@ -104,9 +105,6 @@ profile. This started with version 0.26.0.
 - Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
-
-### Changes
-- The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
 
 ## 0.26.2 (2024-04-18)
 
