@@ -63,6 +63,7 @@ profile. This started with version 0.26.0.
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
 - Fix dropped attribute in `(module M : S [@attr])` (#2602, @Julow)
 - Build on OCaml 5.3 (#2603, @adamchol, @Julow)
+- Fix unecessary break due to comment in polymorphic variants (#2606, @Julow)
 
 ### Changes
 - The location of attributes for structure items is now tracked and preserved. (#2247, @EmileTrotignon)
