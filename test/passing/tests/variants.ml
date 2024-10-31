@@ -14,3 +14,9 @@ let _ = (* xx *) `(* yy *) A (* zz *)
 let _ = (* xx *) `B (* zz *)
 
 let _ = `(* yy *) C (* zz *)
+
+type t =
+  [ `Fooooo
+  | (* Other inline element markup. *)
+    `Simple_reference of string
+  | `Fooooo ]

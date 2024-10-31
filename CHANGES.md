@@ -96,7 +96,7 @@ profile. This started with version 0.26.0.
 - \* Consistent break after string constant argument (#2453, @Julow)
 - \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 - \* Fix the indentation of tuples in attributes and extensions (#2488, @Julow)
-- \* Fix unwanted alignment after comment (#2507, #2589, @Julow)
+- \* Fix weird indentation and line breaks after comments (#2507, #2589, #2606, @Julow)
 - \* Fix unwanted alignment in if-then-else (#2511, @Julow)
 - Fix missing parentheses around constraint expressions with attributes (#2513, @alanechang)
 - Fix formatting of type vars in GADT constructors (#2518, @Julow)
