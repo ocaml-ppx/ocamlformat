@@ -281,7 +281,8 @@ and delimited_inline_element_list :
   let first_token = peek input in
   match first_token.value with
   | `Space _ ->
-      junk input;
+      (* Preserve leading spaces in markups
+         junk input; *)
       consume_elements ~at_start_of_line:false []
       (* [~at_start_of_line] is [false] here because the preceding token was some
          some markup like '{b', and we didn't move to the next line, so the next
