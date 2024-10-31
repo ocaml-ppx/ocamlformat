@@ -10050,6 +10050,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to raw_identifiers.ml.stdout
+   (with-stderr-to raw_identifiers.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/raw_identifiers.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/raw_identifiers.ml raw_identifiers.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/raw_identifiers.ml.err raw_identifiers.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to raw_identifiers.ml.js-stdout
+   (with-stderr-to raw_identifiers.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/raw_identifiers.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/raw_identifiers.ml.js-ref raw_identifiers.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/raw_identifiers.ml.js-err raw_identifiers.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to recmod.mli.stdout
    (with-stderr-to recmod.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/recmod.mli})))))
