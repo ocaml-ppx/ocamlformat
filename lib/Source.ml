@@ -31,6 +31,7 @@ let find_token t k pos =
   Array.binary_search t.tokens
     ~compare:(fun (_, elt) pos -> Position.compare elt.Location.loc_start pos)
     k pos
+  |> Option.globalize (fun x -> x)
 
 let find_first_token_on_line t line =
   match

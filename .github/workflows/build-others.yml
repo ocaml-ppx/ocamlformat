@@ -18,10 +18,11 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - windows-latest
+          # Don't include windows. At time of writing, its opam repository doesn't have 5.2.
+          # - windows-latest
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
-          - 4.14.x
+          - 5.2.x
 
     runs-on: ${{ matrix.os }}
 

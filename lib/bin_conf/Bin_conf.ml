@@ -629,9 +629,9 @@ type action =
   | Check of input list
   | Print_config of Conf.t
 
-let ( let* ) = Result.( >>= )
+let ( let* ) x f = Result.( >>= ) x f
 
-let ( let+ ) = Result.( >>| )
+let ( let+ ) x f = Result.( >>| ) x f
 
 let make_action ~enable_outside_detected_project ~root action inputs =
   let make_file ?name kind file =

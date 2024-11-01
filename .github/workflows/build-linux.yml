@@ -18,7 +18,7 @@ jobs:
       matrix:
         ocaml-compiler:
           # Don't include every versions. OCaml-CI already covers that
-          - 4.14.x
+          - 5.2.x
 
     runs-on: ubuntu-latest
 

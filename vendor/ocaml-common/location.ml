@@ -216,7 +216,7 @@ let print_updating_num_loc_lines ppf f arg =
   pp_set_formatter_out_functions ppf out_functions
 
 let setup_colors () =
-  Misc.Color.setup !Clflags.color
+  Misc.Style.setup !Clflags.color
 
 (******************************************************************************)
 (* Printing locations, e.g. 'File "foo.ml", line 3, characters 10-12' *)
