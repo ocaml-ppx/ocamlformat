@@ -153,6 +153,7 @@ let setup_tags () =
 (******************************************************************************)
 (* Printing locations, e.g. 'File "foo.ml", line 3, characters 10-12' *)
 
+(* [Build_path_prefix_map] related features are disabled in ocamlformat
 let rewrite_absolute_path path =
   match Misc.get_build_path_prefix_map () with
   | None -> path
@@ -204,6 +205,9 @@ let absolute_path s = (* This function could go into Filename *)
 
 let show_filename file =
   if !Clflags.absname then absolute_path file else file
+*)
+
+let show_filename file = file
 
 module Fmt = Format_doc
 module Doc = struct

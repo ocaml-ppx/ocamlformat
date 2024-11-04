@@ -94,6 +94,7 @@ val reset: unit -> unit
 
 (** {1 Rewriting path } *)
 
+(* [Build_path_prefix_map] related features are disabled in ocamlformat
 val rewrite_absolute_path: string -> string
 (** [rewrite_absolute_path path] rewrites [path] to honor the
     BUILD_PATH_PREFIX_MAP variable
@@ -162,6 +163,7 @@ val absolute_path: string -> string
      Then [s] is rewritten using [rewrite_absolute_path].
      Finally the result is normalized by eliminating instances of
      ['.'] or ['..']. *)
+*)
 
 (** {1 Printing locations} *)
 
