@@ -548,6 +548,17 @@ let mkfunction params body_constraint body =
 let mkfunction params body_constraint body =
   Pexp_function (params, body_constraint, body)
 
+let mk_functor_typ ~loc ~attrs args mty =
+  let mty =
+    match attrs, mty with
+    | [], {pmty_desc= Pmty_functor (args', mty'); pmty_attributes= []; _} ->
+        Pmty_functor (args @ args', mty')
+    | [], {pmty_desc= Pmty_gen (unit_loc, mty'); pmty_attributes= []; _} ->
+        Pmty_functor (args @ [mkloc Unit unit_loc], mty')
+    | _ -> Pmty_functor (args, mty)
+  in
+  mkmty ~loc ~attrs mty
+
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
    the assertions below should be turned into explicit checks. *)
@@ -1612,15 +1623,11 @@ module_type:
   | FUNCTOR attrs = attributes args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { let mty =
-          match attrs, mty with
-          | [], {pmty_desc= Pmty_functor (args', mty'); pmty_attributes= []; _} ->
-              Pmty_functor (args @ args', mty')
-          | [], {pmty_desc= Pmty_gen (loc, mty'); pmty_attributes= []; _} ->
-              Pmty_functor (args @ [mkloc Unit loc], mty')
-          | _ -> Pmty_functor (args, mty)
-        in
-        mkmty ~loc:$sloc ~attrs mty }
+      { mk_functor_typ ~loc:$sloc ~attrs args mty }
+  | args = nonempty_functor_args
+    MINUSGREATER mty = module_type
+      %prec below_WITH
+      { mk_functor_typ ~loc:$sloc ~attrs:[] args mty }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
@@ -1632,9 +1639,6 @@ module_type:
   | mkmty(
       mkrhs(mty_longident)
         { Pmty_ident $1 }
-    | LPAREN RPAREN MINUSGREATER module_type
-        { let arg_loc = make_loc ($startpos($1), $endpos($2)) in
-          Pmty_gen(arg_loc, $4) }
     | module_type MINUSGREATER module_type
         %prec below_WITH
         { let arg_loc = make_loc $loc($1) in
@@ -4062,7 +4066,7 @@ floating_attribute:
     { $1 }
 ;
 ext:
-  | /* empty */     { None }
+  | /* empty */   { None }
   | PERCENT attr_id { Some $2 }
 ;
 %inline no_ext:

@@ -98,3 +98,9 @@ module M = functor (_ : S) -> struct end
 module M (_ : S) = struct end
 
 module M : functor (_ : S) -> S' = functor (_ : S) -> struct end
+
+module type SETFUNCTOR = functor (Elt : ORDERED_TYPE) -> sig end
+
+module WrongSet : functor (Elt : ORDERED_TYPE) -> SET = Set
+
+module M : functor (A : S) (B : S) -> S = N
