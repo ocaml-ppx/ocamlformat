@@ -686,3 +686,6 @@ type x =
         + baz
      }
     } *)
+
+(** Space before a reference or link text is preserved. A newline is turned
+    into a space. {{!ref} with newline} and {{!ref} with space}. *)

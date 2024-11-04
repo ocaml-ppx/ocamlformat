@@ -288,7 +288,8 @@ and delimited_inline_element_list :
          some markup like '{b', and we didn't move to the next line, so the next
          token will not be the first non-whitespace token on its line. *)
   | `Single_newline _ ->
-      junk input;
+      (* Preserve leading spaces in markups
+         junk input; *)
       consume_elements ~at_start_of_line:true []
   | `Blank_line _ as blank ->
       (* In case the markup is immediately followed by a blank line, the error
