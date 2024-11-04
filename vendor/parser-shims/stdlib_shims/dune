@@ -1,0 +1,3 @@
+(library
+ (name ocamlformat_stdlib_shims)
+ (public_name ocamlformat-lib.stdlib_shims))
