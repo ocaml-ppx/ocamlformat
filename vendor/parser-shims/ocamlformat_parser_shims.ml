@@ -1,21 +1,6 @@
-module List = struct
-  include List
-
-  let rec find_map f = function
-    | [] -> None
-    | x :: l ->
-        begin match f x with
-        | Some _ as result -> result
-        | None -> find_map f l
-        end
-end
-
-module Int = struct
-  include Int
-
-  let min x y = if x <= y then x else y
-  let max x y = if x >= y then x else y
-end
+(* Stdlib shims are separated because they are also used by the compiler libs
+   shims. *)
+include Ocamlformat_stdlib_shims
 
 module Misc = struct
   include Misc
