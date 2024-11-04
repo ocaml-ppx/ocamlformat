@@ -548,14 +548,13 @@ let mkfunction params body_constraint body =
 let mkfunction params body_constraint body =
   Pexp_function (params, body_constraint, body)
 
-let mk_functor_typ ~loc ~attrs args mty =
+let mk_functor_typ ~loc ~attrs ~short args mty =
   let mty =
     match attrs, mty with
-    | [], {pmty_desc= Pmty_functor (args', mty'); pmty_attributes= []; _} ->
-        Pmty_functor (args @ args', mty')
-    | [], {pmty_desc= Pmty_gen (unit_loc, mty'); pmty_attributes= []; _} ->
-        Pmty_functor (args @ [mkloc Unit unit_loc], mty')
-    | _ -> Pmty_functor (args, mty)
+    | [], {pmty_desc= Pmty_functor (args', mty', short'); pmty_attributes= []; _}
+      when short = short' ->
+        Pmty_functor (args @ args', mty', short)
+    | _ -> Pmty_functor (args, mty, short)
   in
   mkmty ~loc ~attrs mty
 
@@ -1623,11 +1622,11 @@ module_type:
   | FUNCTOR attrs = attributes args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { mk_functor_typ ~loc:$sloc ~attrs args mty }
+      { mk_functor_typ ~loc:$sloc ~attrs ~short:false args mty }
   | args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { mk_functor_typ ~loc:$sloc ~attrs:[] args mty }
+      { mk_functor_typ ~loc:$sloc ~attrs:[] ~short:true args mty }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
@@ -1642,7 +1641,7 @@ module_type:
     | module_type MINUSGREATER module_type
         %prec below_WITH
         { let arg_loc = make_loc $loc($1) in
-          Pmty_functor([mkloc (Named (mknoloc None, $1)) arg_loc], $3) }
+          Pmty_functor([mkloc (Named (mknoloc None, $1)) arg_loc], $3, true) }
     | module_type WITH separated_nonempty_llist(AND, with_constraint)
         { Pmty_with($1, $3) }
 /*  | LPAREN MODULE mkrhs(mod_longident) RPAREN

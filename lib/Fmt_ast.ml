@@ -3686,31 +3686,21 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
           Some
             ( str "end" $ after
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
-  | Pmty_functor (args, mt) ->
+  | Pmty_functor (args, mt, short) ->
+      let keyword =
+        if short && List.is_empty pmty_attributes then noop
+        else
+          str "functor"
+          $ fmt_attributes c ~pre:Blank pmty_attributes
+          $ break 1 2
+      in
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
       { blk with
         pro=
           Some
             ( Cmts.fmt_before c pmty_loc
-            $ str "functor"
-            $ fmt_attributes c ~pre:Blank pmty_attributes
-            $ break 1 2
+            $ keyword
             $ list args (break 1 2) (fmt_functor_param c ctx)
-            $ break 1 2 $ str "->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
-  | Pmty_gen (gen_loc, mt) ->
-      let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      { blk with
-        pro=
-          Some
-            ( Cmts.fmt_before c pmty_loc
-            $ Cmts.fmt c gen_loc
-                (wrap (str "(") (str ")") (Cmts.fmt_within c gen_loc))
             $ break 1 2 $ str "->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
       ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
