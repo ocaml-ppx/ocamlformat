@@ -242,7 +242,7 @@ module Parse = struct
     map fg (normalize_mapper ~ocaml_version ~preserve_beginend)
     @@
     let lexbuf = Lexing.from_string str in
-    Location.init lexbuf input_name ;
+    Location.init_info lexbuf input_name ;
     match fg with
     | Structure -> Parse.implementation lexbuf
     | Signature -> Parse.interface lexbuf

@@ -44,7 +44,8 @@ val is_none : t -> bool
 val in_file : string -> t
 (** Return an empty ghost range located in a given file. *)
 
-val init : Lexing.lexbuf -> string -> unit
+(* val init : Lexing.lexbuf -> string -> unit *)
+val init_info : Lexing.lexbuf -> string -> unit
 (** Set the file name and line number of the [lexbuf] to be the start
     of the named file. *)
 

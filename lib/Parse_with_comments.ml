@@ -44,7 +44,7 @@ let tokens lexbuf =
 
 let fresh_lexbuf source =
   let lexbuf = Lexing.from_string source in
-  Location.init lexbuf !Location.input_name ;
+  Location.init_info lexbuf !Location.input_name ;
   let hash_bang =
     Lexer.skip_hash_bang lexbuf ;
     let len = lexbuf.lex_last_pos in
@@ -54,7 +54,7 @@ let fresh_lexbuf source =
 
 let split_hash_bang source =
   let lexbuf = Lexing.from_string source in
-  Location.init lexbuf !Location.input_name ;
+  Location.init_info lexbuf !Location.input_name ;
   Lexer.skip_hash_bang lexbuf ;
   let len = lexbuf.lex_last_pos in
   let hash_bang = String.sub source ~pos:0 ~len in

@@ -58,7 +58,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
 module Parse = struct
   let ast (type a) (fg : a t) ~input_name str : a =
     let lexbuf = Lexing.from_string str in
-    Location.init lexbuf input_name ;
+    Location.init_info lexbuf input_name ;
     match fg with
     | Structure -> Parse.implementation lexbuf
     | Signature -> Parse.interface lexbuf
