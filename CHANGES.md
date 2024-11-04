@@ -106,6 +106,7 @@ profile. This started with version 0.26.0.
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
 - Fix formatting of paragraphs in lists in documentation (#2607, @Julow)
+- Avoid unwanted space in references and links text in documentation (#2608, @Julow)
 
 ## 0.26.2 (2024-04-18)
 

@@ -89,6 +89,10 @@ let str_normalized ?(escape = escape_all) c s =
     |> fun s -> list s space_break (fun s -> escape s |> str)
   else str (escape s)
 
+let rec drop_leading_spaces = function
+  | {Loc.value= `Space _; _} :: tl -> drop_leading_spaces tl
+  | elems -> elems
+
 let ign_loc ~f with_loc = f with_loc.Loc.value
 
 let fmt_verbatim_block ~loc s =
@@ -204,18 +208,10 @@ let list_block_elem c elems f =
       in
       f elem $ break )
 
-let space_elt c : inline_element with_location =
-  let sp = if c.conf.fmt_opts.wrap_docstrings.v then "" else " " in
-  Loc.(at (span []) (`Space sp))
-
 let non_wrap_space sp =
   if String.contains sp '\n' then force_newline else str sp
 
 let rec fmt_inline_elements c elements =
-  let wrap_elements opn cls ~always_wrap hd = function
-    | [] -> wrap_if always_wrap opn cls hd
-    | tl -> wrap opn cls (hd $ fmt_inline_elements c (space_elt c :: tl))
-  in
   let rec aux = function
     | [] -> noop
     | `Space sp :: `Word (("-" | "+") as w) :: t ->
@@ -252,19 +248,34 @@ let rec fmt_inline_elements c elements =
         in
         hovbox_if c.conf.fmt_opts.wrap_docstrings.v
           (1 + String.length s + 1)
-          (wrap_elements (str "{") (str "}") ~always_wrap:true
+          (fmt_markup_with_inline_elements c ~force_space:true
              (str_normalized c s) elems )
         $ aux t
     | `Reference (_kind, rf, txt) :: t ->
-        let rf = wrap (str "{!") (str "}") (fmt_reference rf) in
-        wrap_elements (str "{") (str "}") ~always_wrap:false rf txt $ aux t
+        let rf = str "{!" $ fmt_reference rf $ str "}" in
+        fmt_link_or_reference c rf txt $ aux t
     | `Link (url, txt) :: t ->
-        let url = wrap (str "{:") (str "}") (str_normalized c url) in
-        hovbox_if c.conf.fmt_opts.wrap_docstrings.v 2
-        @@ wrap_elements (str "{") (str "}") ~always_wrap:false url txt
-        $ aux t
+        let url = str "{:" $ str_normalized c url $ str "}" in
+        fmt_link_or_reference c url txt $ aux t
   in
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
+
+and fmt_link_or_reference c tag txt =
+  match txt with
+  | [] -> tag
+  | _ :: _ ->
+      hovbox_if c.conf.fmt_opts.wrap_docstrings.v 1
+        (fmt_markup_with_inline_elements c tag txt)
+
+(** Format a markup of the form [{tag elems}]. If [force_space] is [true], a
+    space will be added after the tag, even if it's not present in the source.
+*)
+and fmt_markup_with_inline_elements c ?(force_space = false) tag elems =
+  let leading_space, elems =
+    if force_space then (str " ", drop_leading_spaces elems)
+    else (noop, elems)
+  in
+  str "{" $ tag $ leading_space $ fmt_inline_elements c elems $ str "}"
 
 and fmt_nestable_block_element c elm =
   match elm.Loc.value with
@@ -348,12 +359,9 @@ let fmt_block_element c elm =
         | Some lbl -> str ":" $ str_normalized c lbl
         | None -> noop
       in
-      let elems =
-        if List.is_empty elems then elems else space_elt c :: elems
-      in
+      let tag = str lvl $ lbl in
       hovbox 0
-        (wrap (str "{") (str "}")
-           (str lvl $ lbl $ fmt_inline_elements c elems) )
+        (fmt_markup_with_inline_elements c ~force_space:true tag elems)
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 

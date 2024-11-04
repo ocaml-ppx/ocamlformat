@@ -1,7 +1,7 @@
 {0 Parent/Child Specification}
 This parent/child specification allows more flexible output support, e.g.,
 per library documentation. See
-{{:https://v3.ocaml.org/packages} v3.ocaml.org/packages}.
+{{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
 
 The rules are;
 
@@ -160,3 +160,6 @@ and we shall get
 ]}
 
 For more about [odoc] commands, simply invoke [odoc --help] in your shell.
+
+Preserve the space between a link/reference and its text: {{:foo}bar}
+{{:foo} bar} {{!foo}bar} {{!foo} bar}
