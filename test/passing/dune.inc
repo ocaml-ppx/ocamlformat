@@ -1734,6 +1734,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to effects.ml.stdout
+   (with-stderr-to effects.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/effects.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/effects.ml.ref effects.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/effects.ml.err effects.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to eliom_ext.eliom.stdout
    (with-stderr-to eliom_ext.eliom.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/eliom_ext.eliom})))))
