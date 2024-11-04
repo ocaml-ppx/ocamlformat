@@ -42,6 +42,7 @@ module Misc = struct
     let default_setting = Contextual
   end
 
+  (* Terminal styling handling *)
   module Style = struct
     (* use ANSI color codes, see https://en.wikipedia.org/wiki/ANSI_escape_code *)
     type color =
@@ -111,6 +112,8 @@ module Misc = struct
       }
 
     let cur_styles = ref default_styles
+    let get_styles () = !cur_styles
+    let set_styles s = cur_styles := s
 
     (* map a tag to a style, if the tag is known.
      @raise Not_found otherwise *)
@@ -123,12 +126,14 @@ module Misc = struct
       | Style s -> no_markup s
       | _ -> raise Not_found
 
-    let as_inline_code printer ppf x =
-      Format.pp_open_stag ppf (Format.String_tag "inline_code");
-      printer ppf x;
-      Format.pp_close_stag ppf ()
 
-    let inline_code ppf s = as_inline_code Format.pp_print_string ppf s
+    let as_inline_code printer ppf x =
+      let open Format_doc in
+      pp_open_stag ppf (Format.String_tag "inline_code");
+      printer ppf x;
+      pp_close_stag ppf ()
+
+    let inline_code ppf s = as_inline_code Format_doc.pp_print_string ppf s
 
     (* either prints the tag of [s] or delegates to [or_else] *)
     let mark_open_tag ~or_else s =
@@ -178,7 +183,25 @@ module Misc = struct
   end
 end
 
-module Clflags = struct
+module Clflags : sig
+  val include_dirs : string list ref
+  val hidden_include_dirs : string list ref
+  val debug : bool ref
+  val unsafe : bool ref
+  val open_modules : string list ref
+  val absname : bool ref
+  val use_threads : bool ref
+  val principal : bool ref
+  val recursive_types : bool ref
+  val applicative_functors : bool ref
+  val for_package : string option ref
+  val transparent_modules : bool ref
+  val locations : bool ref
+  val color : Misc.Color.setting option ref
+  val error_style : Misc.Error_style.setting option ref
+  val unboxed_types : bool ref
+  val no_std_include : bool ref
+end = struct
   let include_dirs = ref ([] : string list)(* -I *)
   let hidden_include_dirs = ref ([] : string list)
   let debug = ref false                   (* -g *)
@@ -221,31 +244,4 @@ module Builtin_attributes = struct
   let mark_payload_attrs_used _ = ()
 end
 
-module Format_doc = struct
-  open Format
-
-  type 'a t = formatter -> 'a -> unit
-
-  let compat t ppf x = t ppf x
-
-  let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
-    let left_column_size =
-      List.fold_left (fun acc (s, _) -> Int.max acc (String.length s)) 0 lines in
-    let lines_nb = List.length lines in
-    let ellipsed_first, ellipsed_last =
-      match max_lines with
-      | Some max_lines when lines_nb > max_lines ->
-          let printed_lines = max_lines - 1 in (* the ellipsis uses one line *)
-          let lines_before = printed_lines / 2 + printed_lines mod 2 in
-          let lines_after = printed_lines / 2 in
-          (lines_before, lines_nb - lines_after - 1)
-      | _ -> (-1, -1)
-    in
-    fprintf ppf "@[<v>";
-    List.iteri (fun k (line_l, line_r) ->
-        if k = ellipsed_first then fprintf ppf "...@,";
-        if ellipsed_first <= k && k <= ellipsed_last then ()
-        else fprintf ppf "%*s %s %s@," left_column_size line_l sep line_r
-      ) lines;
-    fprintf ppf "@]"
-end
+module Format_doc = Format_doc

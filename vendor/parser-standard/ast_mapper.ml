@@ -834,21 +834,21 @@ let default_mapper =
 let extension_of_error {kind; main; sub} =
   if kind <> Location.Report_error then
     raise (Invalid_argument "extension_of_error: expected kind Report_error");
-  let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
+  let str_of_msg msg = Format.asprintf "%a" Format_doc.Doc.format msg in
   let extension_of_sub sub =
     { loc = sub.loc; txt = "ocaml.error" },
     PStr ([Str.eval (Exp.constant
-                       (Pconst_string (str_of_pp sub.txt, sub.loc, None)))])
+                       (Const.string ~loc:sub.loc (str_of_msg sub.txt)))])
   in
   { loc = main.loc; txt = "ocaml.error" },
   PStr (Str.eval (Exp.constant
-                    (Pconst_string (str_of_pp main.txt, main.loc, None))) ::
+                    (Const.string ~loc:main.loc (str_of_msg main.txt))) ::
         List.map (fun msg -> Str.extension (extension_of_sub msg)) sub)
 
 let attribute_of_warning loc s =
   Attr.mk
     {loc; txt = "ocaml.ppwarning" }
-    (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, loc, None)))]))
+    (PStr ([Str.eval ~loc (Exp.constant (Const.string ~loc s))]))
 
 let cookies = ref String.Map.empty
 
