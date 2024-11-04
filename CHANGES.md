@@ -13,6 +13,9 @@ profile. This started with version 0.26.0.
   This might change the formatting of some functions due to the formatting code
   being completely rewritten.
 
+- Support OCaml 5.3 syntax (#2562, @Zeta611)
+  Adds support for effect patterns.
+
 - Documentation comments are now formatted by default (#2390, @Julow)
   Use the option `parse-docstrings = false` to restore the previous behavior.
 
