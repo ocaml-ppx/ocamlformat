@@ -96,8 +96,10 @@ let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 let variant_var sub x =
   {loc = sub.location sub x.loc; txt= map_loc sub x.txt}
 
-let map_package_type sub (lid, l) =
-  (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+let map_package_type sub (lid, l, attrs) =
+  (map_loc sub lid),
+  (List.map (map_tuple (map_loc sub) (sub.typ sub)) l),
+  sub.attributes sub attrs
 
 let map_arg_label sub = function
   | Asttypes.Nolabel -> Asttypes.Nolabel
@@ -115,15 +117,15 @@ let map_value_constraint sub = function
       Pvc_coercion { ground; coercion }
 
 module FP = struct
-  let map_param_val sub ((lab, def, p) : param_val) : param_val =
+  let map_param_val sub ((lab, def, p) : pparam_val) : pparam_val =
     (sub.arg_label sub lab, map_opt (sub.expr sub) def, sub.pat sub p)
 
-  let map_param_newtype sub (ty : param_newtype) : param_newtype =
+  let map_param_newtype sub (ty : string loc list) : string loc list =
     List.map (map_loc sub) ty
 
   let map_expr sub = function
-    | Param_val x -> Param_val (map_param_val sub x)
-    | Param_newtype x -> Param_newtype (map_param_newtype sub x)
+    | Pparam_val x -> Pparam_val (map_param_val sub x)
+    | Pparam_newtype x -> Pparam_newtype (map_param_newtype sub x)
 
   let map_class sub x = map_param_val sub x
 
@@ -240,8 +242,7 @@ module T = struct
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
                              (List.map (map_loc sub) sl) (sub.typ sub t)
     | Ptyp_package pt ->
-        let lid, l = map_package_type sub pt in
-        package ~loc ~attrs lid l
+        package ~loc ~attrs (map_package_type sub pt)
     | Ptyp_open (mod_ident, t) ->
         open_ ~loc ~attrs (map_loc sub mod_ident) (sub.typ sub t)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
@@ -498,16 +499,41 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
+  let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
+    let loc = sub.location sub loc in
+    let desc =
+      match desc with
+      | Pparam_val (lab, def, p) ->
+          Pparam_val
+            (sub.arg_label sub lab,
+             map_opt (sub.expr sub) def,
+             sub.pat sub p)
+      | Pparam_newtype ty ->
+          Pparam_newtype (List.map (map_loc sub) ty)
+    in
+    { pparam_loc = loc; pparam_desc = desc }
+
+  let map_function_body sub body =
+    match body with
+    | Pfunction_body e ->
+        Pfunction_body (sub.expr sub e)
+    | Pfunction_cases (cases, loc, attributes) ->
+        let cases = sub.cases sub cases in
+        let loc = sub.location sub loc in
+        let attributes = sub.attributes sub attributes in
+        Pfunction_cases (cases, loc, attributes)
+
   let map_constraint sub c =
     match c with
     | Pconstraint ty -> Pconstraint (sub.typ sub ty)
     | Pcoerce (ty1, ty2) -> Pcoerce (map_opt (sub.typ sub) ty1, sub.typ sub ty2)
 
-  let map_if_branch sub {if_cond; if_body; if_attrs} =
+  let map_if_branch sub {if_cond; if_body; if_attrs; if_loc_then} =
     let if_cond = sub.expr sub if_cond in
     let if_body = sub.expr sub if_body in
     let if_attrs = sub.attributes sub if_attrs in
-    { if_cond; if_body; if_attrs }
+    let if_loc_then = sub.location sub if_loc_then in
+    { if_cond; if_body; if_attrs; if_loc_then }
 
   let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} =
     let open Exp in
@@ -520,11 +546,11 @@ module E = struct
       let loc_in = sub.location sub loc_in in
         let_ ~loc ~loc_in ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
-    | Pexp_fun (p, e) ->
-        fun_ ~loc ~attrs
-          (FP.map sub FP.map_expr p)
-          (sub.expr sub e)
-    | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
+    | Pexp_function (ps, c, b) ->
+      function_ ~loc ~attrs
+        (List.map (map_function_param sub) ps)
+        (map_opt (map_constraint sub) c)
+        (map_function_body sub b)
     | Pexp_apply (e, l) ->
         apply ~loc ~attrs
           (sub.expr sub e)
@@ -555,8 +581,11 @@ module E = struct
     | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_ifthenelse (eN, e2) ->
+        let map_else (exp, loc_else) =
+          sub.expr sub exp, sub.location sub loc_else
+        in
         ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)
-          (map_opt (sub.expr sub) e2)
+          (map_opt map_else e2)
     | Pexp_sequence (e1, e2) ->
         sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
     | Pexp_while (e1, e2) ->
@@ -885,11 +914,11 @@ let default_mapper =
       );
 
     value_binding =
-      (fun this {pvb_pat; pvb_args; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
+      (fun this {pvb_pat; pvb_args; pvb_body; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc} ->
          Vb.mk
            (this.pat this pvb_pat)
            (List.map (FP.map this FP.map_expr) pvb_args)
-           (this.expr this pvb_expr)
+           (E.map_function_body this pvb_body)
            ?value_constraint:(Option.map (map_value_constraint this) pvb_constraint)
            ~is_pun:pvb_is_pun
            ~loc:(this.location this pvb_loc)

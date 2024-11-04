@@ -233,6 +233,7 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
 let format (type ext std) (ext_fg : ext Extended_ast.t)
     (std_fg : std Std_ast.t) ?output_file ~input_name ~prev_source
     ~ext_parsed ~std_parsed (conf : Conf.t) =
+  Box_debug.enable_stacktraces := conf.opr_opts.debug.v ;
   let dump_ast fg ~suffix ast =
     if conf.opr_opts.debug.v then
       Some
@@ -321,13 +322,9 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
       in
       (* Ast not preserved ? *)
       ( if
-          (not
-             (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
-                ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) ) )
-          && not
-               (Normalize_extended_ast.equal ext_fg conf ext_t.ast
-                  ext_t_new.ast
-                  ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
+          not
+            (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
+               ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
           let old_ast =
             dump_ast std_fg ~suffix:".old"
@@ -373,8 +370,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
         Error
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
           ) )
-      else
-        (* All good, continue *)
+      else (* All good, continue *)
         print_check ~i:(i + 1) ~conf ~prev_source:fmted ext_t_new std_t_new
   in
   try print_check ~i:1 ~conf ~prev_source ext_parsed std_parsed with

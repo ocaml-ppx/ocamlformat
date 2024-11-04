@@ -20,6 +20,9 @@
   (* Ensure that record patterns don't miss any field. *)
 *)
 
+[@@@ocaml.warning "-60"] module Str = Ast_helper.Str (* For ocamldep *)
+[@@@ocaml.warning "+60"]
+
 open Parsetree
 open Ast_helper
 open Location
@@ -45,6 +48,7 @@ type mapper = {
   constant: mapper -> constant -> constant;
   constructor_declaration: mapper -> constructor_declaration
                            -> constructor_declaration;
+  directive_argument: mapper -> directive_argument -> directive_argument;
   expr: mapper -> expression -> expression;
   extension: mapper -> extension -> extension;
   extension_constructor: mapper -> extension_constructor
@@ -68,6 +72,8 @@ type mapper = {
   signature_item: mapper -> signature_item -> signature_item;
   structure: mapper -> structure -> structure;
   structure_item: mapper -> structure_item -> structure_item;
+  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
+  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
   typ: mapper -> core_type -> core_type;
   type_declaration: mapper -> type_declaration -> type_declaration;
   type_extension: mapper -> type_extension -> type_extension;
@@ -76,9 +82,6 @@ type mapper = {
   value_binding: mapper -> value_binding -> value_binding;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
-  directive_argument: mapper -> directive_argument -> directive_argument;
-  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
-  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
 }
 
 let map_fst f (x, y) = (f x, y)
@@ -147,7 +150,9 @@ module T = struct
         object_ ~loc ~attrs (List.map (object_field sub) l) o
     | Ptyp_class (lid, tl) ->
         class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
-    | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
+    | Ptyp_alias (t, s) ->
+        let s = map_loc sub s in
+        alias ~loc ~attrs (sub.typ sub t) s
     | Ptyp_variant (rl, b, ll) ->
         variant ~loc ~attrs (List.map (row_field sub) rl) b ll
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
@@ -362,7 +367,9 @@ module M = struct
                     (sub.module_type sub mty)
     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
+    (* Added *)
     | Pmod_hole -> hole ~loc ~attrs ()
+    (* *)
 
   let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
     let open Str in
@@ -393,6 +400,35 @@ end
 module E = struct
   (* Value expressions for the core language *)
 
+  let map_function_param sub { pparam_loc = loc; pparam_desc = desc } =
+    let loc = sub.location sub loc in
+    let desc =
+      match desc with
+      | Pparam_val (lab, def, p) ->
+          Pparam_val
+            (lab,
+             map_opt (sub.expr sub) def,
+             sub.pat sub p)
+      | Pparam_newtype ty ->
+          Pparam_newtype (map_loc sub ty)
+    in
+    { pparam_loc = loc; pparam_desc = desc }
+
+  let map_function_body sub body =
+    match body with
+    | Pfunction_body e ->
+        Pfunction_body (sub.expr sub e)
+    | Pfunction_cases (cases, loc, attributes) ->
+        let cases = sub.cases sub cases in
+        let loc = sub.location sub loc in
+        let attributes = sub.attributes sub attributes in
+        Pfunction_cases (cases, loc, attributes)
+
+  let map_constraint sub c =
+    match c with
+    | Pconstraint ty -> Pconstraint (sub.typ sub ty)
+    | Pcoerce (ty1, ty2) -> Pcoerce (map_opt (sub.typ sub) ty1, sub.typ sub ty2)
+
   let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs} =
     let open Exp in
     let loc = sub.location sub loc in
@@ -403,10 +439,11 @@ module E = struct
     | Pexp_let (r, vbs, e) ->
         let_ ~loc ~attrs r (List.map (sub.value_binding sub) vbs)
           (sub.expr sub e)
-    | Pexp_fun (lab, def, p, e) ->
-        fun_ ~loc ~attrs lab (map_opt (sub.expr sub) def) (sub.pat sub p)
-          (sub.expr sub e)
-    | Pexp_function pel -> function_ ~loc ~attrs (sub.cases sub pel)
+    | Pexp_function (ps, c, b) ->
+      function_ ~loc ~attrs
+        (List.map (map_function_param sub) ps)
+        (map_opt (map_constraint sub) c)
+        (map_function_body sub b)
     | Pexp_apply (e, l) ->
         apply ~loc ~attrs (sub.expr sub e) (List.map (map_snd (sub.expr sub)) l)
     | Pexp_match (e, pel) ->
@@ -471,7 +508,9 @@ module E = struct
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
+    (* Added *)
     | Pexp_hole -> hole ~loc ~attrs ()
+  (* *)
 
   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
     let open Exp in

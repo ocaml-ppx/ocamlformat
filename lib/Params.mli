@@ -37,7 +37,11 @@ module Exp : sig
     -> Fmt.t
 
   val box_fun_decl_args :
-       Conf.t
+       ctx:Ast.t
+    -> ctx0:Ast.t
+    -> ?last_arg:bool
+    -> ?epi:Fmt.t
+    -> Conf.t
     -> parens:bool
     -> kw:Fmt.t
     -> args:Fmt.t
@@ -45,6 +49,37 @@ module Exp : sig
     -> Fmt.t
   (** Box and assemble the parts [kw] (up to the arguments), [args] and
       [annot]. *)
+
+  val break_fun_kw :
+    Conf_t.t -> ctx:Ast.t -> ctx0:Ast.t -> last_arg:bool -> Fmt.t
+
+  val box_fun_expr :
+       Conf.t
+    -> source:Source.t
+    -> ctx0:Ast.t
+    -> ctx:Ast.t
+    -> (Fmt.t -> Fmt.t) * int
+  (** return a box with an indent and minus the value of the indent to be used for a closing parenthesis *)
+
+  val box_function_cases :
+       Conf.t
+    -> ?indent:int
+    -> ctx:Ast.t
+    -> ctx0:Ast.t
+    -> parens:bool
+    -> Fmt.t
+    -> Fmt.t
+
+  val function_attrs_sp : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
+  (** Whether a space should be added between the [function] keyword and the
+      attributes. *)
+
+  val break_fun_decl_args : Conf.t -> ctx:Ast.t -> last_arg:bool -> Fmt.t
+
+  val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
+
+  val box_fun_decl : ctx0:Ast.t -> Conf.t -> Fmt.t -> Fmt.t
+  (** Box a function decl from the label to the arrow. *)
 end
 
 module Mod : sig
@@ -67,8 +102,11 @@ module Pcty : sig
   val break_let_open : Conf.t -> rhs:class_type -> Fmt.t
 end
 
+val get_or_pattern_is_nested : ctx:Ast.t -> pattern -> bool
+(** Whether an or-pattern should be disambiguated. *)
+
 val get_or_pattern_sep :
-  ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
+  ?cmts_before:bool -> ?space:bool -> Conf.t -> nested:bool -> Fmt.t
 
 type cases =
   { leading_space: Fmt.t
@@ -124,11 +162,11 @@ val get_list_expr : Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 
-val get_record_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_record_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
-val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_list_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
-val get_array_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_array_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
@@ -155,6 +193,8 @@ val get_if_then_else :
   -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(expression Ast.xt -> Fmt.t)
+  -> cmts_before_kw:Fmt.t
+  -> cmts_after_kw:Fmt.t option
   -> if_then_else
 
 val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
@@ -188,25 +228,16 @@ module Indent : sig
 
   (** Expressions *)
 
-  val function_ :
-    ?default:int -> Conf.t -> parens:bool -> expression Ast.xt -> int
+  val function_ : Conf.t -> ctx:Ast.t -> ctx0:Ast.t -> parens:bool -> int
   (** Check the [function-indent-nested] option, or return [default] (0 if
       not provided) if the option does not apply. *)
-
-  val fun_ : ?eol:Fmt.t -> Conf.t -> int
-  (** Handle [function-indent-nested]. *)
 
   val fun_args : Conf.t -> int
 
   val fun_type_annot : Conf.t -> int
 
-  val docked_fun :
-    Conf.t -> source:Source.t -> loc:Location.t -> lbl:arg_label -> int
-
-  val docked_function : Conf.t -> parens:bool -> expression Ast.xt -> int
-
   val docked_function_after_fun :
-    Conf.t -> parens:bool -> lbl:arg_label -> int
+    Conf.t -> parens:bool -> ctx0:Ast.t -> ctx:Ast.t -> int
 
   val fun_args_group : Conf.t -> lbl:arg_label -> expression -> int
 

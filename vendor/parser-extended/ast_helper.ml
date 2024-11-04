@@ -80,7 +80,7 @@ module Typ = struct
   let alias ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_alias (a, b))
   let variant ?loc ?attrs a b c = mk ?loc ?attrs (Ptyp_variant (a, b, c))
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
-  let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
+  let package ?loc ?attrs p = mk ?loc ?attrs (Ptyp_package p)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
   let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
 end
@@ -127,8 +127,7 @@ module Exp = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
   let let_ ?loc ?attrs ~loc_in a b = mk ?loc ?attrs (Pexp_let (a, b, loc_in))
-  let fun_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_fun (a, b))
-  let function_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_function a)
+  let function_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_function (a, b, c))
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
   let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
   let try_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_try (a, b))
@@ -440,11 +439,11 @@ end
 
 module Vb = struct
   let mk ?(loc = !default_loc) ?(attrs = Attr.empty_ext_attrs)  ?(docs = empty_docs)
-        ?(text = []) ?value_constraint ~is_pun pat args expr =
+        ?(text = []) ?value_constraint ~is_pun pat args body =
     {
      pvb_pat = pat;
      pvb_args = args;
-     pvb_expr = expr;
+     pvb_body = body;
      pvb_constraint=value_constraint;
      pvb_is_pun = is_pun;
      pvb_attributes =

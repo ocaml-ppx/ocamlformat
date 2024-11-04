@@ -5,7 +5,8 @@ let _ =
 
 let _ =
   (* before match *)
-  match (* after match *) x with _ -> 1
+  match (* after match *) x with
+  | _ -> 1
 
 let _ =
   (* before try *)

@@ -119,11 +119,15 @@ let foo =
 let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
 
 let foo =
-  if cmp < 0 then
-    (* ast higher precedence than context: no parens *)
+  if cmp < 0 then (* foo *)
+    a + b
+  else (* foo *)
+    a - b
+
+let foo =
+  if cmp < 0 then (* ast higher precedence than context: no parens *)
     false
-  else if cmp > 0 then
-    (* context higher prec than ast: add parens *)
+  else if cmp > 0 then (* context higher prec than ast: add parens *)
     true
   else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
   then foo
@@ -157,3 +161,18 @@ let _ =
     bar
   then 1
   else 2
+
+let compare s1 s2 =
+  if String.equal s1 s2 then (* this simplifies the next two cases *)
+    0
+  else if String.equal s1 Cmdliner.Manpage.s_options then
+    (* ensure OPTIONS section is last (hence first in the manual) *)
+    1
+  else if String.equal s2 Cmdliner.Manpage.s_options then (* same as above *)
+    -1
+  else (* reverse order *)
+    String.compare s2 s1
+
+let _ = if x then 42 (* dummy *) else y
+
+let _ = if x then 42 (* dummy *) else if y then z else w

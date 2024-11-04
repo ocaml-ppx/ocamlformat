@@ -683,3 +683,12 @@ type x =
 (** at@ *)
 
 (** \@at *)
+
+(** Lists can't be nested
+    {ul
+     {- foo }
+     {- module system documentation including
+        + bar
+        + baz
+     }
+    } *)

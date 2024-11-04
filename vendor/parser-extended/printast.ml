@@ -259,8 +259,9 @@ and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
 
-and package_type i ppf (s, l) =
+and package_type i ppf (s, l, attrs) =
   line i ppf "package_type %a\n" fmt_longident_loc s;
+  attributes (i+1) ppf attrs;
   list i package_with ppf l
 
 and pattern i ppf x =
@@ -350,13 +351,11 @@ and expression i ppf x =
       line (i + 1) ppf "loc_in: %a\n" fmt_location loc_in;
       value_bindings i ppf l;
       expression i ppf e;
-  | Pexp_function l ->
+  | Pexp_function (params, c, body) ->
       line i ppf "Pexp_function\n";
-      list i case ppf l;
-  | Pexp_fun (p, e) ->
-      line i ppf "Pexp_fun\n";
-      expr_function_param i ppf p;
-      expression i ppf e;
+      list i expr_function_param ppf params;
+      option i type_constraint ppf c;
+      function_body i ppf body
   | Pexp_apply (e, l) ->
       line i ppf "Pexp_apply\n";
       expression i ppf e;
@@ -399,9 +398,13 @@ and expression i ppf x =
       line i ppf "Pexp_list\n";
       list i expression ppf l;
   | Pexp_ifthenelse (eN, eo) ->
+      let pp_else i ppf (exp, loc_else) =
+        line i ppf "else %a\n" fmt_location loc_else;
+        expression (i+1) ppf exp
+      in
       line i ppf "Pexp_ifthenelse\n";
       list i if_branch ppf eN;
-      option i expression ppf eo;
+      option i pp_else ppf eo;
   | Pexp_sequence (e1, e2) ->
       line i ppf "Pexp_sequence\n";
       expression i ppf e1;
@@ -508,30 +511,38 @@ and expression i ppf x =
       expression i ppf e1;
       expression i ppf e2
 
-and if_branch i ppf { if_cond; if_body } =
+and if_branch i ppf { if_cond; if_body; if_loc_then } =
   line i ppf "if_branch\n";
   expression i ppf if_cond;
+  line i ppf "then %a\n" fmt_location if_loc_then;
   expression i ppf if_body
 
-and param_val i ppf (l, eo, p) =
-  line i ppf "param_val\n";
+and pparam_val i ppf ~loc (l, eo, p) =
+  line i ppf "Pparam_val %a\n" fmt_location loc;
   arg_label (i+1) ppf l;
   option (i+1) expression ppf eo;
   pattern (i+1) ppf p
 
-and param_newtype i ppf ty =
-  line i ppf "param_newtype\n";
-  list i (fun i ppf x -> line (i+1) ppf "type %a" fmt_string_loc x) ppf ty
-
 and expr_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
-  line i ppf "function_param %a\n" fmt_location loc;
   match desc with
-  | Param_val x -> param_val i ppf x
-  | Param_newtype x -> param_newtype i ppf x
+  | Pparam_val p -> pparam_val i ppf ~loc p
+  | Pparam_newtype tys ->
+      List.iter (fun ty ->
+        line i ppf "Pparam_newtype \"%s\" %a\n" ty.txt fmt_location loc)
+        tys
 
 and class_function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
-  line i ppf "function_param %a\n" fmt_location loc;
-  param_val i ppf desc
+  pparam_val i ppf ~loc desc
+
+and function_body i ppf body =
+  match body with
+  | Pfunction_body e ->
+      line i ppf "Pfunction_body\n";
+      expression (i+1) ppf e
+  | Pfunction_cases (cases, loc, attrs) ->
+      line i ppf "Pfunction_cases %a\n" fmt_location loc;
+      attributes (i+1) ppf attrs;
+      list (i+1) case ppf cases
 
 and type_constraint i ppf constraint_ =
   match constraint_ with
@@ -1088,11 +1099,14 @@ and case i ppf {pc_lhs; pc_guard; pc_rhs} =
   expression (i+1) ppf pc_rhs;
 
 and value_binding i ppf x =
-  line i ppf "<def> %a\n" fmt_location x.pvb_loc;
-  ext_attrs (i+1) ppf x.pvb_attributes;
-  pattern (i+1) ppf x.pvb_pat;
-  Option.iter (value_constraint (i+1) ppf) x.pvb_constraint;
-  expression (i+1) ppf x.pvb_expr
+  line i ppf "<def> %a is_pun=%b\n" fmt_location x.pvb_loc x.pvb_is_pun;
+  let i = i + 1 in
+  ext_attrs i ppf x.pvb_attributes;
+  pattern i ppf x.pvb_pat;
+  line i ppf "args\n";
+  list i expr_function_param ppf x.pvb_args;
+  Option.iter (value_constraint i ppf) x.pvb_constraint;
+  function_body i ppf x.pvb_body
 
 and value_constraint i ppf x =
   let pp_sep ppf () = Format.fprintf ppf "@ "; in

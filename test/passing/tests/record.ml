@@ -63,3 +63,13 @@ type t =
   { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : YYYYYYYYYYYYYYYYYYYYY.t
     (* ____________________________________ *)
   }
+
+let _ =
+  let _ = function
+    | {
+      foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo;
+      foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo;
+    } ->
+        ()
+  in
+  ()

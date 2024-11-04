@@ -33,7 +33,7 @@ module Misc : sig
   end
 
   module Style : sig
-  val as_inline_code: (Format.formatter -> 'a -> unit as 'printer) -> 'printer
+    val as_inline_code: (Format.formatter -> 'a -> unit as 'printer) -> 'printer
     (** @since ocaml-5.2 *)
 
     val inline_code: Format.formatter -> string -> unit
@@ -89,4 +89,10 @@ module Builtin_attributes : sig
   val register_attr : current_phase -> 'a -> unit
 
   val mark_payload_attrs_used : 'a -> unit
+end
+
+module Format_doc : sig
+  type 'a t
+  val compat : 'a t -> Format.formatter -> 'a -> unit
+  val pp_two_columns : ?sep : string -> ?max_lines:int -> (string * string) list t
 end

@@ -217,7 +217,7 @@ let encoder f =
 let default =
   command##hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
   command##hasPermission #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
   foo
 
 let _ = ( let* ) x (fun y -> z)
@@ -228,7 +228,7 @@ let _ = f (( let* ) x (fun y -> z))
 
 let _ = f (( let* ) x (function y -> z))
 
-let _ = ((x >>= fun () -> ()) [@a])
+let _ = (x >>= fun () -> ()) [@a]
 
 let _ = ( >>= ) [@attr]
 

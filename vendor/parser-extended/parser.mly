@@ -429,7 +429,7 @@ let extra_rhs_core_type ct ~pos =
 type let_binding =
   { lb_pattern: pattern;
     lb_args: expr_function_param list;
-    lb_expression: expression;
+    lb_body: function_body;
     lb_constraint: value_constraint option;
     lb_is_pun: bool;
     lb_attributes: ext_attrs;
@@ -440,11 +440,11 @@ type let_bindings' =
     lbs_rec: rec_flag;
     lbs_has_ext: bool }
 
-let mklb ?(text=[]) ~docs ~loc (p, args, typ, e, is_pun) attrs =
+let mklb ?(text=[]) ~docs ~loc (p, args, typ, body, is_pun) attrs =
   {
     lb_pattern = p;
     lb_args = args;
-    lb_expression = e;
+    lb_body = body;
     lb_constraint=typ;
     lb_is_pun = is_pun;
     lb_attributes = add_text_attrs' text (add_docs_attrs' docs attrs);
@@ -470,7 +470,7 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_has_ext=_ } =
       (fun lb ->
          Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
            ?value_constraint:lb.lb_constraint ~is_pun:lb.lb_is_pun
-           lb.lb_pattern lb.lb_args lb.lb_expression)
+           lb.lb_pattern lb.lb_args lb.lb_body)
       lbs_bindings
   in
   { pvbs_bindings; pvbs_rec = lbs_rec }
@@ -485,6 +485,68 @@ let class_of_let_bindings ~loc ~loc_in lbs body =
   (* Our use of let_bindings(no_ext) guarantees the following: *)
   assert (not lbs.lbs_has_ext);
   mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
+
+(* This rewrite is not wanted in OCamlformat
+(* If all the parameters are [Pparam_newtype x], then return [Some xs] where
+   [xs] is the corresponding list of values [x]. This function is optimized for
+   the common case, where a list of parameters contains at least one value
+   parameter.
+*)
+let all_params_as_newtypes =
+  let is_newtype { pparam_desc; _ } =
+    match pparam_desc with
+    | Pparam_newtype _ -> true
+    | Pparam_val _ -> false
+  in
+  let as_newtype { pparam_desc; pparam_loc } =
+    match pparam_desc with
+    | Pparam_newtype x -> Some (x, pparam_loc)
+    | Pparam_val _ -> None
+  in
+  fun params ->
+    if List.for_all is_newtype params
+    then Some (List.filter_map as_newtype params)
+    else None
+
+(* Given a construct [fun (type a b c) : t -> e], we construct
+   [Pexp_newtype(a, Pexp_newtype(b, Pexp_newtype(c, Pexp_constraint(e, t))))]
+   rather than a [Pexp_function].
+*)
+let mkghost_newtype_function_body newtypes body_constraint body =
+  let wrapped_body =
+    match body_constraint with
+    | None -> body
+    | Some body_constraint ->
+        let loc = { body.pexp_loc with loc_ghost = true } in
+        Exp.mk (mkexp_desc_constraint body body_constraint) ~loc
+  in
+  let expr =
+    List.fold_right
+      (fun (newtype, newtype_loc) e ->
+         (* Mints a ghost location that approximates the newtype's "extent" as
+            being from the start of the newtype param until the end of the
+            function body.
+         *)
+         let loc = (newtype_loc.Location.loc_start, body.pexp_loc.loc_end) in
+         ghexp (Pexp_newtype (newtype, e)) ~loc)
+      newtypes
+      wrapped_body
+  in
+  expr.pexp_desc
+
+let mkfunction params body_constraint body =
+  match body with
+  | Pfunction_cases _ -> Pexp_function (params, body_constraint, body)
+  | Pfunction_body body_exp ->
+    (* If all the params are newtypes, then we don't create a function node;
+       we create nested newtype nodes. *)
+      match all_params_as_newtypes params with
+      | None -> Pexp_function (params, body_constraint, body)
+      | Some newtypes ->
+          mkghost_newtype_function_body newtypes body_constraint body_exp
+*)
+let mkfunction params body_constraint body =
+  Pexp_function (params, body_constraint, body)
 
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
@@ -905,6 +967,28 @@ reversed_nonempty_llist(X):
   xs = rev(reversed_nonempty_llist(X))
     { xs }
 
+(* [reversed_nonempty_concat(X)] recognizes a nonempty sequence of [X]s (each of
+   which is a list), and produces an OCaml list of their concatenation in
+   reverse order -- that is, the last element of the last list in the input text
+   appears first in the list.
+*)
+reversed_nonempty_concat(X):
+  x = X
+    { List.rev x }
+| xs = reversed_nonempty_concat(X) x = X
+    { List.rev_append x xs }
+
+(* Not needed. Upstream uses it only for desugaring (type a b c)
+(* [nonempty_concat(X)] recognizes a nonempty sequence of [X]s
+   (each of which is a list), and produces an OCaml list of their concatenation
+   in direct order -- that is, the first element of the first list in the input
+   text appears first in the list.
+*)
+
+%inline nonempty_concat(X):
+  xs = rev(reversed_nonempty_concat(X))
+    { xs }
+
 (* [reversed_separated_nonempty_llist(separator, X)] recognizes a nonempty list
    of [X]s, separated with [separator]s, and produces an OCaml list in reverse
    order -- that is, the last element in the input text appears first in this
@@ -916,6 +1000,7 @@ reversed_nonempty_llist(X):
    the case of a list of length more than one will be distinguished at the
    use site, and will give rise there to two productions. This can be used
    to avoid certain conflicts. *)
+*)
 
 %inline inline_reversed_separated_nonempty_llist(separator, X):
   x = X
@@ -1677,7 +1762,7 @@ module_declaration_body:
 ;
 (* A module substitution (in a signature). *)
 module_subst:
-MODULE
+  MODULE
   ext = ext attrs1 = attributes
   uid = mkrhs(UIDENT)
   COLONEQUAL
@@ -1914,7 +1999,7 @@ method_:
     private_ = virtual_with_private_flag
     label = mkrhs(label) COLON ty = poly_type
       { (label, private_, Cfk_virtual ty), attrs }
-  | override_flag attributes private_flag mkrhs(label) strict_binding
+  | override_flag attributes private_flag mkrhs(label) strict_binding(seq_expr)
       { let args, tc, exp = $5 in
         ($4, pv_of_priv $3, Cfk_concrete ($1, (args, tc), exp)), $2 }
   | override_flag attributes private_flag mkrhs(label)
@@ -2109,16 +2194,47 @@ class_type_declarations:
 
 /* Core expressions */
 
-seq_expr:
-  | expr        %prec below_SEMI  { $1 }
-  | expr SEMI                     { $1 }
-  | mkexp(expr SEMI seq_expr
+%inline or_function(EXPR):
+  | EXPR
+      { $1 }
+  | FUNCTION ext_attributes match_cases
+      { let loc = make_loc $sloc in
+        let cases = $3 in
+        (* There are two choices of where to put attributes: on the
+           Pexp_function node; on the Pfunction_cases body. We put them on the
+           Pexp_function node here because the compiler only uses
+           Pfunction_cases attributes for enabling/disabling warnings in
+           typechecking. For standalone function cases, we want the compiler to
+           respect, e.g., [@inline] attributes.
+        *)
+        let desc = mkfunction [] None (Pfunction_cases (cases, loc, [])) in
+        mkexp_attrs ~loc:$sloc desc $2
+      }
+;
+
+(* [fun_seq_expr] (and [fun_expr]) are legal expression bodies of a function.
+   [seq_expr] (and [expr]) are expressions that appear in other contexts
+   (e.g. subexpressions of the expression body of a function).
+
+   [fun_seq_expr] can't be a bare [function _ -> ...]. [seq_expr] can.
+
+   This distinction exists because [function _ -> ...] is parsed as a *function
+   cases* body of a function, not an expression body. This so functions can be
+   parsed with the intended arity.
+*)
+fun_seq_expr:
+  | fun_expr    %prec below_SEMI  { $1 }
+  | fun_expr SEMI                 { $1 }
+  | mkexp(fun_expr SEMI seq_expr
     { Pexp_sequence($1, $3) })
     { $1 }
-  | expr SEMI PERCENT attr_id seq_expr
+  | fun_expr SEMI PERCENT attr_id seq_expr
     { let seq = mkexp ~loc:$sloc (Pexp_sequence ($1, $5)) in
       let payload = PStr [mkstrexp seq []] in
       mkexp ~loc:$sloc (Pexp_extension ($4, payload)) }
+;
+seq_expr:
+  | or_function(fun_seq_expr) { $1 }
 ;
 labeled_simple_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
@@ -2136,7 +2252,7 @@ labeled_simple_pattern:
   | LABEL simple_pattern
       { mk_labelled $1 $sloc, None, $2 }
   | simple_pattern
-      { Nolabel, None, $1 }
+      { (Nolabel, None, $1) }
 ;
 
 pattern_var:
@@ -2190,10 +2306,10 @@ let_pattern:
 
 %inline qualified_dotop: ioption(DOT mkrhs(mod_longident) {$2}) DOTOP { $1, $2 };
 
-expr:
+fun_expr:
     simple_expr %prec below_HASH
       { $1 }
-  | expr_attrs
+  | fun_expr_attrs
       { let desc, attrs = $1 in
         mkexp_attrs ~loc:$sloc desc attrs }
   | mkexp(expr_)
@@ -2230,7 +2346,10 @@ expr:
   *)
 /* END AVOID */
 ;
-%inline expr_attrs:
+%inline expr:
+  | or_function(fun_expr) { $1 }
+;
+%inline fun_expr_attrs:
   | LET MODULE ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
       { Pexp_letmodule($4, $5, $6, $8), $3 }
   | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
@@ -2239,10 +2358,12 @@ expr:
       { let open_loc = make_loc ($startpos($2), $endpos($5)) in
         let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
         Pexp_letopen(od, $7), $4 }
-  | FUNCTION ext_attributes match_cases
-      { Pexp_function $3, $2 }
-  | FUN ext_attributes expr_fun_param fun_def
-      { Pexp_fun($3, $4), $2 }
+  /* Cf #5939: we used to accept (fun p when e0 -> e) */
+  | FUN ext_attributes expr_fun_params preceded(COLON, atomic_type)?
+      MINUSGREATER fun_body
+      { let body_constraint = Option.map (fun x -> Pconstraint x) $4 in
+        mkfunction $3 body_constraint $6, $2
+      }
   | MATCH ext_attributes seq_expr WITH match_cases
       { Pexp_match($3, $5), $2 }
   | TRY ext_attributes seq_expr WITH match_cases
@@ -2251,16 +2372,19 @@ expr:
       { syntax_error() }
   | IF ext_attributes seq_expr THEN expr ELSE else_=expr
       { let ext, attrs = $2 in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        let if_loc_then = make_loc $loc($4)
+        and loc_else = make_loc $loc($6) in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
         let ite =
           match else_.pexp_desc with
           | Pexp_ifthenelse(brs, else_) -> Pexp_ifthenelse(br :: brs, else_)
-          | _ -> Pexp_ifthenelse([br], Some else_)
+          | _ -> Pexp_ifthenelse([br], Some (else_, loc_else))
         in
         ite, (ext, []) }
   | IF ext_attributes seq_expr THEN expr
       { let ext, attrs = $2 in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs } in
+        let if_loc_then = make_loc $loc($4) in
+        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
         Pexp_ifthenelse ([br], None), (ext, []) }
   | WHILE ext_attributes seq_expr do_done_expr
       { Pexp_while($3, $4), $2 }
@@ -2287,7 +2411,7 @@ expr:
       { Pexp_construct($1, Some $2) }
   | name_tag simple_expr %prec below_HASH
       { Pexp_variant($1, Some $2) }
-  | e1 = expr op = op(infix_operator) e2 = expr
+  | e1 = fun_expr op = op(infix_operator) e2 = expr
       { mkinfix e1 op e2 }
   | subtractive expr %prec prec_unary_minus
       { mkuminus ~oploc:$loc($1) $1 $2 }
@@ -2450,10 +2574,10 @@ labeled_simple_expr:
     val_ident { mkpatvar ~loc:$sloc $1 }
 ;
 let_binding_body_no_punning:
-    let_ident strict_binding
+    let_ident strict_binding(fun_body)
       { let args, tc, exp = $2 in
         ($1, args, tc, exp) }
-  | let_ident type_constraint EQUAL seq_expr
+  | let_ident type_constraint EQUAL fun_body
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
@@ -2463,19 +2587,19 @@ let_binding_body_no_punning:
         in
         (v, [], Some t, $4)
       }
-  | let_ident COLON poly(core_type) EQUAL seq_expr
+  | let_ident COLON poly(core_type) EQUAL fun_body
     {
       let t = ghtyp ~loc:($loc($3)) $3 in
       ($1, [], Some (Pvc_constraint { locally_abstract_univars = []; typ=t }), $5)
     }
-  | let_ident COLON TYPE lident_list DOT core_type EQUAL seq_expr
+  | let_ident COLON TYPE lident_list DOT core_type EQUAL fun_body
     { let constraint' =
         Pvc_constraint { locally_abstract_univars=$4; typ = $6}
       in
       ($1, [], Some constraint', $8) }
-  | pattern_no_exn EQUAL seq_expr
+  | pattern_no_exn EQUAL fun_body
       { ($1, [], None, $3) }
-  | simple_pattern_not_ident COLON core_type EQUAL seq_expr
+  | simple_pattern_not_ident COLON core_type EQUAL fun_body
       { ($1, [], Some(Pvc_constraint { locally_abstract_univars=[]; typ=$3 }), $5) }
 ;
 let_binding_body:
@@ -2483,7 +2607,7 @@ let_binding_body:
       { let p,args,tc,e = $1 in (p,args,tc,e,false) }
 /* BEGIN AVOID */
   | val_ident %prec below_HASH
-      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, Pfunction_body (mkexpvar ~loc:$loc $1), true) }
   (* The production that allows puns is marked so that [make list-parse-errors]
      does not attempt to exploit it. That would be problematic because it
      would then generate bindings such as [let x], which are rejected by the
@@ -2522,12 +2646,12 @@ and_let_binding:
     }
 ;
 letop_binding_body:
-    pat = let_ident strict_binding
+    pat = let_ident strict_binding(seq_expr)
       { let args, tc, exp = $2 in
         (pat, args, tc, exp, false) }
   | val_ident
       (* Let-punning *)
-      { (mkpatvar ~loc:$loc $1, [], None, mkexpvar ~loc:$loc $1, true) }
+      { (mkpatvar ~loc:$loc $1, [], None, (mkexpvar ~loc:$loc $1), true) }
   | pat = simple_pattern COLON typ = core_type EQUAL exp = seq_expr
       { (pat, [], Some (Pvc_constraint { locally_abstract_univars = []; typ }), exp, false) }
   | pat = pattern_no_exn EQUAL exp = seq_expr
@@ -2544,10 +2668,10 @@ letop_bindings:
         let and_ = {pbop_op; pbop_args; pbop_pat; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc} in
         let_pat, let_args, let_typ, let_exp, let_is_pun, and_ :: rev_ands }
 ;
-strict_binding:
-    EQUAL seq_expr
+strict_binding(body):
+    EQUAL body
       { [], None, $2 }
-  | nonempty_llist(expr_fun_param) type_constraint? EQUAL seq_expr
+  | nonempty_llist(expr_fun_param) type_constraint? EQUAL body
       { let tc =
           match $2 with
           | Some (Pconstraint typ) ->
@@ -2557,6 +2681,20 @@ strict_binding:
           | None -> None
         in
         $1, tc, $4 }
+;
+fun_body:
+  | FUNCTION ext_attributes match_cases
+      { let ext, attrs = $2 in
+        match ext with
+        | None -> Pfunction_cases ($3, make_loc $sloc, attrs)
+        | Some _ ->
+          (* function%foo extension nodes interrupt the arity *)
+            let cases = Pfunction_cases ($3, make_loc $sloc, []) in
+            Pfunction_body
+              (mkexp_attrs ~loc:$sloc (mkfunction [] None cases) $2)
+      }
+  | fun_seq_expr
+      { Pfunction_body $1 }
 ;
 %inline match_cases:
   xs = preceded_or_separated_nonempty_llist(BAR, match_case)
@@ -2570,6 +2708,30 @@ match_case:
   | pattern MINUSGREATER DOT
       { Exp.case $1 (Exp.unreachable ~loc:(make_loc $loc($3)) ()) }
 ;
+(* Removed in favor of expr_fun_param
+fun_param_as_list:
+  | LPAREN TYPE ty_params = lident_list RPAREN
+      { (* We desugar (type a b c) to (type a) (type b) (type c).
+           If we do this desugaring, the loc for each parameter is a ghost.
+        *)
+        let loc =
+          match ty_params with
+          | [] -> assert false (* lident_list is non-empty *)
+          | [_] -> make_loc $sloc
+          | _ :: _ :: _ -> ghost_loc $sloc
+        in
+        List.map
+          (fun x -> { pparam_loc = loc; pparam_desc = Pparam_newtype x })
+          ty_params
+      }
+  | labeled_simple_pattern
+      { let a, b, c = $1 in
+        [ { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (a, b, c) } ]
+      }
+;
+fun_params:
+  | nonempty_concat(fun_param_as_list) { $1 }
+*)
 param_val:
   | labeled_simple_pattern
       { $1 }
@@ -2580,8 +2742,8 @@ param_newtype:
 ;
 expr_fun_param:
   mkfunparam(
-      param_val { Param_val $1 }
-    | param_newtype { Param_newtype $1 }
+      param_val { Pparam_val $1 }
+    | param_newtype { Pparam_newtype $1 }
   ) { $1 }
 ;
 class_fun_param:
@@ -2589,16 +2751,8 @@ class_fun_param:
     param_val { $1 }
   ) { $1 }
 ;
-fun_def:
-    MINUSGREATER seq_expr
-      { $2 }
-  | mkexp(COLON atomic_type MINUSGREATER seq_expr
-      { Pexp_constraint ($4, $2) })
-      { $1 }
-/* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | expr_fun_param fun_def
-      { ghexp ~loc:$sloc (Pexp_fun($1, $2)) }
-;
+expr_fun_params:
+  | nonempty_llist(expr_fun_param) { $1 }
 %inline expr_comma_list:
   es = separated_nontrivial_llist(COMMA, expr)
     { es }
@@ -3462,12 +3616,11 @@ atomic_type:
 
 %inline package_core_type: module_type
       { let (lid, cstrs, attrs) = package_type_of_module_type $1 in
-        let descr = Ptyp_package (lid, cstrs) in
+        let descr = Ptyp_package (lid, cstrs, []) in
         mktyp ~loc:$sloc ~attrs descr }
 ;
 %inline package_type: module_type
-      { let (lid, cstrs, _attrs) = package_type_of_module_type $1 in
-        (lid, cstrs) }
+      { package_type_of_module_type $1 }
 ;
 %inline row_field_list:
   separated_nonempty_llist(BAR, row_field)

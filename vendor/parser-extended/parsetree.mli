@@ -181,7 +181,8 @@ and core_type_desc =
   | Ptyp_open of Longident.t loc * core_type (** [M.(T)] *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
-and package_type = Longident.t loc * (Longident.t loc * core_type) list
+and package_type =
+  Longident.t loc * (Longident.t loc * core_type) list * attributes
 (** As {!package_type} typed values:
          - [(S, [])] represents [(module S)],
          - [(S, [(t1, T1) ; ... ; (tn, Tn)])]
@@ -314,15 +315,21 @@ and expression_desc =
                when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
             - [loc_in] is the location of the [in] keyword.
          *)
-  | Pexp_function of case list  (** [function P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_fun of expr_function_param * expression
-      (** [Pexp_fun(P, E)] represents:
-            - [fun P -> E]
-            - [fun ~l:P -> E]
-            - [fun ?l:P -> E]
-            - [fun ?l:(P = E0) -> E]
-            - [fun (type t) -> E]
-         *)
+  | Pexp_function of
+      expr_function_param list * type_constraint option * function_body
+  (** [Pexp_function ([P1; ...; Pn], C, body)] represents any construct
+      involving [fun] or [function], including:
+      - [fun P1 ... Pn -> E]
+        when [body = Pfunction_body E]
+      - [fun P1 ... Pn -> function p1 -> e1 | ... | pm -> em]
+        when [body = Pfunction_cases [ p1 -> e1; ...; pm -> em ]]
+
+      [C] represents a type constraint or coercion placed immediately before the
+      arrow, e.g. [fun P1 ... Pn : ty -> ...] when [C = Some (Pconstraint ty)].
+
+      A function must have parameters. [Pexp_function (params, _, body)] must
+      have non-empty [params] or a [Pfunction_cases _] body.
+  *)
   | Pexp_apply of expression * (arg_label * expression) list
       (** [Pexp_apply(E0, [(l1, E1) ; ... ; (ln, En)])]
             represents [E0 ~l1:E1 ... ~ln:En]
@@ -371,8 +378,8 @@ and expression_desc =
       (** [E1.l <- E2] *)
   | Pexp_array of expression list  (** [[| E1; ...; En |]] *)
   | Pexp_list of expression list  (** [[ E1; ...; En ]] *)
-  | Pexp_ifthenelse of if_branch list * expression option
-      (** [if E1 then E2 else E3] *)
+  | Pexp_ifthenelse of if_branch list * (expression * Location.t) option
+      (** [Pexp_ifthenelse (if_branches, Some (else_expr, else_keyword_loc)] *)
   | Pexp_sequence of expression * expression  (** [E1; E2] *)
   | Pexp_while of expression * expression  (** [while E1 do E2 done] *)
   | Pexp_for of pattern * expression * expression * direction_flag * expression
@@ -448,6 +455,7 @@ and if_branch =
     if_cond: expression;
     if_body: expression;
     if_attrs: attributes;  (** [... [\@id1] [\@id2]] *)
+    if_loc_then: Location.t;  (** Location of the [then] keyword, for comment attachment. *)
   }
 
 and case =
@@ -477,35 +485,71 @@ and binding_op =
     pbop_loc : Location.t;
   }
 
-and param_val = arg_label * expression option * pattern
-  (** - [P] when [lbl] is [Nolabel] and [exp0] is [None]
-      - [~l:P] when [lbl] is [Labelled l] and [exp0] is [None]
-      - [?l:P] when [lbl] is [Optional l] and [exp0] is [None]
-      - [?l:(P = E0)] when [lbl] is [Optional l] and [exp0] is [Some E0]
+and pparam_val = arg_label * expression option * pattern
 
-      Note: If [E0] is provided, only [Optional] is allowed.
+and function_param_desc =
+  | Pparam_val of pparam_val
+  (** [Pparam_val (lbl, exp0, P)] represents the parameter:
+      - [P]
+        when [lbl] is {{!Asttypes.arg_label.Nolabel}[Nolabel]}
+        and [exp0] is [None]
+      - [~l:P]
+        when [lbl] is {{!Asttypes.arg_label.Labelled}[Labelled l]}
+        and [exp0] is [None]
+      - [?l:P]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [None]
+      - [?l:(P = E0)]
+        when [lbl] is {{!Asttypes.arg_label.Optional}[Optional l]}
+        and [exp0] is [Some E0]
+
+      Note: If [E0] is provided, only
+      {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
+  *)
+  | Pparam_newtype of string loc list
+  (** [Pparam_newtype x] represents the parameter [(type x)].
+      [x] carries the location of the identifier, whereas the [pparam_loc]
+      on the enclosing [function_param] node is the location of the [(type x)]
+      as a whole.
+
+      Multiple parameters [(type a b c)] are represented as multiple
+      [Pparam_newtype] nodes, let's say:
+
+      {[ [ { pparam_kind = Pparam_newtype a; pparam_loc = loc1 };
+           { pparam_kind = Pparam_newtype b; pparam_loc = loc2 };
+           { pparam_kind = Pparam_newtype c; pparam_loc = loc3 };
+         ]
+      ]}
+
+      Here, the first loc [loc1] is the location of [(type a b c)], and the
+      subsequent locs [loc2] and [loc3] are the same as [loc1], except marked as
+      ghost locations. The locations on [a], [b], [c], correspond to the
+      variables [a], [b], and [c] in the source code.
   *)
 
-and param_newtype = string loc list
-  (** [(type x y z)]. *)
-
 and 'a function_param =
-  {
-    pparam_loc : Location.t;
+  { pparam_loc : Location.t;
     pparam_desc : 'a;
   }
 
-and param_val_or_newtype =
-  | Param_val of param_val
-  | Param_newtype of param_newtype
+and expr_function_param = function_param_desc function_param
 
-and expr_function_param = param_val_or_newtype function_param
+and class_function_param = pparam_val function_param
 
-and class_function_param = param_val function_param
+and function_body =
+  | Pfunction_body of expression
+  | Pfunction_cases of case list * Location.t * attributes
+  (** In [Pfunction_cases (_, loc, attrs)], the location extends from the
+      start of the [function] keyword to the end of the last case. The compiler
+      will only use typechecking-related attributes from [attrs], e.g. enabling
+      or disabling a warning.
+  *)
+(** See the comment on {{!expression_desc.Pexp_function}[Pexp_function]}. *)
 
 and type_constraint =
   | Pconstraint of core_type
   | Pcoerce of core_type option * core_type
+(** See the comment on {{!expression_desc.Pexp_function}[Pexp_function]}. *)
 
 (** {2 Value descriptions} *)
 
@@ -887,7 +931,8 @@ and signature_item =
 and signature_item_desc =
   | Psig_value of value_description
       (** - [val x: T]
-          - [external x: T = "s1" ... "sn"] *)
+            - [external x: T = "s1" ... "sn"]
+         *)
   | Psig_type of rec_flag * type_declaration list
       (** [type t1 = ... and ... and tn  = ...] *)
   | Psig_typesubst of type_declaration list
@@ -1041,7 +1086,7 @@ and structure_item_desc =
         *)
   | Pstr_primitive of value_description
       (** - [val x: T]
-          - [external x: T = "s1" ... "sn"] *)
+            - [external x: T = "s1" ... "sn" ]*)
   | Pstr_type of rec_flag * type_declaration list
       (** [type t1 = ... and ... and tn = ...] *)
   | Pstr_typext of type_extension  (** [type t1 += ...] *)
@@ -1081,7 +1126,7 @@ and value_binding =
   {
     pvb_pat: pattern;
     pvb_args: expr_function_param list;
-    pvb_expr: expression;
+    pvb_body: function_body; (** For bindings that are not functions, this is [Pfunction_body expr]. *)
     pvb_constraint: value_constraint option;
     pvb_is_pun: bool;
     pvb_attributes: ext_attrs;

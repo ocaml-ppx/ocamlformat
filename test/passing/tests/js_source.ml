@@ -8193,3 +8193,69 @@ end
     ]
   ;;
 *)
+
+let _ =
+  { foo =
+      (fun _ -> function
+         | _ ->
+           let _ = 42 in
+           ()
+         | () -> ())
+  }
+;;
+
+let _ =
+  match () with
+  | _ ->
+    f
+    >>= (function
+     | `Fooooooooooooooooooooooooooooooooooooooo -> 1
+     | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2)
+;;
+
+let _ =
+  match () with
+  | _ ->
+    f
+    >>= (function
+     | `Fooooooooooooooooooooooooooooooooooooooo -> 1
+     | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2)
+    >>= foo
+;;
+
+let exists t key =
+  S.Tree.kind t.tree (path key)
+  >|= function
+  | Some `Contents -> Ok (Some `Value)
+  | Some `Node -> Ok (Some `Dictionary)
+  | None -> Ok None
+;;
+
+let _ = if x then 42 (* dummy *) else y
+let _ = if x then 42 (* dummy *) else if y then z else w
+
+let _ =
+  if x
+  then
+    fun _ -> true
+    (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+  else f
+;;
+
+let _ =
+  match ids_queue with
+  | Some q ->
+    (* this is more efficient than a linear scan of [ids] *)
+    fun id -> not (Ident.HashQueue.mem q id)
+  | None -> fun id -> not (List.mem ~equal:Ident.equal ids id)
+;;
+
+type callbacks =
+  { html_debug_new_node_session_f :
+      'a.
+      ?kind:[ `ComputePre | `ExecNode | `ExecNodeNarrowing | `WTO ]
+      -> pp_name:(Format.formatter -> unit)
+      -> Procdesc.Node.t
+      -> f:(unit -> 'a)
+      -> 'a
+  }

@@ -1,6 +1,6 @@
 [@@@foo]
 
-let (x [@foo]) : (unit[@foo]) = (() [@foo]) [@@foo]
+let (x [@foo]) : (unit[@foo]) = () [@foo] [@@foo]
 
 type t = Foo of (t[@foo]) [@foo] [@@foo]
 
@@ -1347,11 +1347,9 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
            | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
-           (fun (type c) :
-                ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
-              function
-             | Thd, Noarg -> `Nil
-             | Ttl Thd, v -> `Cons v )
+           (fun (type c) ->
+             ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
            (* One can also write the type annotation directly *) } )
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
@@ -1394,8 +1392,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
-         )
+         | `Nil -> ("Nil", None)
+         | `Cons p -> ("Cons", Some (Tdyn (targ, p))) )
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
@@ -1447,7 +1445,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
               (int -> string -> noarg -> unit, c) ty_sel * c
            -> [`A of int | `B of string | `C] =
          function
-         | Thd, v -> `A v | Ttl Thd, v -> `B v | Ttl (Ttl Thd), Noarg -> `C
+         | Thd, v -> `A v
+         | Ttl Thd, v -> `B v
+         | Ttl (Ttl Thd), Noarg -> `C
     end )
 
 type 'a vlist = [`Nil | `Cons of 'a * 'a vlist]
@@ -2909,7 +2909,7 @@ let magic : 'a 'b. 'a -> 'b =
 type (_, +_) eq = Refl : ('a, 'a) eq
 
 let magic : 'a 'b. 'a -> 'b =
- fun (type a b) (x : a) ->
+ fun (type a) (type b) (x : a) ->
   let bad_proof (type a) =
     (Refl : (< m: a >, < m: a >) eq :> (< m: a >, < >) eq)
   in
@@ -3792,7 +3792,8 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -3997,7 +3998,8 @@ let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -4046,12 +4048,12 @@ let int_of_sexp _ = 42
 
 let t_of_sexp : 'a. (sexp -> 'a) -> sexp -> 'a t =
   let _tp_loc = "core_array.ml.t" in
-  fun _of_a t -> (array_of_sexp _of_a) t
+  fun _of_a -> fun t -> (array_of_sexp _of_a) t
 
 let _ = t_of_sexp
 
 let sexp_of_t : 'a. ('a -> sexp) -> 'a t -> sexp =
- fun _of_a v -> (sexp_of_array _of_a) v
+ fun _of_a -> fun v -> (sexp_of_array _of_a) v
 
 let _ = sexp_of_t
 
@@ -4105,13 +4107,13 @@ end = struct
   let t_of_sexp :
       'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
-    fun _of_a _of_perms t -> (array_of_sexp _of_a) t
+    fun _of_a -> fun _of_perms -> fun t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
   let sexp_of_t :
       'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp =
-   fun _of_a _of_perms v -> (sexp_of_array _of_a) v
+   fun _of_a -> fun _of_perms -> fun v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t
 
@@ -4124,12 +4126,12 @@ end = struct
 
     let t_of_sexp : 'perms. (sexp -> 'perms) -> sexp -> 'perms t =
       let _tp_loc = "core_array.ml.Permissioned.Int.t" in
-      fun _of_perms t -> t__of_sexp t
+      fun _of_perms -> fun t -> t__of_sexp t
 
     let _ = t_of_sexp
 
     let sexp_of_t : 'perms. ('perms -> sexp) -> 'perms t -> sexp =
-     fun _of_perms v -> sexp_of_t_ v
+     fun _of_perms -> fun v -> sexp_of_t_ v
 
     let _ = sexp_of_t
   end
@@ -6508,7 +6510,7 @@ end =
   M1
 ;;
 
-fun (x : M1.t) : M2.t -> x
+fun (x : M1.t) -> (x : M2.t)
 
 (* fails *)
 
@@ -9040,9 +9042,9 @@ let f : type a'. a' = assert false
 
 let foo : type a' b'. a' -> b' = fun a -> assert false
 
-let foo : type t'. t' = fun (type t') : t' -> assert false
+let foo : type t'. t' = fun (type t') -> (assert false : t')
 
-let foo : 't. 't = fun (type t) : t -> assert false
+let foo : 't. 't = fun (type t) -> (assert false : t)
 
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
@@ -9155,11 +9157,10 @@ let x = A (B).a
 
 let formula_base x =
   let open Formula.Infix in
-  (Expr.typeof x) #== (Lit (Type IntType))
-  #&& (x #<= (Expr.int 4))
-  #&& ((Expr.int 0) #< x)
+  (Expr.typeof x)#==(Lit (Type IntType))#&&(x#<=(Expr.int 4))#&&( (Expr.int 0)
+                                                                #<x )
 
-let _ = call ~f:(fun pair : (a * b) -> pair) ;;
+let _ = call ~f:(fun pair -> (pair : a * b)) ;;
 
 f
   (fun _ -> function
@@ -9183,7 +9184,7 @@ let xxxxxx =
   let%map (* _____________________________ __________ *) () = yyyyyyyy in
   {zzzzzzzzzzzzz}
 
-let _ = fun (x : int as 'a) : (int as 'a) -> x
+let _ = fun (x : int as 'a) -> (x : int as 'a)
 
 let eradicate_meta_class_is_nullsafe =
   register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
@@ -9202,3 +9203,12 @@ let eradicate_meta_class_is_nullsafe =
 
 let () =
   match () with _ -> ( fun _ : _ -> match () with _ -> () ) | _ -> ()
+
+let f = function
+  | Foo -> bar
+  | EArr l ->
+      EArr
+        (List.map l ~f:(function
+          | ElementHole -> ElementHole
+          | Element e -> Element (m#expression e)
+          | ElementSpread e -> ElementSpread (m#expression e) ))

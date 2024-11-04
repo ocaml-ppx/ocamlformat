@@ -13,15 +13,6 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-val fun_ :
-     Cmts.t
-  -> ?will_keep_first_ast_node:bool
-  -> expression Ast.xt
-  -> expr_function_param list * expression Ast.xt
-(** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
-    and the body of the function [exp]. [will_keep_first_ast_node] is set by
-    default, otherwise the [exp] is returned without modification. *)
-
 module Exp : sig
   val infix :
        Cmts.t
@@ -51,7 +42,7 @@ module Let_binding : sig
     ; lb_pat: pattern Ast.xt
     ; lb_args: expr_function_param list
     ; lb_typ: value_constraint option
-    ; lb_exp: expression Ast.xt
+    ; lb_body: function_body Ast.xt
     ; lb_pun: bool
     ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }

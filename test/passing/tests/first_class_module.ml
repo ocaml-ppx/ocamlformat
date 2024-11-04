@@ -114,3 +114,5 @@ let x = (module M : S)
 
 (* Unpack containing a [pexp_constraint]. *)
 module T = (val (x : (module S)))
+
+let _ = (module Int : T [@foo])
