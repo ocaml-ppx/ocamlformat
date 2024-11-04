@@ -70,6 +70,7 @@ module Misc = struct
       in
       "\x1b[" ^ s ^ "m"
 
+
     type Format.stag += Style of style list
 
     type tag_style ={
@@ -89,19 +90,19 @@ module Misc = struct
     let no_markup stl = { ansi = stl; text_close = ""; text_open = "" }
 
     let default_styles = {
-        warning = no_markup [Bold; FG Magenta];
-        error = no_markup [Bold; FG Red];
-        loc = no_markup [Bold];
-        hint = no_markup [Bold; FG Blue];
-        inline_code= { ansi=[Bold]; text_open = {|"|}; text_close = {|"|} }
-      }
+      warning = no_markup [Bold; FG Magenta];
+      error = no_markup [Bold; FG Red];
+      loc = no_markup [Bold];
+      hint = no_markup [Bold; FG Blue];
+      inline_code= { ansi=[Bold]; text_open = {|"|}; text_close = {|"|} }
+    }
 
     let cur_styles = ref default_styles
     let get_styles () = !cur_styles
     let set_styles s = cur_styles := s
 
     (* map a tag to a style, if the tag is known.
-     @raise Not_found otherwise *)
+       @raise Not_found otherwise *)
     let style_of_tag s = match s with
       | Format.String_tag "error" ->  (!cur_styles).error
       | Format.String_tag "warning" ->(!cur_styles).warning
@@ -138,9 +139,9 @@ module Misc = struct
       let open Format in
       let functions = pp_get_formatter_stag_functions ppf () in
       let functions' = {functions with
-        mark_open_stag=(mark_open_tag ~or_else:functions.mark_open_stag);
-        mark_close_stag=(mark_close_tag ~or_else:functions.mark_close_stag);
-      } in
+                        mark_open_stag=(mark_open_tag ~or_else:functions.mark_open_stag);
+                        mark_close_stag=(mark_close_tag ~or_else:functions.mark_close_stag);
+                       } in
       pp_set_mark_tags ppf true; (* enable tags *)
       pp_set_formatter_stag_functions ppf functions';
       ()
@@ -161,8 +162,8 @@ module Misc = struct
           Format.set_mark_tags true;
           List.iter set_tag_handling formatter_l;
           Color.enabled := (match o with
-            | Some s -> enable_color s
-            | None -> enable_color Color.default_setting)
+              | Some s -> enable_color s
+              | None -> enable_color Color.default_setting)
         );
         ()
   end
