@@ -5,7 +5,8 @@ let () =
 
 let _ =
   (match%ext x with
-   | () -> ()) [@attr y]
+   | () -> ())
+  [@attr y]
 ;;
 
 let _ =
@@ -86,7 +87,8 @@ let _ =
 let _ =
   [%expr
     let x = e in
-    f y] [@x]
+    f y]
+  [@x]
 ;;
 
 let _ =
@@ -421,21 +423,24 @@ let _ =
 let _ =
   (object%ext
      method x = y
-  end) [@attr]
+  end)
+  [@attr]
 ;;
 
 let _ =
   [%ext
     object
       method x = y
-    end] [@attr]
+    end]
+  [@attr]
 ;;
 
 let _ =
   f
     ((object%ext
         method x = y
-     end) [@attr])
+     end)
+    [@attr])
 ;;
 
 let _ =
@@ -443,7 +448,8 @@ let _ =
     ([%ext
        object
          method x = y
-       end] [@attr])
+       end]
+    [@attr])
 ;;
 
 let _ = if%ext x then y else z
@@ -481,26 +487,30 @@ let _ =
 
 let _ =
   (match%ext x with
-   | _ -> x) [@attr]
+   | _ -> x)
+  [@attr]
 ;;
 
 let _ =
   [%ext
     match x with
-    | _ -> x] [@attr]
+    | _ -> x]
+  [@attr]
 ;;
 
 let _ =
   f
     ((match%ext x with
-      | _ -> x) [@attr])
+      | _ -> x)
+    [@attr])
 ;;
 
 let _ =
   f
     ([%ext
        match x with
-       | _ -> x] [@attr])
+       | _ -> x]
+    [@attr])
 ;;
 
 let _ =
@@ -529,26 +539,30 @@ let _ =
 
 let _ =
   (try%ext x with
-   | _ -> x) [@attr]
+   | _ -> x)
+  [@attr]
 ;;
 
 let _ =
   [%ext
     try x with
-    | _ -> x] [@attr]
+    | _ -> x]
+  [@attr]
 ;;
 
 let _ =
   f
     ((try%ext x with
-      | _ -> x) [@attr])
+      | _ -> x)
+    [@attr])
 ;;
 
 let _ =
   f
     ([%ext
        try x with
-       | _ -> x] [@attr])
+       | _ -> x]
+    [@attr])
 ;;
 
 let _ = fun%ext x -> x
@@ -586,26 +600,30 @@ let _ =
 
 let _ =
   (function%ext
-    | x -> x) [@attr]
+    | x -> x)
+  [@attr]
 ;;
 
 let _ =
   [%ext
     function
-    | x -> x] [@attr]
+    | x -> x]
+  [@attr]
 ;;
 
 let _ =
   f
     ((function%ext
-       | x -> x) [@attr])
+       | x -> x)
+    [@attr])
 ;;
 
 let _ =
   f
     ([%ext
        function
-       | x -> x] [@attr])
+       | x -> x]
+    [@attr])
 ;;
 
 let _ = new%ext x
@@ -643,24 +661,28 @@ let _ =
 
 let _ =
   (x;%ext
-   y) [@attr]
+   y)
+  [@attr]
 ;;
 
 let _ =
   [%ext
     x;
-    y] [@attr]
+    y]
+  [@attr]
 ;;
 
 let _ =
   f
     ((x;%ext
-      y) [@attr])
+      y)
+    [@attr])
 ;;
 
 let _ =
   f
     ([%ext
        x;
-       y] [@attr])
+       y]
+    [@attr])
 ;;

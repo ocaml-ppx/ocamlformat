@@ -381,6 +381,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to attribute_on_long_line.ml.stdout
+   (with-stderr-to attribute_on_long_line.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/attribute_on_long_line.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/attribute_on_long_line.ml.ref attribute_on_long_line.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/attribute_on_long_line.ml.err attribute_on_long_line.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to attribute_on_long_line.ml.js-stdout
+   (with-stderr-to attribute_on_long_line.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/attribute_on_long_line.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/attribute_on_long_line.ml.js-ref attribute_on_long_line.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/attribute_on_long_line.ml.js-err attribute_on_long_line.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to attributes.ml.stdout
    (with-stderr-to attributes.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/attributes.ml})))))

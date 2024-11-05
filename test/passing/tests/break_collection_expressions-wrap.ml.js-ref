@@ -61,7 +61,8 @@ let length =
    ; (* foo *) 27 (* foo *)
    ; 27
    ; 27
-  |] [@foo]
+  |]
+  [@foo]
 ;;
 
 let length =
@@ -71,7 +72,8 @@ let length =
    ; (* foo *) 27 (* foo *)
    ; 27
    ; 27
-  :] [@foo]
+  :]
+  [@foo]
 ;;
 
 let length =
@@ -173,7 +175,8 @@ let length =
    ; 27
    ; 27
    ; 28
-  |] [@foo]
+  |]
+  [@foo]
 ;;
 
 let length =
@@ -271,7 +274,8 @@ let length =
    ; 27
    ; 27
    ; 28
-  :] [@foo]
+  :]
+  [@foo]
 ;;
 
 let length =
@@ -388,5 +392,6 @@ let length =
   ; 27
   ; 27
   ; 28
-  ] [@foo]
+  ]
+  [@foo]
 ;;

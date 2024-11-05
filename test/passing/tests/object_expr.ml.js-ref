@@ -19,5 +19,6 @@ let () =
   f
     (object
        method m x = x
-    end [@xxx])
+    end
+    [@xxx])
 ;;

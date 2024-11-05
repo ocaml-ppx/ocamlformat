@@ -667,11 +667,7 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
 and fmt_attributes_aux c ?pre ?suf ~key attrs =
   let num = List.length attrs in
   fmt_if_k (num > 0)
-    ( opt pre (function
-        (* Breaking before an attribute can confuse ocp-indent that will
-           produce a suboptimal indentation. *)
-        | Space when c.conf.fmt_opts.ocp_indent_compat.v -> sp Blank
-        | pre -> sp pre )
+    ( opt pre sp
     $ hvbox_if (num > 1) 0
         (hvbox 0 (list attrs "@ " (fmt_attribute c ~key)) $ opt suf str) )
 
@@ -1242,9 +1238,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   (match ctx0 with Pat {ppat_desc= Ppat_tuple _; _} -> hvbox 0 | _ -> Fn.id)
-  @@ ( match ppat_desc with
-     | Ppat_or _ -> fun k -> Cmts.fmt c ppat_loc @@ k
-     | _ -> fun k -> Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k) )
+  @@ (fun k -> Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k))
   @@ hovbox_if box 0
   @@ fmt_pattern_attributes c xpat
   @@
@@ -1433,7 +1427,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         | `Fit_or_vertical | `Vertical -> open_hvbox
         | `Fit | `Nested | `Toplevel | `All -> open_hovbox
       in
-      hvbox 0
+      hvbox
+        (if nested then -2 else 0)
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last:_ xpat ->
@@ -1450,10 +1445,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                   in
                   let pro =
                     if first_grp && first then
-                      fmt_opt pro
-                      $ fits_breaks
-                          (if parens then "(" else "")
-                          (if nested then "" else "( ")
+                      fits_breaks
+                        (if parens then "(" else "")
+                        (if nested then "" else "( ")
                       $ open_box (-2)
                     else if first then
                       Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before

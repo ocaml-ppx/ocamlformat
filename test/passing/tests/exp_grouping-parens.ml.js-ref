@@ -366,7 +366,8 @@ let _ = [%ext (* foo *) x y]
 let _ =
   begin
     market_data_items := ()
-  end [@landmark "parse_constant_dividends"]
+  end
+  [@landmark "parse_constant_dividends"]
 ;;
 
 let () = if a then b (* asd *)
@@ -387,7 +388,8 @@ let x =
             Some (path, dist)
           with
           | Not_found | Not_found_s _ -> None
-        end [@warning "-3"]
+        end
+        [@warning "-3"]
       | pd -> pd
     )
   in
@@ -398,5 +400,6 @@ let _ =
   if something_changed then
     begin
       loop
-    end [@attr]
+    end
+    [@attr]
 ;;
