@@ -914,7 +914,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (Params.Indent.type_constr c.conf)
         ( fmt_core_type c (sub_typ ~ctx t1)
         $ space_break
-        $ fmt_longident_loc c ~constructor:true lid )
+        $ fmt_longident_loc c ~constructor:false lid )
   | Ptyp_constr (lid, t1N) ->
       hvbox
         (Params.Indent.type_constr c.conf)
@@ -1135,10 +1135,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   match ppat_desc with
   | Ppat_any -> str "_"
   | Ppat_var {txt; loc} ->
-      Cmts.fmt c loc
-      @@ wrap_if
-           (Std_longident.String_id.is_symbol txt)
-           (str "( ") (str " )") (ident txt)
+      let is_symbol = Std_longident.String_id.is_symbol txt in
+      let str = if is_symbol then str else ident in
+      Cmts.fmt c loc @@ wrap_if is_symbol (str "( ") (str " )") (str txt)
   | Ppat_alias (pat, {txt; loc}) ->
       let paren_pat =
         match pat.ppat_desc with
@@ -1186,7 +1185,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                     hvbox 0
                       (Params.parens c.conf
                          ( str "type "
-                         $ list names space_break (fmt_str_loc c) ) )
+                         $ list names space_break (fmt_ident_loc c) ) )
                     $ space_break )
               $ fmt_pattern c (sub_pat ~ctx pat) ) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl

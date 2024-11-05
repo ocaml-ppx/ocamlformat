@@ -65,6 +65,14 @@ module M = struct
     end
 end
 
+type 'a \#for = 'a list
+
+type 'a \#sig = 'a \#for
+
+type \#true = bool
+
+let f \#false = \#false
+
 type t = {x: int @@ \#let}
 
 let x @ \#let = 42
@@ -74,3 +82,13 @@ let x = (~\#let:42, ~\#and:43)
 let ((~\#let, ~\#and) : \#let:int * \#and:int) = x
 
 kind_abbrev_ \#let = \#and
+
+type t = T : 'a list -> t
+
+let g x =
+  let (T (type \#for) (_ : \#for list)) = x in
+  ()
+
+let ( lsl ) x y = x lsl y
+
+let \#lsl x y = x lsl y
