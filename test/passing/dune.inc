@@ -10057,7 +10057,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/raw_identifiers.ml raw_identifiers.ml.stdout)))
+ (action (diff tests/raw_identifiers.ml.ref raw_identifiers.ml.stdout)))
 
 (rule
  (alias runtest)

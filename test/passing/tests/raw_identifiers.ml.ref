@@ -91,4 +91,4 @@ let g x =
 
 let ( lsl ) x y = x lsl y
 
-let \#lsl x y = x lsl y
+let ( lsl ) x y = x lsl y
