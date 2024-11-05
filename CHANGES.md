@@ -13,7 +13,8 @@ profile. This started with version 0.26.0.
   This might change the formatting of some functions due to the formatting code
   being completely rewritten.
 
-- Support OCaml 5.3 syntax (#2609, #2610, @Julow)
+- Support OCaml 5.3 syntax (#2609, #2610, #2611, @Julow)
+  This adds support for short functor type arguments syntax.
 
 - Documentation comments are now formatted by default (#2390, @Julow)
   Use the option `parse-docstrings = false` to restore the previous behavior.

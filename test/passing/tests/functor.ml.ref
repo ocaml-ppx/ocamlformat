@@ -104,9 +104,15 @@ module type SETFUNCTOR = (Elt : ORDERED_TYPE) -> sig end
 module WrongSet : (Elt : ORDERED_TYPE) -> SET = Set
 
 module M : (A : S) (B : S) -> S = N
-module M : (A : S) -> (B : S) -> S = N
+
+module M : (A : S) (B : S) -> S = N
+
 module M : functor (A : S) -> (B : S) -> S = N
-module M : functor (A : S) -> functor (B : S) -> S = N
+
 module M : functor (A : S) (B : S) -> S = N
-module M : functor (A : S) -> functor (B : S) -> S = N
+
+module M : functor (A : S) (B : S) -> S = N
+
+module M : functor (A : S) (B : S) -> S = N
+
 module M : (A : S) -> functor (B : S) -> S = N

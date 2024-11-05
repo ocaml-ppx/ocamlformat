@@ -841,12 +841,9 @@ and module_type i ppf x =
   | Pmty_signature (s) ->
       line i ppf "Pmty_signature\n";
       signature i ppf s;
-  | Pmty_functor (params, mt) ->
-      line i ppf "Pmty_functor\n";
+  | Pmty_functor (params, mt, short) ->
+      line i ppf "Pmty_functor short=%b\n" short;
       list i functor_parameter ppf params;
-      module_type i ppf mt
-  | Pmty_gen (loc, mt) ->
-      line i ppf "Pmty_gen %a\n" fmt_location loc;
       module_type i ppf mt
   | Pmty_with (mt, l) ->
       line i ppf "Pmty_with\n";

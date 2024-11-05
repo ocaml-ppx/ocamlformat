@@ -159,15 +159,15 @@ type t = [%foo: ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo] (M : S) -> functor (_ : (module type of M) [@foo]) -> sig end
-                                                                                     [@foo]
+module type S = functor [@foo] (M : S) -> (_ : (module type of M) [@foo]) -> sig end
+                                                                             [@foo]
 
-module type S = functor (_ : S) (_ : S) -> S
-module type S = functor (_ : functor (_ : S) -> S) -> S
-module type S = functor (M : S) (_ : S) -> S
-module type S = functor (_ : functor (M : S) -> S) -> S
-module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
-module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
+module type S = (_ : S) (_ : S) -> S
+module type S = (_ : (_ : S) -> S) -> S
+module type S = functor (M : S) -> (_ : S) -> S
+module type S = (_ : functor (M : S) -> S) -> S
+module type S = (_ : functor [@foo] (_ : S) -> S) -> S
+module type S = (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
   module rec A : (S with type t = t)
