@@ -12,6 +12,22 @@
 open Parser_standard
 open Std_ast
 
+(* CR jane-syntax: Soon we will import the PR eliminating the rest of the
+   attribute-based jane syntax mechanism
+   (https://github.com/ocaml-flambda/flambda-backend/pull/3162), and the
+   person who does that will have some work to do in this file.
+
+   Currently, this file doesn't explicitly handle much of what remains in
+   jane syntax (e.g., immutable arrays and module strengthening). But it is
+   surprising that it doesn't - it must be the case that these features are
+   undertested or the obvious normalization problems they create when erasing
+   jane syntax are masked by the broken round-trip check.
+
+   To fix that, it will likely be necessary to add explicit normalization
+   logic for the remaining jane street extensions to this file. At the same
+   time, [is_erasable_jane_syntax] below, which is currently just handling
+   [curry] attributes, should probably be inlined or renamed. *)
+
 let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
   | _ -> false

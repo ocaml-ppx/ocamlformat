@@ -13,7 +13,14 @@ Just run:
 ./parser-jane/repatch.sh {path-to-flambda-backend}
 ```
 Additional steps may be necessary if you are adding or removing files - see the
-top-level HACKING.jst.md
+top-level HACKING.jst.md.
+
+Note: The import script tries to apply a patch to the newly imported parser that
+restores the changes needed by ocamlformat. This diff may fail to apply cleanly,
+for example if the same parts of the parser have changed in flambda-backend.
+In that case, you will see in the script's output that some parts of the patch
+haven't been applied and it will create ".rej" files describing them. You must
+manually look at and apply these rejected portions.
 
 ### Manually
 

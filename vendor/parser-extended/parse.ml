@@ -175,7 +175,7 @@ let prepare_error err =
         | Constrained_types ->
             Format.fprintf ppf "constrained types are not supported"
         | Private_types ->
-            Format.fprintf ppf  "private types are not supported"
+            Format.fprintf ppf "private types are not supported"
         | Not_with_type ->
             Format.fprintf ppf "only %s constraints are supported"
               "with type t ="
