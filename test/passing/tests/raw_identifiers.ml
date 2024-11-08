@@ -92,3 +92,9 @@ let g x =
 let ( lsl ) x y = x lsl y
 
 let \#lsl x y = x lsl y
+
+module type \#sig = sig end
+
+module M = struct let \#mod = 1 end
+
+let _ = M.\#mod
