@@ -234,9 +234,10 @@ let escape_ident s = if Lexer.is_keyword s then "\\#" ^ s else s
 let ident s = str (escape_ident s)
 
 let rec fmt_longident ~constructor (li : Longident.t) =
-  let str = if constructor then str else ident in
   let fmt_id id =
-    wrap_if (Std_longident.String_id.is_symbol id) "( " " )" (str id)
+    let is_symbol = Std_longident.String_id.is_symbol id in
+    let str = if constructor || is_symbol then str else ident in
+    wrap_if is_symbol "( " " )" (str id)
   in
   match li with
   | Lident id -> fmt_id id
@@ -262,6 +263,9 @@ let fmt_ident_loc c ?pre {txt; loc} =
 
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (opt pre str $ str (Option.value ~default txt))
+
+let fmt_ident_loc_opt c ?pre ?default {txt; loc} =
+  fmt_str_loc_opt c ?pre ?default {txt = Option.map txt ~f:escape_ident; loc}
 
 let variant_var c ({txt= x; loc} : variant_var) =
   Cmts.fmt c loc @@ (str "`" $ fmt_ident_loc c x)
@@ -4470,7 +4474,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     let xmt = sub_mty ~ctx mt in
     let blk = fmt_module_type c ?rec_ xmt in
     let pro =
-      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_str_loc_opt c name
+      pro $ Cmts.fmt_before c loc $ str "(" $ fmt_ident_loc_opt c name
       $ str " : "
     and epi = str ")" $ Cmts.fmt_after c loc in
     compose_module' ~box:false ~pro ~epi blk
@@ -4511,7 +4515,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     str keyword
     $ fmt_extension_suffix c ext
     $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-    $ fmt_if rec_flag " rec" $ str " " $ fmt_str_loc_opt c name
+    $ fmt_if rec_flag " rec" $ str " " $ fmt_ident_loc_opt c name
   in
   let compact =
     Poly.(c.conf.fmt_opts.let_module.v = `Compact) || not can_sparse
