@@ -3275,7 +3275,7 @@
  (action
   (with-stdout-to js_record.ml.stdout
    (with-stderr-to js_record.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/js_record.ml})))))
+     (run %{bin:ocamlformat} --margin-check --profile=janestreet --max-iter=3 %{dep:tests/js_record.ml})))))
 
 (rule
  (alias runtest)

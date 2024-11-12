@@ -65,7 +65,7 @@ profile. This started with version 0.26.0.
 - \* Improve formatting of functor arguments (#2505, @Julow)
   This also reduce the indentation of functor arguments with long signatures.
 
-- Improvements to the Janestreet profile (#2445, #2314, #2460, #2593, @Julow, @tdelvecchio-jsc)
+- Improvements to the Janestreet profile (#2445, #2314, #2460, #2593, #2612, @Julow, @tdelvecchio-jsc)
 
 - \* Undo let-bindings and methods normalizations (#2523, #2529, @gpetiot)
   This remove the rewriting of some forms of let-bindings and methods:
@@ -111,6 +111,7 @@ profile. This started with version 0.26.0.
 - Fix formatting of paragraphs in lists in documentation (#2607, @Julow)
 - Avoid unwanted space in references and links text in documentation (#2608, @Julow)
 - \* Improve the indentation of attributes in patterns (#2613, @Julow)
+- \* Avoid large indentation in patterns after `let%ext` (#2615, @Julow)
 
 ## 0.26.2 (2024-04-18)
 
