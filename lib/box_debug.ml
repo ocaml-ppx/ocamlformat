@@ -42,6 +42,11 @@ let css =
   .fits_or_breaks {
     background-color: red;
   }
+  .string_with_whitespaces {
+    background-color: yellow;
+    white-space: pre;
+  }
+
   .tooltiptext {
     visibility: hidden;
     width: min-content;
@@ -132,7 +137,15 @@ let force_newline ?stack fs =
   debugf fs "<div class=\"break force_newline\">force_newline%a</div>"
     stack_tooltip stack
 
-let start_str fs = debugf fs "<span class='string'>"
+let start_str fs s =
+  let extra_class =
+    match String.lfindi s ~f:(fun _ c -> Char.is_whitespace c) with
+    | Some _ ->
+        (* String contains whitespaces, color it *)
+        " string_with_whitespaces"
+    | None -> ""
+  in
+  debugf fs "<span class='string%s'>" extra_class
 
 let end_str ?stack fs = debugf fs "%a</span>" stack_tooltip stack
 
