@@ -3446,12 +3446,12 @@ and fmt_label_declaration c ctx ?(last = false) decl =
              (fits_breaks ~level:5 "" ";") )
           (str ";")
   in
+  let indent_cmts = Params.Indent.record_docstring c.conf in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
-    $ hvbox
-        (Params.Indent.record_docstring c.conf)
+    $ hvbox indent_cmts
         ( hvbox 3
-            ( hvbox 4
+            ( hvbox indent_cmts
                 ( hvbox 2
                     ( hovbox 2
                         ( fmt_mutable_flag ~pro:noop ~epi:space_break c
