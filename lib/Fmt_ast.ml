@@ -4571,7 +4571,6 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
         (max (c.conf.fmt_opts.let_binding_indent.v - 1) 0, false)
     | _ -> (c.conf.fmt_opts.let_binding_indent.v, false)
   in
-  let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   let toplevel, in_, epi, cmts_before, cmts_after =
     match in_ with
     | Some in_ ->
@@ -4591,13 +4590,16 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
   let ext = lb_attrs.attrs_extension in
+  let should_break_after_keyword =
+    Cmts.has_before c.cmts lb_pat.ast.ppat_loc || Option.is_some ext
+  in
   let decl =
     let decl =
       fmt_str_loc c lb_op
       $ fmt_extension_suffix c ext
       $ fmt_attributes c at_attrs
       $ fmt_if rec_flag (str " rec")
-      $ fmt_or pat_has_cmt space_break (str " ")
+      $ fmt_or should_break_after_keyword space_break (str " ")
     and pattern = fmt_pattern c lb_pat
     and args =
       fmt_if

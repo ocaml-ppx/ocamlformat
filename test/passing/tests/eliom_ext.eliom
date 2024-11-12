@@ -28,8 +28,9 @@ type some_type = int * string list [@@deriving json]
 
 type another_type = A of some_type | B of another_type [@@deriving json]]
 
-let%server ( (s : int Eliom_shared.React.S.t)
-           , (f : (?step:React.step -> int -> unit) Eliom_shared.Value.t) ) =
+let%server
+    ( (s : int Eliom_shared.React.S.t)
+    , (f : (?step:React.step -> int -> unit) Eliom_shared.Value.t) ) =
   Eliom_shared.React.S.create 0
 
 let%client incr_s () =
