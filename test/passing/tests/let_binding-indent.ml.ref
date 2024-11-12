@@ -248,7 +248,8 @@ let copy from ~into : unit =
            ; pulse_summaries_count
            ; topl_reachable_calls
            ; timeouts
-           ; timings } [@warning "+9"] ) =
+           ; timings }
+           [@warning "+9"] ) =
             ()
       in
       ()

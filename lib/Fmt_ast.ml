@@ -1086,8 +1086,15 @@ and fmt_pattern_attributes c xpat k =
               false
           | _ -> true )
       in
-      Params.parens_if parens_attr c.conf
-        (k $ fmt_attributes c ~pre:Space attrs)
+      let box =
+        match (xpat.ast.ppat_desc, c.conf.fmt_opts.sequence_style.v) with
+        | (Ppat_record _ | Ppat_array _ | Ppat_list _), `Terminator -> hovbox
+        | _ -> hvbox
+      in
+      box
+        (if parens_attr then 1 else 0)
+        (Params.parens_if parens_attr c.conf
+           (k $ fmt_attributes c ~pre:Space attrs) )
 
 and fmt_pattern ?ext c ?pro ?parens ?(box = false)
     ({ctx= ctx0; ast= pat} as xpat) =
