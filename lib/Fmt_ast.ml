@@ -1086,7 +1086,15 @@ and fmt_pattern_attributes c xpat k =
               false
           | _ -> true )
       in
-      hvbox_if parens_attr 1
+      let box =
+        match xpat.ast.ppat_desc with
+        | (Ppat_record _ | Ppat_array _ | Ppat_list _)
+          when c.conf.fmt_opts.dock_collection_brackets.v ->
+            hovbox
+        | _ -> hvbox
+      in
+      box
+        (if parens_attr then 1 else 0)
         (Params.parens_if parens_attr c.conf
            (k $ fmt_attributes c ~pre:Space attrs) )
 
