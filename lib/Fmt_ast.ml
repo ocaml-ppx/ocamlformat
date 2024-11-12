@@ -265,7 +265,7 @@ let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (opt pre str $ str (Option.value ~default txt))
 
 let fmt_ident_loc_opt c ?pre ?default {txt; loc} =
-  fmt_str_loc_opt c ?pre ?default {txt = Option.map txt ~f:escape_ident; loc}
+  fmt_str_loc_opt c ?pre ?default {txt= Option.map txt ~f:escape_ident; loc}
 
 let variant_var c ({txt= x; loc} : variant_var) =
   Cmts.fmt c loc @@ (str "`" $ fmt_ident_loc c x)
@@ -1074,11 +1074,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ fmt_longident_loc c ~constructor:false lid )
   | Ptyp_extension ext ->
       hvbox c.conf.fmt_opts.extension_indent.v (fmt_extension c ctx ext)
-  | Ptyp_package (id, cnstrs) ->
+  | Ptyp_package (id, cnstrs, attrs) ->
       hvbox 2
         ( hovbox 0
             (fmt "module@ " $ fmt_longident_loc c ~constructor:false id)
-        $ fmt_package_type c ctx cnstrs )
+        $ fmt_package_type c ctx cnstrs attrs )
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
@@ -1209,7 +1209,7 @@ and fmt_labeled_tuple_type c lbl xtyp =
       hvbox 0
         (Cmts.fmt c s.loc (ident s.txt) $ str ":" $ fmt_core_type c xtyp)
 
-and fmt_package_type c ctx cnstrs =
+and fmt_package_type c ctx cnstrs attrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
     fmt_or first "@;<1 0>" "@;<1 1>"
     $ hvbox 2
@@ -1218,7 +1218,7 @@ and fmt_package_type c ctx cnstrs =
         $ fmt " =@ "
         $ fmt_core_type c (sub_typ ~ctx typ) )
   in
-  list_fl cnstrs fmt_cstr
+  list_fl cnstrs fmt_cstr $ fmt_attributes c attrs
 
 and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
   let c = update_config c prf_attributes in
@@ -1276,8 +1276,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_var {txt; loc} ->
       let is_symbol = Std_longident.String_id.is_symbol txt in
       let str = if is_symbol then str else ident in
-      Cmts.fmt c loc
-      @@ wrap_if is_symbol "( " " )" (str txt)
+      Cmts.fmt c loc @@ wrap_if is_symbol "( " " )" (str txt)
   | Ppat_alias (pat, {txt; loc}) ->
       let paren_pat =
         match pat.ppat_desc with
@@ -1520,14 +1519,14 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_unpack (name, pt) ->
       let fmt_constraint_opt pt k =
         match pt with
-        | Some (id, cnstrs) ->
+        | Some (id, cnstrs, attrs) ->
             hovbox 0
               (Params.parens_if parens c.conf
                  (hvbox 1
                     ( hovbox 0
                         ( k $ fmt "@ : "
                         $ fmt_longident_loc c ~constructor:false id )
-                    $ fmt_package_type c ctx cnstrs ) ) )
+                    $ fmt_package_type c ctx cnstrs attrs ) ) )
         | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
       in
       fmt_constraint_opt pt
@@ -2908,11 +2907,11 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       and epi = fmt_if_k inner_parens cls_paren in
       let fmt_mod m =
         match pt with
-        | Some (id, cnstrs) ->
+        | Some (id, cnstrs, attrs) ->
             hvbox 2
               ( hovbox 0
                   (m $ fmt "@ : " $ fmt_longident_loc ~constructor:false c id)
-              $ fmt_package_type c ctx cnstrs )
+              $ fmt_package_type c ctx cnstrs attrs )
         | None -> m
       in
       outer_pro
@@ -4838,11 +4837,11 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
                 (str "end" $ fmt_attributes_and_docstrings c pmod_attributes)
             $ after ) }
   | Pmod_unpack (e, ty1, ty2) ->
-      let package_type sep (lid, cstrs) =
+      let package_type sep (lid, cstrs, attrs) =
         break 1 (Params.Indent.mod_unpack_annot c.conf)
         $ hvbox 0
             ( hovbox 0 (str sep $ fmt_longident_loc c ~constructor:false lid)
-            $ fmt_package_type c ctx cstrs )
+            $ fmt_package_type c ctx cstrs attrs )
       in
       { empty with
         opn= Some (open_hvbox 2)

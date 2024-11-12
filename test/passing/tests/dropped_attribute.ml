@@ -1,5 +1,3 @@
-(* CR-soon tdelvecchio: [[@annot2]] and [[@annot3]] are dropped by ocamlformat. *)
-
 module _ : sig
   val foo : (module T with type t = 'a [@annot1]) -> unit
 end = struct
