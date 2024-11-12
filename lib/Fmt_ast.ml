@@ -1086,8 +1086,9 @@ and fmt_pattern_attributes c xpat k =
               false
           | _ -> true )
       in
-      Params.parens_if parens_attr c.conf
-        (k $ fmt_attributes c ~pre:Space attrs)
+      hvbox_if parens_attr 1
+        (Params.parens_if parens_attr c.conf
+           (k $ fmt_attributes c ~pre:Space attrs) )
 
 and fmt_pattern ?ext c ?pro ?parens ?(box = false)
     ({ctx= ctx0; ast= pat} as xpat) =
