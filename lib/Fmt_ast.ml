@@ -1087,8 +1087,8 @@ and fmt_pattern_attributes c xpat k =
           | _ -> true )
       in
       let box =
-        match (xpat.ast.ppat_desc, c.conf.fmt_opts.break_separators.v) with
-        | (Ppat_record _ | Ppat_array _ | Ppat_list _), `After -> hovbox
+        match (xpat.ast.ppat_desc, c.conf.fmt_opts.sequence_style.v) with
+        | (Ppat_record _ | Ppat_array _ | Ppat_list _), `Terminator -> hovbox
         | _ -> hvbox
       in
       box
