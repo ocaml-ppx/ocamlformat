@@ -1,0 +1,156 @@
+{0 Parent/Child Specification}
+This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://v3.ocaml.org/packages}v3.ocaml.org/packages}.
+
+The rules are;
+
+- [.mld] files may or may not have a parent [.mld].
+- Compilation units must have a parent [.mld].
+- The parent [.mld] file must be compiled before any of its children, and the children
+  must be specified at the parent's compilation time.
+- The output paths of [.mld] files and compilation units are subdirectories of their parent's
+  output directory.
+- The output directory of a [.mld] file [x.mld] with children is [<parent_output_directory>/x],
+  and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html]
+- The output directory of a [.mld] file [x.mld] without children is [<parent_output_directory> /x.html]
+- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html]
+
+{b Note:} The [--pkg <package>] option is still supported for backward compatibility in [odoc >= v2.0.0],
+although it's now equivalent to specifying a parent [.mld] file.
+
+For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has
+children, [Max], and page [foo], whereas [Mark] has no children. That is to say,
+[john.mld], [doe.mld], [mark.mld], [max.mld], [foo.ml] respectively. For instance;
+
+[john.mld]
+
+{v
+{0 About John}
+
+I'm John the father to {{!page-doe}Doe} and {{!page-mark}Mark}.
+v}
+
+[doe.mld]
+
+{v
+{0 About Doe}
+
+I'm Doe, the;
+- son to {{!page-john}John}
+- brother to {{!page-mark}Mark}
+- father to {{!page-max}Max}
+
+I also own page {{!page-foo}foo}
+v}
+
+[mark.mld]
+
+{v
+{0 About Mark}
+
+I'm Mark {{!page-doe}Doe}'s brother and I have no children.
+v}
+
+[max.mld]
+
+{v
+{0 About Max}
+
+I'm Max, the child to {{!page-doe}Doe}
+v}
+
+[foo.ml]
+
+{[
+  (** I'm foo, a page child to Doe *)
+]}
+
+{2 Compilation}
+
+{v
+$ ocamlc -c -bin-annot foo.ml
+  && odoc compile john.mld -c page-doe -c page-mark
+  && odoc compile doe.mld -I . --parent page-john -c page-max -c foo
+  && odoc compile max.mld -I . --parent page-doe
+  && odoc compile foo.cmt -I . --parent page-doe
+  && odoc compile mark.mld -I . --parent page-john
+v}
+
+The output of the compilation phase will be [.odoc] files, where each will be
+linked by invoking the [odoc link] command on them.
+
+{2 Linking}
+
+[odoc link -I . <file>.odoc]
+
+{v
+$ odoc link -I . page-john.odoc
+  && odoc link -I . page-doe.odoc
+  && odoc link -I . page-mark.odoc
+  && odoc link -I . page-max.odoc
+  && odoc link -I . foo.odoc
+v}
+
+The output of the [odoc link] command is an [.odocl] file, by default, in the same path as the original [.odoc] file.
+
+{2 Generating HTML}
+{v
+$ odoc html-generate --indent -o html page-john.odocl
+  && odoc html-generate --indent -o html page-doe.odocl
+  && odoc html-generate --indent -o html page-mark.odocl
+  && odoc html-generate --indent -o html page-max.odocl
+  && odoc html-generate --indent -o html foo.odocl
+  && odoc support-files -o html
+v}
+
+Then we inspect the contents of the [html] directory using;
+
+{v
+$ ls -R html
+  highlight.pack.js
+  john
+  odoc.css
+
+  html/john:
+  doe
+  index.html
+  mark.html
+
+  html/john/doe:
+  Foo
+  index.html
+  max.html
+
+  html/john/doe/Foo:
+  index.
+v}
+
+{b Note:} We generated HTML files only for this example, but it's very possible to
+generate files in other formats (i.e, latex and man-pages) using:
+
+- [$ odoc latex-generate -o latex <file>.odocl]
+- [$ odoc man-generate -o man <file>.odocl]
+
+Of course there are different commands that [odoc] uses for other purposes; e.g.,
+for inspection:
+
+- [odoc <html/latex/man>-targets ...] takes a glimpse of the expected targets
+- [odoc compile-deps ...] lists units (with their digest) that need to be
+  compiled in order to compile the current compilation unit. The unit itself and its
+  digest is also reported in the output.
+
+For example, inspecting the dependencies required to compile [foo.cmt], we run
+
+[odoc compile-deps foo.cmt]
+
+and we shall get
+
+{[
+  Stdlib aea3513d44d604b62eaff79ad12007b3
+  Foo x5ab79b5411a3c3476029260eda0b4a26
+  CamlinternalFormatBasics f562e7b79dbe1bb1591060d6b4e854cf
+]}
+
+For more about [odoc] commands, simply invoke [odoc --help] in your shell.
+
+Preserve the space between a link/reference and its text:
+{{:foo}bar} {{:foo} bar} {{!foo}bar} {{!foo} bar}

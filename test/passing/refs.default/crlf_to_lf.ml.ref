@@ -1,0 +1,41 @@
+let _ = {|
+foo
+
+ bar
+|}
+
+(** This is verbatim:
+
+    {v
+   o  o
+  /\  /\
+  /\  /\
+    v}
+
+    This is preformated code:
+
+    {[
+      let verbatim s =
+        s |> String.split_lines |> List.map ~f:String.strip |> fun s ->
+        list s "@," Fmt.str
+    ]} *)
+
+(** Lists:
+
+    list with short lines:
+
+    - x
+
+    list with long lines:
+
+    - xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx
+      xxx xxx xxx xxx xxx xxx
+
+    list with sub lists:
+
+    {ul
+     {- xxx
+
+        - a
+     }
+    } *)
