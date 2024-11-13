@@ -13,7 +13,6 @@ let dep fname = spf "%%{dep:%s}" fname
 type setup =
   { mutable has_opts: bool
   ; mutable base_file: string option
-  ; mutable extra_deps: string list
   ; mutable should_fail: bool
   ; mutable enabled_if: string option }
 
@@ -43,11 +42,7 @@ let read_file file =
 
 let add_test ?base_file map src_test_name =
   let s =
-    { has_opts= false
-    ; base_file
-    ; extra_deps= []
-    ; should_fail= false
-    ; enabled_if= None }
+    {has_opts= false; base_file; should_fail= false; enabled_if= None}
   in
   map := StringMap.add src_test_name s !map ;
   s
@@ -74,7 +69,6 @@ let register_file tests fname =
       | [] -> ()
       | ["output"] -> ()
       | ["opts"] -> setup.has_opts <- true
-      | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
       | ["err"] -> ()
@@ -103,7 +97,6 @@ let emit_test test_name setup =
   let base_test_name =
     input_dir ^ match setup.base_file with Some n -> n | None -> test_name
   in
-  let extra_deps = String.concat " " setup.extra_deps in
   let enabled_if_line =
     match setup.enabled_if with
     | None -> ""
@@ -113,7 +106,7 @@ let emit_test test_name setup =
   Printf.printf
     {|
 (rule
- (deps .ocamlformat dune-project %s)%s
+ (deps .ocamlformat dune-project)%s
  (action
   (with-stdout-to %s
    (with-stderr-to %s.stderr
@@ -127,7 +120,7 @@ let emit_test test_name setup =
  (alias runtest)%s
  (action (diff %s %s.stderr)))
 |}
-    extra_deps enabled_if_line output_fname test_name
+    enabled_if_line output_fname test_name
     (cmd setup.should_fail
        (["%{bin:ocamlformat}"] @ opts @ [dep base_test_name]) )
     enabled_if_line (ref_file ".ref") test_name enabled_if_line
