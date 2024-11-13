@@ -3306,18 +3306,6 @@
  (action (diff js_source.ml.err js_source.ml.stderr)))
 
 (rule
- (deps ../tests/.ocp-indent )
- (package ocamlformat)
- (action
-   (with-outputs-to js_source.ml.ocp.output
-     (run %{bin:ocp-indent} --config JaneStreet %{dep:js_source.ml.stdout}))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff js_source.ml.ocp js_source.ml.ocp.output)))
-
-(rule
  (deps ../tests/.ocamlformat )
  (package ocamlformat)
  (action
