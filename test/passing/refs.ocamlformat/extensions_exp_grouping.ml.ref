@@ -1,0 +1,93 @@
+let _ =
+  begin%ext
+    y >>= z
+  end
+
+let _ =
+  [%ext
+    begin
+      y >>= z
+    end]
+
+let _ =
+  x
+  >>= begin%ext
+        y >>= z
+      end
+
+let _ =
+  x
+  >>= [%ext
+        begin
+          y >>= z
+        end]
+
+let _ =
+  f
+    begin%ext
+      y >>= z
+    end
+
+let _ =
+  f
+    [%ext
+      begin
+        y >>= z
+      end]
+
+let _ = (module%ext S)
+
+let _ = [%ext (module S)]
+
+let _ = f (module%ext S)
+
+let _ = f [%ext (module S)]
+
+let _ = (module%ext S : S)
+
+let _ = [%ext (module S : S)]
+
+let _ = f (module%ext S : S)
+
+let _ = f [%ext (module S : S)]
+
+let _ = x ;%ext y
+
+let _ = [%ext x ; y]
+
+let _ = f (x ;%ext y)
+
+let _ = f [%ext x ; y]
+
+let _ =
+  match w with
+  | (lazy%ext x) when x = y ->
+      k
+  | [%ext lazy x] when x = y ->
+      k
+  | (module%ext M) ->
+      k
+  | [%ext (module M)] ->
+      k
+  | (module%ext M : S) ->
+      k
+  | [%ext (module M : S)] ->
+      k
+  | (exception%ext e) ->
+      k
+  | ((exception%ext e) [@attr]) ->
+      k
+  | [%ext? exception e] ->
+      k
+  | _ ->
+      default
+
+let a =
+  (* test *)
+  Lwt.return () ;%lwt Lwt.return 1
+
+let a =
+  f
+    ( (* test *)
+      Lwt.return () ;%lwt
+      Lwt.return 1 )

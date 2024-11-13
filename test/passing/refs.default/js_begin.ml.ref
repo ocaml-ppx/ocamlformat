@@ -1,0 +1,11 @@
+let f = function
+  | zoo ->
+      foo;
+      bar
+
+let g = function
+  | zoo ->
+      foo;
+      bar
+
+let () = match foo with Bar -> snoo

@@ -1,0 +1,352 @@
+let () =
+  Lwt_main.run
+    (let a = "a" in
+     let b = "b" in
+     let c = "c" in
+     Lwt.return "test" )
+
+let () =
+  Lwt_main.run
+    (let a = "a" in
+     let b = "b" in
+     let c = "c" in
+     Lwt.return "test" )
+
+let () =
+  List.iter
+    (fun v ->
+      (* do a lot of things *)
+      let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      () )
+    values
+
+let () =
+  List.iter
+    (fun v ->
+      (* do a lot of things *)
+      let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      () )
+    values
+
+let () =
+  foooooooo
+    ( fooooooooooooo ;
+      foooooooo foooooooooooo ;
+      fooooooooooo foooooooooo ;
+      foooooooooooooooo )
+
+let () =
+  foooooooo
+    ( fooooooooooooo ;
+      foooooooo foooooooooooo ;
+      fooooooooooo foooooooooo ;
+      foooooooooooooooo )
+
+let () =
+  foooooooo
+    ( if foooooooooooooooooooooooooooo then
+        if foooooooooooooooooooooooooooo then foooooooooooooooooo
+        else foooooooooooooooooooooooooo
+      else if foooooooooooooooooooooooooooooooo then
+        foooooooooooooooooo
+          ( if foooooooooooooooooooooooooooo then
+              if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+              else foooooooooooooooooooooooooo
+            else if foooooooooooooooooooooooooooooooo then
+              fooooooooooooooooooooooooooooooooooo
+            else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+            else fooooooooooooooooooooo )
+      else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+      else fooooooooooooooooooooo )
+
+let () =
+  foooooooo
+    ( if foooooooooooooooooooooooooooo then
+        if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+        else
+          foooooooooooooooooooooooooooo
+            ( if foooooooooooooooooooooooooooo then
+                if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+                else foooooooooooooooooooooooooo
+              else if foooooooooooooooooooooooooooooooo then
+                fooooooooooooooooooooooooooooooooooo
+              else if foooooooooooooooooo then
+                foooooooooooooooooooooooooooooooooo
+              else fooooooooooooooooooooo )
+      else if foooooooooooooooooooooooooooooooo then
+        fooooooooooooooooooooooooooooooooooo
+      else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
+      else fooooooooooooooooooooo )
+
+let _ =
+  a
+  |>
+  let a = b in
+  c
+
+let _ =
+  (let a = b in
+   c )
+  |> d
+
+let _ =
+  a :=
+    let a = b in
+    c
+
+let _ =
+  (let a = b in
+   c )
+  := d
+
+let _ =
+  a
+  +
+  let a = b in
+  c
+
+let _ =
+  (let a = b in
+   c )
+  + d
+
+let _ =
+  f
+    (let a = b in
+     c )
+
+let _ =
+  (let a = b in
+   c )
+    d
+
+let _ =
+  a#f
+    (let a = b in
+     c )
+
+let _ =
+  (let a = b in
+   c )
+    #f
+
+let _ =
+  A
+    (let a = b in
+     c )
+
+let _ =
+  `A
+    (let a = b in
+     c )
+
+let _ =
+  { x=
+      (let a = b in
+       c ) }
+
+let _ =
+  { (let a = b in
+     c )
+    with
+    a= b }
+
+let _ =
+  {< x = let a = b in
+         c >}
+
+let _ =
+  x <-
+    (let a = b in
+     c )
+
+let _ =
+  (let a = b in
+   c )
+    .x
+
+let _ =
+  (let a = b in
+   c ).x <-
+    d
+
+let _ =
+  ( (let a = b in
+     c )
+  , d )
+
+let _ =
+  ( let a = b in
+    c
+    :> t )
+
+let _ =
+  let a = b in
+  c :: d
+
+let _ =
+  a
+  ::
+  (let a = b in
+   c )
+
+let _ =
+  [ (let a = b in
+     c ) ]
+
+let _ =
+  [| (let a = b in
+      c ) |]
+
+let () = if a then b (* asd *)
+
+[@@@ocamlformat "if-then-else=compact"]
+
+let _ =
+  if x then (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+  else if y then (f 0 ; f 2)
+  else (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+
+let () = if a then b (* asd *)
+
+[@@@ocamlformat "if-then-else=fit-or-vertical"]
+
+let _ =
+  if x then (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+  else if y then (
+    f 0 ; f 2 )
+  else (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+
+let () =
+  if a then
+    b (* asd *)
+
+[@@@ocamlformat "if-then-else=keyword-first"]
+
+let _ =
+  if x
+  then (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+  else if y
+  then (f 0 ; f 2)
+  else (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo )
+
+let () = if a then b (* asd *)
+
+[@@@ocamlformat "if-then-else=k-r"]
+
+let _ =
+  if x then (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  ) else if y then (
+    f 0 ; f 2
+  ) else (
+    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    Fooo fooo
+  )
+
+let _ =
+  match x with
+  | A -> (
+    match B with A -> fooooooooooooo )
+  | A -> (
+    match B with A -> fooooooooooooo | B -> fooooooooooooo )
+  | A -> (
+    match B with
+    | A ->
+        fooooooooooooo
+    | B ->
+        fooooooooooooo
+    | C ->
+        fooooooooooooo
+    | D ->
+        fooooooooooooo )
+
+let () =
+  ( add_test
+  @@
+  let test_name = "Test 1" in
+  test_name >:: fun _ -> assert_equal "a" "a" ) ;
+  add_test
+  @@
+  let test_name = "Test 2" in
+  test_name >:: fun _ -> assert_equal "b" "b"
+
+let _ = ()
+
+let _ = ( (* foo *) )
+
+let _ = [%ext ()]
+
+let _ = [%ext (* foo *) ()]
+
+let _ = x y
+
+let _ = (* foo *) x y
+
+let _ = [%ext x y]
+
+let _ = [%ext (* foo *) x y]
+
+let _ =
+  begin [@landmark "parse_constant_dividends"]
+    market_data_items := ()
+  end
+
+let () = if a then b (* asd *)
+
+let x =
+  let get_path_and_distance pv1 pv2 =
+    if is_loop pv1 pv2 then
+      Some ([], 0)
+    else
+      match Tbl.find dist_tbl (pv1, pv2) with
+      | None ->
+        (* FIXME: temporary hack to avoid Jane Street's annoying warnings. *)
+        begin [@warning "-3"]
+          try
+            let path', dist = Dijkstra.shortest_path pgraph pv1 pv2 in
+            let path = unwrap_path path' in
+            Tbl.set dist_tbl ~key:(pv1, pv2) ~data:(path, dist) ;
+            Some (path, dist)
+          with Not_found | Not_found_s _ -> None
+        end
+      | pd ->
+          pd
+  in
+  ()
+
+let _ =
+  if something_changed then
+    begin [@attr]
+      loop
+    end
+
+let _ =
+  match x with
+  | _ ->
+      (* xxx *)
+      y
+
+let _ =
+  match x with
+  | _ ->
+    begin [@foo]
+      y
+    end

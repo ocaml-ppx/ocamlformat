@@ -1,0 +1,6 @@
+Warning: Invalid documentation comment:
+File "invalid_docstring.ml", line 1, characters 5-5:
+End of text is not allowed in '{v ... v}' (verbatim text).
+Warning: Invalid documentation comment:
+File "invalid_docstring.ml", line 1, characters 3-5:
+'{v ... v}' (verbatim text) should not be empty.
