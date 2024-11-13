@@ -2014,15 +2014,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       let bol_indent = Params.Indent.assignment_operator_bol c.conf in
+      let has_cmts_before = Cmts.has_before c.cmts loc in
       let cmts_before =
-        let indent, adj =
+        let indent =
           (* Use the same break for comment and operator. Comments are placed
              according to indentation. *)
           match c.conf.fmt_opts.assignment_operator.v with
-          | `Begin_line -> (bol_indent, noop)
-          | `End_line -> (2, cut_break)
+          | `Begin_line -> bol_indent
+          | `End_line -> 0
         in
-        Cmts.fmt_before c loc ~pro:(break 1 indent) ~epi:adj ~adj
+        Cmts.fmt_before c loc ~pro:(break 1 indent) ~epi:noop ~adj:noop
       in
       let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
       pro
@@ -2034,9 +2035,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  $ break 1 bol_indent $ str ":= " $ cmts_after
                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
              | `End_line ->
+                 let break_infix =
+                   if has_cmts_before then break 1 0 else str " "
+                 in
                  hvbox 0
-                   ( hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
-                   $ str " :=" )
+                   ( fmt_expression c (sub_exp ~ctx r)
+                   $ cmts_before $ break_infix $ str ":=" )
                  $ break 1 2 $ cmts_after
                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
   | Pexp_prefix ({txt= ("~-" | "~-." | "~+" | "~+.") as op; loc}, e1) ->
