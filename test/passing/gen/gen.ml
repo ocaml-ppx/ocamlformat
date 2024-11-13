@@ -90,9 +90,11 @@ let cmd should_fail args =
        (run %s))|} cmd_string
   else spf {|(run %s)|} cmd_string
 
-let emit_test ~profile test_name setup =
+let emit_test test_name setup =
   let opts =
-    "--profile" :: profile :: "--margin-check"
+    (* Pass a relative file name to [--name] so that the right config is
+       picked in [refs.*/.ocamlformat], this is not the input path. *)
+    "--name" :: test_name :: "--margin-check"
     ::
     ( if setup.has_opts then read_lines (spf "%s/%s.opts" input_dir test_name)
       else [] )
@@ -111,8 +113,7 @@ let emit_test ~profile test_name setup =
   Printf.printf
     {|
 (rule
- (deps %s.ocamlformat %s)%s
- (package ocamlformat)
+ (deps .ocamlformat dune-project %s)%s
  (action
   (with-stdout-to %s
    (with-stderr-to %s.stderr
@@ -120,22 +121,19 @@ let emit_test ~profile test_name setup =
 
 (rule
  (alias runtest)%s
- (package ocamlformat)
  (action (diff %s %s.stdout)))
 
 (rule
  (alias runtest)%s
- (package ocamlformat)
  (action (diff %s %s.stderr)))
 |}
-    input_dir extra_deps enabled_if_line output_fname test_name
+    extra_deps enabled_if_line output_fname test_name
     (cmd setup.should_fail
        (["%{bin:ocamlformat}"] @ opts @ [dep base_test_name]) )
     enabled_if_line (ref_file ".ref") test_name enabled_if_line
     (ref_file ".err") test_name
 
 let () =
-  let profile = Sys.argv.(1) in
   let map = ref StringMap.empty in
   Sys.readdir input_dir |> Array.iter (register_file map) ;
-  StringMap.iter (emit_test ~profile) !map
+  StringMap.iter emit_test !map

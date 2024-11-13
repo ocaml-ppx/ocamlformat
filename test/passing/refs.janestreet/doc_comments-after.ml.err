@@ -1,4 +1,4 @@
-Warning: ../tests/doc_comments.ml:258 exceeds the margin
-Warning: ../tests/doc_comments.ml:259 exceeds the margin
-Warning: ../tests/doc_comments.ml:260 exceeds the margin
-Warning: ../tests/doc_comments.ml:289 exceeds the margin
+Warning: doc_comments-after.ml:258 exceeds the margin
+Warning: doc_comments-after.ml:259 exceeds the margin
+Warning: doc_comments-after.ml:260 exceeds the margin
+Warning: doc_comments-after.ml:289 exceeds the margin

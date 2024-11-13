@@ -1,10 +1,10 @@
-ocamlformat: ignoring "../tests/error3.ml" (misplaced documentation comments - warning 50)
-File "../tests/error3.ml", line 2, characters 0-13:
+ocamlformat: ignoring "error3.ml" (misplaced documentation comments - warning 50)
+File "error3.ml", line 2, characters 0-13:
 2 | (** a or b *)
     ^^^^^^^^^^^^^
 Warning 50 [unexpected-docstring]: ambiguous documentation comment
 
-File "../tests/error3.ml", line 3, characters 8-16:
+File "error3.ml", line 3, characters 8-16:
 3 | let b = (** ? *) ()          
             ^^^^^^^^
 Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)

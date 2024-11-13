@@ -1,3 +1,9 @@
-let a = aaaaaaaaaa aaaaaaaaa
+let a =
+  aaaaaaaaaa
+    aaaaaaaaa
+;;
 
-let b = bbbbbbbbbb bbbbbbbbb
+let b =
+  bbbbbbbbbb
+    bbbbbbbbb
+;;
