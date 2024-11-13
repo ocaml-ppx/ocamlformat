@@ -86,7 +86,7 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
-- Fix placement of comments in some cases (#2471, #2503, #2506, #2540, #2541, #2592, @gpetiot, @Julow)
+- Fix placement of comments in some cases (#2471, #2503, #2506, #2540, #2541, #2592, #2617, @gpetiot, @Julow)
   Some comments were being moved or causing OCamlformat to crash.
   OCamlformat refuses to format if a comment would be missing in its output, to avoid loosing code.
 
