@@ -81,6 +81,7 @@ let x = f ~\#let:42 ~\#and:43
 
 let f ~\#let ~\#and : \#let * \#and = x
 
+;;
 kind_abbrev_ \#let = \#and
 
 type t = T : 'a list -> t
@@ -98,3 +99,25 @@ module type \#sig = sig end
 module M = struct let \#mod = 1 end
 
 let _ = M.\#mod
+module type \#sig = M
+
+module type M = \#sig
+
+module type M = M with module type \#sig = \#sig
+module type M = M with module type \#sig := \#sig
+
+let _ = \#sig.( () )
+
+(* Raw idents in module names are not allowed in parser: *)
+(* let (module \#sig : S) = () *)
+(* module \#sig (A : S) = M *)
+(* module \#sig = M *)
+(* module M (\#sig : S) = M *)
+(* module M = M (functor (\#sig : S) -> struct end) *)
+(* module type S = functor (\#sig : S) -> S' *)
+(* module type M = M with module \#sig = \#sig *)
+(* module type M = M with module \#sig := \#sig *)
+let _ =
+  (* let module \#sig = \#sig in *)
+  (* let open \#sig in *)
+  ()

@@ -274,11 +274,9 @@ let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 let fmt_ident_loc c ?pre {txt; loc} =
   fmt_str_loc c ?pre {txt= escape_ident txt; loc}
 
-let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
-  Cmts.fmt c loc (opt pre str $ str (Option.value ~default txt))
-
-let fmt_ident_loc_opt c ?pre ?default {txt; loc} =
-  fmt_str_loc_opt c ?pre ?default {txt= Option.map txt ~f:escape_ident; loc}
+let fmt_module_name_opt c {txt; loc} =
+  let txt = match txt with Some txt -> ident txt | None -> str "_" in
+  Cmts.fmt c loc txt
 
 let variant_var c ({txt= x; loc} : variant_var) =
   Cmts.fmt c loc @@ (str "`" $ fmt_ident_loc c x)
@@ -1337,7 +1335,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       fmt_constraint_opt pt
         ( str "module"
         $ fmt_extension_suffix c ext
-        $ char ' ' $ fmt_str_loc_opt c name )
+        $ char ' '
+        $ fmt_module_name_opt c name )
   | Ppat_exception pat ->
       cbox 2
         (Params.parens_if parens c.conf
@@ -3709,7 +3708,8 @@ and fmt_functor_param c ctx {loc; txt= arg} =
         (Cmts.fmt c loc
            (wrap (str "(") (str ")")
               (hovbox 0
-                 ( hovbox 0 (fmt_str_loc_opt c name $ space_break $ str ": ")
+                 ( hovbox 0
+                     (fmt_module_name_opt c name $ space_break $ str ": ")
                  $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) ) )
 
 and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
@@ -4010,7 +4010,9 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       hovbox 1
         ( pro
         $ Cmts.fmt_before c ~epi:space_break loc
-        $ str "(" $ align_opn $ fmt_ident_loc_opt c name $ str " :" )
+        $ str "(" $ align_opn
+        $ fmt_module_name_opt c name
+        $ str " :" )
       $ fmt_or (Option.is_some blk.pro) (str " ") (break 1 2)
     and epi = str ")" $ Cmts.fmt_after c loc $ align_cls in
     compose_module' ~box:false ~pro ~epi blk
@@ -4054,7 +4056,8 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
       $ fmt_extension_suffix c ext
       $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
       $ fmt_if rec_flag (str " rec")
-      $ space_break $ fmt_ident_loc_opt c name )
+      $ space_break
+      $ fmt_module_name_opt c name )
   in
   let compact =
     Poly.(c.conf.fmt_opts.let_module.v = `Compact) || not can_sparse
