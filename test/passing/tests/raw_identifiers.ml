@@ -73,13 +73,13 @@ type \#true = bool
 
 let f \#false = \#false
 
-type t = {x: int @@ \#let}
+type t = {x: int \#let}
 
-let x @ \#let = 42
+let x \#let = 42
 
-let x = (~\#let:42, ~\#and:43)
+let x = f ~\#let:42 ~\#and:43
 
-let ((~\#let, ~\#and) : \#let:int * \#and:int) = x
+let f ~\#let ~\#and : \#let * \#and = x
 
 kind_abbrev_ \#let = \#and
 
