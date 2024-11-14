@@ -37,6 +37,7 @@ let rec \#rec = {\#mutable= \#rec}
 type \#and = ..
 
 type \#and += Foo
+(* Not allowed in parser: type t += \#and *)
 
 let x = ( ++ )
 
@@ -70,6 +71,12 @@ type 'a \#for = 'a list
 type 'a \#sig = 'a \#for
 
 type \#true = bool
+
+type _ t = \#in t
+
+type '\#in t
+
+class ['\#in] c = c
 
 let f \#false = \#false
 
@@ -124,3 +131,15 @@ let _ =
   (* let module \#sig = \#sig in *)
   (* let open \#sig in *)
   ()
+
+let%let _ = ()
+
+let _ = [%let ()]
+
+let _ = () [@let]
+
+let _ = () [@@let]
+
+let f : type \#in. t = ()
+
+let f : '\#in. t = ()

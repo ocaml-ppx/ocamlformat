@@ -4586,14 +4586,14 @@ and fmt_value_constraint c vc_opt =
             , fmt_constraint_sep c ":"
               $ hvbox 0
                   ( str "type "
-                  $ list pvars (str " ") (fmt_str_loc c)
+                  $ list pvars (str " ") (fmt_ident_loc c)
                   $ str "." $ space_break
                   $ fmt_core_type c (sub_typ ~ctx typ) ) )
         | `After ->
             ( fmt_constraint_sep c ":"
               $ hvbox 0
                   ( str "type "
-                  $ list pvars (str " ") (fmt_str_loc c)
+                  $ list pvars (str " ") (fmt_ident_loc c)
                   $ str "." )
             , space_break $ fmt_core_type c (sub_typ ~ctx typ) ) )
       | Pvc_coercion {ground; coercion} ->
