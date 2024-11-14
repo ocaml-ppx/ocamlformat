@@ -592,7 +592,7 @@ let fmt_type_var s =
   (* [' a'] is a valid type variable, the space is required to not lex as a
      char. https://github.com/ocaml/ocaml/pull/2034 *)
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') (str " ")
-  $ str s
+  $ ident s
 
 let rec fmt_extension_aux c ctx ~key (ext, pld) =
   match (ext.txt, pld, ctx) with
@@ -1451,7 +1451,7 @@ and fmt_param_newtype c = function
   | names ->
       cbox 0
         (Params.parens c.conf
-           (str "type " $ list names space_break (fmt_str_loc c)) )
+           (str "type " $ list names space_break (fmt_ident_loc c)) )
 
 and fmt_expr_fun_arg c fp =
   let ctx = Fpe fp in
@@ -3415,6 +3415,11 @@ and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
     let fit = Tyd.is_simple decl in
     fmt_docstring_around_item_attrs ~force_before ~fit c ptype_attributes
   in
+  let type_name =
+    match name with
+    | Some name -> fmt_longident_loc ~constructor:false c name
+    | None -> ident txt
+  in
   let box_manifest k =
     hvbox c.conf.fmt_opts.type_decl_indent.v
       ( str pre
@@ -3424,9 +3429,7 @@ and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
       $ hvbox_if
           (not (List.is_empty ptype_params))
           0
-          ( fmt_tydcl_params c ctx ptype_params
-          $ Option.value_map name ~default:(str txt)
-              ~f:(fmt_longident_loc ~constructor:false c) )
+          (fmt_tydcl_params c ctx ptype_params $ type_name)
       $ k )
   in
   let fmt_manifest_kind =
