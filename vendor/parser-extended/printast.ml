@@ -309,8 +309,9 @@ and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
 
-and package_type i ppf (s, l) =
+and package_type i ppf (s, l, attrs) =
   line i ppf "package_type %a\n" fmt_longident_loc s;
+  attributes (i+1) ppf attrs;
   list i package_with ppf l
 
 and pattern i ppf x =
@@ -633,7 +634,7 @@ and jkind_annotation ?loc i ppf jkind =
   let fmt_loc_opt ppf = function
     | None -> ()
     | Some loc -> fmt_location ppf loc
-  in 
+  in
   match jkind with
   | Default -> line i ppf "Default %a\n" fmt_loc_opt loc
   | Abbreviation jkind ->

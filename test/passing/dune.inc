@@ -3321,6 +3321,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to dropped_attribute.ml.stdout
+   (with-stderr-to dropped_attribute.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/dropped_attribute.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/dropped_attribute.ml.ref dropped_attribute.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/dropped_attribute.ml.err dropped_attribute.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to dropped_attribute.ml.js-stdout
+   (with-stderr-to dropped_attribute.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/dropped_attribute.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/dropped_attribute.ml.js-ref dropped_attribute.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/dropped_attribute.ml.js-err dropped_attribute.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to eliom_ext.eliom.stdout
    (with-stderr-to eliom_ext.eliom.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/eliom_ext.eliom})))))

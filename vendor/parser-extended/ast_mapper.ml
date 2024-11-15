@@ -102,8 +102,10 @@ let map_type_var sub (n, l) =
 let variant_var sub x =
   {loc = sub.location sub x.loc; txt= map_loc sub x.txt}
 
-let map_package_type sub (lid, l) =
-  (map_loc sub lid), (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
+let map_package_type sub (lid, l, attrs) =
+  (map_loc sub lid),
+  (List.map (map_tuple (map_loc sub) (sub.typ sub)) l),
+  sub.attributes sub attrs
 
 let map_arg_label sub = function
   | Asttypes.Nolabel -> Asttypes.Nolabel
@@ -227,8 +229,7 @@ module T = struct
     | Ptyp_poly (sl, t) -> poly ~loc ~attrs
                              (List.map (map_type_var sub) sl) (sub.typ sub t)
     | Ptyp_package pt ->
-        let lid, l = map_package_type sub pt in
-        package ~loc ~attrs lid l
+        package ~loc ~attrs (map_package_type sub pt)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
     (* Jane Street extension *)
