@@ -13,24 +13,28 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type src_kind = Lnormal | Lraw | Loperator | Lconstruct
+
 type t =
-    Lident of string
-  | Ldot of t * string
+    Lident of string * src_kind
+  | Ldot of t * string * src_kind
   | Lapply of t * t
 
+(*
 let rec flat accu = function
     Lident s -> s :: accu
   | Ldot(lid, s) -> flat (s :: accu) lid
   | Lapply(_, _) -> Misc.fatal_error "Longident.flat"
 
 let flatten lid = flat [] lid
+*)
 
 let last = function
-    Lident s -> s
-  | Ldot(_, s) -> s
+    Lident (s, src) -> s, src
+  | Ldot(_, s, src) -> s, src
   | Lapply(_, _) -> Misc.fatal_error "Longident.last"
 
-
+(*
 let rec split_at_dots s pos =
   try
     let dot = String.index_from s pos '.' in
@@ -48,3 +52,5 @@ let parse s =
   | None -> Lident ""  (* should not happen, but don't put assert false
                           so as not to crash the toplevel (see Genprintval) *)
   | Some v -> v
+*)
+

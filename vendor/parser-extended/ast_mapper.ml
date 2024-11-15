@@ -120,7 +120,7 @@ module FP = struct
   let map_param_val sub ((lab, def, p) : pparam_val) : pparam_val =
     (sub.arg_label sub lab, map_opt (sub.expr sub) def, sub.pat sub p)
 
-  let map_param_newtype sub (ty : string loc list) : string loc list =
+  let map_param_newtype sub (ty : 'a loc list) : 'a loc list =
     List.map (map_loc sub) ty
 
   let map_expr sub = function

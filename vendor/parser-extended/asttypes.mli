@@ -52,7 +52,8 @@ type obj_closed_flag =
   | OClosed
   | OOpen of Location.t
 
-type label = string
+type ident = string * Longident.src_kind
+type label = ident
 
 type 'a loc = 'a Location.loc = {
   txt : 'a;
@@ -61,10 +62,10 @@ type 'a loc = 'a Location.loc = {
 
 type arg_label =
     Nolabel
-  | Labelled of string loc (** [label:T -> ...] *)
-  | Optional of string loc (** [?label:T -> ...] *)
+  | Labelled of label loc (** [label:T -> ...] *)
+  | Optional of label loc (** [?label:T -> ...] *)
 
-type variant_var = string loc loc  (** [`A] *)
+type variant_var = ident loc loc  (** [`A] *)
 
 type variance_and_injectivity = string loc list
 

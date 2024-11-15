@@ -107,7 +107,7 @@ and arrow_param =
 
 and core_type_desc =
   | Ptyp_any  (** [_] *)
-  | Ptyp_var of string  (** A type variable such as ['a] *)
+  | Ptyp_var of ident  (** A type variable such as ['a] *)
   | Ptyp_arrow of arrow_param list * core_type
       (** [Ptyp_arrow(lbl, T1, T2)] represents:
             - [T1 -> T2]    when [lbl] is
@@ -142,7 +142,7 @@ and core_type_desc =
             - [T #tconstr]             when [l=[T]],
             - [(T1, ..., Tn) #tconstr] when [l=[T1 ; ... ; Tn]].
          *)
-  | Ptyp_alias of core_type * string loc  (** [T as 'a]. *)
+  | Ptyp_alias of core_type * ident loc  (** [T as 'a]. *)
   | Ptyp_variant of row_field list * closed_flag * variant_var list option
       (** [Ptyp_variant([`A;`B], flag, labels)] represents:
             - [[ `A|`B ]]
@@ -158,7 +158,7 @@ and core_type_desc =
                       when [flag]   is {{!Asttypes.closed_flag.Closed}[Closed]},
                        and [labels] is [Some ["X";"Y"]].
          *)
-  | Ptyp_poly of string loc list * core_type
+  | Ptyp_poly of ident loc list * core_type
       (** ['a1 ... 'an. T]
 
            Can only appear in the following context:
@@ -217,7 +217,7 @@ and object_field = {
 }
 
 and object_field_desc =
-  | Otag of label loc * core_type
+  | Otag of ident loc * core_type
   | Oinherit of core_type
 
 (** {2 Patterns} *)
@@ -232,8 +232,8 @@ and pattern =
 
 and pattern_desc =
   | Ppat_any  (** The pattern [_]. *)
-  | Ppat_var of string loc  (** A variable pattern such as [x] *)
-  | Ppat_alias of pattern * string loc
+  | Ppat_var of ident loc  (** A variable pattern such as [x] *)
+  | Ppat_alias of pattern * ident loc
       (** An alias pattern such as [P as 'a] *)
   | Ppat_constant of constant
       (** Patterns such as [1], ['a'], ["true"], [1.0], [1l], [1L], [1n] *)
@@ -247,7 +247,7 @@ and pattern_desc =
 
            Invariant: [n >= 2]
         *)
-  | Ppat_construct of Longident.t loc * (string loc list * pattern) option
+  | Ppat_construct of Longident.t loc * (ident loc list * pattern) option
       (** [Ppat_construct(C, args)] represents:
             - [C]               when [args] is [None],
             - [C P]             when [args] is [Some ([], P)]
@@ -394,10 +394,10 @@ and expression_desc =
             - [(E :> T)]      when [from] is [None],
             - [(E : T0 :> T)] when [from] is [Some T0].
          *)
-  | Pexp_send of expression * label loc  (** [E # m] *)
+  | Pexp_send of expression * ident loc  (** [E # m] *)
   | Pexp_new of Longident.t loc  (** [new M.c] *)
-  | Pexp_setinstvar of label loc * expression  (** [x <- 2] *)
-  | Pexp_override of (label loc * expression) list
+  | Pexp_setinstvar of ident loc * expression  (** [x <- 2] *)
+  | Pexp_override of (ident loc * expression) list
       (** [{< x1 = E1; ...; xn = En >}] *)
   | Pexp_letmodule of string option loc * functor_parameter loc list * module_expr * expression
       (** [let module M = ME in E] *)
@@ -505,7 +505,7 @@ and function_param_desc =
       Note: If [E0] is provided, only
       {{!Asttypes.arg_label.Optional}[Optional]} is allowed.
   *)
-  | Pparam_newtype of string loc list
+  | Pparam_newtype of ident loc list
   (** [Pparam_newtype x] represents the parameter [(type x)].
       [x] carries the location of the identifier, whereas the [pparam_loc]
       on the enclosing [function_param] node is the location of the [(type x)]
@@ -554,7 +554,7 @@ and type_constraint =
 
 and value_description =
     {
-     pval_name: string loc;
+     pval_name: ident loc;
      pval_type: core_type;
      pval_prim: string loc list;
      pval_attributes: ext_attrs;  (** [... [\@\@id1] [\@\@id2]] *)
@@ -571,7 +571,7 @@ and value_description =
 
 and type_declaration =
     {
-     ptype_name: string loc;
+     ptype_name: ident loc;
      ptype_params: (core_type * variance_and_injectivity) list;
       (** [('a1,...'an) t] *)
      ptype_cstrs: (core_type * core_type * Location.t) list;
@@ -616,7 +616,7 @@ and type_kind =
 
 and label_declaration =
     {
-     pld_name: string loc;
+     pld_name: ident loc;
      pld_mutable: mutable_flag;
      pld_type: core_type;
      pld_loc: Location.t;
@@ -635,8 +635,8 @@ and label_declaration =
 
 and constructor_declaration =
     {
-     pcd_name: string loc;
-     pcd_vars: string loc list;
+     pcd_name: ident loc;
+     pcd_vars: ident loc list;
      pcd_args: constructor_arguments;
      pcd_res: core_type option;
      pcd_loc: Location.t;
@@ -676,7 +676,7 @@ and type_extension =
 
 and extension_constructor =
     {
-     pext_name: string loc;
+     pext_name: ident loc;
      pext_kind: extension_constructor_kind;
      pext_loc: Location.t;
      pext_attributes: attributes;  (** [C of ... [\@id1] [\@id2]] *)
@@ -691,7 +691,7 @@ and type_exception =
 (** Definition of a new exception ([exception E]). *)
 
 and extension_constructor_kind =
-  | Pext_decl of string loc list * constructor_arguments * core_type option
+  | Pext_decl of ident loc list * constructor_arguments * core_type option
       (** [Pext_decl(existentials, c_args, t_opt)]
           describes a new extension constructor. It can be:
           - [C of T1 * ... * Tn] when:
@@ -760,9 +760,9 @@ and class_type_field =
 
 and class_type_field_desc =
   | Pctf_inherit of class_type  (** [inherit CT] *)
-  | Pctf_val of (label loc * mutable_virtual * core_type)
+  | Pctf_val of (ident loc * mutable_virtual * core_type)
       (** [val x: T] *)
-  | Pctf_method of (label loc * private_virtual * core_type)
+  | Pctf_method of (ident loc * private_virtual * core_type)
       (** [method x: T] *)
   | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pctf_attribute of attribute  (** [[\@\@\@id]] *)
@@ -772,7 +772,7 @@ and 'a class_infos =
     {
      pci_virt: virtual_flag;
      pci_params: (core_type * variance_and_injectivity) list;
-     pci_name: string loc;
+     pci_name: ident loc;
      pci_args: class_function_param list;
      pci_constraint: class_type option;
      pci_expr: 'a;
@@ -849,7 +849,7 @@ and class_field =
     }
 
 and class_field_desc =
-  | Pcf_inherit of override_flag * class_expr * string loc option
+  | Pcf_inherit of override_flag * class_expr * ident loc option
       (** [Pcf_inherit(flag, CE, s)] represents:
             - [inherit CE]
                     when [flag] is {{!Asttypes.override_flag.Fresh}[Fresh]}
@@ -864,14 +864,14 @@ and class_field_desc =
                    when [flag] is {{!Asttypes.override_flag.Override}[Override]}
                     and [s] is [Some x]
   *)
-  | Pcf_val of (label loc * mutable_virtual * class_field_value_kind)
+  | Pcf_val of (ident loc * mutable_virtual * class_field_value_kind)
       (** [Pcf_val(x,flag, kind)] represents:
             - [val x = E]
             - [val virtual x: T]
             - [val mutable x = E]
             - [val mutable virtual x: T]
   *)
-  | Pcf_method of (label loc * private_virtual * class_field_method_kind)
+  | Pcf_method of (ident loc * private_virtual * class_field_method_kind)
       (** - [method x = E]
           - [method virtual x: T]
   *)
@@ -975,7 +975,7 @@ and module_substitution =
 
 and module_type_declaration =
     {
-     pmtd_name: string loc;
+     pmtd_name: ident loc;
      pmtd_type: module_type option;
      pmtd_ext_attrs : ext_attrs;
      pmtd_loc: Location.t;
@@ -1106,7 +1106,7 @@ and structure_item_desc =
 
 and value_constraint =
   | Pvc_constraint of {
-      locally_abstract_univars:string loc list;
+      locally_abstract_univars:ident loc list;
       typ:core_type;
     }
   | Pvc_coercion of {ground:core_type option; coercion:core_type }
