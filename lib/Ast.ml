@@ -60,8 +60,8 @@ let longident_fit_margin (c : Conf.t) x = x * 3 < c.fmt_opts.margin.v * 2
 let longident_is_simple c x =
   let rec length x =
     match x with
-    | Longident.Lident x -> String.length x
-    | Ldot (x, y) -> length x + 1 + String.length y
+    | Longident.Lident (x, _) -> String.length x
+    | Ldot (x, y, _) -> length x + 1 + String.length y
     | Lapply (x, y) -> length x + length y + 3
   in
   longident_fit_margin c (length x)
@@ -156,7 +156,8 @@ module Exp = struct
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
     | Pexp_prefix (_, e) -> is_trivial e
     | Pexp_apply
-        ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
+        ({pexp_desc= Pexp_ident {txt= Lident ("not", _); _}; _}, [(_, e1)])
+      ->
         is_trivial e1
     | Pexp_variant (_, None) -> true
     | Pexp_array [] | Pexp_list [] -> true
@@ -1618,7 +1619,8 @@ end = struct
       | Pexp_cons l ->
           Some (ColonColon, if exp == List.last_exn l then Right else Left)
       | Pexp_construct
-          ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [_; _]; _}) ->
+          ( {txt= Lident ("[]", Lconstruct); _}
+          , Some {pexp_desc= Pexp_tuple [_; _]; _} ) ->
           Some (Semi, Non)
       | Pexp_array _ | Pexp_list _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
@@ -2287,7 +2289,8 @@ end = struct
         true
     | ( Exp {pexp_desc= Pexp_infix (_, _, e1); _}
       , { pexp_desc=
-            Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, _)
+            Pexp_apply
+              ({pexp_desc= Pexp_ident {txt= Lident ("not", _); _}; _}, _)
         ; _ } )
       when not (e1 == exp) ->
         true

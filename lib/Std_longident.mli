@@ -35,8 +35,6 @@ val is_infix : Longident.t -> bool
 
 val is_prefix : Longident.t -> bool
 
-val is_index_op : Longident.t -> bool
-
 val is_symbol : Longident.t -> bool
 
 val is_hash_getter : Longident.t -> bool
@@ -50,5 +48,7 @@ val is_monadic_binding : Longident.t -> bool
     operator chars. *)
 
 val field_alias_str : field:Longident.t -> string -> bool
+
+val field_alias_label : field:Longident.t -> Asttypes.label -> bool
 
 val field_alias : field:Longident.t -> Longident.t -> bool

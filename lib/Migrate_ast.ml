@@ -128,11 +128,3 @@ module Location = struct
         in
         (c + String.length (String.strip s) + 1, mkloc (String.strip s) loc) )
 end
-
-module Longident = struct
-  include Longident
-
-  let lident s =
-    assert (not (String.contains s '.')) ;
-    Lident s
-end

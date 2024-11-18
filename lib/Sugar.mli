@@ -25,7 +25,7 @@ module Exp : sig
 end
 
 val sequence :
-  Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
+  Cmts.t -> expression Ast.xt -> (string loc option * expression Ast.xt) list
 (** [sequence cmts exp] returns the list of expressions (with the optional
     extension) from a sequence of expressions [exp]. *)
 

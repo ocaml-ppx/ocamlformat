@@ -87,7 +87,7 @@ module String_id = struct
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
 end
 
-let test ~f = function Longident.Lident i -> f i | _ -> false
+let test ~f = function Longident.Lident (i, _) -> f i | _ -> false
 
 let is_prefix = test ~f:String_id.is_prefix
 
@@ -97,15 +97,23 @@ let is_infix = test ~f:String_id.is_infix
 
 let is_hash_getter = test ~f:String_id.is_hash_getter
 
-let is_index_op i = Longident.last i |> String_id.is_index_op
+let is_index_op i =
+  let s, _ = Longident.last i in
+  String_id.is_index_op s
 
 let is_symbol i = is_prefix i || is_infix i || is_index_op i
 
 let field_alias_str ~field y =
   match field with
-  | Ldot (_, x) | Lident x -> String.equal x y
+  | Ldot (_, x, _) | Lident (x, _) -> String.equal x y
+  | Lapply _ -> false
+
+let field_alias_label ~field (y, ysrc) =
+  match field with
+  | Ldot (_, x, xsrc) | Lident (x, xsrc) ->
+      String.equal x y && Poly.equal xsrc ysrc
   | Lapply _ -> false
 
 let field_alias ~field = function
-  | Lident x -> field_alias_str ~field x
+  | Lident (x, src) -> field_alias_label ~field (x, src)
   | Ldot _ | Lapply _ -> false

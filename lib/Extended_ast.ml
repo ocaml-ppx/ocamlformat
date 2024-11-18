@@ -133,7 +133,7 @@ module Parse = struct
       match (t, v) with
       (* [{ x = x }] -> [{ x }] *)
       | _, Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
-        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+        when Std_longident.field_alias_label ~field:f.txt v_txt ->
           (f, t, None)
       (* [{ x = (x : t) }] -> [{ x : t}] *)
       | ( None
@@ -147,7 +147,7 @@ module Parse = struct
             ; ppat_attributes= []
             ; _ } )
         when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+             && Std_longident.field_alias_label ~field:f.txt v_txt ->
           (f, Some t, None)
       | _ -> (f, t, Option.map ~f:(m.pat m) v)
     in
@@ -163,7 +163,9 @@ module Parse = struct
       | {ppat_desc= Ppat_cons (_ :: _ :: _ :: _ as l); _} as p
         when match List.last_exn l with
              (* Empty lists are always represented as Lident [] *)
-             | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
+             | { ppat_desc=
+                   Ppat_construct
+                     ({txt= Lident ("[]", Lconstruct); loc= _}, None)
                ; ppat_attributes= []
                ; _ } ->
                  true
@@ -187,7 +189,9 @@ module Parse = struct
       | {pexp_desc= Pexp_cons (_ :: _ :: _ :: _ as l); _} as e
         when match List.last_exn l with
              (* Empty lists are always represented as Lident [] *)
-             | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
+             | { pexp_desc=
+                   Pexp_construct
+                     ({txt= Lident ("[]", Lconstruct); loc= _}, None)
                ; pexp_attributes= []
                ; _ } ->
                  true
@@ -208,7 +212,7 @@ module Parse = struct
       | { pexp_desc=
             Pexp_apply
               ( { pexp_desc=
-                    Pexp_ident {txt= Lident op as longident; loc= loc_op}
+                    Pexp_ident {txt= Lident (op, _) as longident; loc= loc_op}
                 ; pexp_attributes= []
                 ; _ }
               , [(Nolabel, l); (Nolabel, r)] )

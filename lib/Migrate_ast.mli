@@ -78,10 +78,3 @@ module Location : sig
 
   val of_lines : filename:string -> string list -> string loc list
 end
-
-module Longident : sig
-  include module type of Longident
-
-  val lident : string -> t
-  (** Make a Lident from a dotless string *)
-end
