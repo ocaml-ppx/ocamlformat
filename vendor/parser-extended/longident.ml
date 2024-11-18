@@ -13,7 +13,11 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type src_kind = Lnormal | Lraw | Loperator | Lconstruct
+type src_kind =
+  | Lnormal (** [ident] *)
+  | Lraw (** [\#raw_ident] *)
+  | Loperator (** [( >>= )] *)
+  | Lconstruct (** [true] *)
 
 type t =
     Lident of string * src_kind
