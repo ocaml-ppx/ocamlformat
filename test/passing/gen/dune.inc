@@ -3835,6 +3835,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to raw_identifiers.ml.stdout
+   (with-stderr-to raw_identifiers.ml.stderr
+     (run %{bin:ocamlformat} --name raw_identifiers.ml --margin-check %{dep:../tests/raw_identifiers.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff raw_identifiers.ml.ref raw_identifiers.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff raw_identifiers.ml.err raw_identifiers.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to recmod.mli.stdout
    (with-stderr-to recmod.mli.stderr
      (run %{bin:ocamlformat} --name recmod.mli --margin-check %{dep:../tests/recmod.mli})))))

@@ -404,6 +404,7 @@ let hex_float_literal =
   ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
   (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
 let literal_modifier = ['G'-'Z' 'g'-'z']
+let raw_ident_escape = "\\#"
 
 rule token = parse
   | ('\\' as bs) newline {
@@ -422,6 +423,8 @@ rule token = parse
   | ".~"
       { error lexbuf
           (Reserved_sequence (".~", Some "is reserved for use in MetaOCaml")) }
+  | "~" (raw_ident_escape lowercase identchar * as name) ':'
+      { LABEL name }
   | "~" (lowercase identchar * as name) ':'
       { check_label_name lexbuf name;
         LABEL name }
@@ -430,12 +433,17 @@ rule token = parse
         LABEL name }
   | "?"
       { QUESTION }
+  | "?" (raw_ident_escape lowercase identchar * as name) ':'
+      { OPTLABEL name }
   | "?" (lowercase identchar * as name) ':'
       { check_label_name lexbuf name;
         OPTLABEL name }
   | "?" (lowercase_latin1 identchar_latin1 * as name) ':'
       { warn_latin1 lexbuf;
         OPTLABEL name }
+  | (raw_ident_escape lowercase identchar * as name)
+      (* Compared to upstream, the raw_ident_escape is part of the lident. *)
+      { LIDENT name }
   | lowercase identchar * as name
       { try Hashtbl.find keyword_table name
         with Not_found -> LIDENT name }
@@ -494,7 +502,7 @@ rule token = parse
       { CHAR (char_for_octal_code lexbuf 3, s) }
   | "\'" ("\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] as s) "\'"
       { CHAR (char_for_hexadecimal_code lexbuf 3, s) }
-  | "\'" ("\\" _ as esc)
+  | "\'" ("\\" [^ '#'] as esc)
       { error lexbuf (Illegal_escape (esc, None)) }
   | "\'\'"
       { error lexbuf Empty_character_literal }
