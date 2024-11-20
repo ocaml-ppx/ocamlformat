@@ -3715,6 +3715,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to pre42_syntax.ml.stdout
+   (with-stderr-to pre42_syntax.ml.stderr
+     (run %{bin:ocamlformat} --name pre42_syntax.ml --margin-check --ocaml-version=4.1 %{dep:../tests/pre42_syntax.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff pre42_syntax.ml.ref pre42_syntax.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff pre42_syntax.ml.err pre42_syntax.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to pre_post_extensions.ml.stdout
    (with-stderr-to pre_post_extensions.ml.stderr
      (run %{bin:ocamlformat} --name pre_post_extensions.ml --margin-check %{dep:../tests/pre_post_extensions.ml})))))
