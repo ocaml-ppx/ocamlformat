@@ -4528,6 +4528,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to utf8_identifiers.ml.stdout
+   (with-stderr-to utf8_identifiers.ml.stderr
+     (run %{bin:ocamlformat} --name utf8_identifiers.ml --margin-check %{dep:../tests/utf8_identifiers.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff utf8_identifiers.ml.ref utf8_identifiers.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff utf8_identifiers.ml.err utf8_identifiers.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to variants.ml.stdout
    (with-stderr-to variants.ml.stderr
      (run %{bin:ocamlformat} --name variants.ml --margin-check %{dep:../tests/variants.ml})))))
