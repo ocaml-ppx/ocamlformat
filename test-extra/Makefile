@@ -13,11 +13,11 @@
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
 DIRS= \
-	code/ocamlformat code/infer code/js_of_ocaml code/dune code/irmin \
+	code/ocamlformat code/js_of_ocaml code/dune code/irmin \
 	code/dune-release code/mirage code/ppxlib code/base
 
 # Extra test directories, for which looser checking is done
-XDIRS=code/ocaml
+XDIRS=code/ocaml code/infer
 
 # Directories to ignore (given to find, compared literally)
 PRUNE_DIRS= \
