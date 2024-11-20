@@ -29,7 +29,11 @@ exception Warning50 of (Location.t * Warnings.t) list
 val parse :
      ?disable_w50:bool
   -> ?disable_deprecated:bool
-  -> ('b -> input_name:string -> string -> 'a)
+  -> (   'b
+      -> ocaml_version:Ocaml_version.t
+      -> input_name:string
+      -> string
+      -> 'a )
   -> 'b
   -> Conf.t
   -> input_name:string
@@ -50,5 +54,10 @@ val parse_toplevel :
     function handles [conf.parse_toplevel_phrases]. *)
 
 val parse_ast :
-  Conf.t -> 'a Extended_ast.t -> input_name:string -> string -> 'a
+     Conf.t
+  -> 'a Extended_ast.t
+  -> ocaml_version:Ocaml_version.t
+  -> input_name:string
+  -> string
+  -> 'a
 (** Argument to {!parse}. *)

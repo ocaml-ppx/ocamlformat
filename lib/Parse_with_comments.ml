@@ -84,7 +84,8 @@ let parse ?(disable_w50 = false) ?(disable_deprecated = false) parse fragment
         if Warning.is_deprecated_alert alert && disable_deprecated then false
         else not conf.opr_opts.quiet.v )
       ~f:(fun () ->
-        let ast = parse fragment ~input_name source in
+        let ocaml_version = conf.opr_opts.ocaml_version.v in
+        let ast = parse fragment ~ocaml_version ~input_name source in
         Warnings.check_fatal () ;
         let comments =
           let mk_cmt = function
@@ -102,9 +103,8 @@ let parse ?(disable_w50 = false) ?(disable_deprecated = false) parse fragment
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
 
-let parse_ast (conf : Conf.t) fg ~input_name s =
-  let ocaml_version = conf.opr_opts.ocaml_version.v
-  and preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
+let parse_ast (conf : Conf.t) fg ~ocaml_version ~input_name s =
+  let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
   Extended_ast.Parse.ast fg ~ocaml_version ~preserve_beginend ~input_name s
 
 (** [is_repl_block x] returns whether [x] is a list of REPL phrases and

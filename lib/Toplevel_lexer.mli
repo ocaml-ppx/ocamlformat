@@ -9,4 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val repl_file : Lexing.lexbuf -> Parsetree.repl_phrase list
+val repl_file :
+     ocaml_version:(int * int) option
+  -> Lexing.lexbuf
+  -> Parsetree.repl_phrase list
