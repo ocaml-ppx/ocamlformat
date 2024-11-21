@@ -3745,6 +3745,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to pre53_syntax.ml.stdout
+   (with-stderr-to pre53_syntax.ml.stderr
+     (run %{bin:ocamlformat} --name pre53_syntax.ml --margin-check --ocaml-version=5.2 %{dep:../tests/pre53_syntax.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff pre53_syntax.ml.ref pre53_syntax.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff pre53_syntax.ml.err pre53_syntax.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to pre_post_extensions.ml.stdout
    (with-stderr-to pre_post_extensions.ml.stderr
      (run %{bin:ocamlformat} --name pre_post_extensions.ml --margin-check %{dep:../tests/pre_post_extensions.ml})))))
