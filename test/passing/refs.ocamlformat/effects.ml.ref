@@ -1,7 +1,9 @@
 let step (f : unit -> 'a) () : 'a status =
   match f () with
-  | v -> Complete v
-  | effect Xchg msg, cont -> Suspended {msg; cont}
+  | v ->
+      Complete v
+  | effect Xchg msg, cont ->
+      Suspended {msg; cont}
 
 (* A concurrent round-robin scheduler *)
 let run (main : unit -> unit) : unit =
@@ -22,12 +24,15 @@ let run (main : unit -> unit) : unit =
   in
   let rec spawn (f : unit -> unit) : unit =
     match f () with
-    | () -> dequeue ()
+    | () ->
+        dequeue ()
     | exception e ->
         print_endline (Printexc.to_string e) ;
         dequeue ()
-    | effect Yield, k -> enqueue k () ; dequeue ()
-    | effect Fork f, k -> enqueue k () ; spawn f
+    | effect Yield, k ->
+        enqueue k () ; dequeue ()
+    | effect Fork f, k ->
+        enqueue k () ; spawn f
     | effect Xchg n, k -> (
       match !exchanger with
       | Some (n', k') ->
@@ -47,8 +52,10 @@ let invert (type a) ~(iter : (a -> unit) -> unit) : a Seq.t =
   let yield v = perform (M.Yield v) in
   fun () ->
     match iter yield with
-    | () -> Seq.Nil
-    | effect M.Yield v, k -> Seq.Cons (v, continue k)
+    | () ->
+        Seq.Nil
+    | effect M.Yield v, k ->
+        Seq.Cons (v, continue k)
 
 type _ Effect.t += E : int t | F : string t
 
