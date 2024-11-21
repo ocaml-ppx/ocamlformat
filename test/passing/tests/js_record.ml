@@ -101,3 +101,17 @@ type t =
     : Something_lengthy.t
         list
   }
+
+type t =
+  { for_intf : Dune_rules.Module_name.t list
+    (* direct module dependencies for the interface *)
+  ; for_impl : Dune_rules.Module_name.t list
+    (* direct module dependencies for the implementation *)
+}
+
+type t =
+  { for_intf : Dune_rules.Module_name.t list
+        (* direct module dependencies for the interface *)
+    (* direct module dependencies for the interface *)
+  ; for_impl : Dune_rules.Module_name.t list
+}

@@ -22,7 +22,12 @@
 
 open Asttypes
 
-type constant =
+type constant = {
+  pconst_desc : constant_desc;
+  pconst_loc : Location.t;
+}
+
+and constant_desc =
   | Pconst_integer of string * char option
       (** Integer constants such as [3] [3l] [3L] [3n].
 
@@ -312,7 +317,7 @@ and expression_desc =
 
       A function must have parameters. [Pexp_function (params, _, body)] must
       have non-empty [params] or a [Pfunction_cases _] body.
-         *)
+  *)
   | Pexp_apply of expression * (arg_label * expression) list
       (** [Pexp_apply(E0, [(l1, E1) ; ... ; (ln, En)])]
             represents [E0 ~l1:E1 ... ~ln:En]

@@ -157,3 +157,6 @@ and we shall get
 ]}
 
 For more about [odoc] commands, simply invoke [odoc --help] in your shell.
+
+Preserve the space between a link/reference and its text:
+{{:foo}bar} {{:foo} bar} {{!foo}bar} {{!foo} bar}

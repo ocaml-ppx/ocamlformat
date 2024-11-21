@@ -1,0 +1,6 @@
+Warning: Invalid documentation comment:
+File "wrap_invalid_doc_comments.ml", line 2, characters 48-53:
+'{v ... v}' (verbatim text) should begin on its own line.
+Warning: Invalid documentation comment:
+File "wrap_invalid_doc_comments.ml", line 2, characters 48-53:
+'{v ... v}' (verbatim text) should not be empty.

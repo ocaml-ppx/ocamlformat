@@ -1086,8 +1086,15 @@ and fmt_pattern_attributes c xpat k =
               false
           | _ -> true )
       in
-      Params.parens_if parens_attr c.conf
-        (k $ fmt_attributes c ~pre:Space attrs)
+      let box =
+        match (xpat.ast.ppat_desc, c.conf.fmt_opts.sequence_style.v) with
+        | (Ppat_record _ | Ppat_array _ | Ppat_list _), `Terminator -> hovbox
+        | _ -> hvbox
+      in
+      box
+        (if parens_attr then 1 else 0)
+        (Params.parens_if parens_attr c.conf
+           (k $ fmt_attributes c ~pre:Space attrs) )
 
 and fmt_pattern ?ext c ?pro ?parens ?(box = false)
     ({ctx= ctx0; ast= pat} as xpat) =
@@ -2018,15 +2025,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       let bol_indent = Params.Indent.assignment_operator_bol c.conf in
+      let has_cmts_before = Cmts.has_before c.cmts loc in
       let cmts_before =
-        let indent, adj =
+        let indent =
           (* Use the same break for comment and operator. Comments are placed
              according to indentation. *)
           match c.conf.fmt_opts.assignment_operator.v with
-          | `Begin_line -> (bol_indent, noop)
-          | `End_line -> (2, cut_break)
+          | `Begin_line -> bol_indent
+          | `End_line -> 0
         in
-        Cmts.fmt_before c loc ~pro:(break 1 indent) ~epi:adj ~adj
+        Cmts.fmt_before c loc ~pro:(break 1 indent) ~epi:noop ~adj:noop
       in
       let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
       pro
@@ -2038,9 +2046,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  $ break 1 bol_indent $ str ":= " $ cmts_after
                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
              | `End_line ->
+                 let break_infix =
+                   if has_cmts_before then break 1 0 else str " "
+                 in
                  hvbox 0
-                   ( hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
-                   $ str " :=" )
+                   ( fmt_expression c (sub_exp ~ctx r)
+                   $ cmts_before $ break_infix $ str ":=" )
                  $ break 1 2 $ cmts_after
                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
   | Pexp_prefix ({txt= ("~-" | "~-." | "~+" | "~+.") as op; loc}, e1) ->
@@ -3457,12 +3468,12 @@ and fmt_label_declaration c ctx ?(last = false) decl =
              (fits_breaks ~level:5 "" ";") )
           (str ";")
   in
+  let indent_cmts = Params.Indent.record_docstring c.conf in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
-    $ hvbox
-        (Params.Indent.record_docstring c.conf)
+    $ hvbox indent_cmts
         ( hvbox 3
-            ( hvbox 4
+            ( hvbox indent_cmts
                 ( hvbox 2
                     ( hovbox 2
                         ( fmt_mutable_flag ~pro:noop ~epi:space_break c
@@ -3697,31 +3708,21 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
           Some
             ( str "end" $ after
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
-  | Pmty_functor (args, mt) ->
+  | Pmty_functor (args, mt, short) ->
+      let keyword =
+        if short && List.is_empty pmty_attributes then noop
+        else
+          str "functor"
+          $ fmt_attributes c ~pre:Blank pmty_attributes
+          $ break 1 2
+      in
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
       { blk with
         pro=
           Some
             ( Cmts.fmt_before c pmty_loc
-            $ str "functor"
-            $ fmt_attributes c ~pre:Blank pmty_attributes
-            $ break 1 2
+            $ keyword
             $ list args (break 1 2) (fmt_functor_param c ctx)
-            $ break 1 2 $ str "->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
-  | Pmty_gen (gen_loc, mt) ->
-      let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      { blk with
-        pro=
-          Some
-            ( Cmts.fmt_before c pmty_loc
-            $ Cmts.fmt c gen_loc
-                (wrap (str "(") (str ")") (Cmts.fmt_within c gen_loc))
             $ break 1 2 $ str "->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
       ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
@@ -4592,7 +4593,6 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
         (max (c.conf.fmt_opts.let_binding_indent.v - 1) 0, false)
     | _ -> (c.conf.fmt_opts.let_binding_indent.v, false)
   in
-  let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   let toplevel, in_, epi, cmts_before, cmts_after =
     match in_ with
     | Some in_ ->
@@ -4612,13 +4612,16 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
   let ext = lb_attrs.attrs_extension in
+  let should_break_after_keyword =
+    Cmts.has_before c.cmts lb_pat.ast.ppat_loc || Option.is_some ext
+  in
   let decl =
     let decl =
       fmt_str_loc c lb_op
       $ fmt_extension_suffix c ext
       $ fmt_attributes c at_attrs
       $ fmt_if rec_flag (str " rec")
-      $ fmt_or pat_has_cmt space_break (str " ")
+      $ fmt_or should_break_after_keyword space_break (str " ")
     and pattern = fmt_pattern c lb_pat
     and args =
       fmt_if

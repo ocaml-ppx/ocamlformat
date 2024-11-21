@@ -12,7 +12,7 @@ let extended_ast ppf syntax ~input_name content =
 let std_ast ppf syntax ~input_name content =
   let open Std_ast in
   let (Any kind) = of_syntax syntax in
-  Parse.ast kind ~input_name content |> Printast.ast kind ppf
+  Parse.ast kind ~ocaml_version ~input_name content |> Printast.ast kind ppf
 
 let get_arg () =
   let std = ref false and input = ref None in

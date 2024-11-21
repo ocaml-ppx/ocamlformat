@@ -1,0 +1,9 @@
+File "error4.ml", line 2, characters 0-13:
+2 | (** a or b *)
+    ^^^^^^^^^^^^^
+Warning 50 [unexpected-docstring]: ambiguous documentation comment
+
+File "error4.ml", line 3, characters 8-16:
+3 | let b = (** ? *) ()          
+            ^^^^^^^^
+Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)

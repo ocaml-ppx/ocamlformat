@@ -1,10 +1,5 @@
+ocamlformat: ignoring "tests/unit_lex.ml" (syntax error)
 File "tests/unit_lex.ml", line 18, characters 4-10:
 18 |     éçèæùà (* this file must be iso-8859-1 *)
          ^^^^^^
-Alert deprecated: ISO-Latin1 characters in identifiers
-ocamlformat: ignoring "tests/unit_lex.ml" (syntax error)
-
-File "tests/unit_lex.ml", line 55, characters 2-8:
-55 |   '\999'; (* wrong, but yet... *)
-       ^^^^^^
-Error: Illegal backslash escape in string or character ('\999'): 999 is outside the range of legal characters (0-255).
+Error: Invalid encoding of identifier éçèæùà.

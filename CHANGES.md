@@ -8,13 +8,20 @@ profile. This started with version 0.26.0.
 
 ### Highlight
 
-- \* Support OCaml 5.2 syntax (#2519, #2544, #2590, #2596, @Julow, @EmileTrotignon)
-  This includes local open in types and the new representation for functions.
+- \* Support OCaml 5.2 syntax (#2519, #2544, #2590, #2596, #2621, @Julow, @EmileTrotignon)
+  This includes local open in types, raw identifiers, and the new
+  representation for functions.
   This might change the formatting of some functions due to the formatting code
   being completely rewritten.
 
-- Support OCaml 5.3 syntax (#2562, @Zeta611)
-  Adds support for effect patterns.
+- Support OCaml 5.3 syntax (#2609, #2610, #2611, #2622, #2623, #2562, @Julow, @Zeta611)
+  This adds support for effect patterns, short functor type arguments and utf8
+  identifiers.
+  To format code using the new `effect` syntax, add this option to your
+  `.ocamlformat`:
+  ```
+  ocaml-version = 5.3
+  ```
 
 - Documentation comments are now formatted by default (#2390, @Julow)
   Use the option `parse-docstrings = false` to restore the previous behavior.
@@ -65,7 +72,7 @@ profile. This started with version 0.26.0.
 - \* Improve formatting of functor arguments (#2505, @Julow)
   This also reduce the indentation of functor arguments with long signatures.
 
-- Improvements to the Janestreet profile (#2445, #2314, #2460, #2593, @Julow, @tdelvecchio-jsc)
+- Improvements to the Janestreet profile (#2445, #2314, #2460, #2593, #2612, @Julow, @tdelvecchio-jsc)
 
 - \* Undo let-bindings and methods normalizations (#2523, #2529, @gpetiot)
   This remove the rewriting of some forms of let-bindings and methods:
@@ -86,7 +93,7 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
-- Fix placement of comments in some cases (#2471, #2503, #2506, #2540, #2541, #2592, @gpetiot, @Julow)
+- Fix placement of comments in some cases (#2471, #2503, #2506, #2540, #2541, #2592, #2617, @gpetiot, @Julow)
   Some comments were being moved or causing OCamlformat to crash.
   OCamlformat refuses to format if a comment would be missing in its output, to avoid loosing code.
 
@@ -109,6 +116,9 @@ profile. This started with version 0.26.0.
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
 - Fix formatting of paragraphs in lists in documentation (#2607, @Julow)
+- Avoid unwanted space in references and links text in documentation (#2608, @Julow)
+- \* Improve the indentation of attributes in patterns (#2613, @Julow)
+- \* Avoid large indentation in patterns after `let%ext` (#2615, @Julow)
 
 ## 0.26.2 (2024-04-18)
 

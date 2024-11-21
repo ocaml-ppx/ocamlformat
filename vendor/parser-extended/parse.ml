@@ -42,10 +42,13 @@ let maybe_skip_phrase lexbuf =
 
 type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
 
-let wrap (parser : 'a parser) lexbuf : 'a =
+let wrap (parser : 'a parser) ~ocaml_version lexbuf : 'a =
   try
     Docstrings.init ();
-    Lexer.init ();
+    let keyword_edition =
+      Some (ocaml_version, [])
+    in
+    Lexer.init ?keyword_edition ();
     let open Parser.MenhirInterpreter in
     let rec fix_resume = function
       | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
@@ -168,7 +171,7 @@ let prepare_error err =
       Location.errorf ~loc
         "In this scoped type, variable %a \
          is reserved for the local type %a."
-        (Style.as_inline_code Pprintast.tyvar) var
+        (Style.as_inline_code Pprintast.Doc.tyvar) var
         Style.inline_code var
   | Other loc ->
       Location.errorf ~loc "Syntax error"
@@ -178,20 +181,20 @@ let prepare_error err =
   | Invalid_package_type (loc, ipt) ->
       let invalid ppf ipt = match ipt with
         | Syntaxerr.Parameterized_types ->
-            Format.fprintf ppf "parametrized types are not supported"
+            Format_doc.fprintf ppf "parametrized types are not supported"
         | Constrained_types ->
-            Format.fprintf ppf "constrained types are not supported"
+            Format_doc.fprintf ppf "constrained types are not supported"
         | Private_types ->
-            Format.fprintf ppf  "private types are not supported"
+            Format_doc.fprintf ppf  "private types are not supported"
         | Not_with_type ->
-            Format.fprintf ppf "only %a constraints are supported"
+            Format_doc.fprintf ppf "only %a constraints are supported"
               Style.inline_code "with type t ="
         | Neither_identifier_nor_with_type ->
-            Format.fprintf ppf
+            Format_doc.fprintf ppf
               "only module type identifier and %a constraints are supported"
               Style.inline_code "with type"
       in
-      Location.errorf ~loc "invalid package type: %a" invalid ipt
+      Location.errorf ~loc "Syntax error: invalid package type: %a" invalid ipt
   | Removed_string_set loc ->
       Location.errorf ~loc
         "Syntax error: strings are immutable, there is no assignment \
