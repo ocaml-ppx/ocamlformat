@@ -3843,13 +3843,12 @@ type_longident:
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
-mod_ext_longident_:
-    UIDENT                          { Lident $1 }
+mod_longident_disam:
   | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
-  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
 ;
 mod_ext_longident:
-    mod_ext_longident_ { $1 }
+    mk_longident(mod_ext_longident, UIDENT) { $1 }
+  | mod_longident_disam { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
