@@ -111,6 +111,7 @@ module Pat = struct
   let unpack ?loc ?attrs a b = mk ?loc ?attrs (Ppat_unpack (a, b))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_open (a, b))
   let exception_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_exception a)
+  let effect_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_effect(a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ppat_extension a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Ppat_cons a)
 end
@@ -559,7 +560,6 @@ module Te = struct
      pext_loc = loc;
      pext_attributes = add_docs_attrs docs (add_info_attrs info attrs);
     }
-
 end
 
 module Csig = struct

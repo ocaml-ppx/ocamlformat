@@ -1,0 +1,63 @@
+let step (f : unit -> 'a) () : 'a status =
+  match f () with
+  | v -> Complete v
+  | effect Xchg msg, cont -> Suspended { msg; cont }
+
+(* A concurrent round-robin scheduler *)
+let run (main : unit -> unit) : unit =
+  let exchanger : (int * (int, unit) continuation) option ref =
+    ref None (* waiting exchanger *)
+  in
+  let run_q = Queue.create () in
+  (* scheduler queue *)
+  let enqueue k v =
+    let task () = continue k v in
+    Queue.push task run_q
+  in
+  let dequeue () =
+    if Queue.is_empty run_q then () (* done *)
+    else
+      let task = Queue.pop run_q in
+      task ()
+  in
+  let rec spawn (f : unit -> unit) : unit =
+    match f () with
+    | () -> dequeue ()
+    | exception e ->
+        print_endline (Printexc.to_string e);
+        dequeue ()
+    | effect Yield, k ->
+        enqueue k ();
+        dequeue ()
+    | effect Fork f, k ->
+        enqueue k ();
+        spawn f
+    | effect Xchg n, k -> (
+        match !exchanger with
+        | Some (n', k') ->
+            exchanger := None;
+            enqueue k' n;
+            continue k n'
+        | None ->
+            exchanger := Some (n, k);
+            dequeue ())
+  in
+  spawn main
+
+let invert (type a) ~(iter : (a -> unit) -> unit) : a Seq.t =
+  let module M = struct
+    type _ Effect.t += Yield : a -> unit t
+  end in
+  let yield v = perform (M.Yield v) in
+  fun () ->
+    match iter yield with
+    | () -> Seq.Nil
+    | effect M.Yield v, k -> Seq.Cons (v, continue k)
+
+type _ Effect.t += E : int t | F : string t
+
+let foo () = perform F
+let bar () = try foo () with effect E, k -> failwith "impossible"
+let baz () = try bar () with effect F, k -> continue k "Hello, world!";;
+
+try perform (Xchg 0) with effect Xchg n, k -> continue k 21 + continue k 21

@@ -1436,6 +1436,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to effects.ml.stdout
+   (with-stderr-to effects.ml.stderr
+     (run %{bin:ocamlformat} --name effects.ml --margin-check --ocaml-version=5.3 %{dep:../tests/effects.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff effects.ml.ref effects.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff effects.ml.err effects.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to eliom_ext.eliom.stdout
    (with-stderr-to eliom_ext.eliom.stderr
      (run %{bin:ocamlformat} --name eliom_ext.eliom --margin-check %{dep:../tests/eliom_ext.eliom})))))
@@ -3726,6 +3741,21 @@
 (rule
  (alias runtest)
  (action (diff pre42_syntax.ml.err pre42_syntax.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
+  (with-stdout-to pre53_syntax.ml.stdout
+   (with-stderr-to pre53_syntax.ml.stderr
+     (run %{bin:ocamlformat} --name pre53_syntax.ml --margin-check --ocaml-version=5.2 %{dep:../tests/pre53_syntax.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff pre53_syntax.ml.ref pre53_syntax.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff pre53_syntax.ml.err pre53_syntax.ml.stderr)))
 
 (rule
  (deps .ocamlformat dune-project)
