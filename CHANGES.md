@@ -14,7 +14,7 @@ profile. This started with version 0.26.0.
   This might change the formatting of some functions due to the formatting code
   being completely rewritten.
 
-- Support OCaml 5.3 syntax (#2609, #2610, #2611, #2622, #2623, #2562, @Julow, @Zeta611)
+- Support OCaml 5.3 syntax (#2609, #2610, #2611, #2622, #2623, #2562, #2624, @Julow, @Zeta611)
   This adds support for effect patterns, short functor type arguments and utf8
   identifiers.
   To format code using the new `effect` syntax, add this option to your
