@@ -93,18 +93,6 @@ let fmt_char_option f = function
   | None -> fprintf f "None"
   | Some c -> fprintf f "Some %c" c
 
-let fmt_constant i f x =
-  line i f "constant %a\n" fmt_location x.pconst_loc;
-  let i = i+1 in
-  match x.pconst_desc with
-  | Pconst_integer (j,m) -> line i f "PConst_int (%s,%a)\n" j fmt_char_option m
-  | Pconst_char (c, s) -> line i f "PConst_char (%02x,%s)\n" (Char.code c) s
-  | Pconst_string (s, strloc, None) ->
-      line i f "PConst_string(%S,%a,None)\n" s fmt_location strloc
-  | Pconst_string (s, strloc, Some delim) ->
-      line i f "PConst_string (%S,%a,Some %S)\n" s fmt_location strloc delim
-  | Pconst_float (s,m) -> line i f "PConst_float (%s,%a)\n" s fmt_char_option m
-
 let fmt_mutable_flag f x =
   match x with
   | Immutable -> fprintf f "Immutable"
@@ -159,6 +147,18 @@ let fmt_mutable_virtual_flag ppf { mv_mut; mv_virt } =
     (fmt_opt fmt_location) mv_mut
     (fmt_opt fmt_location) mv_virt
 
+let fmt_constant i f x =
+  line i f "constant %a\n" fmt_location x.pconst_loc;
+  let i = i+1 in
+  match x.pconst_desc with
+  | Pconst_integer (j,m) -> line i f "PConst_int (%s,%a)\n" j fmt_char_option m
+  | Pconst_char (c, s) -> line i f "PConst_char (%02x,%s)\n" (Char.code c) s
+  | Pconst_string (s, strloc, None) ->
+      line i f "PConst_string(%S,%a,None)\n" s fmt_location strloc
+  | Pconst_string (s, strloc, Some delim) ->
+      line i f "PConst_string (%S,%a,Some %S)\n" s fmt_location strloc delim
+  | Pconst_float (s,m) -> line i f "PConst_float (%s,%a)\n" s fmt_char_option m
+
 let list i f ppf l =
   match l with
   | [] -> line i ppf "[]\n"
@@ -177,6 +177,7 @@ let option i f ppf x =
 let longident_loc i ppf li = line i ppf "%a\n" fmt_longident_loc li
 let string i ppf s = line i ppf "\"%s\"\n" s
 let string_loc i ppf s = line i ppf "%a\n" fmt_string_loc s
+let str_opt_loc i ppf s = line i ppf "%a\n" fmt_str_opt_loc s
 let arg_label i ppf = function
   | Nolabel -> line i ppf "Nolabel\n"
   | Optional s -> line i ppf "Optional %a\n" fmt_string_loc s

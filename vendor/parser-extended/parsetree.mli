@@ -22,7 +22,12 @@
 
 open Asttypes
 
-type constant_desc =
+type constant = {
+  pconst_desc : constant_desc;
+  pconst_loc : Location.t;
+}
+
+and constant_desc =
   | Pconst_integer of string * char option
       (** Integer constants such as [3] [3l] [3L] [3n].
 
@@ -45,11 +50,6 @@ type constant_desc =
      Suffixes [g-z][G-Z] are accepted by the parser.
      Suffixes are rejected by the typechecker.
   *)
-
-type constant = {
-  pconst_desc : constant_desc;
-  pconst_loc : Location.t;
-}
 
 type location_stack = Location.t list
 
@@ -181,8 +181,7 @@ and core_type_desc =
   | Ptyp_open of Longident.t loc * core_type (** [M.(T)] *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
-and package_type =
-  Longident.t loc * (Longident.t loc * core_type) list * attributes
+and package_type = Longident.t loc * (Longident.t loc * core_type) list * attributes
 (** As {!package_type} typed values:
          - [(S, [])] represents [(module S)],
          - [(S, [(t1, T1) ; ... ; (tn, Tn)])]
@@ -868,9 +867,17 @@ and class_field_desc =
   | Pcf_val of (label loc * mutable_virtual * class_field_value_kind)
       (** [Pcf_val(x,flag, kind)] represents:
             - [val x = E]
+       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
+        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val virtual x: T]
+       when [flag] is {{!Asttypes.mutable_flag.Immutable}[Immutable]}
+        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
             - [val mutable x = E]
+       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
+        and [kind] is {{!class_field_kind.Cfk_concrete}[Cfk_concrete(Fresh, E)]}
             - [val mutable virtual x: T]
+       when [flag] is {{!Asttypes.mutable_flag.Mutable}[Mutable]}
+        and [kind] is {{!class_field_kind.Cfk_virtual}[Cfk_virtual(T)]}
   *)
   | Pcf_method of (label loc * private_virtual * class_field_method_kind)
       (** - [method x = E]
