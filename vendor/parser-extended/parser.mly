@@ -175,20 +175,31 @@ let neg_string f =
   then String.sub f 1 (String.length f - 1)
   else "-" ^ f
 
-let mkuminus ~oploc name arg =
-  match name, arg.pexp_desc with
-  | "-", Pexp_constant({pconst_desc= Pconst_integer (n,m); _} as c) ->
-      Pexp_constant({c with pconst_desc= Pconst_integer(neg_string n,m)})
-  | ("-" | "-."), Pexp_constant({pconst_desc= Pconst_float (f, m); _} as c) ->
-      Pexp_constant({c with pconst_desc= Pconst_float(neg_string f, m)})
+(* Pre-apply the special [-], [-.], [+] and [+.] prefix operators into
+   constants if possible, otherwise turn them into the corresponding prefix
+   operators [~-], [~-.], etc.. *)
+let mkuminus ~sloc ~oploc name arg =
+  match name, arg.pexp_desc, arg.pexp_attributes with
+  | "-",
+    Pexp_constant({pconst_desc = Pconst_integer (n,m); pconst_loc=_}),
+    [] ->
+      Pexp_constant(mkconst ~loc:sloc (Pconst_integer(neg_string n, m)))
+  | ("-" | "-."),
+    Pexp_constant({pconst_desc = Pconst_float (f, m); pconst_loc=_}), [] ->
+      Pexp_constant(mkconst ~loc:sloc (Pconst_float(neg_string f, m)))
   | _ ->
       Pexp_prefix(mkoperator ~loc:oploc ("~" ^ name), arg)
 
-let mkuplus ~oploc name arg =
+let mkuplus ~sloc ~oploc name arg =
   let desc = arg.pexp_desc in
-  match name, desc with
-  | "+", Pexp_constant({pconst_desc= Pconst_integer _; _})
-  | ("+" | "+."), Pexp_constant({pconst_desc= Pconst_float _; _}) -> desc
+  match name, desc, arg.pexp_attributes with
+  | "+",
+    Pexp_constant({pconst_desc = Pconst_integer _ as desc; pconst_loc=_}),
+    []
+  | ("+" | "+."),
+    Pexp_constant({pconst_desc = Pconst_float _ as desc; pconst_loc=_}),
+    [] ->
+      Pexp_constant(mkconst ~loc:sloc desc)
   | _ ->
       Pexp_prefix(mkoperator ~loc:oploc ("~" ^ name), arg)
 
@@ -2417,9 +2428,9 @@ fun_expr:
   | e1 = fun_expr op = op(infix_operator) e2 = expr
       { mkinfix e1 op e2 }
   | subtractive expr %prec prec_unary_minus
-      { mkuminus ~oploc:$loc($1) $1 $2 }
+      { mkuminus ~sloc:$sloc ~oploc:$loc($1) $1 $2 }
   | additive expr %prec prec_unary_plus
-      { mkuplus ~oploc:$loc($1) $1 $2 }
+      { mkuplus ~sloc:$sloc ~oploc:$loc($1) $1 $2 }
 ;
 
 simple_expr:
