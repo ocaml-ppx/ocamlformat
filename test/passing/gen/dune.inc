@@ -4200,7 +4200,7 @@
  (action
   (with-stdout-to source.ml.stdout
    (with-stderr-to source.ml.stderr
-     (run %{bin:ocamlformat} --name source.ml --margin-check --max-iters=3 %{dep:../tests/source.ml})))))
+     (run %{bin:ocamlformat} --name source.ml --margin-check --max-iters=3 --ocaml-version=5.3 %{dep:../tests/source.ml})))))
 
 (rule
  (alias runtest)

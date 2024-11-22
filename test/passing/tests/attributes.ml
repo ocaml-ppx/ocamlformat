@@ -460,3 +460,8 @@ let () =
        [@warning "-4"] )
   in
   ()
+
+;;
+M.(Some x) [@foo]
+
+[@@@foo:]

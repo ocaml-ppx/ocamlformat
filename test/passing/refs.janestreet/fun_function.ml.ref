@@ -190,3 +190,35 @@ open struct
          | Lazy_loaded { v_ref; _ } | Dirty { v_ref; _ } -> v_ref)
   ;;
 end
+
+let _ = call ~f:(fun pair -> (pair : a * b));;
+
+f
+  (fun _ -> function
+     | true ->
+       let () = () in
+       ()
+     | false -> ())
+  ()
+;;
+
+f
+  (fun _ -> function
+     | true ->
+       let () = () in
+       ()
+     (* comment *)
+     | false -> ())
+  ()
+
+let _ = fun (x : int as 'a) -> (x : int as 'a)
+
+let f = function
+  | Foo -> bar
+  | EArr l ->
+    EArr
+      (List.map l ~f:(function
+         | ElementHole -> ElementHole
+         | Element e -> Element (m#expression e)
+         | ElementSpread e -> ElementSpread (m#expression e)))
+;;
