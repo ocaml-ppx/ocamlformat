@@ -24,6 +24,9 @@
 
 %{
 
+[@@@ocaml.warning "-60"] module Str = Ast_helper.Str (* For ocamldep *)
+[@@@ocaml.warning "+60"]
+
 open Asttypes
 open Longident
 open Parsetree
@@ -114,9 +117,6 @@ let mkrhs rhs loc = mkloc rhs (make_loc loc)
 let ghrhs rhs loc = mkloc rhs (ghost_loc loc)
 *)
 
-let mk_optional lbl loc = Optional (mkrhs lbl loc)
-let mk_labelled lbl loc = Labelled (mkrhs lbl loc)
-
 let push_loc x acc =
   if x.Location.loc_ghost
   then acc
@@ -191,6 +191,10 @@ let mkuplus ~oploc name arg =
   | ("+" | "+."), Pexp_constant({pconst_desc= Pconst_float _; _}) -> desc
   | _ ->
       Pexp_prefix(mkoperator ~loc:oploc ("~" ^ name), arg)
+
+let mk_attr ~loc name payload =
+  Builtin_attributes.(register_attr Parser name);
+  Attr.mk ~loc name payload
 
 (* TODO define an abstraction boundary between locations-as-pairs
    and locations-as-Location.t; it should be clear when we move from
@@ -643,8 +647,8 @@ let mk_directive ~loc name arg =
 %token DOT                    "."
 %token DOTDOT                 ".."
 %token DOWNTO                 "downto"
-%token ELSE                   "else"
 %token EFFECT                 "effect"
+%token ELSE                   "else"
 %token END                    "end"
 %token EOF                    ""
 %token EQUAL                  "="
@@ -2246,19 +2250,19 @@ seq_expr:
 ;
 labeled_simple_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
-      { mk_optional (fst $3) $sloc, $4, snd $3 }
+      { (Optional (mkrhs (fst $3) $sloc), $4, snd $3) }
   | QUESTION label_var
-      { mk_optional (fst $2) $sloc, None, snd $2 }
+      { (Optional (mkrhs (fst $2) $sloc), None, snd $2) }
   | OPTLABEL LPAREN let_pattern opt_default RPAREN
-      { mk_optional $1 $sloc, $4, $3 }
+      { (Optional (mkrhs $1 $sloc), $4, $3) }
   | OPTLABEL pattern_var
-      { mk_optional $1 $sloc, None, $2 }
+      { (Optional (mkrhs $1 $sloc), None, $2) }
   | TILDE LPAREN label_let_pattern RPAREN
-      { mk_labelled (fst $3) $sloc, None, snd $3 }
+      { (Labelled (mkrhs (fst $3) $sloc), None, snd $3) }
   | TILDE label_var
-      { mk_labelled (fst $2) $sloc, None, snd $2 }
+      { (Labelled (mkrhs (fst $2) $sloc), None, snd $2) }
   | LABEL simple_pattern
-      { mk_labelled $1 $sloc, None, $2 }
+      { (Labelled (mkrhs $1 $sloc), None, $2) }
   | simple_pattern
       { (Nolabel, None, $1) }
 ;
@@ -2578,21 +2582,20 @@ simple_expr:
 ;
 labeled_simple_expr:
     simple_expr %prec below_HASH
-      { Nolabel, $1 }
+      { (Nolabel, $1) }
   | LABEL simple_expr %prec below_HASH
-      { mk_labelled $1 $sloc, $2 }
+      { (Labelled (mkrhs $1 $sloc), $2) }
   | TILDE label = LIDENT
       { let loc = $loc(label) in
-        mk_labelled label $sloc, mkexpvar ~loc label }
+        (Labelled (mkrhs label $sloc), mkexpvar ~loc label) }
   | TILDE LPAREN label = LIDENT ty = type_constraint RPAREN
-      { mk_labelled label $sloc,
-        mkexp_constraint ~loc:($startpos($2), $endpos)
-          (mkexpvar ~loc:$loc(label) label) ty }
+      { (Labelled (mkrhs label $sloc), mkexp_constraint ~loc:($startpos($2), $endpos)
+                           (mkexpvar ~loc:$loc(label) label) ty) }
   | QUESTION label = LIDENT
       { let loc = $loc(label) in
-        mk_optional label $sloc, mkexpvar ~loc label }
+        (Optional (mkrhs label $sloc), mkexpvar ~loc label) }
   | OPTLABEL simple_expr %prec below_HASH
-      { mk_optional $1 $sloc, $2 }
+      { (Optional (mkrhs $1 $sloc), $2) }
 ;
 %inline lident_list:
   xs = mkrhs(LIDENT)+
@@ -2609,9 +2612,9 @@ let_binding_body_no_punning:
       { let v = $1 in (* PR#7344 *)
         let t =
           match $2 with
-          | Pconstraint typ ->
-             Pvc_constraint { locally_abstract_univars = []; typ }
-          | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion }
+            Pconstraint t ->
+             Pvc_constraint { locally_abstract_univars = []; typ=t }
+          | Pcoerce (ground, coercion) -> Pvc_coercion { ground; coercion}
         in
         (v, [], Some t, $4)
       }
@@ -2818,7 +2821,7 @@ record_expr_content:
     { es }
 ;
 type_constraint:
-  | COLON core_type                             { Pconstraint $2 }
+    COLON core_type                             { Pconstraint $2 }
   | COLON core_type COLONGREATER core_type      { Pcoerce (Some $2, $4) }
   | COLONGREATER core_type                      { Pcoerce (None, $2) }
   | COLON error                                 { syntax_error() }
@@ -3495,9 +3498,9 @@ function_type:
 ;
 %inline arg_label:
   | label = optlabel
-      { mk_optional label $sloc }
+      { Optional (mkrhs label $sloc) }
   | label = LIDENT COLON
-      { mk_labelled label $sloc }
+      { Labelled (mkrhs label $sloc) }
   | /* empty */
       { Nolabel }
 ;
@@ -4072,17 +4075,17 @@ attr_id:
   ) { $1 }
 ;
 attribute:
-  LBRACKETAT attr_id payload RBRACKET
-    { Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+  LBRACKETAT attr_id attr_payload RBRACKET
+    { mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 post_item_attribute:
-  LBRACKETATAT attr_id payload RBRACKET
-    { Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+  LBRACKETATAT attr_id attr_payload RBRACKET
+    { mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 floating_attribute:
-  LBRACKETATATAT attr_id payload RBRACKET
+  LBRACKETATATAT attr_id attr_payload RBRACKET
     { mark_symbol_docs $sloc;
-      Attr.mk ~loc:(make_loc $sloc) $2 $3 }
+      mk_attr ~loc:(make_loc $sloc) $2 $3 }
 ;
 %inline post_item_attributes:
   post_item_attribute*
@@ -4121,5 +4124,11 @@ payload:
   | COLON core_type { PTyp $2 }
   | QUESTION pattern { PPat ($2, None) }
   | QUESTION pattern WHEN seq_expr { PPat ($2, Some $4) }
+;
+attr_payload:
+  payload
+    { Builtin_attributes.mark_payload_attrs_used $1;
+      $1
+    }
 ;
 %%
