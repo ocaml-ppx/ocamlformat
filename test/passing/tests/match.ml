@@ -60,3 +60,12 @@ let x =
   ()
 
 let _ = match x with _ -> b >>= fun () -> c
+
+let () =
+  match () with
+  | _ ->
+    fun _ : _ ->
+    (match () with
+     | _ -> ())
+  | _ -> ()
+;;

@@ -16,3 +16,5 @@ class c =
   (let () = print_endline "Class init" in
    with_param)
     ()
+
+class t = object (_ [@foo]) end
