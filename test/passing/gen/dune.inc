@@ -3490,6 +3490,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to newlines.ml.stdout
+   (with-stderr-to newlines.ml.stderr
+     (run %{bin:ocamlformat} --name newlines.ml --margin-check %{dep:../tests/newlines.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff newlines.ml.ref newlines.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff newlines.ml.err newlines.ml.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to object.ml.stdout
    (with-stderr-to object.ml.stderr
      (run %{bin:ocamlformat} --name object.ml --margin-check %{dep:../tests/object.ml})))))
