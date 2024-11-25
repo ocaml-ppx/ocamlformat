@@ -144,6 +144,7 @@ let store_string s = Buffer.add_string string_buffer s
 let store_substring s ~pos ~len = Buffer.add_substring string_buffer s pos len
 
 let store_lexeme lexbuf = store_string (Lexing.lexeme lexbuf)
+(*
 let store_normalized_newline newline =
   (* #12502: we normalize "\r\n" to "\n" at lexing time,
      to avoid behavior difference due to OS-specific
@@ -169,6 +170,10 @@ let store_normalized_newline newline =
   if len = 1
   then store_string_char '\n'
   else store_substring newline ~pos:1 ~len:(len - 1)
+*)
+let store_normalized_newline newline =
+  (* OCamlformat: We preserve the line endings in string literals. *)
+  store_string newline
 
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref Location.none
