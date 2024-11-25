@@ -493,6 +493,10 @@ let identchar = ['A'-'Z' 'a'-'z' '_' '\'' '0'-'9']
 let utf8 = ['\192'-'\255'] ['\128'-'\191']*
 let identstart_ext = identstart | utf8
 let identchar_ext = identchar | utf8
+let delim_ext = (lowercase | uppercase | utf8)*
+(* ascii uppercase letters in quoted string delimiters ({delim||delim}) are
+   rejected by the delimiter validation function, we accept them temporarily to
+   have the same error message for ascii and non-ascii uppercase letters *)
 
 let symbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
@@ -593,7 +597,7 @@ rule token = parse
   | "\""
       { let s, loc = wrap_string_lexer string lexbuf in
         STRING (s, loc, None) }
-  | "{" (ident_ext? as raw_name) '|'
+  | "{" (delim_ext as raw_name) '|'
       { let delim = validate_delim lexbuf raw_name in
         let s, loc = wrap_string_lexer (quoted_string delim) lexbuf in
         STRING (s, loc, Some delim)
@@ -604,7 +608,7 @@ rule token = parse
         let s, loc = wrap_string_lexer (quoted_string "") lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 2 id in
         QUOTED_STRING_EXPR (id, idloc, s, loc, Some "") }
-  | "{%" (extattrident as raw_id) blank+ (ident_ext as raw_delim) "|"
+  | "{%" (extattrident as raw_id) blank+ (delim_ext as raw_delim) "|"
       { let orig_loc = Location.curr lexbuf in
         let id = validate_ext lexbuf raw_id in
         let delim = validate_delim lexbuf raw_delim in
@@ -617,7 +621,7 @@ rule token = parse
         let s, loc = wrap_string_lexer (quoted_string "") lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 3 id in
         QUOTED_STRING_ITEM (id, idloc, s, loc, Some "") }
-  | "{%%" (extattrident as raw_id) blank+ (ident_ext as raw_delim) "|"
+  | "{%%" (extattrident as raw_id) blank+ (delim_ext as raw_delim) "|"
       { let orig_loc = Location.curr lexbuf in
         let id = validate_ext lexbuf raw_id in
         let delim = validate_delim lexbuf raw_delim in
@@ -800,7 +804,7 @@ and comment = parse
         is_in_string := false;
         store_string_char '\"';
         comment lexbuf }
-  | "{" ('%' '%'? extattrident blank*)? (ident_ext? as raw_delim) "|"
+  | "{" ('%' '%'? extattrident blank*)? (delim_ext as raw_delim) "|"
       { match lax_delim raw_delim with
         | None -> store_lexeme lexbuf; comment lexbuf
         | Some delim ->
