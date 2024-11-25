@@ -81,7 +81,10 @@ and string_aux mode = parse
         string_aux mode lexbuf
       }
   | newline
-      { store_string (Lexing.lexeme lexbuf);
+      { (* See store_normalized_newline in vendor/parser-standard/lexer.mll. *)
+        (match Lexing.lexeme lexbuf with
+        | "\n" -> store_string "\n"
+        | s -> store_string (String.sub s 1 (String.length s - 1)));
         string_aux mode lexbuf }
   | eof
       { raise Parse_error }
