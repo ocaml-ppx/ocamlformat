@@ -69,8 +69,14 @@ type t =
   | (* List markup. *)
     `Begin_list of [ `Unordered | `Ordered ]
   | `Begin_list_item of [ `Li | `Dash ]
+  | (* Table markup. *)
+    `Begin_table_light
+  | `Begin_table_heavy
+  | `Begin_table_row
+  | `Begin_table_cell of [ `Header | `Data ]
   | `Minus
   | `Plus
+  | `Bar
   | section_heading
   | tag ]
 
@@ -87,8 +93,14 @@ let print : [< t ] -> string = function
   | `Begin_link_with_replacement_text _ -> "'{{:'"
   | `Begin_list_item `Li -> "'{li ...}'"
   | `Begin_list_item `Dash -> "'{- ...}'"
+  | `Begin_table_light -> "{t"
+  | `Begin_table_heavy -> "{table"
+  | `Begin_table_row -> "'{tr'"
+  | `Begin_table_cell `Header -> "'{th'"
+  | `Begin_table_cell `Data -> "'{td'"
   | `Minus -> "'-'"
   | `Plus -> "'+'"
+  | `Bar -> "'|'"
   | `Begin_section_heading (level, label) ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
@@ -142,8 +154,14 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_list `Ordered -> "'{ol ...}' (numbered list)"
   | `Begin_list_item `Li -> "'{li ...}' (list item)"
   | `Begin_list_item `Dash -> "'{- ...}' (list item)"
+  | `Begin_table_light -> "'{t ...}' (table)"
+  | `Begin_table_heavy -> "'{table ...}' (table)"
+  | `Begin_table_row -> "'{tr ...}' (table row)"
+  | `Begin_table_cell `Header -> "'{th ... }' (table header cell)"
+  | `Begin_table_cell `Data -> "'{td ... }' (table data cell)"
   | `Minus -> "'-' (bulleted list item)"
   | `Plus -> "'+' (numbered list item)"
+  | `Bar -> "'|'"
   | `Begin_section_heading (level, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
   | `Tag (`Author _) -> "'@author'"

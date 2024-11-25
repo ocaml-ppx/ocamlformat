@@ -208,8 +208,21 @@ let list_block_elem c elems f =
       in
       f elem $ break )
 
+let table_extract_header grid =
+  let is_header_cell = function _, `Header -> true | _, `Data -> false in
+  let rec loop acc = function
+    | hd :: tl when List.exists hd ~f:is_header_cell -> loop (hd :: acc) tl
+    | data_rows -> (List.rev acc, data_rows)
+  in
+  loop [] grid
+
 let non_wrap_space sp =
   if String.contains sp '\n' then force_newline else str sp
+
+let fmt_block_markup ?force_break:(fb = false) tag content =
+  let initial_break = if fb then force_break else space_break in
+  hvbox 2
+    (str "{" $ str tag $ initial_break $ content $ break 1 ~-2 $ str "}")
 
 let rec fmt_inline_elements c elements =
   let rec aux = function
@@ -292,6 +305,8 @@ and fmt_nestable_block_element c elm =
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
+  | `Table (tbl, `Light) -> fmt_table_light c tbl
+  | `Table (tbl, `Heavy) -> fmt_table_heavy c tbl
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =
@@ -315,7 +330,43 @@ and fmt_list_light c kind items =
   let fmt_item elems =
     line_start $ hovbox 0 (fmt_nestable_block_elements c elems)
   in
-  vbox 0 (list items cut_break fmt_item)
+  vbox 0 (list items force_break fmt_item)
+
+and fmt_table_heavy c ((grid, alignments) : _ abstract_table) =
+  let fmt_cell (elems, header) =
+    let cell_tag = match header with `Header -> "th" | `Data -> "td" in
+    fmt_block_markup cell_tag (fmt_nestable_block_elements c elems)
+  in
+  let fmt_row row = fmt_block_markup "tr" (list row space_break fmt_cell) in
+  ignore alignments ;
+  fmt_block_markup "table" (list grid force_break fmt_row)
+
+and fmt_table_light c ((grid, alignments) : _ abstract_table) =
+  let fmt_align = function
+    | Some `Left -> str ":--"
+    | Some `Center -> str ":-:"
+    | Some `Right -> str "--:"
+    | None -> str "---"
+  in
+  let header_rows, data_rows = table_extract_header grid in
+  let has_header_rows = not (List.is_empty header_rows)
+  and has_data_rows = not (List.is_empty data_rows) in
+  let fmt_alignment_row =
+    opt alignments (fun aligns ->
+        str "|"
+        $ list aligns (str "|") fmt_align
+        $ str "|"
+        $ fmt_if has_data_rows force_break )
+  in
+  let fmt_cell (elems, _) = fmt_nestable_block_elements c elems in
+  let fmt_row row = str "| " $ list row (str " | ") fmt_cell $ str " |" in
+  let fmt_rows rows = list rows force_break fmt_row in
+  let fmt_grid =
+    fmt_rows header_rows
+    $ fmt_if has_header_rows force_break
+    $ fmt_alignment_row $ fmt_rows data_rows
+  in
+  fmt_block_markup ~force_break:true "t" (vbox 0 fmt_grid)
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)

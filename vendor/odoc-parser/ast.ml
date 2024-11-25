@@ -9,6 +9,7 @@
 
 type 'a with_location = 'a Loc.with_location
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type alignment = [ `Left | `Center | `Right ]
 
 type reference_kind = [ `Simple | `With_text ]
 (** References in doc comments can be of two kinds: [{!simple}] or [{{!ref}With text}]. *)
@@ -29,6 +30,11 @@ type inline_element =
     text. Similarly the [`Link] constructor has the link itself as first parameter
     and the second is the replacement text. *)
 
+type 'a cell = 'a with_location list * [ `Header | `Data ]
+type 'a row = 'a cell list
+type 'a grid = 'a row list
+type 'a abstract_table = 'a grid * alignment option list option
+
 type nestable_block_element =
   [ `Paragraph of inline_element with_location list
   | `Code_block of
@@ -41,12 +47,15 @@ type nestable_block_element =
     [ `Unordered | `Ordered ]
     * [ `Light | `Heavy ]
     * nestable_block_element with_location list list
+  | `Table of table
   | `Math_block of string  (** @since 2.0.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].
     This corresponds to the syntactic constructor used (see the
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html#sss:ocamldoc-list}manual}).
     *)
+
+and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 
 type internal_tag =
   [ `Canonical of string with_location | `Inline | `Open | `Closed ]

@@ -88,6 +88,15 @@ let rec odoc_inline_element fmt = function
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
+let light_heavy_to_string = function `Light -> "Light" | `Heavy -> "Heavy"
+
+let alignment_to_string = function
+  | `Left -> "Left"
+  | `Right -> "Right"
+  | `Center -> "Center"
+
+let header_data_to_string = function `Header -> "Header" | `Data -> "Data"
+
 let rec odoc_nestable_block_element c fmt = function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (metadata, txt) ->
@@ -106,6 +115,18 @@ let rec odoc_nestable_block_element c fmt = function
         fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
       fpf fmt "List(%s,%a)" ord (list list_item) items
+  | `Table ((grid, alignment), syntax) ->
+      let pp_align fmt aln = fpf fmt "%s" (alignment_to_string aln) in
+      let pp_cell fmt (elems, header) =
+        fpf fmt "(%a,%s)"
+          (odoc_nestable_block_elements c)
+          elems
+          (header_data_to_string header)
+      in
+      let pp_grid = list (list pp_cell) in
+      let pp_alignment = option (list (option pp_align)) in
+      fpf fmt "Table((%a,%a),%s)" pp_grid grid pp_alignment alignment
+        (light_heavy_to_string syntax)
 
 and odoc_nestable_block_elements c fmt elems =
   list (ign_loc (odoc_nestable_block_element c)) fmt elems

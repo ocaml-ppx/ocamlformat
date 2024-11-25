@@ -36,6 +36,115 @@ let peek input =
   | Some token -> token
   | None -> assert false
 
+module Table = struct
+  module Light_syntax = struct
+    let valid_align = function
+      | [ { Loc.value = `Word w; _ } ] -> (
+          match String.length w with
+          | 0 -> `Valid None
+          | 1 -> (
+              match w with
+              | "-" -> `Valid None
+              | ":" -> `Valid (Some `Center)
+              | _ -> `Invalid)
+          | len ->
+              if String.for_all (Char.equal '-') (String.sub w 1 (len - 2)) then
+                match (String.get w 0, String.get w (len - 1)) with
+                | ':', ':' -> `Valid (Some `Center)
+                | ':', '-' -> `Valid (Some `Left)
+                | '-', ':' -> `Valid (Some `Right)
+                | '-', '-' -> `Valid None
+                | _ -> `Invalid
+              else `Invalid)
+      | _ -> `Invalid
+
+    let valid_align_row lx =
+      let rec loop acc = function
+        | [] -> Some (List.rev acc)
+        | x :: q -> (
+            match valid_align x with
+            | `Invalid -> None
+            | `Valid alignment -> loop (alignment :: acc) q)
+      in
+      loop [] lx
+
+    let create ~grid ~align : Ast.table =
+      let cell_to_block (x, k) =
+        let whole_loc = Loc.span (List.map (fun x -> x.Loc.location) x) in
+        match x with
+        | [] -> ([], k)
+        | _ -> ([ Loc.at whole_loc (`Paragraph x) ], k)
+      in
+      let row_to_block = List.map cell_to_block in
+      let grid_to_block = List.map row_to_block in
+      ((grid_to_block grid, align), `Light)
+
+    let with_kind kind : 'a with_location list list -> 'a Ast.row =
+      List.map (fun c -> (c, kind))
+
+    let from_raw_data grid : Ast.table =
+      match grid with
+      | [] -> create ~grid:[] ~align:None
+      | row1 :: rows2_N -> (
+          match valid_align_row row1 with
+          (* If the first line is the align row, everything else is data. *)
+          | Some _ as align ->
+              create ~grid:(List.map (with_kind `Data) rows2_N) ~align
+          | None -> (
+              match rows2_N with
+              (* Only 1 line, if this is not the align row this is data. *)
+              | [] -> create ~grid:[ with_kind `Data row1 ] ~align:None
+              | row2 :: rows3_N -> (
+                  match valid_align_row row2 with
+                  (* If the second line is the align row, the first one is the
+                     header and the rest is data. *)
+                  | Some _ as align ->
+                      let header = with_kind `Header row1 in
+                      let data = List.map (with_kind `Data) rows3_N in
+                      create ~grid:(header :: data) ~align
+                  (* No align row in the first 2 lines, everything is considered
+                     data. *)
+                  | None ->
+                      create ~grid:(List.map (with_kind `Data) grid) ~align:None
+                  )))
+  end
+
+  module Heavy_syntax = struct
+    let create ~grid : Ast.table = ((grid, None), `Heavy)
+    let from_grid grid : Ast.table = create ~grid
+  end
+end
+
+module Reader = struct
+  let until_rbrace_or_eof input acc =
+    let rec consume () =
+      let next_token = peek input in
+      match next_token.value with
+      | `Right_brace ->
+          junk input;
+          `End (acc, next_token.location)
+      | `End ->
+          Parse_error.end_not_allowed next_token.location ~in_what:"table"
+          |> add_warning input;
+          junk input;
+          `End (acc, next_token.location)
+      | `Space _ | `Single_newline _ | `Blank_line _ ->
+          junk input;
+          consume ()
+      | _ -> `Token next_token
+    in
+    consume ()
+
+  module Infix = struct
+    let ( >>> ) consume if_token =
+      match consume with
+      | `End (ret, loc) -> (ret, loc)
+      | `Token t -> if_token t
+  end
+end
+
+open Reader.Infix
+
 (* The last token in the stream is always [`End], and it is never consumed by
    the parser, so the [None] case is impossible. *)
 
@@ -99,6 +208,9 @@ let rec inline_element :
   | `Plus ->
       junk input;
       Loc.at location (`Word "+")
+  | `Bar ->
+      junk input;
+      Loc.at location (`Word "|")
   | (`Code_span _ | `Math_span _ | `Raw_markup _) as token ->
       junk input;
       Loc.at location token
@@ -249,6 +361,9 @@ and delimited_inline_element_list :
         junk input;
         let element = Loc.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
+    | `Bar as token ->
+        let acc = inline_element input next_token.location token :: acc in
+        consume_elements ~at_start_of_line:false acc
     | (`Minus | `Plus) as bullet ->
         (if at_start_of_line then
          let suggestion =
@@ -342,8 +457,8 @@ let paragraph : input -> Ast.nestable_block_element with_location =
    fun acc ->
     let next_token = peek input in
     match next_token.value with
-    | (`Space _ | `Minus | `Plus | #token_that_always_begins_an_inline_element)
-      as token ->
+    | ( `Space _ | `Minus | `Plus | `Bar
+      | #token_that_always_begins_an_inline_element ) as token ->
         let element = inline_element input next_token.location token in
         paragraph_line (element :: acc)
     | _ -> acc
@@ -356,7 +471,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
    fun acc ->
     match npeek 2 input with
     | { value = `Single_newline ws; location }
-      :: { value = #token_that_always_begins_an_inline_element; _ }
+      :: { value = #token_that_always_begins_an_inline_element | `Bar; _ }
       :: _ ->
         junk input;
         let acc = Loc.at location (`Space ws) :: acc in
@@ -373,7 +488,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
 (* {3 Helper types} *)
 
 (* The interpretation of tokens in the block parser depends on where on a line
-    each token appears. The five possible "locations" are:
+    each token appears. The six possible "locations" are:
 
     - [`At_start_of_line], when only whitespace has been read on the current
       line.
@@ -383,6 +498,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
       [-], has been read, and only whitespace has been read since.
     - [`After_explicit_list_bullet], when a valid explicit bullet, such as [{li],
       has been read, and only whitespace has been read since.
+    - [`After_table_cell], when a table cell opening markup ('{th' or '{td') has been read.
     - [`After_text], when any other valid non-whitespace token has already been
       read on the current line.
 
@@ -406,6 +522,7 @@ type where_in_line =
   | `After_tag
   | `After_shorthand_bullet
   | `After_explicit_list_bullet
+  | `After_table_cell
   | `After_text ]
 
 (* The block parsing loop, function [block_element_list], stops when it
@@ -459,6 +576,7 @@ type ('block, 'stops_at_which_tokens) context =
   | Top_level : (Ast.block_element, stops_at_delimiters) context
   | In_shorthand_list : (Ast.nestable_block_element, stopped_implicitly) context
   | In_explicit_list : (Ast.nestable_block_element, stops_at_delimiters) context
+  | In_table_cell : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_tag : (Ast.nestable_block_element, Token.t) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
@@ -473,6 +591,7 @@ let accepted_in_all_contexts :
   | Top_level -> (block :> Ast.block_element)
   | In_shorthand_list -> block
   | In_explicit_list -> block
+  | In_table_cell -> block
   | In_tag -> block
 
 (* Converts a tag to a series of words. This is used in error recovery, when a
@@ -501,6 +620,7 @@ let tag_to_words = function
    - paragraphs,
    - code blocks,
    - verbatim text blocks,
+   - tables,
    - lists, and
    - section headings. *)
 let rec block_element_list :
@@ -563,6 +683,7 @@ let rec block_element_list :
         | Top_level -> (List.rev acc, next_token, where_in_line)
         | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
+        | In_table_cell -> (List.rev acc, next_token, where_in_line)
         | In_tag -> (List.rev acc, next_token, where_in_line))
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
@@ -598,6 +719,32 @@ let rec block_element_list :
 
         junk input;
         consume_block_elements ~parsed_a_tag where_in_line acc
+    (* Table rows ([{tr ...}]) can never appear directly
+       in block content. They can only appear inside [{table ...}]. *)
+    | { value = `Begin_table_row as token; location } ->
+        let suggestion =
+          Printf.sprintf "move %s into %s." (Token.print token)
+            (Token.describe `Begin_table_heavy)
+        in
+        Parse_error.not_allowed ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion location
+        |> add_warning input;
+        junk input;
+        consume_block_elements ~parsed_a_tag where_in_line acc
+    (* Table cells ([{th ...}] and [{td ...}]) can never appear directly
+       in block content. They can only appear inside [{tr ...}]. *)
+    | { value = `Begin_table_cell _ as token; location } ->
+        let suggestion =
+          Printf.sprintf "move %s into %s." (Token.print token)
+            (Token.describe `Begin_table_row)
+        in
+        Parse_error.not_allowed ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion location
+        |> add_warning input;
+        junk input;
+        consume_block_elements ~parsed_a_tag where_in_line acc
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
     | { value = `Tag tag as token; location } as next_token -> (
@@ -624,6 +771,7 @@ let rec block_element_list :
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
+        | In_table_cell -> recover_when_not_at_top_level context
         | In_tag ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
@@ -708,8 +856,8 @@ let rec block_element_list :
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
                   (tag :: acc)))
-    | { value = #token_that_always_begins_an_inline_element; _ } as next_token
-      ->
+    | ( { value = #token_that_always_begins_an_inline_element; _ }
+      | { value = `Bar; _ } ) as next_token ->
         warn_if_after_tags next_token;
         warn_if_after_text next_token;
 
@@ -802,6 +950,25 @@ let rec block_element_list :
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
+    | { value = (`Begin_table_light | `Begin_table_heavy) as token; location }
+      as next_token ->
+        warn_if_after_tags next_token;
+        warn_if_after_text next_token;
+        junk input;
+        let block, brace_location =
+          let parent_markup = token in
+          let parent_markup_location = location in
+          match token with
+          | `Begin_table_light ->
+              light_table input ~parent_markup ~parent_markup_location
+          | `Begin_table_heavy ->
+              heavy_table input ~parent_markup ~parent_markup_location
+        in
+        let location = Loc.span [ location; brace_location ] in
+        let block = accepted_in_all_contexts context (`Table block) in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Minus | `Plus) as token; location } as next_token -> (
         (match where_in_line with
         | `After_text | `After_shorthand_bullet ->
@@ -857,6 +1024,7 @@ let rec block_element_list :
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
         | In_explicit_list -> recover_when_not_at_top_level context
+        | In_table_cell -> recover_when_not_at_top_level context
         | In_tag -> recover_when_not_at_top_level context
         | Top_level ->
             if where_in_line <> `At_start_of_line then
@@ -916,6 +1084,7 @@ let rec block_element_list :
     | Top_level -> `At_start_of_line
     | In_shorthand_list -> `After_shorthand_bullet
     | In_explicit_list -> `After_explicit_list_bullet
+    | In_table_cell -> `After_table_cell
     | In_tag -> `After_tag
   in
 
@@ -1068,6 +1237,144 @@ and explicit_list_items :
   in
 
   consume_list_items []
+
+(* Consumes a sequence of table rows that might start with [`Bar].
+
+   This function is called immediately after '{t' ([`Begin_table `Light]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and light_table ~parent_markup ~parent_markup_location input =
+  let rec consume_rows acc ~last_loc =
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
+    match next_token.Loc.value with
+    | `Bar | #token_that_always_begins_an_inline_element -> (
+        let next, row, last_loc =
+          light_table_row ~parent_markup ~last_loc input
+        in
+        match next with
+        | `Continue -> consume_rows (row :: acc) ~last_loc
+        | `Stop -> (row :: acc, last_loc))
+    | other_token ->
+        Parse_error.not_allowed next_token.location
+          ~what:(Token.describe other_token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_rows acc ~last_loc
+  in
+  let rows, brace_location = consume_rows [] ~last_loc:parent_markup_location in
+  let grid = List.rev rows in
+  (Table.Light_syntax.from_raw_data grid, brace_location)
+
+(* Consumes a table row that might start with [`Bar]. *)
+and light_table_row ~parent_markup ~last_loc input =
+  let rec consume_row acc_row acc_cell acc_space ~new_line ~last_loc =
+    let push_cells row cell =
+      match cell with [] -> row | _ -> List.rev cell :: row
+    in
+    let return row cell = List.rev (push_cells row cell) in
+    let next_token = peek input in
+    match next_token.value with
+    | `End ->
+        Parse_error.end_not_allowed next_token.location ~in_what:"table"
+        |> add_warning input;
+        junk input;
+        (`Stop, return acc_row acc_cell, next_token.location)
+    | `Right_brace ->
+        junk input;
+        (`Stop, return acc_row acc_cell, next_token.location)
+    | `Space _ as token ->
+        junk input;
+        let i = Loc.at next_token.location token in
+        consume_row acc_row acc_cell (i :: acc_space) ~new_line ~last_loc
+    | `Single_newline _ | `Blank_line _ ->
+        junk input;
+        (`Continue, return acc_row acc_cell, last_loc)
+    | `Bar ->
+        junk input;
+        let acc_row = if new_line then [] else List.rev acc_cell :: acc_row in
+        consume_row acc_row [] [] ~new_line:false ~last_loc
+    | #token_that_always_begins_an_inline_element as token ->
+        let i = inline_element input next_token.location token in
+        if Loc.spans_multiple_lines i then
+          Parse_error.not_allowed
+            ~what:(Token.describe (`Single_newline ""))
+            ~in_what:(Token.describe `Begin_table_light)
+            i.location
+          |> add_warning input;
+        let acc_cell =
+          if acc_cell = [] then [ i ] else (i :: acc_space) @ acc_cell
+        in
+        consume_row acc_row acc_cell [] ~new_line:false
+          ~last_loc:next_token.location
+    | other_token ->
+        Parse_error.not_allowed next_token.location
+          ~what:(Token.describe other_token)
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        junk input;
+        consume_row acc_row acc_cell acc_space ~new_line ~last_loc
+  in
+  consume_row [] [] [] ~new_line:true ~last_loc
+
+(* Consumes a sequence of table rows (starting with '{tr ...}', which are
+   represented by [`Begin_table_row] tokens).
+
+   This function is called immediately after '{table' ([`Begin_table `Heavy]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and heavy_table ~parent_markup ~parent_markup_location input =
+  let rec consume_rows acc ~last_loc =
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
+    match next_token.Loc.value with
+    | `Begin_table_row as token ->
+        junk input;
+        let items, last_loc = heavy_table_row ~parent_markup:token input in
+        consume_rows (List.rev items :: acc) ~last_loc
+    | token ->
+        Parse_error.not_allowed next_token.location ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion:"Move outside of {table ...}, or inside {tr ...}"
+        |> add_warning input;
+        junk input;
+        consume_rows acc ~last_loc
+  in
+  let rows, brace_location = consume_rows [] ~last_loc:parent_markup_location in
+  let grid = List.rev rows in
+  (Table.Heavy_syntax.from_grid grid, brace_location)
+
+(* Consumes a sequence of table cells (starting with '{th ...}' or '{td ... }',
+   which are represented by [`Begin_table_cell] tokens).
+
+   This function is called immediately after '{tr' ([`Begin_table_row]) is
+   read. The only "valid" way to exit is by reading a [`Right_brace] token,
+   which is consumed. *)
+and heavy_table_row ~parent_markup input =
+  let rec consume_cell_items acc =
+    Reader.until_rbrace_or_eof input acc >>> fun next_token ->
+    match next_token.Loc.value with
+    | `Begin_table_cell kind as token ->
+        junk input;
+        let content, token_after_list_item, _where_in_line =
+          block_element_list In_table_cell ~parent_markup:token input
+        in
+        (match token_after_list_item.value with
+        | `Right_brace -> junk input
+        | `End ->
+            Parse_error.not_allowed token_after_list_item.location
+              ~what:(Token.describe `End) ~in_what:(Token.describe token)
+            |> add_warning input);
+        consume_cell_items ((content, kind) :: acc)
+    | token ->
+        Parse_error.not_allowed next_token.location ~what:(Token.describe token)
+          ~in_what:(Token.describe parent_markup)
+          ~suggestion:
+            "Move outside of {table ...}, or inside {td ...} or {th ...}"
+        |> add_warning input;
+        junk input;
+        consume_cell_items acc
+  in
+  consume_cell_items []
 
 (* {2 Entry point} *)
 

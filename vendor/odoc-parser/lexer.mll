@@ -189,8 +189,6 @@ let reference_token start target =
   | "{{:" -> `Begin_link_with_replacement_text target
   | _ -> assert false
 
-
-
 let trim_leading_space_or_accept_whitespace input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
@@ -241,10 +239,8 @@ let heading_level input level =
 
 }
 
-
-
 let markup_char =
-  ['{' '}' '[' ']' '@']
+  ['{' '}' '[' ']' '@' '|']
 let space_char =
   [' ' '\t' '\n' '\r']
 let bullet_char =
@@ -265,6 +261,7 @@ let code_block_text =
   ([^ ']'] | ']'+ [^ ']' '}'])* ']'*
 let raw_markup =
   ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
+
 let raw_markup_target =
   ([^ ':' '%'] | '%'+ [^ ':' '%' '}'])* '%'*
 
@@ -289,6 +286,9 @@ rule token input = parse
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
     { emit input `Right_brace ~adjust_start_by:p }
 
+  | '|'
+    { emit input `Bar }
+
   | word_char (word_char | bullet_char | '@')*
   | bullet_char (word_char | bullet_char | '@')+ as w
     { emit input (`Word (unescape_word w)) }
@@ -311,13 +311,13 @@ rule token input = parse
 
   | "{e"
     { emit input (`Begin_style `Emphasis) }
-  
+
   | "{L"
     { emit input (`Begin_paragraph_style `Left) }
-  
+
   | "{C"
     { emit input (`Begin_paragraph_style  `Center) }
-  
+
   | "{R"
     { emit input (`Begin_paragraph_style  `Right) }
 
@@ -326,13 +326,13 @@ rule token input = parse
 
   | "{_"
     { emit input (`Begin_style `Subscript) }
-  
+
   | "{math" space_char
     { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
   | "{m" horizontal_space
     { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
 
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
@@ -397,6 +397,21 @@ rule token input = parse
 
   | "{-"
     { emit input (`Begin_list_item `Dash) }
+
+  | "{table"
+    { emit input (`Begin_table_heavy) }
+
+  | "{t"
+    { emit input (`Begin_table_light) }
+
+  | "{tr"
+    { emit input `Begin_table_row }
+
+  | "{th"
+    { emit input (`Begin_table_cell `Header) }
+
+  | "{td"
+    { emit input (`Begin_table_cell `Data) }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit

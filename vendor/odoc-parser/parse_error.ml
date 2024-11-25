@@ -76,3 +76,8 @@ let truncated_code_block_meta : Loc.span -> Warning.t =
 
 let truncated_code_block : Loc.span -> Warning.t =
   Warning.make ~suggestion:"add ']}'." "Missing end of code block."
+
+let end_not_allowed : in_what:string -> Loc.span -> Warning.t =
+ fun ~in_what ->
+  Warning.make ~suggestion:"add '}'." "End of text is not allowed in %s."
+    in_what
