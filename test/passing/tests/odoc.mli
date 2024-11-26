@@ -234,4 +234,17 @@
    {!( } )}
    {{!foo} bar}
    {{!foo} {b bar}}
+
+   {image!foo}
+   {audio!foo}
+   {video!foo}
+   {image:foo}
+   {audio:foo}
+   {video:foo}
+   {{image!foo}bar}
+   {{audio!foo}bar}
+   {{video!foo}bar}
+   {{image:foo}bar}
+   {{audio:foo}bar}
+   {{video:foo}bar}
 *)

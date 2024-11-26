@@ -281,7 +281,8 @@ and fmt_markup_with_inline_elements c ~wrap ?(force_space = false) tag elems
   in
   str "{" $ tag $ leading_space $ fmt_inline_elements c ~wrap elems $ str "}"
 
-and fmt_nestable_block_element c elm =
+and fmt_nestable_block_element c (elm : nestable_block_element with_location)
+    =
   match elm.Loc.value with
   | `Paragraph elems ->
       hovbox 0
@@ -299,6 +300,20 @@ and fmt_nestable_block_element c elm =
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
   | `Table table -> fmt_table c table
+  | `Media (_kind, href, text, media) -> (
+      let prefix =
+        match media with
+        | `Image -> "image"
+        | `Video -> "video"
+        | `Audio -> "audio"
+      in
+      let href =
+        match href.value with
+        | `Reference s -> str "!" $ str s
+        | `Link s -> str ":" $ str s
+      in
+      let ref = str "{" $ str prefix $ href $ str "}" in
+      match text with "" -> ref | _ -> str "{" $ ref $ str text $ str "}" )
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =

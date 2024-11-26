@@ -23,6 +23,9 @@ let span spans =
 let nudge_start offset span =
   { span with start = { span.start with column = span.start.column + offset } }
 
+let nudge_end offset span =
+  { span with end_ = { span.end_ with column = span.end_.column - offset } }
+
 let spans_multiple_lines = function
   | {
       location =

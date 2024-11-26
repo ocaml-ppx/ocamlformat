@@ -96,7 +96,17 @@ let alignment_to_string = function
 
 let header_data_to_string = function `Header -> "Header" | `Data -> "Data"
 
-let rec odoc_nestable_block_element c fmt = function
+let media_to_string = function
+  | `Audio -> "Audio"
+  | `Video -> "Video"
+  | `Image -> "Image"
+
+let fmt_media_href fmt = function
+  | `Reference s -> fpf fmt "Reference(%s)" s
+  | `Link s -> fpf fmt "Link(%s)" s
+
+let rec odoc_nestable_block_element c fmt : Ast.nestable_block_element -> _ =
+  function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (b : Ast.code_block) ->
       let fmt_metadata fmt (m : Ast.code_block_meta) =
@@ -133,6 +143,9 @@ let rec odoc_nestable_block_element c fmt = function
       let pp_alignment = option (list (option pp_align)) in
       fpf fmt "Table((%a,%a),%s)" pp_grid grid pp_alignment alignment
         (light_heavy_to_string syntax)
+  | `Media (_kind, href, text, media) ->
+      fpf fmt "Media(%a,%S,%s)" (ign_loc fmt_media_href) href text
+        (media_to_string media)
 
 and odoc_nestable_block_elements c fmt elems =
   list (ign_loc (odoc_nestable_block_element c)) fmt elems

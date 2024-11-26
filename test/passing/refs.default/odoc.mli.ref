@@ -248,4 +248,17 @@
     @canonical ref *)
 
 (** {!foo} bar{!foo} {!foo}bar {!val:foo} {!} {!( * )} {!:foo} {!val:}
-    {!"my-name"} {!"}"} {!( } )} {{!foo} bar} {{!foo} {b bar}} *)
+    {!"my-name"} {!"}"} {!( } )} {{!foo} bar} {{!foo} {b bar}}
+
+    {image!foo}
+    {audio!foo}
+    {video!foo}
+    {image:foo}
+    {audio:foo}
+    {video:foo}
+    {{image!foo}bar}
+    {{audio!foo}bar}
+    {{video!foo}bar}
+    {{image:foo}bar}
+    {{audio:foo}bar}
+    {{video:foo}bar} *)
