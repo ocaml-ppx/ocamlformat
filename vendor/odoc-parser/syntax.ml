@@ -366,14 +366,14 @@ and delimited_inline_element_list :
         consume_elements ~at_start_of_line:false acc
     | (`Minus | `Plus) as bullet ->
         (if at_start_of_line then
-         let suggestion =
-           Printf.sprintf "move %s so it isn't the first thing on the line."
-             (Token.print bullet)
-         in
-         Parse_error.not_allowed ~what:(Token.describe bullet)
-           ~in_what:(Token.describe parent_markup)
-           ~suggestion next_token.location
-         |> add_warning input);
+           let suggestion =
+             Printf.sprintf "move %s so it isn't the first thing on the line."
+               (Token.print bullet)
+           in
+           Parse_error.not_allowed ~what:(Token.describe bullet)
+             ~in_what:(Token.describe parent_markup)
+             ~suggestion next_token.location
+           |> add_warning input);
 
         let acc = inline_element input next_token.location bullet :: acc in
         consume_elements ~at_start_of_line:false acc
@@ -1248,25 +1248,25 @@ and explicit_list_items :
         (* '{li', represented by [`Begin_list_item `Li], must be followed by
            whitespace. *)
         (if kind = `Li then
-         match (peek input).value with
-         | `Space _ | `Single_newline _ | `Blank_line _ | `Right_brace ->
-             ()
-             (* The presence of [`Right_brace] above requires some explanation:
+           match (peek input).value with
+           | `Space _ | `Single_newline _ | `Blank_line _ | `Right_brace ->
+               ()
+               (* The presence of [`Right_brace] above requires some explanation:
 
-                - It is better to be silent about missing whitespace if the next
-                  token is [`Right_brace], because the error about an empty list
-                  item will be generated below, and that error is more important to
-                  the user.
-                - The [`Right_brace] token also happens to include all whitespace
-                  before it, as a convenience for the rest of the parser. As a
-                  result, not ignoring it could be wrong: there could in fact be
-                  whitespace in the concrete syntax immediately after '{li', just
-                  it is not represented as [`Space], [`Single_newline], or
-                  [`Blank_line]. *)
-         | _ ->
-             Parse_error.should_be_followed_by_whitespace next_token.location
-               ~what:(Token.print token)
-             |> add_warning input);
+                  - It is better to be silent about missing whitespace if the next
+                    token is [`Right_brace], because the error about an empty list
+                    item will be generated below, and that error is more important to
+                    the user.
+                  - The [`Right_brace] token also happens to include all whitespace
+                    before it, as a convenience for the rest of the parser. As a
+                    result, not ignoring it could be wrong: there could in fact be
+                    whitespace in the concrete syntax immediately after '{li', just
+                    it is not represented as [`Space], [`Single_newline], or
+                    [`Blank_line]. *)
+           | _ ->
+               Parse_error.should_be_followed_by_whitespace next_token.location
+                 ~what:(Token.print token)
+               |> add_warning input);
 
         let content, token_after_list_item, _where_in_line =
           block_element_list In_explicit_list ~parent_markup:token input
