@@ -82,8 +82,8 @@ let split_on_whitespaces =
   String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
 
 (** Escape special characters and normalize whitespaces *)
-let str_normalized ?(escape = escape_all) c s =
-  if c.conf.fmt_opts.wrap_docstrings.v then
+let str_normalized ?(escape = escape_all) ~wrap s =
+  if wrap then
     split_on_whitespaces s
     |> List.filter ~f:(Fn.non String.is_empty)
     |> fun s -> list s space_break (fun s -> escape s |> str)
@@ -208,13 +208,46 @@ let list_block_elem c elems f =
       in
       f elem $ break )
 
-let table_extract_header grid =
-  let is_header_cell = function _, `Header -> true | _, `Data -> false in
-  let rec loop acc = function
-    | hd :: tl when List.exists hd ~f:is_header_cell -> loop (hd :: acc) tl
-    | data_rows -> (List.rev acc, data_rows)
-  in
-  loop [] grid
+module Light_table = struct
+  (** A table type that can safely be formatted using the light syntax. *)
+
+  type cell = inline_element with_location list
+
+  type row = cell list
+
+  (** [header_rows, alignments, data_rows] *)
+  type t = row list * alignment option list option * row list
+
+  module Ast = Ocamlformat_odoc_parser.Ast
+
+  (** Returns [None] if the given table cannot be safely formatted using the
+      light syntax. This might return [None] for tables that were using the
+      light syntax in the original source. *)
+  let of_table : Ast.table -> t option =
+    let exception Table_not_safe in
+    let extract_cell ((elems, _header) : _ Ast.cell) =
+      match elems with
+      | [] -> []
+      | [{value= `Paragraph inline_elems; _}] -> inline_elems
+      | _ -> raise Table_not_safe
+    in
+    let extract_row (row : _ Ast.row) = List.map ~f:extract_cell row in
+    let is_header_cell (_, h) =
+      match h with `Header -> true | `Data -> false
+    in
+    let rec extract header : _ Ast.grid -> _ = function
+      | hd :: tl when List.exists hd ~f:is_header_cell ->
+          extract (extract_row hd :: header) tl
+      | data_rows -> (List.rev header, List.map ~f:extract_row data_rows)
+    in
+    function
+    | _, `Heavy -> None
+    | (grid, alignments), `Light -> (
+      try
+        let header, data = extract [] grid in
+        Some (header, alignments, data)
+      with Table_not_safe -> None )
+end
 
 let non_wrap_space sp =
   if String.contains sp '\n' then force_newline else str sp
@@ -224,32 +257,29 @@ let fmt_block_markup ?force_break:(fb = false) tag content =
   hvbox 2
     (str "{" $ str tag $ initial_break $ content $ break 1 ~-2 $ str "}")
 
-let rec fmt_inline_elements c elements =
+let rec fmt_inline_elements c ~wrap elements =
   let rec aux = function
     | [] -> noop
     | `Space sp :: `Word (("-" | "+") as w) :: t ->
         (* Escape lines starting with '+' or '-'. *)
-        fmt_or c.conf.fmt_opts.wrap_docstrings.v
+        fmt_or wrap
           (cbreak ~fits:("", 1, "") ~breaks:("", 0, "\\"))
           (non_wrap_space sp)
         $ str w $ aux t
-    | `Space sp :: t ->
-        fmt_or c.conf.fmt_opts.wrap_docstrings.v space_break
-          (non_wrap_space sp)
-        $ aux t
+    | `Space sp :: t -> fmt_or wrap space_break (non_wrap_space sp) $ aux t
     | `Word w :: t ->
         fmt_if (String.is_prefix ~prefix:"@" w) (str "\\")
-        $ str_normalized c w $ aux t
+        $ str_normalized ~wrap w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
-          | Some l -> str_normalized c l $ str ":"
+          | Some l -> str_normalized ~wrap l $ str ":"
           | None -> noop
         in
         (* todo check this was an escape sequence *)
-        wrap (str "{%") (str "%}") (lang $ str s) $ aux t
+        str "{%" $ (lang $ str s) $ str "%}" $ aux t
     | `Styled (style, elems) :: t ->
         let s =
           match style with
@@ -259,40 +289,42 @@ let rec fmt_inline_elements c elements =
           | `Superscript -> "^"
           | `Subscript -> "_"
         in
-        hovbox_if c.conf.fmt_opts.wrap_docstrings.v
+        hovbox_if wrap
           (1 + String.length s + 1)
-          (fmt_markup_with_inline_elements c ~force_space:true
-             (str_normalized c s) elems )
+          (fmt_markup_with_inline_elements c ~wrap ~force_space:true
+             (str_normalized ~wrap s) elems )
         $ aux t
     | `Reference (_kind, rf, txt) :: t ->
         let rf = str "{!" $ fmt_reference rf $ str "}" in
-        fmt_link_or_reference c rf txt $ aux t
+        fmt_link_or_reference c ~wrap rf txt $ aux t
     | `Link (url, txt) :: t ->
-        let url = str "{:" $ str_normalized c url $ str "}" in
-        fmt_link_or_reference c url txt $ aux t
+        let url = str "{:" $ str_normalized ~wrap url $ str "}" in
+        fmt_link_or_reference c ~wrap url txt $ aux t
   in
   aux (List.map elements ~f:(ign_loc ~f:Fn.id))
 
-and fmt_link_or_reference c tag txt =
+and fmt_link_or_reference c ~wrap tag txt =
   match txt with
   | [] -> tag
   | _ :: _ ->
-      hovbox_if c.conf.fmt_opts.wrap_docstrings.v 1
-        (fmt_markup_with_inline_elements c tag txt)
+      hovbox_if wrap 1 (fmt_markup_with_inline_elements c ~wrap tag txt)
 
 (** Format a markup of the form [{tag elems}]. If [force_space] is [true], a
     space will be added after the tag, even if it's not present in the source.
 *)
-and fmt_markup_with_inline_elements c ?(force_space = false) tag elems =
+and fmt_markup_with_inline_elements c ~wrap ?(force_space = false) tag elems
+    =
   let leading_space, elems =
     if force_space then (str " ", drop_leading_spaces elems)
     else (noop, elems)
   in
-  str "{" $ tag $ leading_space $ fmt_inline_elements c elems $ str "}"
+  str "{" $ tag $ leading_space $ fmt_inline_elements c ~wrap elems $ str "}"
 
 and fmt_nestable_block_element c elm =
   match elm.Loc.value with
-  | `Paragraph elems -> hovbox 0 (fmt_inline_elements c elems)
+  | `Paragraph elems ->
+      hovbox 0
+        (fmt_inline_elements c ~wrap:c.conf.fmt_opts.wrap_docstrings.v elems)
   | `Code_block (s1, s2) -> fmt_code_block c s1 s2
   | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
@@ -305,8 +337,7 @@ and fmt_nestable_block_element c elm =
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
-  | `Table (tbl, `Light) -> fmt_table_light c tbl
-  | `Table (tbl, `Heavy) -> fmt_table_heavy c tbl
+  | `Table table -> fmt_table c table
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =
@@ -332,7 +363,7 @@ and fmt_list_light c kind items =
   in
   vbox 0 (list items force_break fmt_item)
 
-and fmt_table_heavy c ((grid, alignments) : _ abstract_table) =
+and fmt_table_heavy c (((grid, alignments), _) : table) =
   let fmt_cell (elems, header) =
     let cell_tag = match header with `Header -> "th" | `Data -> "td" in
     fmt_block_markup cell_tag (fmt_nestable_block_elements c elems)
@@ -341,32 +372,38 @@ and fmt_table_heavy c ((grid, alignments) : _ abstract_table) =
   ignore alignments ;
   fmt_block_markup "table" (list grid force_break fmt_row)
 
-and fmt_table_light c ((grid, alignments) : _ abstract_table) =
+and fmt_table_light c (header, alignments, data) =
   let fmt_align = function
     | Some `Left -> str ":--"
     | Some `Center -> str ":-:"
     | Some `Right -> str "--:"
     | None -> str "---"
   in
-  let header_rows, data_rows = table_extract_header grid in
-  let has_header_rows = not (List.is_empty header_rows)
-  and has_data_rows = not (List.is_empty data_rows) in
+  let has_header = not (List.is_empty header)
+  and has_data = not (List.is_empty data) in
   let fmt_alignment_row =
     opt alignments (fun aligns ->
         str "|"
         $ list aligns (str "|") fmt_align
         $ str "|"
-        $ fmt_if has_data_rows force_break )
+        $ fmt_if has_data force_break )
   in
-  let fmt_cell (elems, _) = fmt_nestable_block_elements c elems in
+  (* Don't allow inline elements to wrap, meaning the line won't break if the
+     row breaks the margin. *)
+  let fmt_cell elems = fmt_inline_elements c ~wrap:false elems in
   let fmt_row row = str "| " $ list row (str " | ") fmt_cell $ str " |" in
   let fmt_rows rows = list rows force_break fmt_row in
   let fmt_grid =
-    fmt_rows header_rows
-    $ fmt_if has_header_rows force_break
-    $ fmt_alignment_row $ fmt_rows data_rows
+    fmt_rows header
+    $ fmt_if has_header force_break
+    $ fmt_alignment_row $ fmt_rows data
   in
   fmt_block_markup ~force_break:true "t" (vbox 0 fmt_grid)
+
+and fmt_table c table =
+  match Light_table.of_table table with
+  | Some light -> fmt_table_light c light
+  | None -> fmt_table_heavy c table
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)
@@ -407,12 +444,14 @@ let fmt_block_element c elm =
       let lvl = Int.to_string lvl in
       let lbl =
         match lbl with
-        | Some lbl -> str ":" $ str_normalized c lbl
+        | Some lbl -> str ":" $ str_normalized ~wrap:false lbl
         | None -> noop
       in
       let tag = str lvl $ lbl in
       hovbox 0
-        (fmt_markup_with_inline_elements c ~force_space:true tag elems)
+        (fmt_markup_with_inline_elements c
+           ~wrap:c.conf.fmt_opts.wrap_docstrings.v ~force_space:true tag
+           elems )
   | #nestable_block_element as value ->
       hovbox 0 (fmt_nestable_block_element c {elm with value})
 

@@ -133,4 +133,9 @@
   |-------------------|
   | Header other word |
   }
+
+  {t
+   | foo | bar |
+   | {i foooooooooooooooooooooooooooo} foooooooooooooooooooooooo fooooooooooooooooooooooo | bar |
+  }
 *)
