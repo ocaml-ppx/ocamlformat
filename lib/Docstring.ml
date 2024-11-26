@@ -162,6 +162,7 @@ let odoc_tag c fmt = function
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
+  | `Hidden -> fpf fmt "Hidden"
 
 let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->

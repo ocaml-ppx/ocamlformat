@@ -376,7 +376,7 @@ and fmt_code_block c (b : code_block) =
       | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval
       | Error (`Msg message) ->
           if
-            not (String.is_empty message)
+            (not (String.is_empty message))
             && Option.is_some b.meta
             && not c.conf.opr_opts.quiet.v
           then
@@ -450,6 +450,7 @@ let fmt_tag c = function
   | `Inline -> fmt_tag_args c "inline"
   | `Open -> fmt_tag_args c "open"
   | `Closed -> fmt_tag_args c "closed"
+  | `Hidden -> fmt_tag_args c "hidden"
   | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
 
 let fmt_block_element c elm =

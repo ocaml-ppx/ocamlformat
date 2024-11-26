@@ -202,3 +202,20 @@
   {@ocaml kind=toplevel [ code ]}
   {delim@ocaml[ foo ]delim[ ]}
 *)
+
+(**
+   @author foo bar
+   @version foo bar
+   @see <foo> {i bar}
+   @since foo bar
+   @before foo {i bar}
+   @deprecated foo {i bar}
+   @param foo {i bar}
+   @raise foo {i bar}
+   @return foo {i bar}
+   @inline
+   @open
+   @closed
+   @hidden
+   @canonical ref
+*)

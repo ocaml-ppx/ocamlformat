@@ -607,6 +607,7 @@ let tag_to_words = function
   | `Inline -> [ `Word "@inline" ]
   | `Open -> [ `Word "@open" ]
   | `Closed -> [ `Word "@closed" ]
+  | `Hidden -> [ `Word "@hidden" ]
   | `Param s -> [ `Word "@param"; `Space " "; `Word s ]
   | `Raise s -> [ `Word "@raise"; `Space " "; `Word s ]
   | `Return -> [ `Word "@return" ]
@@ -873,7 +874,7 @@ let rec block_element_list :
                 let tag = Loc.at location tag in
                 consume_block_elements ~parsed_a_tag:true where_in_line
                   (tag :: acc)
-            | (`Inline | `Open | `Closed) as tag ->
+            | (`Inline | `Open | `Closed | `Hidden) as tag ->
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
                   (tag :: acc)))
