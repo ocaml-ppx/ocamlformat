@@ -40,6 +40,7 @@ type t =
   | `Blank_line of string
   | (* A right curly brace ([}]), i.e. end of markup. *)
     `Right_brace
+  | `Right_code_delimiter
   | (* Words are anything that is not whitespace or markup. Markup symbols can be
        be part of words if escaped.
 
@@ -63,7 +64,9 @@ type t =
   | (* Leaf block element markup. *)
     `Code_block of
     (string Loc.with_location * string Loc.with_location option) option
+    * string
     * string Loc.with_location
+    * bool
   | `Verbatim of string
   | `Modules of string
   | (* List markup. *)
@@ -147,6 +150,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Single_newline _ -> "line break"
   | `Blank_line _ -> "blank line"
   | `Right_brace -> "'}'"
+  | `Right_code_delimiter -> "']}'"
   | `Code_block _ -> "'{[...]}' (code block)"
   | `Verbatim _ -> "'{v ... v}' (verbatim text)"
   | `Modules _ -> "'{!modules ...}'"

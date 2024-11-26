@@ -104,45 +104,6 @@ let fmt_verbatim_block ~loc s =
   in
   hvbox 0 (wrap (str "{v") (str "v}") content)
 
-let fmt_metadata (lang, meta) =
-  let fmt_meta meta = str " " $ str meta in
-  str "@" $ ign_loc ~f:str lang $ opt meta (ign_loc ~f:fmt_meta)
-
-let fmt_code_block c s1 s2 =
-  let wrap_code x =
-    str "{" $ opt s1 fmt_metadata $ str "[" $ break 1000 2 $ x $ space_break
-    $ str "]}"
-  in
-  let fmt_line ~first ~last:_ l =
-    let l = String.rstrip l in
-    if first then str l
-    else if String.length l = 0 then str "\n"
-    else cut_break $ str l
-  in
-  let fmt_code s =
-    let lines = String.split_lines s in
-    let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-    box (wrap_code (vbox 0 (list_fl lines fmt_line)))
-  in
-  let {Loc.location; value= original} = s2 in
-  match s1 with
-  | Some ({value= "ocaml"; _}, _) | None -> (
-    (* [offset] doesn't take into account code blocks nested into lists. *)
-    match c.fmt_code c.conf ~offset:2 ~set_margin:true original with
-    | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval |> fmt_code
-    | Error (`Msg message) ->
-        ( match message with
-        | "" -> ()
-        | _ when Option.is_none s1 -> ()
-        | _ ->
-            if not c.conf.opr_opts.quiet.v then
-              Docstring.warn Stdlib.Format.err_formatter
-                { location
-                ; message= Format.sprintf "invalid code block: %s" message }
-        ) ;
-        fmt_code original )
-  | Some _ -> fmt_code original
-
 let fmt_code_span s =
   wrap (str "[") (str "]") (str (escape_balanced_brackets s))
 
@@ -325,7 +286,7 @@ and fmt_nestable_block_element c elm =
   | `Paragraph elems ->
       hovbox 0
         (fmt_inline_elements c ~wrap:c.conf.fmt_opts.wrap_docstrings.v elems)
-  | `Code_block (s1, s2) -> fmt_code_block c s1 s2
+  | `Code_block code_block -> fmt_code_block c code_block
   | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
   | `Modules mods ->
@@ -404,6 +365,60 @@ and fmt_table c table =
   match Light_table.of_table table with
   | Some light -> fmt_table_light c light
   | None -> fmt_table_heavy c table
+
+and fmt_code_block c (b : code_block) =
+  let content =
+    let content = b.content.value in
+    match b.meta with
+    | Some {language= {value= "ocaml"; _}; _} | None -> (
+      (* [offset] doesn't take into account code blocks nested into lists. *)
+      match c.fmt_code c.conf ~offset:2 ~set_margin:true content with
+      | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval
+      | Error (`Msg message) ->
+          if
+            not (String.is_empty message)
+            && Option.is_some b.meta
+            && not c.conf.opr_opts.quiet.v
+          then
+            Docstring.warn Stdlib.Format.err_formatter
+              { location= b.content.location
+              ; message= Format.sprintf "invalid code block: %s" message } ;
+          content )
+    | Some _ -> content
+  in
+  let fmt_line ~first ~last:_ l =
+    let l = String.rstrip l in
+    if first then str l
+    else if String.length l = 0 then str_as 0 "\n"
+    else force_break $ str l
+  in
+  let fmt_code s =
+    let lines = String.split_lines s in
+    vbox 0 (list_fl lines fmt_line)
+  in
+  let delim = opt b.delimiter str in
+  let opening =
+    let meta =
+      opt b.meta (fun meta ->
+          str "@"
+          $ ign_loc ~f:str meta.language
+          $ opt meta.tags (fun tags -> str " " $ ign_loc ~f:str tags) )
+    in
+    str "{" $ delim $ meta $ str "["
+  in
+  let output_or_closing =
+    match b.output with
+    | Some elems ->
+        hvbox 2
+          ( str "]" $ delim $ str "[" $ force_break
+          $ fmt_nestable_block_elements c elems
+          $ fmt_if (not (List.is_empty elems)) (break 1000 ~-2)
+          $ str "]}" )
+    | None -> str "]" $ delim $ str "}"
+  in
+  hvbox 2
+    ( opening $ force_break $ fmt_code content $ break 1 ~-2
+    $ output_or_closing )
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)

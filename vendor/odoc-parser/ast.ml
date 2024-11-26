@@ -35,12 +35,21 @@ type 'a row = 'a cell list
 type 'a grid = 'a row list
 type 'a abstract_table = 'a grid * alignment option list option
 
-type nestable_block_element =
+type code_block_meta = {
+  language : string with_location;
+  tags : string with_location option;
+}
+
+type code_block = {
+  meta : code_block_meta option;
+  delimiter : string option;
+  content : string with_location;
+  output : nestable_block_element with_location list option;
+}
+
+and nestable_block_element =
   [ `Paragraph of inline_element with_location list
-  | `Code_block of
-    (string with_location * string with_location option) option
-    * string with_location
-    (* [(language tag * metadata option) option * content] *)
+  | `Code_block of code_block
   | `Verbatim of string
   | `Modules of string with_location list
   | `List of

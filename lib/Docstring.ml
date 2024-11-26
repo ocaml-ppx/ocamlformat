@@ -9,6 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Ast = Ocamlformat_odoc_parser.Ast
 module Odoc_parser = Ocamlformat_odoc_parser.Odoc_parser
 
 let parse ~loc text =
@@ -56,8 +57,6 @@ let odoc_reference = ign_loc str
 
 let option f fmt = function Some v -> f fmt v | None -> ()
 
-let pair fmt_a fmt_b fmt (a, b) = fpf fmt "(%a,%a)" fmt_a a fmt_b b
-
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
   | `Italic -> fpf fmt "Italic"
@@ -99,13 +98,20 @@ let header_data_to_string = function `Header -> "Header" | `Data -> "Data"
 
 let rec odoc_nestable_block_element c fmt = function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
-  | `Code_block (metadata, txt) ->
-      let txt = Odoc_parser.Loc.value txt in
-      let txt = c.normalize_code txt in
-      let fmt_metadata =
-        option (pair (ign_loc str) (option (ign_loc str)))
+  | `Code_block (b : Ast.code_block) ->
+      let fmt_metadata fmt (m : Ast.code_block_meta) =
+        fpf fmt "(%a, %a)" (ign_loc str) m.language
+          (option (ign_loc str))
+          m.tags
       in
-      fpf fmt "Code_block(%a, %a)" fmt_metadata metadata str txt
+      let fmt_content =
+        ign_loc (fun fmt s -> str fmt (c.normalize_code s))
+      in
+      let fmt_output =
+        option (list (ign_loc (odoc_nestable_block_element c)))
+      in
+      fpf fmt "Code_block(%a, %a, %a, %a)" (option fmt_metadata) b.meta
+        (option str) b.delimiter fmt_content b.content fmt_output b.output
   | `Math_block txt -> fpf fmt "Math_block(%a)" str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods

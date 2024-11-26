@@ -130,3 +130,104 @@
       | foo | bar |
       | {i foooooooooooooooooooooooooooo} foooooooooooooooooooooooo fooooooooooooooooooooooo | bar |
     } *)
+
+(** {[
+      foo
+    ]}
+    {[
+      foo
+    ]}
+
+    {[
+      foo bar
+    ]}
+    {[
+      foo bar
+    ]}
+
+    {[
+      foo bar
+    ]}
+
+    {[
+      foo bar
+    ]}
+
+    {[
+      foo bar
+    ]}
+
+    {[
+      {[
+    ]}
+    {[
+      foo
+    ]}
+    {[
+      ]
+    ]}
+    {[
+      foo]]bar
+    ]}
+
+    {[
+      (** foo *)
+      let bar = ()
+    ]}
+
+    {@ocaml env=f1 version>=4.06[
+      code goes here
+    ]}
+    {delim@ocaml[
+      foo
+    ]delim[
+      output {b foo}
+    ]}
+
+    {delim@ocaml[
+      foo
+    ]delim[
+      foo
+      {[
+        bar
+      ]}
+      baz
+    ]}
+
+    {[
+      foo][output {b foo}
+    ]}
+    {@ocaml[
+      foo][output {b foo}
+    ]}
+    {@ocaml[
+      foo]unexpected[output {b foo}
+    ]}
+    {delim@ocaml[
+      foo]wrong[output {b foo}
+    ]delim}
+
+    {@ocaml[
+      code
+    ]}
+
+    {@ocaml kind=toplevel[
+      code
+    ]}
+
+    {@ocaml kind=toplevel
+  env=e1[
+      code
+    ]}
+
+    {@ocaml kind=toplevel[
+      code
+    ]}
+
+    {@ocaml kind=toplevel[
+      code
+    ]}
+    {delim@ocaml[
+      foo
+    ]delim[
+      ]} *)
