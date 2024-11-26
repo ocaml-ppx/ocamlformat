@@ -360,6 +360,10 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
     when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
+  | PStr [{pstr_desc= Pstr_eval (_, _); pstr_loc= _}]
+    when String.is_prefix ~prefix:"metaocaml." pre.txt
+         && Location.is_none pre.loc ->
+      ()
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with

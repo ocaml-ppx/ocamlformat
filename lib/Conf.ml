@@ -263,7 +263,8 @@ let default =
       ; ocaml_version= elt Ocaml_version.Releases.v4_04_0
       ; quiet= elt false
       ; disable_conf_attrs= elt false
-      ; version_check= elt true } }
+      ; version_check= elt true
+      ; metaocaml= elt false } }
 
 module V = struct
   let v0_12 = Version.make ~major:0 ~minor:12 ~patch:None
@@ -1454,6 +1455,12 @@ module Operational = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with version_check= elt}))
       (fun conf -> conf.opr_opts.version_check)
 
+  let metaocaml =
+    let doc = "Enable metaocaml" in
+    Decl.flag ~default ~names:["metaocaml"] ~doc ~kind
+      (fun conf elt -> update conf ~f:(fun f -> {f with metaocaml= elt}))
+      (fun conf -> conf.opr_opts.metaocaml)
+
   let options : Store.t =
     Store.
       [ elt comment_check
@@ -1464,7 +1471,8 @@ module Operational = struct
       ; elt ocaml_version
       ; elt quiet
       ; elt disable_conf_attrs
-      ; elt version_check ]
+      ; elt version_check
+      ; elt metaocaml ]
 end
 
 let options = Operational.options @ Formatting.options @ options
