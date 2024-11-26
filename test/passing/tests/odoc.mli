@@ -219,3 +219,19 @@
    @hidden
    @canonical ref
 *)
+
+(**
+   {!foo}
+   bar{!foo}
+   {!foo}bar
+   {!val:foo}
+   {!}
+   {!( * )}
+   {!:foo}
+   {!val:}
+   {!"my-name"}
+   {!"}"}
+   {!( } )}
+   {{!foo} bar}
+   {{!foo} {b bar}}
+*)
