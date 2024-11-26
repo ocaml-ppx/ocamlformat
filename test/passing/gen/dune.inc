@@ -3642,7 +3642,7 @@
  (action
   (with-stdout-to odoc.mli.stdout
    (with-stderr-to odoc.mli.stderr
-     (run %{bin:ocamlformat} --name odoc.mli --margin-check %{dep:../tests/odoc.mli})))))
+     (run %{bin:ocamlformat} --name odoc.mli --margin-check --parse-docstrings %{dep:../tests/odoc.mli})))))
 
 (rule
  (alias runtest)
