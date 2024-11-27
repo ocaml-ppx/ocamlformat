@@ -40,6 +40,9 @@ type code_block_meta = {
   tags : string with_location option;
 }
 
+type media = Token.media
+type media_href = Token.media_href
+
 type code_block = {
   meta : code_block_meta option;
   delimiter : string option;
@@ -57,7 +60,9 @@ and nestable_block_element =
     * [ `Light | `Heavy ]
     * nestable_block_element with_location list list
   | `Table of table
-  | `Math_block of string  (** @since 2.0.0 *) ]
+  | `Math_block of string  (** @since 2.0.0 *)
+  | `Media of reference_kind * media_href with_location * string * media
+    (** @since 3.0.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].
     This corresponds to the syntactic constructor used (see the
@@ -67,7 +72,14 @@ and nestable_block_element =
 and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 
 type internal_tag =
-  [ `Canonical of string with_location | `Inline | `Open | `Closed | `Hidden ]
+  [ `Canonical of string with_location
+  | `Inline
+  | `Open
+  | `Closed
+  | `Hidden
+  | `Children_order of nestable_block_element with_location list
+  | `Short_title of nestable_block_element with_location list ]
+
 (** Internal tags are used to exercise fine control over the output of odoc. They
     are never rendered in the output *)
 

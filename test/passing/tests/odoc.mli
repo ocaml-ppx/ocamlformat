@@ -218,6 +218,31 @@
    @closed
    @hidden
    @canonical ref
+
+   @author Foo
+   {2 Bar}
+
+   @author Foo
+   - bar
+
+   @hidden
+   foo
+   @hidden
+
+   @deprecated - foo
+   - bar
+
+   @deprecated
+   - foo
+   - bar
+
+   @deprecated
+   {2 Bar}
+
+   @children_order
+   foo
+   - bar
+   baz
 *)
 
 (**
@@ -234,4 +259,23 @@
    {!( } )}
    {{!foo} bar}
    {{!foo} {b bar}}
+
+   {image!foo}
+   {audio!foo}
+   {video!foo}
+   {image:foo}
+   {audio:foo}
+   {video:foo}
+   {{image!foo}bar}
+   {{audio!foo}bar}
+   {{video!foo}bar}
+   {{image:foo}bar}
+   {{audio:foo}bar}
+   {{video:foo}bar}
+*)
+
+(**
+   fooooooooooooooo fooooooooooooooo fooooooooooooooo [fooooooooooooooo fooooooooooooooo] fooooooooooooooo
+
+   fooooooooooooooo [fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo] fooooooooooooooo
 *)

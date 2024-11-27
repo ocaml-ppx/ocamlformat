@@ -18,10 +18,28 @@ type tag =
     | `Before of string
     | `Version of string
     | `Canonical of string
+    | `Children_order
+    | `Short_title
     | `Inline
     | `Open
     | `Closed
     | `Hidden ] ]
+
+type media = [ `Audio | `Video | `Image ]
+type media_href = [ `Reference of string | `Link of string ]
+
+type media_markup =
+  [ `Simple_media of media_href * media
+  | `Media_with_replacement_text of media_href * media * string ]
+
+let s_of_media kind media =
+  match (kind, media) with
+  | `Simple, `Audio -> "{audio!"
+  | `Simple, `Video -> "{video!"
+  | `Simple, `Image -> "{image!"
+  | `Replaced, `Audio -> "{{audio!"
+  | `Replaced, `Video -> "{{video!"
+  | `Replaced, `Image -> "{{image!"
 
 type t =
   [ (* End of input. *)
@@ -62,6 +80,7 @@ type t =
   | `Begin_reference_with_replacement_text of string
   | `Simple_link of string
   | `Begin_link_with_replacement_text of string
+  | media_markup
   | (* Leaf block element markup. *)
     `Code_block of
     (string Loc.with_location * string Loc.with_location option) option
@@ -113,6 +132,8 @@ let print : [< t ] -> string = function
   | `Tag (`Param _) -> "'@param'"
   | `Tag (`Raise _) -> "'@raise'"
   | `Tag `Return -> "'@return'"
+  | `Tag `Children_order -> "'@children_order'"
+  | `Tag `Short_title -> "'@short_title'"
   | `Tag (`See _) -> "'@see'"
   | `Tag (`Since _) -> "'@since'"
   | `Tag (`Before _) -> "'@before'"
@@ -124,6 +145,21 @@ let print : [< t ] -> string = function
   | `Tag `Hidden -> "'@hidden"
   | `Raw_markup (None, _) -> "'{%...%}'"
   | `Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
+  | `Simple_media (`Reference _, `Image) -> "{image!...}"
+  | `Simple_media (`Reference _, `Audio) -> "{audio!...}"
+  | `Simple_media (`Reference _, `Video) -> "{video!...}"
+  | `Simple_media (`Link _, `Image) -> "{image:...}"
+  | `Simple_media (`Link _, `Audio) -> "{audio:...}"
+  | `Simple_media (`Link _, `Video) -> "{video:...}"
+  | `Media_with_replacement_text (`Reference _, `Image, _) ->
+      "{{image!...} ...}"
+  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
+      "{{audio!...} ...}"
+  | `Media_with_replacement_text (`Reference _, `Video, _) ->
+      "{{video!...} ...}"
+  | `Media_with_replacement_text (`Link _, `Image, _) -> "{{image:...} ...}"
+  | `Media_with_replacement_text (`Link _, `Audio, _) -> "{{audio:...} ...}"
+  | `Media_with_replacement_text (`Link _, `Video, _) -> "{{video:...} ...}"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
@@ -145,6 +181,24 @@ let describe : [< t | `Comment ] -> string = function
   | `Simple_reference _ -> "'{!...}' (cross-reference)"
   | `Begin_reference_with_replacement_text _ ->
       "'{{!...} ...}' (cross-reference)"
+  | `Simple_media (`Reference _, `Image) -> "'{image!...}' (image-reference)"
+  | `Simple_media (`Reference _, `Audio) -> "'{audio!...}' (audio-reference)"
+  | `Simple_media (`Reference _, `Video) -> "'{video!...}' (video-reference)"
+  | `Simple_media (`Link _, `Image) -> "'{image:...}' (image-link)"
+  | `Simple_media (`Link _, `Audio) -> "'{audio:...}' (audio-link)"
+  | `Simple_media (`Link _, `Video) -> "'{video:...}' (video-link)"
+  | `Media_with_replacement_text (`Reference _, `Image, _) ->
+      "'{{image!...} ...}' (image-reference)"
+  | `Media_with_replacement_text (`Reference _, `Audio, _) ->
+      "'{{audio!...} ...}' (audio-reference)"
+  | `Media_with_replacement_text (`Reference _, `Video, _) ->
+      "'{{video!...} ...}' (video-reference)"
+  | `Media_with_replacement_text (`Link _, `Image, _) ->
+      "'{{image:...} ...}' (image-link)"
+  | `Media_with_replacement_text (`Link _, `Audio, _) ->
+      "'{{audio:...} ...}' (audio-link)"
+  | `Media_with_replacement_text (`Link _, `Video, _) ->
+      "'{{video:...} ...}' (video-link)"
   | `Simple_link _ -> "'{:...} (external link)'"
   | `Begin_link_with_replacement_text _ -> "'{{:...} ...}' (external link)"
   | `End -> "end of text"
@@ -184,6 +238,8 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Open -> "'@open'"
   | `Tag `Closed -> "'@closed'"
   | `Tag `Hidden -> "'@hidden"
+  | `Tag `Children_order -> "'@children_order"
+  | `Tag `Short_title -> "'@short_title"
   | `Comment -> "top-level text"
 
 let describe_element = function

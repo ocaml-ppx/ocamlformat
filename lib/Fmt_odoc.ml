@@ -104,8 +104,15 @@ let fmt_verbatim_block ~loc s =
   in
   hvbox 0 (wrap (str "{v") (str "v}") content)
 
-let fmt_code_span s =
-  wrap (str "[") (str "]") (str (escape_balanced_brackets s))
+let fmt_code_span ~wrap s =
+  let s = escape_balanced_brackets s in
+  let s =
+    if wrap then
+      let words = String.split_on_chars ~on:[' '] s in
+      list words space_break str
+    else str s
+  in
+  hovbox_if wrap 1 (str "[" $ s $ str "]")
 
 let fmt_math_span s = hovbox 2 (wrap (str "{m ") (str "}") (str s))
 
@@ -163,8 +170,8 @@ let list_block_elem c elems f =
                 (elem.Loc.value :> block_element)
                 (n.value :> block_element)
               || should_preserve_blank c elem.location n.location
-            then str "\n" $ force_newline
-            else force_newline
+            then str "\n" $ force_break
+            else force_break
         | None -> noop
       in
       f elem $ break )
@@ -231,7 +238,7 @@ let rec fmt_inline_elements c ~wrap elements =
     | `Word w :: t ->
         fmt_if (String.is_prefix ~prefix:"@" w) (str "\\")
         $ str_normalized ~wrap w $ aux t
-    | `Code_span s :: t -> fmt_code_span s $ aux t
+    | `Code_span s :: t -> fmt_code_span ~wrap s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
@@ -281,7 +288,8 @@ and fmt_markup_with_inline_elements c ~wrap ?(force_space = false) tag elems
   in
   str "{" $ tag $ leading_space $ fmt_inline_elements c ~wrap elems $ str "}"
 
-and fmt_nestable_block_element c elm =
+and fmt_nestable_block_element c (elm : nestable_block_element with_location)
+    =
   match elm.Loc.value with
   | `Paragraph elems ->
       hovbox 0
@@ -299,6 +307,20 @@ and fmt_nestable_block_element c elm =
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
   | `Table table -> fmt_table c table
+  | `Media (_kind, href, text, media) -> (
+      let prefix =
+        match media with
+        | `Image -> "image"
+        | `Video -> "video"
+        | `Audio -> "audio"
+      in
+      let href =
+        match href.value with
+        | `Reference s -> str "!" $ str s
+        | `Link s -> str ":" $ str s
+      in
+      let ref = str "{" $ str prefix $ href $ str "}" in
+      match text with "" -> ref | _ -> str "{" $ ref $ str text $ str "}" )
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =
@@ -437,7 +459,7 @@ let wrap_see = function
   | `File -> wrap (str "'") (str "'")
   | `Document -> wrap (str "\"") (str "\"")
 
-let fmt_tag c = function
+let fmt_tag c : tag -> _ = function
   | `Author s -> fmt_tag_args c "author" ~arg:(str s)
   | `Version s -> fmt_tag_args c "version" ~arg:(str s)
   | `See (k, sr, txt) -> fmt_tag_args c "see" ~arg:(wrap_see k (str sr)) ~txt
@@ -452,6 +474,8 @@ let fmt_tag c = function
   | `Closed -> fmt_tag_args c "closed"
   | `Hidden -> fmt_tag_args c "hidden"
   | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
+  | `Children_order txt -> fmt_tag_args c "children_order" ~txt
+  | `Short_title txt -> fmt_tag_args c "short_title" ~txt
 
 let fmt_block_element c elm =
   match elm.Loc.value with

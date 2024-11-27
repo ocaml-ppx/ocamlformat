@@ -181,13 +181,34 @@ let warning =
   with_location_adjustments (fun input location error ->
     input.warnings := (error location) :: !(input.warnings))
 
-let reference_token start target =
+let reference_token media start target input lexbuf =
   match start with
   | "{!" -> `Simple_reference target
   | "{{!" -> `Begin_reference_with_replacement_text target
-  | "{:" -> `Simple_link target
-  | "{{:" -> `Begin_link_with_replacement_text target
-  | _ -> assert false
+  | "{:" -> `Simple_link (target)
+  | "{{:" -> `Begin_link_with_replacement_text (target)
+
+  | "{image!" -> `Simple_media (`Reference target, `Image)
+  | "{image:" -> `Simple_media (`Link target, `Image)
+  | "{audio!" -> `Simple_media (`Reference target, `Audio)
+  | "{audio:" -> `Simple_media (`Link target, `Audio)
+  | "{video!" -> `Simple_media (`Reference target, `Video)
+  | "{video:" -> `Simple_media (`Link target, `Video)
+
+  | _ ->
+     let target, kind =
+       match start with
+       | "{{image!" -> `Reference target, `Image
+       | "{{image:" -> `Link target, `Image
+       | "{{audio!" -> `Reference target, `Audio
+       | "{{audio:" -> `Link target, `Audio
+       | "{{video!" -> `Reference target, `Video
+       | "{{video:" -> `Link target, `Video
+       | _ -> assert false
+     in
+     let token_descr = Token.describe (`Media_with_replacement_text (target, kind, "")) in
+     let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
+     `Media_with_replacement_text (target, kind, content)
 
 let trim_leading_space_or_accept_whitespace input start_offset text =
   match text.[0] with
@@ -264,8 +285,11 @@ let horizontal_space =
 let newline =
   '\n' | "\r\n"
 
-let reference_start =
-  "{!" | "{{!" | "{:" | "{{:"
+let media_start =
+    "{!" | "{{!" | "{:" | "{{:"
+  | "{image!" | "{{image!" | "{image:" | "{{image:"
+  | "{video!" | "{{video!" | "{video:" | "{{video:"
+  | "{audio!" | "{{audio!" | "{audio:" | "{{audio:"
 
 let raw_markup =
   ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
@@ -402,13 +426,13 @@ and token input = parse
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
 
-  | (reference_start as start)
+  | (media_start as start)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let target =
         reference_content input start start_offset (Buffer.create 16) lexbuf
       in
-      let token = (reference_token start target) in
+      let token = reference_token media start target input lexbuf in
       emit ~start_offset input token }
 
   | "{["
@@ -516,6 +540,12 @@ and token input = parse
   | ("@return" | "@returns")
     { emit input (`Tag `Return) }
 
+  | ("@children_order")
+    { emit input (`Tag `Children_order) }
+
+  | ("@short_title")
+    { emit input (`Tag `Short_title) }
+
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { emit input (`Tag (`See (`Url, url))) }
 
@@ -619,13 +649,16 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
-  | newline newline
+  | newline horizontal_space* (newline horizontal_space*)+
     { warning
         input
         (Parse_error.not_allowed
           ~what:(Token.describe (`Blank_line "\n\n"))
           ~in_what:(Token.describe (`Code_span "")));
-      Buffer.add_char buffer '\n';
+      Buffer.add_char buffer ' ';
+      code_span buffer nesting_level start_offset input lexbuf }
+  | newline horizontal_space*
+    { Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
 
   | eof
@@ -680,6 +713,35 @@ and math kind buffer nesting_level start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       math kind buffer nesting_level start_offset input lexbuf }
+
+and media tok_descr buffer nesting_level start_offset input = parse
+  | '}'
+    { if nesting_level == 0 then
+        Buffer.contents buffer
+      else begin
+        Buffer.add_char buffer '}';
+        media tok_descr buffer (nesting_level - 1) start_offset input lexbuf
+      end
+      }
+  | '{'
+    { Buffer.add_char buffer '{';
+      media tok_descr buffer (nesting_level + 1) start_offset input lexbuf }
+  | ("\\{" | "\\}") as s
+    { Buffer.add_string buffer s;
+      media tok_descr buffer nesting_level start_offset input lexbuf }
+  | eof
+    { warning
+        input
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:tok_descr);
+      Buffer.contents buffer}
+  | (newline)
+    { Buffer.add_char buffer ' ';
+      media tok_descr buffer nesting_level start_offset input lexbuf }
+  | _ as c
+    { Buffer.add_char buffer c;
+      media tok_descr buffer nesting_level start_offset input lexbuf }
 
 and verbatim buffer last_false_terminator start_offset input = parse
   | (space_char as c) "v}"
