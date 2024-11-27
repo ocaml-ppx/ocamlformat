@@ -245,7 +245,36 @@
     @open
     @closed
     @hidden
-    @canonical ref *)
+    @canonical ref
+
+    @author Foo
+
+    {2 Bar}
+
+    @author Foo
+
+    - bar
+
+    @hidden
+
+    foo
+    @hidden
+
+    @deprecated
+      - foo
+      - bar
+
+    @deprecated
+      - foo
+      - bar
+
+    @deprecated
+
+    {2 Bar}
+
+    @children_order
+      foo
+      - bar baz *)
 
 (** {!foo} bar{!foo} {!foo}bar {!val:foo} {!} {!( * )} {!:foo} {!val:}
     {!"my-name"} {!"}"} {!( } )} {{!foo} bar} {{!foo} {b bar}}

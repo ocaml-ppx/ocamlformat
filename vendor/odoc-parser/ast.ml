@@ -72,7 +72,14 @@ and nestable_block_element =
 and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 
 type internal_tag =
-  [ `Canonical of string with_location | `Inline | `Open | `Closed | `Hidden ]
+  [ `Canonical of string with_location
+  | `Inline
+  | `Open
+  | `Closed
+  | `Hidden
+  | `Children_order of nestable_block_element with_location list
+  | `Short_title of nestable_block_element with_location list ]
+
 (** Internal tags are used to exercise fine control over the output of odoc. They
     are never rendered in the output *)
 

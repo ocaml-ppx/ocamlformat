@@ -576,11 +576,12 @@ let _check_subset : stopped_implicitly -> Token.t = fun t -> (t :> Token.t)
    - The type of token that the block parser stops at. See discussion above. *)
 type ('block, 'stops_at_which_tokens) context =
   | Top_level : (Ast.block_element, stops_at_delimiters) context
-  | In_shorthand_list : (Ast.nestable_block_element, stopped_implicitly) context
+  | In_implicitly_ended :
+      [ `Tag | `Shorthand_list ]
+      -> (Ast.nestable_block_element, stopped_implicitly) context
   | In_explicit_list : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_table_cell : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_code_results : (Ast.nestable_block_element, code_stop) context
-  | In_tag : (Ast.nestable_block_element, Token.t) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
@@ -592,11 +593,10 @@ let accepted_in_all_contexts :
  fun context block ->
   match context with
   | Top_level -> (block :> Ast.block_element)
-  | In_shorthand_list -> block
+  | In_implicitly_ended (`Tag | `Shorthand_list) -> block
   | In_explicit_list -> block
   | In_table_cell -> block
   | In_code_results -> block
-  | In_tag -> block
 
 (* Converts a tag to a series of words. This is used in error recovery, when a
    tag cannot be generated. *)
@@ -617,6 +617,8 @@ let tag_to_words = function
   | `See (`Url, s) -> [ `Word "@see"; `Space " "; `Word ("<" ^ s ^ ">") ]
   | `Since s -> [ `Word "@since"; `Space " "; `Word s ]
   | `Version s -> [ `Word "@version"; `Space " "; `Word s ]
+  | `Children_order -> [ `Word "@children_order" ]
+  | `Short_title -> [ `Word "@short_title" ]
 
 (* {3 Block element lists} *)
 
@@ -638,13 +640,12 @@ let rec block_element_list :
     * where_in_line =
  fun context ~parent_markup input ->
   let rec consume_block_elements :
-      parsed_a_tag:bool ->
       where_in_line ->
       block with_location list ->
       block with_location list
       * stops_at_which_tokens with_location
       * where_in_line =
-   fun ~parsed_a_tag where_in_line acc ->
+   fun where_in_line acc ->
     let describe token =
       match token with
       | #token_that_always_begins_an_inline_element -> "paragraph"
@@ -654,16 +655,6 @@ let rec block_element_list :
     let warn_if_after_text { Loc.location; value = token } =
       if where_in_line = `After_text then
         Parse_error.should_begin_on_its_own_line ~what:(describe token) location
-        |> add_warning input
-    in
-
-    let warn_if_after_tags { Loc.location; value = token } =
-      if parsed_a_tag then
-        let suggestion =
-          Printf.sprintf "move %s before any tags." (Token.describe token)
-        in
-        Parse_error.not_allowed ~what:(describe token)
-          ~in_what:"the tags section" ~suggestion location
         |> add_warning input
     in
 
@@ -683,9 +674,9 @@ let rec block_element_list :
     | { value = `End; _ } as next_token -> (
         match context with
         | Top_level -> (List.rev acc, next_token, where_in_line)
-        | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
+            (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
-        | In_tag -> (List.rev acc, next_token, where_in_line)
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
         | In_code_results -> (List.rev acc, next_token, where_in_line))
     | { value = `Right_brace; _ } as next_token -> (
@@ -694,37 +685,39 @@ let rec block_element_list :
            possible values of [context]. *)
         match context with
         | Top_level -> (List.rev acc, next_token, where_in_line)
-        | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
+            (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
-        | In_tag -> (List.rev acc, next_token, where_in_line)
         | In_code_results ->
             junk input;
-            consume_block_elements ~parsed_a_tag where_in_line acc)
+            consume_block_elements where_in_line acc)
     | { value = `Right_code_delimiter; _ } as next_token -> (
         match context with
         | In_code_results -> (List.rev acc, next_token, where_in_line)
         | _ ->
             junk input;
-            consume_block_elements ~parsed_a_tag where_in_line acc)
+            consume_block_elements where_in_line acc)
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
        well as to ensure that all block elements begin on their own line. *)
     | { value = `Space _; _ } ->
         junk input;
-        consume_block_elements ~parsed_a_tag where_in_line acc
+        consume_block_elements where_in_line acc
     | { value = `Single_newline _; _ } ->
         junk input;
-        consume_block_elements ~parsed_a_tag `At_start_of_line acc
+        consume_block_elements `At_start_of_line acc
     | { value = `Blank_line _; _ } as next_token -> (
         match context with
-        (* Blank lines terminate shorthand lists ([- foo]). They also terminate
-           paragraphs, but the paragraph parser is aware of that internally. *)
-        | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
+        (* Blank lines terminate shorthand lists ([- foo]) and tags. They also
+           terminate paragraphs, but the paragraph parser is aware of that
+           internally. *)
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
+            (List.rev acc, next_token, where_in_line)
         (* Otherwise, blank lines are pretty much like single newlines. *)
         | _ ->
             junk input;
-            consume_block_elements ~parsed_a_tag `At_start_of_line acc)
+            consume_block_elements `At_start_of_line acc)
     (* Explicit list items ([{li ...}] and [{- ...}]) can never appear directly
        in block content. They can only appear inside [{ul ...}] and [{ol ...}].
        So, catch those. *)
@@ -740,7 +733,7 @@ let rec block_element_list :
         |> add_warning input;
 
         junk input;
-        consume_block_elements ~parsed_a_tag where_in_line acc
+        consume_block_elements where_in_line acc
     (* Table rows ([{tr ...}]) can never appear directly
        in block content. They can only appear inside [{table ...}]. *)
     | { value = `Begin_table_row as token; location } ->
@@ -753,7 +746,7 @@ let rec block_element_list :
           ~suggestion location
         |> add_warning input;
         junk input;
-        consume_block_elements ~parsed_a_tag where_in_line acc
+        consume_block_elements where_in_line acc
     (* Table cells ([{th ...}] and [{td ...}]) can never appear directly
        in block content. They can only appear inside [{tr ...}]. *)
     | { value = `Begin_table_cell _ as token; location } ->
@@ -766,9 +759,8 @@ let rec block_element_list :
           ~suggestion location
         |> add_warning input;
         junk input;
-        consume_block_elements ~parsed_a_tag where_in_line acc
-    (* Tags. These can appear at the top level only. Also, once one tag is seen,
-       the only top-level elements allowed are more tags. *)
+        consume_block_elements where_in_line acc
+    (* Tags. These can appear at the top level only. *)
     | { value = `Tag tag as token; location } as next_token -> (
         let recover_when_not_at_top_level context =
           warn_because_not_at_top_level next_token;
@@ -779,8 +771,7 @@ let rec block_element_list :
             |> accepted_in_all_contexts context
             |> Loc.at location
           in
-          consume_block_elements ~parsed_a_tag `At_start_of_line
-            (paragraph :: acc)
+          consume_block_elements `At_start_of_line (paragraph :: acc)
         in
 
         match context with
@@ -789,15 +780,11 @@ let rec block_element_list :
         (* If a tag starts at the beginning of a line, it terminates the preceding
            tag and/or the current shorthand list. In this case, return to the
            caller, and let the caller decide how to interpret the tag token. *)
-        | In_shorthand_list ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
         | In_table_cell -> recover_when_not_at_top_level context
-        | In_tag ->
-            if where_in_line = `At_start_of_line then
-              (List.rev acc, next_token, where_in_line)
-            else recover_when_not_at_top_level context
         | In_code_results -> recover_when_not_at_top_level context
         (* If this is the top-level call to [block_element_list], parse the
            tag. *)
@@ -831,26 +818,28 @@ let rec block_element_list :
                 in
 
                 let tag = Loc.at location (`Tag tag) in
-                consume_block_elements ~parsed_a_tag:true `After_text
-                  (tag :: acc)
-            | (`Deprecated | `Return) as tag ->
+                consume_block_elements `After_text (tag :: acc)
+            | (`Deprecated | `Return | `Children_order | `Short_title) as tag ->
                 let content, _stream_head, where_in_line =
-                  block_element_list In_tag ~parent_markup:token input
+                  block_element_list (In_implicitly_ended `Tag)
+                    ~parent_markup:token input
                 in
                 let tag =
                   match tag with
                   | `Deprecated -> `Deprecated content
                   | `Return -> `Return content
+                  | `Children_order -> `Children_order content
+                  | `Short_title -> `Short_title content
                 in
                 let location =
                   location :: List.map Loc.location content |> Loc.span
                 in
                 let tag = Loc.at location (`Tag tag) in
-                consume_block_elements ~parsed_a_tag:true where_in_line
-                  (tag :: acc)
+                consume_block_elements where_in_line (tag :: acc)
             | (`Param _ | `Raise _ | `Before _) as tag ->
                 let content, _stream_head, where_in_line =
-                  block_element_list In_tag ~parent_markup:token input
+                  block_element_list (In_implicitly_ended `Tag)
+                    ~parent_markup:token input
                 in
                 let tag =
                   match tag with
@@ -862,34 +851,30 @@ let rec block_element_list :
                   location :: List.map Loc.location content |> Loc.span
                 in
                 let tag = Loc.at location (`Tag tag) in
-                consume_block_elements ~parsed_a_tag:true where_in_line
-                  (tag :: acc)
+                consume_block_elements where_in_line (tag :: acc)
             | `See (kind, target) ->
                 let content, _next_token, where_in_line =
-                  block_element_list In_tag ~parent_markup:token input
+                  block_element_list (In_implicitly_ended `Tag)
+                    ~parent_markup:token input
                 in
                 let location =
                   location :: List.map Loc.location content |> Loc.span
                 in
                 let tag = `Tag (`See (kind, target, content)) in
                 let tag = Loc.at location tag in
-                consume_block_elements ~parsed_a_tag:true where_in_line
-                  (tag :: acc)
+                consume_block_elements where_in_line (tag :: acc)
             | (`Inline | `Open | `Closed | `Hidden) as tag ->
                 let tag = Loc.at location (`Tag tag) in
-                consume_block_elements ~parsed_a_tag:true `After_text
-                  (tag :: acc)))
+                consume_block_elements `After_text (tag :: acc)))
     | ( { value = #token_that_always_begins_an_inline_element; _ }
       | { value = `Bar; _ } ) as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
 
         let block = paragraph input in
         let block = Loc.map (accepted_in_all_contexts context) block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = `Verbatim s as token; location } as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
         if s = "" then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
@@ -899,9 +884,8 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context token in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = `Math_block s as token; location } as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
         if s = "" then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
@@ -911,14 +895,13 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context token in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | {
         value =
           `Code_block (meta, delim, { value = s; location = v_loc }, has_outputs)
           as token;
         location;
       } as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
         junk input;
         let delimiter = if delim = "" then None else Some delim in
@@ -958,9 +941,8 @@ let rec block_element_list :
         in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = `Modules s as token; location } as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
 
         junk input;
@@ -999,9 +981,8 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context (`Modules modules) in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = `Begin_list kind as token; location } as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
 
         junk input;
@@ -1018,10 +999,9 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context block in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = (`Begin_table_light | `Begin_table_heavy) as token; location }
       as next_token ->
-        warn_if_after_tags next_token;
         warn_if_after_text next_token;
         junk input;
         let block, brace_location =
@@ -1037,7 +1017,7 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context (`Table block) in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { value = (`Minus | `Plus) as token; location } as next_token -> (
         (match where_in_line with
         | `After_text | `After_shorthand_bullet ->
@@ -1046,10 +1026,9 @@ let rec block_element_list :
             |> add_warning input
         | _ -> ());
 
-        warn_if_after_tags next_token;
-
         match context with
-        | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
+        | In_implicitly_ended `Shorthand_list ->
+            (List.rev acc, next_token, where_in_line)
         | _ ->
             let items, where_in_line =
               shorthand_list_items next_token where_in_line input
@@ -1064,11 +1043,9 @@ let rec block_element_list :
             let block = accepted_in_all_contexts context block in
             let block = Loc.at location block in
             let acc = block :: acc in
-            consume_block_elements ~parsed_a_tag where_in_line acc)
+            consume_block_elements where_in_line acc)
     | { value = `Begin_section_heading (level, label) as token; location } as
       next_token -> (
-        warn_if_after_tags next_token;
-
         let recover_when_not_at_top_level context =
           warn_because_not_at_top_level next_token;
           junk input;
@@ -1083,18 +1060,16 @@ let rec block_element_list :
             |> accepted_in_all_contexts context
             |> Loc.at location
           in
-          consume_block_elements ~parsed_a_tag `At_start_of_line
-            (paragraph :: acc)
+          consume_block_elements `At_start_of_line (paragraph :: acc)
         in
 
         match context with
-        | In_shorthand_list ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
         | In_explicit_list -> recover_when_not_at_top_level context
         | In_table_cell -> recover_when_not_at_top_level context
-        | In_tag -> recover_when_not_at_top_level context
         | In_code_results -> recover_when_not_at_top_level context
         | Top_level ->
             if where_in_line <> `At_start_of_line then
@@ -1127,7 +1102,7 @@ let rec block_element_list :
             let heading = `Heading (level, label, content) in
             let heading = Loc.at location heading in
             let acc = heading :: acc in
-            consume_block_elements ~parsed_a_tag `After_text acc)
+            consume_block_elements `After_text acc)
     | { value = `Begin_paragraph_style _ as token; location } ->
         junk input;
         let content, brace_location =
@@ -1146,7 +1121,7 @@ let rec block_element_list :
           |> accepted_in_all_contexts context
           |> Loc.at location
         in
-        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph :: acc)
+        consume_block_elements `At_start_of_line (paragraph :: acc)
     | {
      location;
      value = `Media_with_replacement_text (href, media, content) as token;
@@ -1179,7 +1154,7 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context block in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
     | { location; value = `Simple_media (href, media) } ->
         junk input;
 
@@ -1194,20 +1169,20 @@ let rec block_element_list :
         let block = accepted_in_all_contexts context block in
         let block = Loc.at location block in
         let acc = block :: acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+        consume_block_elements `After_text acc
   in
 
   let where_in_line =
     match context with
     | Top_level -> `At_start_of_line
-    | In_shorthand_list -> `After_shorthand_bullet
+    | In_implicitly_ended `Shorthand_list -> `After_shorthand_bullet
     | In_explicit_list -> `After_explicit_list_bullet
     | In_table_cell -> `After_table_cell
     | In_code_results -> `After_tag
-    | In_tag -> `After_tag
+    | In_implicitly_ended `Tag -> `After_tag
   in
 
-  consume_block_elements ~parsed_a_tag:false where_in_line []
+  consume_block_elements where_in_line []
 
 (* {3 Lists} *)
 
@@ -1244,7 +1219,8 @@ and shorthand_list_items :
           junk input;
 
           let content, stream_head, where_in_line =
-            block_element_list In_shorthand_list ~parent_markup:bullet input
+            block_element_list (In_implicitly_ended `Shorthand_list)
+              ~parent_markup:bullet input
           in
           if content = [] then
             Parse_error.should_not_be_empty ~what:(Token.describe bullet)

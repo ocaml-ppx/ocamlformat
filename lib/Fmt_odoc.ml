@@ -163,8 +163,8 @@ let list_block_elem c elems f =
                 (elem.Loc.value :> block_element)
                 (n.value :> block_element)
               || should_preserve_blank c elem.location n.location
-            then str "\n" $ force_newline
-            else force_newline
+            then str "\n" $ force_break
+            else force_break
         | None -> noop
       in
       f elem $ break )
@@ -452,7 +452,7 @@ let wrap_see = function
   | `File -> wrap (str "'") (str "'")
   | `Document -> wrap (str "\"") (str "\"")
 
-let fmt_tag c = function
+let fmt_tag c : tag -> _ = function
   | `Author s -> fmt_tag_args c "author" ~arg:(str s)
   | `Version s -> fmt_tag_args c "version" ~arg:(str s)
   | `See (k, sr, txt) -> fmt_tag_args c "see" ~arg:(wrap_see k (str sr)) ~txt
@@ -467,6 +467,8 @@ let fmt_tag c = function
   | `Closed -> fmt_tag_args c "closed"
   | `Hidden -> fmt_tag_args c "hidden"
   | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
+  | `Children_order txt -> fmt_tag_args c "children_order" ~txt
+  | `Short_title txt -> fmt_tag_args c "short_title" ~txt
 
 let fmt_block_element c elm =
   match elm.Loc.value with

@@ -540,6 +540,12 @@ and token input = parse
   | ("@return" | "@returns")
     { emit input (`Tag `Return) }
 
+  | ("@children_order")
+    { emit input (`Tag `Children_order) }
+
+  | ("@short_title")
+    { emit input (`Tag `Short_title) }
+
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { emit input (`Tag (`See (`Url, url))) }
 
