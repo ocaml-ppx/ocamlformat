@@ -215,6 +215,12 @@ module Light_table = struct
         let header, data = extract [] grid in
         Some (header, alignments, data)
       with Table_not_safe -> None )
+
+  let alignment_chars = function
+    | Some `Left -> (":", "-")
+    | Some `Center -> (":", ":")
+    | Some `Right -> ("-", ":")
+    | None -> ("-", "-")
 end
 
 let non_wrap_space sp =
@@ -356,32 +362,69 @@ and fmt_table_heavy c (((grid, alignments), _) : table) =
   fmt_block_markup "table" (list grid force_break fmt_row)
 
 and fmt_table_light c (header, alignments, data) =
-  let fmt_align = function
-    | Some `Left -> str ":--"
-    | Some `Center -> str ":-:"
-    | Some `Right -> str "--:"
-    | None -> str "---"
+  (* Format every cells into strings to then compute the width of columns. *)
+  let format_rows_to_strings =
+    let format_cell_to_string elems =
+      Format_.asprintf " %a " Fmt.eval
+      @@ fmt_inline_elements c ~wrap:false elems
+    in
+    List.map ~f:(List.map ~f:format_cell_to_string)
   in
-  let has_header = not (List.is_empty header)
-  and has_data = not (List.is_empty data) in
-  let fmt_alignment_row =
-    opt alignments (fun aligns ->
-        str "|"
-        $ list aligns (str "|") fmt_align
-        $ str "|"
-        $ fmt_if has_data force_break )
+  let header = format_rows_to_strings header
+  and data = format_rows_to_strings data in
+  let column_width =
+    let column_count =
+      let f acc row = max acc (List.length row) in
+      let compute init rows = List.fold_left rows ~init ~f in
+      let aligns_count =
+        Option.value_map alignments ~default:0 ~f:List.length
+      in
+      compute (compute aligns_count header) data
+    in
+    let column_min_width = if Option.is_some alignments then 3 else 1 in
+    let widths = Array.init column_count ~f:(fun _ -> column_min_width) in
+    let compute_column_widths row =
+      List.iteri row ~f:(fun i cell ->
+          widths.(i) <- max widths.(i) (Fmt.str_length cell) )
+    in
+    List.iter ~f:compute_column_widths header ;
+    List.iter ~f:compute_column_widths data ;
+    Array.get widths
   in
-  (* Don't allow inline elements to wrap, meaning the line won't break if the
-     row breaks the margin. *)
-  let fmt_cell elems = fmt_inline_elements c ~wrap:false elems in
-  let fmt_row row = str "| " $ list row (str " | ") fmt_cell $ str " |" in
-  let fmt_rows rows = list rows force_break fmt_row in
-  let fmt_grid =
-    fmt_rows header
-    $ fmt_if has_header force_break
-    $ fmt_alignment_row $ fmt_rows data
+  let align_row, align_of_column =
+    let align_column i align =
+      let l, r = Light_table.alignment_chars align in
+      l ^ String.make (column_width i - 2) '-' ^ r
+    in
+    match alignments with
+    | Some aligns ->
+        let aligns_ar = Array.of_list aligns in
+        let aligns_get i =
+          if i >= Array.length aligns_ar then `Left
+          else Option.value ~default:`Left aligns_ar.(i)
+        in
+        ([List.mapi ~f:align_column aligns], aligns_get)
+    | None -> ([], fun _ -> `Left)
   in
-  fmt_block_markup ~force_break:true "t" (vbox 0 fmt_grid)
+  let padding n = str (String.make n ' ') in
+  let fmt_cell i s =
+    let pad = column_width i - Fmt.str_length s in
+    let l, r =
+      if pad <= 0 then (noop, noop)
+      else
+        match align_of_column i with
+        | `Left -> (noop, padding pad)
+        | `Center -> (padding (pad / 2), padding ((pad + 1) / 2))
+        | `Right -> (padding pad, noop)
+    in
+    l $ str s $ r
+  in
+  let fmt_row row =
+    let row = List.mapi row ~f:fmt_cell in
+    str "|" $ list row (str "|") Fn.id $ str "|"
+  in
+  fmt_block_markup ~force_break:true "t"
+    (vbox 0 (list (header @ align_row @ data) force_break fmt_row))
 
 and fmt_table c table =
   match Light_table.of_table table with
