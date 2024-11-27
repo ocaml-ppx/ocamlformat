@@ -3640,6 +3640,21 @@
 (rule
  (deps .ocamlformat dune-project)
  (action
+  (with-stdout-to odoc.mli.stdout
+   (with-stderr-to odoc.mli.stderr
+     (run %{bin:ocamlformat} --name odoc.mli --margin-check --parse-docstrings %{dep:../tests/odoc.mli})))))
+
+(rule
+ (alias runtest)
+ (action (diff odoc.mli.ref odoc.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (action (diff odoc.mli.err odoc.mli.stderr)))
+
+(rule
+ (deps .ocamlformat dune-project)
+ (action
   (with-stdout-to open-closing-on-separate-line.ml.stdout
    (with-stderr-to open-closing-on-separate-line.ml.stderr
      (run %{bin:ocamlformat} --name open-closing-on-separate-line.ml --margin-check --indicate-multiline-delimiters=closing-on-separate-line %{dep:../tests/open.ml})))))
