@@ -56,7 +56,7 @@ profile. This started with version 0.26.0.
 - Added back the flag `--disable-outside-detected-project` (#2439, @gpetiot)
   It was removed in version 0.22.
 
-- Support newer Odoc syntax (#2631, #2632, @Julow)
+- Support newer Odoc syntax (#2631, #2632, #2633, @Julow)
 
 ### Changed
 
