@@ -273,3 +273,9 @@
    {{audio:foo}bar}
    {{video:foo}bar}
 *)
+
+(**
+   fooooooooooooooo fooooooooooooooo fooooooooooooooo [fooooooooooooooo fooooooooooooooo] fooooooooooooooo
+
+   fooooooooooooooo [fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo fooooooooooooooo] fooooooooooooooo
+*)

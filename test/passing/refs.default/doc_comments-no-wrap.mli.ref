@@ -381,7 +381,8 @@ end
 
     [ A lot of    spaces ]
 
-    [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
+    [Very
+     looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
 *)
 
 (** {[

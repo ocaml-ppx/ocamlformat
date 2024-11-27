@@ -104,8 +104,15 @@ let fmt_verbatim_block ~loc s =
   in
   hvbox 0 (wrap (str "{v") (str "v}") content)
 
-let fmt_code_span s =
-  wrap (str "[") (str "]") (str (escape_balanced_brackets s))
+let fmt_code_span ~wrap s =
+  let s = escape_balanced_brackets s in
+  let s =
+    if wrap then
+      let words = String.split_on_chars ~on:[' '] s in
+      list words space_break str
+    else str s
+  in
+  hovbox_if wrap 1 (str "[" $ s $ str "]")
 
 let fmt_math_span s = hovbox 2 (wrap (str "{m ") (str "}") (str s))
 
@@ -231,7 +238,7 @@ let rec fmt_inline_elements c ~wrap elements =
     | `Word w :: t ->
         fmt_if (String.is_prefix ~prefix:"@" w) (str "\\")
         $ str_normalized ~wrap w $ aux t
-    | `Code_span s :: t -> fmt_code_span s $ aux t
+    | `Code_span s :: t -> fmt_code_span ~wrap s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
