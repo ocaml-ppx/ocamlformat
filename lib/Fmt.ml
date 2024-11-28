@@ -143,7 +143,7 @@ let utf8_length s =
 let str_as n s =
   let stack = Box_debug.get_stack () in
   with_pp (fun fs ->
-      Box_debug.start_str fs ;
+      Box_debug.start_str fs s ;
       Format_.pp_print_as fs n s ;
       Box_debug.end_str ~stack fs )
 

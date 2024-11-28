@@ -6,5 +6,5 @@
  (instrumentation
   (backend bisect_ppx))
  (flags
-  (:standard -w -50))
- (libraries astring camlp-streams))
+  (:standard -w -50 -open Ocamlformat_parser_shims))
+ (libraries astring camlp-streams ocamlformat_parser_shims))

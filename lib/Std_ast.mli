@@ -33,7 +33,12 @@ type any_t = Any : 'a t -> any_t [@@unboxed]
 val of_syntax : Syntax.t -> any_t
 
 module Parse : sig
-  val ast : 'a t -> input_name:string -> string -> 'a
+  val ast :
+       'a t
+    -> ocaml_version:Ocaml_version.t
+    -> input_name:string
+    -> string
+    -> 'a
 end
 
 val equal : 'a t -> 'a -> 'a -> bool

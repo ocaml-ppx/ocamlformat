@@ -91,7 +91,7 @@ jobs:
           key: test-extra-code
 
       - name: Fetch main build of ocamlformat
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build-linux.yml
           workflow_conclusion: ""

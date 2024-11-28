@@ -648,3 +648,16 @@ type x =
 
 (** at@ *)
 (** \@at *)
+
+(** Lists can't be nested
+    - foo
+    - module system documentation including
+    {ol
+    {- bar}
+    {- baz}
+    }
+*)
+
+(** Space before a reference or link text is preserved. A newline is turned
+    into a space. {{!ref}
+    with newline} and {{!ref} with space}. *)

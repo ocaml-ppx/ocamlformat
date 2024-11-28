@@ -44,7 +44,8 @@ val is_none : t -> bool
 val in_file : string -> t
 (** Return an empty ghost range located in a given file. *)
 
-val init : Lexing.lexbuf -> string -> unit
+(* val init : Lexing.lexbuf -> string -> unit *)
+val init_info : Lexing.lexbuf -> string -> unit
 (** Set the file name and line number of the [lexbuf] to be the start
     of the named file. *)
 
@@ -88,16 +89,73 @@ val input_phrase_buffer: Buffer.t option ref
 (** {1 Toplevel-specific functions} *)
 
 val echo_eof: unit -> unit
-val separate_new_message: formatter -> unit
 val reset: unit -> unit
 
 
 (** {1 Rewriting path } *)
 
+(* [Build_path_prefix_map] related features are disabled in ocamlformat
 val rewrite_absolute_path: string -> string
-    (** rewrite absolute path to honor the BUILD_PATH_PREFIX_MAP
-        variable (https://reproducible-builds.org/specs/build-path-prefix-map/)
-        if it is set. *)
+(** [rewrite_absolute_path path] rewrites [path] to honor the
+    BUILD_PATH_PREFIX_MAP variable
+    if it is set. It does not check whether [path] is absolute or not.
+    The result is as follows:
+    - If BUILD_PATH_PREFIX_MAP is not set, just return [path].
+    - otherwise, rewrite using the mapping (and if there are no
+      matching prefixes that will just return [path]).
+
+    See
+    {{: https://reproducible-builds.org/specs/build-path-prefix-map/ }
+    the BUILD_PATH_PREFIX_MAP spec}
+    *)
+
+val rewrite_find_first_existing: string -> string option
+(** [rewrite_find_first_existing path] uses a BUILD_PATH_PREFIX_MAP mapping
+    and tries to find a source in mapping
+    that maps to a result that exists in the file system.
+    There are the following return values:
+    - [None], means either
+      {ul {- BUILD_PATH_PREFIX_MAP is not set and [path] does not exists, or}
+          {- no source prefixes of [path] in the mapping were found,}}
+    - [Some target], means [target] exists and either
+      {ul {- BUILD_PATH_PREFIX_MAP is not set and [target] = [path], or}
+          {- [target] is the first file (in priority
+             order) that [path] mapped to that exists in the file system.}}
+    - [Not_found] raised, means some source prefixes in the map
+      were found that matched [path], but none of them existed
+      in the file system. The caller should catch this and issue
+      an appropriate error message.
+
+    See
+    {{: https://reproducible-builds.org/specs/build-path-prefix-map/ }
+    the BUILD_PATH_PREFIX_MAP spec}
+    *)
+
+val rewrite_find_all_existing_dirs: string -> string list
+(** [rewrite_find_all_existing_dirs dir] accumulates a list of existing
+    directories, [dirs], that are the result of mapping a potentially
+    abstract directory, [dir], over all the mapping pairs in the
+    BUILD_PATH_PREFIX_MAP environment variable, if any. The list [dirs]
+    will be in priority order (head as highest priority).
+
+    The possible results are:
+    - [[]], means either
+      {ul {- BUILD_PATH_PREFIX_MAP is not set and [dir] is not an existing
+      directory, or}
+          {- if set, then there were no matching prefixes of [dir].}}
+    - [Some dirs], means dirs are the directories found. Either
+      {ul {- BUILD_PATH_PREFIX_MAP is not set and [dirs = [dir]], or}
+          {- it was set and [dirs] are the mapped existing directories.}}
+    - Not_found raised, means some source prefixes in the map
+      were found that matched [dir], but none of mapping results
+      were existing directories (possibly due to misconfiguration).
+      The caller should catch this and issue an appropriate error
+      message.
+
+    See
+    {{: https://reproducible-builds.org/specs/build-path-prefix-map/ }
+    the BUILD_PATH_PREFIX_MAP spec}
+    *)
 
 val absolute_path: string -> string
  (** [absolute_path path] first makes an absolute path, [s] from [path],
@@ -105,6 +163,7 @@ val absolute_path: string -> string
      Then [s] is rewritten using [rewrite_absolute_path].
      Finally the result is normalized by eliminating instances of
      ['.'] or ['..']. *)
+*)
 
 (** {1 Printing locations} *)
 
@@ -113,10 +172,17 @@ val show_filename: string -> string
         Otherwise, returns the filename unchanged. *)
 
 val print_filename: formatter -> string -> unit
-
 val print_loc: formatter -> t -> unit
 val print_locs: formatter -> t list -> unit
+val separate_new_message: formatter -> unit
 
+module Doc: sig
+  val separate_new_message: unit Format_doc.printer
+  val filename: string Format_doc.printer
+  val quoted_filename: string Format_doc.printer
+  val loc: t Format_doc.printer
+  val locs: t list Format_doc.printer
+end
 
 (** {1 Toplevel-specific location highlighting} *)
 
@@ -128,9 +194,9 @@ val highlight_terminfo:
 
 (** {2 The type of reports and report printers} *)
 
-type msg = (Format.formatter -> unit) loc
+type msg = Format_doc.t loc
 
-val msg: ?loc:t -> ('a, Format.formatter, unit, msg) format4 -> 'a
+val msg: ?loc:t -> ('a, Format_doc.formatter, unit, msg) format4 -> 'a
 
 type report_kind =
   | Report_error
@@ -143,6 +209,7 @@ type report = {
   kind : report_kind;
   main : msg;
   sub : msg list;
+  footnote: Format_doc.t option
 }
 
 type report_printer = {
@@ -155,7 +222,7 @@ type report_printer = {
   pp_main_loc : report_printer -> report ->
     Format.formatter -> t -> unit;
   pp_main_txt : report_printer -> report ->
-    Format.formatter -> (Format.formatter -> unit) -> unit;
+    Format.formatter -> Format_doc.t -> unit;
   pp_submsgs : report_printer -> report ->
     Format.formatter -> msg list -> unit;
   pp_submsg : report_printer -> report ->
@@ -163,7 +230,7 @@ type report_printer = {
   pp_submsg_loc : report_printer -> report ->
     Format.formatter -> t -> unit;
   pp_submsg_txt : report_printer -> report ->
-    Format.formatter -> (Format.formatter -> unit) -> unit;
+    Format.formatter -> Format_doc.t -> unit;
 }
 (** A printer for [report]s, defined using open-recursion.
     The goal is to make it easy to define new printers by re-using code from
@@ -264,15 +331,17 @@ val deprecated_script_alert: string -> unit
 type error = report
 (** An [error] is a [report] which [report_kind] must be [Report_error]. *)
 
-val error: ?loc:t -> ?sub:msg list -> string -> error
+type delayed_msg = unit -> Format_doc.t option
 
-val errorf: ?loc:t -> ?sub:msg list ->
-  ('a, Format.formatter, unit, error) format4 -> 'a
+val error: ?loc:t -> ?sub:msg list -> ?footnote:delayed_msg -> string -> error
 
-val error_of_printer: ?loc:t -> ?sub:msg list ->
-  (formatter -> 'a -> unit) -> 'a -> error
+val errorf: ?loc:t -> ?sub:msg list -> ?footnote:delayed_msg ->
+  ('a, Format_doc.formatter, unit, error) format4 -> 'a
 
-val error_of_printer_file: (formatter -> 'a -> unit) -> 'a -> error
+val error_of_printer: ?loc:t -> ?sub:msg list -> ?footnote:delayed_msg ->
+  (Format_doc.formatter -> 'a -> unit) -> 'a -> error
+
+val error_of_printer_file: (Format_doc.formatter -> 'a -> unit) -> 'a -> error
 
 
 (** {1 Automatically reporting errors for raised exceptions} *)
@@ -295,8 +364,8 @@ exception Already_displayed_error
 (** Raising [Already_displayed_error] signals an error which has already been
    printed. The exception will be caught, but nothing will be printed *)
 
-val raise_errorf: ?loc:t -> ?sub:msg list ->
-  ('a, Format.formatter, unit, 'b) format4 -> 'a
+val raise_errorf: ?loc:t -> ?sub:msg list -> ?footnote:delayed_msg ->
+  ('a, Format_doc.formatter, unit, 'b) format4 -> 'a
 
 val report_exception: formatter -> exn -> unit
 (** Reraise the exception if it is unknown. *)

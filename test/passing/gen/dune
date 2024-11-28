@@ -1,2 +1,21 @@
 (executable
  (name gen))
+
+(rule
+ (deps
+  (source_tree ../tests))
+ (package ocamlformat)
+ (enabled_if
+  (<> %{os_type} Win32))
+ (action
+  (with-stdout-to
+   dune.inc.gen
+   (run ../gen/gen.exe))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (enabled_if
+  (<> %{os_type} Win32))
+ (action
+  (diff dune.inc dune.inc.gen)))

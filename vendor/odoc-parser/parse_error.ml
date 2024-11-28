@@ -30,6 +30,11 @@ let not_allowed :
   Warning.make ?suggestion "%s is not allowed in %s." (capitalize_ascii what)
     in_what
 
+let unclosed_bracket :
+    ?suggestion:string -> bracket:string -> Loc.span -> Warning.t =
+ fun ?suggestion ~bracket ->
+  Warning.make ?suggestion "Open bracket '%s' is never closed." bracket
+
 let no_leading_whitespace_in_verbatim : Loc.span -> Warning.t =
   Warning.make "'{v' should be followed by whitespace."
 
@@ -76,3 +81,8 @@ let truncated_code_block_meta : Loc.span -> Warning.t =
 
 let truncated_code_block : Loc.span -> Warning.t =
   Warning.make ~suggestion:"add ']}'." "Missing end of code block."
+
+let end_not_allowed : in_what:string -> Loc.span -> Warning.t =
+ fun ~in_what ->
+  Warning.make ~suggestion:"add '}'." "End of text is not allowed in %s."
+    in_what

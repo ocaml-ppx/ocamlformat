@@ -80,9 +80,77 @@ module Typ = struct
   let alias ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_alias (a, b))
   let variant ?loc ?attrs a b c = mk ?loc ?attrs (Ptyp_variant (a, b, c))
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
-  let package ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_package (a, b))
+  let package ?loc ?attrs p = mk ?loc ?attrs (Ptyp_package p)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
   let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
+
+(*
+  let force_poly t =
+    match t.ptyp_desc with
+    | Ptyp_poly _ -> t
+    | _ -> poly ~loc:t.ptyp_loc [] t (* -> ghost? *)
+
+  let varify_constructors var_names t =
+    let check_variable vl loc v =
+      if List.mem v vl then
+        raise Syntaxerr.(Error(Variable_in_scope(loc,v))) in
+    let var_names = List.map (fun v -> v.txt) var_names in
+    let rec loop t =
+      let desc =
+        match t.ptyp_desc with
+        | Ptyp_any -> Ptyp_any
+        | Ptyp_var x ->
+            check_variable var_names t.ptyp_loc x;
+            Ptyp_var x
+        | Ptyp_arrow (label,core_type,core_type') ->
+            Ptyp_arrow(label, loop core_type, loop core_type')
+        | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
+        | Ptyp_constr( { txt = Longident.Lident s }, [])
+          when List.mem s var_names ->
+            Ptyp_var s
+        | Ptyp_constr(longident, lst) ->
+            Ptyp_constr(longident, List.map loop lst)
+        | Ptyp_object (lst, o) ->
+            Ptyp_object (List.map loop_object_field lst, o)
+        | Ptyp_class (longident, lst) ->
+            Ptyp_class (longident, List.map loop lst)
+        | Ptyp_alias(core_type, alias) ->
+            check_variable var_names alias.loc alias.txt;
+            Ptyp_alias(loop core_type, alias)
+        | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
+            Ptyp_variant(List.map loop_row_field row_field_list,
+                         flag, lbl_lst_option)
+        | Ptyp_poly(string_lst, core_type) ->
+          List.iter (fun v ->
+            check_variable var_names t.ptyp_loc v.txt) string_lst;
+            Ptyp_poly(string_lst, loop core_type)
+        | Ptyp_package(longident,lst) ->
+            Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
+        | Ptyp_open (mod_ident, core_type) ->
+            Ptyp_open (mod_ident, loop core_type)
+        | Ptyp_extension (s, arg) ->
+            Ptyp_extension (s, arg)
+      in
+      {t with ptyp_desc = desc}
+    and loop_row_field field =
+      let prf_desc = match field.prf_desc with
+        | Rtag(label,flag,lst) ->
+            Rtag(label,flag,List.map loop lst)
+        | Rinherit t ->
+            Rinherit (loop t)
+      in
+      { field with prf_desc; }
+    and loop_object_field field =
+      let pof_desc = match field.pof_desc with
+        | Otag(label, t) ->
+            Otag(label, loop t)
+        | Oinherit t ->
+            Oinherit (loop t)
+      in
+      { field with pof_desc; }
+    in
+    loop t
+*)
 end
 
 module Pat = struct
@@ -111,6 +179,7 @@ module Pat = struct
   let unpack ?loc ?attrs a b = mk ?loc ?attrs (Ppat_unpack (a, b))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_open (a, b))
   let exception_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_exception a)
+  let effect_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_effect(a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ppat_extension a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Ppat_cons a)
 end
@@ -162,7 +231,9 @@ module Exp = struct
     mk ?loc ?attrs (Pexp_letop {let_; ands; body; loc_in})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
-  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+  (* Added *)
+  let hole ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+  (* *)
   let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
   let parens ?loc ?attrs a = mk ?loc ?attrs (Pexp_parens a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
@@ -196,16 +267,15 @@ module Mty = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pmty_ident a)
   let alias ?loc ?attrs a = mk ?loc ?attrs (Pmty_alias a)
   let signature ?loc ?attrs a = mk ?loc ?attrs (Pmty_signature a)
-  let functor_ ?loc ?attrs a b = mk ?loc ?attrs (Pmty_functor (a, b))
-  let gen ?loc ?attrs a b = mk ?loc ?attrs (Pmty_gen (a, b))
+  let functor_ ?loc ?attrs a b short = mk ?loc ?attrs (Pmty_functor (a, b, short))
   let with_ ?loc ?attrs a b = mk ?loc ?attrs (Pmty_with (a, b))
   let typeof_ ?loc ?attrs a = mk ?loc ?attrs (Pmty_typeof a)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmty_extension a)
 end
 
 module Mod = struct
-let mk ?(loc = !default_loc) ?(attrs = []) d =
-  {pmod_desc = d; pmod_loc = loc; pmod_attributes = attrs}
+  let mk ?(loc = !default_loc) ?(attrs = []) d =
+    {pmod_desc = d; pmod_loc = loc; pmod_attributes = attrs}
   let attr d a = {d with pmod_attributes = d.pmod_attributes @ [a]}
 
   let ident ?loc ?attrs x = mk ?loc ?attrs (Pmod_ident x)
@@ -217,7 +287,9 @@ let mk ?(loc = !default_loc) ?(attrs = []) d =
   let unpack ?loc ?attrs a b c = mk ?loc ?attrs (Pmod_unpack (a, b, c))
   let apply_unit ?loc ?attrs a b = mk ?loc ?attrs (Pmod_apply_unit (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
+  (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+  (* *)
 end
 
 module Sig = struct
@@ -376,7 +448,8 @@ module Md = struct
      pmd_name = name;
      pmd_args = args;
      pmd_type = typ;
-     pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
+     pmd_ext_attrs =
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
 end
@@ -387,7 +460,8 @@ module Ms = struct
     {
      pms_name = name;
      pms_manifest = syn;
-     pms_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
+     pms_ext_attrs =
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pms_loc = loc;
     }
 end
@@ -398,7 +472,8 @@ module Mtd = struct
     {
      pmtd_name = name;
      pmtd_type = typ;
-     pmtd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
+     pmtd_ext_attrs =
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pmtd_loc = loc;
     }
 end
@@ -410,7 +485,8 @@ module Mb = struct
      pmb_name = name;
      pmb_args = args;
      pmb_expr = expr;
-     pmb_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
+     pmb_ext_attrs =
+       add_text_attrs' text (add_docs_attrs' docs attrs);
      pmb_loc = loc;
     }
 end
@@ -560,7 +636,6 @@ module Te = struct
      pext_loc = loc;
      pext_attributes = add_docs_attrs docs (add_info_attrs info attrs);
     }
-
 end
 
 module Csig = struct

@@ -261,9 +261,9 @@ let rec mty_is_simple x =
   | Pmty_signature (_ :: _)
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
-   |Pmty_functor (_, _) ->
+   |Pmty_functor (_, _, false) ->
       false
-  | Pmty_gen (_, t) -> mty_is_simple t
+  | Pmty_functor (_, t, true) -> mty_is_simple t
   | Pmty_typeof e -> mod_is_simple e
   | Pmty_with (t, ([] | [_])) -> mty_is_simple t
 
@@ -968,7 +968,7 @@ end = struct
               | {prf_desc= Rtag (_, _, t1N); _} -> List.exists t1N ~f
               | {prf_desc= Rinherit t1; _} -> typ == t1 ) )
       | Ptyp_open (_, t1) -> assert (t1 == typ)
-      | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
+      | Ptyp_package (_, it1N, _) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
             List.exists fields ~f:(function
@@ -1001,14 +1001,14 @@ end = struct
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
       | Ppat_extension (_, PTyp t) -> assert (typ == t)
-      | Ppat_unpack (_, Some (_, l)) ->
+      | Ppat_unpack (_, Some (_, l, _)) ->
           assert (List.exists l ~f:(fun (_, t) -> typ == t))
       | Ppat_record (l, _) ->
           assert (List.exists l ~f:(fun (_, t, _) -> Option.exists t ~f))
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_pack (_, Some (_, it1N)) -> assert (List.exists it1N ~f:snd_f)
+      | Pexp_pack (_, Some (_, it1N, _)) -> assert (List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
        |Pexp_extension (_, PTyp t1) ->
@@ -1046,7 +1046,7 @@ end = struct
     | Mod ctx -> (
       match ctx.pmod_desc with
       | Pmod_unpack (_, ty1, ty2) ->
-          let f (_, cstrs) = List.exists cstrs ~f:(fun (_, x) -> f x) in
+          let f (_, cstrs, _) = List.exists cstrs ~f:(fun (_, x) -> f x) in
           assert (Option.exists ty1 ~f || Option.exists ty2 ~f)
       | _ -> assert false )
     | Sig ctx -> (
@@ -1251,6 +1251,7 @@ end = struct
          |Ppat_open (_, p1)
          |Ppat_variant (_, Some p1) ->
             assert (p1 == pat)
+        | Ppat_effect (p1, p2) -> assert (p1 == pat || p2 == pat)
         | Ppat_extension (_, ext) -> assert (check_extensions ext)
         | Ppat_any | Ppat_constant _
          |Ppat_construct (_, None)
@@ -1777,6 +1778,7 @@ end = struct
       match c.pcl_desc with
       | Pcl_apply _ -> Some Apply
       | Pcl_structure _ -> Some Apply
+      | Pcl_let _ -> Some Low
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
      |Rep | Mb _ | Md _ | Cd _ | Ctd _ ->
@@ -1943,8 +1945,9 @@ end = struct
       , Ppat_tuple _ )
      |( ( Pat
             { ppat_desc=
-                ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
+                ( Ppat_construct _ | Ppat_exception _ | Ppat_effect _
+                | Ppat_or _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _
+                | Ppat_list _ )
             ; _ }
         | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body _); _} )
       , Ppat_alias _ )
@@ -1954,25 +1957,27 @@ end = struct
         | Ppat_or _ ) )
      |( Pat
           { ppat_desc=
-              ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
-              | Ppat_variant _ | Ppat_list _ )
+              ( Ppat_construct _ | Ppat_exception _ | Ppat_effect _
+              | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
           ; _ }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_lazy _; _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_tuple _; _}, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
+     |Pat _, Ppat_effect _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_variant (_, Some _)
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
-     |(Exp {pexp_desc= Pexp_letop _; _} | Bo _), Ppat_exception _ ->
+     |( (Exp {pexp_desc= Pexp_letop _; _} | Bo _)
+      , (Ppat_exception _ | Ppat_effect _) ) ->
         true
     | (Str _ | Exp _ | Lb _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
       , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
-        | Ppat_lazy _ | Ppat_exception _ | Ppat_or _ ) )
+        | Ppat_lazy _ | Ppat_exception _ | Ppat_effect _ | Ppat_or _ ) )
      |( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->

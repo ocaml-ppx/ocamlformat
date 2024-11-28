@@ -106,6 +106,7 @@ let () =
   (* Pattern expressions *)
   | lazy%foo[@foo] x -> ()
   | exception%foo[@foo] x -> ()
+  | effect x, k -> ()
 
 (* Class expressions *)
 class x =
@@ -171,11 +172,14 @@ and[@foo] y = x
 type%foo[@foo] t = int
 and[@foo] t = int
 type%foo[@foo] t += T
+type t += A = M.A[@a]
+type t += B = M.A[@b] | C = M.A[@c][@@t]
 
 class%foo[@foo] x = x
 class type%foo[@foo] x = x
 external%foo[@foo] x : _  = ""
 exception%foo[@foo] X
+exception A = M.A[@a]
 
 module%foo[@foo] M = M
 module%foo[@foo] rec M : S = M
@@ -304,7 +308,7 @@ let pop_castable () =
     | [] -> raise Not_found
 ;;
 
-(* We can add foos and bars to this list, and retrive them *)
+(* We can add foos and bars to this list, and retrieve them *)
 
 push_castable (new foo);;
 push_castable (new bar);;
@@ -720,7 +724,7 @@ end = struct
   let ik =
     { tag = Int;
       label = "int";
-      write = string_of_int;
+      write = Int.to_string;
       read = int_of_string }
 
   let () = Hashtbl.add readTbl "int" (K ik)
@@ -838,7 +842,7 @@ let apply x =
   (module N : S)
 
 let () =
-  let int = forget (create string_of_int succ 0) in
+  let int = forget (create Int.to_string succ 0) in
   let str = forget (create (fun s -> s) (fun s -> s ^ s) "X") in
   List.iter print (List.map apply [int; apply int; apply (apply str)])
 
@@ -911,7 +915,7 @@ module rec Print : sig
 end = struct
   let to_string (type s) t x =
     match t with
-    | Int eq -> string_of_int (TypEq.apply eq x)
+    | Int eq -> Int.to_string (TypEq.apply eq x)
     | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
     | Pair p ->
         let module P = (val p : PAIR with type t = s) in
@@ -946,7 +950,7 @@ let f = function
   | Some _ [@foooo]-> 2
   | None -> 3
 ;;
-print_endline (string_of_int (f (Some (module struct let x = false end))));;
+print_endline (Int.to_string (f (Some (module struct let x = false end))));;
 type 'a ty =
   | Int : int ty
   | Bool : bool ty
@@ -956,16 +960,14 @@ let fbool (type t) (x : t) (tag : t ty) =
   | Bool -> x
 ;;
 (* val fbool : 'a -> 'a ty -> 'a = <fun> *)
-
-(** OK: the return value is x of type t **)
+(* * OK: the return value is x of type t **)
 
 let fint (type t) (x : t) (tag : t ty) =
   match tag with
   | Int -> x > 0
 ;;
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
-
-(** OK: the return value is x > 0 of type bool;
+(* * OK: the return value is x > 0 of type bool;
 This has used the equation t = bool, not visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) =
@@ -3074,7 +3076,7 @@ Error: Types marked with the immediate attribute must be
        non-pointer types like int or bool
 |}];;
 (*
-   Implicit unpack allows to omit the signature in (val ...) expressions.
+   Implicit unpack allows the signature in (val ...) expressions to be omitted.
 
    It also adds (module M : S) and (module M) patterns, relying on
    implicit (val ...) for the implementation. Such patterns can only
@@ -3184,7 +3186,7 @@ open Typ
 let rec to_string: 'a. 'a Typ.typ -> 'a -> string =
   fun (type s) t x ->
     match (t : s typ) with
-    | Int eq -> string_of_int (TypEq.apply eq x)
+    | Int eq -> Int.to_string (TypEq.apply eq x)
     | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
     | Pair (module P) ->
         let (x1, x2) = TypEq.apply P.eq x in
@@ -3290,7 +3292,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
           ~f:(fun ~key ~data acc ->
                 if Names.mem s used then data::acc else acc) in
       if List.exists used_expr ~f:(fun t -> Names.mem s (free t)) then
-        let name = s ^ string_of_int (next_id ()) in
+        let name = s ^ Int.to_string (next_id ()) in
         `Abs(name,
              subst_rec ~subst:(Subst.add ~key:s ~data:(`Var name) subst) t)
       else
@@ -3471,7 +3473,7 @@ class ['a] lambda_ops (ops : ('a,'a) #ops Lazy.t) =
               ~f:(fun ~key ~data acc ->
                 if Names.mem s used then data::acc else acc) in
           if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
-            let name = s ^ string_of_int (next_id ()) in
+            let name = s ^ Int.to_string (next_id ()) in
             `Abs(name,
                  !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
           else
@@ -3658,7 +3660,7 @@ let lambda_ops (ops : ('a,'a) #ops Lazy.t) =
               ~f:(fun ~key ~data acc ->
                 if Names.mem s used then data::acc else acc) in
           if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
-            let name = s ^ string_of_int (next_id ()) in
+            let name = s ^ Int.to_string (next_id ()) in
             `Abs(name,
                  !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
           else
@@ -4163,7 +4165,7 @@ module Make(O : Set.OrderedType) : S with type elt = O.t =
 
 module rec A : Set.OrderedType = struct
  type t = int
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
 end
 and B : S = struct
  module C = Make(A)
@@ -4325,13 +4327,11 @@ module M' = M
 module B' = B
 
 class b : B.a = object
- method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
  method a : 'a. 'a M.s -> 'a = fun (type a) ((module X) : (module M.S with type
 a = a)) -> X.v
 end
 
 class b' : B.a = object
- method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
  method a : 'a. 'a M'.s -> 'a = fun (type a) ((module X) : (module M'.S with
 type a = a)) -> X.v
 end
@@ -4750,7 +4750,7 @@ module C : sig module L : module type of List end = A
 include D'
 (*
 let () =
-  print_endline (string_of_int D'.M.y)
+  print_endline (Int.to_string D'.M.y)
 *)
 open A
 let f =
@@ -4824,6 +4824,7 @@ module Z = functor (_: sig end) (_:sig end) (_: sig end) -> struct end;;
 module GZ : functor (X: sig end) () (Z: sig end) -> sig end
           = functor (X: sig end) () (Z: sig end) -> struct end;;
 module F (X : sig end) = struct type t = int end;;
+module F (_ : sig end) = struct type t = int end;;
 type t = F(Does_not_exist).t;;
 type expr =
   [ `Abs of string * expr
@@ -5052,10 +5053,10 @@ let get_buf s i =
 let set_buf s i u =
   let n = UChar.uint_code u in
   begin
-    s.[i] <- Char.chr (n lsr 24);
-    s.[i + 1] <- Char.chr (n lsr 16 lor 0xff);
-    s.[i + 2] <- Char.chr (n lsr 8 lor 0xff);
-    s.[i + 3] <- Char.chr (n lor 0xff);
+    s.![i] <- Char.chr (n lsr 24);
+    s.![i + 1] <- Char.chr (n lsr 16 lor 0xff);
+    s.![i + 2] <- Char.chr (n lsr 8 lor 0xff);
+    s.![i + 3] <- Char.chr (n lor 0xff);
   end
 
 let init_buf buf pos init =
@@ -5108,7 +5109,7 @@ class string init = string_raw (make_buf init)
 let of_string s =
   let buf = String.make (4 * String.length s) '\000' in
   for i = 0 to String.length s - 1 do
-    buf.[4 * i] <- s.[i]
+    buf.![4 * i] <- s.[i]
   done;
   new text_raw buf
 
@@ -5766,7 +5767,7 @@ module rec A
      type t = Leaf of int | Node of ASet.t
      let compare x y =
        match (x,y) with
-         (Leaf i, Leaf j) -> Pervasives.compare i j
+         (Leaf i, Leaf j) -> Stdlib.compare i j
        | (Leaf i, Node t) -> -1
        | (Node s, Leaf j) -> 1
        | (Node s, Node t) -> ASet.compare s t
@@ -6765,7 +6766,7 @@ module PR7135 = struct
     f (x :> int) (y :> int)
 end;;
 
-(* exemple of non-ground coercion *)
+(* example of non-ground coercion *)
 
 module Test1 = struct
   type t = private int
@@ -7228,7 +7229,7 @@ let _ = function
       ignore (bg.{1, 2, 3, 4})
     end
   | b, s, ba1, ba2, ba3, bg -> begin
-      y.(0) <- 1; s.[1] <- 'c';
+      y.(0) <- 1; s.![1] <- 'c';
       ba1.{1} <- 2; ba2.{1, 2} <- 3; ba3.{1, 2, 3} <- 4;
       bg.{1, 2, 3, 4, 5} <- 0
     end
@@ -7304,13 +7305,11 @@ let test x y = ((+)[@foo]) x y;;
 let test x = ((~-)[@foo]) x;;
 let test contents = { contents = contents[@foo] };;
 class type t = object(_[@foo]) end;;
-class t = object(_[@foo]) end;;
 let test f x = f ~x:(x[@foo]);;
 let f = function ((`A|`B)[@bar]) | `C -> ();;
 let f = function _::(_::_ [@foo]) -> () | _ -> ();;
 function {contents=contents[@foo]} -> ();;
 fun contents -> {contents=contents[@foo]};;
-fun contents -> {contents=contents[@foo]; foo};;
 ((); (((); ())[@foo]));;
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
@@ -7361,74 +7360,129 @@ end
 
 type t = |
 
-;;
-M.(Some x) [@foo]
 
-[@@@foo:]
+(* GPR#2034 *)
 
-let x = (A(B)).a
+let x = `  Foo
+let x = ` (* wait for it *) Bar
+type (+' a, -' a', ' a'b', 'ab', ' abcd', ' (* ! *) x) t =
+  ' a * ' a' * ' a'b' * 'ab' * ' abcd' * ' (* !! *) x
+  as ' a'
 
-let x = A(B).a
-
-let formula_base x =
-  let open Formula.Infix in
-  (Expr.typeof x) #== (Lit (Type IntType))
-  #&& (x #<= (Expr.int 4))
-  #&& ((Expr.int 0) #< x)
-
-let _ = call ~f:(fun pair -> (pair : a * b))
-
-;;
-f
-  (fun _ -> function
-    | true ->
-        let () = () in
-        () | false -> ())
-  ()
-
-;;
-f
-  (fun _ -> function
-    | true ->
-        let () = () in
-        ()
-        (* comment *) | false -> ())
-  ()
-
-let xxxxxx =
-  let%map (* _____________________________
-             __________ *)()            = yyyyyyyy in
-  { zzzzzzzzzzzzz }
-
-let _ = fun (x : int as 'a) -> (x : int as 'a)
-
-let eradicate_meta_class_is_nullsafe =
-  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
-    ~hum:"Class is marked @Nullsafe and has 0 issues"
-      (* Should be enabled for special integrations *) ~enabled:false Info Eradicate (* TODO *)
-    ~user_documentation:""
-
-let eradicate_meta_class_is_nullsafe =
-  register ~id:"ERADICATE_META_CLASS_IS_NULLSAFE"
-    ~hum:(* Should be enabled for special integrations *)
-      "Class is marked @Nullsafe and has 0 issues"
-      (* Should be enabled for special integrations *)
-    ~enabled:false Info
-
-let () =
-  match () with
-  | _ ->
-    fun _ : _ ->
-    (match () with
-     | _ -> ())
-  | _ -> ()
-;;
+(* #2190 *)
 
 let f = function
-  | Foo -> bar
-  | EArr l ->
-      EArr
-        (List.map l ~f:(function
-          | ElementHole -> ElementHole
-          | Element e -> Element (m#expression e)
-          | ElementSpread e -> ElementSpread (m#expression e)))
+  | lazy (A foo) -> foo
+
+let () =
+  f (fun (type t) -> x)
+
+(* #9778 *)
+
+type t = unit
+
+let rec equal : 'a. ('a -> 'a -> bool) -> 'a t -> 'a t -> bool =
+ (fun poly_a (_ : unit) (_ : unit) -> true) [@ocaml.warning "-A"]
+ [@@ocaml.warning "-39"]
+
+(* Issue #9548, PR #9591 *)
+
+type u = [ `A ] ;;
+type v = [ u | `B ] ;;
+let f = fun (x : [ | u ]) -> x ;;
+
+(* Issue #9999 *)
+let test = function
+  | `A | `B as x -> ignore x
+
+let test = function
+  | `A as x | (`B as x) -> ignore x
+
+let test = function
+  | `A as x | (`B as x) as z -> ignore (z, x)
+
+let test = function
+  | (`A as x) | (`B as x) as z -> ignore (z, x)
+
+let test = function
+  | (`A | `B) | `C -> ()
+
+let test = function
+  | `A | (`B | `C) -> ()
+
+let test = function
+  | `A | `B | `C -> ()
+
+let test = function
+  | (`A | `B) as x | `C -> ()
+
+(* Let-punning *)
+module M = struct
+  let (let*) x f = f x
+  let (and*) a b = (a, b)
+  let x = 1 and y = 2 and z = 3
+  let p =
+    let* x and* y and* z in (x,y,z)
+  let q =
+    let%foo x and y and z in (x,y,z)
+end
+
+(* No surrounding parentheses for immediate objects *)
+let x = object method f = 1 end;;
+let x = object method f = 1 end # f;;
+let x = Some object method f = 1 end;;
+let x = Some object method f = 1 end # f;;
+
+let f x y z = x in
+f object method f = 1 end
+  object method f = 1 end # f
+  object end
+
+(* Punning of labelled function argument with type constraint *)
+let g y =
+  let f ~y = y + 1 in
+  f ~(y:int)
+
+let goober a = match a with C (type a b) y -> y
+
+
+(** With constraints *)
+
+module type s = sig type ('a,'b) t end with type (-!'a, !+'b) t = 'b -> 'a list
+module type s = sig type ('a,'b) t end with type (!-'a, +!'b) t := 'b -> 'a list
+module type s = sig type ('a,'b) t end with type ('a,'b) t := 'b -> 'a list
+
+(* Coercion in value constraint *)
+
+let x: [`A] :> [> `A | `B ] = `A
+let x :> [> `A | `B ] = `A
+
+(* Raw identifiers *)
+
+module type A = sig
+  type ('\#let, '\#a) \#virtual = ('\#let * '\#a) as '\#mutable
+  val foo : '\#let '\#a . '\#a -> '\#let -> unit
+  type \#foo = { \#let : int }
+end
+
+module M = struct
+  let (\#let,\#foo) as \#val = (\#mutable,\#baz)
+  let _ = fun (type \#let) (type \#foo) -> 1
+  let f g ~\#let ?\#and ?(\#for = \#and) () =
+    g ~\#let ?\#and ()
+  class \#let = object
+    inherit \#val \#let as \#mutable
+  end
+end
+
+let x = new M.\#begin
+
+let f = fun x (type \#begin) (type \#end) -> 1
+
+let f: type \#if. \#if -> \#if = fun x -> x
+
+(* check pretty-printing of local module open in core_type *)
+type t = String.( t )
+
+(* Utf8 identifier *)
+let là = function ça -> ça

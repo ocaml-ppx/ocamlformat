@@ -19,6 +19,10 @@ val nudge_start : int -> span -> span
 (** This adjusts only the column number, implicitly assuming that the offset does
    not move the location across a newline character. *)
 
+val nudge_end : int -> span -> span
+(** This adjusts only the column number, implicitly assuming that the offset does
+   not move the location across a newline character. *)
+
 (** {2 Located values} *)
 
 type +'a with_location = { location : span; value : 'a }
@@ -39,3 +43,7 @@ val map : ('a -> 'b) -> 'a with_location -> 'b with_location
 val same : _ with_location -> 'b -> 'b with_location
 (** [same x y] retuns the value y wrapped in a {!with_location} whose
     location is that of [x] *)
+
+val spans_multiple_lines : _ with_location -> bool
+(** [spans_multiple_lines x] checks to see whether [x] is located
+    on a single line or whether it covers more than one. *)

@@ -73,3 +73,16 @@ let _ =
         ()
   in
   ()
+
+let foo
+    ({
+       foooooooooooooooooooooo;
+       invalidation_trace;
+       access_trace;
+       must_be_valid_reason;
+     } [@warning "+missing-record-field-pattern"]) =
+  ()
+
+let x = (A(B)).a
+
+let x = A(B).a

@@ -9,6 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Ast = Ocamlformat_odoc_parser.Ast
 module Odoc_parser = Ocamlformat_odoc_parser.Odoc_parser
 
 let parse ~loc text =
@@ -56,8 +57,6 @@ let odoc_reference = ign_loc str
 
 let option f fmt = function Some v -> f fmt v | None -> ()
 
-let pair fmt_a fmt_b fmt (a, b) = fpf fmt "(%a,%a)" fmt_a a fmt_b b
-
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
   | `Italic -> fpf fmt "Italic"
@@ -88,15 +87,41 @@ let rec odoc_inline_element fmt = function
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
-let rec odoc_nestable_block_element c fmt = function
+let light_heavy_to_string = function `Light -> "Light" | `Heavy -> "Heavy"
+
+let alignment_to_string = function
+  | `Left -> "Left"
+  | `Right -> "Right"
+  | `Center -> "Center"
+
+let header_data_to_string = function `Header -> "Header" | `Data -> "Data"
+
+let media_to_string = function
+  | `Audio -> "Audio"
+  | `Video -> "Video"
+  | `Image -> "Image"
+
+let fmt_media_href fmt = function
+  | `Reference s -> fpf fmt "Reference(%s)" s
+  | `Link s -> fpf fmt "Link(%s)" s
+
+let rec odoc_nestable_block_element c fmt : Ast.nestable_block_element -> _ =
+  function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
-  | `Code_block (metadata, txt) ->
-      let txt = Odoc_parser.Loc.value txt in
-      let txt = c.normalize_code txt in
-      let fmt_metadata =
-        option (pair (ign_loc str) (option (ign_loc str)))
+  | `Code_block (b : Ast.code_block) ->
+      let fmt_metadata fmt (m : Ast.code_block_meta) =
+        fpf fmt "(%a, %a)" (ign_loc str) m.language
+          (option (ign_loc str))
+          m.tags
       in
-      fpf fmt "Code_block(%a, %a)" fmt_metadata metadata str txt
+      let fmt_content =
+        ign_loc (fun fmt s -> str fmt (c.normalize_code s))
+      in
+      let fmt_output =
+        option (list (ign_loc (odoc_nestable_block_element c)))
+      in
+      fpf fmt "Code_block(%a, %a, %a, %a)" (option fmt_metadata) b.meta
+        (option str) b.delimiter fmt_content b.content fmt_output b.output
   | `Math_block txt -> fpf fmt "Math_block(%a)" str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
@@ -106,20 +131,36 @@ let rec odoc_nestable_block_element c fmt = function
         fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
       fpf fmt "List(%s,%a)" ord (list list_item) items
+  | `Table ((grid, alignment), syntax) ->
+      let pp_align fmt aln = fpf fmt "%s" (alignment_to_string aln) in
+      let pp_cell fmt (elems, header) =
+        fpf fmt "(%a,%s)"
+          (odoc_nestable_block_elements c)
+          elems
+          (header_data_to_string header)
+      in
+      let pp_grid = list (list pp_cell) in
+      let pp_alignment = option (list (option pp_align)) in
+      fpf fmt "Table((%a,%a),%s)" pp_grid grid pp_alignment alignment
+        (light_heavy_to_string syntax)
+  | `Media (_kind, href, text, media) ->
+      fpf fmt "Media(%a,%S,%s)" (ign_loc fmt_media_href) href text
+        (media_to_string media)
 
 and odoc_nestable_block_elements c fmt elems =
   list (ign_loc (odoc_nestable_block_element c)) fmt elems
 
-let odoc_tag c fmt = function
+let odoc_implicitly_ended_tag c fmt tag elems =
+  fpf fmt "%s(%a)" tag (odoc_nestable_block_elements c) elems
+
+let odoc_tag c fmt : Ast.tag -> unit = function
   | `Author txt -> fpf fmt "Author(%a)" str txt
-  | `Deprecated elems ->
-      fpf fmt "Deprecated(%a)" (odoc_nestable_block_elements c) elems
+  | `Deprecated elems -> odoc_implicitly_ended_tag c fmt "Deprecated" elems
   | `Param (p, elems) ->
       fpf fmt "Param(%a,%a)" str p (odoc_nestable_block_elements c) elems
   | `Raise (p, elems) ->
       fpf fmt "Raise(%a,%a)" str p (odoc_nestable_block_elements c) elems
-  | `Return elems ->
-      fpf fmt "Return(%a)" (odoc_nestable_block_elements c) elems
+  | `Return elems -> odoc_implicitly_ended_tag c fmt "Return" elems
   | `See (kind, txt, elems) ->
       let kind =
         match kind with `Url -> "U" | `File -> "F" | `Document -> "D"
@@ -135,6 +176,10 @@ let odoc_tag c fmt = function
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
+  | `Hidden -> fpf fmt "Hidden"
+  | `Children_order elems ->
+      odoc_implicitly_ended_tag c fmt "Children_order" elems
+  | `Short_title elems -> odoc_implicitly_ended_tag c fmt "Short_title" elems
 
 let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->

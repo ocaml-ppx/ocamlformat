@@ -9,6 +9,7 @@
 
 type 'a with_location = 'a Loc.with_location
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type alignment = [ `Left | `Center | `Right ]
 
 type reference_kind = [ `Simple | `With_text ]
 (** References in doc comments can be of two kinds: [{!simple}] or [{{!ref}With text}]. *)
@@ -29,27 +30,56 @@ type inline_element =
     text. Similarly the [`Link] constructor has the link itself as first parameter
     and the second is the replacement text. *)
 
-type nestable_block_element =
+type 'a cell = 'a with_location list * [ `Header | `Data ]
+type 'a row = 'a cell list
+type 'a grid = 'a row list
+type 'a abstract_table = 'a grid * alignment option list option
+
+type code_block_meta = {
+  language : string with_location;
+  tags : string with_location option;
+}
+
+type media = Token.media
+type media_href = Token.media_href
+
+type code_block = {
+  meta : code_block_meta option;
+  delimiter : string option;
+  content : string with_location;
+  output : nestable_block_element with_location list option;
+}
+
+and nestable_block_element =
   [ `Paragraph of inline_element with_location list
-  | `Code_block of
-    (string with_location * string with_location option) option
-    * string with_location
-    (* [(language tag * metadata option) option * content] *)
+  | `Code_block of code_block
   | `Verbatim of string
   | `Modules of string with_location list
   | `List of
     [ `Unordered | `Ordered ]
     * [ `Light | `Heavy ]
     * nestable_block_element with_location list list
-  | `Math_block of string  (** @since 2.0.0 *) ]
+  | `Table of table
+  | `Math_block of string  (** @since 2.0.0 *)
+  | `Media of reference_kind * media_href with_location * string * media
+    (** @since 3.0.0 *) ]
 (** Some block elements may be nested within lists or tags, but not all.
     The [`List] constructor has a parameter of type [\[`Light | `Heavy\]].
     This corresponds to the syntactic constructor used (see the
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html#sss:ocamldoc-list}manual}).
     *)
 
+and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
+
 type internal_tag =
-  [ `Canonical of string with_location | `Inline | `Open | `Closed ]
+  [ `Canonical of string with_location
+  | `Inline
+  | `Open
+  | `Closed
+  | `Hidden
+  | `Children_order of nestable_block_element with_location list
+  | `Short_title of nestable_block_element with_location list ]
+
 (** Internal tags are used to exercise fine control over the output of odoc. They
     are never rendered in the output *)
 

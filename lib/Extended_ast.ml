@@ -242,15 +242,18 @@ module Parse = struct
     map fg (normalize_mapper ~ocaml_version ~preserve_beginend)
     @@
     let lexbuf = Lexing.from_string str in
-    Location.init lexbuf input_name ;
+    let ocaml_version =
+      Some Ocaml_version.(major ocaml_version, minor ocaml_version)
+    in
+    Location.init_info lexbuf input_name ;
     match fg with
-    | Structure -> Parse.implementation lexbuf
-    | Signature -> Parse.interface lexbuf
-    | Use_file -> Parse.use_file lexbuf
-    | Core_type -> Parse.core_type lexbuf
-    | Module_type -> Parse.module_type lexbuf
-    | Expression -> Parse.expression lexbuf
-    | Repl_file -> Toplevel_lexer.repl_file lexbuf
+    | Structure -> Parse.implementation ~ocaml_version lexbuf
+    | Signature -> Parse.interface ~ocaml_version lexbuf
+    | Use_file -> Parse.use_file ~ocaml_version lexbuf
+    | Core_type -> Parse.core_type ~ocaml_version lexbuf
+    | Module_type -> Parse.module_type ~ocaml_version lexbuf
+    | Expression -> Parse.expression ~ocaml_version lexbuf
+    | Repl_file -> Toplevel_lexer.repl_file ~ocaml_version lexbuf
     | Documentation ->
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
