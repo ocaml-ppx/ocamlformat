@@ -38,8 +38,8 @@
     }
 
     {t
-      | a | *b* |
-      | *c | d* |
+      | a  | *b* |
+      | *c | d*  |
     }
 
     {t
@@ -71,9 +71,9 @@
     }
 
     {t
-      | a | b | c | d |
-      |---|:--|--:|:-:|
-      | a | b | c | d |
+      | a  | b  |  c | d  |
+      |----|:---|---:|:--:|
+      | .. | .. | .. | .. |
     }
 
     {t
@@ -83,23 +83,25 @@
     }
 
     {t
-      | {i a} {:google.com} \t |  | {m b} {e c} {% xyz %} | {b d} [foo] |
-      |---|---|---|---|
+      | {i a} {:google.com} \t |   | {m b} {e c} {% xyz %} | {b d} [foo] |
+      |------------------------|---|-----------------------|-------------|
     }
 
     {t
-      | a | b | c | d |
-      |---|--:|:--|:-:|
+      | ... | ... | ... | ... | .... |
+      |-----|----:|:----|:---:|:----:|
+      | .   |   . | .   |  .  |  .   |
+      | ..  |  .. | ..  | ..  |  ..  |
     }
 
     {t
-      |  | a | b |
-      |:--|--:|
-      | c | d |
-      | cc | dd |
+      |    |   a | b |
+      |:---|----:|
+      | c  |   d |
+      | cc |  dd |
       | -: | :-: |
-      | e | f |
-      | g | h |  |
+      | e  |   f |
+      | g  |   h |   |
     }
 
     {t
@@ -115,19 +117,13 @@
     }
 
     {t
-      | Header and other word |
-      |---|
-      | cell and other words |
+      | Header and other word |   | 🐫 |
+      |-----------------------|---|---|
+      | cell and other words  | é |   |
     }
 
     {t
-      | Header other word |
-      |---|
-      | Header other word |
-    }
-
-    {t
-      | foo | bar |
+      | foo                                                                                  | bar |
       | {i foooooooooooooooooooooooooooo} foooooooooooooooooooooooo fooooooooooooooooooooooo | bar |
     } *)
 

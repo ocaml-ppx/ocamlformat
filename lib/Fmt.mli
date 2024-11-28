@@ -46,6 +46,9 @@ val eval : Format_.formatter -> t -> unit
 val protect : t -> on_error:(exn -> unit) -> t
 (** Catch exceptions raised while formatting. *)
 
+val str_length : string -> int
+(** Length that will be accounted when the given string is outputted. *)
+
 (** Break hints and format strings --------------------------------------*)
 
 val break : int -> int -> t
