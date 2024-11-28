@@ -43,7 +43,9 @@ profile. This started with version 0.26.0.
 
 ### Added
 
-- Allow a custom command to be used to run ocamlformat in the emacs plugin (#2577, @gridbugs)
+- Improve the emacs plugin (#2577, #2600, @gridbugs, @thibautbenjamin)
+  Allow a custom command to be used to run ocamlformat and add compatibility
+  with emacs ocaml tree-sitter modes.
 
 - Added option `let-binding-deindent-fun` (#2521, @henrytill)
   to control the indentation of the `fun` in:

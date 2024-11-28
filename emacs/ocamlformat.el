@@ -100,7 +100,9 @@ nil (default)."
 
 \(add-hook \\='before-save-hook \\='ocamlformat-before-save)."
   (interactive)
-  (when (memq major-mode '(tuareg-mode caml-mode)) (ocamlformat)))
+  (when
+      (memq major-mode '(tuareg-mode caml-mode ocaml-ts-mode ocamli-ts-mode))
+    (ocamlformat)))
 
 (defun ocamlformat--goto-line (line)
   "Move point to the line numbered LINE."
