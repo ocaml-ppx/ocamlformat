@@ -1,10 +1,6 @@
-github,mirage,irmin,
 github,mirage,mirage,
 github,ocaml,dune,<no-ignore-revs><signoff>
-github,ocaml,ocaml-lsp,
+github,ocaml,merlin,
 github,ocaml,odoc,
 github,ocaml-ppx,ppxlib,<signoff>
 github,ocsigen,js_of_ocaml,
-github,realworldocaml,mdx,
-github,tarides,dune-release,
-github,tarides,ocaml-platform-installer,
