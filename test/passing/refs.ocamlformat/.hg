@@ -1,0 +1,2 @@
+This file ensures that OCamlformat don't consider parent directories when
+searching for configuration.
