@@ -21,7 +21,7 @@ The recommended way is to use a versioned default profile, such as:
 
 {[
 profile = default
-version = 0.26.1
+version = 0.27.0
 ]}
 
 (or replace with the output of [ocamlformat --version])
