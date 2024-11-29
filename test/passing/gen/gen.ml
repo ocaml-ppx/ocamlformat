@@ -106,7 +106,7 @@ let emit_test test_name setup =
   Printf.printf
     {|
 (rule
- (deps .ocamlformat .hg)%s
+ (deps .ocamlformat)%s
  (package ocamlformat)
  (action
   (with-stdout-to %s
