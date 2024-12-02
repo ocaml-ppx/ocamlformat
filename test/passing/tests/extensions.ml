@@ -130,6 +130,17 @@ let%lwt f = function
 type%any_extension t =
   < a: 'a >
 
+[%%any_extension
+  type t = < a: 'a >
+]
+
+type%any_extension nonrec t =
+  < a: 'a >
+
+[%%any_extension
+  type nonrec t = < a: 'a >
+]
+
 let value =
   f
     [%any_extension
