@@ -3659,13 +3659,8 @@ type_parameters:
 ;
 
 jkind:
-    mkrhs(jkind) MOD mkrhs(LIDENT)+
-      { (* LIDENTs here are for modes *) let modes =
-          List.map
-            (fun {txt; loc} -> {txt = Mode txt; loc})
-            $3
-        in
-        Mod ($1, modes) }
+    mkrhs(jkind) MOD mode_expr
+      { Mod ($1, $3) }
   | mkrhs(jkind) WITH core_type
       { With ($1, $3) }
   | mkrhs(ident)
@@ -4254,7 +4249,16 @@ strict_function_or_labeled_tuple_type:
 ;
 
 %inline mode_expr:
-  | mode+ { if Erase_jane_syntax.should_erase () then [] else $1 }
+  | mode+ {
+    if Erase_jane_syntax.should_erase ()
+    then []
+    else
+      List.sort
+        (fun
+          { Location.txt = Mode m1; _ } { Location.txt = Mode m2; _ } ->
+        String.compare m1 m2)
+        $1
+    }
 ;
 
 at_mode_expr:
@@ -4289,7 +4293,16 @@ atat_mode_expr:
   | LIDENT { mkloc (Modality $1) (make_loc $sloc) }
 
 %inline modalities:
-  | modality+ { if Erase_jane_syntax.should_erase () then [] else $1 }
+  | modality+ {
+    if Erase_jane_syntax.should_erase ()
+    then []
+    else
+      List.sort
+        (fun
+          { Location.txt = Modality m1; _ } { Location.txt = Modality m2; _ } ->
+        String.compare m1 m2)
+        $1
+    }
 
 optional_atat_modalities_expr:
   | %prec below_HASH

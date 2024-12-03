@@ -29,6 +29,7 @@ let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8) [@@attr]
 
 type t = { x : (t[@attr]) @@ mode1 mode2 }
 type t = { x : t @@ mode1 mode2 }
+type t = { x : t @@ mode2 mode1 }
 type t = { x : t @@ mode1 mode2 [@attr] }
 type t = { mutable x : (t[@attr]) @@ mode1 mode2 }
 type t = { mutable x : t @@ mode1 mode2 [@attr] }

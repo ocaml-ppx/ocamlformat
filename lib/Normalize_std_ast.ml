@@ -469,11 +469,25 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     Ast_mapper.default_mapper.type_declaration m {decl with ptype_attributes}
   in
   let modes (m : Ast_mapper.mapper) ms =
-    Ast_mapper.default_mapper.modes m (if erase_jane_syntax then [] else ms)
+    Ast_mapper.default_mapper.modes m
+      ( if erase_jane_syntax then []
+        else
+          List.sort
+            ~compare:(fun
+                {Location.txt= Mode m1; _} {Location.txt= Mode m2; _} ->
+              String.compare m1 m2 )
+            ms )
   in
   let modalities (m : Ast_mapper.mapper) ms =
     Ast_mapper.default_mapper.modalities m
-      (if erase_jane_syntax then [] else ms)
+      ( if erase_jane_syntax then []
+        else
+          List.sort
+            ~compare:(fun
+                {Location.txt= Modality m1; _}
+                {Location.txt= Modality m2; _}
+              -> String.compare m1 m2 )
+            ms )
   in
   let value_binding (m : Ast_mapper.mapper) vb =
     let vb =

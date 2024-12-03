@@ -44,6 +44,8 @@ type t = {x: (t[@attr]) @@ mode1 mode2}
 
 type t = {x: t @@ mode1 mode2}
 
+type t = {x: t @@ mode1 mode2}
+
 type t = {x: t @@ mode1 mode2 [@attr]}
 
 type t = {mutable x: (t[@attr]) @@ mode1 mode2}
