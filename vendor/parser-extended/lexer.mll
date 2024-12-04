@@ -389,6 +389,8 @@ let update_loc lexbuf file line absolute chars =
 
 let preprocessor = ref None
 
+let lex_metaocaml = ref false
+
 let escaped_newlines = ref false
 
 type comment = [ `Comment of string | `Docstring of string ]
@@ -498,8 +500,10 @@ let delim_ext = (lowercase | uppercase | utf8)*
    rejected by the delimiter validation function, we accept them temporarily to
    have the same error message for ascii and non-ascii uppercase letters *)
 
-let symbolchar =
-  ['!' '$' '%' '&' '*' '+' '-' '.' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
+let symbolcharnodot =
+  ['!' '$' '%' '&' '*' '+' '-' '/' ':' '<' '=' '>' '?' '@' '^' '|' '~']
+let symbolchar = symbolcharnodot | '.'
+
 let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|']
 let symbolchar_or_hash =
@@ -550,7 +554,8 @@ rule token = parse
   | "~"
       { TILDE }
   | ".~"
-      { error lexbuf
+      { if !lex_metaocaml then METAOCAML_ESCAPE
+        else error lexbuf
           (Reserved_sequence (".~", Some "is reserved for use in MetaOCaml")) }
   | "~" (identstart identchar * as name) ':'
       { check_label_name lexbuf name;
@@ -737,12 +742,16 @@ rule token = parse
   | "+=" { PLUSEQ }
   | "-"  { MINUS }
   | "-." { MINUSDOT }
-
+  | ".<" { METAOCAML_BRACKET_OPEN }
+  | ">." { if !lex_metaocaml then METAOCAML_BRACKET_CLOSE
+           else INFIXOP0 (">." ^ symbolchars lexbuf) }
   | "!" symbolchar_or_hash + as op
             { PREFIXOP op }
   | ['~' '?'] symbolchar_or_hash + as op
             { PREFIXOP op }
-  | ['=' '<' '>' '|' '&' '$'] symbolchar * as op
+  | ['=' '<' '|' '&' '$'] symbolchar * as op
+            { INFIXOP0 op }
+  | ['>'] symbolcharnodot symbolchar * as op
             { INFIXOP0 op }
   | ['@' '^'] symbolchar * as op
             { INFIXOP1 op }
@@ -763,6 +772,9 @@ rule token = parse
   | eof { EOF }
   | (_ as illegal_char)
       { error lexbuf (Illegal_character illegal_char) }
+
+and symbolchars = parse
+  | symbolchar * as op   { op }
 
 and directive = parse
   | ([' ' '\t']* (['0'-'9']+ as _num) [' ' '\t']*

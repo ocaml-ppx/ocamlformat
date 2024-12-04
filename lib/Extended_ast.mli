@@ -35,6 +35,7 @@ module Parse : sig
   val ast :
        'a t
     -> ocaml_version:Ocaml_version.t
+    -> metaocaml:bool
     -> preserve_beginend:bool
     -> input_name:string
     -> string

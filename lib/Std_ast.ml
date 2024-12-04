@@ -56,19 +56,19 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let ast (type a) (fg : a t) ~ocaml_version ~input_name str : a =
+  let ast (type a) (fg : a t) ~ocaml_version ~metaocaml ~input_name str : a =
     let lexbuf = Lexing.from_string str in
     let ocaml_version =
       Some Ocaml_version.(major ocaml_version, minor ocaml_version)
     in
     Location.init_info lexbuf input_name ;
     match fg with
-    | Structure -> Parse.implementation ~ocaml_version lexbuf
-    | Signature -> Parse.interface ~ocaml_version lexbuf
-    | Use_file -> Parse.use_file ~ocaml_version lexbuf
-    | Core_type -> Parse.core_type ~ocaml_version lexbuf
-    | Module_type -> Parse.module_type ~ocaml_version lexbuf
-    | Expression -> Parse.expression ~ocaml_version lexbuf
+    | Structure -> Parse.implementation ~ocaml_version ~metaocaml lexbuf
+    | Signature -> Parse.interface ~ocaml_version ~metaocaml lexbuf
+    | Use_file -> Parse.use_file ~ocaml_version ~metaocaml lexbuf
+    | Core_type -> Parse.core_type ~ocaml_version ~metaocaml lexbuf
+    | Module_type -> Parse.module_type ~ocaml_version ~metaocaml lexbuf
+    | Expression -> Parse.expression ~ocaml_version ~metaocaml lexbuf
     | Repl_file -> ()
     | Documentation -> ()
 end
