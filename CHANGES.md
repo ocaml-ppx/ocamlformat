@@ -4,6 +4,10 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## Unreleased
+
+- \* Add a `space-around-high-precedence-infix` to disable compact notation around operators that start with `#` (e.g. `a##b`) introduced in #2580. (#2638, @giltho).
+
 ## 0.27.0
 
 ### Highlight
@@ -19,6 +23,7 @@ profile. This started with version 0.26.0.
   identifiers.
   To format code using the new `effect` syntax, add this option to your
   `.ocamlformat`:
+
   ```
   ocaml-version = 5.3
   ```
@@ -29,6 +34,7 @@ profile. This started with version 0.26.0.
 - \* Consistent indentation of polymorphic variant arguments (#2427, @Julow)
   Increases the indentation by one to make the formatting consistent with
   normal variants. For example:
+
   ```
     ...
     (* before *)
@@ -49,6 +55,7 @@ profile. This started with version 0.26.0.
 
 - Added option `let-binding-deindent-fun` (#2521, @henrytill)
   to control the indentation of the `fun` in:
+
   ```
   let f =
    fun foo ->
@@ -67,6 +74,7 @@ profile. This started with version 0.26.0.
 
 - \* Improve formatting of type constraints with type variables (#2437, @gpetiot)
   For example:
+
   ```
   let f : type a b c.
       a -> b -> c =
@@ -80,9 +88,10 @@ profile. This started with version 0.26.0.
 
 - \* Undo let-bindings and methods normalizations (#2523, #2529, @gpetiot)
   This remove the rewriting of some forms of let-bindings and methods:
-  + `let f x = (x : int)` is no longer rewritten into `let f x : int = x`
-  + `let f (type a) (type b) ...` is no longer rewritten into `let f (type a b) ...`
-  + `let f = fun x -> ...` is no longer rewritten into `let f x = ...`
+
+  - `let f x = (x : int)` is no longer rewritten into `let f x : int = x`
+  - `let f (type a) (type b) ...` is no longer rewritten into `let f (type a b) ...`
+  - `let f = fun x -> ...` is no longer rewritten into `let f x = ...`
 
 - \* The `break-colon` option is now taken into account for method type constraints (#2529, @gpetiot)
 
@@ -116,7 +125,7 @@ profile. This started with version 0.26.0.
 - Fix formatting of type vars in GADT constructors (#2518, @Julow)
 - Fix `[@ocamlformat "disable"]` in some cases (#2242, #2525, @EmileTrotignon)
   This caused a bug inside `class type` constructs and when attached to a `let ... in`
-- Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
+- \* Display `a##b` instead of `a ## b` and similarly for operators that start with # (#2580, @v-gb)
 - \* Fix arrow type indentation with `break-separators=before` (#2598, @Julow)
 - Fix missing parentheses around a let in class expressions (#2599, @Julow)
 - Fix formatting of paragraphs in lists in documentation (#2607, @Julow)
@@ -239,8 +248,8 @@ profile. This started with version 0.26.0.
 - Preserve syntax of module unpack with type constraint (`((module X) : (module Y))` vs `(module X : Y)`) (#2136, @trefis, @gpetiot)
 - Normalize location format for warning and error messages (#2139, @gpetiot)
 - Preserve syntax and improve readability of indexop-access expressions (#2150, @trefis, @gpetiot)
-  + Break sequences containing indexop-access assignments
-  + Remove unnecessary parentheses around indices
+  - Break sequences containing indexop-access assignments
+  - Remove unnecessary parentheses around indices
 - Mute warnings for odoc code blocks whose syntax is not specified (#2151, @gpetiot)
 - Improve formatting of odoc links (#2152, @gpetiot)
 - Preserve sugared extension node attached to an `if` carrying attributes (#2167, @trefis, @gpetiot)
@@ -263,9 +272,9 @@ profile. This started with version 0.26.0.
 ### Added
 
 - Support `odoc-parser.2.0.0` (#2123, @gpetiot)
-  * Breaking change: incompatible with earlier versions of `odoc-parser`
-  * New inline math elements `{m ...}` available in doc-comments
-  * New block math elements `{math ...}` available in doc-comments
+  - Breaking change: incompatible with earlier versions of `odoc-parser`
+  - New inline math elements `{m ...}` available in doc-comments
+  - New block math elements `{math ...}` available in doc-comments
 
 ## 0.23.0 (2022-07-07)
 
@@ -339,8 +348,8 @@ profile. This started with version 0.26.0.
 ### Changed
 
 - More expressions are considered "simple" (not inducing a break e.g. as an argument of an application):
-  + Variants with no argument (#1968, @gpetiot)
-  + Empty or singleton arrays/lists (#1943, @gpetiot)
+  - Variants with no argument (#1968, @gpetiot)
+  - Empty or singleton arrays/lists (#1943, @gpetiot)
 - Print odoc code block delimiters on their own line (#1980, @gpetiot)
 - Make formatting of cons-list patterns consistent with cons-list expressions, (::) operators are aligned when possible, comments position also improved (#1983, @gpetiot)
 - Apply 'sequence-style' to add a space before ';;' between toplevel items, consistently with the formatting of ';' in sequences (#2004, @gpetiot)
@@ -374,31 +383,31 @@ profile. This started with version 0.26.0.
 
 - Profiles `compact` and `sparse` are now deprecated and will be removed by version 1.0 (#1803, @gpetiot)
 - Options that are not set by the preset profiles are now deprecated and will be removed by version 1.0:
-  + `align-cases`, `align-constructors-decl` and `align-variants-decl` (#1793, @gpetiot)
-  + `disambiguate-non-breaking-match` (#1805, @gpetiot)
-  + `break-before-in` (#1888, @gpetiot)
-  + `break-cases={toplevel,all}` (#1890, @gpetiot)
-  + `break-collection-expressions` (#1891, @gpetiot)
-  + `break-fun-decl=smart` (#1892, @gpetiot)
-  + `break-fun-sig=smart` (#1893, @gpetiot)
-  + `break-string-literals` (#1894, @gpetiot)
-  + `break-struct` (#1895, @gpetiot)
-  + `extension-indent` (#1896, @gpetiot)
-  + `function-indent` (#1897, @gpetiot)
-  + `function-indent-nested` (#1898, @gpetiot)
-  + `if-then-else={fit-or-vertical,k-r}` (#1899, @gpetiot)
-  + `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
-  + `indent-after-in` (#1901, @gpetiot)
-  + `let-binding-indent` (#1902, @gpetiot)
-  + `let-binding-spacing=sparse` (#1903, @gpetiot)
-  + `match-indent` (#1904, @gpetiot)
-  + `match-indent-nested` (#1905, @gpetiot)
-  + `module-item-spacing=preserve` (#1906, @gpetiot)
-  + `nested-match` (#1907, @gpetiot)
-  + `parens-tuple-patterns` (#1908, @gpetiot)
-  + `sequence-style=before` (#1909, @gpetiot)
-  + `stritem-extension-indent` (#1910, @gpetiot)
-  + `type-decl-indent` (#1911, @gpetiot)
+  - `align-cases`, `align-constructors-decl` and `align-variants-decl` (#1793, @gpetiot)
+  - `disambiguate-non-breaking-match` (#1805, @gpetiot)
+  - `break-before-in` (#1888, @gpetiot)
+  - `break-cases={toplevel,all}` (#1890, @gpetiot)
+  - `break-collection-expressions` (#1891, @gpetiot)
+  - `break-fun-decl=smart` (#1892, @gpetiot)
+  - `break-fun-sig=smart` (#1893, @gpetiot)
+  - `break-string-literals` (#1894, @gpetiot)
+  - `break-struct` (#1895, @gpetiot)
+  - `extension-indent` (#1896, @gpetiot)
+  - `function-indent` (#1897, @gpetiot)
+  - `function-indent-nested` (#1898, @gpetiot)
+  - `if-then-else={fit-or-vertical,k-r}` (#1899, @gpetiot)
+  - `indicate-multiline-delimiters=closing-on-separate-line` (#1900, @gpetiot)
+  - `indent-after-in` (#1901, @gpetiot)
+  - `let-binding-indent` (#1902, @gpetiot)
+  - `let-binding-spacing=sparse` (#1903, @gpetiot)
+  - `match-indent` (#1904, @gpetiot)
+  - `match-indent-nested` (#1905, @gpetiot)
+  - `module-item-spacing=preserve` (#1906, @gpetiot)
+  - `nested-match` (#1907, @gpetiot)
+  - `parens-tuple-patterns` (#1908, @gpetiot)
+  - `sequence-style=before` (#1909, @gpetiot)
+  - `stritem-extension-indent` (#1910, @gpetiot)
+  - `type-decl-indent` (#1911, @gpetiot)
 
 ### Fixed
 
@@ -470,7 +479,7 @@ profile. This started with version 0.26.0.
 - Fix parentheses around successive unary operations (#1696, @gpetiot)
 - Add missing break between pattern and attribute (#1711, @gpetiot)
 - Add missing parentheses around expression having attributes or comments inside a shorthand let-open clause (#1708, @gpetiot)
-- Do not consider leading star '*' when checking the diff of doc comments (#1712, @hhugo)
+- Do not consider leading star '\*' when checking the diff of doc comments (#1712, @hhugo)
 - Fix formatting of multiline non-wrapping comments (#1723, @gpetiot)
 - Fix position of comments following a record field (#1945, @gpetiot)
 
@@ -486,13 +495,13 @@ profile. This started with version 0.26.0.
 ### Added
 
 - Implement OCaml 4.13 features (#1680, @gpetiot)
-  + Named existentials in pattern-matching (ocaml#9584)
-  + Let-punning (ocaml#10013)
-  + Module type substitutions (ocaml#10133)
+  - Named existentials in pattern-matching (ocaml#9584)
+  - Let-punning (ocaml#10013)
+  - Module type substitutions (ocaml#10133)
 - Emacs integration (disabled for ocamlformat < 0.19.0):
-  + Indent a line or a region with ocamlformat when pressing <TAB>
-  + Break the line and reindent the cursor when pressing <ENTER>
-  (#1639, #1685, @gpetiot) (#1687, @bcc32)
+  - Indent a line or a region with ocamlformat when pressing <TAB>
+  - Break the line and reindent the cursor when pressing <ENTER>
+    (#1639, #1685, @gpetiot) (#1687, @bcc32)
 - Add 'line-endings=lf|crlf' option to specify the line endings used in the
   formatted output. (#1703, @nojb)
 
@@ -576,8 +585,8 @@ profile. This started with version 0.26.0.
 - Add missing break in module statement (#1431, @gpetiot)
 - Indent attributes attached to included modules better (#1468, @gpetiot)
 - Clean up `ocamlformat.el` for submission to MELPA (#1476, #1495, @bcc32)
-  + Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
-  + Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
+  - Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
+  - Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
 - Add missing parentheses around a pattern matching that is the left-hand part of a sequence when an attribute is attached (#1483, @gpetiot)
 - Add missing parentheses around infix operator used to build a function (#1486, @gpetiot)
 - Fix comments around desugared expression (#1487, @gpetiot)
@@ -600,8 +609,8 @@ profile. This started with version 0.26.0.
 ### Internal
 
 - Use ppxlib instead of ocaml-migrate-parsetree 1.x. (#1482, @emillon)
-  + No functional changes are expected.
-  + Cherry picked commits: 219dc1e3a4614041e1bc5428d003c0af4e, 9e453b0ef87124e33827ee2423289deef8, 7ad1e575ffa4ce3022c71daba39954d3b9, eb49db6772a9adabe611982000465d0ad7, dc79052a085950cd88fdef0843f665a029, c06c544e21bd65b726cde8fee0f78a6248, ce94d2fa50ff276b5782070375a0b30ba1
+  - No functional changes are expected.
+  - Cherry picked commits: 219dc1e3a4614041e1bc5428d003c0af4e, 9e453b0ef87124e33827ee2423289deef8, 7ad1e575ffa4ce3022c71daba39954d3b9, eb49db6772a9adabe611982000465d0ad7, dc79052a085950cd88fdef0843f665a029, c06c544e21bd65b726cde8fee0f78a6248, ce94d2fa50ff276b5782070375a0b30ba1
 
 ## 0.15.0 (2020-08-06)
 
@@ -644,25 +653,25 @@ profile. This started with version 0.26.0.
 - No functional changes from 0.14.2. The goal of this release is to be
   compatible with base and stdio v0.14.0.
 - Backport the following PRs:
-  + Update opam metadata (#1386)
-  + Add compatibility with base.v0.14.0 (#1396)
-  + Allow stdio.v0.14 (#1399)
+  - Update opam metadata (#1386)
+  - Add compatibility with base.v0.14.0 (#1396)
+  - Allow stdio.v0.14 (#1399)
 
 ## 0.14.2 (2020-05-11)
 
 ### Changed
 
 - Merge `doc-comments-val` option with `doc-comments`. The placement of documentation comments on `val` and `external` items is now controled by `doc-comments`.
-  + `doc-comments=after` becomes `doc-comments=after-when-possible` to take into account the technical limitations of ocamlformat;
-  + `doc-comments=before` is unchanged;
-  + `doc-comments-val` is now replaced with `doc-comments`.
+  - `doc-comments=after` becomes `doc-comments=after-when-possible` to take into account the technical limitations of ocamlformat;
+  - `doc-comments=before` is unchanged;
+  - `doc-comments-val` is now replaced with `doc-comments`.
     To reproduce the former behaviors
-    * `doc-comments=before` + `doc-comments-val=before`: now use `doc-comments=before`;
-    * `doc-comments=before` + `doc-comments-val=after`: now use `doc-comments=before-except-val`;
-    * `doc-comments=after` + `doc-comments-val=before`: this behavior did not make much sense and is not available anymore;
-    * `doc-comments=after` + `doc-comments-val=after`: now use `doc-comments=after-when-possible`.
- (#1358, @jberdine, @Julow, @gpetiot).
- This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
+    - `doc-comments=before` + `doc-comments-val=before`: now use `doc-comments=before`;
+    - `doc-comments=before` + `doc-comments-val=after`: now use `doc-comments=before-except-val`;
+    - `doc-comments=after` + `doc-comments-val=before`: this behavior did not make much sense and is not available anymore;
+    - `doc-comments=after` + `doc-comments-val=after`: now use `doc-comments=after-when-possible`.
+      (#1358, @jberdine, @Julow, @gpetiot).
+      This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
 
 ## 0.14.1 (2020-04-14)
 
@@ -692,11 +701,11 @@ profile. This started with version 0.26.0.
 - The default for `doc-comments` is changed from `after` to `before` (#1012, #1325, @Julow).
   This affects both `conventional` (default) and `ocamlformat` profiles.
 - Some options are now deprecated:
-  + `doc-comments` (#1293, #1012).
+  - `doc-comments` (#1293, #1012).
     This option depends on a flawed heuristic.
     It is replaced by `doc-comments-val` for `val` and `external` declarations.
     There is no equivalent to this option in the general case.
-  + `escape-chars`, `escape-strings` and `extension-sugar` (#1293).
+  - `escape-chars`, `escape-strings` and `extension-sugar` (#1293).
     These options are rarely used and their default behavior is considered to be the right behavior.
 - Add space between `row_field` attributes and the label or arguments, to be
   consistent with the non-polymorphic case. (#1299, @CraigFe)
@@ -706,13 +715,13 @@ profile. This started with version 0.26.0.
 - Fix missing parentheses around `let open` (#1229, @Julow).
   eg. `M.f (M.(x) [@attr])` would be formatted to `M.f M.(x) [@attr]`, which would crash OCamlformat
 - Remove unecessary parentheses with attributes in some structure items:
-  + extensions and eval items (#1230, @Julow).
+  - extensions and eval items (#1230, @Julow).
     eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
-  + `let _ = ...`  constructs (#1244, @emillon)
+  - `let _ = ...` constructs (#1244, @emillon)
 - Fix some bugs related to comments:
-  + after a function on the rhs of an infix (#1231, @Julow).
+  - after a function on the rhs of an infix (#1231, @Julow).
     eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
-  + in module unpack (#1309, @Julow).
+  - in module unpack (#1309, @Julow).
     eg. in the module expression `module M = (val x : S (* A *))`
 - Fix formatting of empty signature payload `[%a:]` (#1236, @emillon)
 - Fix parenthesizing when accessing field of construct application (#1247, @gpetiot)
@@ -722,10 +731,10 @@ profile. This started with version 0.26.0.
 - Fix parens around binop operations with attributes (#1252, #1306, @gpetiot, @CraigFe)
 - Remove unecessary parentheses in the argument of indexing operators (#1280, @Julow)
 - Retain attributes on various AST nodes:
-  + field set expressions, e.g. `(a.x <- b) [@a]` (#1284, @CraigFe)
-  + instance variable set expressions, e.g. `(a <- b) [@a]` (#1288, @CraigFe)
-  + indexing operators, e.g. `(a.(b)) [@a]` (#1300, @CraigFe)
-  + sequences, e.g. `(a; b) [@a]` (#1291, @CraigFe)
+  - field set expressions, e.g. `(a.x <- b) [@a]` (#1284, @CraigFe)
+  - instance variable set expressions, e.g. `(a <- b) [@a]` (#1288, @CraigFe)
+  - indexing operators, e.g. `(a.(b)) [@a]` (#1300, @CraigFe)
+  - sequences, e.g. `(a; b) [@a]` (#1291, @CraigFe)
 - Avoid unnecessary spacing after object types inside records and polymorphic variants, e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296, @CraigFe)
 - Fix missing parentheses around tuples with attributes. (#1301, @CraigFe).
   Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
@@ -961,7 +970,7 @@ profile. This started with version 0.26.0.
 - Improve: option max-indent (#841, @gpetiot)
 - Improve: option nested-match=align (#827, @gpetiot)
 - Fix dropped attributes in with_constraints (#846, @gpetiot)
-- Fix dropped comments in list patterns and module types  (#866, @gpetiot)
+- Fix dropped comments in list patterns and module types (#866, @gpetiot)
 - Fix comment dropped in object (#849, @gpetiot)
 - Fix inconsistency of break-separators for wildcards in match cases (#855, @gpetiot)
 - Improve: new options to support 'with' and 'strict_with' (ocp-indent) (#853, @gpetiot)
@@ -1026,7 +1035,7 @@ profile. This started with version 0.26.0.
 - Tidying fmt ast (#748, @gpetiot)
 - Fix nested parens with no break infix before func (#760, @gpetiot)
 - Provide an mli for Compat (#772) (hhugo)
--Fix non-wrapping asterisk prefixed cmts (#759, @gpetiot)
+  -Fix non-wrapping asterisk prefixed cmts (#759, @gpetiot)
 - Support for OCaml 4.08 (#763, @hhugo)
 - Fix module type functor (#716, @gpetiot)
 - Small cleanup (#764, @hhugo)
@@ -1522,7 +1531,7 @@ profile. This started with version 0.26.0.
 - Improve: tuple attribute args
 - Improve: parenthesization of Ppat_or
 - Improve: determination of file kind based on provided name
-- Improve: extension on the let at toplevel: e.g. let%expect_test _ (#94, @mbarbin)
+- Improve: extension on the let at toplevel: e.g. let%expect*test * (#94, @mbarbin)
 - Improve: constraints in punned record fields (#93, @mbarbin)
 - Improve: nullary attributes
 - Improve: Ppat_tuple under Ppat_array with unnecessary but clearer parens
