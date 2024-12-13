@@ -5081,6 +5081,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to space_around_high_precedence_infix.ml.stdout
+   (with-stderr-to space_around_high_precedence_infix.ml.stderr
+     (run %{bin:ocamlformat} --name space_around_high_precedence_infix.ml --margin-check --space-around-high-precedence-infix %{dep:../tests/space_around_high_precedence_infix.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff space_around_high_precedence_infix.ml.ref space_around_high_precedence_infix.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff space_around_high_precedence_infix.ml.err space_around_high_precedence_infix.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to str_value.ml.stdout
    (with-stderr-to str_value.ml.stderr
      (run %{bin:ocamlformat} --name str_value.ml --margin-check %{dep:../tests/str_value.ml})))))

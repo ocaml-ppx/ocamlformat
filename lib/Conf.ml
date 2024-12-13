@@ -103,6 +103,7 @@ let conventional_profile from =
   ; sequence_style= elt `Terminator
   ; single_case= elt `Compact
   ; space_around_arrays= elt true
+  ; space_around_high_precedence_infix= elt false
   ; space_around_lists= elt true
   ; space_around_records= elt true
   ; space_around_variants= elt true
@@ -172,6 +173,7 @@ let ocamlformat_profile from =
   ; sequence_style= elt `Separator
   ; single_case= elt `Compact
   ; space_around_arrays= elt false
+  ; space_around_high_precedence_infix= elt false
   ; space_around_lists= elt false
   ; space_around_records= elt false
   ; space_around_variants= elt false
@@ -240,6 +242,7 @@ let janestreet_profile from =
   ; sequence_style= elt `Terminator
   ; single_case= elt `Sparse
   ; space_around_arrays= elt true
+  ; space_around_high_precedence_infix= elt false
   ; space_around_lists= elt true
   ; space_around_records= elt true
   ; space_around_variants= elt true
@@ -1220,6 +1223,19 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with space_around_arrays= elt}) )
       (fun conf -> conf.fmt_opts.space_around_arrays)
 
+  let space_around_high_precedence_infix =
+    let doc =
+      "Use space around high precedence infix operators (which start with a \
+       #). If false, no space is used to indicate high precedence (e.g. \
+       'a##b')"
+    in
+    let names = ["space-around-high-precedence-infix"] in
+    Decl.flag ~names ~default ~doc ~kind ~allow_inline:false
+      (fun conf elt ->
+        update conf ~f:(fun f ->
+            {f with space_around_high_precedence_infix= elt} ) )
+      (fun conf -> conf.fmt_opts.space_around_high_precedence_infix)
+
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
     let names = ["space-around-lists"] in
@@ -1357,6 +1373,7 @@ module Formatting = struct
       ; elt sequence_style
       ; elt single_case
       ; elt space_around_arrays
+      ; elt space_around_high_precedence_infix
       ; elt space_around_lists
       ; elt space_around_records
       ; elt space_around_variants

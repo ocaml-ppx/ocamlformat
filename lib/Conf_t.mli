@@ -109,6 +109,7 @@ type fmt_opts =
   ; sequence_style: [`Before | `Separator | `Terminator] elt
   ; single_case: [`Compact | `Sparse] elt
   ; space_around_arrays: bool elt
+  ; space_around_high_precedence_infix: bool elt
   ; space_around_lists: bool elt
   ; space_around_records: bool elt
   ; space_around_variants: bool elt
