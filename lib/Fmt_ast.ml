@@ -1793,6 +1793,10 @@ and fmt_infix_op_args c ~parens xexp op_args =
   let op_prec_higher_than_apply =
     match op_prec with Some p -> Prec.compare p Apply > 0 | None -> false
   in
+  let space_around_op =
+    c.conf.fmt_opts.space_around_high_precedence_infix.v
+    || not op_prec_higher_than_apply
+  in
   let groups =
     let width xe = expression_width c xe in
     let not_simple arg = not (is_simple c.conf width arg) in
@@ -1859,10 +1863,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
            let pro, before_arg =
              let break =
                if very_last && is_not_indented xarg then space_break
-               else
-                 fmt_if
-                   ((not very_first) && not op_prec_higher_than_apply)
-                   (str " ")
+               else fmt_if ((not very_first) && space_around_op) (str " ")
              in
              match cmts_after with
              | Some c -> (noop, hovbox 0 (op $ space_break $ c))
@@ -1870,9 +1871,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
            in
            fmt_opt cmts_before $ before_arg
            $ fmt_arg ~pro ~very_last xarg
-           $ fmt_if ((not last) && not op_prec_higher_than_apply) (break 1 0) )
-      )
-    $ fmt_if ((not last_grp) && not op_prec_higher_than_apply) (break 1 0)
+           $ fmt_if ((not last) && space_around_op) (break 1 0) ) )
+    $ fmt_if ((not last_grp) && space_around_op) (break 1 0)
   in
   Params.Exp.Infix_op_arg.wrap c.conf ~parens
     ~parens_nested:(Ast.parenze_nested_exp xexp)

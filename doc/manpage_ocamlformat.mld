@@ -342,6 +342,9 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-space-around-arrays
            Unset space-around-arrays.
 
+       --no-space-around-high-precedence-infix
+           Unset space-around-high-precedence-infix.
+
        --no-space-around-lists
            Unset space-around-lists.
 
@@ -427,6 +430,11 @@ OPTIONS (CODE FORMATTING STYLE)
        --space-around-arrays
            Add a space inside the delimiters of arrays. The flag is set by
            default.
+
+       --space-around-high-precedence-infix
+           Use space around high precedence infix operators (which start with
+           a #). If false, no space is used to indicate high precedence (e.g.
+           'a##b') The flag is unset by default. Cannot be set in attributes.
 
        --space-around-lists
            Add a space inside the delimiters of lists. The flag is set by
