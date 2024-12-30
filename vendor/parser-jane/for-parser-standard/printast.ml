@@ -60,12 +60,15 @@ let fmt_char_option f = function
 let fmt_constant f x =
   match x with
   | Pconst_integer (i,m) -> fprintf f "PConst_int (%s,%a)" i fmt_char_option m
+  | Pconst_unboxed_integer (i,m) -> fprintf f "PConst_unboxed_int (%s,%c)" i m
   | Pconst_char (c) -> fprintf f "PConst_char %02x" (Char.code c)
   | Pconst_string (s, strloc, None) ->
       fprintf f "PConst_string(%S,%a,None)" s fmt_location strloc
   | Pconst_string (s, strloc, Some delim) ->
       fprintf f "PConst_string (%S,%a,Some %S)" s fmt_location strloc delim
   | Pconst_float (s,m) -> fprintf f "PConst_float (%s,%a)" s fmt_char_option m
+  | Pconst_unboxed_float (s,m) ->
+      fprintf f "PConst_unboxed_float (%s,%a)" s fmt_char_option m
 
 let fmt_mutable_flag f x =
   match x with
@@ -130,11 +133,6 @@ let arg_label i ppf = function
   | Optional s -> line i ppf "Optional \"%s\"\n" s
   | Labelled s -> line i ppf "Labelled \"%s\"\n" s
 
-let typevars ppf vs =
-  List.iter (fun x -> fprintf ppf " '%s" x.txt) vs
-    (* Don't use Pprintast.tyvar, as that causes a dependency cycle with
-       Jane_syntax, which depends on this module for debugging. *)
-
 let modality i ppf modality =
   line i ppf "modality %a\n" fmt_string_loc
     (Location.map (fun (Modality x) -> x) modality)
@@ -162,8 +160,12 @@ let rec core_type i ppf x =
   attributes i ppf x.ptyp_attributes;
   let i = i+1 in
   match x.ptyp_desc with
-  | Ptyp_any -> line i ppf "Ptyp_any\n";
-  | Ptyp_var (s) -> line i ppf "Ptyp_var %s\n" s;
+  | Ptyp_any jkind ->
+      line i ppf "Ptyp_any\n";
+      jkind_annotation_opt (i+1) ppf jkind
+  | Ptyp_var (s, jkind) ->
+      line i ppf "Ptyp_var %s\n" s;
+      jkind_annotation_opt (i+1) ppf jkind
   | Ptyp_arrow (l, ct1, ct2, m1, m2) ->
       line i ppf "Ptyp_arrow\n";
       arg_label i ppf l;
@@ -173,7 +175,7 @@ let rec core_type i ppf x =
       modes i ppf m2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
-      list i core_type ppf l;
+      list i (labeled_tuple_element core_type) ppf l;
   | Ptyp_unboxed_tuple l ->
       line i ppf "Ptyp_unboxed_tuple\n";
       list i (labeled_tuple_element core_type) ppf l
@@ -200,18 +202,31 @@ let rec core_type i ppf x =
   | Ptyp_class (li, l) ->
       line i ppf "Ptyp_class %a\n" fmt_longident_loc li;
       list i core_type ppf l
-  | Ptyp_alias (ct, s) ->
-      line i ppf "Ptyp_alias \"%s\"\n" s;
+  | Ptyp_alias (ct, s, jkind) ->
+      line i ppf "Ptyp_alias %a\n"
+        (fun ppf -> function
+           | None -> fprintf ppf "_"
+           | Some name -> fprintf ppf "\"%s\"" name.txt)
+        s;
       core_type i ppf ct;
+      jkind_annotation_opt i ppf jkind
   | Ptyp_poly (sl, ct) ->
-      line i ppf "Ptyp_poly%a\n" typevars sl;
+      line i ppf "Ptyp_poly\n";
+      list i typevar ppf sl;
       core_type i ppf ct;
   | Ptyp_package (s, l) ->
       line i ppf "Ptyp_package %a\n" fmt_longident_loc s;
       list i package_with ppf l;
+  | Ptyp_open (mod_ident, t) ->
+      line i ppf "Ptyp_open \"%a\"\n" fmt_longident_loc mod_ident;
+      core_type i ppf t
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension \"%s\"\n" s.txt;
       payload i ppf arg
+
+and typevar i ppf (s, jkind) =
+  line i ppf "var: %s\n" s.txt;
+  jkind_annotation_opt (i+1) ppf jkind
 
 and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
@@ -230,9 +245,9 @@ and pattern i ppf x =
   | Ppat_constant (c) -> line i ppf "Ppat_constant %a\n" fmt_constant c;
   | Ppat_interval (c1, c2) ->
       line i ppf "Ppat_interval %a..%a\n" fmt_constant c1 fmt_constant c2;
-  | Ppat_tuple (l) ->
-      line i ppf "Ppat_tuple\n";
-      list i pattern ppf l;
+  | Ppat_tuple (l, c) ->
+      line i ppf "Ppat_tuple\n %a\n" fmt_closed_flag c;
+      list i (labeled_tuple_element pattern) ppf l
   | Ppat_unboxed_tuple (l, c) ->
       line i ppf "Ppat_unboxed_tuple %a\n" fmt_closed_flag c;
       list i (labeled_tuple_element pattern) ppf l
@@ -249,8 +264,11 @@ and pattern i ppf x =
   | Ppat_record (l, c) ->
       line i ppf "Ppat_record %a\n" fmt_closed_flag c;
       list i longident_x_pattern ppf l;
-  | Ppat_array (l) ->
-      line i ppf "Ppat_array\n";
+  | Ppat_record_unboxed_product (l, c) ->
+      line i ppf "Ppat_record_unboxed_product %a\n" fmt_closed_flag c;
+      list i longident_x_pattern ppf l;
+  | Ppat_array (mut, l) ->
+      line i ppf "Ppat_array %a\n" fmt_mutable_flag mut;
       list i pattern ppf l;
   | Ppat_or (p1, p2) ->
       line i ppf "Ppat_or\n";
@@ -293,7 +311,7 @@ and expression i ppf x =
   | Pexp_function (params, c, body) ->
       line i ppf "Pexp_function\n";
       list i function_param ppf params;
-      option i function_constraint ppf c;
+      function_constraint i ppf c;
       function_body i ppf body
   | Pexp_apply (e, l) ->
       line i ppf "Pexp_apply\n";
@@ -309,7 +327,7 @@ and expression i ppf x =
       list i case ppf l;
   | Pexp_tuple (l) ->
       line i ppf "Pexp_tuple\n";
-      list i expression ppf l;
+      list i (labeled_tuple_element expression) ppf l;
   | Pexp_unboxed_tuple (l) ->
       line i ppf "Pexp_unboxed_tuple\n";
       list i (labeled_tuple_element expression) ppf l;
@@ -323,8 +341,16 @@ and expression i ppf x =
       line i ppf "Pexp_record\n";
       list i longident_x_expression ppf l;
       option i expression ppf eo;
+  | Pexp_record_unboxed_product (l, eo) ->
+      line i ppf "Pexp_record_unboxed_product\n";
+      list i longident_x_expression ppf l;
+      option i expression ppf eo;
   | Pexp_field (e, li) ->
       line i ppf "Pexp_field\n";
+      expression i ppf e;
+      longident_loc i ppf li;
+  | Pexp_unboxed_field (e, li) ->
+      line i ppf "Pexp_unboxed_field\n";
       expression i ppf e;
       longident_loc i ppf li;
   | Pexp_setfield (e1, li, e2) ->
@@ -332,8 +358,8 @@ and expression i ppf x =
       expression i ppf e1;
       longident_loc i ppf li;
       expression i ppf e2;
-  | Pexp_array (l) ->
-      line i ppf "Pexp_array\n";
+  | Pexp_array (mut, l) ->
+      line i ppf "Pexp_array %a\n" fmt_mutable_flag mut;
       list i expression ppf l;
   | Pexp_ifthenelse (e1, e2, eo) ->
       line i ppf "Pexp_ifthenelse\n";
@@ -395,8 +421,9 @@ and expression i ppf x =
   | Pexp_object s ->
       line i ppf "Pexp_object\n";
       class_structure i ppf s
-  | Pexp_newtype (s, e) ->
+  | Pexp_newtype (s, jkind, e) ->
       line i ppf "Pexp_newtype \"%s\"\n" s.txt;
+      jkind_annotation_opt i ppf jkind;
       expression i ppf e
   | Pexp_pack me ->
       line i ppf "Pexp_pack\n";
@@ -418,12 +445,63 @@ and expression i ppf x =
   | Pexp_stack e ->
       line i ppf "Pexp_stack\n";
       expression i ppf e
+  | Pexp_comprehension c ->
+      line i ppf "Pexp_comprehension\n";
+      comprehension_expression i ppf c
+  | Pexp_overwrite (e1, e2) ->
+      line i ppf "Pexp_overwrite\n";
+      expression i ppf e1;
+      expression i ppf e2;
+  | Pexp_hole ->
+    line i ppf "Pexp_hole"
+
+and comprehension_expression i ppf = function
+  | Pcomp_array_comprehension (m, c) ->
+      line i ppf "Pcomp_array_comprehension %a\n" fmt_mutable_flag m;
+      comprehension i ppf c
+  | Pcomp_list_comprehension c ->
+      line i ppf "Pcomp_list_comprehension\n";
+      comprehension i ppf c
+
+and comprehension i ppf ({ pcomp_body; pcomp_clauses } : comprehension) =
+  list i comprehension_clause ppf pcomp_clauses;
+  expression i ppf pcomp_body
+
+and comprehension_clause i ppf = function
+  | Pcomp_for cbs ->
+      line i ppf "Pcomp_for\n";
+      list i comprehension_clause_binding ppf cbs
+  | Pcomp_when exp ->
+      line i ppf "Pcomp_when\n";
+      expression i ppf exp
+
+and comprehension_clause_binding i ppf
+    { pcomp_cb_pattern; pcomp_cb_iterator; pcomp_cb_attributes }
+  =
+  pattern i ppf pcomp_cb_pattern;
+  comprehension_iterator (i+1) ppf pcomp_cb_iterator;
+  attributes i ppf pcomp_cb_attributes
+
+and comprehension_iterator i ppf = function
+  | Pcomp_range { start; stop; direction } ->
+      line i ppf "Pcomp_range %a\n" fmt_direction_flag direction;
+      expression i ppf start;
+      expression i ppf stop;
+  | Pcomp_in exp ->
+      line i ppf "Pcomp_in\n";
+      expression i ppf exp
+
+and jkind_annotation_opt i ppf jkind =
+  match jkind with
+  | None -> ()
+  | Some jkind -> jkind_annotation (i+1) ppf jkind
 
 and jkind_annotation i ppf (jkind : jkind_annotation) =
-  match jkind with
+  line i ppf "jkind %a\n" fmt_location jkind.pjkind_loc;
+  match jkind.pjkind_desc with
   | Default -> line i ppf "Default\n"
   | Abbreviation jkind ->
-      line i ppf "Abbreviation \"%s\"\n" jkind.txt
+      line i ppf "Abbreviation \"%s\"\n" jkind
   | Mod (jkind, m) ->
       line i ppf "Mod\n";
       jkind_annotation (i+1) ppf jkind;
@@ -448,10 +526,7 @@ and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
       pattern (i+1) ppf p
   | Pparam_newtype (ty, jkind) ->
       line i ppf "Pparam_newtype \"%s\" %a\n" ty.txt fmt_location loc;
-      option (i+1)
-        (fun i ppf jkind -> jkind_annotation i ppf jkind.txt)
-        ppf
-        jkind
+      jkind_annotation_opt (i+1) ppf jkind
 
 and function_body i ppf body =
   match body with
@@ -473,9 +548,9 @@ and type_constraint i ppf type_constraint =
       option (i+1) core_type ppf ty1;
       core_type (i+1) ppf ty2
 
-and function_constraint i ppf { type_constraint = c; mode_annotations } =
-  type_constraint i ppf c;
-  modes i ppf mode_annotations
+and function_constraint i ppf { ret_type_constraint; ret_mode_annotations; mode_annotations = _ } =
+  option i type_constraint ppf ret_type_constraint;
+  modes i ppf ret_mode_annotations
 
 and value_description i ppf x =
   line i ppf "value_description %a %a\n" fmt_string_loc
@@ -534,6 +609,9 @@ and type_kind i ppf x =
   | Ptype_record l ->
       line i ppf "Ptype_record\n";
       list (i+1) label_decl ppf l;
+  | Ptype_record_unboxed_product l ->
+      line i ppf "Ptype_record_unboxed_product\n";
+      list (i+1) label_decl ppf l;
   | Ptype_open ->
       line i ppf "Ptype_open\n";
 
@@ -568,7 +646,7 @@ and extension_constructor_kind i ppf x =
   match x with
       Pext_decl(v, a, r) ->
         line i ppf "Pext_decl\n";
-        if v <> [] then line (i+1) ppf "vars%a\n" typevars v;
+        list (i+1) typevar ppf v;
         constructor_arguments (i+1) ppf a;
         option (i+1) core_type ppf r;
     | Pext_rebind li ->
@@ -754,13 +832,16 @@ and module_type i ppf x =
   | Pmty_signature (s) ->
       line i ppf "Pmty_signature\n";
       signature i ppf s;
-  | Pmty_functor (Unit, mt2) ->
+  | Pmty_functor (Unit, mt2, mm2) ->
       line i ppf "Pmty_functor ()\n";
       module_type i ppf mt2;
-  | Pmty_functor (Named (s, mt1), mt2) ->
+      modes i ppf mm2
+  | Pmty_functor (Named (s, mt1, mm1), mt2, mm2) ->
       line i ppf "Pmty_functor %a\n" fmt_str_opt_loc s;
       module_type i ppf mt1;
+      modes i ppf mm1;
       module_type i ppf mt2;
+      modes i ppf mm2
   | Pmty_with (mt, l) ->
       line i ppf "Pmty_with\n";
       module_type i ppf mt;
@@ -771,8 +852,13 @@ and module_type i ppf x =
   | Pmty_extension (s, arg) ->
       line i ppf "Pmod_extension \"%s\"\n" s.txt;
       payload i ppf arg
+  | Pmty_strengthen (m, lid) ->
+      line i ppf "Pmty_strengthen %a\n" fmt_longident lid.txt;
+      module_type i ppf m
 
-and signature i ppf x = list i signature_item ppf x
+and signature i ppf {psg_items; psg_modalities} =
+  modalities i ppf psg_modalities;
+  list i signature_item ppf psg_items
 
 and signature_item i ppf x =
   line i ppf "signature_item %a\n" fmt_location x.psig_loc;
@@ -796,7 +882,8 @@ and signature_item i ppf x =
   | Psig_module pmd ->
       line i ppf "Psig_module %a\n" fmt_str_opt_loc pmd.pmd_name;
       attributes i ppf pmd.pmd_attributes;
-      module_type i ppf pmd.pmd_type
+      module_type i ppf pmd.pmd_type;
+      modalities i ppf pmd.pmd_modalities
   | Psig_modsubst pms ->
       line i ppf "Psig_modsubst %a = %a\n"
         fmt_string_loc pms.pms_name
@@ -835,6 +922,9 @@ and signature_item i ppf x =
       payload i ppf arg
   | Psig_attribute a ->
       attribute i ppf "Psig_attribute" a
+  | Psig_kind_abbrev (name, jkind) ->
+      line i ppf "Psig_kind_abbrev \"%s\"\n" name.txt;
+      jkind_annotation i ppf jkind
 
 and modtype_declaration i ppf = function
   | None -> line i ppf "#abstract"
@@ -877,9 +967,10 @@ and module_expr i ppf x =
   | Pmod_functor (Unit, me) ->
       line i ppf "Pmod_functor ()\n";
       module_expr i ppf me;
-  | Pmod_functor (Named (s, mt), me) ->
+  | Pmod_functor (Named (s, mt, mm), me) ->
       line i ppf "Pmod_functor %a\n" fmt_str_opt_loc s;
       module_type i ppf mt;
+      modes i ppf mm;
       module_expr i ppf me;
   | Pmod_apply (me1, me2) ->
       line i ppf "Pmod_apply\n";
@@ -888,16 +979,28 @@ and module_expr i ppf x =
   | Pmod_apply_unit me1 ->
       line i ppf "Pmod_apply_unit\n";
       module_expr i ppf me1
-  | Pmod_constraint (me, mt) ->
+  | Pmod_constraint (me, mt, mm) ->
       line i ppf "Pmod_constraint\n";
       module_expr i ppf me;
-      module_type i ppf mt;
+      Option.iter (module_type i ppf) mt;
+      modes i ppf mm
   | Pmod_unpack (e) ->
       line i ppf "Pmod_unpack\n";
       expression i ppf e;
   | Pmod_extension (s, arg) ->
       line i ppf "Pmod_extension \"%s\"\n" s.txt;
       payload i ppf arg
+  | Pmod_instance instance ->
+      line i ppf "Pmod_instance\n";
+      module_instance i ppf instance
+
+and module_instance i ppf { pmod_instance_head; pmod_instance_args } =
+  line i ppf "head=%s\n" pmod_instance_head;
+  list i (fun i ppf (name, arg) ->
+    line i ppf "name=%s\n" name;
+    module_instance i ppf arg)
+    ppf
+    pmod_instance_args
 
 and structure i ppf x = list i structure_item ppf x
 
@@ -955,11 +1058,15 @@ and structure_item i ppf x =
       payload i ppf arg
   | Pstr_attribute a ->
       attribute i ppf "Pstr_attribute" a
+  | Pstr_kind_abbrev (name, jkind) ->
+      line i ppf "Pstr_kind_abbrev \"%s\"\n" name.txt;
+      jkind_annotation i ppf jkind
 
 and module_declaration i ppf pmd =
   str_opt_loc i ppf pmd.pmd_name;
   attributes i ppf pmd.pmd_attributes;
   module_type (i+1) ppf pmd.pmd_type;
+  modalities (i+1) ppf pmd.pmd_modalities
 
 and module_binding i ppf x =
   str_opt_loc i ppf x.pmb_name;
@@ -975,7 +1082,9 @@ and constructor_decl i ppf
      {pcd_name; pcd_vars; pcd_args; pcd_res; pcd_loc; pcd_attributes} =
   line i ppf "%a\n" fmt_location pcd_loc;
   line (i+1) ppf "%a\n" fmt_string_loc pcd_name;
-  if pcd_vars <> [] then line (i+1) ppf "pcd_vars =%a\n" typevars pcd_vars;
+  if pcd_vars <> [] then (
+    line (i+1) ppf "pcd_vars\n";
+    list (i+1) typevar ppf pcd_vars);
   attributes i ppf pcd_attributes;
   constructor_arguments (i+1) ppf pcd_args;
   option (i+1) core_type ppf pcd_res
@@ -1081,7 +1190,9 @@ and directive_argument i ppf x =
   | Pdir_ident (li) -> line i ppf "Pdir_ident %a\n" fmt_longident li
   | Pdir_bool (b) -> line i ppf "Pdir_bool %s\n" (string_of_bool b)
 
-let interface ppf x = list 0 signature_item ppf x
+let interface ppf {psg_items; psg_modalities} =
+  modalities 0 ppf psg_modalities;
+  list 0 signature_item ppf psg_items
 
 let implementation ppf x = list 0 structure_item ppf x
 

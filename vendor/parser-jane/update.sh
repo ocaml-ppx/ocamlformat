@@ -8,9 +8,9 @@ else
     exit 1
 fi
 
-parsing_dir="${flambda_backend_dir}/ocaml/parsing"
-utils_dir="${flambda_backend_dir}/ocaml/utils"
-lex_dir="${flambda_backend_dir}/ocaml/lex"
+parsing_dir="${flambda_backend_dir}/parsing"
+utils_dir="${flambda_backend_dir}/utils"
+lex_dir="${flambda_backend_dir}/lex"
 
 cd $(dirname $0)
 # parser-standard
@@ -18,12 +18,8 @@ cp "$parsing_dir"/asttypes.mli for-parser-standard/
 cp "$parsing_dir"/ast_helper.ml for-parser-standard/
 cp "$parsing_dir"/ast_mapper.ml for-parser-standard/
 cp "$parsing_dir"/docstrings.ml for-parser-standard/
-cp "$parsing_dir"/jane_syntax.ml for-parser-standard/
-cp "$parsing_dir"/jane_syntax.mli for-parser-standard/
-cp "$parsing_dir"/jane_syntax_parsing.ml for-parser-standard/
-cp "$parsing_dir"/jane_syntax_parsing.mli for-parser-standard/
-cp "$utils_dir"/language_extension.ml for-parser-standard/
-cp "$utils_dir"/language_extension.mli for-parser-standard/
+cp "$parsing_dir"/language_extension.ml for-parser-standard/
+cp "$parsing_dir"/language_extension.mli for-parser-standard/
 cp "$utils_dir"/language_extension_kernel.ml for-parser-standard/
 cp "$utils_dir"/language_extension_kernel.mli for-parser-standard/
 cp "$parsing_dir"/lexer.mll for-parser-standard/

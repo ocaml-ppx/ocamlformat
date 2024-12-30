@@ -1,5 +1,7 @@
 include Language_extension_kernel
 
+type 'a language_extension = 'a t
+
 (* operations we want on every extension level *)
 module type Extension_level = sig
   type t
@@ -51,54 +53,127 @@ module Maturity = struct
     | Alpha -> "_alpha"
 end
 
+let maturity_to_string = function
+  | Alpha -> "alpha"
+  | Beta -> "beta"
+  | Stable -> "stable"
+
 let get_level_ops : type a. a t -> (module Extension_level with type t = a) =
   function
   | Comprehensions -> (module Unit)
   | Mode -> (module Maturity)
-  | Unique -> (module Unit)
+  | Unique -> (module Maturity)
+  | Overwriting -> (module Unit)
   | Include_functor -> (module Unit)
   | Polymorphic_parameters -> (module Unit)
   | Immutable_arrays -> (module Unit)
   | Module_strengthening -> (module Unit)
   | Layouts -> (module Maturity)
-  | SIMD -> (module Unit)
+  | SIMD -> (module Maturity)
   | Labeled_tuples -> (module Unit)
   | Small_numbers -> (module Maturity)
+  | Instances -> (module Unit)
+
+(* We'll do this in a more principled way later. *)
+(* CR layouts: Note that layouts is only "mostly" erasable, because of annoying
+   interactions with the pre-layouts [@@immediate] attribute like:
+
+     type ('a : immediate) t = 'a [@@immediate]
+
+   But we've decided to punt on this issue in the short term.
+*)
+let is_erasable : type a. a t -> bool = function
+  | Mode | Unique | Overwriting | Layouts -> true
+  | Comprehensions | Include_functor | Polymorphic_parameters | Immutable_arrays
+  | Module_strengthening | SIMD | Labeled_tuples | Small_numbers | Instances ->
+    false
+
+let maturity_of_unique_for_drf = Stable
+
+let maturity_of_unique_for_destruction = Alpha
 
 module Exist_pair = struct
-  include Exist_pair
+  type t = Pair : 'a language_extension * 'a -> t
 
   let maturity : t -> Maturity.t = function
     | Pair (Comprehensions, ()) -> Beta
     | Pair (Mode, m) -> m
-    | Pair (Unique, ()) -> Alpha
+    | Pair (Unique, m) -> m
+    | Pair (Overwriting, ()) -> Alpha
     | Pair (Include_functor, ()) -> Stable
     | Pair (Polymorphic_parameters, ()) -> Stable
     | Pair (Immutable_arrays, ()) -> Stable
     | Pair (Module_strengthening, ()) -> Stable
     | Pair (Layouts, m) -> m
-    | Pair (SIMD, ()) -> Stable
+    | Pair (SIMD, m) -> m
     | Pair (Labeled_tuples, ()) -> Stable
     | Pair (Small_numbers, m) -> m
+    | Pair (Instances, ()) -> Stable
 
   let is_erasable : t -> bool = function Pair (ext, _) -> is_erasable ext
 
   let to_string = function
     | Pair (Layouts, m) -> to_string Layouts ^ "_" ^ maturity_to_string m
     | Pair (Mode, m) -> to_string Mode ^ "_" ^ maturity_to_string m
+    | Pair (Unique, m) -> to_string Unique ^ "_" ^ maturity_to_string m
     | Pair (Small_numbers, m) ->
       to_string Small_numbers ^ "_" ^ maturity_to_string m
+    | Pair (SIMD, m) -> to_string SIMD ^ "_" ^ maturity_to_string m
     | Pair
-        ( (( Comprehensions | Unique | Include_functor | Polymorphic_parameters
-           | Immutable_arrays | Module_strengthening | SIMD | Labeled_tuples )
-          as ext),
+        ( (( Comprehensions | Include_functor | Polymorphic_parameters
+           | Immutable_arrays | Module_strengthening | Labeled_tuples
+           | Instances | Overwriting ) as ext),
           _ ) ->
       to_string ext
+
+  (* converts full extension names, like "layouts_alpha" to a pair of
+     an extension and its maturity. For extensions that don't take an
+     argument, the conversion is just [Language_extension_kernel.of_string].
+  *)
+  let of_string extn_name : t option =
+    match String.lowercase_ascii extn_name with
+    | "comprehensions" -> Some (Pair (Comprehensions, ()))
+    | "mode" -> Some (Pair (Mode, Stable))
+    | "mode_beta" -> Some (Pair (Mode, Beta))
+    | "mode_alpha" -> Some (Pair (Mode, Alpha))
+    | "unique" -> Some (Pair (Unique, Stable))
+    | "unique_beta" -> Some (Pair (Unique, Beta))
+    | "unique_alpha" -> Some (Pair (Unique, Alpha))
+    | "overwriting" -> Some (Pair (Overwriting, ()))
+    | "include_functor" -> Some (Pair (Include_functor, ()))
+    | "polymorphic_parameters" -> Some (Pair (Polymorphic_parameters, ()))
+    | "immutable_arrays" -> Some (Pair (Immutable_arrays, ()))
+    | "module_strengthening" -> Some (Pair (Module_strengthening, ()))
+    | "layouts" -> Some (Pair (Layouts, Stable))
+    | "layouts_alpha" -> Some (Pair (Layouts, Alpha))
+    | "layouts_beta" -> Some (Pair (Layouts, Beta))
+    | "simd" -> Some (Pair (SIMD, Stable))
+    | "simd_beta" -> Some (Pair (SIMD, Beta))
+    | "labeled_tuples" -> Some (Pair (Labeled_tuples, ()))
+    | "small_numbers" -> Some (Pair (Small_numbers, Stable))
+    | "small_numbers_beta" -> Some (Pair (Small_numbers, Beta))
+    | "instances" -> Some (Pair (Instances, ()))
+    | _ -> None
 end
 
 type extn_pair = Exist_pair.t = Pair : 'a t * 'a -> extn_pair
 
-type exist = Exist.t = Pack : _ t -> exist
+type exist = Pack : _ t -> exist
+
+let all_extensions =
+  [ Pack Comprehensions;
+    Pack Mode;
+    Pack Unique;
+    Pack Overwriting;
+    Pack Include_functor;
+    Pack Polymorphic_parameters;
+    Pack Immutable_arrays;
+    Pack Module_strengthening;
+    Pack Layouts;
+    Pack SIMD;
+    Pack Labeled_tuples;
+    Pack Small_numbers;
+    Pack Instances ]
 
 (**********************************)
 (* string conversions *)
@@ -109,10 +184,15 @@ let to_command_line_string : type a. a t -> a -> string =
   to_string extn ^ Ops.to_command_line_suffix level
 
 let pair_of_string_exn extn_name =
-  match pair_of_string extn_name with
+  match Exist_pair.of_string extn_name with
   | Some pair -> pair
   | None ->
     raise (Arg.Bad (Printf.sprintf "Extension %s is not known" extn_name))
+
+let of_string extn_name : exist option =
+  match Exist_pair.of_string extn_name with
+  | Some (Pair (ext, _)) -> Some (Pack ext)
+  | None -> None
 
 (************************************)
 (* equality *)
@@ -122,6 +202,7 @@ let equal_t (type a b) (a : a t) (b : b t) : (a, b) Misc.eq option =
   | Comprehensions, Comprehensions -> Some Refl
   | Mode, Mode -> Some Refl
   | Unique, Unique -> Some Refl
+  | Overwriting, Overwriting -> Some Refl
   | Include_functor, Include_functor -> Some Refl
   | Polymorphic_parameters, Polymorphic_parameters -> Some Refl
   | Immutable_arrays, Immutable_arrays -> Some Refl
@@ -130,9 +211,10 @@ let equal_t (type a b) (a : a t) (b : b t) : (a, b) Misc.eq option =
   | SIMD, SIMD -> Some Refl
   | Labeled_tuples, Labeled_tuples -> Some Refl
   | Small_numbers, Small_numbers -> Some Refl
-  | ( ( Comprehensions | Mode | Unique | Include_functor
+  | Instances, Instances -> Some Refl
+  | ( ( Comprehensions | Mode | Unique | Overwriting | Include_functor
       | Polymorphic_parameters | Immutable_arrays | Module_strengthening
-      | Layouts | SIMD | Labeled_tuples | Small_numbers ),
+      | Layouts | SIMD | Labeled_tuples | Small_numbers | Instances ),
       _ ) ->
     None
 
@@ -260,7 +342,7 @@ end = struct
         let max_allowed_lvl = List.fold_left Ops.max lvl lvls in
         Some (Pair (extn, max_allowed_lvl))
     in
-    List.filter_map maximal_in_universe Exist.all
+    List.filter_map maximal_in_universe all_extensions
 end
 
 (*****************************************)
@@ -340,7 +422,7 @@ let unconditionally_enable_maximal_without_checks () =
     let (module Ops) = get_level_ops extn in
     Pair (extn, Ops.max_value)
   in
-  extensions := List.map maximal_pair Exist.all
+  extensions := List.map maximal_pair all_extensions
 
 let erasable_extensions_only () =
   Universe.is No_extensions || Universe.is Upstream_compatible
@@ -389,7 +471,9 @@ let get_command_line_string_if_enabled extn =
 (* existentially packed extension *)
 
 module Exist = struct
-  include Exist
+  type t = exist = Pack : _ language_extension -> t
+
+  let all = all_extensions
 
   let to_command_line_strings (Pack extn) =
     let (module Ops) = get_level_ops extn in
@@ -401,6 +485,46 @@ module Exist = struct
 
   let is_erasable : t -> bool = function Pack extn -> is_erasable extn
 end
+
+module Error = struct
+  type error =
+    | Disabled_extension :
+        { ext : _ t;
+          maturity : maturity option
+        }
+        -> error
+
+  let report_error ~loc = function
+    | Disabled_extension { ext; maturity } -> (
+      (* CR layouts: The [maturity] special case is a bit ad-hoc, but the
+         layouts error message would be much worse without it. It also would be
+         nice to mention the language construct in the error message. *)
+      match maturity with
+      | None ->
+        Location.errorf ~loc
+          "The extension \"%s\" is disabled and cannot be used" (to_string ext)
+      | Some maturity ->
+        Location.errorf ~loc
+          "This construct requires the %s version of the extension \"%s\", \
+           which is disabled and cannot be used"
+          (maturity_to_string maturity)
+          (to_string ext))
+
+  exception Error of Location.t * error
+
+  let () =
+    Location.register_error_of_exn (function
+      | Error (loc, err) -> Some (report_error ~loc err)
+      | _ -> None)
+end
+
+let assert_enabled (type a) ~loc (t : a t) (setting : a) =
+  if not (is_at_least t setting)
+  then
+    let maturity : maturity option =
+      match t with Layouts -> Some (setting : maturity) | _ -> None
+    in
+    raise (Error.Error (loc, Disabled_extension { ext = t; maturity }))
 
 (********************************************)
 (* Special functionality for [Pprintast] *)

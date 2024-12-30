@@ -8,21 +8,37 @@ type maturity = Language_extension_kernel.maturity =
   | Beta
   | Alpha
 
+module Maturity : sig
+  (* Maturities are ordered such that the most experimental (Alpha) is
+     greatest *)
+  val max : maturity -> maturity -> maturity
+end
+
 (** The type of language extensions. An ['a t] is an extension that can either
     be off or be set to have any value in ['a], so a [unit t] can be either on
     or off, while a [maturity t] can have different maturity settings. *)
 type 'a t = 'a Language_extension_kernel.t =
   | Comprehensions : unit t
   | Mode : maturity t
-  | Unique : unit t
+  | Unique : maturity t
+  | Overwriting : unit t
   | Include_functor : unit t
   | Polymorphic_parameters : unit t
   | Immutable_arrays : unit t
   | Module_strengthening : unit t
   | Layouts : maturity t
-  | SIMD : unit t
+  | SIMD : maturity t
   | Labeled_tuples : unit t
   | Small_numbers : maturity t
+  | Instances : unit t
+
+(** Require that an extension is enabled for at least the provided level, or
+    else throw an exception at the provided location saying otherwise. *)
+val assert_enabled : loc:Location.t -> 'a t -> 'a -> unit
+
+val maturity_of_unique_for_drf : maturity
+
+val maturity_of_unique_for_destruction : maturity
 
 (** Existentially packed language extension *)
 module Exist : sig
@@ -30,7 +46,7 @@ module Exist : sig
   (* this is removed from the sig by the [with] below; ocamldoc doesn't like
      [:=] in sigs *)
 
-  type t = Language_extension_kernel.Exist.t = Pack : 'a extn -> t
+  type t = Pack : 'a extn -> t
 
   val to_string : t -> string
 
@@ -156,4 +172,17 @@ module For_pprintast : sig
 
   (** Raises if called more than once ever. *)
   val make_printer_exporter : unit -> printer_exporter
+end
+
+(** Expose the exception type raised by [assert_extension_enabled] to help
+    the exception printer. *)
+module Error : sig
+  type error = private
+    | Disabled_extension :
+        { ext : _ t;
+          maturity : maturity option
+        }
+        -> error
+
+  type exn += private Error of Location.t * error
 end

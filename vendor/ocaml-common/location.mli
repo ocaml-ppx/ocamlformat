@@ -106,6 +106,7 @@ type 'a loc = {
 val mknoloc : 'a -> 'a loc
 val mkloc : 'a -> t -> 'a loc
 val get_txt : 'a loc -> 'a
+val get_loc : 'a loc -> t
 val map : ('a -> 'b) -> 'a loc -> 'b loc
 val compare_txt : ('a -> 'b -> 'c) -> 'a loc -> 'b loc -> 'c
 
@@ -347,3 +348,6 @@ val raise_errorf: ?loc:t -> ?sub:msg list ->
 
 val report_exception: formatter -> exn -> unit
 (** Reraise the exception if it is unknown. *)
+
+(** CR uniqueness: remove this once overwriting is fully implemented *)
+val todo_overwrite_not_implemented : ?kind:string -> t -> 'a
