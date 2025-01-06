@@ -24,6 +24,7 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  | Pattern : pattern t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
 
