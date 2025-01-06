@@ -25,6 +25,7 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  | Pattern : pattern t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
 
@@ -37,6 +38,7 @@ let of_syntax = function
   | Core_type -> Any Core_type
   | Module_type -> Any Module_type
   | Expression -> Any Expression
+  | Pattern -> Any Pattern
   | Repl_file -> Any Repl_file
   | Documentation -> Any Documentation
 
@@ -50,6 +52,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Core_type -> m.typ m
   | Module_type -> m.module_type m
   | Expression -> m.expr m
+  | Pattern -> m.pat m
   | Repl_file -> List.map ~f:(m.repl_phrase m)
   | Documentation -> Fn.id
 
@@ -253,6 +256,7 @@ module Parse = struct
     | Core_type -> Parse.core_type ~ocaml_version lexbuf
     | Module_type -> Parse.module_type ~ocaml_version lexbuf
     | Expression -> Parse.expression ~ocaml_version lexbuf
+    | Pattern -> Parse.pattern ~ocaml_version lexbuf
     | Repl_file -> Toplevel_lexer.repl_file ~ocaml_version lexbuf
     | Documentation ->
         let pos = (Location.curr lexbuf).loc_start in
@@ -274,6 +278,7 @@ module Printast = struct
     | Core_type -> core_type
     | Module_type -> module_type
     | Expression -> expression
+    | Pattern -> pattern
     | Repl_file -> repl_file
     | Documentation -> Docstring.dump
 end
