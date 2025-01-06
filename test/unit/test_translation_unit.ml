@@ -124,8 +124,8 @@ let test_parse_and_format_expression =
 
 let tests =
   List.concat
-    [ test_parse_and_format_signature
-    ; test_parse_and_format_use_file
-    ; test_parse_and_format_core_type
+    [ test_parse_and_format_core_type
+    ; test_parse_and_format_expression
     ; test_parse_and_format_module_type
-    ; test_parse_and_format_expression ]
+    ; test_parse_and_format_signature
+    ; test_parse_and_format_use_file ]
