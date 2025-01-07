@@ -582,7 +582,7 @@ end
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let open Fmt in
   let parse_comments_as_doc =
-    conf.fmt_opts.wrap_docstrings.v && conf.fmt_opts.parse_docstrings.v
+    conf.fmt_opts.ocp_indent_compat.v && conf.fmt_opts.parse_docstrings.v
   in
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
