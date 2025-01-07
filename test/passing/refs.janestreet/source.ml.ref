@@ -1664,7 +1664,7 @@ let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
 (*
-   let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
+let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
   fun le a b ->
   match a, b, le with
   | NZ, m, _ -> Diff (m, PlusZ m)
@@ -5901,7 +5901,7 @@ module C : sig module L : module type of List end = A
 include D'
 
 (*
-   let () =
+let () =
   print_endline (Int.to_string D'.M.y)
 *)
 open A
@@ -6528,7 +6528,7 @@ end = struct
   type refer = { poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) }
 end
 (*
-   ocamlc -c pr3918a.mli pr3918b.mli
+  ocamlc -c pr3918a.mli pr3918b.mli
   rm -f pr3918a.cmi
   ocamlc -c pr3918c.ml
 *)
@@ -7410,7 +7410,7 @@ let _ =
 (* Early strict evaluation *)
 
 (*
-   module rec Cyclic
+module rec Cyclic
   : sig val x : int end
   = struct let x = Cyclic.x + 1 end
 ;;
@@ -7507,7 +7507,7 @@ end
 (* Wrong LHS signatures (PR#4336) *)
 
 (*
-   module type ASig = sig type a val a:a val print:a -> unit end
+module type ASig = sig type a val a:a val print:a -> unit end
 module type BSig = sig type b val b:b val print:b -> unit end
 
 module A = struct type a = int let a = 0 let print = print_int end
@@ -7519,6 +7519,7 @@ module MakeB (Empty:sig end) : BSig = B
 module
    rec NewA : ASig = MakeA (struct end)
    and NewB : BSig with type b = NewA.a = MakeB (struct end);;
+
 *)
 
 (* Expressions and bindings *)

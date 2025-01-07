@@ -483,13 +483,13 @@ let _ =
   *)
   ();
   (* indentation preserved
-  *)
+   *)
   ();
   (* indentation preserved
-  *)
+     *)
   ();
   (* indentation not preserved
-  *)
+*)
   ()
 ;;
 

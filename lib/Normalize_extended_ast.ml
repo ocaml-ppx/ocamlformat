@@ -152,14 +152,18 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
   ; typ }
 
 let normalize_cmt (conf : Conf.t) =
-  let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
+  let parse_comments_as_doc =
+    conf.fmt_opts.ocp_indent_compat.v && conf.fmt_opts.parse_docstrings.v
+  in
   object (self)
     method cmt c =
-      let decoded = Cmt.decode ~parse_comments_as_doc c in
+      let decoded = Cmt.decode c in
       match decoded.Cmt.kind with
       | Verbatim txt -> txt
       | Doc txt -> self#doc txt
-      | Normal txt -> Docstring.normalize_text txt
+      | Normal txt ->
+          if parse_comments_as_doc then self#doc txt
+          else Docstring.normalize_text txt
       | Code txt -> self#code txt
       | Asterisk_prefixed lines ->
           String.concat ~sep:" " (List.map ~f:Docstring.normalize_text lines)
