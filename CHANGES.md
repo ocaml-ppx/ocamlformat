@@ -4,6 +4,14 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## unreleased
+
+### Fixed
+
+- Fixed `wrap-comments=true` not working with the janestreet profile (#2645, @Julow)
+  Asterisk-prefixed comments are also now formatted the same way as with the
+  default profile.
+
 ## 0.27.0
 
 ### Highlight
