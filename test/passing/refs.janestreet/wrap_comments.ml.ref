@@ -2,74 +2,61 @@
 
 type t =
   | Aaaaaaaaaa
-    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+       incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb
 
 let _ =
   [ "a"
-  ; "b"
-    (* first line
-     second line *)
+  ; "b" (* first line second line *)
   ; "c"
     (* first line
 
-     second line
-    *)
+       second line *)
   ; "d"
     (* first line
 
-
-     second line *)
+       second line *)
   ; "e"
     (* first line
 
-     second line
-    *)
+       second line *)
   ; "f"
     (* first line
 
-     second line
-    *)
+       second line *)
   ; "g"
   ]
 ;;
 
 let _ =
   let _ =
-    (* This is indented 7
-This 0 *)
+    (* This is indented 7 This 0 *)
     0
   in
   0
 ;;
 
 let _ =
-  (*no space before
-    no space after*)
+  (*no space before no space after*)
   0
 ;;
 
 let _ =
-  (*
-     blah blah
-  *)
+  (* blah blah *)
   ()
 ;;
 
 (*
-   * foo
+ * foo
  * bar
-*)
+ *)
 
-(*
-   * foo
-   bar
-*)
+(* * foo bar *)
 
 let _ =
   f
-    (* foo
-    *)
+    (* foo *)
     a
 ;;
 
@@ -77,7 +64,7 @@ let _ =
  * + 2
  * ---
  *   3
-*)
+ *)
 
 [@@@ocamlformat "wrap-comments=false"]
 
@@ -143,7 +130,7 @@ let _ =
     (* first line
 
      second line
-    *)
+  *)
   ; "d"
     (* first line
 
@@ -153,12 +140,14 @@ let _ =
     (* first line
 
      second line
-    *)
+         *)
   ; "f"
     (* first line
 
      second line
-    *)
+
+
+         *)
   ; "g"
   ]
 ;;
@@ -181,7 +170,7 @@ let _ =
 let _ =
   (*no space before
     just newline after
-  *)
+*)
   0
 ;;
 
@@ -203,21 +192,21 @@ let _ =
 ;;
 
 let _ =
-  (*
-     blah blah
+  (* 
+    blah blah
   *)
   ()
 ;;
 
 (*
-   * foo
+ * foo
  * bar
-*)
+ *)
 
 (*
-   * foo
+ * foo
    bar
-*)
+ *)
 
 let _ =
   (* It is very confusing - same expression has two different types in two contexts:*)
@@ -260,7 +249,7 @@ let _ =
 let _ =
   f
     (* foo
-    *)
+      *)
     a
 ;;
 
@@ -268,4 +257,4 @@ let _ =
  * + 2
  * ---
  *   3
-*)
+ *)
