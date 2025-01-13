@@ -11910,6 +11910,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to variance.ml.stdout
+   (with-stderr-to variance.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/variance.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variance.ml.ref variance.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variance.ml.err variance.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to variance.ml.js-stdout
+   (with-stderr-to variance.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/variance.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variance.ml.js-ref variance.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/variance.ml.js-err variance.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to variants.ml.stdout
    (with-stderr-to variants.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/variants.ml})))))

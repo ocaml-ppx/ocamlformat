@@ -74,6 +74,8 @@ type mapper = {
   typ: mapper -> core_type -> core_type;
   type_declaration: mapper -> type_declaration -> type_declaration;
   type_extension: mapper -> type_extension -> type_extension;
+  variance_and_injectivity: mapper -> Asttypes.variance_and_injectivity
+                            -> Asttypes.variance_and_injectivity;
   kind_abbreviation: mapper -> kind_abbreviation -> kind_abbreviation;
   type_exception: mapper -> type_exception -> type_exception;
   type_kind: mapper -> type_kind -> type_kind;
@@ -237,6 +239,8 @@ module T = struct
         constr_unboxed ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     (* End Jane Street extension *)
 
+  let map_variance_and_injectivity sub = List.map (map_loc sub)
+
   let map_type_declaration sub
       {ptype_name; ptype_params; ptype_cstrs;
        ptype_kind;
@@ -248,9 +252,15 @@ module T = struct
       } =
     let loc = sub.location sub ptype_loc in
     let attrs = sub.attributes sub ptype_attributes in
+    let params =
+      List.map
+        (fun (ct, var_inj) ->
+          sub.typ sub ct, sub.variance_and_injectivity sub var_inj)
+        ptype_params
+    in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
       ?jkind:(ptype_jkind)
-      ~params:(List.map (map_fst (sub.typ sub)) ptype_params)
+      ~params
       ~priv:(Flag.map_private sub ptype_private)
       ~cstrs:(List.map
                 (map_tuple3 (sub.typ sub) (sub.typ sub) (sub.location sub))
@@ -849,6 +859,7 @@ let default_mapper =
     class_description =
       (fun this -> CE.class_infos this (this.class_type this));
     type_declaration = T.map_type_declaration;
+    variance_and_injectivity = T.map_variance_and_injectivity;
     type_kind = T.map_type_kind;
     typ = T.map;
     type_extension = T.map_type_extension;
