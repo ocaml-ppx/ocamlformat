@@ -370,15 +370,19 @@ module Interaction_with_existing_syntax = struct
 
   (* modalities on record fields *)
 
-  type t = {x: t}
+  type t = {x: t [@globalized]}
 
-  type t = A of {x: t}
+  type t = A of {x: t [@globalized]}
 
   (* modalities on constructor arguments *)
 
-  type t = A of typ | B of typ1 * typ2
+  type t =
+    | A of (typ[@globalized])
+    | B of (typ1[@globalized]) * (typ2[@globalized])
 
-  type t = A : typ -> t | B : typ1 * typ2 -> t
+  type t =
+    | A : (typ[@globalized]) -> t
+    | B : (typ1[@globalized]) * (typ2[@globalized]) -> t
 end
 
 module Regressions = struct

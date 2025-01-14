@@ -29,9 +29,12 @@ let f () =
   let () = g (fun () -> ()) in
   "asdfasdfasdfasdfasdfasdfasdf"
 
-type 'a r = {mutable a: 'a; b: 'a; c: 'a}
+type 'a r = {mutable a: 'a; b: 'a; c: 'a [@globalized]}
 
-type 'a r = Foo of 'a | Bar of 'a * 'a | Baz of int * string * 'a
+type 'a r =
+  | Foo of ('a[@globalized])
+  | Bar of 'a * ('a[@globalized])
+  | Baz of (int[@globalized]) * string * ('a[@globalized])
 
 type ('a, 'b) cfn = a:'a -> ?b:b -> 'a -> int -> 'b
 

@@ -16,6 +16,11 @@ let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
   | _ -> false
 
+let globalized_attr =
+  Ast_helper.Attr.mk ~loc:Location.none
+    (Location.mknoloc "globalized")
+    (PStr [])
+
 (* We rewrite both "[@immediate]" and "[@ocaml.immediate]" into ":
    immediate", which is then turned into just "[@immediate]" if we are
    erasing jane syntax. This means "[@ocaml.immediate]" get rewritten to
@@ -478,6 +483,38 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
       else ext )
     |> Ast_mapper.default_mapper.extension_constructor m
   in
+  let label_declaration (m : Ast_mapper.mapper) ld =
+    (* CR modes: Develop a more general mechanism for "erasing" modalities
+       into attributes *)
+    let global__ =
+      List.exists ld.pld_modalities ~f:(function
+        | {Location.txt= Modality "global"; _} -> true
+        | {txt= Modality _; _} -> false )
+    in
+    let ld = Ast_mapper.default_mapper.label_declaration m ld in
+    { ld with
+      pld_attributes=
+        ( if erase_jane_syntax && global__ then
+            globalized_attr :: ld.pld_attributes
+          else ld.pld_attributes ) }
+  in
+  let constructor_argument (m : Ast_mapper.mapper) ca =
+    (* CR modes: Develop a more general mechanism for "erasing" modalities
+       into attributes *)
+    let global__ =
+      List.exists ca.pca_modalities ~f:(function
+        | {Location.txt= Modality "global"; _} -> true
+        | {txt= Modality _; _} -> false )
+    in
+    let ca = Ast_mapper.default_mapper.constructor_argument m ca in
+    { ca with
+      pca_type=
+        ( if erase_jane_syntax && global__ then
+            { ca.pca_type with
+              ptyp_attributes= globalized_attr :: ca.pca_type.ptyp_attributes
+            }
+          else ca.pca_type ) }
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
@@ -486,10 +523,12 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   ; signature
   ; class_signature
   ; class_structure
+  ; constructor_argument
   ; expr
   ; pat
   ; typ
   ; type_declaration
+  ; label_declaration
   ; modes
   ; modalities
   ; value_binding
