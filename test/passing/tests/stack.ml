@@ -95,3 +95,37 @@ let x = stack_ (stack_ ( 2 , stack_ "hello" ),  ~x:(stack_ (Foo x)))
 
 let x = (* 1 *) stack_ (* 2 *) ((* 3 *) stack_ (* 4 *) ((* 5 *) 1 (* 6 *),
         stack_ (* 7 *) "hello" (* 8 *)) (* 9 *), (* 10 *) ~x:((* 11 *)stack_ (* 12 *) (Foo x)))
+
+(* Constructor precedence *)
+
+let x = Foo (stack_ ((), ()))
+
+let x = stack_ (() :: [])
+
+(* Tuples *)
+
+let x = stack_ (1, 2)
+
+let x = stack_ #(1, 2)
+
+let x = stack_ (~x:1, ~y:2)
+
+(* Expressions rejected by the typechecker *)
+
+let x = stack_ (x + y)
+
+let x = stack_ (-x)
+
+let x = stack_ (stack_ (Foo x))
+
+let x = stack_ (let y = 1 in Some y)
+
+let x = stack_ (c # x)
+
+let x = stack_ (r.x <- x)
+
+let x = stack_ (
+  if x
+  then y
+  else z
+)

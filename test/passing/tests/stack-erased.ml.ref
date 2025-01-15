@@ -113,3 +113,35 @@ let x =
       (* 12 *)
         Foo
         x ) )
+
+(* Constructor precedence *)
+
+let x = Foo ((), ())
+
+let x = () :: []
+
+(* Tuples *)
+
+let x = (1, 2)
+
+let x = #(1, 2)
+
+let x = (~x:1, ~y:2)
+
+(* Expressions rejected by the typechecker *)
+
+let x = x + y
+
+let x = -x
+
+let x = Foo x
+
+let x =
+  let y = 1 in
+  Some y
+
+let x = c#x
+
+let x = r.x <- x
+
+let x = if x then y else z
