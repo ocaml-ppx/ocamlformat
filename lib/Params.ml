@@ -297,8 +297,10 @@ let wrap_collec c ~space_around opn cls =
   if space_around then wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
   else wrap_fits_breaks c opn cls
 
-let wrap_record (c : Conf.t) =
-  wrap_collec c ~space_around:c.fmt_opts.space_around_records.v "{" "}"
+let wrap_record (c : Conf.t) ~unboxed =
+  let left_brace = if unboxed then "#{" else "{" in
+  wrap_collec c ~space_around:c.fmt_opts.space_around_records.v left_brace
+    "}"
 
 let wrap_tuple (c : Conf.t) ~unboxed ~parens ~no_parens_if_break =
   if unboxed then wrap_fits_breaks c "#(" ")"
@@ -316,7 +318,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-let get_record_type (c : Conf.t) =
+let get_record_type (c : Conf.t) ~unboxed =
   let sparse_type_decl = Poly.(c.fmt_opts.type_decl.v = `Sparse) in
   let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
   let dock = c.fmt_opts.dock_collection_brackets.v in
@@ -333,9 +335,12 @@ let get_record_type (c : Conf.t) =
             (fmt_or sparse_type_decl "@;<1000 0>" "@ ")
             (fmt_or sparse_type_decl "@;<1000 2>" "@;<1 2>") )
   in
-  { docked_before= fmt_if dock " {"
+  let box_margin = if unboxed then 1 else 0 in
+  { docked_before= fmt_if dock (if unboxed then " #{" else " {")
   ; break_before
-  ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
+  ; box_record=
+      (fun k ->
+        if dock then k else hvbox box_margin (wrap_record c ~unboxed k) )
   ; box_spaced= c.fmt_opts.space_around_records.v
   ; sep_before
   ; sep_after
@@ -352,12 +357,18 @@ type elements_collection_record_expr = {break_after_with: Fmt.t}
 
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
-let get_record_expr (c : Conf.t) =
+let get_record_expr (c : Conf.t) ~unboxed =
   let space = if c.fmt_opts.space_around_records.v then 1 else 0 in
   let dock = c.fmt_opts.dock_collection_brackets.v in
   let box k =
-    if dock then hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
-    else hvbox 0 (wrap_record c k)
+    let margin = if unboxed then 1 else 0 in
+    if dock then
+      hvbox margin
+        (wrap
+           (if unboxed then "#{" else "{")
+           "}"
+           (break space 2 $ k $ break space 0) )
+    else hvbox margin (wrap_record c ~unboxed k)
   in
   ( ( match c.fmt_opts.break_separators.v with
     | `Before ->
@@ -441,12 +452,13 @@ let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
   hvbox indent_opn
     (wrap_k (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
 
-let get_record_pat (c : Conf.t) ~ctx =
-  let params, _ = get_record_expr c in
+let get_record_pat (c : Conf.t) ~ctx ~unboxed =
+  let params, _ = get_record_expr c ~unboxed in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
+      let left_brace = if unboxed then "#{" else "{" in
       box_pattern_docked c ~ctx
-        ~space_around:c.fmt_opts.space_around_records.v "{" "}"
+        ~space_around:c.fmt_opts.space_around_records.v left_brace "}"
     else params.box
   in
   ( {params with box}

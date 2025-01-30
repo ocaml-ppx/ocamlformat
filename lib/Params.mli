@@ -109,7 +109,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-val get_record_type : Conf.t -> record_type
+val get_record_type : Conf.t -> unboxed:bool -> record_type
 
 type elements_collection =
   { box: Fmt.t -> Fmt.t
@@ -122,7 +122,9 @@ type elements_collection_record_expr = {break_after_with: Fmt.t}
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
 val get_record_expr :
-  Conf.t -> elements_collection * elements_collection_record_expr
+     Conf.t
+  -> unboxed:bool
+  -> elements_collection * elements_collection_record_expr
 
 val get_list_expr : Conf.t -> elements_collection
 
@@ -134,7 +136,10 @@ val wrap_comprehension :
   Conf.t -> space_around:bool -> punctuation:string -> Fmt.t -> Fmt.t
 
 val get_record_pat :
-  Conf.t -> ctx:Ast.t -> elements_collection * elements_collection_record_pat
+     Conf.t
+  -> ctx:Ast.t
+  -> unboxed:bool
+  -> elements_collection * elements_collection_record_pat
 
 val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
 

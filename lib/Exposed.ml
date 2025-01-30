@@ -81,7 +81,10 @@ module Right = struct
     | {ptype_cstrs= _ :: _ as cstrs; _} ->
         (* type a = ... constraint left = < ... > *)
         list ~elt:(fun (_left, right, _loc) -> core_type right) cstrs
-    | {ptype_kind= Ptype_open | Ptype_record _; _} -> false
+    | { ptype_kind=
+          Ptype_open | Ptype_record _ | Ptype_record_unboxed_product _
+      ; _ } ->
+        false
     | {ptype_kind= Ptype_abstract; ptype_manifest= None; _} -> false
     | {ptype_kind= Ptype_abstract; ptype_manifest= Some manifest; _} ->
         (* type a = < ... > *)

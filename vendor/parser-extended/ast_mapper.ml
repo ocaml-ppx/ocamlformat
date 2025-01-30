@@ -273,6 +273,8 @@ module T = struct
     | Ptype_variant l ->
         Ptype_variant (List.map (sub.constructor_declaration sub) l)
     | Ptype_record l -> Ptype_record (List.map (sub.label_declaration sub) l)
+    | Ptype_record_unboxed_product l ->
+        Ptype_record_unboxed_product (List.map (sub.label_declaration sub) l)
     | Ptype_open -> Ptype_open
 
   let map_constructor_argument sub x =
@@ -611,8 +613,20 @@ module E = struct
             l
         in
         record ~loc ~attrs fields (map_opt (sub.expr sub) eo)
+    | Pexp_record_unboxed_product (l, eo) ->
+        let fields =
+          List.map
+            (map_tuple3
+               (map_loc sub)
+               (map_opt (map_constraint sub))
+               (map_opt (sub.expr sub)))
+            l
+        in
+        record_unboxed_product ~loc ~attrs fields (map_opt (sub.expr sub) eo)
     | Pexp_field (e, lid) ->
         field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
+    | Pexp_unboxed_field (e, lid) ->
+        unboxed_field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
     | Pexp_setfield (e1, lid, e2) ->
         setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
           (sub.expr sub e2)
@@ -744,6 +758,16 @@ module P = struct
             lpl
         in
         record ~loc ~attrs fields (Flag.map_obj_closed sub cf)
+    | Ppat_record_unboxed_product (lpl, cf) ->
+        let fields =
+          List.map
+            (map_tuple3
+               (map_loc sub)
+               (map_opt (sub.typ sub))
+               (map_opt (sub.pat sub)))
+            lpl
+        in
+        record_unboxed_product ~loc ~attrs fields (Flag.map_obj_closed sub cf)
     | Ppat_array (mf, pl) ->
         array ~loc ~attrs (Flag.map_mutable sub mf) (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)

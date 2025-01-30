@@ -11694,6 +11694,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_record.ml.stdout
+   (with-stderr-to unboxed_record.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record.ml.ref unboxed_record.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record.ml.err unboxed_record.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_record.ml.js-stdout
+   (with-stderr-to unboxed_record.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/unboxed_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record.ml.js-ref unboxed_record.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record.ml.js-err unboxed_record.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_records_cmts_attrs.ml.stdout
+   (with-stderr-to unboxed_records_cmts_attrs.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_records_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs.ml unboxed_records_cmts_attrs.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs.ml.err unboxed_records_cmts_attrs.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_records_cmts_attrs.ml.js-stdout
+   (with-stderr-to unboxed_records_cmts_attrs.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/unboxed_records_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs.ml.js-ref unboxed_records_cmts_attrs.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs.ml.js-err unboxed_records_cmts_attrs.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_tuples.ml.stdout
    (with-stderr-to unboxed_tuples.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_tuples.ml})))))

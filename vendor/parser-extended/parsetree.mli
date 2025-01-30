@@ -332,6 +332,17 @@ and pattern_desc =
 
            Invariant: [n > 0]
          *)
+  | Ppat_record_unboxed_product of
+      (Longident.t loc * core_type option * pattern option) list
+      * obj_closed_flag
+      (** [Ppat_record_unboxed_product([(l1, P1) ; ... ; (ln, Pn)], flag)] represents:
+            - [#{ l1=P1; ...; ln=Pn }]
+                 when [flag] is {{!Asttypes.closed_flag.Closed}[Closed]}
+            - [#{ l1=P1; ...; ln=Pn; _}]
+                 when [flag] is {{!Asttypes.closed_flag.Open}[Open]}
+
+           Invariant: [n > 0]
+         *)
   | Ppat_array of mutable_flag * pattern list
       (** Pattern [[| P1; ...; Pn |]] (flag = Mutable)
           Pattern [[: P1; ...; Pn :]] (flag = Immutable) *)
@@ -445,7 +456,20 @@ and expression_desc =
 
            Invariant: [n > 0]
          *)
+  | Pexp_record_unboxed_product of
+      ( Longident.t loc
+        * type_constraint option
+        * expression option)
+        list
+      * expression option
+      (** [Pexp_record_unboxed_product([(l1,P1) ; ... ; (ln,Pn)], exp0)] represents
+            - [#{ l1=P1; ...; ln=Pn }]         when [exp0] is [None]
+            - [#{ E0 with l1=P1; ...; ln=Pn }] when [exp0] is [Some E0]
+
+           Invariant: [n > 0]
+         *)
   | Pexp_field of expression * Longident.t loc  (** [E.l] *)
+  | Pexp_unboxed_field of expression * Longident.t loc  (** [E.#l] *)
   | Pexp_setfield of expression * Longident.t loc * expression
       (** [E1.l <- E2] *)
   | Pexp_array of mutable_flag * expression list
@@ -696,6 +720,7 @@ and type_kind =
   | Ptype_abstract
   | Ptype_variant of constructor_declaration list
   | Ptype_record of label_declaration list  (** Invariant: non-empty list *)
+  | Ptype_record_unboxed_product of label_declaration list  (** Invariant: non-empty list *)
   | Ptype_open
 
 and label_declaration =

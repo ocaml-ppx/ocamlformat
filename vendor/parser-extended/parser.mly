@@ -800,6 +800,7 @@ let transl_label ~pattern ~arg_label ~loc =
 %token DONE                   "done"
 %token DOT                    "."
 %token DOTDOT                 ".."
+%token DOTHASH                ".#"
 %token DOWNTO                 "downto"
 %token ELSE                   "else"
 %token END                    "end"
@@ -819,6 +820,7 @@ let transl_label ~pattern ~arg_label ~loc =
 %token GREATERRBRACE          ">}"
 %token GREATERRBRACKET        ">]"
 %token HASHLPAREN             "#("
+%token HASHLBRACE             "#{"
 %token IF                     "if"
 %token IN                     "in"
 %token INCLUDE                "include"
@@ -987,12 +989,12 @@ The precedences must be listed from low to high.
 %nonassoc HASH HASH_SUFFIX              /* simple_expr/toplevel_directive */
 %left     HASHOP
 %nonassoc below_DOT
-%nonassoc DOT DOTOP
+%nonassoc DOT DOTHASH DOTOP
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
-          LBRACKETPERCENT QUOTED_STRING_EXPR STACK HASHLPAREN
+          LBRACKETPERCENT QUOTED_STRING_EXPR STACK HASHLBRACE HASHLPAREN
 
 
 /* Entry points */
@@ -2810,6 +2812,8 @@ comprehension_clause:
       { Pexp_override [] }
   | simple_expr DOT mkrhs(label_longident)
       { Pexp_field($1, $3) }
+  | simple_expr DOTHASH mkrhs(label_longident)
+      { Pexp_unboxed_field($1, $3) }
   | od=open_dot_declaration DOT LPAREN seq_expr RPAREN
       { Pexp_open(od, $4) }
   | od=open_dot_declaration DOT LBRACELESS object_expr_content GREATERRBRACE
@@ -2843,6 +2847,9 @@ comprehension_clause:
   | LBRACE record_expr_content RBRACE
       { let (exten, fields) = $2 in
         Pexp_record(fields, exten) }
+  | HASHLBRACE record_expr_content RBRACE
+      { let (exten, fields) = $2 in
+        Pexp_record_unboxed_product(fields, exten) }
   | LBRACE record_expr_content error
       { unclosed "{" $loc($1) "}" $loc($3) }
   | od=open_dot_declaration DOT LBRACE record_expr_content RBRACE
@@ -3459,6 +3466,9 @@ simple_delimited_pattern:
       LBRACE record_pat_content RBRACE
       { let (fields, closed) = $2 in
         Ppat_record(fields, closed) }
+    | HASHLBRACE record_pat_content RBRACE
+      { let (fields, closed) = $2 in
+        Ppat_record_unboxed_product(fields, closed) }
     | LBRACE record_pat_content error
       { unclosed "{" $loc($1) "}" $loc($3) }
     | LBRACKET pattern_semi_list RBRACKET
@@ -3641,6 +3651,10 @@ nonempty_type_kind:
     priv = inline_private_flag
     LBRACE ls = label_declarations RBRACE
       { (Ptype_record ls, priv, oty) }
+  | oty = type_synonym
+    priv = inline_private_flag
+    HASHLBRACE ls = label_declarations RBRACE
+      { (Ptype_record_unboxed_product ls, priv, oty) }
 ;
 %inline type_synonym:
   ioption(terminated(core_type, EQUAL))

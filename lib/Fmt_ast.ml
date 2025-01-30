@@ -1343,7 +1343,14 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       cbox 2
         (Params.parens_if parens c.conf
            (variant_var c lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
-  | Ppat_record (flds, closed_flag) ->
+  | Ppat_record (flds, closed_flag)
+   |Ppat_record_unboxed_product (flds, closed_flag) ->
+      let unboxed =
+        match ppat_desc with
+        | Ppat_record _ -> false
+        | Ppat_record_unboxed_product _ -> true
+        | _ -> assert false
+      in
       let fmt_field (lid, typ1, pat) =
         let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
         let rhs =
@@ -1351,7 +1358,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         in
         hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
-      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 ~unboxed in
       let last_sep, fmt_underscore =
         match closed_flag with
         | OClosed -> (true, noop)
@@ -2572,12 +2579,19 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ( variant_var c s
              $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))
              $ fmt_atrs ) )
-  | Pexp_field (exp, lid) ->
+  | Pexp_field (exp, lid) | Pexp_unboxed_field (exp, lid) ->
+      let unboxed =
+        match pexp_desc with
+        | Pexp_field _ -> false
+        | Pexp_unboxed_field _ -> true
+        | _ -> assert false
+      in
       pro
       $ hvbox 2
           (Params.parens_if parens c.conf
              ( fmt_expression c (sub_exp ~ctx exp)
-             $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ) )
+             $ fmt (if unboxed then "@,.#" else "@,.")
+             $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
@@ -2880,7 +2894,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ hvbox 0
           (Params.parens_if outer_parens c.conf
              (compose_module ~pro ~epi blk ~f:fmt_mod $ fmt_atrs) )
-  | Pexp_record (flds, default) ->
+  | Pexp_record (flds, default) | Pexp_record_unboxed_product (flds, default)
+    ->
+      let unboxed =
+        match pexp_desc with
+        | Pexp_record _ -> false
+        | Pexp_record_unboxed_product _ -> true
+        | _ -> assert false
+      in
       let fmt_field (lid, tc, exp) =
         let typ1, typ2 =
           match tc with
@@ -2895,7 +2916,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         in
         hvbox 0 @@ fmt_record_field c ?typ1 ?typ2 ?rhs lid
       in
-      let p1, p2 = Params.get_record_expr c.conf in
+      let p1, p2 = Params.get_record_expr c.conf ~unboxed in
       let last_loc (lid, tc, e) =
         match (tc, e) with
         | _, Some e -> e.pexp_loc
@@ -3782,8 +3803,14 @@ and fmt_type_declaration c ?(pre = noop) ?name ?(eq = "=") {ast= decl; _} =
         box_manifest (fmt_manifest m)
         $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
-    | Ptype_record lbl_decls ->
-        let p = Params.get_record_type c.conf in
+    | Ptype_record lbl_decls | Ptype_record_unboxed_product lbl_decls ->
+        let unboxed =
+          match ptype_kind with
+          | Ptype_record _ -> false
+          | Ptype_record_unboxed_product _ -> true
+          | _ -> assert false
+        in
+        let p = Params.get_record_type c.conf ~unboxed in
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
@@ -3955,7 +3982,7 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
       let vars =
         match vars with Some vars -> fmt "@ " $ vars | None -> noop
       in
-      let p = Params.get_record_type c.conf in
+      let p = Params.get_record_type c.conf ~unboxed:false in
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last

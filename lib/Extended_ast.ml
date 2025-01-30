@@ -181,6 +181,9 @@ module Parse = struct
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
+      | {ppat_desc= Ppat_record_unboxed_product (fields, flag); _} as e ->
+          let fields = List.map ~f:(pat_record_field m) fields in
+          {e with ppat_desc= Ppat_record_unboxed_product (fields, flag)}
       (* [(module M) : (module T)] -> [(module M : T)] *)
       | { ppat_desc=
             Ppat_constraint
@@ -212,6 +215,12 @@ module Parse = struct
           { e with
             pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_)
           }
+      | {pexp_desc= Pexp_record_unboxed_product (fields, with_); _} as e ->
+          let fields = List.map ~f:(record_field m) fields in
+          { e with
+            pexp_desc=
+              Pexp_record_unboxed_product
+                (fields, Option.map ~f:(m.expr m) with_) }
       (* [( + ) 1 2] -> [1 + 2] *)
       | { pexp_desc=
             Pexp_apply
