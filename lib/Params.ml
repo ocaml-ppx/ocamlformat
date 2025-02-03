@@ -380,7 +380,7 @@ let get_or_pattern_is_nested ~ctx pat =
       not
         (List.exists bindings.pvbs_bindings ~f:(function
           | {pvb_body= Pfunction_cases (cases, _, _); _} -> check_cases cases
-          | _ -> false ) )
+          | _ -> false ))
   | _ -> true
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
