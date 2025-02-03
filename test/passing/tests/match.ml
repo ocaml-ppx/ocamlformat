@@ -69,3 +69,52 @@ let () =
      | _ -> ())
   | _ -> ()
 ;;
+
+[@@@ocamlformat "nested-match=align"]
+
+let () =
+  match f x with
+  | _ :: _ -> aaaaa aaaa a aa aaaaaa aaaa
+  | _ ->
+  match g y with
+  | _ :: _ :: _ :: _ -> bbb bbbbb bbbbbbb bbbb bbbb
+  | _ :: _ :: _ -> cc cccc cccc cccc cccc ccc cccccc cccc
+  | [] -> ff dda asa
+
+let () =
+  match%ext1 f x with
+  | _ :: _ -> aaaaa aaaa a aa aaaaaa aaaa
+  | _ ->
+  match g y with
+  | _ :: _ :: _ :: _ -> bbb bbbbb bbbbbbb bbbb bbbb
+  | _ :: _ :: _ -> cc cccc cccc cccc cccc ccc cccccc cccc
+  | [] -> ff dda asa
+
+let () =
+  match f x with
+  | _ :: _ -> aaaaa aaaa a aa aaaaaa aaaa
+  | _ ->
+  match%ext2 g y with
+  | _ :: _ :: _ :: _ -> bbb bbbbb bbbbbbb bbbb bbbb
+  | _ :: _ :: _ -> cc cccc cccc cccc cccc ccc cccccc cccc
+  | [] -> ff dda asa
+
+let () =
+  match f x with
+  | _ :: _ -> aaaaa aaaa a aa aaaaaa aaaa
+  | _ ->
+      [%ext2
+        match g y with
+        | _ :: _ :: _ :: _ -> bbb bbbbb bbbbbbb bbbb bbbb
+        | _ :: _ :: _ -> cc cccc cccc cccc cccc ccc cccccc cccc
+        | [] -> ff dda asa]
+
+let () =
+  match%ext1 f x with
+  | _ :: _ -> aaaaa aaaa a aa aaaaaa aaaa
+  | _ ->
+  match%ext2 g y with
+  | _ :: _ :: _ :: _ -> bbb bbbbb bbbbbbb bbbb bbbb
+  | _ :: _ :: _ -> cc cccc cccc cccc cccc ccc cccccc cccc
+  | [] -> ff dda asa
+

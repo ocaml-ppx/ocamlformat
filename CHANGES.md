@@ -12,6 +12,8 @@ profile. This started with version 0.26.0.
   Asterisk-prefixed comments are also now formatted the same way as with the
   default profile.
 
+- Fixed `nested-match=align` not working with `match%ext` (#2648, @EmileTrotignon)
+
 ## 0.27.0
 
 ### Highlight
