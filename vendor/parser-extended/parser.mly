@@ -747,7 +747,7 @@ let convert_jkind_to_legacy_attr =
 (* NOTE: An alternate approach for performing the erasure of %call_pos and %src_pos
    could have been doing it as a ppx transformation instead of performing the erasing
    inside of ocamlformat. *)
-let transl_label ~pattern ~arg_label ~loc =
+let erase_call_pos_pattern ~pattern ~arg_label ~loc =
   if not (Erase_jane_syntax.should_erase ())
   then arg_label, pattern, None
   else (
@@ -762,6 +762,18 @@ let transl_label ~pattern ~arg_label ~loc =
              { loc; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "dummy_pos") }) )
     | _ -> arg_label, pattern, None)
 ;;
+
+let erase_call_pos_type ~arg_label ~arg_type ~loc =
+  if not (Erase_jane_syntax.should_erase ())
+  then arg_label, arg_type
+  else (
+    match arg_label, arg_type.ptyp_desc with
+    | Labelled l, Ptyp_extension ({ txt = "call_pos"; _ }, _) ->
+       ( Optional l
+       , Ast_helper.Typ.constr
+           { loc; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "position") }
+           [] )
+    | _ -> arg_label, arg_type)
 
 %}
 
@@ -2434,7 +2446,7 @@ labeled_simple_pattern:
       { let lbl, pat, cty, modes = x in
         let pat = mkpat_with_modes ~loc:$loc(x) ~pat ~cty ~modes in
         let arg_label, pat, default_value =
-          transl_label
+          erase_call_pos_pattern
             ~pattern:pat
             ~arg_label:(mk_labelled lbl $sloc)
             ~loc:(make_loc $sloc)
@@ -2445,7 +2457,7 @@ labeled_simple_pattern:
       { false, mk_labelled (fst $2) $sloc, None, snd $2 }
   | LABEL simple_pattern
       { let arg_label, pat, default_value =
-          transl_label
+          erase_call_pos_pattern
             ~pattern:($2)
             ~arg_label:(mk_labelled $1 $sloc)
             ~loc:(make_loc $sloc)
@@ -2453,7 +2465,7 @@ labeled_simple_pattern:
         false, arg_label, default_value, pat }
   | LABEL LPAREN LOCAL pattern RPAREN
       { let arg_label, pat, default_value =
-          transl_label
+          erase_call_pos_pattern
             ~pattern:(mkpat_stack $4)
             ~arg_label:(mk_labelled $1 $sloc)
             ~loc:(make_loc $sloc)
@@ -4102,19 +4114,12 @@ strict_function_or_labeled_tuple_type:
       codomain = strict_function_or_labeled_tuple_type
         { let (domain, _), arg_modes = domain_with_modes in
           let type_ = mktyp_modes local domain in
+          let loc = make_loc $sloc in
           let label, type_ =
-            if not (Erase_jane_syntax.should_erase ())
-            then label, type_
-            else (
-              match label, type_.ptyp_desc with
-              | Labelled l, Ptyp_extension ({ txt = "call_pos"; _ }, _) ->
-                ( Optional l
-                , Ast_helper.Typ.constr
-                    { loc = make_loc $sloc
-                    ; txt = Ldot (Ldot (Lident "Stdlib", "Lexing"), "position")
-                    }
-                    [] )
-              | _ -> label, type_)
+            erase_call_pos_type
+              ~arg_label:label
+              ~arg_type:type_
+              ~loc
           in
           let arrow_type = {
             pap_label = label;
@@ -4142,6 +4147,13 @@ strict_function_or_labeled_tuple_type:
       %prec MINUSGREATER
          { let (domain, _), arg_modes = domain_with_modes in
            let (codomain, _), ret_modes = codomain_with_modes in
+           let loc = make_loc $sloc in
+           let label, domain =
+             erase_call_pos_type
+               ~arg_label:label
+               ~arg_type:domain
+               ~loc
+           in
            let arrow_type = {
              pap_label = label;
              pap_loc = make_loc $sloc;

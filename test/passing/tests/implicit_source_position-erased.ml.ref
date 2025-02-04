@@ -18,3 +18,10 @@ let in_a_type : ?call_pos:Stdlib.Lexing.position -> unit -> Lexing.position =
 let in_an_expression = Stdlib.Lexing.dummy_pos
 
 let with_locals ?(call_pos = Stdlib.Lexing.dummy_pos) () = ()
+
+type 'a t = ?here:Stdlib.Lexing.position -> 'a
+
+let f (x : ?here:Stdlib.Lexing.position -> _)
+    ~(y : ?here:Stdlib.Lexing.position -> _)
+    ?(z : ?here:Stdlib.Lexing.position -> _) =
+  ()
