@@ -1,0 +1,8 @@
+(* a *)
+@@
+(* b *)
+moda1
+(* c *)
+moda2
+(* d *)
+val x : int

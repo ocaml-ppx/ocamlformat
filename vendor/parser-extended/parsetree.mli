@@ -1051,7 +1051,12 @@ and functor_parameter =
             - [(X : MT)] when [name] is [Some X],
             - [(_ : MT)] when [name] is [None] *)
 
-and signature = signature_item list
+and signature =
+  {
+    psg_modalities : modalities;
+    psg_items : signature_item list;
+    psg_loc : Location.t;
+  }
 
 and signature_item =
     {
@@ -1090,6 +1095,7 @@ and signature_item_desc =
 and module_declaration =
     {
      pmd_name: string option loc;
+     pmd_modalities: modalities;
      pmd_args: functor_parameter loc list;
      pmd_type: module_type;
      pmd_ext_attrs : ext_attrs;

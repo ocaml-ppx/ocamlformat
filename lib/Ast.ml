@@ -320,8 +320,8 @@ let doc_atrs ?(acc = []) atrs =
 
 let rec mty_is_simple x =
   match x.pmty_desc with
-  | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
-  | Pmty_signature (_ :: _)
+  | Pmty_ident _ | Pmty_alias _ | Pmty_signature {psg_items= []; _} -> true
+  | Pmty_signature {psg_items= _ :: _; _}
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
    |Pmty_functor (_, _)

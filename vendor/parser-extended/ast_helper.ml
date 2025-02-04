@@ -260,6 +260,11 @@ module Sig = struct
       f_txt
 end
 
+module Sg = struct
+  let mk ?(loc = !default_loc) ?(modalities = []) a =
+    {psg_items = a; psg_modalities = modalities; psg_loc = loc}
+end
+
 module Str = struct
   let mk ?(loc = !default_loc) d = {pstr_desc = d; pstr_loc = loc}
 
@@ -390,9 +395,10 @@ end
 
 module Md = struct
   let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
-        ?(docs = empty_docs) ?(text = []) name args typ =
+        ?(docs = empty_docs) ?(text = []) name modalities args typ =
     {
      pmd_name = name;
+     pmd_modalities = modalities;
      pmd_args = args;
      pmd_type = typ;
      pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);

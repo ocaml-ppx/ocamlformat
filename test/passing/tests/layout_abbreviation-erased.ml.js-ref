@@ -815,7 +815,11 @@ kind_abbrev_ k =
   (* 375 *)
   mod
      (* 382 *)
-     m (* 381 *) mmmmmmmmmmmmmmmmmmmmm (* 383 *) mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+     m
+     (* 381 *)
+     mmmmmmmmmmmmmmmmmmmmm
+     (* 383 *)
+     mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
 (* 374 *)
 
 kind_abbrev_ k =
@@ -1912,8 +1916,8 @@ module type S = sig
                                       _
                                       (* 1192 *)
                                       (* 1191 *)
-                                      mod (* 1194 *)
-                                          mmmmmmmmmmmmm (* 1195 *) mmmmmmmmmmmmm
+                                      mod
+                                         (* 1194 *) mmmmmmmmmmmmm (* 1195 *) mmmmmmmmmmmmm
                                       (* 1190 *)
                                       (* 1189 *)
                                       with (* 1196 *) tt (* 1188 *))

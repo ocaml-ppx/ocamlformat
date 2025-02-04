@@ -1009,7 +1009,9 @@ and module_type i ppf x =
       module_type i ppf mt;
       longident_loc i ppf li
 
-and signature i ppf x = list i signature_item ppf x
+and signature i ppf {psg_items; psg_modalities} =
+  modalities i ppf psg_modalities;
+  list i signature_item ppf psg_items
 
 and signature_item i ppf x =
   line i ppf "signature_item %a\n" fmt_location x.psig_loc;
@@ -1377,7 +1379,7 @@ let repl_phrase i ppf x =
   toplevel_phrase i ppf x.prepl_phrase;
   line i ppf "output %S\n" x.prepl_output
 
-let interface ppf x = list 0 signature_item ppf x
+let interface ppf x = signature 0 ppf x
 
 let implementation ppf x = list 0 structure_item ppf x
 

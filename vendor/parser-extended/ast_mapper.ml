@@ -866,7 +866,13 @@ let default_mapper =
     structure = (fun this l -> List.map (this.structure_item this) l);
     structure_item = M.map_structure_item;
     module_expr = M.map;
-    signature = (fun this l -> List.map (this.signature_item this) l);
+    signature =
+      (fun this {psg_items; psg_modalities; psg_loc} ->
+         let psg_modalities = this.modalities this psg_modalities in
+         let psg_items = List.map (this.signature_item this) psg_items in
+         let psg_loc = this.location this psg_loc in
+         {psg_items; psg_modalities; psg_loc}
+      );
     signature_item = MT.map_signature_item;
     module_type = MT.map;
     with_constraint = MT.map_with_constraint;
@@ -908,9 +914,10 @@ let default_mapper =
     binding_op = E.map_binding_op;
 
     module_declaration =
-      (fun this {pmd_name; pmd_args; pmd_type; pmd_ext_attrs; pmd_loc} ->
+      (fun this {pmd_name; pmd_modalities; pmd_args; pmd_type; pmd_ext_attrs; pmd_loc} ->
          Md.mk
            (map_loc this pmd_name)
+           (this.modalities this pmd_modalities)
            (List.map (map_functor_param this) pmd_args)
            (this.module_type this pmd_type)
            ~attrs:(this.ext_attrs this pmd_ext_attrs)

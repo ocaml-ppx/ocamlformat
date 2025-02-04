@@ -147,7 +147,7 @@ module Right = struct
 
   let payload = function
     | PStr items -> list ~elt:structure_item items
-    | PSig items -> list ~elt:signature_item items
+    | PSig {psg_items; _} -> list ~elt:signature_item psg_items
     | PTyp t -> core_type t
     | PPat _ -> false
 end

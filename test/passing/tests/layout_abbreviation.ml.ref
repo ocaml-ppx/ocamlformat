@@ -2066,8 +2066,7 @@ module type S = sig
                                                     tttttttttttttttttttt
                                                     (* 1091 *)
                                                     (* 1079 *)))
-                                           mod (* 1096 *)
-                                               mmmmmmmmmmmmmm
+                                           mod (* 1096 *) mmmmmmmmmmmmmm
                                            (* 1078 *)
                                            (* 1077 *)
                                            with (* 1097 *)

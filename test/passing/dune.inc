@@ -2679,6 +2679,186 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to default_modalities.ml.stdout
+   (with-stderr-to default_modalities.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/default_modalities.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.ml.ref default_modalities.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.ml.err default_modalities.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities.ml.js-stdout
+   (with-stderr-to default_modalities.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.ml.js-ref default_modalities.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.ml.js-err default_modalities.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities.mli.stdout
+   (with-stderr-to default_modalities.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/default_modalities.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.mli.ref default_modalities.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.mli.err default_modalities.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities.mli.js-stdout
+   (with-stderr-to default_modalities.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.mli.js-ref default_modalities.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities.mli.js-err default_modalities.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities2.mli.stdout
+   (with-stderr-to default_modalities2.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/default_modalities2.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2.mli.ref default_modalities2.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2.mli.err default_modalities2.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities2.mli.js-stdout
+   (with-stderr-to default_modalities2.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities2.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2.mli.js-ref default_modalities2.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2.mli.js-err default_modalities2.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities3.mli.stdout
+   (with-stderr-to default_modalities3.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/default_modalities3.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3.mli.ref default_modalities3.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3.mli.err default_modalities3.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities3.mli.js-stdout
+   (with-stderr-to default_modalities3.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities3.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3.mli.js-ref default_modalities3.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3.mli.js-err default_modalities3.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities4.mli.stdout
+   (with-stderr-to default_modalities4.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --no-comment-check %{dep:tests/default_modalities4.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4.mli.ref default_modalities4.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4.mli.err default_modalities4.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities4.mli.js-stdout
+   (with-stderr-to default_modalities4.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities4.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4.mli.js-ref default_modalities4.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4.mli.js-err default_modalities4.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to directives.mlt.stdout
    (with-stderr-to directives.mlt.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/directives.mlt})))))
@@ -8387,6 +8567,80 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to modality_comments_failure.mli.stdout
+   (with-stderr-to modality_comments_failure.mli.stderr
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} --margin-check %{dep:tests/modality_comments_failure.mli}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_failure.mli.ref modality_comments_failure.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_failure.mli.err modality_comments_failure.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modality_comments_failure.mli.js-stdout
+   (with-stderr-to modality_comments_failure.mli.js-stderr
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modality_comments_failure.mli}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_failure.mli.js-ref modality_comments_failure.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_failure.mli.js-err modality_comments_failure.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modality_comments_regression.mli.stdout
+   (with-stderr-to modality_comments_regression.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/modality_comments_regression.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_regression.mli.ref modality_comments_regression.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_regression.mli.err modality_comments_regression.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to modality_comments_regression.mli.js-stdout
+   (with-stderr-to modality_comments_regression.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/modality_comments_regression.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_regression.mli.js-ref modality_comments_regression.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/modality_comments_regression.mli.js-err modality_comments_regression.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to modes-erased.ml.stdout
    (with-stderr-to modes-erased.ml.stderr
      (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/modes.ml})))))
@@ -8850,6 +9104,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/module_item_spacing.mli.js-err module_item_spacing.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to module_modes.mli.stdout
+   (with-stderr-to module_modes.mli.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/module_modes.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.mli.ref module_modes.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.mli.err module_modes.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to module_modes.mli.js-stdout
+   (with-stderr-to module_modes.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/module_modes.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.mli.js-ref module_modes.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.mli.js-err module_modes.mli.js-stderr)))
 
 (rule
  (deps tests/.ocamlformat )

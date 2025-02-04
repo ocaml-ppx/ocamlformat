@@ -12,8 +12,8 @@
 open Extended_ast
 
 type 'a item =
-  | Structure : Extended_ast.structure item
-  | Signature : Extended_ast.signature item
+  | Structure : Extended_ast.structure_item list item
+  | Signature : Extended_ast.signature_item list item
   | Use_file : Extended_ast.use_file item
 
 type 'a t =

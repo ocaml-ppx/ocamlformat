@@ -240,8 +240,7 @@ type a =
   ((* comment 1 *)
   'k (* comment 2 *) :
   (* comment 3 *)
-  immediate64 (* comment 4 *) mod (* comment 5 *)
-                                  mode (* comment 6 *))
+  immediate64 (* comment 4 *) mod (* comment 5 *) mode (* comment 6 *))
 (* comment 7 *)
 
 let f (type a : immediate mod mode) x = x

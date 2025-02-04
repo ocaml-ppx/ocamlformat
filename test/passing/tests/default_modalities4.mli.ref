@@ -1,0 +1,17 @@
+@@ moda1 moda2
+
+(** cmt *)
+
+type t
+
+module type T = sig @@ moda1 moda2
+  (** cmt *)
+
+  type t
+
+  module T : sig @@ moda1 moda2
+    (** cmt *)
+
+    type t
+  end
+end
