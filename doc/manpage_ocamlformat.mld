@@ -575,6 +575,9 @@ OPTIONS
            Emit a warning if the formatted output exceeds the margin. The
            flag is unset by default.
 
+       --metaocaml
+           Enable MetaOCaml support. The flag is unset by default.
+
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
            iterations. May be set in .ocamlformat. The default value is 10.
@@ -600,6 +603,9 @@ OPTIONS
 
        --no-margin-check
            Unset margin-check.
+
+       --no-metaocaml
+           Unset metaocaml.
 
        --no-quiet
            Unset quiet.

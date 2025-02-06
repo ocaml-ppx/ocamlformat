@@ -130,7 +130,8 @@ type opr_opts =
   ; ocaml_version: Ocaml_version.t elt
   ; quiet: bool elt
   ; disable_conf_attrs: bool elt
-  ; version_check: bool elt }
+  ; version_check: bool elt
+  ; metaocaml: bool elt }
 
 type t =
   { fmt_opts: fmt_opts

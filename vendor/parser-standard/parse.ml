@@ -42,12 +42,13 @@ let maybe_skip_phrase lexbuf =
 
 type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
 
-let wrap (parser : 'a parser) ~ocaml_version lexbuf : 'a =
+let wrap (parser : 'a parser) ~ocaml_version ~metaocaml lexbuf : 'a =
   try
     Docstrings.init ();
     let keyword_edition =
       Some (ocaml_version, [])
     in
+    Lexer.lex_metaocaml := metaocaml;
     Lexer.init ?keyword_edition ();
     let open Parser.MenhirInterpreter in
     let rec fix_resume = function
