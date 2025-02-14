@@ -14,6 +14,8 @@ profile. This started with version 0.26.0.
 
 - Fixed `nested-match=align` not working with `match%ext` (#2648, @EmileTrotignon)
 
+- Print valid syntax for the corner case (1).a (#2653, @v-gb)
+
 ## 0.27.0
 
 ### Highlight
