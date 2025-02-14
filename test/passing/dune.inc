@@ -2679,6 +2679,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to default_modalities-erased.ml.stdout
+   (with-stderr-to default_modalities-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=5 %{dep:tests/default_modalities.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.ml.ref default_modalities-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.ml.err default_modalities-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities-erased.ml.js-stdout
+   (with-stderr-to default_modalities-erased.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.ml.js-ref default_modalities-erased.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.ml.js-err default_modalities-erased.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities-erased.mli.stdout
+   (with-stderr-to default_modalities-erased.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax %{dep:tests/default_modalities.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.mli.ref default_modalities-erased.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.mli.err default_modalities-erased.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities-erased.mli.js-stdout
+   (with-stderr-to default_modalities-erased.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.mli.js-ref default_modalities-erased.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities-erased.mli.js-err default_modalities-erased.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to default_modalities.ml.stdout
    (with-stderr-to default_modalities.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/default_modalities.ml})))))
@@ -2751,6 +2823,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to default_modalities2-erased.mli.stdout
+   (with-stderr-to default_modalities2-erased.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax %{dep:tests/default_modalities2.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2-erased.mli.ref default_modalities2-erased.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2-erased.mli.err default_modalities2-erased.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities2-erased.mli.js-stdout
+   (with-stderr-to default_modalities2-erased.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities2.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2-erased.mli.js-ref default_modalities2-erased.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities2-erased.mli.js-err default_modalities2-erased.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to default_modalities2.mli.stdout
    (with-stderr-to default_modalities2.mli.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=4 %{dep:tests/default_modalities2.mli})))))
@@ -2787,6 +2895,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to default_modalities3-erased.mli.stdout
+   (with-stderr-to default_modalities3-erased.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax %{dep:tests/default_modalities3.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3-erased.mli.ref default_modalities3-erased.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3-erased.mli.err default_modalities3-erased.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities3-erased.mli.js-stdout
+   (with-stderr-to default_modalities3-erased.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities3.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3-erased.mli.js-ref default_modalities3-erased.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities3-erased.mli.js-err default_modalities3-erased.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to default_modalities3.mli.stdout
    (with-stderr-to default_modalities3.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/default_modalities3.mli})))))
@@ -2818,6 +2962,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/default_modalities3.mli.js-err default_modalities3.mli.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities4-erased.mli.stdout
+   (with-stderr-to default_modalities4-erased.mli.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax %{dep:tests/default_modalities4.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4-erased.mli.ref default_modalities4-erased.mli.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4-erased.mli.err default_modalities4-erased.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to default_modalities4-erased.mli.js-stdout
+   (with-stderr-to default_modalities4-erased.mli.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/default_modalities4.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4-erased.mli.js-ref default_modalities4-erased.mli.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/default_modalities4-erased.mli.js-err default_modalities4-erased.mli.js-stderr)))
 
 (rule
  (deps tests/.ocamlformat )

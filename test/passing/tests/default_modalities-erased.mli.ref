@@ -1,0 +1,3 @@
+(** Doc comment *)
+
+val x : string
