@@ -126,9 +126,11 @@ type t =
   | Unerasable_position_argument            (* 188 *)
   | Unnecessarily_partial_tuple_pattern     (* 189 *)
   | Probe_name_too_long of string           (* 190 *)
+  | Zero_alloc_all_hidden_arrow of string   (* 198 *)
   | Unchecked_zero_alloc_attribute          (* 199 *)
   | Unboxing_impossible                     (* 210 *)
   | Mod_by_top of string                    (* 211 *)
+  | Unnecessary_allow_any_kind              (* 212 *)
 
 (* If you remove a warning, leave a hole in the numbering.  NEVER change
    the numbers of existing warnings.
@@ -214,9 +216,11 @@ let number = function
   | Unerasable_position_argument -> 188
   | Unnecessarily_partial_tuple_pattern -> 189
   | Probe_name_too_long _ -> 190
+  | Zero_alloc_all_hidden_arrow _ -> 198
   | Unchecked_zero_alloc_attribute -> 199
   | Unboxing_impossible -> 210
   | Mod_by_top _ -> 211
+  | Unnecessary_allow_any_kind -> 212
 ;;
 (* DO NOT REMOVE the ;; above: it is used by
    the testsuite/ests/warnings/mnemonics.mll test to determine where
@@ -579,6 +583,11 @@ let descriptions = [
     names = ["probe-name-too-long"];
     description = "Probe name must be at most 100 characters long.";
     since = since 4 14 };
+  { number = 198;
+    names = ["zero-alloc-all-hidden-arrow"];
+    description = "A declaration whose type is an alias of a function type \
+                   will be ignored by zero_alloc all or all_opt.";
+    since = since 4 14 };
   { number = 199;
     names = ["unchecked-zero-alloc-attribute"];
     description = "A property of a function that was \
@@ -592,6 +601,11 @@ let descriptions = [
     names = ["mod-by-top"];
     description = "Including the top-most element of an axis in a kind's modifiers is a no-op.";
     since = since 4 14 };
+  { number = 212;
+    names = ["unnecessary-allow-any-kind"];
+    description = "[@@unsafe_allow_any_kind_in_{impl,intf}] attributes included \
+                   on a type and a signature with matching kinds";
+    since = since 5 1 };
 ]
 
 let name_to_number =
@@ -1221,6 +1235,14 @@ let message = function
       Printf.sprintf
         "This probe name is too long: `%s'. \
          Probe names must be at most 100 characters long." name
+  | Zero_alloc_all_hidden_arrow s ->
+      Printf.sprintf
+      "The type of this item is an\n\
+       alias of a function type, but the [@@@zero_alloc %s] attribute for\n\
+       this signature does not apply to it because its type is not\n\
+       syntactically a function type. If it should be checked, use an\n\
+       explicit zero_alloc attribute with an arity. If not, use an explicit\n\
+       zero_alloc ignore attribute." s
   | Unchecked_zero_alloc_attribute ->
       Printf.sprintf "the zero_alloc attribute cannot be checked.\n\
       The function it is attached to was optimized away. \n\
@@ -1235,6 +1257,10 @@ let message = function
         "%s is the top-most modifier.\n\
          Modifying by a top element is a no-op."
         modifier
+  | Unnecessary_allow_any_kind ->
+    Printf.sprintf
+      "[@@allow_any_kind_in_intf] and [@@allow_any_kind_in_impl] set on a \n\
+       type, but the kind matches. The attributes can be removed."
 ;;
 
 let nerrors = ref 0

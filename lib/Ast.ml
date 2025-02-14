@@ -1184,7 +1184,7 @@ end = struct
     | Jkd j ->
         assert (
           match j with
-          | Kind_of t | With (_, t) -> t == typ
+          | Kind_of t | With (_, t, _) -> t == typ
           | Default | Abbreviation _ | Mod _ | Product _ -> false )
     | Top | Tli _ | Rep -> assert false
 

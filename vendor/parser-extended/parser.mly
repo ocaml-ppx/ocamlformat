@@ -3715,8 +3715,8 @@ type_parameters:
 jkind:
     mkrhs(jkind) MOD mode_expr
       { Mod ($1, $3) }
-  | mkrhs(jkind) WITH core_type
-      { With ($1, $3) }
+  | mkrhs(jkind) WITH core_type optional_atat_modalities_expr
+      { With ($1, $3, $4) }
   | mkrhs(ident)
       { let {txt; loc} = $1 in
         Abbreviation ({ txt; loc }) }

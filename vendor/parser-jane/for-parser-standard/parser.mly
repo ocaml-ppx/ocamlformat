@@ -808,7 +808,12 @@ let package_type_of_module_type pmty =
   in
   match pmty with
   | {pmty_desc = Pmty_ident lid} -> (lid, [], pmty.pmty_attributes)
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; pmty_attributes = inner_attributes}, cstrs)} ->
+      begin match inner_attributes with
+      | [] -> ()
+      | attr :: _ ->
+        err attr.attr_loc Syntaxerr.Misplaced_attribute
+      end;
       (lid, List.map map_cstr cstrs, pmty.pmty_attributes)
   | _ ->
       err pmty.pmty_loc Neither_identifier_nor_with_type
@@ -2791,16 +2796,20 @@ optional_atomic_constraint_:
   }
   | { empty_body_constraint }
 
+fun_:
+    /* Cf #5939: we used to accept (fun p when e0 -> e) */
+  | FUN ext_attributes fun_params body_constraint = optional_atomic_constraint_
+      MINUSGREATER fun_body
+    {  mkfunction $3 body_constraint $6 ~loc:$sloc ~attrs:$2 }
+
 fun_expr:
     simple_expr %prec below_HASH
       { $1 }
   | fun_expr_attrs
       { let desc, attrs = $1 in
         mkexp_attrs ~loc:$sloc desc attrs }
-    /* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | FUN ext_attributes fun_params body_constraint = optional_atomic_constraint_
-      MINUSGREATER fun_body
-      {  mkfunction $3 body_constraint $6 ~loc:$sloc ~attrs:$2 }
+  | fun_
+      { $1 }
   | expr_
       { $1 }
   | let_bindings(ext) IN seq_expr
@@ -2885,15 +2894,22 @@ fun_expr:
       { mkexp ~loc:$sloc (Pexp_apply($1, $2)) }
   | STACK simple_expr
       { mkexp ~loc:$sloc (Pexp_stack $2) }
+  | STACK or_function(fun_)
+      { mkexp ~loc:$sloc (Pexp_stack $2) }
   | labeled_tuple %prec below_COMMA
       { mkexp ~loc:$sloc (Pexp_tuple $1) }
-  | mkrhs(constr_longident) simple_expr %prec below_HASH
-      { mkexp ~loc:$sloc (Pexp_construct($1, Some $2)) }
+  | constructor_app %prec below_HASH { $1 }
+  | STACK constructor_app %prec below_HASH
+      { mkexp ~loc:$sloc (Pexp_stack $2) }
   | name_tag simple_expr %prec below_HASH
       { mkexp ~loc:$sloc (Pexp_variant($1, Some $2)) }
   | e1 = fun_expr op = op(infix_operator) e2 = expr
       { mkexp ~loc:$sloc (mkinfix e1 op e2) }
 ;
+
+%inline constructor_app:
+  | mkrhs(constr_longident) simple_expr
+    { mkexp ~loc:$sloc (Pexp_construct($1, Some $2)) }
 
 simple_expr:
   | LPAREN seq_expr RPAREN
@@ -3964,8 +3980,8 @@ jkind_desc:
       in
       Mod ($1, modes)
     }
-  | jkind_annotation WITH core_type {
-      With ($1, $3)
+  | jkind_annotation WITH core_type optional_atat_modalities_expr {
+      With ($1, $3, $4)
     }
   | ident {
       Abbreviation $1

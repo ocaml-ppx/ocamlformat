@@ -1295,7 +1295,7 @@ and jkind_annotation =
   | Default
   | Abbreviation of jkind_const_annotation
   | Mod of jkind_annotation loc * modes
-  | With of jkind_annotation loc * core_type
+  | With of jkind_annotation loc * core_type * modalities
   | Kind_of of core_type
   | Product of jkind_annotation loc list
 

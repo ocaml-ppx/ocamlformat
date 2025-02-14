@@ -72,7 +72,7 @@ module Right = struct
   let rec jkind ({txt= jk; _} : jkind_annotation Asttypes.loc) =
     match jk with
     | Default | Abbreviation _ | Mod _ -> false
-    | With (_, t) | Kind_of t -> core_type t
+    | With (_, t, _) | Kind_of t -> core_type t
     | Product jks -> list ~elt:jkind jks
 
   let type_declaration = function

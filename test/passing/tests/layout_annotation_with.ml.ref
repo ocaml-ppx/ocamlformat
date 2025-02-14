@@ -388,3 +388,94 @@ type t =
       (* 5 *)
       {x: 'a * 'b * 'c * 'd}
       -> t
+
+(**********************************************)
+(* Test 13: modalities on with-bounds *)
+
+type asdfasdf :
+  value
+  mod contended many mmasdmfm portable
+  with foo @@ asd asdfasdfasdf f many portable
+  with bar @@ vasdf
+  with t
+  with u
+  with asdfasdf
+
+type asdfasdf :
+  value
+  mod contended many mmasdmfm portable
+  with foo @@ asasdfasd
+              asd
+              asd
+              asd
+              asd
+              asdf
+              asdf
+              asdf
+              asdfasdf
+              asdfasdfasdf
+              asdfasdfasdf
+              df
+              df
+              df
+              f
+              f
+              fas
+              fas
+              fasd
+              many
+              portable
+  with bar @@ asd
+              asdf
+              fasd
+              fasddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+              vasdfsadf
+  with t
+  with u
+  with asdfasdf
+
+type t =
+  | T :
+      ((* a comment! *) 'a :
+      immutable_data
+      with t u v w x t t option list list list list list @@ aaa
+                                                            aaaa
+                                                            aaaaaaaaa
+                                                            aaaaaaaaaaaaa
+                                                            asdf
+      with ('a, 'b, 'c) typetypetypetype @@ bar foo
+      with t).
+      'a t option
+      -> t
+
+let f
+    (type a
+    (b :
+    immutable_data
+    with a
+    with b @@ bar foo
+    with c @@ many
+              many
+              many
+              once
+              once
+              portable
+              portable
+              uncontended
+              uncontended
+    mod bar baz foo) ) (x : (a, b) t) =
+  x
+
+type ('a, 'b) foo : immutable_data with 'a @@ contended many portable shared
+(* 1 *)
+(* 2 *)
+(* 3 *)
+(* 4 *)
+(* 5 *)
+(* 6 *)
+(* 7 *)
+
+type asdfasdf :
+  value
+  mod contended many mmasdmfm portable
+  with foo @@ mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm

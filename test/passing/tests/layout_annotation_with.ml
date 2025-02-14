@@ -7,21 +7,21 @@ val foo :
   -> 'k Jane_symbol.Map.t
   -> ('k, Sockaddr.t, 'cmp) Map.t
 
-type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt : value with type_ 
+type ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt : value with type_
 
-type  t_value  :  value with type_ 
+type  t_value  :  value with type_
 
 type t_imm
-     : immediate with type_ 
+     : immediate with type_
 
 type t_imm64 :
        immediate64
 
-type t_float64 : float64 with type_ 
+type t_float64 : float64 with type_
 
-type t_any : any with type_ 
+type t_any : any with type_
 
-type t_void : void with type_ 
+type t_void : void with type_
 
 (***************************************)
 (* Test 1: annotation on type variable *)
@@ -334,7 +334,7 @@ end
 (**************************************)
 (* Test 11: Arbitrary strings as layout names *)
 
-type t_asdf : asdf with type_ 
+type t_asdf : asdf with type_
 
 let x : int as ('a : some_layout with type_) = 5
 
@@ -359,3 +359,25 @@ type t =
 type t =
   | T : (* 1 *) ('a : value with type_) 'b (* 2 *) ('c : (* 3 *) float64 (* 4 *) with type_) 'd . (* 5 *) { x : 'a * 'b * 'c * 'd } -> t
 
+(**********************************************)
+(* Test 13: modalities on with-bounds *)
+
+type asdfasdf : value mod portable contended many mmasdmfm with foo @@ many portable asdfasdfasdf asd f with bar @@ vasdf with t with u with asdfasdf
+
+type asdfasdf :
+  value
+  mod contended many mmasdmfm portable
+  with foo @@ asd asdfasdfasdf f many portable asdf asdf asd fas df asdf asasdfasd df asd fas df asdfasdfasdf asdfasdf asd fasd f
+  with bar @@ vasdfsadf asdf asd fasd fasddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  with t
+  with u
+  with asdfasdf
+
+type t =
+  T : (* a comment! *) ('a : immutable_data with t u v w x t t option list list list list list @@ asdf aaaa aaa aaaaaaaaa aaaaaaaaaaaaa with ('a, 'b, 'c) typetypetypetype @@ foo bar with t). ('a t) option -> t
+
+let f (type a) (type b : immutable_data with a with b @@ foo bar with c @@ portable many uncontended once many portable many once uncontended mod foo bar baz) (x : (a, b) t) = x
+
+type ('a, 'b) foo : immutable_data with (* 1 *) 'a (* 2 *) @@ (* 3 *) portable (* 4 *) contended (* 5 *) many (* 6 *) shared (* 7 *)
+
+type asdfasdf : value mod portable contended many mmasdmfm with foo @@ mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm

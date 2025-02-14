@@ -1078,8 +1078,8 @@ let default_mapper =
         Abbreviation ({ txt; loc })
       | Mod (t, mode_list) ->
         Mod (map_loc_txt this this.jkind_annotation t, this.modes this mode_list)
-      | With (t, ty) ->
-        With (map_loc_txt this this.jkind_annotation t, this.typ this ty)
+      | With (t, ty, ms) ->
+        With (map_loc_txt this this.jkind_annotation t, this.typ this ty, this.modalities this ms)
       | Kind_of ty -> Kind_of (this.typ this ty)
       | Product ts -> Product (List.map (map_loc_txt this this.jkind_annotation) ts));
 

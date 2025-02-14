@@ -1,5 +1,4 @@
-(* Attributes [[@annot1]] and [[@annot3]] are dropped by the compiler;
-   an upcoming patch should fix this. *)
+(* Attributes [[@annot2]] and [[@annot4]] used to be dropped by ocamlformat *)
 
 module _ : sig
   val foo : ((module T with type t = 'a)[@annot2]) -> unit

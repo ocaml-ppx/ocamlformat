@@ -841,7 +841,7 @@ and fmt_jkind c ~ctx {txt= jkd; loc} =
           $ fmt "@ mod" $ Cmts.fmt_within c loc $ mode_fmt
         in
         (parens, fmt)
-    | With (jkind, type_) ->
+    | With (jkind, type_, ms) ->
         let parens =
           match ctx with
           | Jkd jkd -> (
@@ -857,6 +857,10 @@ and fmt_jkind c ~ctx {txt= jkd; loc} =
         let fmt =
           fmt_jkind c ~ctx:inner_ctx jkind
           $ fmt "@ with " $ Cmts.fmt_within c loc $ types_fmt
+          $ hvbox_if
+              (not (List.is_empty ms))
+              3
+              (fmt_modals c ~pro:(fmt " ") ~ats:`Two (Modalities ms))
         in
         (parens, fmt)
     | Kind_of type_ ->

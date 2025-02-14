@@ -654,10 +654,11 @@ and jkind_annotation ?loc i ppf jkind =
       line i ppf "Mod %a\n"  fmt_loc_opt loc;
       jkind_annotation_loc (i+1) ppf jkind;
       modes (i+1) ppf m
-  | With (jkind, type_) ->
+  | With (jkind, type_, ms) ->
       line i ppf "With %a\n"  fmt_loc_opt loc;
       jkind_annotation_loc (i+1) ppf jkind;
-      core_type (i+1) ppf type_
+      core_type (i+1) ppf type_;
+      modalities (i+1) ppf ms
   | Kind_of type_ ->
       line i ppf "Kind_of %a\n"  fmt_loc_opt loc;
       core_type (i+1) ppf type_
