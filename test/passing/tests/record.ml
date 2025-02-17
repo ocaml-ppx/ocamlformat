@@ -86,3 +86,6 @@ let foo
 let x = (A(B)).a
 
 let x = A(B).a
+
+let x = (1).a
+
