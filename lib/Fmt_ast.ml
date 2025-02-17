@@ -613,7 +613,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
   | _, PPat (({ppat_loc; _} as pat), _), (Pld _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
       fmt_pattern c ~ext (sub_pat ~ctx pat)
-  | _ ->
+  | _ -> (
       let box =
         if c.conf.fmt_opts.ocp_indent_compat.v then
           match pld with
@@ -623,12 +623,40 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
               hvbox c.conf.fmt_opts.stritem_extension_indent.v
         else Fn.id
       in
-      box
-        (wrap (str "[") (str "]")
-           ( str (Ext.Key.to_string key)
-           $ fmt_str_loc c ext
-           $ fmt_payload c (Pld pld) pld
-           $ fmt_if (Exposed.Right.payload pld) (str " ") ) )
+      let is_metaocaml_sugar =
+        if
+          String.is_prefix ~prefix:"metaocaml." ext.txt
+          && Location.is_none ext.loc
+        then
+          match pld with
+          | PStr [({pstr_desc= Pstr_eval (e, []); _} as pstr)] ->
+              let node =
+                match ext.txt with
+                | "metaocaml.escape" -> `Escape
+                | "metaocaml.bracket" -> `Bracket
+                | _ -> assert false
+              in
+              Some (node, e, Str pstr)
+          | _ -> assert false
+        else None
+      in
+      match is_metaocaml_sugar with
+      | Some (`Escape, e, ctx) ->
+          let parens =
+            match e.pexp_desc with Pexp_ident _ -> false | _ -> true
+          in
+          box (str ".~" $ fmt_expression c ~parens (sub_exp ~ctx e))
+      | Some (`Bracket, e, ctx) ->
+          box
+            (wrap (str ".< ") (str " >.")
+               (fmt_expression c (sub_exp ~ctx e)) )
+      | None ->
+          box
+            (wrap (str "[") (str "]")
+               ( str (Ext.Key.to_string key)
+               $ fmt_str_loc c ext
+               $ fmt_payload c (Pld pld) pld
+               $ fmt_if (Exposed.Right.payload pld) (str " ") ) ) )
 
 and fmt_extension = fmt_extension_aux ~key:Ext.Key.Regular
 
@@ -2974,7 +3002,8 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then (* Side effect order is important. *)
+    if List.is_empty fields then
+      (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in
