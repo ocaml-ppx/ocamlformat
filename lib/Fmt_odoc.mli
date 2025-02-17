@@ -22,6 +22,7 @@ val fmt_ast : Conf.t -> fmt_code:fmt_code -> Odoc_parser.Ast.t -> Fmt.t
 
 val fmt_parsed :
      Conf.t
+  -> actually_a_doc_comment:bool
   -> fmt_code:fmt_code
   -> input:string
   -> offset:int

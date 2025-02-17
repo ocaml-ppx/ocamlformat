@@ -55,4 +55,4 @@ type typ = typ
  *
  * The source code of this test is empty: we just check the arguments
  * expansion.
- *)
+ * *)

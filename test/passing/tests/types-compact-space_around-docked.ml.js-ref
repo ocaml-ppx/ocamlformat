@@ -93,20 +93,20 @@ type t =
 val x
   : [ `X of int
       (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *)
+          fooooooooooooooooooo fooooooooooooooo *)
     ]
 
 val x
   : [ `X of
       int * foooooooooooooo * fooooooooooo * fooooooooooo foooooooooo * foooooooooooo
       (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *)
+          fooooooooooooooooooo fooooooooooooooo *)
     ]
 
 val x
   : [ `X of int (* booooom *)
       (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *)
+          fooooooooooooooooooo fooooooooooooooo *)
     ]
 
 val x
@@ -114,7 +114,7 @@ val x
       int * foooooooooooooo * fooooooooooo * fooooooooooo foooooooooo * foooooooooooo
       (* boooooom *)
       (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *)
+          fooooooooooooooooooo fooooooooooooooo *)
     ]
 
 type voting_period = Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =

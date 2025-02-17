@@ -45,8 +45,8 @@ module type M = sig
 
   val f
     :  x:t
-         (** an extremely long comment about [x] that does not fit on the
-             same line with [x] *)
+         (** an extremely long comment about [x] that does not fit on the same line with
+             [x] *)
     -> unit
 
   val f
@@ -56,8 +56,8 @@ module type M = sig
           -> foooooooooooooo
           -> foooooooooooooo * fooooooooooooooooo
           -> foooooooooooooooo)
-         (** an extremely long comment about [x] that does not fit on the
-             same line with [x] *)
+         (** an extremely long comment about [x] that does not fit on the same line with
+             [x] *)
     -> unit
 end
 

@@ -5,6 +5,7 @@ No redundant values:
   $ echo 'field-space = tight' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
+  check-odoc-parsing=false
   comment-check=true
   debug=false
   disable=false
@@ -83,6 +84,7 @@ Redundant values from the conventional profile:
   $ echo 'margin = 80' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
+  check-odoc-parsing=false
   comment-check=true
   debug=false
   disable=false
@@ -161,6 +163,7 @@ Redundant values from the ocamlformat profile:
   $ echo 'margin = 80' >> .ocamlformat
 
   $ ocamlformat empty.ml --print-config
+  check-odoc-parsing=false
   comment-check=true
   debug=false
   disable=false

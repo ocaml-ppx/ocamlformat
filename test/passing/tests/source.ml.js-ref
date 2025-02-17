@@ -900,8 +900,8 @@ let fint (type t) (x : t) (tag : t ty) =
 
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
 
-(** OK: the return value is x > 0 of type bool;
-This has used the equation t = bool, not visible in the return type **)
+(** OK: the return value is x > 0 of type bool; This has used the equation t = bool, not
+    visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) =
   match tag with
@@ -7893,7 +7893,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml  *)
+(** Pure type-checking tests: see recmod/*.ml *)
 type t =
   | A of
       { x : int
@@ -10156,8 +10156,8 @@ let _ =
 
 type action =
   | In_out of [ `Impl | `Intf ] input * string option
-  (** Format input file (or [-] for stdin) of given kind to output file,
-      or stdout if None. *)
+  (** Format input file (or [-] for stdin) of given kind to output file, or stdout if
+      None. *)
   (* foo *)
   | Inplace of [ `Impl | `Intf ] input list
   (** Format in-place, overwriting input file(s). *)
@@ -10277,9 +10277,7 @@ val fooooooooooooooooooooooooooooooo
 
 (* *)
 
-(**
-   xxx
-*)
+(** xxx *)
 include S1
 (** @inline *)
 
@@ -10471,8 +10469,8 @@ let _ =
 
 (*$ (* *) *)
 
-(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
-    xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    [xxxxxxx] *)
 
 (*    Hand-aligned comment
         .

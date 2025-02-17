@@ -1,3 +1,4 @@
+check-odoc-parsing=false
 comment-check=true
 debug=false
 disable=false

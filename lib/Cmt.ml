@@ -127,7 +127,10 @@ let is_all_whitespace s = String.for_all s ~f:Char.is_whitespace
 
 let split_asterisk_prefixed =
   let prefix = "*" in
-  let drop_prefix s = String.drop_prefix s (String.length prefix) in
+  let drop_prefix s =
+    if is_all_whitespace s then ""
+    else String.drop_prefix s (String.length prefix)
+  in
   let rec lines_are_asterisk_prefixed = function
     | [] -> true
     (* Allow the last line to be empty *)
@@ -191,7 +194,7 @@ let decode_comment ~parse_comments_as_doc txt loc =
 let decode_docstring _loc = function
   | "" -> mk (Verbatim "")
   | ("*" | "$") as txt -> mk (Verbatim txt)
-  | "\n" | " " -> mk (Verbatim " ")
+  | txt when is_all_whitespace txt -> mk (Verbatim " ")
   | txt -> mk ~prefix:"*" (Doc txt)
 
 let decode ~parse_comments_as_doc = function

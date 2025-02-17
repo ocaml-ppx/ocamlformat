@@ -105,7 +105,7 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
                   , [] )
             ; _ } as pstr ) ]
       when Ast.Attr.is_doc attr ->
-        let doc' = normalize_doc doc in
+        let doc' = normalize_doc ~location:attr.attr_loc ~pro:"(**" doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
             attr_payload=
@@ -219,13 +219,15 @@ let normalize_cmt (conf : Conf.t) =
       let decoded = Cmt.decode ~parse_comments_as_doc c in
       match decoded.Cmt.kind with
       | Verbatim txt -> txt
-      | Doc txt -> self#doc txt
+      | Doc txt ->
+          self#doc ~location:(Cmt.loc c) ~pro:("(*" ^ decoded.prefix) txt
       | Normal txt -> Docstring.normalize_text txt
       | Code txt -> self#code txt
       | Asterisk_prefixed lines ->
           String.concat ~sep:" " (List.map ~f:Docstring.normalize_text lines)
 
-    method doc d = docstring conf ~normalize_code:self#code d
+    method doc ~location ~pro d =
+      docstring conf ~normalize_code:self#code ~location ~pro d
 
     method code c =
       let mapper =

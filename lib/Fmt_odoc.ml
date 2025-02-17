@@ -159,15 +159,6 @@ let fmt_math_block s =
 
 let fmt_reference = ign_loc ~f:str
 
-(* Decide between using light and heavy syntax for lists *)
-let list_should_use_heavy_syntax items =
-  let heavy_nestable_block_elements = function
-    (* More than one element or contains a list *)
-    | [{Loc.value= `List _; _}] | _ :: _ :: _ -> true
-    | [] | [_] -> false
-  in
-  List.exists items ~f:heavy_nestable_block_elements
-
 (* Decide if a blank line should be added between two elements *)
 let block_element_should_blank elem next =
   match (elem, next) with
@@ -176,22 +167,40 @@ let block_element_should_blank elem next =
   | (`List _ | `Tag _), _ | `Paragraph _, `Paragraph _ -> true
   | _, _ -> false
 
-let should_preserve_blank _c (a : Loc.span) (b : Loc.span) =
+let should_preserve_blank (a : Loc.span) (b : Loc.span) =
   (* Whether there were already an empty line *)
   b.start.line - a.end_.line > 1
 
+let will_have_blank_in_list (a : _ Loc.with_location)
+    (b : _ Loc.with_location) =
+  block_element_should_blank
+    (a.value :> block_element)
+    (b.value :> block_element)
+  || should_preserve_blank a.location b.location
+
+(* Decide between using light and heavy syntax for lists *)
+let list_should_use_heavy_syntax items =
+  let rec heavy_nestable_block_elements = function
+    (* Consecutive paragraphs that require blank line or has a non-terminal
+       list *)
+    | {Loc.value= `List _; _} :: _ :: _ -> true
+    | item1 :: item2 :: _ when will_have_blank_in_list item1 item2 -> true
+    | _ :: rest -> heavy_nestable_block_elements rest
+    | [] -> false
+  in
+  List.exists items ~f:heavy_nestable_block_elements
+
 (* Format a list of block_elements separated by newlines Inserts blank line
    depending on [block_element_should_blank] *)
-let list_block_elem c elems f =
+let list_block_elem _c elems f =
   list_pn elems (fun ~prev:_ elem ~next ->
       let break =
         match next with
         | Some n ->
             if
-              block_element_should_blank
-                (elem.Loc.value :> block_element)
-                (n.value :> block_element)
-              || should_preserve_blank c elem.location n.location
+              will_have_blank_in_list
+                (elem :> block_element Loc.with_location)
+                (n :> block_element Loc.with_location)
             then fmt "\n@\n"
             else fmt "@\n"
         | None -> noop
@@ -202,6 +211,17 @@ let space_elt c : inline_element with_location =
   let sp = if c.conf.fmt_opts.wrap_docstrings.v then "" else " " in
   Loc.(at (span []) (`Space sp))
 
+let looks_like_number w =
+  let w =
+    match String.chop_suffix w ~suffix:")" with
+    | Some w -> Some (String.chop_prefix_if_exists w ~prefix:"(")
+    | None -> String.chop_suffix w ~suffix:"."
+  in
+  match w |> Option.map ~f:String.to_list with
+  | Some [c] -> Char.is_alphanum c
+  | Some (_ :: _ as w) -> List.for_all ~f:Char.is_digit w
+  | Some [] | None -> false
+
 let non_wrap_space sp = if String.contains sp '\n' then fmt "@\n" else str sp
 
 let rec fmt_inline_elements c elements =
@@ -211,12 +231,19 @@ let rec fmt_inline_elements c elements =
   in
   let rec aux = function
     | [] -> noop
-    | `Space sp :: `Word (("-" | "+") as w) :: t ->
-        (* Escape lines starting with '+' or '-'. *)
-        fmt_or_k c.conf.fmt_opts.wrap_docstrings.v
-          (cbreak ~fits:("", 1, "") ~breaks:("", 0, "\\"))
-          (non_wrap_space sp)
-        $ str w $ aux t
+    | `Space _ :: (`Word w :: _ as t) when c.conf.fmt_opts.wrap_docstrings.v
+      ->
+        fmt_or_k
+          ( (* special case: don't accidentally make asterisk-prefixed
+               comments *)
+            String.is_prefix w ~prefix:"*"
+          (* special case: don't accidentally make bulleted lists *)
+          || String.equal w "-"
+          || String.equal w "+"
+          (* special case: don't accidentally make numbered lists *)
+          || looks_like_number w )
+          (non_wrap_space " ") (fmt "@ ")
+        $ aux t
     | `Space sp :: t ->
         fmt_or_k c.conf.fmt_opts.wrap_docstrings.v (fmt "@ ")
           (non_wrap_space sp)
@@ -259,7 +286,7 @@ let rec fmt_inline_elements c elements =
 
 and fmt_nestable_block_element c elm =
   match elm.Loc.value with
-  | `Paragraph elems -> fmt_inline_elements c elems
+  | `Paragraph elems -> cbox 0 (fmt_inline_elements c elems)
   | `Code_block (s1, s2) -> fmt_code_block c s1 s2
   | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
@@ -276,18 +303,40 @@ and fmt_list_heavy c kind items =
     let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
     box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements c elems))
   and start : s =
-    match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
+    match kind with `Unordered -> "{ul@," | `Ordered _ -> "{ol@,"
   in
   vbox 1 (wrap start "@;<1 -1>}" (list items "@," fmt_item))
 
 and fmt_list_light c kind items =
-  let line_start =
-    match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
+  let line_start i =
+    match kind with
+    | `Unordered -> fmt "-"
+    | `Ordered None -> fmt "+"
+    | `Ordered (Some (p, n, _spacious)) ->
+        let letter_i i = i |> ( + ) (Char.to_int 'a') |> Char.of_int_exn in
+        let n =
+          match n with
+          | `Number _ -> `Number (i + 1)
+          | `Lower_case _ -> `Lower_case (i |> letter_i)
+          | `Upper_case _ -> `Upper_case (i |> letter_i |> Char.uppercase)
+        in
+        str (Odoc_parser.Ast.print_list_number p n)
   in
-  let fmt_item elems =
-    line_start $ hovbox 0 (fmt_nestable_block_elements c elems)
+  let fmt_item (i, elems) =
+    line_start i
+    $ fmt_or_k (List.is_empty elems) noop
+        (str " " $ hovbox 0 (fmt_nestable_block_elements c elems))
   in
-  vbox 0 (list items "@," fmt_item)
+  let sep =
+    let spacious =
+      match kind with
+      | `Unordered | `Ordered None -> false
+      | `Ordered (Some (_, _, spacious)) -> spacious
+    in
+    fmt_or spacious "\n@," "@,"
+  in
+  vbox 0
+    (list_k (List.mapi ~f:(fun i elems -> (i, elems)) items) sep fmt_item)
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)
@@ -348,14 +397,18 @@ let beginning_offset (conf : Conf.t) input =
   let whitespace_count =
     match String.indent_of_line input with Some c -> c | None -> 1
   in
-  if conf.fmt_opts.ocp_indent_compat.v && not conf.fmt_opts.wrap_docstrings.v
-  then
-    (* Preserve offset of the first line and indent the whole comment based
-       on that. *)
-    whitespace_count
+  if conf.fmt_opts.ocp_indent_compat.v then
+    if conf.fmt_opts.wrap_docstrings.v then
+      if String.is_prefix input ~prefix:"*" then min whitespace_count 1
+      else 1
+    else
+      (* Preserve offset of the first line and indent the whole comment based
+         on that. *)
+      whitespace_count
   else min whitespace_count 1
 
-let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
+let fmt_parsed (conf : Conf.t) ~actually_a_doc_comment ~fmt_code ~input
+    ~offset parsed =
   let open Fmt in
   let begin_offset = beginning_offset conf input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
@@ -364,16 +417,14 @@ let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
     fmt_code conf ~offset:(offset + offset') ~set_margin input
   in
   let fmt_parsed parsed =
-    str (String.make begin_offset ' ')
-    $ fmt_ast conf ~fmt_code parsed
-    $ fmt_if
-        (String.length input > 1 && String.ends_with_whitespace input)
-        " "
+    str (String.make begin_offset ' ') $ fmt_ast conf ~fmt_code parsed
   in
   match parsed with
-  | _ when not conf.fmt_opts.parse_docstrings.v -> str input
+  | _ when not (conf.fmt_opts.parse_docstrings.v && actually_a_doc_comment)
+    ->
+      str input
   | Ok parsed -> fmt_parsed parsed
   | Error msgs ->
-      if not conf.opr_opts.quiet.v then
-        List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
+      if (not conf.opr_opts.quiet.v) && conf.opr_opts.check_odoc_parsing.v
+      then List.iter msgs ~f:(Docstring.warn Format.err_formatter) ;
       str input

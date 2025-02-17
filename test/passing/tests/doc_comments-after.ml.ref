@@ -20,10 +20,10 @@ include Mod
 let x = 2
 (** after *)
 
-(**floatting1*)
-(**floatting2*)
+(**floatting1 *)
+(**floatting2 *)
 
-(**before*)
+(**before *)
 and y = 2
 (** after *)
 
@@ -256,12 +256,13 @@ exception A of int
 
 module A = struct
   module B = struct
-    (** It does not try to saturate (1a) A = B + C /\ B = D + E => A = C + D
-        \+ E Nor combine more than 2 equations (1b) A = B + C /\ B = D + E /\
-        F = C + D + E => A = F
+    (** It does not try to saturate (1a) A = B + C /\ B = D + E => A = C +
+        D + E Nor combine more than 2 equations (1b) A = B + C /\ B = D + E
+        /\ F = C + D + E => A = F
 
-        xxxxxxxxxxxxxxxxxxxxxxxxxxxx (2) A = B + C /\ B = D + E => A = C + D
-        \- E *)
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+        (2) A = B + C /\ B = D + E => A = C + D - E *)
     let a b = ()
   end
 end
@@ -310,4 +311,4 @@ let a = 1
 
 (**{v
   foo
-   v}*)
+   v} *)

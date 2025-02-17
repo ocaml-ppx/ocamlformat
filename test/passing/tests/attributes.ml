@@ -330,7 +330,7 @@ let _ =
    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
   [@a]
 
-[@@@a (**b*)]
+[@@@a (**b *)]
 
 let (Foo ((A | B) [@attr])) = ()
 

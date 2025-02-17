@@ -108,7 +108,10 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
             ; _ } as pstr ) ]
       when is_doc attr ->
         let normalize_code = normalize_code conf m in
-        let doc' = docstring conf ~normalize_code doc in
+        let doc' =
+          docstring conf ~normalize_code ~location:attr.attr_loc ~pro:"(**"
+            doc
+        in
         Ast_mapper.default_mapper.attribute m
           { attr with
             attr_payload=
@@ -584,10 +587,10 @@ let docstring conf ~erase_jane_syntax =
 let moved_docstrings fragment ~erase_jane_syntax c ~old:s1 ~new_:s2 =
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
-  let equal ~old:(_, x) ~new_:(_, y) =
+  let equal ~old:(lx, x) ~new_:(ly, y) =
     String.equal
-      (docstring c x ~erase_jane_syntax)
-      (docstring c y ~erase_jane_syntax:false)
+      (docstring c x ~erase_jane_syntax ~location:lx ~pro:"(**")
+      (docstring c y ~erase_jane_syntax:false ~location:ly ~pro:"(**")
   in
   let cmt_kind = `Doc_comment in
   let cmt (loc, x) = Cmt.create_docstring x loc in

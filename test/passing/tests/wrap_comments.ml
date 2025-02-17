@@ -64,6 +64,22 @@ let _ =
    bar
  *)
 
+(* foo
+ **)
+
+(* foo
+ * *)
+
+(* foo
+ * bar
+ * *)
+
+module _ = struct
+  (* xxx = -xxx * xxxx.xxx + x * xxxx.xxx = -xxx * x + xx = -xxx
+     xxx = -xxx * xxxx.xxx + x * xxxx.xxx = -xxx * x + xx =  -xx
+  *)
+end
+
 let _ =
   f
       (* foo

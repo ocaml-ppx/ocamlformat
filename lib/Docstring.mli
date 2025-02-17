@@ -11,6 +11,7 @@
 
 val parse :
      loc:Warnings.loc
+  -> pro:string
   -> string
   -> (Odoc_parser.Ast.t, Odoc_parser.Warning.t list) Result.t
 
@@ -26,6 +27,8 @@ val is_tag_only : Odoc_parser.Ast.t -> bool
 val normalize :
      parse_docstrings:bool
   -> normalize_code:(string -> string)
+  -> location:Location.t
+  -> pro:string
   -> string
   -> string
 

@@ -1,0 +1,3 @@
+Warning: Invalid documentation comment:
+File "tests/doc_syntax_edge_cases.ml", line 126, characters 19-19:
+End of text is not allowed in '{v ... v}' (verbatim text).

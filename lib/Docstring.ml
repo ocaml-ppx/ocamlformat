@@ -9,11 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-let parse ~loc text =
+let parse ~loc ~pro text =
   let location = loc.Location.loc_start in
   let location =
     { location with
-      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
+      pos_cnum=
+        location.pos_cnum + String.length pro (* Length of comment opening *)
+    }
   in
   let v = Odoc_parser.parse_comment ~location ~text in
   match Odoc_parser.warnings v with
@@ -99,7 +101,7 @@ let rec odoc_nestable_block_element c fmt = function
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->
-      let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
+      let ord = match ord with `Unordered -> "U" | `Ordered _ -> "O" in
       let list_item fmt elems =
         fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
@@ -145,10 +147,13 @@ let odoc_block_element c fmt = function
 
 let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
-let normalize ~parse_docstrings ~normalize_code text =
+let normalize ~parse_docstrings ~normalize_code ~location ~pro text =
   if not parse_docstrings then normalize_text text
   else
-    let location = Lexing.dummy_pos in
+    let location = location.Location.loc_start in
+    let location =
+      {location with pos_cnum= location.pos_cnum + String.length pro}
+    in
     let parsed = Odoc_parser.parse_comment ~location ~text in
     let c = {normalize_code} in
     Format.asprintf "Docstring(%a)%!" (odoc_docs c) (Odoc_parser.ast parsed)

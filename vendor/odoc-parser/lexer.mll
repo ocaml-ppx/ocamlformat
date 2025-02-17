@@ -31,7 +31,7 @@ type math_kind =
   Inline | Block
 
 let math_constr kind x =
-  match kind with 
+  match kind with
   | Inline -> `Math_span x
   | Block -> `Math_block x
 
@@ -191,18 +191,11 @@ let reference_token start target =
 
 
 
-let trim_leading_space_or_accept_whitespace input start_offset text =
+let trim_leading_space_or_accept_whitespace text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
-  | '\t' | '\r' | '\n' -> text
+  | _ -> text
   | exception Invalid_argument _ -> ""
-  | _ ->
-    warning
-      input
-      ~start_offset
-      ~end_offset:(start_offset + 2)
-      Parse_error.no_leading_whitespace_in_verbatim;
-    text
 
 let trim_trailing_space_or_accept_whitespace text =
   match text.[String.length text - 1] with
@@ -211,10 +204,34 @@ let trim_trailing_space_or_accept_whitespace text =
   | _ -> text
   | exception Invalid_argument _ -> text
 
+let trim_trailing_space_in_all_lines text =
+  text
+  |> Astring.String.cuts ~sep:"\n"
+  |> List.map (Astring.String.drop ~rev:true ~sat:Astring.Char.Ascii.is_white)
+  |> String.concat "\n"
+
+let emit_code_span code =
+  `Code_span
+    (match String.split_on_char '\n' code with
+     | [] -> assert false
+     | [ line ] -> line
+     | hd :: tl ->
+       let tl = 
+         (match List.rev tl with
+          | [] -> assert false
+          | last :: mid ->
+            Astring.String.drop ~rev:false ~sat:Astring.Char.Ascii.is_white last
+            :: List.map String.trim mid)
+         |> List.rev
+       in
+       Astring.String.drop ~rev:true ~sat:Astring.Char.Ascii.is_white hd :: tl
+       |> String.concat " ")
+
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
+  let t = trim_trailing_space_in_all_lines t in
   let t = trim_trailing_space_or_accept_whitespace t in
-  let t = trim_leading_space_or_accept_whitespace input start_offset t in
+  let t = trim_leading_space_or_accept_whitespace t in
   let t = trim_leading_blank_lines t in
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
@@ -232,13 +249,14 @@ let emit_code_block ~start_offset input metadata c =
   let c = with_location_adjustments ~adjust_end_by:"]}" (fun _ -> Loc.at) input c in
   emit ~start_offset input (`Code_block (metadata, c))
 
-let heading_level input level =
-  if String.length level >= 2 && level.[0] = '0' then begin
-    warning
-      input ~start_offset:1 (Parse_error.leading_zero_in_heading_level level)
-  end;
-  int_of_string level
+let emit_numbered input punc num =
+  (* Don't overflow on long strings *)
+  match int_of_string num with
+  | num -> emit input (`List_number (punc, `Number num))
+  | exception _ -> emit input (`Word num)
 
+let heading_level level =
+  int_of_string level
 }
 
 
@@ -271,7 +289,6 @@ let raw_markup_target =
 let language_tag_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ]
 
-
 rule token input = parse
   | horizontal_space* eof
     { emit input `End }
@@ -289,6 +306,27 @@ rule token input = parse
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
     { emit input `Right_brace ~adjust_start_by:p }
 
+  | ((['1'-'9'] ['0'-'9']*) as num) '.'
+    { emit_numbered input `Dot num }
+  | ((['1'-'9'] ['0'-'9']*) as num) ')'
+    { emit_numbered input `Paren num }
+  | '(' ((['1'-'9'] ['0'-'9']*) as num) ')'
+    { emit_numbered input `Two_paren num }
+
+  | (['a'-'z'] as num) '.'
+    { emit input (`List_number (`Dot, `Lower_case num)) }
+  | (['a'-'z'] as num) ')'
+    { emit input (`List_number (`Paren, `Lower_case num)) }
+  | '(' (['a'-'z'] as num) ')'
+    { emit input (`List_number (`Two_paren, `Lower_case num)) }
+
+  | (['A'-'Z'] as num) '.'
+    { emit input (`List_number (`Dot, `Upper_case num)) }
+  | (['A'-'Z'] as num) ')'
+    { emit input (`List_number (`Paren, `Upper_case num)) }
+  | '(' (['A'-'Z'] as num) ')'
+    { emit input (`List_number (`Two_paren, `Upper_case num)) }
+
   | word_char (word_char | bullet_char | '@')*
   | bullet_char (word_char | bullet_char | '@')+ as w
     { emit input (`Word (unescape_word w)) }
@@ -303,36 +341,27 @@ rule token input = parse
   | '+'
     { emit input `Plus }
 
-  | "{b"
+  | "{b" space_char
     { emit input (`Begin_style `Bold) }
 
-  | "{i"
+  | "{i" space_char
     { emit input (`Begin_style `Italic) }
 
-  | "{e"
+  | "{e" space_char
     { emit input (`Begin_style `Emphasis) }
-  
-  | "{L"
-    { emit input (`Begin_paragraph_style `Left) }
-  
-  | "{C"
-    { emit input (`Begin_paragraph_style  `Center) }
-  
-  | "{R"
-    { emit input (`Begin_paragraph_style  `Right) }
 
-  | "{^"
+  | "{^" space_char
     { emit input (`Begin_style `Superscript) }
 
-  | "{_"
+  | "{_" space_char
     { emit input (`Begin_style `Subscript) }
-  
+
   | "{math" space_char
     { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
   | "{m" horizontal_space
     { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
-    
+
 
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
@@ -400,10 +429,10 @@ rule token input = parse
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit
-        input (`Begin_section_heading (heading_level input level, Some label)) }
+        input (`Begin_section_heading (heading_level level, Some label)) }
 
   | '{' (['0'-'9']+ as level)
-    { emit input (`Begin_section_heading (heading_level input level, None)) }
+    { emit input (`Begin_section_heading (heading_level level, None)) }
 
   | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
     { emit input (`Tag (`Author author)) }
@@ -466,28 +495,22 @@ rule token input = parse
       emit input (`Word "]") }
 
   | "@param"
-    { warning input Parse_error.truncated_param;
-      emit input (`Tag (`Param "")) }
+    { emit input (`Tag (`Param "")) }
 
-  | ("@raise" | "@raises") as tag
-    { warning input (Parse_error.truncated_raise tag);
-      emit input (`Tag (`Raise "")) }
+  | ("@raise" | "@raises") as _tag
+    { emit input (`Tag (`Raise "")) }
 
   | "@before"
-    { warning input Parse_error.truncated_before;
-      emit input (`Tag (`Before "")) }
+    { emit input (`Tag (`Before "")) }
 
   | "@see"
-    { warning input Parse_error.truncated_see;
-      emit input (`Word "@see") }
+    { emit input (`Word "@see") }
 
-  | '@' ['a'-'z' 'A'-'Z']+ as tag
-    { warning input (Parse_error.unknown_tag tag);
-      emit input (`Word tag) }
+  | '@' (word_char | bullet_char | '@')+ as tag
+    { emit input (`Word tag) }
 
   | '@'
-    { warning input Parse_error.stray_at;
-      emit input (`Word "@") }
+    { emit input (`Word "@") }
 
   | '\r'
     { warning input Parse_error.stray_cr;
@@ -516,7 +539,7 @@ rule token input = parse
 and code_span buffer nesting_level start_offset input = parse
   | ']'
     { if nesting_level = 0 then
-        emit input (`Code_span (Buffer.contents buffer)) ~start_offset
+        emit input (emit_code_span (Buffer.contents buffer)) ~start_offset
       else begin
         Buffer.add_char buffer ']';
         code_span buffer (nesting_level - 1) start_offset input lexbuf
@@ -531,12 +554,7 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline newline
-    { warning
-        input
-        (Parse_error.not_allowed
-          ~what:(Token.describe (`Blank_line "\n\n"))
-          ~in_what:(Token.describe (`Code_span "")));
-      Buffer.add_char buffer '\n';
+    { Buffer.add_char buffer '\n';
       code_span buffer nesting_level start_offset input lexbuf }
 
   | eof
@@ -545,7 +563,7 @@ and code_span buffer nesting_level start_offset input = parse
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Code_span "")));
-      emit input (`Code_span (Buffer.contents buffer)) ~start_offset }
+      emit input (emit_code_span (Buffer.contents buffer)) ~start_offset }
 
   | _ as c
     { Buffer.add_char buffer c;
@@ -615,7 +633,7 @@ and verbatim buffer last_false_terminator start_offset input = parse
           input
           ~start_offset:location
           ~end_offset:(location + 2)
-          Parse_error.no_trailing_whitespace_in_verbatim
+          Parse_error.truncated_verbatim_block
       end;
       emit_verbatim input start_offset buffer }
 
@@ -626,14 +644,8 @@ and verbatim buffer last_false_terminator start_offset input = parse
 
 
 and bad_markup_recovery start_offset input = parse
-  | [^ '}']+ as text '}' as rest
-    { let suggestion =
-        Printf.sprintf "did you mean '{!%s}' or '[%s]'?" text text in
-      warning
-        input
-        ~start_offset
-        (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
-      emit input (`Code_span text) ~start_offset}
+  | [^ '}']+ as text '}'
+    { emit input (emit_code_span ("{" ^ text ^ "}")) ~start_offset }
 
 (* The second field of the metadata.
    This rule keeps whitespaces and newlines in the 'metadata' field except the

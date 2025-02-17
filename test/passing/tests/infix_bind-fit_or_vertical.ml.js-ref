@@ -259,8 +259,7 @@ let f =
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 ;;
 
-(** The tests below are testing a dropped comment with
-    `--no-break-infix-before-func` *)
+(** The tests below are testing a dropped comment with `--no-break-infix-before-func` *)
 
 let _ = x |> fun y -> y (* *)
 

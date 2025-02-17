@@ -54,8 +54,7 @@ type t =
   ; let_open : [ `Preserve | `Auto | `Short | `Long ]
   ; margin : int (** Format code to fit within [margin] columns. *)
   ; max_iters : int
-  (** Fail if output of formatting does not stabilize within
-            [max_iters] iterations. *)
+  (** Fail if output of formatting does not stabilize within [max_iters] iterations. *)
   ; module_item_spacing : [ `Compact | `Sparse ]
   ; ocp_indent_compat : bool (** Try to indent like ocp-indent *)
   ; parens_ite : bool

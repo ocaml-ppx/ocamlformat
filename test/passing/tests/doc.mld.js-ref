@@ -1,5 +1,6 @@
 {0 Parent/Child Specification}
-This parent/child specification allows more flexible output support, e.g., per library documentation. See {{:https://v3.ocaml.org/packages} v3.ocaml.org/packages}.
+This parent/child specification allows more flexible output support, e.g., per library
+documentation. See {{:https://v3.ocaml.org/packages} v3.ocaml.org/packages}.
 
 The rules are;
 
@@ -7,19 +8,22 @@ The rules are;
 - Compilation units must have a parent [.mld].
 - The parent [.mld] file must be compiled before any of its children, and the children
   must be specified at the parent's compilation time.
-- The output paths of [.mld] files and compilation units are subdirectories of their parent's
-  output directory.
-- The output directory of a [.mld] file [x.mld] with children is [<parent_output_directory>/x],
-  and its file name is [index.html]. That is to say, [<parent_output_directory>/x/index.html]
-- The output directory of a [.mld] file [x.mld] without children is [<parent_output_directory> /x.html]
-- The output directory of a compilation unit [X] is [<parent_output_directory>/X/index.html]
+- The output paths of [.mld] files and compilation units are subdirectories of their
+  parent's output directory.
+- The output directory of a [.mld] file [x.mld] with children is
+  [<parent_output_directory>/x], and its file name is [index.html]. That is to say,
+  [<parent_output_directory>/x/index.html]
+- The output directory of a [.mld] file [x.mld] without children is
+  [<parent_output_directory> /x.html]
+- The output directory of a compilation unit [X] is
+  [<parent_output_directory>/X/index.html]
 
-{b Note:} The [--pkg <package>] option is still supported for backward compatibility in [odoc >= v2.0.0],
-although it's now equivalent to specifying a parent [.mld] file.
+{b Note:} The [--pkg <package>] option is still supported for backward compatibility in
+[odoc >= v2.0.0], although it's now equivalent to specifying a parent [.mld] file.
 
-For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has
-children, [Max], and page [foo], whereas [Mark] has no children. That is to say,
-[john.mld], [doe.mld], [mark.mld], [max.mld], [foo.ml] respectively. For instance;
+For example, let's consider [John] whose is [Doe] and [Mark]'s father. [Doe] has children,
+[Max], and page [foo], whereas [Mark] has no children. That is to say, [john.mld],
+[doe.mld], [mark.mld], [max.mld], [foo.ml] respectively. For instance;
 
 [john.mld]
 
@@ -75,8 +79,8 @@ $ ocamlc -c -bin-annot foo.ml
   && odoc compile mark.mld -I . --parent page-john
 v}
 
-The output of the compilation phase will be [.odoc] files, where each will be
-linked by invoking the [odoc link] command on them.
+The output of the compilation phase will be [.odoc] files, where each will be linked by
+invoking the [odoc link] command on them.
 
 {2 Linking}
 
@@ -90,7 +94,8 @@ $ odoc link -I . page-john.odoc
   && odoc link -I . foo.odoc
 v}
 
-The output of the [odoc link] command is an [.odocl] file, by default, in the same path as the original [.odoc] file.
+The output of the [odoc link] command is an [.odocl] file, by default, in the same path as
+the original [.odoc] file.
 
 {2 Generating HTML}
 {v
@@ -130,13 +135,13 @@ generate files in other formats (i.e, latex and man-pages) using:
 - [$ odoc latex-generate -o latex <file>.odocl]
 - [$ odoc man-generate -o man <file>.odocl]
 
-Of course there are different commands that [odoc] uses for other purposes; e.g.,
-for inspection:
+Of course there are different commands that [odoc] uses for other purposes; e.g., for
+inspection:
 
 - [odoc <html/latex/man>-targets ...] takes a glimpse of the expected targets
-- [odoc compile-deps ...] lists units (with their digest) that need to be
-  compiled in order to compile the current compilation unit. The unit itself and its
-  digest is also reported in the output.
+- [odoc compile-deps ...] lists units (with their digest) that need to be compiled in
+  order to compile the current compilation unit. The unit itself and its digest is also
+  reported in the output.
 
 For example, inspecting the dependencies required to compile [foo.cmt], we run
 

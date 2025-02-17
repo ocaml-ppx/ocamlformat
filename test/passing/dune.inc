@@ -3645,6 +3645,78 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to doc_syntax_edge_cases-check_odoc.ml.stdout
+   (with-stderr-to doc_syntax_edge_cases-check_odoc.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iter 5 --check-odoc-parsing %{dep:tests/doc_syntax_edge_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases-check_odoc.ml.ref doc_syntax_edge_cases-check_odoc.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases-check_odoc.ml.err doc_syntax_edge_cases-check_odoc.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to doc_syntax_edge_cases-check_odoc.ml.js-stdout
+   (with-stderr-to doc_syntax_edge_cases-check_odoc.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files --check-odoc-parsing %{dep:tests/doc_syntax_edge_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases-check_odoc.ml.js-ref doc_syntax_edge_cases-check_odoc.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases-check_odoc.ml.js-err doc_syntax_edge_cases-check_odoc.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to doc_syntax_edge_cases.ml.stdout
+   (with-stderr-to doc_syntax_edge_cases.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iter 5 %{dep:tests/doc_syntax_edge_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases.ml.ref doc_syntax_edge_cases.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases.ml.err doc_syntax_edge_cases.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to doc_syntax_edge_cases.ml.js-stdout
+   (with-stderr-to doc_syntax_edge_cases.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/doc_syntax_edge_cases.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases.ml.js-ref doc_syntax_edge_cases.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_syntax_edge_cases.ml.js-err doc_syntax_edge_cases.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to docstrings_toplevel_directives.mlt.stdout
    (with-stderr-to docstrings_toplevel_directives.mlt.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/docstrings_toplevel_directives.mlt})))))
@@ -12741,7 +12813,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/wrap_invalid_doc_comments.ml wrap_invalid_doc_comments.ml.stdout)))
+ (action (diff tests/wrap_invalid_doc_comments.ml.ref wrap_invalid_doc_comments.ml.stdout)))
 
 (rule
  (alias runtest)

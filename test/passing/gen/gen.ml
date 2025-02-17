@@ -9,6 +9,7 @@ type setup =
   ; mutable has_js_ref: bool
   ; mutable has_why_no_js: bool
   ; mutable has_opts: bool
+  ; mutable has_js_opts: bool
   ; mutable has_ocp: bool
   ; mutable ocp_opts: string list
   ; mutable base_file: string option
@@ -46,6 +47,7 @@ let add_test ?base_file map src_test_name =
     ; has_js_ref= false
     ; has_why_no_js= false
     ; has_opts= false
+    ; has_js_opts= false
     ; has_ocp= false
     ; ocp_opts= []
     ; base_file
@@ -78,6 +80,7 @@ let register_file tests fname =
       | [] -> ()
       | ["output"] | ["ocp"; "output"] -> ()
       | ["opts"] -> setup.has_opts <- true
+      | ["js-opts"] -> setup.has_js_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["js-ref"] -> setup.has_js_ref <- true
       | ["why-no-js"] -> setup.has_why_no_js <- true
@@ -154,6 +157,13 @@ let emit_test test_name setup =
     ( if setup.has_opts then read_lines (spf "tests/%s.opts" test_name)
       else [] )
   in
+  let js_opts =
+    "--profile=janestreet" :: "--enable-outside-detected-project"
+    :: "--disable-conf-files"
+    ::
+    ( if setup.has_js_opts then read_lines (spf "tests/%s.js-opts" test_name)
+      else [] )
+  in
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
   in
@@ -174,12 +184,8 @@ let emit_test test_name setup =
   |> print_string ;
   if setup.has_js_ref then
     one_styling_test ~extra_deps ~enabled_if_line ~test_name ~base_test_name
-      ~should_fail:setup.should_fail
-      ~opts:
-        [ "--profile=janestreet"
-        ; "--enable-outside-detected-project"
-        ; "--disable-conf-files" ]
-      ~output_name:js_ref_name ~extra_suffix:"js-"
+      ~should_fail:setup.should_fail ~opts:js_opts ~output_name:js_ref_name
+      ~extra_suffix:"js-"
     |> print_string ;
   one_js_coverage_test ~test_name ~has_js_ref:setup.has_js_ref
     ~has_why_no_js:setup.has_why_no_js

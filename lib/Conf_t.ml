@@ -55,6 +55,7 @@ type 'a elt = 'a Elt.t
 type fmt_opts =
   { align_symbol_open_paren: bool elt
   ; assignment_operator: [`Begin_line | `End_line] elt
+  ; break_around_multiline_strings: bool elt
   ; break_before_in: [`Fit_or_vertical | `Auto] elt
   ; break_cases:
       [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All | `Vertical] elt
@@ -70,6 +71,7 @@ type fmt_opts =
   ; break_struct: bool elt
   ; cases_exp_indent: int elt
   ; cases_matching_exp_indent: [`Normal | `Compact] elt
+  ; collapse_comment_whitespace: bool elt
   ; disambiguate_non_breaking_match: bool elt
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible] elt
   ; doc_comments_padding: int elt
@@ -122,7 +124,8 @@ type fmt_opts =
   ; wrap_fun_args: bool elt }
 
 type opr_opts =
-  { comment_check: bool elt
+  { check_odoc_parsing: bool elt
+  ; comment_check: bool elt
   ; debug: bool elt
   ; disable: bool elt
   ; margin_check: bool elt

@@ -399,9 +399,26 @@ let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
     let pos = loc.Location.loc_start in
     pos.pos_cnum - pos.pos_bol + 3
   and fmt_code = c.fmt_code in
-  let doc = Fmt_odoc.fmt_parsed c.conf ~fmt_code ~offset ~input parsed in
+  let doc =
+    if
+      c.conf.fmt_opts.parse_docstrings.v
+      && String.for_all ~f:Char.is_whitespace input
+    then noop
+    else
+      Fmt_odoc.fmt_parsed c.conf ~actually_a_doc_comment:true ~fmt_code
+        ~offset ~input parsed
+  in
+  let closing_space =
+    match parsed with
+    | Ok _
+      when c.conf.fmt_opts.parse_docstrings.v
+           && not (String.is_suffix ~suffix:"*" input) ->
+        str " "
+    | _ -> noop
+  in
   Cmts.fmt c loc
-  @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
+  @@ vbox_if (Option.is_none pro) 0
+       (fmt_opt pro $ wrap_k (str "(**") (closing_space $ str "*)") doc $ epi)
 
 let docstring_epi ~standalone ~next ~epi ~floating =
   let epi = if Option.is_some next then fmt "@\n" else fmt_opt epi in
@@ -414,7 +431,8 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ~prev:_ ({txt; loc}, floating) ~next ->
       let epi = docstring_epi ~standalone ~next ~epi ~floating in
-      fmt_parsed_docstring c ~loc ?pro ~epi txt (Docstring.parse ~loc txt) )
+      fmt_parsed_docstring c ~loc ?pro ~epi txt
+        (Docstring.parse ~pro:"(**" ~loc txt) )
 
 let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
     ?(fit = false) c doc1 doc2 =
@@ -438,7 +456,7 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
       let floating_doc, doc =
         doc
         |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
-               (Docstring.parse ~loc txt, doc) )
+               (Docstring.parse ~pro:"(**" ~loc txt, doc) )
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let placement =

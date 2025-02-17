@@ -563,11 +563,17 @@ end
 module Asterisk_prefixed = struct
   open Fmt
 
-  let fmt_line ~first:_ ~last s =
-    if last && is_only_whitespaces s then fmt "@," else fmt "@,*" $ str s
+  let fmt_line ~more_than_two_lines ~first:_ ~last s =
+    if last && String.is_empty s && more_than_two_lines then fmt "@,"
+    else fmt "@,*" $ str s
 
   let fmt ~pro ~epi = function
-    | hd :: tl -> vbox 1 (pro $ str hd $ list_fl tl fmt_line $ epi)
+    | hd :: tl ->
+        let more_than_two_lines =
+          match tl with _ :: _ :: _ -> true | _ -> false
+        in
+        vbox 1
+          (pro $ str hd $ list_fl tl (fmt_line ~more_than_two_lines) $ epi)
     | [] -> noop
 end
 
@@ -616,14 +622,17 @@ module Doc = struct
     in
     let txt = if pre_nl then String.lstrip txt else txt in
     let txt = if trail_nl then String.rstrip txt else txt in
-    let parsed = Docstring.parse ~loc txt in
+    let parsed = Docstring.parse ~loc ~pro txt in
     (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
+    let doc =
+      Fmt_odoc.fmt_parsed conf ~actually_a_doc_comment:false ~fmt_code
+        ~input:txt ~offset parsed
+    in
     let open Fmt in
     hvbox 2
-      ( pro
+      ( str pro
       $ fmt_if pre_nl "@;<1000 1>"
       $ doc
       $ fmt_if trail_nl "@;<1000 -2>"
@@ -636,12 +645,13 @@ let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let decoded = Cmt.decode ~parse_comments_as_doc cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
-  let pro = str "(*" $ str decoded.prefix
+  let pro_str = "(*" ^ decoded.prefix
   and epi = str decoded.suffix $ str "*)" in
+  let pro = str pro_str in
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
   | Doc txt ->
-      Doc.fmt ~pro ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
+      Doc.fmt ~pro:pro_str ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
   | Normal txt ->
       if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
       else Unwrapped.fmt ~pro ~epi txt

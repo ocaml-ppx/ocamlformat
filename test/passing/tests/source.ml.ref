@@ -9899,8 +9899,7 @@ let _ =
 
 (*$ (* *) *)
 
-(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx
-    xxxx]
+(** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx xxxx]
     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx] *)
 
 (* Hand-aligned comment . . *)

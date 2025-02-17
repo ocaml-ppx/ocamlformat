@@ -17,10 +17,10 @@ include Mod
 let x = 2
 (** after *)
 
-(**floatting1*)
-(**floatting2*)
+(** floatting1 *)
+(** floatting2 *)
 
-(**before*)
+(** before *)
 and y = 2
 (** after *)
 
@@ -244,14 +244,13 @@ exception A of int
 
 module A = struct
   module B = struct
-    (** It does not try to saturate
-        (1a) A = B + C  /\  B = D + E  =>  A = C + D + E
-        Nor combine more than 2 equations
-        (1b) A = B + C  /\  B = D + E  /\  F = C + D + E  =>  A = F
+    (** It does not try to saturate (1a) A = B + C /\ B = D + E => A = C + D + E Nor
+        combine more than 2 equations (1b) A = B + C /\ B = D + E /\ F = C + D + E => A =
+        F
 
         xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        (2) A = B + C  /\  B = D + E  =>  A = C + D - E
-    *)
+
+        (2) A = B + C /\ B = D + E => A = C + D - E *)
     let a b = ()
   end
 end
@@ -279,30 +278,26 @@ let _ = ()
 
 (** @see "title" *)
 
-(**
-
-starts with linebreaks
-*)
+(** starts with linebreaks *)
 let a = 1
 
-(** {@metadata[ Code block with metadata field ]} *)
+(** {@metadata[
+      Code block with metadata field
+    ]} *)
 
-(** {@some_tag[ Code block with metadata field. This is a big block that should hopefully break ]} *)
+(** {@some_tag[
+      Code block with metadata field. This is a big block that should hopefully break
+    ]} *)
 
 (** {@ocaml[
       let _ =
-       f
-       @@
-       { aaa= aaa bbb ccc
-       ; bbb= aaa bbb ccc
-       ; ccc= aaa bbb ccc }
-       >>= fun () ->
-       let _ = x in
-       f @@ g @@ h @@ fun x -> y
+        f @@ { aaa = aaa bbb ccc; bbb = aaa bbb ccc; ccc = aaa bbb ccc }
+        >>= fun () ->
+        let _ = x in
+        f @@ g @@ h @@ fun x -> y
+      ;;
     ]} *)
 
-(**{v
-
+(** {v
   foo
-
-v}*)
+    v} *)

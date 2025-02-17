@@ -50,6 +50,7 @@ let conventional_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt true
   ; assignment_operator= elt `End_line
+  ; break_around_multiline_strings= elt false
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Fit
   ; break_collection_expressions= elt `Fit_or_vertical
@@ -64,6 +65,7 @@ let conventional_profile from =
   ; break_struct= elt true
   ; cases_exp_indent= elt 4
   ; cases_matching_exp_indent= elt `Normal
+  ; collapse_comment_whitespace= elt true
   ; disambiguate_non_breaking_match= elt false
   ; doc_comments= elt `After_when_possible
   ; doc_comments_padding= elt 2
@@ -119,6 +121,7 @@ let ocamlformat_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt true
   ; assignment_operator= elt `End_line
+  ; break_around_multiline_strings= elt false
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Nested
   ; break_collection_expressions= elt `Fit_or_vertical
@@ -133,6 +136,7 @@ let ocamlformat_profile from =
   ; break_struct= elt true
   ; cases_exp_indent= elt 4
   ; cases_matching_exp_indent= elt `Compact
+  ; collapse_comment_whitespace= elt true
   ; disambiguate_non_breaking_match= elt false
   ; doc_comments= elt `Before_except_val
   ; doc_comments_padding= elt 2
@@ -186,6 +190,7 @@ let janestreet_profile from =
   let elt content = Elt.make content from in
   { align_symbol_open_paren= elt false
   ; assignment_operator= elt `Begin_line
+  ; break_around_multiline_strings= elt true
   ; break_before_in= elt `Fit_or_vertical
   ; break_cases= elt `Fit_or_vertical
   ; break_collection_expressions=
@@ -201,6 +206,7 @@ let janestreet_profile from =
   ; break_struct= elt (ocamlformat_profile from).break_struct.v
   ; cases_exp_indent= elt 2
   ; cases_matching_exp_indent= elt `Normal
+  ; collapse_comment_whitespace= elt true
   ; disambiguate_non_breaking_match= elt false
   ; doc_comments= elt `Before
   ; doc_comments_padding= elt 1
@@ -234,7 +240,7 @@ let janestreet_profile from =
   ; parens_ite= elt true
   ; parens_tuple= elt `Multi_line_only
   ; parens_tuple_patterns= elt `Multi_line_only
-  ; parse_docstrings= elt false
+  ; parse_docstrings= elt true
   ; parse_toplevel_phrases= elt false
   ; sequence_blank_line= elt `Compact
   ; sequence_style= elt `Terminator
@@ -246,8 +252,8 @@ let janestreet_profile from =
   ; stritem_extension_indent= elt 2
   ; type_decl= elt `Sparse
   ; type_decl_indent= elt 2
-  ; wrap_comments= elt false
-  ; wrap_docstrings= elt false
+  ; wrap_comments= elt true
+  ; wrap_docstrings= elt true
   ; wrap_fun_args= elt false }
 
 let default =
@@ -255,7 +261,8 @@ let default =
   { fmt_opts= default_profile `Default
   ; profile= elt `default
   ; opr_opts=
-      { comment_check= elt true
+      { check_odoc_parsing= elt false
+      ; comment_check= elt true
       ; debug= elt false
       ; disable= elt false
       ; margin_check= elt false
@@ -1391,6 +1398,13 @@ let kind = Decl.Operational
 module Operational = struct
   let update ~f c = {c with opr_opts= f c.opr_opts}
 
+  let check_odoc_parsing =
+    let doc = "Control whether to error when odoc parsing fails." in
+    Decl.flag ~default ~names:["check-odoc-parsing"] ~doc ~kind
+      (fun conf elt ->
+        update conf ~f:(fun f -> {f with check_odoc_parsing= elt}) )
+      (fun conf -> conf.opr_opts.check_odoc_parsing)
+
   let comment_check =
     let doc =
       "Control whether to check comments and documentation comments. Unsafe \
@@ -1461,7 +1475,8 @@ module Operational = struct
 
   let options : Store.t =
     Store.
-      [ elt comment_check
+      [ elt check_odoc_parsing
+      ; elt comment_check
       ; elt debug
       ; elt disable
       ; elt margin_check

@@ -5,6 +5,8 @@
 type section_heading = [ `Begin_section_heading of int * string option ]
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 type paragraph_style = [ `Left | `Center | `Right ]
+type list_punctuation = [ `Dot | `Paren | `Two_paren ]
+type list_number = [ `Number of int | `Lower_case of char | `Upper_case of char ]
 
 type tag =
   [ `Tag of
@@ -71,8 +73,25 @@ type t =
   | `Begin_list_item of [ `Li | `Dash ]
   | `Minus
   | `Plus
+  | `List_number of list_punctuation * list_number
   | section_heading
   | tag ]
+
+let print_list_number punc num =
+  let pre, post =
+    (match punc with
+     | `Dot -> "", "."
+     | `Paren -> "", ")"
+     | `Two_paren -> "(", ")"
+    )
+  in
+  let n = 
+    (match num with
+     | `Number n -> Printf.sprintf "%d" n
+     | `Lower_case c | `Upper_case c -> Printf.sprintf "%c" c
+    )
+  in
+  Printf.sprintf "%s%s%s" pre n post
 
 let print : [< t ] -> string = function
   | `Begin_paragraph_style `Left -> "'{L'"
@@ -89,6 +108,8 @@ let print : [< t ] -> string = function
   | `Begin_list_item `Dash -> "'{- ...}'"
   | `Minus -> "'-'"
   | `Plus -> "'+'"
+  | `List_number (punc, num) ->
+      Printf.sprintf "'%s'" (print_list_number punc num)
   | `Begin_section_heading (level, label) ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
@@ -144,6 +165,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_list_item `Dash -> "'{- ...}' (list item)"
   | `Minus -> "'-' (bulleted list item)"
   | `Plus -> "'+' (numbered list item)"
+  | `List_number _ as token -> Printf.sprintf "%s (numbered list item)" (print token)
   | `Begin_section_heading (level, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
   | `Tag (`Author _) -> "'@author'"

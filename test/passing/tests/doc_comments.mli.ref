@@ -377,8 +377,7 @@ end
 
 (** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
 
-(** [Multi
-     Line]
+(** [Multi Line]
 
     [ A lot of    spaces ]
 
@@ -546,7 +545,7 @@ val k : int
 
 (** *)
 
-(**  *)
+(** *)
 
 (** [trim "  "] is [""] *)
 
@@ -607,9 +606,9 @@ type x =
       echo "this""is""only""a""single"(echo word)(echo also)
     ]} *)
 
-(**a*)
+(**a *)
 
-(**b*)
+(**b *)
 
 (** Inline math: {m \infty}
 
@@ -658,7 +657,7 @@ type x =
 (** ISO-Latin1 characters in identifiers
     {[
       ω
-    ]}*)
+    ]} *)
 
 (** Here, [my_list=[]]. *)
 
