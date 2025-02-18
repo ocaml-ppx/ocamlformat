@@ -2338,7 +2338,10 @@ end = struct
       when exp == lhs ->
         true
     | ( Exp {pexp_desc= Pexp_field (e, _); _}
-      , {pexp_desc= Pexp_construct _ | Pexp_cons _; _} )
+      , { pexp_desc=
+            ( Pexp_construct _ | Pexp_cons _
+            | Pexp_constant {pconst_desc= Pconst_integer (_, None); _} )
+        ; _ } )
       when e == exp ->
         true
     | ( Exp {pexp_desc= Pexp_function (_, _, Pfunction_body e); _}

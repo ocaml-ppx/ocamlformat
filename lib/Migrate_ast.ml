@@ -127,6 +127,8 @@ module Location = struct
           {loc_start; loc_end; loc_ghost= false}
         in
         (c + String.length (String.strip s) + 1, mkloc (String.strip s) loc) )
+
+  let is_ghost loc = loc.loc_ghost
 end
 
 module Longident = struct

@@ -15,6 +15,8 @@ open Extended_ast
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
 
+let is_dummy_pos p = p.Lexing.pos_cnum < 0
+
 let create ~text ~tokens =
   let tokens =
     List.filter tokens ~f:(fun (tok, _) ->
@@ -66,7 +68,7 @@ let empty_line_between (t : t) p1 p2 =
     | (_tok, x) :: xs ->
         x.loc_start.pos_lnum - prev.pos_lnum > 1 || loop x.loc_end xs
   in
-  loop p1 l
+  (not (is_dummy_pos p1 || is_dummy_pos p2)) && loop p1 l
 
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end

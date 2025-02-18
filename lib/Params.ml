@@ -432,6 +432,17 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let align_nested_match =
     match (ast.pexp_desc, c.fmt_opts.nested_match.v) with
     | (Pexp_match _ | Pexp_try _), `Align -> last
+    | ( Pexp_extension
+          ( ext
+          , PStr
+              [ { pstr_loc= _
+                ; pstr_desc=
+                    Pstr_eval
+                      ({pexp_desc= Pexp_match _ | Pexp_try _; pexp_loc; _}, _)
+                } ] )
+      , `Align )
+      when Source.extension_using_sugar ~name:ext ~payload:pexp_loc ->
+        last
     | _ -> false
   in
   let body_has_parens =
@@ -930,7 +941,8 @@ module Align = struct
 
   let module_pack (c : Conf.t) ~me =
     if not c.fmt_opts.ocp_indent_compat.v then false
-    else (* Align when the constraint is not desugared. *)
+    else
+      (* Align when the constraint is not desugared. *)
       match me.pmod_desc with
       | Pmod_structure _ | Pmod_ident _ -> false
       | _ -> true

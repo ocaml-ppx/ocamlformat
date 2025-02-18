@@ -329,10 +329,12 @@ let relocate_cmts_before (t : t) ~src ~sep ~dst =
   update_cmts t `Before ~f ; update_cmts t `Within ~f
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
-  let kwd_loc =
-    Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
-  in
-  relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
+  if not (whole_loc.Location.loc_ghost || matched_loc.Location.loc_ghost)
+  then
+    let kwd_loc =
+      Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
+    in
+    relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
 let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   let open Extended_ast in
@@ -581,18 +583,22 @@ end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let open Fmt in
-  let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
-  let decoded = Cmt.decode ~parse_comments_as_doc cmt in
+  let decoded = Cmt.decode cmt in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
   let pro = str "(*" $ str decoded.prefix
   and epi = str decoded.suffix $ str "*)" in
+  let fmt_doc txt =
+    Doc.fmt ~pro ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
+  in
   match decoded.kind with
   | Verbatim txt -> Verbatim.fmt ~pro ~epi txt
-  | Doc txt ->
-      Doc.fmt ~pro ~epi ~fmt_code conf ~loc:(Cmt.loc cmt) txt ~offset
+  | Doc txt -> fmt_doc txt
   | Normal txt ->
-      if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
+      if
+        conf.fmt_opts.ocp_indent_compat.v && conf.fmt_opts.parse_docstrings.v
+      then fmt_doc txt
+      else if conf.fmt_opts.wrap_comments.v then Wrapped.fmt ~pro ~epi txt
       else Unwrapped.fmt ~pro ~epi txt
   | Code code -> Cinaps.fmt ~pro ~epi ~fmt_code conf ~offset code
   | Asterisk_prefixed lines -> Asterisk_prefixed.fmt ~pro ~epi lines
