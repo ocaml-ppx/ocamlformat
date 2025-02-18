@@ -46,6 +46,11 @@ Error: Syntax error
 |}
         ) ]
 
+let test_parse_and_format_pattern =
+  let make_test = test_parse_and_format "pattern" ~fg:Pattern in
+  [ make_test "A 1" ~input:"A 1" ~expected:(Ok "A 1\n")
+  ; make_test "A B C" ~input:"A B C" ~expected:(Ok "A (B C)\n") ]
+
 let test_parse_and_format_module_type =
   let make_test = test_parse_and_format "module_type" ~fg:Module_type in
   [ make_test "sig end" ~input:"sig end" ~expected:(Ok "sig end\n")
@@ -124,6 +129,9 @@ let test_parse_and_format_expression =
 
 let tests =
   List.concat
-    [ test_parse_and_format_signature @ test_parse_and_format_use_file
-      @ test_parse_and_format_core_type @ test_parse_and_format_module_type
-      @ test_parse_and_format_expression ]
+    [ test_parse_and_format_core_type
+    ; test_parse_and_format_expression
+    ; test_parse_and_format_module_type
+    ; test_parse_and_format_pattern
+    ; test_parse_and_format_signature
+    ; test_parse_and_format_use_file ]

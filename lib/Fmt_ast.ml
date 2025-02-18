@@ -4823,6 +4823,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
         (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
   | Expression, e ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
+  | Pattern, p -> fmt_pattern c (sub_pat ~ctx:(Pld (PPat (p, None))) p)
   | Repl_file, l -> fmt_repl_file c ctx l
   | Documentation, d ->
       (* TODO: [source] and [cmts] should have never been computed when

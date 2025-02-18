@@ -16,6 +16,7 @@ type t =
   | Core_type
   | Module_type
   | Expression
+  | Pattern
   | Repl_file
   | Documentation
 

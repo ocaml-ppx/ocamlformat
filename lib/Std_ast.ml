@@ -21,6 +21,7 @@ type 'a t =
   | Core_type : core_type t
   | Module_type : module_type t
   | Expression : expression t
+  | Pattern : pattern t
   (* not implemented *)
   | Repl_file : unit t
   | Documentation : unit t
@@ -34,6 +35,7 @@ let of_syntax = function
   | Core_type -> Any Core_type
   | Module_type -> Any Module_type
   | Expression -> Any Expression
+  | Pattern -> Any Pattern
   | Repl_file -> Any Repl_file
   | Documentation -> Any Documentation
 
@@ -52,6 +54,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Core_type -> m.typ m
   | Module_type -> m.module_type m
   | Expression -> m.expr m
+  | Pattern -> m.pat m
   | Repl_file -> Fn.id
   | Documentation -> Fn.id
 
@@ -69,6 +72,7 @@ module Parse = struct
     | Core_type -> Parse.core_type ~ocaml_version lexbuf
     | Module_type -> Parse.module_type ~ocaml_version lexbuf
     | Expression -> Parse.expression ~ocaml_version lexbuf
+    | Pattern -> Parse.pattern ~ocaml_version lexbuf
     | Repl_file -> ()
     | Documentation -> ()
 end
@@ -85,6 +89,7 @@ module Printast = struct
     | Core_type -> core_type 0
     | Module_type -> module_type 0
     | Expression -> expression 0
+    | Pattern -> pattern 0
     | Repl_file -> fun _ _ -> ()
     | Documentation -> fun _ _ -> ()
 end
