@@ -77,6 +77,8 @@ module Location : sig
   val of_lexbuf : Lexing.lexbuf -> t
 
   val of_lines : filename:string -> string list -> string loc list
+
+  val is_ghost : t -> bool
 end
 
 module Longident : sig
