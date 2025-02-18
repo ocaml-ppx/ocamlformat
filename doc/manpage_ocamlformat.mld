@@ -519,6 +519,10 @@ OPTIONS
            Check whether the input files already are formatted. Mutually
            exclusive with --inplace and --output.
 
+       --check-odoc-parsing
+           Control whether to error when odoc parsing fails. The flag is
+           unset by default.
+
        --comment-check
            Control whether to check comments and documentation comments.
            Unsafe to turn off. May be set in .ocamlformat. The flag is set by
@@ -585,6 +589,9 @@ OPTIONS
            file name. Some options can be specified in configuration files
            named '.ocamlformat' in the same or a parent directory of NAME,
            see documentation of other options for details.
+
+       --no-check-odoc-parsing
+           Unset check-odoc-parsing.
 
        --no-comment-check
            Unset comment-check.
