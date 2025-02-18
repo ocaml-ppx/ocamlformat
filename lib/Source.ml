@@ -68,7 +68,7 @@ let empty_line_between (t : t) p1 p2 =
     | (_tok, x) :: xs ->
         x.loc_start.pos_lnum - prev.pos_lnum > 1 || loop x.loc_end xs
   in
-  not (is_dummy_pos p1 || is_dummy_pos p2) && loop p1 l
+  (not (is_dummy_pos p1 || is_dummy_pos p2)) && loop p1 l
 
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
