@@ -19,6 +19,9 @@ profile. This started with version 0.26.0.
 
 - Print valid syntax for the corner case (1).a (#2653, @v-gb)
 
+- `Ast_mapper.default_mapper` now iterates on the location of `in` in `let+ .. in ..`
+  (#2658, @v-gb)
+
 ## 0.27.0
 
 ### Highlight
