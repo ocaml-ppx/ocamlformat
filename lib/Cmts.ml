@@ -365,13 +365,11 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
-        | Some loc -> loc
-        | None -> (
-          match Source.loc_of_first_token_at src whole_loc PERCENT with
-          | Some loc -> loc
-          | None -> impossible "expect token starting extension" )
+        | Some _ as o -> o
+        | None -> Source.loc_of_first_token_at src whole_loc PERCENT
       in
-      relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
+      Option.iter kwd_loc ~f:(fun kwd_loc ->
+          relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc )
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
