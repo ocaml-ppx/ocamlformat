@@ -25,6 +25,9 @@ profile. This started with version 0.26.0.
 - Fix missing parentheses in `let+ (Cstr _) : _ = _` (#2661, @Julow)
   This caused a crash as the generated code wasn't valid syntax.
 
+- ocamlformat is now more robust when used as a library to print modified ASTs
+  (#2659, @v-gb)
+
 ## 0.27.0
 
 ### Highlight

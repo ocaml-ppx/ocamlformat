@@ -118,6 +118,7 @@ let tests =
   ; ("Ast", Test_ast.tests)
   ; ("Literal_lexer", Test_literal_lexer.tests)
   ; ("Fmt", Test_fmt.tests)
+  ; ("Fmt_ast", Test_fmt_ast.tests)
   ; ("Translation_unit", Test_translation_unit.tests) ]
 
 let () = Alcotest.run "ocamlformat" tests ~compact:true
