@@ -134,6 +134,16 @@ let x = x + y
 
 let x = -x
 
+let x = -42
+
+let x = +x
+
+let x = 42
+
+let x = - (-x)
+
+let x = 42
+
 let x = Foo x
 
 let x =

@@ -116,6 +116,17 @@ let x = stack_ (x + y)
 
 let x = stack_ (-x)
 
+let x = stack_ (-42)
+
+let x = stack_ (+x)
+
+let x = stack_ (+42)
+
+let x = stack_ (-(-x))
+
+let x = stack_ (-(-42))
+
+
 let x = stack_ (stack_ (Foo x))
 
 let x = stack_ (let y = 1 in Some y)

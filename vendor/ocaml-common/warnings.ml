@@ -129,6 +129,7 @@ type t =
   | Zero_alloc_all_hidden_arrow of string   (* 198 *)
   | Unchecked_zero_alloc_attribute          (* 199 *)
   | Unboxing_impossible                     (* 210 *)
+  | Mod_by_top of string                    (* 211 *)
   | Unnecessary_allow_any_kind              (* 212 *)
 
 (* If you remove a warning, leave a hole in the numbering.  NEVER change
@@ -218,6 +219,7 @@ let number = function
   | Zero_alloc_all_hidden_arrow _ -> 198
   | Unchecked_zero_alloc_attribute -> 199
   | Unboxing_impossible -> 210
+  | Mod_by_top _ -> 211
   | Unnecessary_allow_any_kind -> 212
 ;;
 (* DO NOT REMOVE the ;; above: it is used by
@@ -594,6 +596,10 @@ let descriptions = [
   { number = 210;
     names = ["unboxing-impossible"];
     description = "The parameter or return value corresponding @unboxed attribute cannot be unboxed.";
+    since = since 4 14 };
+  { number = 211;
+    names = ["mod-by-top"];
+    description = "Including the top-most element of an axis in a kind's modifiers is a no-op.";
     since = since 4 14 };
   { number = 212;
     names = ["unnecessary-allow-any-kind"];
@@ -1246,6 +1252,11 @@ let message = function
       Printf.sprintf
         "This [@unboxed] attribute cannot be used.\n\
          The type of this value does not allow unboxing."
+  | Mod_by_top modifier ->
+      Printf.sprintf
+        "%s is the top-most modifier.\n\
+         Modifying by a top element is a no-op."
+        modifier
   | Unnecessary_allow_any_kind ->
     Printf.sprintf
       "[@@allow_any_kind_in_intf] and [@@allow_any_kind_in_impl] set on a \n\

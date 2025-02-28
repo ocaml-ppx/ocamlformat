@@ -135,6 +135,7 @@ type t =
   | Zero_alloc_all_hidden_arrow of string   (* 198 *)
   | Unchecked_zero_alloc_attribute          (* 199 *)
   | Unboxing_impossible                     (* 210 *)
+  | Mod_by_top of string                    (* 211 *)
   | Unnecessary_allow_any_kind              (* 212 *)
 
 type alert = {kind:string; message:string; def:loc; use:loc}

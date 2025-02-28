@@ -1015,7 +1015,7 @@ The precedences must be listed from low to high.
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT HASH_FLOAT INT HASH_INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
-          LBRACKETPERCENT QUOTED_STRING_EXPR STACK HASHLBRACE HASHLPAREN
+          LBRACKETPERCENT QUOTED_STRING_EXPR HASHLBRACE HASHLPAREN
 
 
 /* Entry points */
@@ -2579,12 +2579,23 @@ let_pattern:
 
 %inline qualified_dotop: ioption(DOT mkrhs(mod_longident) {$2}) DOTOP { $1, $2 };
 
+%inline fun_attrs:
+  | FUNCTION ext_attributes match_cases
+      { Pexp_function $3, $2 }
+  | FUN ext_attributes fun_param fun_def
+      { Pexp_fun($3, $4), $2 }
+
 expr:
     simple_expr %prec below_HASH
       { $1 }
   | expr_attrs
       { let desc, attrs = $1 in
         mkexp_attrs ~loc:$sloc desc attrs }
+  | maybe_stack(
+      fun_attrs {
+        let desc, attrs = $1 in
+        mkexp_attrs ~loc:$sloc desc attrs }
+    ) { $1 }
   | expr_
       { $1 }
   | let_bindings(ext) IN seq_expr
@@ -2607,14 +2618,16 @@ expr:
     { mk_builtin_indexop_expr ~loc:$sloc $1 }
   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
     { mk_dotop_indexop_expr ~loc:$sloc $1 }
-  | FUN ext_attributes LPAREN TYPE newtypes RPAREN fun_def
-    { let loc = $sloc in
-      wrap_exp_attrs ~loc (mk_newtypes ~loc $5 $7) $2 }
-  | FUN ext_attributes LPAREN TYPE
-    name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
-    RPAREN fun_def
-    { let loc = $sloc in
-      wrap_exp_attrs ~loc (mk_newtypes ~loc:$sloc [name, jkind] $9) $2 }
+  | maybe_stack(
+      FUN ext_attributes LPAREN TYPE newtypes RPAREN fun_def
+      { let loc = $sloc in
+        wrap_exp_attrs ~loc (mk_newtypes ~loc $5 $7) $2 }
+    | FUN ext_attributes LPAREN TYPE
+      name=mkrhs(LIDENT {Some $1}) COLON jkind=jkind_annotation
+      RPAREN fun_def
+      { let loc = $sloc in
+        wrap_exp_attrs ~loc (mk_newtypes ~loc:$sloc [name, jkind] $9) $2 }
+  ) { $1 }
   | expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
@@ -2637,10 +2650,6 @@ expr:
       { let open_loc = make_loc ($startpos($2), $endpos($5)) in
         let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
         Pexp_letopen(od, $7), $4 }
-  | FUNCTION ext_attributes match_cases
-      { Pexp_function $3, $2 }
-  | FUN ext_attributes fun_param fun_def
-      { Pexp_fun($3, $4), $2 }
   | MATCH ext_attributes seq_expr WITH match_cases
       { Pexp_match($3, $5), $2 }
   | TRY ext_attributes seq_expr WITH match_cases
@@ -2679,14 +2688,13 @@ expr:
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
       { mkexp ~loc:$sloc (Pexp_apply($1, $2)) }
-  | STACK simple_expr
-      { if Erase_jane_syntax.should_erase ()
-        then $2
-        else mkexp ~loc:$sloc (Pexp_stack $2) }
+  | stack(simple_expr) %prec below_HASH { $1 }
   | labeled_tuple %prec below_COMMA
       { mkexp ~loc:$sloc (Pexp_tuple $1) }
-  | mkrhs(constr_longident) simple_expr %prec below_HASH
+  | maybe_stack(
+    mkrhs(constr_longident) simple_expr %prec below_HASH
       { mkexp ~loc:$sloc (Pexp_construct($1, Some $2)) }
+      ) { $1 }
   | name_tag simple_expr %prec below_HASH
       { mkexp ~loc:$sloc (Pexp_variant($1, Some $2)) }
   | e1 = expr op = op(infix_operator) e2 = expr
@@ -4370,6 +4378,15 @@ optional_atat_modalities_expr:
   | ATAT error { expecting $loc($2) "modality expression" }
 ;
 
+%inline stack(exp):
+  | STACK exp {
+      if Erase_jane_syntax.should_erase () then $2
+      else mkexp ~loc:$sloc (Pexp_stack $2)
+  }
+
+%inline maybe_stack(exp):
+  | stack(exp) { $1 }
+  | exp { $1 }
 
 (* Tuple types include:
    - atomic types (see below);

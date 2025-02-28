@@ -1,11 +1,11 @@
 (* These tests from the campiler test suite *)
 
-let f = ref (stack_ (fun x -> x))
+let f = ref (stack_ fun x -> x)
 let f = ref (stack_ (2, 3))
 let f = ignore_local (stack_ (2, 3))
 let f = ref (stack_ Foo)
-let f = ref (stack_ (Bar 42))
-let f = ignore_local (stack_ (Bar 42))
+let f = ref (stack_ Bar 42)
+let f = ignore_local (stack_ Bar 42)
 let f = ref (stack_ `Foo)
 let f = ref (stack_ (`Bar 42))
 let f = ignore_local (stack_ (`Bar 42))
@@ -21,15 +21,15 @@ let f () = stack_ (3, 5)
 let f () = exclave_ stack_ (3, 5)
 
 let f () =
-  let g = stack_ (fun x -> x) in
+  let g = stack_ fun x -> x in
   g 42
 ;;
 
-let f () = (stack_ (fun x -> x)) 42
+let f () = (stack_ fun x -> x) 42
 let f () = List.length (stack_ [ 1; 2; 3 ])
 let f () = stack_ [ i for i = 0 to 9 ]
 let f () = stack_ [| i for i = 0 to 9 |]
-let f () = stack_ (new cla)
+let f () = stack_ new cla
 
 class foo cla =
   object
@@ -72,16 +72,16 @@ let mk () =
 let f =
   ref
     (stack_
-      (function
-        | x -> x))
+      function
+      | x -> x)
 ;;
 
 let f =
   ref
     (stack_
-      (function
-        | x -> x
-        | y -> y))
+      function
+      | x -> x
+      | y -> y)
 ;;
 
 let f =
@@ -91,13 +91,13 @@ let f =
     (stack_
       (* 3 *)
       (* 4 *)
-      (function
-        (* 5 *)
-        (* 6 *)
-        | x -> x))
+      function
+      (* 5 *)
+      (* 6 *)
+      | x -> x)
 ;;
 
-let x = stack_ (stack_ (2, stack_ "hello"), ~x:(stack_ (Foo x)))
+let x = stack_ (stack_ (2, stack_ "hello"), ~x:(stack_ Foo x))
 
 let x =
   (* 1 *)
@@ -108,7 +108,7 @@ let x =
     ~x:(stack_
          (* 11 *)
          (* 12 *)
-         (Foo x)) )
+         Foo x) )
 ;;
 
 (* Constructor precedence *)
@@ -126,7 +126,12 @@ let x = stack_ (~x:1, ~y:2)
 
 let x = stack_ (x + y)
 let x = stack_ (-x)
-let x = stack_ (stack_ (Foo x))
+let x = stack_ (-42)
+let x = stack_ (+x)
+let x = stack_ 42
+let x = stack_ (- (-x))
+let x = stack_ 42
+let x = stack_ (stack_ Foo x)
 
 let x =
   stack_
@@ -134,6 +139,6 @@ let x =
      Some y)
 ;;
 
-let x = stack_ (c#x)
+let x = stack_ c#x
 let x = stack_ (r.x <- x)
 let x = stack_ (if x then y else z)
