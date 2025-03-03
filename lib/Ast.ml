@@ -1877,22 +1877,32 @@ end = struct
     | Ppat_tuple _ -> true
     | _ -> false
 
-  let parenze_pat_in_bindings bindings pat =
-    let parenze_pat_in_binding ~pvb_constraint =
+  let parenze_pat_in_bindings' ~pat_of_binding bindings pat =
+    let parenze_pat_in_binding ~constraint_ =
       (* Some patterns must be parenthesed when followed by a colon. *)
-      (exposed_right_colon pat && Option.is_some pvb_constraint)
+      (exposed_right_colon pat && Option.is_some constraint_)
       ||
       match pat.ppat_desc with
       | Ppat_construct (_, Some _)
        |Ppat_variant (_, Some _)
        |Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
-          (* Add disambiguation parentheses that are not necessary. *)
+          (* These parentheses serve as disambiguation for value_bindings but
+             are mandatory for binding_op. *)
           true
       | _ -> false
     in
-    List.exists bindings ~f:(fun {pvb_pat; pvb_constraint; _} ->
+    List.exists bindings ~f:(fun binding ->
+        let pat', constraint_ = pat_of_binding binding in
         (* [pat] appears on the left side of a binding. *)
-        pvb_pat == pat && parenze_pat_in_binding ~pvb_constraint )
+        pat' == pat && parenze_pat_in_binding ~constraint_ )
+
+  let parenze_pat_in_bindings =
+    let pat_of_binding {pvb_pat= p; pvb_constraint= t; _} = (p, t) in
+    parenze_pat_in_bindings' ~pat_of_binding
+
+  let parenze_pat_in_letop let_ ands pat =
+    let pat_of_binding {pbop_pat= p; pbop_typ= t; _} = (p, t) in
+    parenze_pat_in_bindings' ~pat_of_binding (let_ :: ands) pat
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
@@ -1913,16 +1923,6 @@ end = struct
     | Fpc {pparam_desc= _; _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
     | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
-    | ( Exp {pexp_desc= Pexp_letop _; _}
-      , ( Ppat_construct (_, Some _)
-        | Ppat_cons _
-        | Ppat_variant (_, Some _)
-        | Ppat_or _ | Ppat_alias _
-        | Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ) ->
-        true
-    | ( Exp {pexp_desc= Pexp_letop _; _}
-      , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
-        false
     | ( Bo {pbop_typ= None; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_cons _
@@ -1988,6 +1988,10 @@ end = struct
       , _ )
       when parenze_pat_in_bindings pvbs_bindings pat ->
         true
+    | Exp {pexp_desc= Pexp_letop {let_; ands; _}; _}, _
+      when parenze_pat_in_letop let_ ands pat ->
+        true
+    | Bo bo, _ when parenze_pat_in_letop bo [] pat -> true
     | ( Lb {pvb_pat; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
