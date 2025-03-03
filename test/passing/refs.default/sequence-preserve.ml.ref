@@ -112,8 +112,8 @@ let _ =
 let foo x y =
   do_some_setup x;
   let* () = do_some_setup y in
-
   (* Empty line after letop *)
+
   important_function x;
   another_important_function x y;
   cleanup x y
