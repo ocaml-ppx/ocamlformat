@@ -22,6 +22,9 @@ profile. This started with version 0.26.0.
 - `Ast_mapper.default_mapper` now iterates on the location of `in` in `let+ .. in ..`
   (#2658, @v-gb)
 
+- Fix missing parentheses in `let+ (Cstr _) : _ = _` (#2661, @Julow)
+  This caused a crash as the generated code wasn't valid syntax.
+
 ## 0.27.0
 
 ### Highlight
