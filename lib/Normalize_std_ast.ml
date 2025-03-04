@@ -271,6 +271,14 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     | Pexp_extension ({txt= "src_pos"; loc}, _) when erase_jane_syntax ->
         m.expr m (dummy_position ~loc)
     | Pexp_stack expr when erase_jane_syntax -> m.expr m expr
+    | Pexp_unboxed_tuple es when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m {exp with pexp_desc= Pexp_tuple es}
+    | Pexp_record_unboxed_product (es, e) when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m
+          {exp with pexp_desc= Pexp_record (es, e)}
+    | Pexp_unboxed_field (e, l) when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m
+          {exp with pexp_desc= Pexp_field (e, l)}
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
@@ -295,6 +303,12 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
            [let _ : typ = exp] is represented as [let _ : typ = (exp :
            typ)]. *)
         m.pat m pat1
+    | Ppat_unboxed_tuple (ps, oc) when erase_jane_syntax ->
+        Ast_mapper.default_mapper.pat m
+          {pat with ppat_desc= Ppat_tuple (ps, oc)}
+    | Ppat_record_unboxed_product (ps, oc) when erase_jane_syntax ->
+        Ast_mapper.default_mapper.pat m
+          {pat with ppat_desc= Ppat_record (ps, oc)}
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =
@@ -350,6 +364,8 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
       | {ptyp_desc= Ptyp_poly (l, t); _} when erase_jane_syntax ->
           let l = List.map l ~f:(fun (n, _) -> (n, None)) in
           {typ with ptyp_desc= Ptyp_poly (l, t)}
+      | {ptyp_desc= Ptyp_unboxed_tuple ts; _} when erase_jane_syntax ->
+          {typ with ptyp_desc= Ptyp_tuple ts}
       | _ -> typ
     in
     Ast_mapper.default_mapper.typ m typ
@@ -420,8 +436,14 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
          removed *)
       |> if erase_jane_syntax then map_attributes_no_sort m else Fn.id
     in
+    let ptype_kind =
+      match decl.ptype_kind with
+      | Ptype_record_unboxed_product lds when erase_jane_syntax ->
+          Ptype_record lds
+      | _ -> decl.ptype_kind
+    in
     Ast_mapper.default_mapper.type_declaration m
-      {decl with ptype_attributes; ptype_jkind_annotation}
+      {decl with ptype_attributes; ptype_jkind_annotation; ptype_kind}
   in
   let modes (m : Ast_mapper.mapper) ms =
     Ast_mapper.default_mapper.modes m

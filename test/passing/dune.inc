@@ -12236,6 +12236,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_record-erased.ml.stdout
+   (with-stderr-to unboxed_record-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/unboxed_record.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record-erased.ml.ref unboxed_record-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_record-erased.ml.err unboxed_record-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_record.ml.stdout
    (with-stderr-to unboxed_record.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_record.ml})))))
@@ -12267,6 +12285,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/unboxed_record.ml.js-err unboxed_record.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_records_cmts_attrs-erased.ml.stdout
+   (with-stderr-to unboxed_records_cmts_attrs-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/unboxed_records_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs-erased.ml.ref unboxed_records_cmts_attrs-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_records_cmts_attrs-erased.ml.err unboxed_records_cmts_attrs-erased.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -12308,6 +12344,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_tuples-erased.ml.stdout
+   (with-stderr-to unboxed_tuples-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/unboxed_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples-erased.ml.ref unboxed_tuples-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples-erased.ml.err unboxed_tuples-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_tuples.ml.stdout
    (with-stderr-to unboxed_tuples.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_tuples.ml})))))
@@ -12339,6 +12393,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/unboxed_tuples.ml.js-err unboxed_tuples.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_tuples_cmts_attrs-erased.ml.stdout
+   (with-stderr-to unboxed_tuples_cmts_attrs-erased.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iter=3 %{dep:tests/unboxed_tuples_cmts_attrs.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs-erased.ml.ref unboxed_tuples_cmts_attrs-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_tuples_cmts_attrs-erased.ml.err unboxed_tuples_cmts_attrs-erased.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )

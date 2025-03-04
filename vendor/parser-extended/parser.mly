@@ -2852,7 +2852,9 @@ comprehension_clause:
   | simple_expr DOT mkrhs(label_longident)
       { Pexp_field($1, $3) }
   | simple_expr DOTHASH mkrhs(label_longident)
-      { Pexp_unboxed_field($1, $3) }
+      { if Erase_jane_syntax.should_erase ()
+        then Pexp_field($1, $3)
+        else Pexp_unboxed_field($1, $3) }
   | od=open_dot_declaration DOT LPAREN seq_expr RPAREN
       { Pexp_open(od, $4) }
   | od=open_dot_declaration DOT LBRACELESS object_expr_content GREATERRBRACE
@@ -2888,7 +2890,9 @@ comprehension_clause:
         Pexp_record(fields, exten) }
   | HASHLBRACE record_expr_content RBRACE
       { let (exten, fields) = $2 in
-        Pexp_record_unboxed_product(fields, exten) }
+        if Erase_jane_syntax.should_erase ()
+        then Pexp_record(fields, exten)
+        else Pexp_record_unboxed_product(fields, exten) }
   | LBRACE record_expr_content error
       { unclosed "{" $loc($1) "}" $loc($3) }
   | od=open_dot_declaration DOT LBRACE record_expr_content RBRACE
@@ -2932,7 +2936,9 @@ comprehension_clause:
     LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($3) ")" $loc($8) }
   | HASHLPAREN labeled_tuple RPAREN
-      { Pexp_unboxed_tuple $2 }
+      { if Erase_jane_syntax.should_erase ()
+        then Pexp_tuple $2
+        else Pexp_unboxed_tuple $2 }
 ;
 labeled_simple_expr:
     simple_expr %prec below_HASH
@@ -3507,7 +3513,9 @@ simple_delimited_pattern:
         Ppat_record(fields, closed) }
     | HASHLBRACE record_pat_content RBRACE
       { let (fields, closed) = $2 in
-        Ppat_record_unboxed_product(fields, closed) }
+        if Erase_jane_syntax.should_erase ()
+        then Ppat_record(fields, closed)
+        else Ppat_record_unboxed_product(fields, closed) }
     | LBRACE record_pat_content error
       { unclosed "{" $loc($1) "}" $loc($3) }
     | LBRACKET pattern_semi_list RBRACKET
@@ -3526,7 +3534,9 @@ simple_delimited_pattern:
             $1 }
   | HASHLPAREN reversed_labeled_tuple_pattern(pattern) RPAREN
         { let (closed, fields) = $2 in
-          Ppat_unboxed_tuple (List.rev fields, closed) }
+          if Erase_jane_syntax.should_erase ()
+          then Ppat_tuple (List.rev fields, closed)
+          else Ppat_unboxed_tuple (List.rev fields, closed) }
   ) { $1 }
 
 %inline pattern_semi_list:
@@ -3693,7 +3703,12 @@ nonempty_type_kind:
   | oty = type_synonym
     priv = inline_private_flag
     HASHLBRACE ls = label_declarations RBRACE
-      { (Ptype_record_unboxed_product ls, priv, oty) }
+      { let record =
+          if Erase_jane_syntax.should_erase ()
+          then Ptype_record ls
+          else Ptype_record_unboxed_product ls
+        in
+        (record, priv, oty) }
 ;
 %inline type_synonym:
   ioption(terminated(core_type, EQUAL))
@@ -4490,7 +4505,9 @@ atomic_type:
     | LBRACKETLESS BAR? row_field_list GREATER name_tag_list RBRACKET
         { Ptyp_variant($3, Closed, Some $5) }
     | HASHLPAREN unboxed_tuple_type_body RPAREN
-        { Ptyp_unboxed_tuple $2 }
+        { if Erase_jane_syntax.should_erase ()
+          then Ptyp_tuple $2
+          else Ptyp_unboxed_tuple $2 }
     | extension
         { Ptyp_extension $1 }
     | LPAREN QUOTE name=mkrhs(ident {Some $1}) COLON jkind=jkind_annotation RPAREN
