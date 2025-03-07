@@ -162,11 +162,14 @@ val get_list_expr : Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 
-val get_record_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
+val get_record_pat :
+  Conf.t -> ctx:Ast.t -> ?ext_length:int -> pattern -> elements_collection
 
-val get_list_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
+val get_list_pat :
+  Conf.t -> ctx:Ast.t -> ?ext_length:int -> pattern -> elements_collection
 
-val get_array_pat : Conf.t -> ctx:Ast.t -> pattern -> elements_collection
+val get_array_pat :
+  Conf.t -> ctx:Ast.t -> ?ext_length:int -> pattern -> elements_collection
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

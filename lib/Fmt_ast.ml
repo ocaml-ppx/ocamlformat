@@ -1096,7 +1096,7 @@ and fmt_pattern_attributes c xpat k =
         (Params.parens_if parens_attr c.conf
            (k $ fmt_attributes c ~pre:Space attrs) )
 
-and fmt_pattern ?ext c ?pro ?parens ?(box = false)
+and fmt_pattern ?ext c ?pro ?ext_length ?parens ?(box = false)
     ({ctx= ctx0; ast= pat} as xpat) =
   protect c (Pat pat)
   @@
@@ -1184,7 +1184,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         in
         hvbox 0 @@ Cmts.fmt c ppat_loc @@ fmt_record_field c ?typ1 ?rhs lid
       in
-      let p = Params.get_record_pat c.conf ~ctx:ctx0 pat in
+      let p = Params.get_record_pat ?ext_length c.conf ~ctx:ctx0 pat in
       let last_sep, fmt_underscore =
         match closed_flag with
         | OClosed -> (true, noop)
@@ -1213,13 +1213,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
-      let p = Params.get_array_pat c.conf ~ctx:ctx0 pat in
+      let p = Params.get_array_pat c.conf ~ctx:ctx0 ?ext_length pat in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_list pats ->
-      let p = Params.get_list_pat c.conf ~ctx:ctx0 pat in
+      let p = Params.get_list_pat c.conf ~ctx:ctx0 ?ext_length pat in
       p.box
         (fmt_elements_collection c p Pat.location ppat_loc
            (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
@@ -2974,7 +2974,8 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then (* Side effect order is important. *)
+    if List.is_empty fields then
+      (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in
@@ -4619,7 +4620,17 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
   in
   let ext = lb_attrs.attrs_extension in
   let should_break_after_keyword =
-    Cmts.has_before c.cmts lb_pat.ast.ppat_loc || Option.is_some ext
+    Cmts.has_before c.cmts lb_pat.ast.ppat_loc
+    || Option.is_some ext
+       &&
+       match lb_pat.ast with
+       | {ppat_desc= Ppat_record _ | Ppat_list _ | Ppat_array _; _}
+         when c.conf.fmt_opts.dock_collection_brackets.v ->
+           false
+       | _ -> true
+  in
+  let ext_length =
+    Option.map ext ~f:(fun ext -> 1 + String.length ext.txt)
   in
   let decl =
     let decl =
@@ -4628,7 +4639,7 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
       $ fmt_attributes c at_attrs
       $ fmt_if rec_flag (str " rec")
       $ fmt_or should_break_after_keyword space_break (str " ")
-    and pattern = fmt_pattern c lb_pat
+    and pattern = fmt_pattern c ?ext_length lb_pat
     and args =
       fmt_if
         (not (List.is_empty lb_args))
