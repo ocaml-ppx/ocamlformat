@@ -380,7 +380,7 @@ let get_or_pattern_is_nested ~ctx pat =
       not
         (List.exists bindings.pvbs_bindings ~f:(function
           | {pvb_body= Pfunction_cases (cases, _, _); _} -> check_cases cases
-          | _ -> false ))
+          | _ -> false ) )
   | _ -> true
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
@@ -679,7 +679,7 @@ let get_list_expr (c : Conf.t) =
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.fmt_opts.space_around_arrays.v "[|" "|]"
 
-let box_pattern_docked (c : Conf.t) ~ctx ~ext_length ~space_around ~pat opn
+let box_pattern_docked (c : Conf.t) ~ctx ~space_around ~pat opn
     cls k =
   let space = if space_around then 1 else 0 in
   let indent_opn, indent_cls =
@@ -690,38 +690,47 @@ let box_pattern_docked (c : Conf.t) ~ctx ~ext_length ~space_around ~pat opn
     | Ast.Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
       when List.exists pvbs_bindings ~f:(fun b -> phys_equal b.pvb_pat pat)
       ->
+        let ext_length =
+          let binding =
+            List.find_exn pvbs_bindings ~f:(fun b ->
+                phys_equal b.pvb_pat pat )
+          in
+          binding.pvb_attributes.attrs_extension
+          |> Option.map ~f:(fun ext -> ext.txt |> String.length |> ( + ) 1)
+          |> Option.value ~default:0
+        in
         (-4 - ext_length, 0)
     | _ -> (0, 0)
   in
   hvbox indent_opn
     (wrap (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
 
-let get_record_pat (c : Conf.t) ~ctx ?(ext_length = 0) pat =
+let get_record_pat (c : Conf.t) ~ctx pat =
   let params, _ = get_record_expr c in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
-      box_pattern_docked c ~ext_length ~ctx
+      box_pattern_docked c ~ctx
         ~space_around:c.fmt_opts.space_around_records.v ~pat "{" "}"
     else params.box
   in
   {params with box}
 
-let collection_pat (c : Conf.t) ~ctx ~ext_length ~space_around ~pat opn cls =
+let collection_pat (c : Conf.t) ~ctx ~space_around ~pat opn cls =
   let params = collection_expr c ~space_around opn cls in
   let box =
     if c.fmt_opts.dock_collection_brackets.v then
       box_collec c 0
-      >> box_pattern_docked c ~ctx ~ext_length ~space_around ~pat opn cls
+      >> box_pattern_docked c ~ctx ~space_around ~pat opn cls
     else params.box
   in
   {params with box}
 
-let get_list_pat (c : Conf.t) ~ctx ?(ext_length = 0) pat =
-  collection_pat c ~ctx ~ext_length
+let get_list_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx
     ~space_around:c.fmt_opts.space_around_lists.v ~pat "[" "]"
 
-let get_array_pat (c : Conf.t) ~ctx ?(ext_length = 0) pat =
-  collection_pat c ~ctx ~ext_length
+let get_array_pat (c : Conf.t) ~ctx pat =
+  collection_pat c ~ctx
     ~space_around:c.fmt_opts.space_around_arrays.v ~pat "[|" "|]"
 
 type if_then_else =
