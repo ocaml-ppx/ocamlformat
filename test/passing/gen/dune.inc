@@ -2769,6 +2769,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to issue2660.ml.stdout
+   (with-stderr-to issue2660.ml.stderr
+     (run %{bin:ocamlformat} --name issue2660.ml --margin-check --profile=default --max-indent=2 %{dep:../tests/issue2660.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff issue2660.ml.ref issue2660.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff issue2660.ml.err issue2660.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to issue289.ml.stdout
    (with-stderr-to issue289.ml.stderr
      (run %{bin:ocamlformat} --name issue289.ml --margin-check %{dep:../tests/issue289.ml})))))
