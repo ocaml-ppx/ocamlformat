@@ -287,7 +287,7 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
         then str_as 1000
         else str )
         (Format_.sprintf "{%s|%s|%s}" delim s delim)
-  | Pconst_string (_, loc', None) -> (
+  | Pconst_string (orig_s, loc', None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -343,7 +343,10 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
         | `Never -> `Preserve
         | `Auto -> `Normalize
       in
-      let s = Source.string_literal c.source preserve_or_normalize loc in
+      let s =
+        if loc.loc_ghost then String.escaped orig_s
+        else Source.string_literal c.source preserve_or_normalize loc
+      in
       Cmts.fmt c loc'
       @@
       match c.conf.fmt_opts.break_string_literals.v with

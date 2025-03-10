@@ -28,6 +28,9 @@ profile. This started with version 0.26.0.
 - Fix bad indentation of `let%ext { ...` (#2663, @EmileTrotignon)
   with `dock-collection-brackets` enabled.
 
+- ocamlformat is now more robust when used as a library to print modified ASTs
+  (#2659, @v-gb)
+
 ## 0.27.0
 
 ### Highlight

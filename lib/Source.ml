@@ -138,7 +138,8 @@ let empty_line_after t (loc : Location.t) =
 
 let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Location.t) =
-  Source_code_position.ascending name.loc.loc_start payload.loc_start > 0
+  name.loc.loc_ghost
+  || Source_code_position.ascending name.loc.loc_start payload.loc_start > 0
 
 let type_constraint_is_first typ loc =
   Location.compare_start typ.ptyp_loc loc < 0
