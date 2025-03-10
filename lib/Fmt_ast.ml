@@ -4622,7 +4622,14 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
   in
   let ext = lb_attrs.attrs_extension in
   let should_break_after_keyword =
-    Cmts.has_before c.cmts lb_pat.ast.ppat_loc || Option.is_some ext
+    Cmts.has_before c.cmts lb_pat.ast.ppat_loc
+    || Option.is_some ext
+       &&
+       match lb_pat.ast with
+       | {ppat_desc= Ppat_record _ | Ppat_list _ | Ppat_array _; _}
+         when c.conf.fmt_opts.dock_collection_brackets.v ->
+           false
+       | _ -> true
   in
   let decl =
     let decl =
