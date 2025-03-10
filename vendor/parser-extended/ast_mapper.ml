@@ -545,8 +545,7 @@ module E = struct
     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
     | Pexp_let (lbs, e, loc_in) ->
-      let loc_in = sub.location sub loc_in in
-        let_ ~loc ~loc_in ~attrs (sub.value_bindings sub lbs)
+        let_ ~loc ~loc_in:(sub.location sub loc_in) ~attrs (sub.value_bindings sub lbs)
           (sub.expr sub e)
     | Pexp_function (ps, c, b) ->
       function_ ~loc ~attrs
@@ -637,7 +636,7 @@ module E = struct
     | Pexp_letopen (o, e) ->
         letopen ~loc ~attrs (sub.open_declaration sub o) (sub.expr sub e)
     | Pexp_letop {let_; ands; body; loc_in} ->
-        letop ~loc ~attrs ~loc_in (sub.binding_op sub let_)
+        letop ~loc ~attrs ~loc_in:(sub.location sub loc_in) (sub.binding_op sub let_)
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()

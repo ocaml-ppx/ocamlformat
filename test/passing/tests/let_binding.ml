@@ -269,3 +269,10 @@ let _ =
   function
   | Strict | Alias -> Immutable
   | StrictOpt -> Mutable
+
+let rewrite_export =
+  let (Raw id) : binary indice = () in
+  let (a, b) : a * b = () in
+  let+ (Raw id) : binary indice = () in
+  let+ (a, b) : a * b = () in
+  ()
