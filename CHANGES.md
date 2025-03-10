@@ -19,6 +19,9 @@ profile. This started with version 0.26.0.
 
 - Print valid syntax for the corner case (1).a (#2653, @v-gb)
 
+- Fix bad indentation of `let%ext { ...` (#2663, @EmileTrotignon)
+  with `dock-collection-brackets` enabled.
+
 ## 0.27.0
 
 ### Highlight
