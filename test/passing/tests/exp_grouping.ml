@@ -283,3 +283,60 @@ let _ =
   match x with
   | _ ->
       begin[@foo] y end
+
+let v =
+  map x
+    begin fun x y z ->
+      y
+    end
+
+let v =
+  map x
+    begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
+      y
+    end
+
+let v =
+  map x
+    begin
+      fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
+      y
+    end
+
+let v =
+  map x
+    (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
+    print y;
+    z)
+
+let v =
+  map x
+    begin
+      fun x
+        argggggggggggggggggggggggggggggggggg
+        gggggggggggggggggggg
+        ggggggggggggggg
+      ->
+      y
+    end
+
+let v =
+  map x
+    (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
+    print y;
+    z)
+
+let v =
+  map x
+    begin fun x y z ->
+      ya f;
+      a f b
+    end
+
+let v =
+  map x
+    begin%ext1
+      fun%ext2 x y z ->
+        ya f;
+        a f b
+    end

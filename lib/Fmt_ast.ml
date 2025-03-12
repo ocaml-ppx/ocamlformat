@@ -2907,6 +2907,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
+  | Pexp_beginend
+      ( { pexp_desc= Pexp_function (args, typ, body)
+        ; pexp_attributes= function_attrs
+        ; _ } as f ) ->
+      let wrap_intro x =
+        hvbox 0
+          ( hvbox 0 (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs)
+          $ break 1 2 $ x )
+        $ break 1000 0
+      in
+      hvbox 2
+        (fmt_function ~wrap_intro ~box ~ctx:(Exp f) ~ctx0 ~label:Nolabel
+           ~parens:false ~attrs:function_attrs ~loc:pexp_loc c
+           (args, typ, body) )
+      $ force_break $ str "end"
   | Pexp_beginend e ->
       fmt_beginend c ~box ~pro ~ctx ~fmt_atrs ~ext ~indent_wrap ?eol e
   | Pexp_parens e ->
