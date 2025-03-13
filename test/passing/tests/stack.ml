@@ -140,3 +140,12 @@ let x = stack_ (
   then y
   else z
 )
+
+let _ = stack_ X foo [@bar]
+let _ = stack_ X (foo [@bar])
+let _ = stack_ (X foo [@bar])
+
+let _ = stack_ fun x -> x [@bar]
+let _ = stack_ fun x -> (x [@bar])
+let _ = stack_ ((fun x -> x) [@bar])
+let _ = (stack_ fun x -> x) [@bar]

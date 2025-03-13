@@ -155,3 +155,17 @@ let x = c#x
 let x = r.x <- x
 
 let x = if x then y else z
+
+let _ = X foo [@bar]
+
+let _ = X (foo [@bar])
+
+let _ = X foo [@bar]
+
+let _ = fun x -> x [@bar]
+
+let _ = fun x -> x [@bar]
+
+let _ = fun [@bar] x -> x
+
+let _ = fun [@bar] x -> x

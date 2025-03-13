@@ -2506,9 +2506,11 @@ end = struct
                    ~test:extension_local ) ->
         true
     | ( Exp {pexp_desc= Pexp_stack _; _}
-      , {pexp_desc= Pexp_fun _ | Pexp_function _ | Pexp_construct _; _} ) ->
+      , { pexp_desc= Pexp_fun _ | Pexp_function _ | Pexp_construct _
+        ; pexp_attributes= []
+        ; _ } ) ->
         false
-    | Exp {pexp_desc= Pexp_stack _; _}, expr
+    | Exp {pexp_desc= Pexp_stack _; _}, ({pexp_attributes= []; _} as expr)
       when Exp.is_simple_in_parser expr ->
         false
     | Exp {pexp_desc= Pexp_stack _; _}, _ -> true
