@@ -2894,8 +2894,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend
-      ({pexp_desc= Pexp_match (e0, cs); _} as e) ->
+  | Pexp_beginend ({pexp_desc= Pexp_match (e0, cs); _} as e) ->
       let xexp = sub_exp ~ctx e in
       let ctx = Exp e in
       hvbox 0
@@ -2912,10 +2911,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             , PStr
                 [ ( { pstr_desc=
                         Pstr_eval
-                          ( ( { pexp_desc=
-                                  Pexp_match (e0, cs)
-                              ; _ } as e1 )
-                          , _ )
+                          (({pexp_desc= Pexp_match (e0, cs); _} as e1), _)
                     ; pstr_loc= _ } as stru ) ] )
       ; _ }
     when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
