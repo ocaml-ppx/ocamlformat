@@ -1915,7 +1915,7 @@ and fmt_match c ?pro ~parens ?ext ctx xexp cs e0 keyword =
     $ Params.Exp.wrap c.conf ~parens ~disambiguate:true
       @@ Params.Align.match_ c.conf ~xexp
       @@ ( hvbox 0
-             ( str keyword
+             ( keyword
              $ fmt_extension_suffix c ext
              $ fmt_attributes c xexp.ast.pexp_attributes
              $ break 1 2
@@ -2595,8 +2595,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  | `Closing_on_separate_line -> break 1000 (-2) $ str ")" )
              ) )
   | Pexp_match (e0, cs) ->
-      fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "match"
-  | Pexp_try (e0, cs) -> fmt_match c ~pro ~parens ?ext ctx xexp cs e0 "try"
+      fmt_match c ~pro ~parens ?ext ctx xexp cs e0 (str "match")
+  | Pexp_try (e0, cs) ->
+      fmt_match c ~pro ~parens ?ext ctx xexp cs e0 (str "try")
   | Pexp_pack (me, pt) ->
       let outer_pro = pro in
       let outer_parens = parens && has_attr in
@@ -2893,6 +2894,40 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
+  | Pexp_beginend
+      ({pexp_desc= Pexp_match (e0, cs); _} as e) ->
+      let xexp = sub_exp ~ctx e in
+      let ctx = Exp e in
+      hvbox 0
+        ( fmt_match c ~pro ~parens:false ctx xexp cs e0
+            (hvbox 0
+               ( str "begin"
+               $ fmt_extension_suffix c ext
+               $ fmt_atrs $ break 1 0 $ str "match" ) )
+        $ break 1 0 $ str "end" )
+  | Pexp_beginend
+      { pexp_desc=
+          Pexp_extension
+            ( ext_inner
+            , PStr
+                [ ( { pstr_desc=
+                        Pstr_eval
+                          ( ( { pexp_desc=
+                                  Pexp_match (e0, cs)
+                              ; _ } as e1 )
+                          , _ )
+                    ; pstr_loc= _ } as stru ) ] )
+      ; _ }
+    when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
+      let ctx = Str stru in
+      let xexp = sub_exp ~ctx e1 in
+      let ctx = Exp e1 in
+      hvbox 0
+        ( fmt_match c ~pro ~parens ~ext:ext_inner ctx xexp cs e0
+            ( str "begin"
+            $ fmt_extension_suffix c ext
+            $ fmt_atrs $ str " " $ str "match" )
+        $ break 1 0 $ str "end" )
   | Pexp_beginend e ->
       let wrap_beginend k =
         let opn =
@@ -2902,7 +2937,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       in
       pro
       $ wrap_beginend
-          (fmt_expression c ~box ?eol ~parens:false ~indent_wrap ?ext
+          (fmt_expression c ~box ?eol ~parens:false ~indent_wrap
              (sub_exp ~ctx e) )
   | Pexp_parens e ->
       pro
@@ -2977,7 +3012,8 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then (* Side effect order is important. *)
+    if List.is_empty fields then
+      (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in

@@ -62,3 +62,64 @@ let _ =
     | D -> fooooooooooooo
   end
 [@@ocamlformat "break-cases=all"]
+
+
+let a =
+  begin match f x i with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a =
+  begin match%lwt f x i with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a =
+  begin%e match%lwt f x i with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a =
+  begin%e match f x i with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a = begin match f x i with A -> a | B -> b end
+
+let a =
+  begin[@a] match[@b]
+    f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
+  with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a =
+    begin%e[@a] match%lwt[@b]
+      f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
+    with
+    | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    end
+
+let a =
+  begin match
+    f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
+  with
+  | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let a =
+  begin%e
+    try f x i with
+    | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
