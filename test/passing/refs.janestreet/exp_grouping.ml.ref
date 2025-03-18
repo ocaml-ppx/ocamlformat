@@ -510,8 +510,10 @@ let v =
 let v =
   map
     x
-    begin
-      fun x argggggggggggggggggggggggggggggggggg gggggggggggggggggggg ggggggggggggggg ->
+    begin fun x
+            argggggggggggggggggggggggggggggggggg
+            gggggggggggggggggggg
+            ggggggggggggggg ->
       y
     end
 ;;

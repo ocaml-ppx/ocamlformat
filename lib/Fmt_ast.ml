@@ -1494,7 +1494,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
+and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
     ~wrap_intro ?box:(should_box = true) ~label ?(parens = false) ?ext ~attrs
     ~loc c (args, typ, body) =
   let should_box =
@@ -1637,13 +1637,19 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0
       wrap (fits_breaks "(" "") (fits_breaks ")" "")
     else Fn.id
   in
+  let pro_outer, pro_inner =
+    let pro = fmt_opt pro in
+    if has_cmts_outer then (pro, noop) else (noop, pro)
+  in
   let body =
     let pro =
       wrap_intro
-        (hvbox_if has_cmts_outer 0
-           ( cmts_outer
-           $ Params.Exp.box_fun_decl ~ctx0 c.conf
-               (fmt_label label label_sep $ cmts_inner $ opn_paren $ head) ) )
+        ( pro_outer
+        $ hvbox_if has_cmts_outer 0
+            ( cmts_outer
+            $ Params.Exp.box_fun_decl ~ctx0 c.conf
+                ( pro_inner $ fmt_label label label_sep $ cmts_inner
+                $ opn_paren $ head ) ) )
     in
     body ~pro $ cls_paren
   in
@@ -2358,11 +2364,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ cut_break $ str "." $ fmt_longident_loc c lid $ fmt_atrs ) )
   | Pexp_function (args, typ, body) ->
       let wrap_intro intro =
-        hovbox ~name:"fmt_expression | Pexp_function" 2 (pro $ intro)
-        $ space_break
+        hovbox ~name:"fmt_expression | Pexp_function" 2 intro $ space_break
       in
-      fmt_function ~wrap_intro ~box ~ctx ~ctx0 ~label:Nolabel ~parens ?ext
-        ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
+      fmt_function ~pro ~wrap_intro ~box ~ctx ~ctx0 ~label:Nolabel ~parens
+        ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
       pro
@@ -2907,21 +2912,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend
-      ( { pexp_desc= Pexp_function (args, typ, body)
-        ; pexp_attributes= function_attrs
-        ; _ } as f ) ->
-      let wrap_intro x =
-        hvbox 0
-          ( hvbox 0 (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs)
-          $ break 1 2 $ x )
-        $ break 1000 0
+  | Pexp_beginend ({pexp_desc= Pexp_function _; _} as f) ->
+      let pro =
+        pro
+        $ hvbox 0
+            (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs $ str " ")
       in
-      hvbox 2
-        (fmt_function ~wrap_intro ~box ~ctx:(Exp f) ~ctx0 ~label:Nolabel
-           ~parens:false ~attrs:function_attrs ~loc:pexp_loc c
-           (args, typ, body) )
-      $ force_break $ str "end"
+      hvbox_if box 2
+        ( fmt_expression c ~box:(not box) ?eol ~parens:false ~pro
+            ~indent_wrap (sub_exp ~ctx f)
+        $ break 1000 ~-2 $ str "end" )
   | Pexp_beginend e ->
       fmt_beginend c ~box ~pro ~ctx ~fmt_atrs ~ext ~indent_wrap ?eol e
   | Pexp_parens e ->

@@ -308,6 +308,11 @@ module Exp = struct
   let box_fun_decl ~ctx0 c k =
     match ctx0 with
     | _ when ocp c -> hvbox 2 k
+    (* Avoid large indentation for [let _ = function]. *)
+    | Lb
+        {pvb_body= Pfunction_body {pexp_desc= Pexp_function ([], _, _); _}; _}
+      ->
+        hovbox 2 k
     | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
 
