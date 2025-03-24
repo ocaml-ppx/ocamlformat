@@ -150,8 +150,7 @@ let a =
 
 let a =
   [%e
-    begin
-    [@a] match%lwt[@b]
+    begin [@a] match%lwt[@b]
       f
         xxxx
         xxxxx
