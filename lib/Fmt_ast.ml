@@ -2894,53 +2894,50 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_indexop_access x ->
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
-  | Pexp_beginend ({pexp_desc= Pexp_match (e0, cs); _} as e) ->
-      let xexp = sub_exp ~ctx e in
-      let ctx = Exp e in
-      hvbox 0
-        ( fmt_match c ~pro ~parens:false ctx xexp cs e0
-            (hvbox 0
-               ( str "begin"
-               $ fmt_extension_suffix c ext
-               $ fmt_atrs $ break 1 0 $ str "match" ) )
-        $ break 1 0 $ str "end" )
-  | Pexp_beginend
-      { pexp_desc=
-          Pexp_extension
-            ( ext_inner
-            , PStr
-                [ ( { pstr_desc=
-                        Pstr_eval
-                          (({pexp_desc= Pexp_match (e0, cs); _} as e1), _)
-                    ; pstr_loc= _ } as stru ) ] )
-      ; _ }
-    when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
-      let ctx = Str stru in
-      let xexp = sub_exp ~ctx e1 in
-      let ctx = Exp e1 in
-      hvbox 0
-        ( fmt_match c ~pro ~parens ~ext:ext_inner ctx xexp cs e0
-            ( str "begin"
-            $ fmt_extension_suffix c ext
-            $ fmt_atrs $ str " " $ str "match" )
-        $ break 1 0 $ str "end" )
   | Pexp_beginend e ->
-      let wrap_beginend k =
-        let opn =
-          hvbox 0 (str "begin" $ fmt_extension_suffix c ext $ fmt_atrs)
-        and cls = str "end" in
-        hvbox 0 (wrap opn cls (wrap (break 1 2) force_break k))
-      in
-      pro
-      $ wrap_beginend
-          (fmt_expression c ~box ?eol ~parens:false ~indent_wrap
-             (sub_exp ~ctx e) )
+      fmt_beginend c ~box ~pro ~ctx ~fmt_atrs ~ext ~indent_wrap ?eol e
   | Pexp_parens e ->
       pro
       $ hvbox 0
           (fmt_expression c ~box ?eol ~parens:true ~indent_wrap ?ext
              (sub_exp ~ctx e) )
       $ fmt_atrs
+
+and fmt_beginend c ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
+    ~indent_wrap ?eol e =
+  let begin_ = str "begin" $ fmt_extension_suffix c ext $ fmt_atrs
+  and end_ = str "end" in
+  match e.pexp_desc with
+  | Pexp_match (e0, cs) ->
+      let xexp = sub_exp ~ctx e in
+      let ctx = Exp e in
+      hvbox 0
+        ( fmt_match c ~pro ~parens:false ctx xexp cs e0
+            (hvbox 0 (begin_ $ break 1 0 $ str "match"))
+        $ break 1 0 $ end_ )
+  | Pexp_extension
+      ( ext_inner
+      , PStr
+          [ ( { pstr_desc=
+                  Pstr_eval (({pexp_desc= Pexp_match (e0, cs); _} as e1), _)
+              ; _ } as stru ) ] )
+    when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
+      let ctx = Str stru in
+      let xexp = sub_exp ~ctx e1 in
+      let ctx = Exp e1 in
+      hvbox 0
+        ( fmt_match c ~pro ~parens:false ~ext:ext_inner ctx xexp cs e0
+            ( str "begin"
+            $ fmt_extension_suffix c ext
+            $ fmt_atrs $ str " " $ str "match" )
+        $ break 1 0 $ str "end" )
+  | _ ->
+      pro
+      $ hvbox 0
+          ( hvbox 0 begin_ $ break 1 2
+          $ fmt_expression c ~box ?eol ~parens:false ~indent_wrap
+              (sub_exp ~ctx e)
+          $ force_break $ end_ )
 
 and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
     rec_flag bindings body =
