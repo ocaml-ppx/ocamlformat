@@ -31,6 +31,10 @@ profile. This started with version 0.26.0.
 - ocamlformat is now more robust when used as a library to print modified ASTs
   (#2659, @v-gb)
 
+### Changed
+
+- `begin match` can now be printed on the same line, with one less indentation level. (#2666, @EmileTrotignon)
+
 ## 0.27.0
 
 ### Highlight
