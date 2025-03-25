@@ -83,6 +83,9 @@ module Exp : sig
 
   val box_pro_with_match : ctx0:Ast.t -> parens:bool -> bool
   (** whether the [~pro] argument should be in the same box as the [match] keyword. *)
+  val function_inner_pro : has_cmts_outer:bool -> ctx0:Ast.t -> bool
+  (** Returns whether the [pro] argument of [fmt_function] should be display as an
+  inner or outer prologue. *)
 end
 
 module Mod : sig

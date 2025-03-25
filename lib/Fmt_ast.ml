@@ -1639,7 +1639,8 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
   in
   let pro_outer, pro_inner =
     let pro = fmt_opt pro in
-    if has_cmts_outer then (pro, noop) else (noop, pro)
+    if Params.Exp.function_inner_pro ~has_cmts_outer ~ctx0 then (noop, pro)
+    else (pro, noop)
   in
   let body =
     let pro =
