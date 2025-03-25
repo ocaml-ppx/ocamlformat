@@ -2917,7 +2917,7 @@ and fmt_beginend c ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
   let begin_ = str "begin" $ fmt_extension_suffix c ext $ fmt_atrs
   and end_ = str "end" in
   match e.pexp_desc with
-  | Pexp_match _ ->
+  | Pexp_match _ | Pexp_try _ ->
       pro
       $ hvbox 0
           ( fmt_expression c
@@ -2927,7 +2927,9 @@ and fmt_beginend c ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
   | Pexp_extension
       ( ext_inner
       , PStr
-          [ ( { pstr_desc= Pstr_eval (({pexp_desc= Pexp_match _; _} as e1), _)
+          [ ( { pstr_desc=
+                  Pstr_eval
+                    (({pexp_desc= Pexp_match _ | Pexp_try _; _} as e1), _)
               ; _ } as stru ) ] )
     when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
       let ctx = Str stru in
