@@ -316,7 +316,7 @@ module Exp = struct
     | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
 
-  let box_pro_with_match ~ctx0 ~parens =
+  let match_inner_pro ~ctx0 ~parens =
     if parens then false
     else
       match ctx0 with Exp {pexp_desc= Pexp_infix _; _} -> false | _ -> true
@@ -324,7 +324,7 @@ module Exp = struct
     if has_cmts_outer then false
     else
       match ctx0 with
-      | Exp {pexp_desc= Pexp_ifthenelse _; _} -> false
+      | Str _ | Lb _ | Exp {pexp_desc= Pexp_ifthenelse _ | Pexp_let _; _} -> false
       | _ -> true
 end
 

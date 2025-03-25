@@ -477,28 +477,16 @@ let _ =
     end
 ;;
 
+let v = map x begin fun x y z -> y end
+
 let v =
-  map
-    x
-    begin fun x y z ->
-      y
-    end
+  map x begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg -> y end
 ;;
 
 let v =
   map
     x
-    begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
-      y
-    end
-;;
-
-let v =
-  map
-    x
-    begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
-      y
-    end
+    begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg -> y end
 ;;
 
 let v =
@@ -513,8 +501,7 @@ let v =
     begin fun x
             argggggggggggggggggggggggggggggggggg
             gggggggggggggggggggg
-            ggggggggggggggg ->
-      y
+            ggggggggggggggg -> y
     end
 ;;
 

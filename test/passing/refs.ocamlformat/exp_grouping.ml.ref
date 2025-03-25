@@ -407,11 +407,7 @@ let _ =
       y
     end
 
-let v =
-  map x
-    begin fun x y z ->
-      y
-    end
+let v = map x begin fun x y z -> y end
 
 let v =
   map x
@@ -423,8 +419,7 @@ let v =
   map x
     begin fun x
       arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
-    ->
-      y
+    -> y
     end
 
 let v =
@@ -438,8 +433,7 @@ let v =
       argggggggggggggggggggggggggggggggggg
       gggggggggggggggggggg
       ggggggggggggggg
-    ->
-      y
+    -> y
     end
 
 let v =
@@ -447,11 +441,7 @@ let v =
     (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
       print y ; z )
 
-let v =
-  map x
-    begin fun x y z ->
-      ya f ; a f b
-    end
+let v = map x begin fun x y z -> ya f ; a f b end
 
 let v =
   map x
