@@ -2564,6 +2564,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
            && c.conf.fmt_opts.break_cases.v <> `All
            && c.conf.fmt_opts.break_cases.v <> `Vertical ) ->
       let cmts_before = Cmts.fmt_before c ?eol pexp_loc in
+      let pro_outer, pro_inner =
+        if Params.Exp.box_pro_with_match ~ctx0 ~parens then (noop, pro)
+        else (pro, noop)
+      in
       (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)
       let xpc_rhs = sub_exp ~ctx pc_rhs in
       let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
@@ -2571,11 +2575,11 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         if c.conf.fmt_opts.leading_nested_match_parens.v then (false, None)
         else (parenze_exp xpc_rhs, Some false)
       in
-      cmts_before $ pro
+      cmts_before $ pro_outer
       $ Params.Exp.wrap c.conf ~parens ~disambiguate:true
           (hvbox 2
              ( hvbox 0
-                 ( str "try"
+                 ( hvbox 0 (pro_inner $ str "try")
                  $ fmt_extension_suffix c ext
                  $ fmt_attributes c pexp_attributes
                  $ break 1 2
