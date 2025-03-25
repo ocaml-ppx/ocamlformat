@@ -1646,7 +1646,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
     let pro =
       wrap_intro
         ( pro_outer
-        $  hvbox_if has_cmts_outer 0
+        $ hvbox_if has_cmts_outer 0
             ( cmts_outer
             $ Params.Exp.box_fun_decl ~ctx0 c.conf
                 ( pro_inner $ fmt_label label label_sep $ cmts_inner

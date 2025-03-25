@@ -320,11 +320,13 @@ module Exp = struct
     if parens then false
     else
       match ctx0 with Exp {pexp_desc= Pexp_infix _; _} -> false | _ -> true
+
   let function_inner_pro ~has_cmts_outer ~ctx0 =
     if has_cmts_outer then false
     else
       match ctx0 with
-      | Str _ | Lb _ | Exp {pexp_desc= Pexp_ifthenelse _ | Pexp_let _; _} -> false
+      | Str _ | Lb _ | Exp {pexp_desc= Pexp_ifthenelse _ | Pexp_let _; _} ->
+          false
       | _ -> true
 end
 
