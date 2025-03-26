@@ -349,3 +349,37 @@ let _ =
     begin [@foo]
       y
     end
+
+let v = map x (fun x y z -> y)
+
+let v =
+  map x (fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
+      y )
+
+let v =
+  map x
+    (fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
+      y )
+
+let v =
+  map x
+    (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
+      print y ; z )
+
+let v =
+  map x
+    (fun
+      x
+      argggggggggggggggggggggggggggggggggg
+      gggggggggggggggggggg
+      ggggggggggggggg
+    -> y )
+
+let v =
+  map x
+    (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
+      print y ; z )
+
+let v = map x (fun x y z -> ya f ; a f b)
+
+let v = map x [%ext1 fun%ext2 x y z -> ya f ; a f b]
