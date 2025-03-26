@@ -2916,21 +2916,18 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ fmt_atrs
 
 and fmt_lazy c ~ctx ?(pro = noop) ~fmt_atrs ~ext ~parens e =
-  let lazy_ = str "lazy" $ fmt_extension_suffix c ext in
-  match e with
-  | {pexp_desc= Pexp_beginend _; _} as e ->
-      pro
-      $ hvbox 2
-          (Params.Exp.wrap c.conf ~parens
-             ( fmt_expression c ~pro:(lazy_ $ str " ") (sub_exp ~ctx e)
-             $ fmt_atrs ) )
-  | _ ->
-      pro
-      $ hvbox 2
-          (Params.Exp.wrap c.conf ~parens
-             ( lazy_ $ space_break
-             $ fmt_expression c (sub_exp ~ctx e)
-             $ fmt_atrs ) )
+  let lazy_ = str "lazy" $ fmt_extension_suffix c ext $ space_break in
+  let kw_outer, kw_inner =
+    match e.pexp_desc with
+    | Pexp_beginend _ -> (noop, lazy_)
+    | _ -> (lazy_, noop)
+  in
+  pro
+  $ hvbox 2
+      (Params.Exp.wrap c.conf ~parens
+         ( kw_outer
+         $ fmt_expression c ~pro:kw_inner (sub_exp ~ctx e)
+         $ fmt_atrs ) )
 
 and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
     ~indent_wrap ?eol e =
@@ -2962,7 +2959,8 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
         $ break 1 0 $ end_ )
   | _ ->
       hvbox 0
-        ( pro $ hvbox 0 begin_ $ break 1 2
+        ( hvbox 0 (pro $ begin_)
+        $ break 1 2
         $ fmt_expression c ~box ?eol ~parens:false ~indent_wrap
             (sub_exp ~ctx e)
         $ force_break $ end_ )
