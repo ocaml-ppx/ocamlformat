@@ -1948,7 +1948,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     (* Some expressions format the 'pro' and comments differently. *)
     let cmts_in_pro =
       match exp.pexp_desc with
-      | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _ -> noop
+      | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _ | Pexp_ifthenelse _ ->
+          noop
       | _ -> Cmts.fmt_before c ?eol pexp_loc
     in
     cmts_in_pro $ pro
@@ -2376,6 +2377,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         @@ wrap_if outer_parens (str "(") (str ")")
         @@ (fmt_longident txt $ Cmts.fmt_within c loc $ fmt_atrs)
   | Pexp_ifthenelse (if_branches, else_) ->
+      let parens = parens || has_attr in
+      let cmts_before = Cmts.fmt_before c ?eol pexp_loc in
+      let pro_outer, pro_inner =
+        if Params.Exp.ifthenelse_inner_pro ~parens ~ctx0 then (noop, pro)
+        else (pro, noop)
+      in
       let last_loc =
         match else_ with
         | Some (e, _) -> e.pexp_loc
@@ -2397,9 +2404,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ((None, loc_else, sub_exp ~ctx x, []) :: List.rev with_conds)
         | None -> with_conds
       in
-      pro
+      cmts_before $ pro_outer
       $ hvbox 0
-          ( Params.Exp.wrap c.conf ~parens:(parens || has_attr)
+          ( Params.Exp.wrap c.conf ~parens
               (hvbox 0
                  (list_fl cnd_exps
                     (fun
@@ -2431,7 +2438,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                       in
                       parens_prev_bch := parens_bch ;
                       p.box_branch
-                        ( p.cond
+                        ( fmt_if first pro_inner $ p.cond
                         $ p.box_keyword_and_expr
                             ( p.branch_pro
                             $ p.wrap_parens
@@ -2940,7 +2947,7 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
   cmts_before
   $
   match e.pexp_desc with
-  | Pexp_match _ | Pexp_try _ | Pexp_function _ ->
+  | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _->
       hvbox 0
         ( fmt_expression c
             ~pro:(pro $ begin_ $ str " ")
