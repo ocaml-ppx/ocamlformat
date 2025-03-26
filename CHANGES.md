@@ -33,8 +33,9 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
-- `begin match` and `begin fun` can now be printed on the same line, with one less indentation
-  level for the body of the inner expression. (#2666, @EmileTrotignon)
+- `lazy begin`, `begin match` and `begin fun` can now be printed on the same
+  line, with one less indentation level for the body of the inner expression.
+  (#2664, #2666, #2671, @EmileTrotignon)
 
 ## 0.27.0
 
