@@ -448,3 +448,25 @@ let v =
         ya f;
         a f b]
 ;;
+
+let _ =
+  lazy
+    (print_endline xxxxxxxxx;
+     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz)
+;;
+
+let _ =
+  lazy
+    (fun y ->
+      print_endline xxxxxxxxx;
+      f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz)
+;;
+
+let _ =
+  lazy
+    (match a with
+     | A -> b
+     | A ->
+       print_endline xxxxxxxxx;
+       f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz)
+;;

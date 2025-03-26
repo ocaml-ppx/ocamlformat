@@ -340,3 +340,23 @@ let v =
         ya f;
         a f b
     end
+
+let _ =
+  lazy begin
+    print_endline xxxxxxxxx;
+    f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
+  end
+
+let _ =
+  lazy begin fun y ->
+    print_endline xxxxxxxxx;
+    f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
+  end
+
+let _ =
+  lazy begin match a with
+  | A -> b
+  | A ->
+    print_endline xxxxxxxxx;
+    f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
+  end
