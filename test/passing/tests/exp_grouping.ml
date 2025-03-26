@@ -360,3 +360,9 @@ let _ =
     print_endline xxxxxxxxx;
     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
   end
+
+let _ =
+  lazy begin fun xxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzzzzz ->
+    print_endline xxxxxxxxx;
+    f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
+  end

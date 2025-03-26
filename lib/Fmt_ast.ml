@@ -2916,11 +2916,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ fmt_atrs
 
 and fmt_lazy c ~ctx ?(pro = noop) ~fmt_atrs ~ext ~parens e =
-  let lazy_ = str "lazy" $ fmt_extension_suffix c ext $ space_break in
+  let lazy_ = str "lazy" $ fmt_extension_suffix c ext in
   let kw_outer, kw_inner =
     match e.pexp_desc with
-    | Pexp_beginend _ -> (noop, lazy_)
-    | _ -> (lazy_, noop)
+    | Pexp_beginend _ ->
+        (* having an unbreakable space is useful for [lazy begin fun ...]
+           when the function has a long list of arguments. *)
+        (noop, lazy_ $ str " ")
+    | _ -> (lazy_ $ space_break, noop)
   in
   pro
   $ hvbox 2

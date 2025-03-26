@@ -470,3 +470,10 @@ let _ =
        print_endline xxxxxxxxx;
        f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz)
 ;;
+
+let _ =
+  lazy
+    (fun xxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzzzzz ->
+      print_endline xxxxxxxxx;
+      f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz)
+;;
