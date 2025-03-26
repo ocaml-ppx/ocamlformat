@@ -38,37 +38,37 @@ profile. This started with version 0.26.0.
   (#2664, #2666, #2671, @EmileTrotignon)
   For example :
   ```ocaml
-    (* before *)
-    begin
-      match a with
-      | A -> a
-      | B -> b
-    end
-    (* after *)
-    begin match a with
+  (* before *)
+  begin
+    match a with
     | A -> a
     | B -> b
+  end
+  (* after *)
+  begin match a with
+  | A -> a
+  | B -> b
+  end
+
+  (* before *)
+  begin
+    fun x ->
+      some code
+  end
+  (* after *)
+  begin fun x ->
+    some code
+  end
+
+  (* before *)
+  lazy
+    begin
+      some code
     end
-
-    (* before *)
-      begin
-        fun x ->
-          some code
-      end
-    (* after *)
-      begin fun x ->
-        some code
-      end
-
-    (* before *)
-      lazy
-        begin
-          some code
-        end
-    (* after *)
-      lazy begin
-        some code
-      end
+  (* after *)
+  lazy begin
+    some code
+  end
   ```
 
 ## 0.27.0
