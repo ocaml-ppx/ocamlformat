@@ -40,33 +40,11 @@ profile. This started with version 0.26.0.
   ```ocaml
   (* before *)
   begin
-    match a with
-    | A -> a
-    | B -> b
-  end
-  (* after *)
-  begin match a with
-  | A -> a
-  | B -> b
-  end
-
-  (* before *)
-  begin
     fun x ->
       some code
   end
   (* after *)
   begin fun x ->
-    some code
-  end
-
-  (* before *)
-  lazy
-    begin
-      some code
-    end
-  (* after *)
-  lazy begin
     some code
   end
   ```
