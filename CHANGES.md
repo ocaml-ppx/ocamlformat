@@ -33,10 +33,9 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
-- `lazy begin`, `begin match` and `begin fun` can now be printed on the same
-  line, with one less indentation level for the body of the inner expression.
-  (#2664, #2666, #2671, @EmileTrotignon)
-  For example :
+- `begin if`, `lazy begin`, `begin match` and `begin fun` can now be printed on
+  the same line, with one less indentation level for the body of the inner
+  expression. (#2664, #2666, #2671, #2672, @EmileTrotignon) For example :
   ```ocaml
   (* before *)
   begin
