@@ -1948,7 +1948,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     (* Some expressions format the 'pro' and comments differently. *)
     let cmts_in_pro =
       match exp.pexp_desc with
-      | Pexp_function _ | Pexp_match _ | Pexp_try _ -> noop
+      | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _ -> noop
       | _ -> Cmts.fmt_before c ?eol pexp_loc
     in
     cmts_in_pro $ pro
@@ -2747,15 +2747,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     c.conf
                     (List.map es ~f:(sub_exp ~ctx >> fmt_expression c)) )
              $ fmt_atrs ) )
-  | Pexp_lazy e ->
-      pro
-      $ hvbox 2
-          (Params.Exp.wrap c.conf ~parens
-             ( str "lazy"
-             $ fmt_extension_suffix c ext
-             $ space_break
-             $ fmt_expression c (sub_exp ~ctx e)
-             $ fmt_atrs ) )
+  | Pexp_lazy e -> fmt_lazy c ~ctx ~pro ~fmt_atrs ~ext ~parens e
   | Pexp_extension
       ( ext
       , PStr
@@ -2914,7 +2906,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend e ->
-      fmt_beginend c ~box ~pro ~ctx ~fmt_atrs ~ext ~indent_wrap ?eol e
+      fmt_beginend c ~loc:pexp_loc ~box ~pro ~ctx ~fmt_atrs ~ext ~indent_wrap
+        ?eol e
   | Pexp_parens e ->
       pro
       $ hvbox 0
@@ -2922,18 +2915,37 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              (sub_exp ~ctx e) )
       $ fmt_atrs
 
-and fmt_beginend c ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
+and fmt_lazy c ~ctx ?(pro = noop) ~fmt_atrs ~ext ~parens e =
+  let lazy_ = str "lazy" $ fmt_extension_suffix c ext in
+  let kw_outer, kw_inner =
+    match e.pexp_desc with
+    | Pexp_beginend _ ->
+        (* having an unbreakable space is useful for [lazy begin fun ...]
+           when the function has a long list of arguments. *)
+        (noop, lazy_ $ str " ")
+    | _ -> (lazy_ $ space_break, noop)
+  in
+  pro
+  $ hvbox 2
+      (Params.Exp.wrap c.conf ~parens
+         ( kw_outer
+         $ fmt_expression c ~pro:kw_inner (sub_exp ~ctx e)
+         $ fmt_atrs ) )
+
+and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
     ~indent_wrap ?eol e =
+  let cmts_before = Cmts.fmt_before c ?eol loc in
   let begin_ = str "begin" $ fmt_extension_suffix c ext $ fmt_atrs
   and end_ = str "end" in
+  cmts_before
+  $
   match e.pexp_desc with
   | Pexp_match _ | Pexp_try _ | Pexp_function _ ->
-      pro
-      $ hvbox 0
-          ( fmt_expression c
-              ~pro:(begin_ $ str " ")
-              ~box ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e)
-          $ break 1 0 $ end_ )
+      hvbox 0
+        ( fmt_expression c
+            ~pro:(pro $ begin_ $ str " ")
+            ~box ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e)
+        $ break 1 0 $ end_ )
   | Pexp_extension
       ( ext_inner
       , PStr
@@ -2943,19 +2955,18 @@ and fmt_beginend c ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
               ; _ } as stru ) ] )
     when Source.extension_using_sugar ~name:ext_inner ~payload:e1.pexp_loc ->
       let ctx = Str stru in
-      pro
-      $ hvbox 0
-          ( fmt_expression c ~ext:ext_inner
-              ~pro:(begin_ $ str " ")
-              ~box ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e1)
-          $ break 1 0 $ end_ )
+      hvbox 0
+        ( fmt_expression c ~ext:ext_inner
+            ~pro:(pro $ begin_ $ str " ")
+            ~box ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e1)
+        $ break 1 0 $ end_ )
   | _ ->
-      pro
-      $ hvbox 0
-          ( hvbox 0 begin_ $ break 1 2
-          $ fmt_expression c ~box ?eol ~parens:false ~indent_wrap
-              (sub_exp ~ctx e)
-          $ force_break $ end_ )
+      hvbox 0
+        ( hvbox 0 (pro $ begin_)
+        $ break 1 2
+        $ fmt_expression c ~box ?eol ~parens:false ~indent_wrap
+            (sub_exp ~ctx e)
+        $ force_break $ end_ )
 
 and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
     rec_flag bindings body =

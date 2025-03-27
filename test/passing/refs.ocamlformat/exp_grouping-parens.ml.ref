@@ -383,3 +383,29 @@ let v =
 let v = map x (fun x y z -> ya f ; a f b)
 
 let v = map x [%ext1 fun%ext2 x y z -> ya f ; a f b]
+
+let _ =
+  lazy
+    ( print_endline xxxxxxxxx ;
+      f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz )
+
+let _ =
+  lazy
+    (fun y ->
+      print_endline xxxxxxxxx ;
+      f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz )
+
+let _ =
+  lazy
+    ( match a with
+    | A ->
+        b
+    | A ->
+        print_endline xxxxxxxxx ;
+        f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz )
+
+let _ =
+  lazy
+    (fun xxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzzzzz ->
+      print_endline xxxxxxxxx ;
+      f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz )
