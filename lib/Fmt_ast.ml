@@ -2380,8 +2380,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let parens = parens || has_attr in
       let cmts_before = Cmts.fmt_before c ?eol pexp_loc in
       let pro_outer, pro_inner =
-        if Params.Exp.ifthenelse_inner_pro c.conf ~parens ~ctx0 then
-          (noop, pro)
+        if Params.Exp.ifthenelse_inner_pro ~parens ~ctx0 then (noop, pro)
         else (pro, noop)
       in
       let last_loc =

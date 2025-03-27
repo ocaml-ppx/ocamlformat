@@ -329,13 +329,12 @@ module Exp = struct
           false
       | _ -> true
 
-  let ifthenelse_inner_pro (c : Conf.t) ~parens ~ctx0 =
+  let ifthenelse_inner_pro ~parens ~ctx0 =
     if parens then false
-    else if Stdlib.(c.fmt_opts.if_then_else.v = `Fit_or_vertical) then
+    else
       match ctx0 with
-      | Exp {pexp_desc= Pexp_beginend _; _} -> true
-      | _ -> false
-    else true
+      | Exp {pexp_desc= Pexp_ifthenelse _; _} -> false
+      | _ -> true
 end
 
 module Mod = struct
