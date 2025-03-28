@@ -527,7 +527,7 @@ f
 
 f
   begin if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-        then
+  then
     ()
   else
     ()
@@ -536,9 +536,8 @@ f
 
 f
   begin if
-          and_ even
-            loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-        then
+    and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+  then
     ()
   else
     ()
@@ -547,8 +546,8 @@ f
 let () =
   f
     begin if
-            a___________________________________________________________________
-          then
+      a___________________________________________________________________
+    then
       b_________________________________________________________________
     else
       c_________________________________________________________________

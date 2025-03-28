@@ -2426,7 +2426,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         else None
                       in
                       let p =
-                        Params.get_if_then_else c.conf ~pro:(fmt_if first pro_inner) ~first ~last
+                        Params.get_if_then_else c.conf
+                          ~pro:(fmt_if first pro_inner) ~first ~last
                           ~parens_bch ~parens_prev_bch:!parens_prev_bch
                           ~xcond ~xbch ~expr_loc:pexp_loc
                           ~fmt_extension_suffix:
