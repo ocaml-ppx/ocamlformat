@@ -366,3 +366,67 @@ let _ =
     print_endline xxxxxxxxx;
     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
   end
+
+[@@@ocamlformat "if-then-else=fit-or-vertical"]
+
+let _ =
+  if b
+  then begin
+    e1;
+    e2
+  end
+  else begin
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
+    this is more
+  end
+
+let _ =
+  if b
+  then begin
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
+    this is more
+  end
+  else if b1
+  then begin
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
+    this is more
+  end
+  else e
+;;
+
+f
+  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+  then ()
+  else ()
+  end
+;;
+
+f
+  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+  then ()
+  else ()
+  end
+;;
+
+f
+  begin if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+  then ()
+  else ()
+  end
+;;
+
+f
+  begin if
+          and_ even
+            loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+  then ()
+  else ()
+  end
+
+let () =
+  f
+    begin if
+            a___________________________________________________________________
+    then b_________________________________________________________________
+    else c_________________________________________________________________
+    end
