@@ -195,6 +195,7 @@ type if_then_else =
 
 val get_if_then_else :
      Conf.t
+  -> pro:Fmt.t
   -> first:bool
   -> last:bool
   -> parens_bch:bool
