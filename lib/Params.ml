@@ -328,6 +328,13 @@ module Exp = struct
       | Str _ | Lb _ | Exp {pexp_desc= Pexp_ifthenelse _ | Pexp_let _; _} ->
           false
       | _ -> true
+
+  let ifthenelse_inner_pro ~parens ~ctx0 =
+    if parens then false
+    else
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_ifthenelse _; _} -> false
+      | _ -> true
 end
 
 module Mod = struct

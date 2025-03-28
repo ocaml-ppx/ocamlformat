@@ -88,6 +88,10 @@ module Exp : sig
   val function_inner_pro : has_cmts_outer:bool -> ctx0:Ast.t -> bool
   (** whether the [pro] argument of [fmt_function] should be displayed as an
     inner or outer prologue. *)
+
+  val ifthenelse_inner_pro : parens:bool -> ctx0:Ast.t -> bool
+  (** whether the [pro] argument should be displayed as an inner or outer
+        prologue when printing [Pexp_ifthenelse]. *)
 end
 
 module Mod : sig
