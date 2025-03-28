@@ -1948,7 +1948,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     (* Some expressions format the 'pro' and comments differently. *)
     let cmts_in_pro =
       match exp.pexp_desc with
-      | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _ | Pexp_ifthenelse _ ->
+      | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _
+       |Pexp_ifthenelse _ ->
           noop
       | _ -> Cmts.fmt_before c ?eol pexp_loc
     in
@@ -2947,7 +2948,7 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs ~ext
   cmts_before
   $
   match e.pexp_desc with
-  | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _->
+  | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ ->
       hvbox 0
         ( fmt_expression c
             ~pro:(pro $ begin_ $ str " ")
