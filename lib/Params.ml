@@ -769,7 +769,7 @@ type if_then_else =
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 
-let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
+let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch ~parens_prev_bch
     ~xcond ~xbch ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond
     ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
@@ -803,13 +803,13 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
         hvbox 2
           ( hvbox 0
               ( hvbox 2
-                  ( fmt_if (not first) (str "else ")
+                  ( pro $ fmt_if (not first) (str "else ")
                   $ str "if"
                   $ fmt_if first (fmt_opt fmt_extension_suffix)
                   $ fmt_attributes $ space_break $ fmt_cond xcnd )
               $ space_break $ cmts_before_kw $ str "then" )
           $ opt cmts_after_kw Fn.id )
-    | None -> cmts_before_kw $ hvbox 2 (str "else" $ opt cmts_after_kw Fn.id)
+    | None -> cmts_before_kw $ hvbox 2 (pro $ str "else" $ opt cmts_after_kw Fn.id)
   in
   let branch_pro ?(indent = 2) () =
     if Option.is_some cmts_after_kw then break 1000 indent
@@ -901,7 +901,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens_bch ~parens_prev_bch
         match xcond with
         | Some xcond ->
             hvbox 2
-              ( fmt_or first
+              (pro $ fmt_or first
                   (str "if" $ fmt_opt fmt_extension_suffix)
                   (str "else if")
               $ fmt_attributes $ space_break $ fmt_cond xcond
