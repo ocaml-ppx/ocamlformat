@@ -31,6 +31,8 @@ profile. This started with version 0.26.0.
 - ocamlformat is now more robust when used as a library to print modified ASTs
   (#2659, @v-gb)
 
+- Fix crash due to edge case with asterisk-prefixed comments (#2674, @Julow)
+
 ### Changed
 
 - `begin if`, `lazy begin`, `begin match` and `begin fun` can now be printed on
