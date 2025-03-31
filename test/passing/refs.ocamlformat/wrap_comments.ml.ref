@@ -225,3 +225,6 @@ let _ = f (* foo
  * ---
  *   3
  *)
+
+(* Multiline comment with the comment close on its own line
+ *)

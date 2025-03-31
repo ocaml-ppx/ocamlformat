@@ -166,7 +166,10 @@ let normalize_cmt (conf : Conf.t) =
           else Docstring.normalize_text txt
       | Code txt -> self#code txt
       | Asterisk_prefixed lines ->
-          String.concat ~sep:" " (List.map ~f:Docstring.normalize_text lines)
+          (* Note: An asterisk prefixed comment can turn into a normal
+             comment if it's two lines long and its second line is
+             whitespaces. They must normalize to the same thing. *)
+          String.concat ~sep:"" (List.map ~f:Docstring.normalize_text lines)
 
     method doc d = docstring conf ~normalize_code:self#code d
 
