@@ -2426,7 +2426,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                         else None
                       in
                       let p =
-                        Params.get_if_then_else c.conf ~first ~last
+                        Params.get_if_then_else c.conf
+                          ~pro:(fmt_if first pro_inner) ~first ~last
                           ~parens_bch ~parens_prev_bch:!parens_prev_bch
                           ~xcond ~xbch ~expr_loc:pexp_loc
                           ~fmt_extension_suffix:
@@ -2439,7 +2440,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                       in
                       parens_prev_bch := parens_bch ;
                       p.box_branch
-                        ( fmt_if first pro_inner $ p.cond
+                        ( p.cond
                         $ p.box_keyword_and_expr
                             ( p.branch_pro
                             $ p.wrap_parens
