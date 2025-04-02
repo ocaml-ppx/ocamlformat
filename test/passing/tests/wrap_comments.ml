@@ -257,3 +257,6 @@ let _ =
  * ---
  *   3
  *)
+
+(* Multiline comment with the comment close on its own line
+ * *)
