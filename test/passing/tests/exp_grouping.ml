@@ -322,6 +322,17 @@ let v =
 
 let v =
   map x
+    (
+      fun x
+        argggggggggggggggggggggggggggggggggg
+        gggggggggggggggggggg
+        ggggggggggggggg
+      ->
+      y
+    )
+
+let v =
+  map x
     (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
     print y;
     z)
@@ -466,3 +477,60 @@ let _ =
       return value
     end
     ~last ~args
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:(function
+    | _ -> a
+    | _ -> b)
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:begin function
+    | _ -> a
+    | _ -> b
+    end
+
+let _ =
+  f aaaabbbbbbbbbbbbbbbbbbbbbbb ~f:begin function _ -> a | _ -> bbbbbbbbbbbbb
+    end
+
+let _ =
+  f aaaabbbbbbbbbbbbbbbbbbbbbbb ~f:(function _ -> a | _ -> bbbbbbbbbbbbbbbbbbbbb
+  )
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    begin function
+    | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    | _ -> b
+    end
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:begin function
+    | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    | _ -> b
+    end
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:begin fun x ->
+      match x with
+      | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      | _ -> b
+    end
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:(fun x ->
+      match x with
+      | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      | _ -> b)
+
+let _ =
+  f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb
+    ~f:(fun x ->
+      match x with
+      | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      | _ -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)

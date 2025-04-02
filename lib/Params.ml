@@ -39,17 +39,33 @@ let ctx_is_rhs_of_infix ~ctx0 ~ctx =
       true
   | _ -> false
 
+type ctx_is_apply_and_exp_is_arg_ret =
+  {label: arg_label; exp: expression; is_last: bool; is_modulo_beginend: bool}
+
 (** Return [None] if [ctx0] is not an application or [ctx] is not one of its
     argument. *)
 let ctx_is_apply_and_exp_is_arg ~ctx ctx0 =
   match (ctx, ctx0) with
   | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
       let last_lbl, last_arg = List.last_exn args in
-      if phys_equal last_arg exp then Some (last_lbl, exp, true)
+      let last_arg, is_modulo_beginend =
+        match last_arg.pexp_desc with
+        | Pexp_beginend last_arg -> (last_arg, true)
+        | _ -> (last_arg, false)
+      in
+      if phys_equal last_arg exp then
+        Some {label= last_lbl; exp; is_last= true; is_modulo_beginend}
       else
         List.find_map
-          ~f:(fun (lbl, x) ->
-            if phys_equal x exp then Some (lbl, exp, false) else None )
+          ~f:(fun (label, arg) ->
+            let arg, is_modulo_beginend =
+              match arg.pexp_desc with
+              | Pexp_beginend arg -> (arg, true)
+              | _ -> (arg, false)
+            in
+            if phys_equal arg exp then
+              Some {label; exp; is_last= false; is_modulo_beginend}
+            else None )
           args
   | _ -> None
 
@@ -69,6 +85,11 @@ let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ctx0 =
       let args_are_simple =
         List.for_all args_before ~f:(fun (_, eI) ->
             is_simple c (fun _ -> 0) (sub_exp ~ctx:ctx0 eI) )
+      in
+      let last_arg =
+        match last_arg.pexp_desc with
+        | Pexp_beginend last_arg -> last_arg
+        | _ -> last_arg
       in
       Poly.equal last_arg exp && args_are_simple
   | _ -> false
@@ -159,7 +180,7 @@ module Exp = struct
   let break_fun_kw c ~ctx ~ctx0 ~last_arg =
     let is_labelled_arg =
       match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-      | Some ((Labelled _ | Optional _), _, _) -> true
+      | Some {label= Labelled _ | Optional _; _} -> true
       | _ -> false
     in
     if Conf.(c.fmt_opts.ocp_indent_compat.v) then
@@ -183,7 +204,7 @@ module Exp = struct
       if ocp c then
         let is_labelled_arg =
           match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-          | Some ((Labelled _ | Optional _), _, _) -> true
+          | Some {label= Labelled _ | Optional _; _} -> true
           | _ -> false
         in
         if is_labelled_arg then (Fn.id, true)
@@ -195,12 +216,14 @@ module Exp = struct
           if is_let_func then if kw_in_box then hovbox ~name 4 else Fn.id
           else
             match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-            | Some (_, _, true) ->
-                (* Is last arg. *) hvbox ~name (if parens then 0 else 2)
-            | Some (Nolabel, _, false) ->
+            | Some {is_last= true; is_modulo_beginend; _} ->
+                (* Is last arg. *)
+                hvbox ~name (if parens || is_modulo_beginend then 0 else 2)
+            | Some {label= Nolabel; is_last= false; _} ->
                 (* TODO: Inconsistent formatting of fun args. *)
                 hovbox ~name 0
-            | Some ((Labelled _ | Optional _), _, false) -> hvbox ~name 0
+            | Some {label= Labelled _ | Optional _; is_last= false; _} ->
+                hvbox ~name 0
             | None -> Fn.id
         in
         (box, not c.fmt_opts.wrap_fun_args.v)
@@ -225,15 +248,20 @@ module Exp = struct
           Source.begins_line ~ignore_spaces:true source loc
         in
         match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-        | Some (Nolabel, fun_exp, is_last_arg) ->
-            if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3
+        | Some {label= Nolabel; exp= fun_exp; is_last; is_modulo_beginend= _}
+          ->
+            if begins_line fun_exp.pexp_loc then if is_last then 5 else 3
             else 2
-        | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
+        | Some
+            { label= Labelled x | Optional x
+            ; exp= fun_exp
+            ; is_last
+            ; is_modulo_beginend= _ } ->
             if begins_line fun_exp.pexp_loc then
               (* The [fun] had to break after the label, nested boxes must be
                  indented less. The last argument is special as the box
                  structure is different. *)
-              if is_last_arg then 4 else 2
+              if is_last then 4 else 2
             else if begins_line x.loc then 4
             else 2
         | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
@@ -275,7 +303,7 @@ module Exp = struct
 
   let single_line_function ~ctx ~ctx0 ~args =
     match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-    | Some (_, _, true) -> List.is_empty args
+    | Some {is_last= true; _} -> List.is_empty args
     | _ -> false
 
   let indent_function (c : Conf.t) ~ctx ~ctx0 ~parens =
@@ -1001,7 +1029,7 @@ module Indent = struct
     | _ when ctx_is_infix ctx0 -> 0
     | _ when ocp c -> (
       match ctx_is_apply_and_exp_is_arg ~ctx ctx0 with
-      | Some (_, _, true) -> (* Last argument *) 2
+      | Some {is_last= true; _} -> (* Last argument *) 2
       | _ -> if parens then 3 else 2 )
     | _ -> 2
 
