@@ -181,7 +181,10 @@ let _ =
     let+ a = b in
     c]
 
-let _ = [%ext "foo" ; "bar"]
+let _ =
+  begin%ext
+    "foo" ; "bar"
+  end
 
 let this_function_has_a_long_name plus very many arguments =
   "and a kind of long body"
@@ -196,12 +199,12 @@ ___________________________________________________________
 ___________________________________________________________
 |}]
 
-let () =
-  (* -1 *)
-  [%(* 0 *)
-    (* 0.5 *)
-    test
-    () (* 1 *) [@foo (* 2 *) "bar"] (* 3 *)]
+let () = (* -1 *) begin%test[@foo "bar"] end (* 0 *)
+
+(* 0.5 *)
+(* 1 *)
+(* 2 *)
+(* 3 *)
 
 open%ext M
 
@@ -308,11 +311,11 @@ let _ = f (assert%lwt false)
 
 let _ = f [%lwt assert false]
 
-let _ = (assert%lwt false) [@attr]
+let _ = assert%lwt false [@attr]
 
 let _ = [%lwt assert false] [@attr]
 
-let _ = f ((assert%lwt false) [@attr])
+let _ = f (assert%lwt false [@attr])
 
 let _ = f ([%lwt assert false] [@attr])
 
@@ -324,11 +327,11 @@ let _ = f (lazy%ext e)
 
 let _ = f [%ext lazy e]
 
-let _ = (lazy%ext e) [@attr]
+let _ = lazy%ext e [@attr]
 
 let _ = [%ext lazy e] [@attr]
 
-let _ = f ((lazy%ext e) [@attr])
+let _ = f (lazy%ext e [@attr])
 
 let _ = f ([%ext lazy e] [@attr])
 
@@ -357,9 +360,9 @@ let _ =
       end]
 
 let _ =
-  (object%ext
-     method x = y
-  end )
+  object%ext
+    method x = y
+  end
   [@attr]
 
 let _ =
@@ -371,9 +374,9 @@ let _ =
 
 let _ =
   f
-    ((object%ext
-        method x = y
-     end )
+    (object%ext
+       method x = y
+    end
     [@attr] )
 
 let _ =
@@ -472,11 +475,11 @@ let _ = f (new%ext x)
 
 let _ = f [%ext new x]
 
-let _ = (new%ext x) [@attr]
+let _ = new%ext x [@attr]
 
 let _ = [%ext new x] [@attr]
 
-let _ = f ((new%ext x) [@attr])
+let _ = f (new%ext x [@attr])
 
 let _ = f ([%ext new x] [@attr])
 

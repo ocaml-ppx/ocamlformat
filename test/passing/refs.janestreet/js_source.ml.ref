@@ -242,10 +242,8 @@ let foo () =
 let _ =
   match x with
   | _
-    when f
-           ~f:
-             (function [@ocaml.warning (* ....................................... *) "-4"]
-             | _ -> .) -> y
+    when f ~f:((function _ -> .)
+             [@ocaml.warning (* ....................................... *) "-4"]) -> y
 ;;
 
 let[@a
@@ -260,21 +258,21 @@ let[@a
   with
   | _
     when f
-           ~f:(function[@ocaml.warning (* ....................................... *) "-4"]
+           ~f:((function
              | _ -> .)
-           ~f:
-             (function[@ocaml.warning
-                        (* ....................................... *)
-                        (* ....................................... *)
-                        "foooooooooooooooooooooooooooo \
-                         fooooooooooooooooooooooooooooooooooooo"]
+             [@ocaml.warning (* ....................................... *) "-4"])
+           ~f:((function
              | _ -> .)
-           ~f:
-             (function[@ocaml.warning
-                        (* ....................................... *)
-                        let x = a
-                        and y = b in
-                        x + y] _ -> .) ->
+             [@ocaml.warning
+               (* ....................................... *)
+               (* ....................................... *)
+               "foooooooooooooooooooooooooooo fooooooooooooooooooooooooooooooooooooo"])
+           ~f:((function _ -> .)
+             [@ocaml.warning
+               (* ....................................... *)
+               let x = a
+               and y = b in
+               x + y]) ->
     y
     [@attr
       (* ... *)

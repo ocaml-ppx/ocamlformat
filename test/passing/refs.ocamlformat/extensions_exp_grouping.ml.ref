@@ -12,8 +12,8 @@ let _ =
 let _ =
   x
   >>= begin%ext
-        y >>= z
-      end
+    y >>= z
+  end
 
 let _ =
   x

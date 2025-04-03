@@ -81,44 +81,35 @@ let%foo _ = ()
 (* Expressions *)
 let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
-  [%foo
-    (let module M = M in
-    ())
-    [@foo]];
-  [%foo
-    (let open M in
-     ()) [@foo]];
-  [%foo fun [@foo] x -> ()];
-  [%foo function[@foo] x -> ()];
-  [%foo try[@foo] () with _ -> ()];
+  (let module%foo [@foo] M = M in
+  ());
+  (let open%foo[@foo] M in
+   ());
+  (fun%foo [@foo] x -> ());
+  (function%foo[@foo] x -> ());
+  (try%foo[@foo] () with _ -> ());
   if%foo [@foo] () then () else ();
-  [%foo
-    while () do
-      ()
-    done
-    [@foo]];
-  [%foo
-    for x = () to () do
-      ()
-    done
-    [@foo]];
-  [%foo assert true [@foo]];
-  [%foo lazy x [@foo]];
-  [%foo object end [@foo]];
-  [%foo
-    begin [@foo]
-      3
-    end];
-  [%foo new x [@foo]];
+  while%foo[@foo] () do
+    ()
+  done;
+  for%foo[@foo] x = () to () do
+    ()
+  done;
+  assert%foo[@foo] true;
+  lazy%foo[@foo] x;
+  object%foo[@foo] end;
+  begin%foo[@foo]
+    3
+  end;
+  new%foo[@foo] x;
 
-  [%foo
-    match[@foo] () with
-    | [%foo?
-        (* Pattern expressions *)
-        ((lazy x) [@foo])] ->
-        ()
-    | [%foo? ((exception x) [@foo])] -> ()
-    | effect x, k -> ()]
+  match%foo[@foo] () with
+  | [%foo?
+      (* Pattern expressions *)
+      ((lazy x) [@foo])] ->
+      ()
+  | [%foo? ((exception x) [@foo])] -> ()
+  | effect x, k -> ()
 
 (* Class expressions *)
 class x =
@@ -8667,7 +8658,7 @@ let () = f (fun (type t) -> x)
 type t = unit
 
 let rec equal : 'a. ('a -> 'a -> bool) -> 'a t -> 'a t -> bool =
- fun [@ocaml.warning "-A"] poly_a (_ : unit) (_ : unit) -> true
+ (fun poly_a (_ : unit) (_ : unit) -> true) [@ocaml.warning "-A"]
 [@@ocaml.warning "-39"]
 
 (* Issue #9548, PR #9591 *)

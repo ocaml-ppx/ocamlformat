@@ -93,7 +93,8 @@ let ctx_is_let_or_fun ~ctx ctx0 =
                  true
              | _ -> false ) ->
       true
-  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs); _}, Exp exp ->
+  | Exp {pexp_desc= Pexp_function (_, _, Pfunction_body rhs, _); _}, Exp exp
+    ->
       phys_equal rhs exp
   | _ -> false
 
@@ -310,8 +311,8 @@ module Exp = struct
     | _ when ocp c -> hvbox 2 k
     (* Avoid large indentation for [let _ = function]. *)
     | Lb
-        {pvb_body= Pfunction_body {pexp_desc= Pexp_function ([], _, _); _}; _}
-      ->
+        { pvb_body= Pfunction_body {pexp_desc= Pexp_function ([], _, _, _); _}
+        ; _ } ->
         hovbox 2 k
     | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
@@ -393,9 +394,9 @@ let get_or_pattern_is_nested ~ctx pat =
   | _ when not (List.is_empty pat.ppat_attributes) -> true
   | Ast.Exp
       { pexp_desc=
-          ( Pexp_function (_, _, Pfunction_cases (cases, _, _))
-          | Pexp_match (_, cases)
-          | Pexp_try (_, cases) )
+          ( Pexp_function (_, _, Pfunction_cases (cases, _, _), _)
+          | Pexp_match (_, cases, _)
+          | Pexp_try (_, cases, _) )
       ; _ }
    |Lb {pvb_body= Pfunction_cases (cases, _, _); _} ->
       not (check_cases cases)
@@ -440,8 +441,8 @@ type cases =
   ; branch_expr: expression Ast.xt
   ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
-    ~xbch:({ast; _} as xast) =
+let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
+    ~cmts_before ~xbch:({ast; _} as xast) =
   let indent =
     match (c.fmt_opts.cases_matching_exp_indent.v, (ctx, ast.pexp_desc)) with
     | ( `Compact
@@ -486,7 +487,9 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
   let indent = if align_nested_match then 0 else indent in
   let open_paren_branch, close_paren_branch, branch_expr =
     match ast with
-    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _}
+    | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
+      ; pexp_attributes= []
+      ; _ }
       when not cmts_before ->
         let close_paren =
           let offset =
@@ -494,7 +497,7 @@ let get_cases (c : Conf.t) ~ctx ~first ~last ~cmts_before
           in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
-        ( break 1 0 $ str "begin"
+        ( break 1 0 $ str "begin" $ fmt_infix_ext_attrs infix_ext_attrs
         , close_paren
         , sub_exp ~ctx:(Exp ast) nested_exp )
     | _ ->
@@ -771,17 +774,23 @@ type if_then_else =
 
 let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
     ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_extension_suffix
-    ~fmt_attributes ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
+    ~fmt_attributes ~fmt_infix_ext_attrs ~fmt_cond ~cmts_before_kw
+    ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
-  let beginend, branch_expr =
+  let beginend, infix_ext_attrs_beginend, branch_expr =
     let ast = xbch.Ast.ast in
     match ast with
-    | {pexp_desc= Pexp_beginend nested_exp; pexp_attributes= []; _} ->
-        (true, sub_exp ~ctx:(Exp ast) nested_exp)
-    | _ -> (false, xbch)
+    | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
+      ; pexp_attributes= []
+      ; _ } ->
+        (true, Some infix_ext_attrs, sub_exp ~ctx:(Exp ast) nested_exp)
+    | _ -> (false, None, xbch)
   in
   let wrap_parens ~wrap_breaks k =
-    if beginend then wrap (str "begin") (str "end") (wrap_breaks k)
+    if beginend then
+      str "begin"
+      $ opt infix_ext_attrs_beginend fmt_infix_ext_attrs
+      $ wrap_breaks k $ str "end"
     else if parens_bch then wrap (str "(") (str ")") (wrap_breaks k)
     else k
   in
@@ -1009,7 +1018,7 @@ module Indent = struct
     if not (ocp c) then 2
     else
       match exp.pexp_desc with
-      | Pexp_function ([], None, Pfunction_cases _) -> 2
+      | Pexp_function ([], None, Pfunction_cases _, _) -> 2
       | _ -> ( match lbl with Nolabel -> 3 | _ -> 2 )
 
   let record_docstring (c : Conf.t) =

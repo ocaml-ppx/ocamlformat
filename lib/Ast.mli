@@ -240,3 +240,9 @@ val parenze_mod : module_expr xt -> bool
 module Ext_attrs : sig
   val has_attrs : ext_attrs -> bool
 end
+
+module Infix_ext_attrs : sig
+  val is_empty : infix_ext_attrs -> bool
+
+  val extract_attrs : expression_desc -> attributes
+end
