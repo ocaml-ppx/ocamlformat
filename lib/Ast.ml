@@ -159,14 +159,6 @@ module Exp = struct
   let is_sequence exp =
     match exp.pexp_desc with
     | Pexp_sequence _ -> true
-    | Pexp_extension
-        ( ext
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
-              ; _ } ] )
-      when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
-        true
     | _ -> false
 
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
@@ -1731,7 +1723,7 @@ end = struct
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
-  let rec prec_ast =
+  let prec_ast =
     let open Prec in
     function
     | Pld _ -> None
@@ -1789,9 +1781,6 @@ end = struct
        |Pexp_variant (_, Some _)
        |Pexp_while _ | Pexp_new _ | Pexp_object _ ->
           Some Apply
-      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
-        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
-          prec_ast (Exp e)
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
