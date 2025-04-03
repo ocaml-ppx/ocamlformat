@@ -458,17 +458,6 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
   let align_nested_match =
     match (ast.pexp_desc, c.fmt_opts.nested_match.v) with
     | (Pexp_match _ | Pexp_try _), `Align -> last
-    | ( Pexp_extension
-          ( ext
-          , PStr
-              [ { pstr_loc= _
-                ; pstr_desc=
-                    Pstr_eval
-                      ({pexp_desc= Pexp_match _ | Pexp_try _; pexp_loc; _}, _)
-                } ] )
-      , `Align )
-      when Source.extension_using_sugar ~name:ext ~payload:pexp_loc ->
-        last
     | _ -> false
   in
   let body_has_parens =
