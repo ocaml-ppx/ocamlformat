@@ -353,7 +353,7 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   | PStr
       [ { pstr_desc=
             Pstr_eval
-              ( { pexp_desc= Pexp_sequence (e1, _)
+              ( { pexp_desc= Pexp_sequence (e1, _, _)
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
                 ; pexp_attributes }
@@ -375,10 +375,10 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
 let relocate_wrongfully_attached_cmts t src exp =
   let open Extended_ast in
   match exp.pexp_desc with
-  | Pexp_match (e0, _) ->
+  | Pexp_match (e0, _, _) ->
       relocate_pattern_matching_cmts t src Parser.MATCH
         ~whole_loc:exp.pexp_loc ~matched_loc:e0.pexp_loc
-  | Pexp_try (e0, _) ->
+  | Pexp_try (e0, _, _) ->
       relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
         ~matched_loc:e0.pexp_loc
   | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
