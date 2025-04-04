@@ -430,3 +430,12 @@ let () =
     then b_________________________________________________________________
     else c_________________________________________________________________
     end
+let main =
+Lwt.run
+@@
+match a with | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let main =
+  Lwt.run
+  @@
+  match%lwt a with | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | B -> bbbbbbbbbbbbbbbbbbbbbb
