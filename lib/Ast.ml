@@ -157,9 +157,7 @@ module Exp = struct
   let is_symbol = test_id ~f:Std_longident.is_symbol
 
   let is_sequence exp =
-    match exp.pexp_desc with
-    | Pexp_sequence _ -> true
-    | _ -> false
+    match exp.pexp_desc with Pexp_sequence _ -> true | _ -> false
 
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
