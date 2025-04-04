@@ -486,7 +486,7 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
           in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
-        ( break 1 0 $ str "begin" $ fmt_infix_ext_attrs infix_ext_attrs
+        ( break 1 0 $ fmt_infix_ext_attrs ~pro:(str "begin") infix_ext_attrs
         , close_paren
         , sub_exp ~ctx:(Exp ast) nested_exp )
     | _ ->
@@ -762,9 +762,8 @@ type if_then_else =
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
-    ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_extension_suffix
-    ~fmt_attributes ~fmt_infix_ext_attrs ~fmt_cond ~cmts_before_kw
-    ~cmts_after_kw =
+    ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_infix_ext_attrs
+    ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
   let beginend, infix_ext_attrs_beginend, branch_expr =
     let ast = xbch.Ast.ast in
@@ -777,8 +776,10 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
   in
   let wrap_parens ~wrap_breaks k =
     if beginend then
-      str "begin"
-      $ opt infix_ext_attrs_beginend fmt_infix_ext_attrs
+      let infix_ext_attrs_beginend =
+        Option.value_exn infix_ext_attrs_beginend
+      in
+      fmt_infix_ext_attrs ~pro:(str "begin") infix_ext_attrs_beginend
       $ wrap_breaks k $ str "end"
     else if parens_bch then wrap (str "(") (str ")") (wrap_breaks k)
     else k
@@ -803,9 +804,8 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
               ( hvbox 2
                   ( pro
                   $ fmt_if (not first) (str "else ")
-                  $ str "if"
-                  $ fmt_if first (fmt_opt fmt_extension_suffix)
-                  $ fmt_attributes $ space_break $ fmt_cond xcnd )
+                  $ fmt_infix_ext_attrs ~pro:(str "if") infix_ext_attrs
+                  $ space_break $ fmt_cond xcnd )
               $ space_break $ cmts_before_kw $ str "then" )
           $ opt cmts_after_kw Fn.id )
     | None ->
@@ -902,11 +902,9 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
         | Some xcond ->
             hvbox 2
               ( pro
-              $ fmt_or first
-                  (str "if" $ fmt_opt fmt_extension_suffix)
-                  (str "else if")
-              $ fmt_attributes $ space_break $ fmt_cond xcond
-              $ cmts_before_kw )
+              $ fmt_if (not first) (str "else ")
+              $ fmt_infix_ext_attrs ~pro:(str "if") infix_ext_attrs
+              $ space_break $ fmt_cond xcond $ cmts_before_kw )
             $ space_break
         | None -> cmts_before_kw
       in

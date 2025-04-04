@@ -339,7 +339,7 @@ let x =
   ()
 
 let _ =
-  if something_changed then begin[@attr]
+  if something_changed then begin [@attr]
     loop
   end
 
