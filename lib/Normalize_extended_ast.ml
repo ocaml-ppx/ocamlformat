@@ -129,13 +129,14 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
     | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
     | Pexp_sequence
         ( exp1
-        , { pexp_desc= Pexp_sequence (exp2, exp3)
+        , { pexp_desc= Pexp_sequence (exp2, exp3, ext2)
           ; pexp_loc= loc2
           ; pexp_attributes= attrs2
-          ; _ } ) ->
+          ; _ }
+        , ext1 ) ->
         m.expr m
-          (Exp.sequence ~loc:loc1 ~attrs:attrs1
-             (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
+          (Exp.sequence ~loc:loc1 ~attrs:attrs1 ?ext:ext1
+             (Exp.sequence ~loc:loc2 ~attrs:attrs2 ?ext:ext2 exp1 exp2)
              exp3 )
     | _ -> Ast_mapper.default_mapper.expr m exp
   in

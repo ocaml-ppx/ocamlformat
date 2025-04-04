@@ -87,6 +87,11 @@ and ext_attrs = {
   attrs_after : attributes; (** eg. [module Foo = struct end [@@attr]]. *)
 }
 
+and infix_ext_attrs = {
+  infix_attrs: attributes;
+  infix_ext: string loc option;
+}
+
 (** {1 Core language} *)
 (** {2 Type expressions} *)
 
@@ -315,7 +320,7 @@ and expression_desc =
             - [loc_in] is the location of the [in] keyword.
          *)
   | Pexp_function of
-      expr_function_param list * type_constraint option * function_body
+      expr_function_param list * type_constraint option * function_body * infix_ext_attrs
   (** [Pexp_function ([P1; ...; Pn], C, body)] represents any construct
       involving [fun] or [function], including:
       - [fun P1 ... Pn -> E]
@@ -340,15 +345,16 @@ and expression_desc =
 
            Invariant: [n > 0]
          *)
-  | Pexp_match of expression * case list
+  | Pexp_match of expression * case list * infix_ext_attrs
       (** [match E0 with P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_try of expression * case list
+  | Pexp_try of expression * case list * infix_ext_attrs
       (** [try E0 with P1 -> E1 | ... | Pn -> En] *)
   | Pexp_tuple of expression list
       (** Expressions [(E1, ..., En)]
 
            Invariant: [n >= 2]
         *)
+  | Pexp_construct_unit_beginend of infix_ext_attrs (** Represents [begin end]*)
   | Pexp_construct of Longident.t loc * expression option
       (** [Pexp_construct(C, exp)] represents:
            - [C]               when [exp] is [None],
@@ -379,9 +385,9 @@ and expression_desc =
   | Pexp_list of expression list  (** [[ E1; ...; En ]] *)
   | Pexp_ifthenelse of if_branch list * (expression * Location.t) option
       (** [Pexp_ifthenelse (if_branches, Some (else_expr, else_keyword_loc)] *)
-  | Pexp_sequence of expression * expression  (** [E1; E2] *)
-  | Pexp_while of expression * expression  (** [while E1 do E2 done] *)
-  | Pexp_for of pattern * expression * expression * direction_flag * expression
+  | Pexp_sequence of expression * expression * string loc option (** [E1; E2] *)
+  | Pexp_while of expression * expression * infix_ext_attrs (** [while E1 do E2 done] *)
+  | Pexp_for of pattern * expression * expression * direction_flag * expression * infix_ext_attrs
       (** [Pexp_for(i, E1, E2, direction, E3)] represents:
             - [for i = E1 to E2 do E3 done]
                  when [direction] is {{!Asttypes.direction_flag.Upto}[Upto]}
@@ -395,26 +401,26 @@ and expression_desc =
             - [(E : T0 :> T)] when [from] is [Some T0].
          *)
   | Pexp_send of expression * label loc  (** [E # m] *)
-  | Pexp_new of Longident.t loc  (** [new M.c] *)
+  | Pexp_new of Longident.t loc * infix_ext_attrs  (** [new M.c] *)
   | Pexp_setinstvar of label loc * expression  (** [x <- 2] *)
   | Pexp_override of (label loc * expression) list
       (** [{< x1 = E1; ...; xn = En >}] *)
-  | Pexp_letmodule of string option loc * functor_parameter loc list * module_expr * expression
+  | Pexp_letmodule of string option loc * functor_parameter loc list * module_expr * expression * infix_ext_attrs
       (** [let module M = ME in E] *)
-  | Pexp_letexception of extension_constructor * expression
+  | Pexp_letexception of extension_constructor * expression * infix_ext_attrs
       (** [let exception C in E] *)
-  | Pexp_assert of expression
+  | Pexp_assert of expression * infix_ext_attrs
       (** [assert E].
 
            Note: [assert false] is treated in a special way by the
            type-checker. *)
-  | Pexp_lazy of expression  (** [lazy E] *)
-  | Pexp_object of class_structure  (** [object ... end] *)
-  | Pexp_pack of module_expr * package_type option
+  | Pexp_lazy of expression * infix_ext_attrs  (** [lazy E] *)
+  | Pexp_object of class_structure * infix_ext_attrs  (** [object ... end] *)
+  | Pexp_pack of module_expr * package_type option * infix_ext_attrs
       (** - [(module M)] is represented as [Pexp_pack(M, None)]
           - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
   | Pexp_open of Longident.t loc * expression  (** [M.(E)] *)
-  | Pexp_letopen of open_declaration * expression
+  | Pexp_letopen of open_declaration * expression * infix_ext_attrs
       (** - [let open M in E]
           - [let open! M in E] *)
   | Pexp_letop of letop
@@ -423,7 +429,7 @@ and expression_desc =
   | Pexp_extension of extension  (** [[%id]] *)
   | Pexp_unreachable  (** [.] *)
   | Pexp_hole  (** [_] *)
-  | Pexp_beginend of expression  (** [begin E end] *)
+  | Pexp_beginend of expression * infix_ext_attrs (** [begin E end] *)
   | Pexp_parens of expression  (** [(E)] *)
   | Pexp_cons of expression list  (** [E1 :: ... :: En] *)
   | Pexp_indexop_access of indexop_access
@@ -453,7 +459,7 @@ and if_branch =
   {
     if_cond: expression;
     if_body: expression;
-    if_attrs: attributes;  (** [... [\@id1] [\@id2]] *)
+    if_attrs: infix_ext_attrs;  (** [... [\@id1] [\@id2]] *)
     if_loc_then: Location.t;  (** Location of the [then] keyword, for comment attachment. *)
   }
 
@@ -537,7 +543,7 @@ and class_function_param = pparam_val function_param
 
 and function_body =
   | Pfunction_body of expression
-  | Pfunction_cases of case list * Location.t * attributes
+  | Pfunction_cases of case list * Location.t * infix_ext_attrs
   (** In [Pfunction_cases (_, loc, attrs)], the location extends from the
       start of the [function] keyword to the end of the last case. The compiler
       will only use typechecking-related attributes from [attrs], e.g. enabling
