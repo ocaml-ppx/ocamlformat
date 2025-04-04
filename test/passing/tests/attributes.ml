@@ -465,3 +465,7 @@ let () =
 M.(Some x) [@foo]
 
 [@@@foo:]
+
+let print = function[@a]
+  | A -> b
+  | B -> a

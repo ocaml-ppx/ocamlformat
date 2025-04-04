@@ -4759,12 +4759,12 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
     else
       let fmt_body ?pro ?box {ast; ctx} =
         match ast with
-        | Pfunction_cases (_, _, infix_ext_attrs) as body ->
+        | Pfunction_cases (_) as body ->
             let wrap_intro intro =
               hovbox 2 (fmt_opt pro $ intro) $ space_break
             in
             fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~label:Nolabel ~attrs:[]
-              ~loc:lb_loc c ([], None, body) ~infix_ext_attrs
+              ~loc:lb_loc c ([], None, body) ~infix_ext_attrs:{(* The infix ext and attrs are stored in Pfunction_cases. *) infix_ext=None; infix_attrs=[]}
         | Pfunction_body body ->
             fmt_expression c ?pro ?box (sub_exp ~ctx body)
       in
