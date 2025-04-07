@@ -122,4 +122,4 @@ module M =
 
   type t]
 
-module M = F ((A : T))
+module M = F (A : T)

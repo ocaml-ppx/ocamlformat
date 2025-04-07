@@ -4316,7 +4316,7 @@ and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
           Option.some_if has_epi
             (Cmts.fmt_after c loc $ fmt_attributes_and_docstrings c attrs) }
 
-and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
+and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
   update_config_maybe_disabled_block c pmod_loc pmod_attributes
@@ -4342,6 +4342,15 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       fmt_mod_apply c ctx ~parens ~dock_struct pmod_loc pmod_attributes me_f
         (`Block (blk_a, Mod.is_simple me_a))
   | Pmod_constraint (me, mt) ->
+      let parens =
+        match ctx0 with
+        | Mod {pmod_desc= Pmod_apply (f, _args); _}
+          when not (phys_equal f m) ->
+            (* Pmod_apply arguments always have parens around them, no need to
+               add extra. That's not the case for the applied functor. *)
+            false
+        | _ -> true
+      in
       let blk_e = fmt_module_expr c (sub_mod ~ctx me) in
       let blk_t = fmt_module_type c (sub_mty ~ctx mt) in
       let has_epi =
@@ -4351,7 +4360,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
           Some
             ( fmt_opt blk_t.opn $ fmt_opt blk_e.opn
             $ open_hovbox (Params.Indent.mod_constraint c.conf ~lhs:me) )
-      ; pro= Some (Cmts.fmt_before c pmod_loc $ str "(")
+      ; pro= Some (Cmts.fmt_before c pmod_loc $ fmt_if parens (str "("))
       ; psp= cut_break
       ; bdy=
           hvbox 0
@@ -4361,7 +4370,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
             $ hvbox 0
                 ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
                 $ fmt_opt blk_t.epi ) )
-          $ closing_paren c ~offset:(-2)
+          $ fmt_if parens (closing_paren c ~offset:(-2))
       ; cls= close_box $ blk_e.cls $ blk_t.cls
       ; esp= noop
       ; epi=
