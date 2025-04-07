@@ -469,3 +469,29 @@ M.(Some x) [@foo]
 let print = function[@a]
   | A -> b
   | B -> a
+
+let _ = ((fun[@a] x -> y) [@b])
+
+let _ = ((match[@a] x with _ -> y) [@b])
+
+let _ = ((try[@a] x with _ -> y) [@b])
+
+let _ = (begin[@a] end [@a])
+
+let _ = (while[@a] x do y done [@b])
+
+let _ = (for[@a] i=0 to x do y done [@b])
+
+let _ = ((new[@a] x) [@b])
+
+let _ = ((let module[@a] X = Y in c) [@b])
+
+let _ = ((let exception[@a] E in c) [@b])
+
+let _ = ((assert[@a] x) [@b])
+
+let _ = (object[@a] method x = y end [@b])
+
+let _ = ((module[@a] X) [@b])
+
+let _ = (begin[@a] x end [@b])
