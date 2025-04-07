@@ -94,10 +94,10 @@ let () =
   () ) ;
   (let open%foo[@foo] M in
    () ) ;
-  (fun%foo [@foo] x -> ()) ;
+  (fun%foo[@foo] x -> ()) ;
   (function%foo[@foo] x -> ()) ;
   (try%foo[@foo] () with _ -> ()) ;
-  if%foo [@foo] () then () else () ;
+  if%foo[@foo] () then () else () ;
   while%foo[@foo] () do
     ()
   done ;
@@ -107,7 +107,7 @@ let () =
   assert%foo[@foo] true ;
   lazy%foo[@foo] x ;
   object%foo[@foo] end ;
-  begin%foo [@foo]
+  begin%foo[@foo]
     3
   end ;
   new%foo[@foo] x ;

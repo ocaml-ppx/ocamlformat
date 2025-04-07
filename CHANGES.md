@@ -70,10 +70,14 @@ profile. This started with version 0.26.0.
 
 - `begin end` syntax for `()` is now preserved. (#2676, @EmileTrotignon)
 
-- \* The formatting of infix extension is now consistent with regular formatting
-  by construction. This reduces indentation in `f @@ match%e` expressions to the
-  level of indentation in `f @@ match`. Other unknown inconsistencies might also
-  be fixed. (#2676, @EmileTrotignon)
+- \* The formatting of infix extensions is now consistent with regular
+  formatting by construction. This reduces indentation in `f @@ match%e`
+  expressions to the level of indentation in `f @@ match`. Other unknown
+  inconsistencies might also be fixed. (#2676, @EmileTrotignon)
+
+- \* The spacing of infix attributes is now consistent across keywords. Every
+  keyword but `begin` `function`, and `fun` had attributes stuck to the keyword:
+  `match[@a]`, but `fun [@a]`. Now its also `fun[@a]`. (#2676, @EmileTrotignon)
 
 ### Changed
 

@@ -678,11 +678,11 @@ and fmt_attributes_aux c ?pre ?suf ~key attrs =
 
 and fmt_attributes = fmt_attributes_aux ~key:Attr.Key.Regular
 
-and fmt_infix_ext_attrs c ~pro ?pre ?suf {infix_ext; infix_attrs} =
+and fmt_infix_ext_attrs c ~pro {infix_ext; infix_attrs} =
   let cmts_before = opt infix_ext (fun ext -> Cmts.fmt_before c ext.loc) in
   cmts_before $ pro
   $ fmt_extension_suffix c infix_ext
-  $ fmt_attributes c ?pre ?suf infix_attrs
+  $ fmt_attributes c infix_attrs
 
 and fmt_item_attributes = fmt_attributes_aux ~key:Attr.Key.Item
 
@@ -1534,8 +1534,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
   let fmt_typ typ = fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ in
   let fmt_fun_args_typ args typ =
     let kw =
-      fmt_infix_ext_attrs c ~pro:(str "fun") ~pre:Blank infix_ext_attrs
-      $ break_fun
+      fmt_infix_ext_attrs c ~pro:(str "fun") infix_ext_attrs $ break_fun
     and args = fmt_expr_fun_args c args
     and annot = Option.map ~f:fmt_typ typ
     and epi =
@@ -1581,10 +1580,6 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
                      ~ctx0 ~ctx ) )
         in
         let function_ =
-          let pre =
-            if Params.Exp.function_attrs_sp c.conf ~ctx0 ~ctx then Some Blank
-            else None
-          in
           let infix_ext_attrs =
             match spilled_infix_ext_attrs with
             | Some {infix_ext= None; infix_attrs= []} -> cs_infix_ext_attrs
@@ -1599,7 +1594,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
               0
               (Cmts.fmt_before c function_loc $ str "function")
           in
-          fmt_infix_ext_attrs c ~pro:function_ ?pre infix_ext_attrs
+          fmt_infix_ext_attrs c ~pro:function_ infix_ext_attrs
         in
         let box_cases ~pro cases =
           let pro_inner, pro_outer, indent =
@@ -2492,7 +2487,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~parens_bch ~parens_prev_bch:!parens_prev_bch
                              ~xcond ~xbch ~expr_loc:pexp_loc
                              ~fmt_infix_ext_attrs:(fun ~pro iea ->
-                               fmt_infix_ext_attrs c ~pro ~pre:Blank iea )
+                               fmt_infix_ext_attrs c ~pro iea )
                              ~infix_ext_attrs
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
@@ -2968,8 +2963,7 @@ and fmt_lazy c ~ctx ?(pro = noop) ~fmt_atrs ~infix_ext_attrs ~parens e =
 and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs
     ~infix_ext_attrs ~indent_wrap ?eol e =
   let cmts_before = Cmts.fmt_before c ?eol loc in
-  let begin_ =
-    fmt_infix_ext_attrs c ~pro:(str "begin") ~pre:Space infix_ext_attrs
+  let begin_ = fmt_infix_ext_attrs c ~pro:(str "begin") infix_ext_attrs
   and end_ = str "end" $ fmt_atrs in
   cmts_before
   $

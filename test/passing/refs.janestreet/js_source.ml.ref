@@ -706,8 +706,8 @@ type input =
   }
 
 let x =
-  fun [@foo] x ->
-  fun [@foo] y ->
+  fun[@foo] x ->
+  fun[@foo] y ->
   object
     method x = y
   end
