@@ -107,7 +107,7 @@ let () =
   assert%foo[@foo] true ;
   lazy%foo[@foo] x ;
   object%foo[@foo] end ;
-  begin%foo[@foo]
+  begin%foo [@foo]
     3
   end ;
   new%foo[@foo] x ;

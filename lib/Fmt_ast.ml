@@ -2969,8 +2969,8 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~fmt_atrs
     ~infix_ext_attrs ~indent_wrap ?eol e =
   let cmts_before = Cmts.fmt_before c ?eol loc in
   let begin_ =
-    fmt_infix_ext_attrs c ~pro:(str "begin") infix_ext_attrs $ fmt_atrs
-  and end_ = str "end" in
+    fmt_infix_ext_attrs c ~pro:(str "begin") ~pre:Space infix_ext_attrs
+  and end_ = str "end" $ fmt_atrs in
   cmts_before
   $
   match e.pexp_desc with

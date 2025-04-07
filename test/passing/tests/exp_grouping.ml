@@ -501,3 +501,5 @@ let main =
   match%lwt a with
   | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let _ = begin a end [@a]
