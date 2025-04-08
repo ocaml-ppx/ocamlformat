@@ -42,3 +42,10 @@ let _ =
       >>= function
       | `Fooooooooooooooooooooooooooooooooooooooo -> 1
       | `Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar -> 2 )
+
+let _ =
+  my_func ~hello ~world
+    ~f:
+      (fun%my_ppx x ->
+        let x = 1 + 2 in
+        x)
