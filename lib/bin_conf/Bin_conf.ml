@@ -166,17 +166,17 @@ let check =
 let inputs =
   let docv = "SRC" in
   let file_or_dash =
-    let parse, print = Arg.non_dir_file in
+    let parse = Arg.conv_parser Arg.non_dir_file in
+    let print = Arg.conv_printer Arg.non_dir_file in
     let print fmt = function
       | Stdin -> print fmt "<standard input>"
       | File x -> print fmt x
     in
     let parse = function
-      | "-" -> `Ok Stdin
-      | s -> (
-        match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
+      | "-" -> Ok Stdin
+      | s -> parse s |> Result.map ~f:(fun x -> File x)
     in
-    (parse, print)
+    Arg.conv (parse, print)
   in
   let doc =
     "Input files. At least one is required, and exactly one without \

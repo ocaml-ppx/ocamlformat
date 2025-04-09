@@ -6,6 +6,16 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Deprecated
+
+- Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
+  the case, the tool no longer accept unambiguous option names prefixes. For
+  example, `--max-iter` is not accepted anymore, you have to pass the full
+  option `--max-iters`. This does not apply to the keys in the `.ocamlformat`
+  configuration files, which have always required the full name.
+  See dbuenzli/cmdliner#200.
+  (#2680, @emillon)
+
 ### Fixed
 
 - Fixed `wrap-comments=true` not working with the janestreet profile (#2645, @Julow)
