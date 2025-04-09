@@ -534,3 +534,8 @@ let _ =
       match x with
       | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       | _ -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)
+
+let a =
+  fffffff begin (* a *) fun () -> a
+      (* cmt *)
+    end

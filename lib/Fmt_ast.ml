@@ -2887,11 +2887,12 @@ and fmt_apply c ~e1N1 ~parens ~pro ~ctx ~e0 ~pexp_loc ~pexp_attributes
   | Pexp_beginend
       ( { pexp_desc= Pexp_function (largs, ltyp, lbody)
         ; pexp_attributes= attrs_beginend
+        ; pexp_loc
         ; _ } as e_func ) ->
       fmt_apply_last_arg_function c ~last_arg ~lbody ~parens ~intro_epi
         ~pexp_loc ~lbl ~ctx ~largs ~has_attr ~expr_epi ~fmt_atrs ~ltyp ~e0
         ~fmt_args_grouped ~args_before ~wrap
-        ~beginend:(Some (attrs_beginend, Exp e_func))
+        ~beginend:(Some (attrs_beginend, pexp_loc, Exp e_func))
   | _ ->
       let fmt_atrs = fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes in
       let force =
@@ -2930,18 +2931,24 @@ and fmt_apply_last_arg_function c ~last_arg ~lbody ~parens ~intro_epi
       if Location.is_single_line pexp_loc c.conf.fmt_opts.margin.v then Fit
       else Break
     in
-    let break_end =
-      let indent =
-        match (largs, lbody) with [], Pfunction_cases _ -> 0 | _ -> -2
-      in
-      break 1000 indent
-    in
     let pro, inner_ctx, end_ =
       match beginend with
       | None -> (noop, inner_ctx, noop)
-      | Some (attrs, inner_ctx) ->
+      | Some (attrs, pexp_loc, inner_ctx) ->
+          let break_end =
+            let indent =
+              match (largs, lbody) with
+              | [], Pfunction_cases _ -> 0
+              | _ -> -2
+            in
+            break 1000 indent
+          in
+          let cmts_begin = Cmts.fmt_before c pexp_loc in
+          let cmts_end = Cmts.fmt_after c pexp_loc in
           let fmt_atrs = fmt_attributes c ~pre:Space attrs in
-          (str "begin" $ fmt_atrs $ str " ", inner_ctx, break_end $ str "end")
+          ( str "begin" $ fmt_atrs $ str " " $ cmts_begin
+          , inner_ctx
+          , cmts_end $ break_end $ str "end" )
     in
     (* bookmark *)
     fmt_function ~pro ~last_arg:true ~force_closing_paren ~ctx:inner_ctx

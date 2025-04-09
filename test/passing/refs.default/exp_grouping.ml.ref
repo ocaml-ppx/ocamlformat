@@ -667,3 +667,8 @@ let _ =
       | _ -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       | _ ->
           bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)
+
+let a =
+  fffffff begin (* a *) fun () -> a
+      (* cmt *)
+    end

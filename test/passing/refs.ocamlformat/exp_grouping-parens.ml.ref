@@ -585,3 +585,5 @@ let _ =
           aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       | _ ->
           bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
+
+let a = fffffff (* a *) (fun () -> a) (* cmt *)
