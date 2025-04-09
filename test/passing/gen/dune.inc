@@ -443,7 +443,7 @@
  (action
   (with-stdout-to break_cases-toplevel.ml.stdout
    (with-stderr-to break_cases-toplevel.ml.stderr
-     (run %{bin:ocamlformat} --name break_cases-toplevel.ml --margin-check --break-cases=toplevel --max-iter=4 %{dep:../tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --name break_cases-toplevel.ml --margin-check --break-cases=toplevel --max-iters=4 %{dep:../tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -482,7 +482,7 @@
  (action
   (with-stdout-to break_cases.ml.stdout
    (with-stderr-to break_cases.ml.stderr
-     (run %{bin:ocamlformat} --name break_cases.ml --margin-check --break-cases=fit --max-iter=4 %{dep:../tests/break_cases.ml})))))
+     (run %{bin:ocamlformat} --name break_cases.ml --margin-check --break-cases=fit --max-iters=4 %{dep:../tests/break_cases.ml})))))
 
 (rule
  (alias runtest)
@@ -716,7 +716,7 @@
  (action
   (with-stdout-to break_separators-after.ml.stdout
    (with-stderr-to break_separators-after.ml.stderr
-     (run %{bin:ocamlformat} --name break_separators-after.ml --margin-check --break-separators=after --max-iter=3 %{dep:../tests/break_separators.ml})))))
+     (run %{bin:ocamlformat} --name break_separators-after.ml --margin-check --break-separators=after --max-iters=3 %{dep:../tests/break_separators.ml})))))
 
 (rule
  (alias runtest)
@@ -734,7 +734,7 @@
  (action
   (with-stdout-to break_separators-after_docked.ml.stdout
    (with-stderr-to break_separators-after_docked.ml.stderr
-     (run %{bin:ocamlformat} --name break_separators-after_docked.ml --margin-check --break-separators=after --dock-collection-brackets --max-iter=3 %{dep:../tests/break_separators.ml})))))
+     (run %{bin:ocamlformat} --name break_separators-after_docked.ml --margin-check --break-separators=after --dock-collection-brackets --max-iters=3 %{dep:../tests/break_separators.ml})))))
 
 (rule
  (alias runtest)
@@ -752,7 +752,7 @@
  (action
   (with-stdout-to break_separators-before_docked.ml.stdout
    (with-stderr-to break_separators-before_docked.ml.stderr
-     (run %{bin:ocamlformat} --name break_separators-before_docked.ml --margin-check --break-separators=before --dock-collection-brackets --max-iter=3 %{dep:../tests/break_separators.ml})))))
+     (run %{bin:ocamlformat} --name break_separators-before_docked.ml --margin-check --break-separators=before --dock-collection-brackets --max-iters=3 %{dep:../tests/break_separators.ml})))))
 
 (rule
  (alias runtest)
@@ -770,7 +770,7 @@
  (action
   (with-stdout-to break_separators.ml.stdout
    (with-stderr-to break_separators.ml.stderr
-     (run %{bin:ocamlformat} --name break_separators.ml --margin-check --break-separators=before --max-iter=3 %{dep:../tests/break_separators.ml})))))
+     (run %{bin:ocamlformat} --name break_separators.ml --margin-check --break-separators=before --max-iters=3 %{dep:../tests/break_separators.ml})))))
 
 (rule
  (alias runtest)
@@ -1136,7 +1136,7 @@
  (action
   (with-stdout-to comments-no-wrap.ml.stdout
    (with-stderr-to comments-no-wrap.ml.stderr
-     (run %{bin:ocamlformat} --name comments-no-wrap.ml --margin-check --no-wrap-comments --max-iter=4 %{dep:../tests/comments.ml})))))
+     (run %{bin:ocamlformat} --name comments-no-wrap.ml --margin-check --no-wrap-comments --max-iters=4 %{dep:../tests/comments.ml})))))
 
 (rule
  (alias runtest)
@@ -1154,7 +1154,7 @@
  (action
   (with-stdout-to comments.ml.stdout
    (with-stderr-to comments.ml.stderr
-     (run %{bin:ocamlformat} --name comments.ml --margin-check --max-iter=4 %{dep:../tests/comments.ml})))))
+     (run %{bin:ocamlformat} --name comments.ml --margin-check --max-iters=4 %{dep:../tests/comments.ml})))))
 
 (rule
  (alias runtest)
@@ -1190,7 +1190,7 @@
  (action
   (with-stdout-to comments_args.ml.stdout
    (with-stderr-to comments_args.ml.stderr
-     (run %{bin:ocamlformat} --name comments_args.ml --margin-check --max-iter=4 %{dep:../tests/comments_args.ml})))))
+     (run %{bin:ocamlformat} --name comments_args.ml --margin-check --max-iters=4 %{dep:../tests/comments_args.ml})))))
 
 (rule
  (alias runtest)
@@ -2246,7 +2246,7 @@
  (action
   (with-stdout-to fun_function.ml.stdout
    (with-stderr-to fun_function.ml.stderr
-     (run %{bin:ocamlformat} --name fun_function.ml --margin-check --max-iter=3 %{dep:../tests/fun_function.ml})))))
+     (run %{bin:ocamlformat} --name fun_function.ml --margin-check --max-iters=3 %{dep:../tests/fun_function.ml})))))
 
 (rule
  (alias runtest)
@@ -3167,7 +3167,7 @@
  (action
   (with-stdout-to js_args.ml.stdout
    (with-stderr-to js_args.ml.stderr
-     (run %{bin:ocamlformat} --name js_args.ml --margin-check --max-iter=3 %{dep:../tests/js_args.ml})))))
+     (run %{bin:ocamlformat} --name js_args.ml --margin-check --max-iters=3 %{dep:../tests/js_args.ml})))))
 
 (rule
  (alias runtest)
@@ -3221,7 +3221,7 @@
  (action
   (with-stdout-to js_fun.ml.stdout
    (with-stderr-to js_fun.ml.stderr
-     (run %{bin:ocamlformat} --name js_fun.ml --margin-check --max-iter=3 %{dep:../tests/js_fun.ml})))))
+     (run %{bin:ocamlformat} --name js_fun.ml --margin-check --max-iters=3 %{dep:../tests/js_fun.ml})))))
 
 (rule
  (alias runtest)
@@ -3239,7 +3239,7 @@
  (action
   (with-stdout-to js_map.ml.stdout
    (with-stderr-to js_map.ml.stderr
-     (run %{bin:ocamlformat} --name js_map.ml --margin-check --max-iter=3 %{dep:../tests/js_map.ml})))))
+     (run %{bin:ocamlformat} --name js_map.ml --margin-check --max-iters=3 %{dep:../tests/js_map.ml})))))
 
 (rule
  (alias runtest)
@@ -3275,7 +3275,7 @@
  (action
   (with-stdout-to js_poly.ml.stdout
    (with-stderr-to js_poly.ml.stderr
-     (run %{bin:ocamlformat} --name js_poly.ml --margin-check --max-iter=3 %{dep:../tests/js_poly.ml})))))
+     (run %{bin:ocamlformat} --name js_poly.ml --margin-check --max-iters=3 %{dep:../tests/js_poly.ml})))))
 
 (rule
  (alias runtest)
@@ -3293,7 +3293,7 @@
  (action
   (with-stdout-to js_record.ml.stdout
    (with-stderr-to js_record.ml.stderr
-     (run %{bin:ocamlformat} --name js_record.ml --margin-check --max-iter=3 %{dep:../tests/js_record.ml})))))
+     (run %{bin:ocamlformat} --name js_record.ml --margin-check --max-iters=3 %{dep:../tests/js_record.ml})))))
 
 (rule
  (alias runtest)
@@ -3999,7 +3999,7 @@
  (action
   (with-stdout-to module_item_spacing-preserve.ml.stdout
    (with-stderr-to module_item_spacing-preserve.ml.stderr
-     (run %{bin:ocamlformat} --name module_item_spacing-preserve.ml --margin-check --max-iter=3 --module-item-spacing=preserve %{dep:../tests/module_item_spacing.ml})))))
+     (run %{bin:ocamlformat} --name module_item_spacing-preserve.ml --margin-check --max-iters=3 --module-item-spacing=preserve %{dep:../tests/module_item_spacing.ml})))))
 
 (rule
  (alias runtest)
@@ -4017,7 +4017,7 @@
  (action
   (with-stdout-to module_item_spacing-sparse.ml.stdout
    (with-stderr-to module_item_spacing-sparse.ml.stderr
-     (run %{bin:ocamlformat} --name module_item_spacing-sparse.ml --margin-check --max-iter=3 --module-item-spacing=sparse %{dep:../tests/module_item_spacing.ml})))))
+     (run %{bin:ocamlformat} --name module_item_spacing-sparse.ml --margin-check --max-iters=3 --module-item-spacing=sparse %{dep:../tests/module_item_spacing.ml})))))
 
 (rule
  (alias runtest)
@@ -4035,7 +4035,7 @@
  (action
   (with-stdout-to module_item_spacing.ml.stdout
    (with-stderr-to module_item_spacing.ml.stderr
-     (run %{bin:ocamlformat} --name module_item_spacing.ml --margin-check --max-iter=3 --module-item-spacing=compact %{dep:../tests/module_item_spacing.ml})))))
+     (run %{bin:ocamlformat} --name module_item_spacing.ml --margin-check --max-iters=3 --module-item-spacing=compact %{dep:../tests/module_item_spacing.ml})))))
 
 (rule
  (alias runtest)
@@ -4053,7 +4053,7 @@
  (action
   (with-stdout-to module_item_spacing.mli.stdout
    (with-stderr-to module_item_spacing.mli.stderr
-     (run %{bin:ocamlformat} --name module_item_spacing.mli --margin-check --max-iter=3 %{dep:../tests/module_item_spacing.mli})))))
+     (run %{bin:ocamlformat} --name module_item_spacing.mli --margin-check --max-iters=3 %{dep:../tests/module_item_spacing.mli})))))
 
 (rule
  (alias runtest)
@@ -4829,7 +4829,7 @@
  (action
   (with-stdout-to reformat_string.ml.stdout
    (with-stderr-to reformat_string.ml.stderr
-     (run %{bin:ocamlformat} --name reformat_string.ml --margin-check --max-iter=3 %{dep:../tests/reformat_string.ml})))))
+     (run %{bin:ocamlformat} --name reformat_string.ml --margin-check --max-iters=3 %{dep:../tests/reformat_string.ml})))))
 
 (rule
  (alias runtest)
@@ -4957,7 +4957,7 @@
  (action
   (with-stdout-to sequence-preserve.ml.stdout
    (with-stderr-to sequence-preserve.ml.stderr
-     (run %{bin:ocamlformat} --name sequence-preserve.ml --margin-check --sequence-blank-line=preserve-one --max-iter=3 %{dep:../tests/sequence.ml})))))
+     (run %{bin:ocamlformat} --name sequence-preserve.ml --margin-check --sequence-blank-line=preserve-one --max-iters=3 %{dep:../tests/sequence.ml})))))
 
 (rule
  (alias runtest)

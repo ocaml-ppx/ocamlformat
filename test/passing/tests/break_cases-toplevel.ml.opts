@@ -1,2 +1,2 @@
 --break-cases=toplevel
---max-iter=4
+--max-iters=4
