@@ -430,3 +430,12 @@ let () =
     then b_________________________________________________________________
     else c_________________________________________________________________
     end
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin fun x ->
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last ~args

@@ -465,3 +465,11 @@ let () =
         b_________________________________________________________________
       else
         c_________________________________________________________________ )
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:(fun x ->
+      function_ body ;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk ;
+      return value )
+    ~last ~args
