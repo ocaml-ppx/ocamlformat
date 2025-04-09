@@ -50,6 +50,27 @@ profile. This started with version 0.26.0.
   end
   ```
 
+- `~args:begin` is now printed on the same line:
+  ```ocaml
+  map
+    ~arg1
+    ~arg2:begin
+      ...
+    end
+    ~arg3
+  ```
+  instead of
+  ```ocaml
+  map
+    ~arg1
+    ~arg2:
+      begin
+        ...
+      end
+    ~arg3
+  ```
+  (#2681, @EmileTrotignon)
+
 ## 0.27.0
 
 ### Highlight
