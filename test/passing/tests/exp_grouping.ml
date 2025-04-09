@@ -439,3 +439,22 @@ let _ =
       return value
     end
     ~last ~args
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin fun x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last ~args
+
+
+    let _ =
+      f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+        ~label:begin match x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa with
+          | A -> aaaaaaaaaaaa
+          | B -> bbbbbbbbbbbbbbbbb b bbbbbbbbbbbbbbbbb
+          | C -> c cccccccccccccccccc cccccccccccccccccccccccccccccc
+        end
+        ~last ~args
