@@ -450,11 +450,11 @@ let _ =
     ~last ~args
 
 
-    let _ =
-      f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
-        ~label:begin match x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa with
-          | A -> aaaaaaaaaaaa
-          | B -> bbbbbbbbbbbbbbbbb b bbbbbbbbbbbbbbbbb
-          | C -> c cccccccccccccccccc cccccccccccccccccccccccccccccc
-        end
-        ~last ~args
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin match x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa with
+      | A -> aaaaaaaaaaaa
+      | B -> bbbbbbbbbbbbbbbbb b bbbbbbbbbbbbbbbbb
+      | C -> c cccccccccccccccccc cccccccccccccccccccccccccccccc
+    end
+    ~last ~args
