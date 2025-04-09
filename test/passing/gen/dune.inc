@@ -1244,7 +1244,7 @@
  (action
   (with-stdout-to comments_in_record-break_separator-after.ml.stdout
    (with-stderr-to comments_in_record-break_separator-after.ml.stderr
-     (run %{bin:ocamlformat} --name comments_in_record-break_separator-after.ml --margin-check --break-separator=after %{dep:../tests/comments_in_record.ml})))))
+     (run %{bin:ocamlformat} --name comments_in_record-break_separator-after.ml --margin-check --break-separators=after %{dep:../tests/comments_in_record.ml})))))
 
 (rule
  (alias runtest)
@@ -1262,7 +1262,7 @@
  (action
   (with-stdout-to comments_in_record-break_separator-before.ml.stdout
    (with-stderr-to comments_in_record-break_separator-before.ml.stderr
-     (run %{bin:ocamlformat} --name comments_in_record-break_separator-before.ml --margin-check --break-separator=before %{dep:../tests/comments_in_record.ml})))))
+     (run %{bin:ocamlformat} --name comments_in_record-break_separator-before.ml --margin-check --break-separators=before %{dep:../tests/comments_in_record.ml})))))
 
 (rule
  (alias runtest)
