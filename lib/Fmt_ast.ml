@@ -2256,7 +2256,6 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         when List.for_all args_before ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let inner_ctx = Exp last_arg in
-          let parens = parens || has_attr in
           let inner_parens, outer_parens =
             (* Don't disambiguate parentheses in some cases, also affect
                indentation. *)

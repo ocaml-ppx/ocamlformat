@@ -495,3 +495,6 @@ let _ = (object[@a] method x = y end [@b])
 let _ = ((module[@a] X) [@b])
 
 let _ = (begin[@a] x end [@b])
+
+let fold input ~init ~f =
+  foldi input ~init ~f:(fun (_ : int) acc x -> f acc x) [@nontail]
