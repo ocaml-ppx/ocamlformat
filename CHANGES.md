@@ -46,6 +46,21 @@ profile. This started with version 0.26.0.
 - \* Fix double parens around module constraint in functor application :
   `module M = F ((A : T))` becomes `module M = F (A : T)`. (#2678, @EmileTrotignon)
 
+- \* Fix crash due to `;;` handling. Now `;;` is added at the of every
+  toplevel-expression, except if its the last thing in the struct
+  (#2683, @EmileTrotignon) For example:
+  ```ocaml
+  (* before *)
+  print_endline "foo"
+
+  let a = 3
+
+  (* after *)
+  print_endline "foo" ;;
+
+  let a = 3
+  ```
+
 ### Changed
 
 - \* `~arg:begin`, `begin if`, `lazy begin`, `begin match` and `begin fun` can now be printed on
