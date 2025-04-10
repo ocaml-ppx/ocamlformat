@@ -72,7 +72,7 @@ let x \#let = 42
 let x = f ~\#let:42 ~\#and:43
 let f ~\#let ~\#and : \#let * \#and = x;;
 
-kind_abbrev_ \#let = \#and
+kind_abbrev_ \#let = \#and;;
 
 type t = T : 'a list -> t
 

@@ -60,6 +60,7 @@ hvbox 0
             $ esp_t $ Option.call ~f:epi_t))
   $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
   $ Option.call ~f:epi_e)
+;;
 
 let to_json { integers; floats; strings } =
   `Assoc
@@ -99,6 +100,7 @@ match
   Str.split (Str.regexp_string "\" \"")
 with
 | prog :: args -> fooooooooooooooooooooo
+;;
 
 let () =
   (* Open the repo *)

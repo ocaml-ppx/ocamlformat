@@ -279,7 +279,7 @@ type t += A ;;
 
 [%extension_constructor A] ;;
 
-([%extension_constructor A] : extension_constructor)
+([%extension_constructor A] : extension_constructor) ;;
 
 module M = struct
   type extension_constructor = int
@@ -287,7 +287,7 @@ end
 
 open M ;;
 
-([%extension_constructor A] : extension_constructor)
+([%extension_constructor A] : extension_constructor) ;;
 
 (* By using two types we can have a recursive constraint *)
 type 'a class_name = .. constraint 'a = < cast: 'a. 'a name -> 'a ; .. >
@@ -364,7 +364,7 @@ push_castable (new foo) ;;
 
 push_castable (new bar) ;;
 
-push_castable (new foo)
+push_castable (new foo) ;;
 
 let c1 : castable = pop_castable ()
 
@@ -978,6 +978,7 @@ print_endline
            ( module struct
              let x = false
            end ) ) ) )
+;;
 
 type 'a ty = Int : int ty | Bool : bool ty
 
@@ -2702,7 +2703,7 @@ end = struct
 end
 ;;
 
-match M.comp with Diff -> false
+match M.comp with Diff -> false ;;
 
 module U = struct
   type t = {x: int}
@@ -2719,7 +2720,7 @@ end = struct
 end
 ;;
 
-match M.comp with Diff -> false
+match M.comp with Diff -> false ;;
 
 type 'a t = T of 'a
 
@@ -2869,7 +2870,7 @@ end = struct
 end
 ;;
 
-f B.eq
+f B.eq ;;
 
 type (_, _) t =
   | Nil : ('tl, 'tl) t
@@ -3473,6 +3474,7 @@ f
 
     let x = 1
   end )
+;;
 
 type 'a s = {s: (module S with type t = 'a)} ;;
 
@@ -3482,6 +3484,7 @@ type 'a s = {s: (module S with type t = 'a)} ;;
 
       let x = 1
     end ) }
+;;
 
 let f {s= (module M)} = M.x
 
@@ -3522,6 +3525,7 @@ f m 1
 
 let (module M) = m in
 M.x
+;;
 
 let (module M) = m
 
@@ -3545,6 +3549,7 @@ let rec (module M : S') =
   end : S' )
 in
 M.f 3
+;;
 
 (* Subtyping *)
 
@@ -3698,7 +3703,7 @@ let ssmap =
 
 let ssmap : (_, _, _) map = (module SSMap) ;;
 
-add ssmap
+add ssmap ;;
 
 open StdLabels
 open MoreLabels
@@ -4538,7 +4543,7 @@ end
 (* PR#5835 *)
 let f ~x = x + 1 ;;
 
-f ?x:0
+f ?x:0 ;;
 
 (* PR#6352 *)
 let foo (f : unit -> unit) = ()
@@ -4548,7 +4553,7 @@ let g ?x () = () ;;
 foo (() ; g) ;;
 
 (* PR#5748 *)
-foo (fun ?opt () -> ())
+foo (fun ?opt () -> ()) ;;
 
 (* fails *)
 (* PR#5907 *)
@@ -4627,14 +4632,14 @@ type t = {x: int; y: int} ;;
 fun {x= 3; z= 2} -> () ;;
 
 (* mixed labels *)
-{x= 3; contents= 2}
+{x= 3; contents= 2} ;;
 
 (* private types *)
 type u = private {mutable u: int} ;;
 
 {u= 3} ;;
 
-fun x -> x.u <- 3
+fun x -> x.u <- 3 ;;
 
 (* Punning and abbreviations *)
 module M = struct
@@ -4663,7 +4668,7 @@ type foo = {x: int}
 
 let r : foo = {ZZZ.x= 2} ;;
 
-(ZZZ.X : int option)
+(ZZZ.X : int option) ;;
 
 (* PR#5865 *)
 let f (x : Complex.t) = x.Complex.z
@@ -5302,7 +5307,7 @@ end
 
 module EM = Simple.Register (Simple.M) ;;
 
-Simple.M.key
+Simple.M.key ;;
 
 module Simple2 = struct
   type 'a t
@@ -5437,23 +5442,23 @@ module F (X : sig end) = struct
 end
 ;;
 
-F.x
+F.x ;;
 
 (* fail *)
 module C = Char ;;
 
-C.chr 66
+C.chr 66 ;;
 
 module C' : module type of Char = C ;;
 
-C'.chr 66
+C'.chr 66 ;;
 
 module C3 = struct
   include Char
 end
 ;;
 
-C3.chr 66
+C3.chr 66 ;;
 
 let f x =
   let module M = struct
@@ -5469,7 +5474,7 @@ module F (X : sig end) = Char
 
 module C4 = F (struct end) ;;
 
-C4.chr 66
+C4.chr 66 ;;
 
 module G (X : sig end) = struct
   module M = X
@@ -5487,7 +5492,7 @@ module M' = struct
 end
 ;;
 
-M'.N'.x
+M'.N'.x ;;
 
 module M'' : sig
   module N' : sig
@@ -5497,7 +5502,7 @@ end =
   M'
 ;;
 
-M''.N'.x
+M''.N'.x ;;
 
 module M2 = struct
   include M'
@@ -5512,7 +5517,7 @@ end = struct
 end
 ;;
 
-M3.N'.x
+M3.N'.x ;;
 
 module M3' : sig
   module N' : sig
@@ -5522,7 +5527,7 @@ end =
   M2
 ;;
 
-M3'.N'.x
+M3'.N'.x ;;
 
 module M4 : sig
   module N' : sig
@@ -5537,7 +5542,7 @@ end = struct
 end
 ;;
 
-M4.N'.x
+M4.N'.x ;;
 
 module F (X : sig end) = struct
   module N = struct
@@ -5556,7 +5561,7 @@ end =
 
 module M5 = G (struct end) ;;
 
-M5.N'.x
+M5.N'.x ;;
 
 module M = struct
   module D = struct
@@ -5580,7 +5585,7 @@ end =
   M
 ;;
 
-M1.N'.x
+M1.N'.x ;;
 
 module M2 : sig
   module N' : sig
@@ -5597,11 +5602,11 @@ end = (
     end )
 ;;
 
-M2.N'.x
+M2.N'.x ;;
 
 open M ;;
 
-N'.x
+N'.x ;;
 
 module M = struct
   module C = Char
@@ -5619,7 +5624,7 @@ end =
 ;;
 
 (* sound, but should probably fail *)
-M1.C'.escaped 'A'
+M1.C'.escaped 'A' ;;
 
 module M2 : sig
   module C' : sig
@@ -5638,13 +5643,13 @@ end = (
 
 M2.C'.chr 66 ;;
 
-StdLabels.List.map
+StdLabels.List.map ;;
 
 module Q = Queue
 
 exception QE = Q.Empty ;;
 
-try Q.pop (Q.create ()) with QE -> "Ok"
+try Q.pop (Q.create ()) with QE -> "Ok" ;;
 
 module type Complex = module type of Complex with type t = Complex.t
 
@@ -5656,7 +5661,7 @@ end
 
 module C = Complex ;;
 
-C.one.Complex.re
+C.one.Complex.re ;;
 
 include C
 
@@ -5707,7 +5712,7 @@ end
 
 module A1 = A ;;
 
-A1.empty = A.empty
+A1.empty = A.empty ;;
 
 (* PR#3476 *)
 (* Does not work yet *)
@@ -5969,7 +5974,7 @@ end = struct
 end
 ;;
 
-R.M.f 3
+R.M.f 3 ;;
 
 module rec R : sig
   module M = M
@@ -5978,7 +5983,7 @@ end = struct
 end
 ;;
 
-R.M.f 3
+R.M.f 3 ;;
 
 open A
 
@@ -6239,7 +6244,7 @@ class c v =
   end
 ;;
 
-new c "42"
+new c "42" ;;
 
 (* Two hidden v's in the same class! *)
 class c (v : int) =
@@ -6255,7 +6260,7 @@ class c (v : int) =
   end
 ;;
 
-(new c 42)#v0
+(new c 42)#v0 ;;
 
 class virtual ['a] c =
   object (s : 'a)
@@ -6902,7 +6907,7 @@ end =
   M1
 ;;
 
-fun (x : M1.t) -> (x : M2.t)
+fun (x : M1.t) -> (x : M2.t) ;;
 
 (* fails *)
 
@@ -6914,7 +6919,7 @@ end =
 
 fun x -> (x : M3.t :> M1.t) ;;
 
-fun x -> (x : M3.t :> M.t)
+fun x -> (x : M3.t :> M.t) ;;
 
 module M4 : sig
   type t = private M3.t
@@ -8294,12 +8299,12 @@ A ;;
 
 B ;;
 
-C
+C ;;
 
 include M
 open M ;;
 
-C
+C ;;
 
 module L = struct
   type v = V
@@ -8307,7 +8312,7 @@ end
 
 open L ;;
 
-V
+V ;;
 
 module L = struct
   type v = V
@@ -8315,7 +8320,7 @@ end
 
 open L ;;
 
-V
+V ;;
 
 type t1 = A
 
@@ -8782,7 +8787,7 @@ fun b -> if b then format_of_string "x" else "y" ;;
 
 fun b -> if b then "x" else format_of_string "y" ;;
 
-fun b : (_, _, _) format -> if b then "x" else "y"
+fun b : (_, _, _) format -> if b then "x" else "y" ;;
 
 (* PR#7135 *)
 
@@ -8968,7 +8973,7 @@ fun (A : a) -> () ;;
 
 function Not_found -> 1 | A -> 2 | _ -> 3 ;;
 
-try raise A with A -> 2
+try raise A with A -> 2 ;;
 
 module TypEq = struct
   type (_, _) t = Eq : ('a, 'a) t
@@ -9370,6 +9375,7 @@ end
 for i = 10 downto 0 do
   ()
 done
+;;
 
 type t = < foo: int [@foo] >
 
@@ -9532,6 +9538,7 @@ fun contents -> {contents= contents [@foo]} ;;
 
 () ;
 (() ; ()) [@foo]
+;;
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
@@ -9581,6 +9588,7 @@ module Indexop = struct
   h.Def.%["one"] <- 1 ;
   h.Def.%("two") <- 2 ;
   h.Def.%{"three"} <- 3
+  ;;
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})
 end
@@ -9692,6 +9700,7 @@ f
   end
     #f
   object end
+;;
 
 (* Punning of labelled function argument with type constraint *)
 let g y =

@@ -16,7 +16,7 @@ open Ocamlformat_format ;;
 
 Stdlib.at_exit (Format.pp_print_flush Format.err_formatter) ;;
 
-Stdlib.at_exit (Format_.pp_print_flush Format_.err_formatter)
+Stdlib.at_exit (Format_.pp_print_flush Format_.err_formatter) ;;
 
 let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
   if conf.opr_opts.disable.v then Ok source

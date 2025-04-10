@@ -137,6 +137,7 @@ and fooo = fooooooooooo [@@foo]
 
 let foooo = fooooooooo [@@foo] in
     fooooooooooooooooooooo
+;;
 
 let[@foo] fooo = fooooooooooo
 
@@ -147,6 +148,7 @@ and[@foo] fooo = fooooooooooo
 
 let[@foo] foooo = fooooooooo in
     fooooooooooooooooooooo
+;;
 
 let a : int = 0
 
@@ -277,6 +279,7 @@ let _ =
 
 fun xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx : _ ->
   match () with _ -> ()
+;;
 
 let _ =
   (*

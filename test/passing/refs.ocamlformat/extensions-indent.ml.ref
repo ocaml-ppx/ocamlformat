@@ -42,6 +42,7 @@ let invariant t =
        e]
   (let%ext rec f = () and g () = () in
    e )
+;;
 
 let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 
@@ -189,7 +190,7 @@ let this_function_has_a_long_name plus very many arguments =
 
 [%expect {|
 ___________________________________________________________
-|}]
+|}] ;;
 
 [%%expect {|
 ___________________________________________________________

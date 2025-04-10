@@ -58,6 +58,7 @@ match x with
 (* this comment is intended to refer to the case below *)
 | Bbbbbbbbbbbbbbbbbbbb ->
     ()
+;;
 
 let _ =
   (* this comment is intended to refer to the entire match below *)

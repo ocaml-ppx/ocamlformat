@@ -9,7 +9,7 @@ id (plus 1) ~b:1;;
    https://caml.inria.fr/mantis/view.php?id=7832 for explanation on the
    type-checking (and dynamic semantics) distinction. *)
 
-(id (plus 1)) ~b:1
+(id (plus 1)) ~b:1;;
 
 let ( !!! ) a ~b = a + b
 let _ = ( !!! ) a b
@@ -93,7 +93,7 @@ let whatever_labelled a_function_name long_list_one some_other_thing =
 ;;
 
 (a - b) ();;
-((a - b) [@foo]) ()
+((a - b) [@foo]) ();;
 
 let _ = M.(loooooooooooooooooooooong + loooooooooooooooooong)
 
