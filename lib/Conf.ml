@@ -588,10 +588,11 @@ module Formatting = struct
     let names = ["break-struct"] in
     let all =
       [ Decl.Value.make ~name:"force" `Force
-          "$(b,force) will break struct-end and sig-end phrases unconditionally."
+          "$(b,force) will break struct-end and sig-end phrases \
+           unconditionally."
       ; Decl.Value.make ~name:"natural" `Natural
-          "$(b,natural) will break struct-end and sig-end phrases naturally at the \
-           margin." ]
+          "$(b,natural) will break struct-end and sig-end phrases naturally \
+           at the margin." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt ->
