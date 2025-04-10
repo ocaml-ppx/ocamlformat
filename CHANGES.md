@@ -50,6 +50,8 @@ profile. This started with version 0.26.0.
   end
   ```
 
+- \* `break-struct=natural` now also applies to `sig ... end`. (#2682, @EmileTrotignon)
+
 ## 0.27.0
 
 ### Highlight
