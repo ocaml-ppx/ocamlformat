@@ -669,3 +669,17 @@ let _ =
     ~last
     ~args
 ;;
+
+let _ =
+  f
+    ~aaaaaaaaaaaaaaaaaaaaaaaaaa
+    ~bbbbbbbbbbbbbbbbbbbbbbb
+    ~ccccccccccccccccccccc
+    ~label:begin
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last
+    ~args
+;;

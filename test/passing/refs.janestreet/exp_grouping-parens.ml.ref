@@ -578,3 +578,16 @@ let _ =
     ~last
     ~args
 ;;
+
+let _ =
+  f
+    ~aaaaaaaaaaaaaaaaaaaaaaaaaa
+    ~bbbbbbbbbbbbbbbbbbbbbbb
+    ~ccccccccccccccccccccc
+    ~label:
+      (function_ body;
+       force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+       return value)
+    ~last
+    ~args
+;;

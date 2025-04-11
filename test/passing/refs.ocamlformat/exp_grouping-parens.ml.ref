@@ -500,3 +500,11 @@ let _ =
       | C ->
           c cccccccccccccccccc cccccccccccccccccccccccccccccc )
     ~last ~args
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:
+      ( function_ body ;
+        force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk ;
+        return value )
+    ~last ~args
