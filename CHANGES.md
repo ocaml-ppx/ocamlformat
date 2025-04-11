@@ -43,6 +43,8 @@ profile. This started with version 0.26.0.
 
 - Fix crash due to edge case with asterisk-prefixed comments (#2674, @Julow)
 
+- Fix crash when formatting `mld` files that cannot be lexed as ocaml (e.g.
+  containing LaTeX or C code) (#2684, @emillon)
 ### Changed
 
 - `begin if`, `lazy begin`, `begin match` and `begin fun` can now be printed on
