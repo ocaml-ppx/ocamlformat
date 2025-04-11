@@ -4344,10 +4344,10 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
   | Pmod_constraint (me, mt) ->
       let parens =
         match ctx0 with
-        | Mod {pmod_desc= Pmod_apply (f, _args); _}
-          when not (phys_equal f m) ->
-            (* Pmod_apply arguments always have parens around them, no need to
-               add extra. That's not the case for the applied functor. *)
+        | Mod {pmod_desc= Pmod_apply (f, _args); _} when not (phys_equal f m)
+          ->
+            (* Pmod_apply arguments always have parens around them, no need
+               to add extra. That's not the case for the applied functor. *)
             false
         | _ -> true
       in
