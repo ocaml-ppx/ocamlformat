@@ -606,3 +606,10 @@ let _ =
   | A -> xxxxxxxxxxxxxxxxxxxxxxx
   | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
 ;;
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>>
+  (xxxxxxxxxxxxxxxxxxxxxxx;
+   aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa)
+;;

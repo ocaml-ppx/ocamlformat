@@ -480,3 +480,11 @@ let _ =
   | A -> xxxxxxxxxxxxxxxxxxxxxxx
   | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
   end
+
+
+  let _ =
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    |>>>>> begin
+      xxxxxxxxxxxxxxxxxxxxxxx ;
+      aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+    end
