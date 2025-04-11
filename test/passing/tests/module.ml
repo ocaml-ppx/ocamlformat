@@ -122,3 +122,6 @@ module M =
   module Foo = Bar
 
   type t]
+
+module M = F (A : T)
+
