@@ -79,6 +79,17 @@ profile. This started with version 0.26.0.
   (* after *)
   print_endline "foo" ;;
   let a = 3
+
+- \* `|> map (fun` is now indented from `|>` and not from `map` (#2686, @EmileTrotignon):
+  ```ocaml
+  (* before *)
+  v
+  |>>>>>> map (fun x ->
+              x )
+  (* after *)
+  v
+  |>>>>>> map (fun x ->
+      x )
   ```
 
 ## 0.27.0
