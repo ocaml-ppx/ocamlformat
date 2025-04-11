@@ -130,9 +130,9 @@ OPTIONS (CODE FORMATTING STYLE)
            expanded. The default value is auto.
 
        --break-struct={force|natural}
-           Break struct-end module items. force will break struct-end phrases
-           unconditionally. natural will break struct-end phrases naturally
-           at the margin. The default value is force.
+           Break struct-end and sig-end items. force will break items
+           unconditionally. natural will break items naturally at the margin.
+           The default value is force.
 
        --cases-exp-indent=COLS
            Indentation of cases expressions (COLS columns). See also the

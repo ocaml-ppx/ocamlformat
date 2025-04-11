@@ -3770,10 +3770,16 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       let after = Cmts.fmt_after c pmty_loc in
       { opn= None
       ; pro= Some (before $ str "sig" $ fmt_if empty (str " "))
-      ; psp= fmt_if (not empty) (break 1000 2)
+      ; psp=
+          fmt_if (not empty)
+            ( if c.conf.fmt_opts.break_struct.v then break 1000 2
+              else break 1 2 )
       ; bdy= (within $ if empty then noop else fmt_signature c ctx s)
       ; cls= noop
-      ; esp= fmt_if (not empty) force_break
+      ; esp=
+          fmt_if (not empty)
+            ( if c.conf.fmt_opts.break_struct.v then force_break
+              else break 1 0 )
       ; epi=
           Some
             ( str "end" $ after
@@ -4403,12 +4409,14 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       ; pro= Some (before $ str "struct" $ fmt_if empty (str " "))
       ; psp=
           fmt_if (not empty)
-            (fmt_or c.conf.fmt_opts.break_struct.v (break 1000 2) (break 1 2))
+            ( if c.conf.fmt_opts.break_struct.v then break 1000 2
+              else break 1 2 )
       ; bdy= within $ fmt_structure c ctx sis
       ; cls= noop
       ; esp=
           fmt_if (not empty)
-            (fmt_or c.conf.fmt_opts.break_struct.v force_break (break 1 0))
+            ( if c.conf.fmt_opts.break_struct.v then force_break
+              else break 1 0 )
       ; epi=
           Some
             ( hovbox_if (not empty) 0

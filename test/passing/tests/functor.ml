@@ -110,3 +110,11 @@ module M : functor (A : S) -> functor (B : S) -> S = N
 module M : functor (A : S) (B : S) -> S = N
 module M : functor (A : S) -> functor (B : S) -> S = N
 module M : (A : S) -> functor (B : S) -> S = N
+
+[@@@ocamlformat "break-struct=natural"]
+
+module M = F ((struct type t end : sig type t end))
+
+module M = struct type t end
+
+module type S = sig type t end
