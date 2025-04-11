@@ -1685,6 +1685,9 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
                ~pro:(fmt_label lbl (str ":" $ break 0 2))
                ~box xarg )
         $ cmts_after )
+  | (Labelled _ | Optional _), Pexp_beginend _ ->
+      let pro = fmt_label lbl (str ":") in
+      fmt_expression c ~box ~pro xarg
   | (Labelled _ | Optional _), Pexp_function (args, typ, body) ->
       let wrap_intro x = hovbox 2 x $ space_break in
       fmt_function ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl
