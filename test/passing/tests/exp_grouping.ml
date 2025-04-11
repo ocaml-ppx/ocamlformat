@@ -466,3 +466,17 @@ let _ =
       return value
     end
     ~last ~args
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin fun xxxxxxx ->
+    xxxxxxxxxxxxxxxxxxxxxxx ;
+    aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin match xxxxxxx with
+  | A -> xxxxxxxxxxxxxxxxxxxxxxx
+  | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
