@@ -222,10 +222,10 @@ let fmt_item_list c ctx0 update_config ast fmt_item items =
   let loc = Ast.location ctx in
   maybe_disabled c loc [] (fun c -> fmt_item c ctx ~prev ~next itm)
   $ opt next (fun (i_n, c_n) ->
-        fmt_or
-          (break_between c (ctx, c.conf) (ast i_n, c_n.conf))
-          (str "\n" $ force_break)
-          (fmt_or break_struct force_break space_break) )
+      fmt_or
+        (break_between c (ctx, c.conf) (ast i_n, c_n.conf))
+        (str "\n" $ force_break)
+        (fmt_or break_struct force_break space_break) )
 
 let fmt_recmodule c ctx items fmt_item ast sub =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
@@ -462,7 +462,7 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
       let floating_doc, doc =
         doc
         |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
-               (Docstring.parse ~loc txt, doc) )
+            (Docstring.parse ~loc txt, doc) )
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let placement =
@@ -1489,7 +1489,7 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
                         (str ";" $ space_break)
                         (sub_exp ~ctx >> fmt_expression c) ) )
            $ opt pia_rhs (fun e ->
-                 fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
+               fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ) )
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
@@ -1858,7 +1858,11 @@ and fmt_infix_op_args c ~parens xexp op_args =
       match xarg.ast.pexp_desc with
       | Pexp_function _ | Pexp_beginend _ ->
           hvbox 0 (fmt_expression c ~pro ~parens xarg)
-      | _ when Params.Exp.is_apply_and_last_arg_is_function_and_other_args_are_simple c.conf xarg.ast ->  hvbox 0 (fmt_expression c ~pro ~parens xarg)
+      | _
+        when Params.Exp
+             .is_apply_and_last_arg_is_function_and_other_args_are_simple
+               c.conf xarg.ast ->
+          hvbox 0 (fmt_expression c ~pro ~parens xarg)
       | _ ->
           hvbox 0
             ( pro
@@ -2568,7 +2572,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                     $ fmt_or override (str "open!")
                                         (str "open")
                                     $ opt ext (fun _ ->
-                                          fmt_if override (str " ") )
+                                        fmt_if override (str " ") )
                                     $ fmt_extension_suffix c ext ) )
                                (sub_mod ~ctx popen_expr)
                            $ Cmts.fmt_after c popen_loc
@@ -2610,8 +2614,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          ( fmt_pattern c ~pro:(if_newline "| ")
                              (sub_pat ~ctx pc_lhs)
                          $ opt pc_guard (fun g ->
-                               space_break $ str "when "
-                               $ fmt_expression c (sub_exp ~ctx g) )
+                             space_break $ str "when "
+                             $ fmt_expression c (sub_exp ~ctx g) )
                          $ space_break $ str "->"
                          $ fmt_if parens_here (str " (") ) )
                  $ break 1 2
@@ -3344,8 +3348,8 @@ and fmt_case c ctx ~first ~last case =
           ( hvbox 0
               ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->
-                    break 1 2 $ str "when "
-                    $ fmt_expression c (sub_exp ~ctx g) ) )
+                  break 1 2 $ str "when " $ fmt_expression c (sub_exp ~ctx g) )
+              )
           $ p.break_before_arrow $ str "->" $ p.break_after_arrow
           $ p.open_paren_branch )
       $ p.break_after_opening_paren
@@ -3677,9 +3681,9 @@ and fmt_type_extension c ctx
            $ str " +="
            $ fmt_private_flag c ptyext_private
            $ list_fl ptyext_constructors (fun ~first ~last:_ x ->
-                 let bar_fits = if first then "" else "| " in
-                 cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
-                 $ fmt_ctor x ) )
+               let bar_fits = if first then "" else "| " in
+               cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
+               $ fmt_ctor x ) )
        $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
 
 and fmt_type_exception ~pre c ctx
@@ -3991,46 +3995,46 @@ and fmt_class_types c ~pre ~sep cls =
 and fmt_class_exprs c cls =
   hvbox 0
   @@ list_fl cls (fun ~first ~last:_ cl ->
-         update_config_maybe_disabled_attrs c cl.pci_loc cl.pci_attributes
-         @@ fun c ->
-         let ctx = Cd cl in
-         let xargs = cl.pci_args in
-         let ext = cl.pci_attributes.attrs_extension in
-         let doc_before, doc_after, attrs_before, attrs_after =
-           let force_before = not (Cl.is_simple cl.pci_expr) in
-           fmt_docstring_around_item_attrs ~force_before c cl.pci_attributes
-         in
-         let class_expr =
-           let pro =
-             box_fun_decl_args c 2
-               ( hovbox 2
-                   ( str (if first then "class" else "and")
-                   $ fmt_if first (fmt_extension_suffix c ext)
-                   $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-                   $ fmt_virtual_flag c cl.pci_virt
-                   $ space_break
-                   $ fmt_class_params c ctx cl.pci_params
-                   $ fmt_str_loc c cl.pci_name )
-               $ fmt_if (not (List.is_empty xargs)) space_break
-               $ wrap_fun_decl_args c (fmt_class_fun_args c xargs) )
-           in
-           let intro =
-             match cl.pci_constraint with
-             | Some ty ->
-                 fmt_class_type c
-                   ~pro:(pro $ str " :" $ space_break)
-                   (sub_cty ~ctx ty)
-             | None -> pro
-           in
-           hovbox 2
-             ( hovbox 2 (intro $ space_break $ str "=")
-             $ space_break
-             $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
-           $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
-         in
-         fmt_if (not first) (str "\n" $ force_break)
-         $ hovbox 0
-           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
+      update_config_maybe_disabled_attrs c cl.pci_loc cl.pci_attributes
+      @@ fun c ->
+      let ctx = Cd cl in
+      let xargs = cl.pci_args in
+      let ext = cl.pci_attributes.attrs_extension in
+      let doc_before, doc_after, attrs_before, attrs_after =
+        let force_before = not (Cl.is_simple cl.pci_expr) in
+        fmt_docstring_around_item_attrs ~force_before c cl.pci_attributes
+      in
+      let class_expr =
+        let pro =
+          box_fun_decl_args c 2
+            ( hovbox 2
+                ( str (if first then "class" else "and")
+                $ fmt_if first (fmt_extension_suffix c ext)
+                $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
+                $ fmt_virtual_flag c cl.pci_virt
+                $ space_break
+                $ fmt_class_params c ctx cl.pci_params
+                $ fmt_str_loc c cl.pci_name )
+            $ fmt_if (not (List.is_empty xargs)) space_break
+            $ wrap_fun_decl_args c (fmt_class_fun_args c xargs) )
+        in
+        let intro =
+          match cl.pci_constraint with
+          | Some ty ->
+              fmt_class_type c
+                ~pro:(pro $ str " :" $ space_break)
+                (sub_cty ~ctx ty)
+          | None -> pro
+        in
+        hovbox 2
+          ( hovbox 2 (intro $ space_break $ str "=")
+          $ space_break
+          $ fmt_class_expr c (sub_cl ~ctx cl.pci_expr) )
+        $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
+      in
+      fmt_if (not first) (str "\n" $ force_break)
+      $ hovbox 0
+        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_expr $ doc_after) )
 
 and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     name xargs xbody xmty ~attrs ~rec_flag =
@@ -4128,13 +4132,13 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
     $ doc_after
     $ opt epi (fun epi ->
-          fmt_or compact
-            (fmt_or
-               ( Option.is_some blk_b.epi
-               && not c.conf.fmt_opts.ocp_indent_compat.v )
-               (str " ") space_break )
-            (break 1 (-2))
-          $ epi ) )
+        fmt_or compact
+          (fmt_or
+             ( Option.is_some blk_b.epi
+             && not c.conf.fmt_opts.ocp_indent_compat.v )
+             (str " ") space_break )
+          (break 1 (-2))
+        $ epi ) )
 
 and fmt_module_declaration c ~rec_flag ~first {ast= pmd; _} =
   protect c (Md pmd)

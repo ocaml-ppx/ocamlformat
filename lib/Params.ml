@@ -350,9 +350,10 @@ module Exp = struct
        If a label is present, arguments should be indented more than the
        arrow and the eventually breaking [fun] keyword. *)
     if c.fmt_opts.ocp_indent_compat.v then str ":" $ cut_break else str ":"
+
   let is_apply_and_last_arg_is_function_and_other_args_are_simple c exp =
     match exp.pexp_desc with
-    |  Pexp_apply (_, args) ->
+    | Pexp_apply (_, args) ->
         let (_lbl, last_arg), args_before =
           match List.rev args with
           | [] -> assert false
@@ -362,7 +363,11 @@ module Exp = struct
           List.for_all args_before ~f:(fun (_, eI) ->
               is_simple c (fun _ -> 0) (sub_exp ~ctx:(Exp exp) eI) )
         in
-        let is_function = match last_arg.pexp_desc with Pexp_function _ -> true | _ -> false in
+        let is_function =
+          match last_arg.pexp_desc with
+          | Pexp_function _ -> true
+          | _ -> false
+        in
         is_function && args_are_simple
     | _ -> false
 end
