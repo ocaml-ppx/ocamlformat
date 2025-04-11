@@ -453,7 +453,7 @@ let () =
     S.ntyp Cbor_type.Reserved
     @@ (S.tok (fun ev ->
             match ev with Cbor_event.Reserved int -> Some int | _ -> None )
-       [@warning "-4"] )
+    [@warning "-4"] )
   in
   ()
 ;;

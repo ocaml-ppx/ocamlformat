@@ -100,6 +100,7 @@ module Exp : sig
     Conf_t.t -> ctx:Ast.t -> ctx0:Ast.t -> bool
 
   val fun_label_sep : Conf.t -> Fmt.t
+  val is_apply_and_last_arg_is_function_and_other_args_are_simple: Conf.t -> expression -> bool
 end
 
 module Mod : sig

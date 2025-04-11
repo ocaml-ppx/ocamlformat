@@ -1858,6 +1858,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       match xarg.ast.pexp_desc with
       | Pexp_function _ | Pexp_beginend _ ->
           hvbox 0 (fmt_expression c ~pro ~parens xarg)
+      | _ when Params.Exp.is_apply_and_last_arg_is_function_and_other_args_are_simple c.conf xarg.ast ->  hvbox 0 (fmt_expression c ~pro ~parens xarg)
       | _ ->
           hvbox 0
             ( pro

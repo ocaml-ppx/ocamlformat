@@ -298,16 +298,16 @@ let x =
 let x =
   some_value
   |> some_fun (fun x ->
-         do_something ();
-         do_something_else ();
-         return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 
 let x =
   some_value
   ^ some_fun (fun x ->
-        do_something ();
-        do_something_else ();
-        return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 
 let bind t ~f =
   unfold_step
@@ -398,20 +398,20 @@ let _ =
 let _ =
   foo
   |> List.map ~f:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
 
 let _ =
   foo
   |> List.map ~f:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
   |> bar
 
 let _ =
@@ -424,11 +424,11 @@ let _ = foo |> List.map (function A -> do_something ())
 let _ =
   foo
   |> List.map (function
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something_else ())
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
   |> bar
 
 let _ =
@@ -712,7 +712,7 @@ let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo:(fun foo ->
-         match bar with Some _ -> foo | None -> baz)
+      match bar with Some _ -> foo | None -> baz)
 
 let _ =
   fooooooooooooooooooooooooooooooo
@@ -728,7 +728,7 @@ let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo
        ~fooooooooooooooooooooooooooooooo (fun foo ->
-         match bar with Some _ -> foo | None -> baz)
+      match bar with Some _ -> foo | None -> baz)
 
 let _ =
   fooooooooooooooooooooooooooooooo
@@ -738,14 +738,14 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-         | foo -> bar)
+      | foo -> bar)
 
 let _ =
   fooooooooooooooooooooooooooooooo
   |> fooooooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo
        (function
-       | Some _ -> foo
-       | None -> baz)
+    | Some _ -> foo
+    | None -> baz)
 
 (* *)
 
