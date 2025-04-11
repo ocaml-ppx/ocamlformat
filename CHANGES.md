@@ -9,7 +9,7 @@ profile. This started with version 0.26.0.
 ### Deprecated
 
 - Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
-  the case, the tool no longer accept unambiguous option names prefixes. For
+  the case, the tool no longer accepts unambiguous option names prefixes. For
   example, `--max-iter` is not accepted anymore, you have to pass the full
   option `--max-iters`. This does not apply to the keys in the `.ocamlformat`
   configuration files, which have always required the full name.
