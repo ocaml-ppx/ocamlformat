@@ -687,15 +687,15 @@ let _ =
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   |>>>>> begin fun xxxxxxx ->
-           xxxxxxxxxxxxxxxxxxxxxxx;
-           aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
-         end
+    xxxxxxxxxxxxxxxxxxxxxxx;
+    aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
 ;;
 
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   |>>>>> begin match xxxxxxx with
-         | A -> xxxxxxxxxxxxxxxxxxxxxxx
-         | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
-         end
+  | A -> xxxxxxxxxxxxxxxxxxxxxxx
+  | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
 ;;
