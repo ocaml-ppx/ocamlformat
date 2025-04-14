@@ -1709,7 +1709,6 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
       fmt_expression c ~box ~pro xarg
   | ( (Labelled _ | Optional _)
     , Pexp_function (args, typ, body, infix_ext_attrs) ) ->
-
       let wrap_intro x = hovbox 2 x $ space_break in
       fmt_function ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl
         ~parens:true ~attrs:arg.pexp_attributes ~infix_ext_attrs
