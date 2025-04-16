@@ -4473,21 +4473,36 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
       }
 
 and fmt_structure c ctx itms =
-  let update_config c i =
+  let update_config c (i, _) =
     match i.pstr_desc with
     | Pstr_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next i =
-    let semisemi =
-      match next with
-      | Some ({pstr_desc= Pstr_eval _; _}, _) -> true
-      | _ -> false
-    in
+  let rec get_semisemi itms =
+    match itms with
+    | [] -> []
+    | item :: itms ->
+      let next_no_doc =
+        List.find itms
+          ~f:(function {pstr_desc=Pstr_attribute attr ; _} when Ast.Attr.is_doc attr -> false | _ -> true)
+      in
+      let semisemi =
+        match next_no_doc, item.pstr_desc with
+        | _, Pstr_attribute attr  when Ast.Attr.is_doc attr -> false
+        | Some _, Pstr_eval _
+        | Some ({pstr_desc= Pstr_eval _; _}), _ ->
+          (* Pstr_eval is always preceded and followed by ";;" *)
+          true
+        | _ -> false
+      in
+      (item, semisemi) :: get_semisemi itms
+  in
+  let itms = get_semisemi itms in
+  let fmt_item c ctx ~prev:_ ~next (i, semisemi) =
     fmt_structure_item c ~last:(Option.is_none next) ~semisemi
       (sub_str ~ctx i)
   in
-  let ast x = Str x in
+  let ast (x, _) = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?eq rec_flag decls ctx =
@@ -4510,12 +4525,6 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
-  let semisemi =
-    match si.pstr_desc with
-    | Pstr_eval _ when not last_item -> true
-    | Pstr_attribute attr when Ast.Attr.is_doc attr -> false
-    | _ -> semisemi
-  in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"
@@ -4835,23 +4844,41 @@ let flatten_ptop =
 let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   let itms = flatten_ptop itms in
   let update_config c = function
-    | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
+    | `Item {pstr_desc= Pstr_attribute atr; _}, _ -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next itm =
+  let rec get_semisemi itms =
+    match itms with
+    | [] -> []
+    | item :: itms ->
+      let next_no_doc =
+        List.find itms
+          ~f:(function
+            | `Item {pstr_desc=Pstr_attribute attr ; _} when Ast.Attr.is_doc attr -> false
+            | _ -> true)
+      in
+      let semisemi =
+        match item, next_no_doc with
+        | `Item {pstr_desc= Pstr_attribute attr; _}, _ when Ast.Attr.is_doc attr-> false
+        | `Item ({pstr_desc=Pstr_eval _;_}), Some _
+        | _, Some ( `Item {pstr_desc= Pstr_eval _; _}) ->
+          (* Pstr_eval is always preceded and followed by ";;" *)
+          true
+        | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
+        | `Item _, Some (`Directive _) -> true
+        | _, None -> force_semisemi
+        | _ -> false
+      in
+      (item, semisemi) :: get_semisemi itms
+  in
+  let itms = get_semisemi itms in
+  let fmt_item c ctx ~prev:_ ~next (itm,semisemi) =
     let last = Option.is_none next in
-    let semisemi =
-      match (itm, next) with
-      | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
-      | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
-      | `Item _, Some (`Directive _, _) -> true
-      | _ -> force_semisemi && last
-    in
     match itm with
     | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c ~semisemi d
   in
-  let ast x = Tli x in
+  let ast (x, _) = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
 let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
