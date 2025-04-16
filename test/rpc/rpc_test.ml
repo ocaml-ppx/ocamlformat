@@ -75,13 +75,13 @@ let start ?versions () =
             0.18.0) is installed." )
   | x -> x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
-         state := Errored ;
-         log
-           "An error occured while initializing and configuring ocamlformat:\n\
-            %s\n\
-            %!"
-           msg ;
-         `No_process )
+      state := Errored ;
+      log
+        "An error occured while initializing and configuring ocamlformat:\n\
+         %s\n\
+         %!"
+        msg ;
+      `No_process )
 
 let get_client ?versions () =
   match !state with

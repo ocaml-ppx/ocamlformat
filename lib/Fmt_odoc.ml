@@ -494,8 +494,8 @@ let fmt_tag_args ?arg ?txt c tag =
   at $ str tag
   $ opt arg (fun x -> char ' ' $ x)
   $ opt txt (function
-      | [] -> noop
-      | x -> space_break $ hovbox 0 (fmt_nestable_block_elements c x) )
+    | [] -> noop
+    | x -> space_break $ hovbox 0 (fmt_nestable_block_elements c x) )
 
 let wrap_see = function
   | `Url -> wrap (str "<") (str ">")
