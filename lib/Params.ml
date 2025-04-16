@@ -83,27 +83,26 @@ let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
 let parens c ?disambiguate k = parens_if true c ?disambiguate k
 
 module Exp = struct
-
   (** Return [None] if [ctx0] is not an application or [ctx] is not one of its
     argument.
     Else, returns [lbl, exp, is_last] where [lbl] is the label of the argument,
     [exp] is the epxression in [ctx], and [is_last] is true if [exp] is the last
     argument.*)
-let ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 =
-  match (ctx, ctx0) with
-  | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
-      let last_lbl, last_arg = List.last_exn args in
-      if phys_equal last_arg exp then Some (last_lbl, exp, true)
-      else
-        List.find_map
-          ~f:(fun (lbl, x) ->
-            if phys_equal x exp then Some (lbl, exp, false) else None )
-          args
-  | _ -> None
+  let ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 =
+    match (ctx, ctx0) with
+    | Exp exp, Exp {pexp_desc= Pexp_apply (_, args); _} ->
+        let last_lbl, last_arg = List.last_exn args in
+        if phys_equal last_arg exp then Some (last_lbl, exp, true)
+        else
+          List.find_map
+            ~f:(fun (lbl, x) ->
+              if phys_equal x exp then Some (lbl, exp, false) else None )
+            args
+    | _ -> None
 
   let ctx_is_apply_and_exp_is_arg_with_label ~ctx ~ctx0 =
     match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with
-    | Some ((Labelled _  | Optional _), _ , _) -> true
+    | Some ((Labelled _ | Optional _), _, _) -> true
     | _ -> false
 
   let ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ~ctx0
@@ -346,12 +345,11 @@ let ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 =
       | Exp {pexp_desc= Pexp_ifthenelse _; _} -> false
       | _ -> true
 
-  let fun_label_sep (c: Conf.t) =
+  let fun_label_sep (c : Conf.t) =
     (* Break between the label and the fun to avoid ocp-indent's alignment.
-        If a label is present, arguments should be indented more than the
-        arrow and the eventually breaking [fun] keyword. *)
-    if c.fmt_opts.ocp_indent_compat.v then str ":" $ cut_break
-    else str ":"
+       If a label is present, arguments should be indented more than the
+       arrow and the eventually breaking [fun] keyword. *)
+    if c.fmt_opts.ocp_indent_compat.v then str ":" $ cut_break else str ":"
 end
 
 module Mod = struct

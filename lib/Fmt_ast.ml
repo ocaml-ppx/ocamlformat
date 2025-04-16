@@ -1508,7 +1508,9 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
     | _ :: _, _, Pfunction_cases _ -> true
     | _ -> false
   in
-  let has_label = Params.Exp.ctx_is_apply_and_exp_is_arg_with_label ~ctx ~ctx0 in
+  let has_label =
+    Params.Exp.ctx_is_apply_and_exp_is_arg_with_label ~ctx ~ctx0
+  in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
      before Sugar.fun_ is important. *)
@@ -1646,8 +1648,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
         $ hvbox_if has_cmts_outer 0
             ( cmts_outer
             $ Params.Exp.box_fun_decl ~ctx0 c.conf
-                ( pro_inner $ cmts_inner
-                $ opn_paren $ head ) ) )
+                (pro_inner $ cmts_inner $ opn_paren $ head) ) )
     in
     body ~pro $ cls_paren
   in
@@ -2006,9 +2007,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          str "%"
                          $ hovbox 2 (fmt_str_loc c name $ space_break $ x)
                          $ space_break )
-                        ~parens:false
-                       ~attrs:call.pexp_attributes ~loc:call.pexp_loc c
-                       (args, typ, body) ) )
+                       ~parens:false ~attrs:call.pexp_attributes
+                       ~loc:call.pexp_loc c (args, typ, body) ) )
              $ space_break $ str ";" $ space_break
              $ list grps (str " ;" $ force_break) fmt_grp ) )
   | Pexp_infix
@@ -2040,9 +2040,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          str "%"
                          $ hovbox 2 (fmt_str_loc c name $ space_break $ x)
                          $ space_break )
-                       ~parens:false
-                       ~attrs:retn.pexp_attributes ~loc:retn.pexp_loc c
-                       (args, typ, body) ) ) ) )
+                       ~parens:false ~attrs:retn.pexp_attributes
+                       ~loc:retn.pexp_loc c (args, typ, body) ) ) ) )
   | Pexp_infix ({txt= ":="; loc}, r, v)
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       let bol_indent = Params.Indent.assignment_operator_bol c.conf in
@@ -2119,8 +2118,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   $ space_break
                   $ hovbox 0 (fmt_str_loc c op $ space_break $ intro) )
                 $ fmt_or followed_by_infix_op force_break space_break )
-              ~attrs:r.pexp_attributes ~loc:r.pexp_loc c
-              (args, typ, body)
+              ~attrs:r.pexp_attributes ~loc:r.pexp_loc c (args, typ, body)
           $ fmt_if has_attr (str ")")
           $ fmt_atrs )
   | Pexp_infix _ ->
@@ -2240,9 +2238,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             let label_sep = Params.Exp.fun_label_sep c.conf in
             let pro = fmt_label lbl label_sep in
             fmt_function ~pro ~force_closing_paren ~ctx:inner_ctx ~ctx0:ctx
-              ~wrap_intro ~parens:true
-              ~attrs:last_arg.pexp_attributes ~loc:last_arg.pexp_loc c
-              (largs, ltyp, lbody)
+              ~wrap_intro ~parens:true ~attrs:last_arg.pexp_attributes
+              ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             ( expr_epi
@@ -2374,8 +2371,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let wrap_intro intro =
         hovbox ~name:"fmt_expression | Pexp_function" 2 intro $ space_break
       in
-      fmt_function ~pro ~wrap_intro ~box ~ctx ~ctx0 ~parens
-        ?ext ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
+      fmt_function ~pro ~wrap_intro ~box ~ctx ~ctx0 ~parens ?ext
+        ~attrs:pexp_attributes ~loc:pexp_loc c (args, typ, body)
   | Pexp_ident {txt; loc} ->
       let outer_parens = has_attr && parens in
       pro
@@ -4755,8 +4752,8 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
             let wrap_intro intro =
               hovbox 2 (fmt_opt pro $ intro) $ space_break
             in
-            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~attrs:[]
-              ~loc:lb_loc c ([], None, body)
+            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~attrs:[] ~loc:lb_loc c
+              ([], None, body)
         | Pfunction_body body ->
             fmt_expression c ?pro ?box (sub_exp ~ctx body)
       in
