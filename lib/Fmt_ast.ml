@@ -4482,20 +4482,22 @@ and fmt_structure c ctx itms =
     match itms with
     | [] -> []
     | item :: itms ->
-      let next_no_doc =
-        List.find itms
-          ~f:(function {pstr_desc=Pstr_attribute attr ; _} when Ast.Attr.is_doc attr -> false | _ -> true)
-      in
-      let semisemi =
-        match next_no_doc, item.pstr_desc with
-        | _, Pstr_attribute attr  when Ast.Attr.is_doc attr -> false
-        | Some _, Pstr_eval _
-        | Some ({pstr_desc= Pstr_eval _; _}), _ ->
-          (* Pstr_eval is always preceded and followed by ";;" *)
-          true
-        | _ -> false
-      in
-      (item, semisemi) :: get_semisemi itms
+        let next_no_doc =
+          List.find itms ~f:(function
+            | {pstr_desc= Pstr_attribute attr; _} when Ast.Attr.is_doc attr
+              ->
+                false
+            | _ -> true )
+        in
+        let semisemi =
+          match (next_no_doc, item.pstr_desc) with
+          | _, Pstr_attribute attr when Ast.Attr.is_doc attr -> false
+          | Some _, Pstr_eval _ | Some {pstr_desc= Pstr_eval _; _}, _ ->
+              (* Pstr_eval is always preceded and followed by ";;" *)
+              true
+          | _ -> false
+        in
+        (item, semisemi) :: get_semisemi itms
   in
   let itms = get_semisemi itms in
   let fmt_item c ctx ~prev:_ ~next (i, semisemi) =
@@ -4851,28 +4853,31 @@ let fmt_toplevel ?(force_semisemi = false) c ctx itms =
     match itms with
     | [] -> []
     | item :: itms ->
-      let next_no_doc =
-        List.find itms
-          ~f:(function
-            | `Item {pstr_desc=Pstr_attribute attr ; _} when Ast.Attr.is_doc attr -> false
-            | _ -> true)
-      in
-      let semisemi =
-        match item, next_no_doc with
-        | `Item {pstr_desc= Pstr_attribute attr; _}, _ when Ast.Attr.is_doc attr-> false
-        | `Item ({pstr_desc=Pstr_eval _;_}), Some _
-        | _, Some ( `Item {pstr_desc= Pstr_eval _; _}) ->
-          (* Pstr_eval is always preceded and followed by ";;" *)
-          true
-        | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
-        | `Item _, Some (`Directive _) -> true
-        | _, None -> force_semisemi
-        | _ -> false
-      in
-      (item, semisemi) :: get_semisemi itms
+        let next_no_doc =
+          List.find itms ~f:(function
+            | `Item {pstr_desc= Pstr_attribute attr; _}
+              when Ast.Attr.is_doc attr ->
+                false
+            | _ -> true )
+        in
+        let semisemi =
+          match (item, next_no_doc) with
+          | `Item {pstr_desc= Pstr_attribute attr; _}, _
+            when Ast.Attr.is_doc attr ->
+              false
+          | `Item {pstr_desc= Pstr_eval _; _}, Some _
+           |_, Some (`Item {pstr_desc= Pstr_eval _; _}) ->
+              (* Pstr_eval is always preceded and followed by ";;" *)
+              true
+          | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
+          | `Item _, Some (`Directive _) -> true
+          | _, None -> force_semisemi
+          | _ -> false
+        in
+        (item, semisemi) :: get_semisemi itms
   in
   let itms = get_semisemi itms in
-  let fmt_item c ctx ~prev:_ ~next (itm,semisemi) =
+  let fmt_item c ctx ~prev:_ ~next (itm, semisemi) =
     let last = Option.is_none next in
     match itm with
     | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
