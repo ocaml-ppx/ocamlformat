@@ -1500,12 +1500,16 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
-    ~wrap_intro ?box:(should_box = true) ~label ?(parens = false) ~attrs
+and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro
+    ~wrap_intro ?box:(should_box = true) ?(parens = false) ~attrs
     ~infix_ext_attrs ~loc c (args, typ, body) =
   let has_outer_attrs = not (List.is_empty attrs) in
   let attr_parens = parens && has_outer_attrs in
   let parens = parens || has_outer_attrs in
+  let last_arg =
+    Params.Exp.ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple
+      c.conf ~ctx ~ctx0
+  in
   let should_box =
     should_box
     ||
@@ -1513,7 +1517,9 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
     | _ :: _, _, Pfunction_cases _ -> true
     | _ -> false
   in
-  let has_label = match label with Nolabel -> false | _ -> true in
+  let has_label =
+    Params.Exp.ctx_is_apply_and_exp_is_arg_with_label ~ctx ~ctx0
+  in
   (* Make sure the comment is placed after the eventual label but not into
      the inner box if no label is present. Side effects of Cmts.fmt c.cmts
      before Sugar.fun_ is important. *)
@@ -1524,13 +1530,6 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
     if has_label then (false, noop, cmts) else (has_cmts, cmts, noop)
   in
   let break_fun = Params.Exp.break_fun_kw c.conf ~ctx ~ctx0 ~last_arg in
-  let (label_sep : t) =
-    (* Break between the label and the fun to avoid ocp-indent's alignment.
-       If a label is present, arguments should be indented more than the
-       arrow and the eventually breaking [fun] keyword. *)
-    if c.conf.fmt_opts.ocp_indent_compat.v then str ":" $ cut_break
-    else str ":"
-  in
   let fmt_typ typ = fmt_type_pcstr c ~ctx ~constraint_ctx:`Fun typ in
   let fmt_fun_args_typ args typ =
     let kw =
@@ -1666,7 +1665,7 @@ and fmt_function ?(last_arg = false) ?force_closing_paren ~ctx ~ctx0 ?pro
         $ hvbox_if has_cmts_outer 0
             ( cmts_outer
             $ Params.Exp.box_fun_decl ~ctx0 c.conf
-                ( pro_inner $ fmt_label label label_sep $ cmts_inner
+                ( pro_inner $ cmts_inner
                 $ opn_attr_paren $ opn_paren $ head ) ) )
     in
     body ~pro $ cls_paren
@@ -1710,7 +1709,9 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   | ( (Labelled _ | Optional _)
     , Pexp_function (args, typ, body, infix_ext_attrs) ) ->
       let wrap_intro x = hovbox 2 x $ space_break in
-      fmt_function ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx ~label:lbl
+      let label_sep = Params.Exp.fun_label_sep c.conf in
+      let pro = fmt_label lbl label_sep in
+      fmt_function ~pro ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx
         ~parens:true ~attrs:arg.pexp_attributes ~infix_ext_attrs
         ~loc:arg.pexp_loc c (args, typ, body)
   | _ ->
@@ -2039,7 +2040,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          str "%"
                          $ hovbox 2 (fmt_str_loc c name $ space_break $ x)
                          $ space_break )
-                       ~label:Nolabel ~parens:false
+                       ~parens:false
                        ~attrs:call.pexp_attributes ~infix_ext_attrs
                        ~loc:call.pexp_loc c (args, typ, body) ) )
              $ space_break $ str ";"
@@ -2078,7 +2079,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                        str "%"
                        $ hovbox 2 (fmt_str_loc c name $ space_break $ x)
                        $ space_break )
-                     ~label:Nolabel ~parens:false ~attrs:retn.pexp_attributes
+                     ~parens:false ~attrs:retn.pexp_attributes
                      ~infix_ext_attrs ~loc:retn.pexp_loc c (args, typ, body)
                  $ str "]" ) ) )
   | Pexp_infix ({txt= ":="; loc}, r, v)
@@ -2161,7 +2162,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   $ space_break
                   $ hovbox 0 (fmt_str_loc c op $ space_break $ intro) )
                 $ fmt_or followed_by_infix_op force_break space_break )
-              ~label:Nolabel ~attrs:r.pexp_attributes ~infix_ext_attrs
+              ~attrs:r.pexp_attributes ~infix_ext_attrs
               ~loc:r.pexp_loc c (args, typ, body)
           $ fmt_if has_attr (str ")")
           $ fmt_atrs )
@@ -2279,8 +2280,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               then Fit
               else Break
             in
-            fmt_function ~last_arg:true ~force_closing_paren ~ctx:inner_ctx
-              ~ctx0:ctx ~wrap_intro ~label:lbl ~parens:true
+            let label_sep = Params.Exp.fun_label_sep c.conf in
+            let pro = fmt_label lbl label_sep in
+            fmt_function ~pro ~force_closing_paren ~ctx:inner_ctx
+              ~ctx0:ctx ~wrap_intro ~parens:true
               ~attrs:last_arg.pexp_attributes ~infix_ext_attrs
               ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
@@ -2414,7 +2417,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let wrap_intro intro =
         hovbox ~name:"fmt_expression | Pexp_function" 2 intro $ space_break
       in
-      fmt_function ~pro ~wrap_intro ~box ~ctx ~ctx0 ~label:Nolabel ~parens
+      fmt_function ~pro ~wrap_intro ~box ~ctx ~ctx0 ~parens
         ~attrs:pexp_attributes ~infix_ext_attrs ~loc:pexp_loc c
         (args, typ, body)
   | Pexp_ident {txt; loc} ->
@@ -4477,21 +4480,38 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
       }
 
 and fmt_structure c ctx itms =
-  let update_config c i =
+  let update_config c (i, _) =
     match i.pstr_desc with
     | Pstr_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next i =
-    let semisemi =
-      match next with
-      | Some ({pstr_desc= Pstr_eval _; _}, _) -> true
-      | _ -> false
-    in
+  let rec get_semisemi itms =
+    match itms with
+    | [] -> []
+    | item :: itms ->
+        let next_no_doc =
+          List.find itms ~f:(function
+            | {pstr_desc= Pstr_attribute attr; _} when Ast.Attr.is_doc attr
+              ->
+                false
+            | _ -> true )
+        in
+        let semisemi =
+          match (next_no_doc, item.pstr_desc) with
+          | _, Pstr_attribute attr when Ast.Attr.is_doc attr -> false
+          | Some _, Pstr_eval _ | Some {pstr_desc= Pstr_eval _; _}, _ ->
+              (* Pstr_eval is always preceded and followed by ";;" *)
+              true
+          | _ -> false
+        in
+        (item, semisemi) :: get_semisemi itms
+  in
+  let itms = get_semisemi itms in
+  let fmt_item c ctx ~prev:_ ~next (i, semisemi) =
     fmt_structure_item c ~last:(Option.is_none next) ~semisemi
       (sub_str ~ctx i)
   in
-  let ast x = Str x in
+  let ast (x, _) = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?eq rec_flag decls ctx =
@@ -4514,12 +4534,6 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
-  let semisemi =
-    match si.pstr_desc with
-    | Pstr_eval _ when not last_item -> true
-    | Pstr_attribute attr when Ast.Attr.is_doc attr -> false
-    | _ -> semisemi
-  in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"
@@ -4758,7 +4772,7 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
             let wrap_intro intro =
               hovbox 2 (fmt_opt pro $ intro) $ space_break
             in
-            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~label:Nolabel ~attrs:[]
+            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~attrs:[]
               ~loc:lb_loc c ([], None, body)
               ~infix_ext_attrs:
                 { (* The infix ext and attrs are stored in Pfunction_cases. *)
@@ -4843,23 +4857,44 @@ let flatten_ptop =
 let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   let itms = flatten_ptop itms in
   let update_config c = function
-    | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
+    | `Item {pstr_desc= Pstr_attribute atr; _}, _ -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next itm =
+  let rec get_semisemi itms =
+    match itms with
+    | [] -> []
+    | item :: itms ->
+        let next_no_doc =
+          List.find itms ~f:(function
+            | `Item {pstr_desc= Pstr_attribute attr; _}
+              when Ast.Attr.is_doc attr ->
+                false
+            | _ -> true )
+        in
+        let semisemi =
+          match (item, next_no_doc) with
+          | `Item {pstr_desc= Pstr_attribute attr; _}, _
+            when Ast.Attr.is_doc attr ->
+              false
+          | `Item {pstr_desc= Pstr_eval _; _}, Some _
+           |_, Some (`Item {pstr_desc= Pstr_eval _; _}) ->
+              (* Pstr_eval is always preceded and followed by ";;" *)
+              true
+          | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
+          | `Item _, Some (`Directive _) -> true
+          | _, None -> force_semisemi
+          | _ -> false
+        in
+        (item, semisemi) :: get_semisemi itms
+  in
+  let itms = get_semisemi itms in
+  let fmt_item c ctx ~prev:_ ~next (itm, semisemi) =
     let last = Option.is_none next in
-    let semisemi =
-      match (itm, next) with
-      | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
-      | `Item {pstr_desc= Pstr_attribute _; _}, _ -> false
-      | `Item _, Some (`Directive _, _) -> true
-      | _ -> force_semisemi && last
-    in
     match itm with
     | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c ~semisemi d
   in
-  let ast x = Tli x in
+  let ast (x, _) = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
 let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
