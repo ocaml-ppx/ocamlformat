@@ -94,8 +94,7 @@ let add_edge target dep =
       edge_count
       target
       (1
-       +
-       try Hashtbl.find edge_count target with
+       + try Hashtbl.find edge_count target with
        | Not_found -> 0);
     if not (Hashtbl.mem edge_count dep) then Hashtbl.add edge_count dep 0)
 ;;

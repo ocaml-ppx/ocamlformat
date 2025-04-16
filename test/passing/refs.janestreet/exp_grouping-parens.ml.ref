@@ -608,8 +608,7 @@ let _ =
 
 let _ =
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-  |>>>>>
-  match xxxxxxx with
+  |>>>>> match xxxxxxx with
   | A -> xxxxxxxxxxxxxxxxxxxxxxx
   | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
 ;;
@@ -623,16 +622,14 @@ let _ =
 
 let main =
   Lwt.run
-  @@
-  match a with
+  @@ match a with
   | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbb
 ;;
 
 let main =
   Lwt.run
-  @@
-  match%lwt a with
+  @@ match%lwt a with
   | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbb
 ;;

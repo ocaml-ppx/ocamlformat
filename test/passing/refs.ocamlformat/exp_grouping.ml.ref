@@ -605,8 +605,7 @@ let _ =
 
 let main =
   Lwt.run
-  @@
-  match a with
+  @@ match a with
   | A ->
       aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B ->
@@ -614,8 +613,7 @@ let main =
 
 let main =
   Lwt.run
-  @@
-  match%lwt a with
+  @@ match%lwt a with
   | A ->
       aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B ->

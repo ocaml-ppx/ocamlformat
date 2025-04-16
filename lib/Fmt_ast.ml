@@ -1877,7 +1877,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
     else
       match xarg.ast.pexp_desc with
-      | Pexp_function _ | Pexp_beginend _ ->
+      | Pexp_function _ | Pexp_beginend _ | Pexp_match _ ->
           hvbox 0 (fmt_expression c ~pro ~parens xarg)
       | _ ->
           hvbox 0
@@ -1950,7 +1950,7 @@ and fmt_match c ?pro ?eol ~loc ~parens ~infix_ext_attrs ctx xexp cs e0
   let indent = Params.match_indent c.conf ~parens ~ctx:ctx0 in
   let pro_outer, pro_inner =
     let pro = fmt_opt pro in
-    if Params.Exp.match_inner_pro ~ctx0 ~parens then (noop, pro)
+    if Params.Exp.match_inner_pro ~parens then (noop, pro)
     else (pro, noop)
   in
   hvbox indent
@@ -2643,7 +2643,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let parens = parens || has_attr in
       let cmts_before = Cmts.fmt_before c ?eol pexp_loc in
       let pro_outer, pro_inner =
-        if Params.Exp.match_inner_pro ~ctx0 ~parens then (noop, pro)
+        if Params.Exp.match_inner_pro ~parens then (noop, pro)
         else (pro, noop)
       in
       (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)

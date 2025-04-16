@@ -122,8 +122,7 @@ let () =
 
 let _ =
   f arg arg arg
-  @@
-  match f with
+  @@ match f with
   | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbb
 
