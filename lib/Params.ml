@@ -326,9 +326,7 @@ module Exp = struct
     | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
 
-  let match_inner_pro ~parens =
-     not parens
-
+  let match_inner_pro ~parens = not parens
 
   let function_inner_pro ~has_cmts_outer ~ctx0 =
     if has_cmts_outer then false

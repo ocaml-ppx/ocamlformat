@@ -423,8 +423,7 @@ module Structure_item = struct
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pstr_loc i2.pstr_loc
     || has_doc i1 || has_doc i2
-    ||
-    match
+    || match
       Conf.
         (c1.fmt_opts.module_item_spacing.v, c2.fmt_opts.module_item_spacing.v)
     with
@@ -509,8 +508,7 @@ module Signature_item = struct
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.psig_loc i2.psig_loc
     || has_doc i1 || has_doc i2
-    ||
-    match
+    || match
       Conf.
         (c1.fmt_opts.module_item_spacing.v, c2.fmt_opts.module_item_spacing.v)
     with
@@ -576,8 +574,7 @@ module Td = struct
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.ptype_loc i2.ptype_loc
     || has_doc i1 || has_doc i2
-    ||
-    match
+    || match
       Conf.
         (c1.fmt_opts.module_item_spacing.v, c2.fmt_opts.module_item_spacing.v)
     with
@@ -590,8 +587,7 @@ end
 module Class_field = struct
   let has_doc itm =
     List.exists ~f:Attr.is_doc itm.pcf_attributes
-    ||
-    match itm.pcf_desc with
+    || match itm.pcf_desc with
     | Pcf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
@@ -604,8 +600,7 @@ module Class_field = struct
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pcf_loc i2.pcf_loc
     || has_doc i1 || has_doc i2
-    ||
-    match
+    || match
       Conf.
         (c1.fmt_opts.module_item_spacing.v, c2.fmt_opts.module_item_spacing.v)
     with
@@ -617,8 +612,7 @@ end
 module Class_type_field = struct
   let has_doc itm =
     List.exists ~f:Attr.is_doc itm.pctf_attributes
-    ||
-    match itm.pctf_desc with
+    || match itm.pctf_desc with
     | Pctf_attribute atr -> Attr.is_doc atr
     | _ -> false
 
@@ -631,8 +625,7 @@ module Class_type_field = struct
   let break_between s cc (i1, c1) (i2, c2) =
     cmts_between s cc i1.pctf_loc i2.pctf_loc
     || has_doc i1 || has_doc i2
-    ||
-    match
+    || match
       Conf.
         (c1.fmt_opts.module_item_spacing.v, c2.fmt_opts.module_item_spacing.v)
     with
@@ -939,16 +932,14 @@ end = struct
     in
     let check_class_type {pci_expr= {pcty_desc; _}; pci_params; _} =
       List.exists pci_params ~f:(fun (t, _) -> t == typ)
-      ||
-      match pcty_desc with
+      || match pcty_desc with
       | Pcty_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
       | Pcty_arrow (t, _) -> List.exists t ~f:(fun x -> x.pap_type == typ)
       | _ -> false
     in
     let check_class_expr {pci_expr= {pcl_desc; _}; pci_params; _} =
       List.exists pci_params ~f:(fun (t, _) -> t == typ)
-      ||
-      match pcl_desc with
+      || match pcl_desc with
       | Pcl_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
       | _ -> false
     in
@@ -997,12 +988,12 @@ end = struct
           || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
                  typ == t1 || typ == t2 )
           || ( match ptype_kind with
-             | Ptype_variant cd1N ->
-                 List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
-                     check_cstr pcd_args || Option.exists pcd_res ~f )
-             | Ptype_record ld1N ->
-                 List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
-             | _ -> false )
+          | Ptype_variant cd1N ->
+              List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
+                  check_cstr pcd_args || Option.exists pcd_res ~f )
+          | Ptype_record ld1N ->
+              List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
+          | _ -> false )
           || Option.exists ptype_manifest ~f )
     | Cty {pcty_desc; _} ->
         assert (
@@ -1218,16 +1209,14 @@ end = struct
     let check_extensions = function PPat (p, _) -> p == pat | _ -> false in
     let check_subpat ppat =
       ppat == pat
-      ||
-      match ppat.ppat_desc with
+      || match ppat.ppat_desc with
       | Ppat_constraint (p, _) -> p == pat
       | _ -> false
     in
     let check_cases = List.exists ~f:(fun c -> c.pc_lhs == pat) in
     let check_binding {pvb_pat; pvb_body; _} =
       check_subpat pvb_pat
-      ||
-      match pvb_body with
+      || match pvb_body with
       | Pfunction_body _ -> false
       | Pfunction_cases (cases, _, _) -> check_cases cases
     in
@@ -1539,8 +1528,8 @@ end = struct
     | Pexp_indexop_access {pia_lhs; pia_kind; pia_rhs= None; _} ->
         Exp.is_trivial pia_lhs
         && ( match pia_kind with
-           | Builtin idx -> Exp.is_trivial idx
-           | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
+        | Builtin idx -> Exp.is_trivial idx
+        | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
     | Pexp_prefix (_, e) -> Exp.is_trivial e && fit_margin c (width xexp)
     | Pexp_infix ({txt= ":="; _}, _, _) -> false
@@ -1865,8 +1854,7 @@ end = struct
       parenthesized in context [ctx]. *)
   let parenze_mty {ctx; ast= mty} =
     Mty.has_trailing_attributes mty
-    ||
-    match (ctx, mty.pmty_desc) with
+    || match (ctx, mty.pmty_desc) with
     | Mty {pmty_desc= Pmty_with _; _}, Pmty_with _ -> true
     | _ -> false
 
@@ -1874,8 +1862,7 @@ end = struct
       parenthesized in context [ctx]. *)
   let parenze_mod {ctx; ast= m} =
     Mod.has_trailing_attributes m
-    ||
-    match (ctx, m.pmod_desc) with
+    || match (ctx, m.pmod_desc) with
     (* The RHS of an application is always parenthesized already. *)
     | Mod {pmod_desc= Pmod_apply (_, x); _}, Pmod_functor _ when m == x ->
         false
@@ -1895,8 +1882,7 @@ end = struct
     let parenze_pat_in_binding ~constraint_ =
       (* Some patterns must be parenthesed when followed by a colon. *)
       (exposed_right_colon pat && Option.is_some constraint_)
-      ||
-      match pat.ppat_desc with
+      || match pat.ppat_desc with
       | Ppat_construct (_, Some _)
        |Ppat_variant (_, Some _)
        |Ppat_cons _ | Ppat_alias _ | Ppat_or _ ->
@@ -1923,8 +1909,7 @@ end = struct
   let parenze_pat ({ctx; ast= pat} as xpat) =
     assert_check_pat xpat ;
     Pat.has_trailing_attributes pat
-    ||
-    match (ctx, pat.ppat_desc) with
+    || match (ctx, pat.ppat_desc) with
     | Pat {ppat_desc= Ppat_cons pl; _}, Ppat_cons _
       when List.last_exn pl == pat ->
         false
@@ -2260,8 +2245,7 @@ end = struct
     assert_check_exp xexp ;
     Hashtbl.find marked_parenzed_inner_nested_match exp
     |> Option.value ~default:false
-    ||
-    match (ctx, exp) with
+    || match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
     | Lb pvb, _ when dont_parenze_exp_in_bindings [pvb] exp -> false
     | Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}, _
