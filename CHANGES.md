@@ -48,7 +48,7 @@ profile. This started with version 0.26.0.
 
 - \* Fix crash due to `;;` handling. Now `;;` is added at the of every
   toplevel-expression, except if its the last thing in the struct
-  (#2683, @EmileTrotignon) For example:
+  (#2683, #2691, @EmileTrotignon) For example:
   ```ocaml
   (* before *)
   print_endline "foo"
