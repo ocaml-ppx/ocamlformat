@@ -145,3 +145,20 @@ let () =
         cc cccc cccc cccc cccc ccc cccccc cccc
     | [] ->
         ff dda asa
+
+let _ =
+  f arg arg arg
+  @@
+  match f with
+  | A ->
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B ->
+      bbbbbbbbbbbbbbbbbbbbbb
+
+let _ =
+  f arg arg arg
+  @@ function
+  | A ->
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B ->
+      bbbbbbbbbbbbbbbbbbbbbb
