@@ -1500,9 +1500,9 @@ and fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x =
 
 (** Format a [Pexp_function]. [wrap_intro] wraps up to after the [->] and is
     responsible for breaking. *)
-and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro
-    ~wrap_intro ?box:(should_box = true) ?(parens = false) ~attrs
-    ~infix_ext_attrs ~loc c (args, typ, body) =
+and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
+    ?box:(should_box = true) ?(parens = false) ~attrs ~infix_ext_attrs ~loc c
+    (args, typ, body) =
   let has_outer_attrs = not (List.is_empty attrs) in
   let attr_parens = parens && has_outer_attrs in
   let parens = parens || has_outer_attrs in
@@ -1665,8 +1665,8 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro
         $ hvbox_if has_cmts_outer 0
             ( cmts_outer
             $ Params.Exp.box_fun_decl ~ctx0 c.conf
-                ( pro_inner $ cmts_inner
-                $ opn_attr_paren $ opn_paren $ head ) ) )
+                (pro_inner $ cmts_inner $ opn_attr_paren $ opn_paren $ head)
+            ) )
     in
     body ~pro $ cls_paren
     $ fmt_attributes c ~pre:Space attrs
@@ -2040,9 +2040,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          str "%"
                          $ hovbox 2 (fmt_str_loc c name $ space_break $ x)
                          $ space_break )
-                       ~parens:false
-                       ~attrs:call.pexp_attributes ~infix_ext_attrs
-                       ~loc:call.pexp_loc c (args, typ, body) ) )
+                       ~parens:false ~attrs:call.pexp_attributes
+                       ~infix_ext_attrs ~loc:call.pexp_loc c (args, typ, body) ) )
              $ space_break $ str ";"
              $ fmt_extension_suffix c ext
              $ space_break
@@ -2162,8 +2161,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   $ space_break
                   $ hovbox 0 (fmt_str_loc c op $ space_break $ intro) )
                 $ fmt_or followed_by_infix_op force_break space_break )
-              ~attrs:r.pexp_attributes ~infix_ext_attrs
-              ~loc:r.pexp_loc c (args, typ, body)
+              ~attrs:r.pexp_attributes ~infix_ext_attrs ~loc:r.pexp_loc c
+              (args, typ, body)
           $ fmt_if has_attr (str ")")
           $ fmt_atrs )
   | Pexp_infix _ ->
@@ -2282,10 +2281,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             in
             let label_sep = Params.Exp.fun_label_sep c.conf in
             let pro = fmt_label lbl label_sep in
-            fmt_function ~pro ~force_closing_paren ~ctx:inner_ctx
-              ~ctx0:ctx ~wrap_intro ~parens:true
-              ~attrs:last_arg.pexp_attributes ~infix_ext_attrs
-              ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
+            fmt_function ~pro ~force_closing_paren ~ctx:inner_ctx ~ctx0:ctx
+              ~wrap_intro ~parens:true ~attrs:last_arg.pexp_attributes
+              ~infix_ext_attrs ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
             ( expr_epi
@@ -4772,8 +4770,8 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
             let wrap_intro intro =
               hovbox 2 (fmt_opt pro $ intro) $ space_break
             in
-            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~attrs:[]
-              ~loc:lb_loc c ([], None, body)
+            fmt_function ~ctx ~ctx0 ~wrap_intro ?box ~attrs:[] ~loc:lb_loc c
+              ([], None, body)
               ~infix_ext_attrs:
                 { (* The infix ext and attrs are stored in Pfunction_cases. *)
                   infix_ext= None
