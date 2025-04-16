@@ -46,20 +46,8 @@ profile. This started with version 0.26.0.
 - \* Fix double parens around module constraint in functor application :
   `module M = F ((A : T))` becomes `module M = F (A : T)`. (#2678, @EmileTrotignon)
 
-- \* Fix crash due to `;;` handling. Now `;;` is added at the of every
-  toplevel-expression, except if its the last thing in the struct
-  (#2683, #2691, @EmileTrotignon) For example:
-  ```ocaml
-  (* before *)
-  print_endline "foo"
-
-  let a = 3
-
-  (* after *)
-  print_endline "foo" ;;
-
-  let a = 3
-  ```
+- Fix misplaced `;;` due to interaction with floating doc comments.
+  (#2691, @EmileTrotignon)
 
 ### Changed
 
@@ -80,6 +68,18 @@ profile. This started with version 0.26.0.
   ```
 
 - \* `break-struct=natural` now also applies to `sig ... end`. (#2682, @EmileTrotignon)
+
+- \* `;;` is added at the of every toplevel-expression, except if its the last
+  thing in the struct (#2683, @EmileTrotignon) For example:
+  ```ocaml
+  (* before *)
+  print_endline "foo"
+  let a = 3
+
+  (* after *)
+  print_endline "foo" ;;
+  let a = 3
+  ```
 
 ## 0.27.0
 
