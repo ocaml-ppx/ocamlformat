@@ -534,6 +534,7 @@ f
   else
     ()
   end
+;;
 
 let () =
   f

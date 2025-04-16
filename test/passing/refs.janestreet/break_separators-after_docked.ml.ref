@@ -183,6 +183,7 @@ Fooooooo.foo
        "foooooo", foooooooo;
        "fooooooooo", foooooooo;
      ])
+;;
 
 class
   ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb] x =

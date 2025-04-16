@@ -1,6 +1,7 @@
 match fooooooooooooooooooooooo with
     | fooooooooooooooooooooooo ->
         foooooooooooooooooooooooooo
+;;
 
 let foooooooo =
   match fooooooooooooooooooooooo with

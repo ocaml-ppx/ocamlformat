@@ -229,6 +229,7 @@ end
 {<(* check: e is effectively the index associated with e, and check that
       already in *)
    x = y>}
+;;
 
 class type a = b[@attr]
 class type a = object end[@attr]

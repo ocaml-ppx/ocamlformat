@@ -134,6 +134,7 @@ f
     (* comment *)
     | false -> ())
   ()
+;;
 
 let _ = fun (x : int as 'a) -> (x : int as 'a)
 

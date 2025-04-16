@@ -46,6 +46,7 @@ match x with
     ()
 | _ ->
     ()
+;;
 
 let is_sequence exp =
   match exp.pexp_desc with

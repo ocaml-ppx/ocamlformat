@@ -61,6 +61,7 @@ match x with
   when fffffffffffffff bbbbbbbbbb yyyyyyyyyy ->
     ()
 | _ -> ()
+;;
 
 let is_sequence exp =
   match exp.pexp_desc with

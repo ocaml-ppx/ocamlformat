@@ -4510,6 +4510,12 @@ and fmt_structure_item c ~last:last_item ~semisemi {ctx= parent_ctx; ast= si}
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
+  let semisemi =
+    match si.pstr_desc with
+    | Pstr_eval _ when not last_item -> true
+    | Pstr_attribute attr when Ast.Attr.is_doc attr -> false
+    | _ -> semisemi
+  in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"

@@ -1,4 +1,4 @@
-[%foo type[@foo] t = < .. > ]
+[%foo type[@foo] t = < .. > ] ;;
 
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
 
@@ -83,7 +83,7 @@ let[@inline] i = fun [@inline] x -> x ;;
 
 if [@test] true then () else () ;;
 
-if [@test] true then () else if [@test] true then () else ()
+if [@test] true then () else if [@test] true then () else () ;;
 
 let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test])
 
@@ -272,7 +272,7 @@ let _ = f ((a.*?!@{b} <- c) [@a]) ;;
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
    (dropped parentheses around tuples with attributes). *)
 
-(0, 0) [@a]
+(0, 0) [@a] ;;
 
 let _ = ((0, 0) [@a])
 
@@ -284,6 +284,7 @@ let _ = f ((0, 0) [@a]) ;;
 ( a________________________________________
 , b________________________________________ )
 [@a]
+;;
 
 let _ =
   f
@@ -351,6 +352,7 @@ let (M.(A | B) [@attr]) = () ;;
 
 {a____________________________________= b___________________________________}
 [@attr]
+;;
 
 let _ =
   (match[@ocaml.warning "-4"] bar with _ -> ()) ;
@@ -456,6 +458,6 @@ let () =
   ()
 ;;
 
-M.(Some x) [@foo]
+M.(Some x) [@foo] ;;
 
 [@@@foo:]

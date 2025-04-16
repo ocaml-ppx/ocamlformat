@@ -52,6 +52,7 @@ f
     then ()
     else ()
   )
+;;
 
 let () =
   f
