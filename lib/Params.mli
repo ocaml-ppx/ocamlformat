@@ -92,6 +92,14 @@ module Exp : sig
   val ifthenelse_inner_pro : parens:bool -> ctx0:Ast.t -> bool
   (** whether the [pro] argument should be displayed as an inner or outer
         prologue when printing [Pexp_ifthenelse]. *)
+
+  val ctx_is_apply_and_exp_is_arg_with_label :
+    ctx:Ast.t -> ctx0:Ast.t -> bool
+
+  val ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple :
+    Conf_t.t -> ctx:Ast.t -> ctx0:Ast.t -> bool
+
+  val fun_label_sep : Conf.t -> Fmt.t
 end
 
 module Mod : sig
