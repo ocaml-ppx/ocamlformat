@@ -591,3 +591,25 @@ let _ =
     ~last
     ~args
 ;;
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> fun xxxxxxx ->
+  xxxxxxxxxxxxxxxxxxxxxxx;
+  aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+;;
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>>
+  match xxxxxxx with
+  | A -> xxxxxxxxxxxxxxxxxxxxxxx
+  | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+;;
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>>
+  (xxxxxxxxxxxxxxxxxxxxxxx;
+   aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa)
+;;
