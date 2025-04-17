@@ -1873,7 +1873,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       ((not very_last) && exposed_right_exp Ast.Non_apply xarg.ast)
       || parenze_exp xarg
     in
-    if Params.Exp.Infix_op_arg.dock c.conf xarg then
+    if Params.Exp.Infix_op_arg.dock xarg then
       (* Indentation of docked fun or function start before the operator. *)
       hovbox ~name:"Infix_op_arg docked" 2
         (fmt_expression c ~parens ~box:false ~pro xarg)
@@ -2247,8 +2247,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
            parenthesis. *)
         let dock_fun_arg =
           (* Do not dock the arguments when there's more than one. *)
-          (not c.conf.fmt_opts.ocp_indent_compat.v)
-          || Location.line_difference e0.pexp_loc last_arg.pexp_loc = 0
+          Location.line_difference e0.pexp_loc last_arg.pexp_loc = 0
         in
         if parens || not dock_fun_arg then (noop, pro) else (pro, noop)
       in
