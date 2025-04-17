@@ -44,8 +44,7 @@ let 0 =
 
 let _ =
   a
-  ||
-  match a with
+  || match a with
   | a -> true
   | b -> false
 ;;

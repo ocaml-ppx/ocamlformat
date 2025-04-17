@@ -608,8 +608,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | group ->
              list group force_break (fun cmt ->
                  wrap (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
-         $
-         match next with
+         $ match next with
          | Some (next :: _) ->
              let last = List.last_exn group in
              fmt_if
