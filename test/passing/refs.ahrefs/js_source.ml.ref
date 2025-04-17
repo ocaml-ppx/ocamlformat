@@ -316,16 +316,16 @@ let x =
 let x =
   some_value
   |> some_fun (fun x ->
-       do_something ();
-       do_something_else ();
-       return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
 
 let x =
   some_value
   ^ some_fun (fun x ->
-      do_something ();
-      do_something_else ();
-      return_this_value)
+    do_something ();
+    do_something_else ();
+    return_this_value)
 
 let bind t ~f =
   unfold_step
@@ -425,20 +425,20 @@ let _ =
 let _ =
   foo
   |> List.map ~f:(fun x ->
-       do_something ();
-       do_something ();
-       do_something ();
-       do_something ();
-       do_something_else ())
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
 
 let _ =
   foo
   |> List.map ~f:(fun x ->
-       do_something ();
-       do_something ();
-       do_something ();
-       do_something ();
-       do_something_else ())
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something ();
+    do_something_else ())
   |> bar
 
 let _ =
@@ -451,11 +451,11 @@ let _ = foo |> List.map (function A -> do_something ())
 let _ =
   foo
   |> List.map (function
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something_else ())
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
   |> bar
 
 let _ =
@@ -495,15 +495,15 @@ end
 let _ =
   foo
   $$ (match group with
-     | [] -> impossible "previous match"
-     | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
+    | [] -> impossible "previous match"
+    | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
   $$ bar
 
 let _ =
   foo
   $$ (try group with
-     | [] -> impossible "previous match"
-     | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
+    | [] -> impossible "previous match"
+    | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
   $$ bar
 
 let _ =
@@ -791,7 +791,7 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-       | foo -> bar)
+    | foo -> bar)
 
 let _ =
   fooooooooooooooooooooooooooooooo

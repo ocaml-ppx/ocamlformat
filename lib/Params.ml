@@ -138,9 +138,7 @@ module Exp = struct
           k
       else k
 
-    let dock (c : Conf.t) xarg =
-      if not c.fmt_opts.ocp_indent_compat.v then false
-      else
+    let dock xarg =
         match xarg.ast.pexp_desc with
         | Pexp_apply (_, args) -> (
           (* Rhs is an apply and it ends with a [fun]. *)
@@ -250,7 +248,10 @@ module Exp = struct
             match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with
             | Some (Nolabel, fun_exp, is_last_arg) ->
                 if begins_line fun_exp.pexp_loc then
-                  if is_last_arg then 5 else 3
+                  if is_last_arg then 5 else
+                  (* TODO Is this branch dead ? Changing the value doesn't
+                   change anything in the test suite. *)
+                    3
                 else 2
             | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
                 if begins_line fun_exp.pexp_loc then
@@ -986,8 +987,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
 let match_indent ?(default = 0) (c : Conf.t) ~parens ~(ctx : Ast.t) =
   match (c.fmt_opts.match_indent_nested.v, ctx) with
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.fmt_opts.match_indent.v
-  | _, Exp {pexp_desc= Pexp_infix _; _}
-    when c.fmt_opts.ocp_indent_compat.v && parens ->
+  | _, Exp {pexp_desc= Pexp_infix _; _} when parens ->
       2 (* Match is docked *)
   | _ -> default
 
