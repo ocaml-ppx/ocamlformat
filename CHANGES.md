@@ -69,10 +69,11 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
-- \* `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match` and
-  `begin fun` can now be printed on the same line, with one less indentation
-  level for the body of the inner expression. (#2664, #2666, #2671, #2672,
-  #2681, #2685, @EmileTrotignon) For example :
+- `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
+  `begin fun` and `map li begin fun`  can now be printed on the same line, with
+  one less indentation level for the body of the inner expression.
+  (#2664, #2666, #2671, #2672, #2681, #2685, #2693, @EmileTrotignon)
+  For example :
   ```ocaml
   (* before *)
   begin
