@@ -144,6 +144,7 @@ type cases =
 
 val get_cases :
      Conf.t
+  -> fmt_infix_ext_attrs:(pro:Fmt.t -> infix_ext_attrs -> Fmt.t)
   -> ctx:Ast.t
   -> first:bool
   -> last:bool
@@ -211,8 +212,8 @@ val get_if_then_else :
   -> xcond:expression Ast.xt option
   -> xbch:expression Ast.xt
   -> expr_loc:Location.t
-  -> fmt_extension_suffix:Fmt.t option
-  -> fmt_attributes:Fmt.t
+  -> fmt_infix_ext_attrs:(pro:Fmt.t -> infix_ext_attrs -> Fmt.t)
+  -> infix_ext_attrs:infix_ext_attrs
   -> fmt_cond:(expression Ast.xt -> Fmt.t)
   -> cmts_before_kw:Fmt.t
   -> cmts_after_kw:Fmt.t option

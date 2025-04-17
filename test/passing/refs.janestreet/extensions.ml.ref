@@ -112,16 +112,11 @@ let _ =
      done)
 ;;
 
-let _ =
-  function%ext
+let _ = function%ext
   | x -> x
 ;;
 
-let _ =
-  f
-    (function%ext
-      | x -> x)
-;;
+let _ = f (function%ext x -> x)
 
 let _ =
   f
@@ -260,9 +255,10 @@ let _ =
 ;;
 
 let _ =
-  [%ext
+  begin%ext
     "foo";
-    "bar"]
+    "bar"
+  end
 ;;
 
 let this_function_has_a_long_name plus very many arguments = "and a kind of long body"
@@ -280,13 +276,12 @@ ___________________________________________________________
 ___________________________________________________________
 |}]
 
-let () =
-  (* -1 *)
-  [%(* 0 *)
-    (* 0.5 *)
-    test
-    () (* 1 *) [@foo (* 2 *) "bar"] (* 3 *)]
-;;
+let () = (* -1 *) begin%test[@foo "bar"] end (* 0 *)
+
+(* 0.5 *)
+(* 1 *)
+(* 2 *)
+(* 3 *)
 
 open%ext M
 
@@ -394,17 +389,17 @@ let _ = assert%lwt false
 let _ = [%lwt assert false]
 let _ = f (assert%lwt false)
 let _ = f [%lwt assert false]
-let _ = (assert%lwt false) [@attr]
+let _ = assert%lwt false [@attr]
 let _ = [%lwt assert false] [@attr]
-let _ = f ((assert%lwt false) [@attr])
+let _ = f (assert%lwt false [@attr])
 let _ = f ([%lwt assert false] [@attr])
 let _ = lazy%ext e
 let _ = [%ext lazy e]
 let _ = f (lazy%ext e)
 let _ = f [%ext lazy e]
-let _ = (lazy%ext e) [@attr]
+let _ = lazy%ext e [@attr]
 let _ = [%ext lazy e] [@attr]
-let _ = f ((lazy%ext e) [@attr])
+let _ = f (lazy%ext e [@attr])
 let _ = f ([%ext lazy e] [@attr])
 
 let _ =
@@ -436,9 +431,9 @@ let _ =
 ;;
 
 let _ =
-  (object%ext
-     method x = y
-  end)
+  object%ext
+    method x = y
+  end
   [@attr]
 ;;
 
@@ -452,9 +447,9 @@ let _ =
 
 let _ =
   f
-    ((object%ext
-        method x = y
-     end)
+    (object%ext
+       method x = y
+    end
     [@attr])
 ;;
 
@@ -589,8 +584,7 @@ let _ = [%ext fun x -> x] [@attr]
 let _ = f ((fun%ext x -> x) [@attr])
 let _ = f ([%ext fun x -> x] [@attr])
 
-let _ =
-  function%ext
+let _ = function%ext
   | x -> x
 ;;
 
@@ -600,11 +594,7 @@ let _ =
     | x -> x]
 ;;
 
-let _ =
-  f
-    (function%ext
-      | x -> x)
-;;
+let _ = f (function%ext x -> x)
 
 let _ =
   f
@@ -616,7 +606,7 @@ let _ =
 let _ =
   (function%ext
     | x -> x)
-  [@attr]
+    [@attr]
 ;;
 
 let _ =
@@ -626,12 +616,7 @@ let _ =
   [@attr]
 ;;
 
-let _ =
-  f
-    ((function%ext
-       | x -> x)
-    [@attr])
-;;
+let _ = f ((function%ext x -> x) [@attr])
 
 let _ =
   f
@@ -645,9 +630,9 @@ let _ = new%ext x
 let _ = [%ext new x]
 let _ = f (new%ext x)
 let _ = f [%ext new x]
-let _ = (new%ext x) [@attr]
+let _ = new%ext x [@attr]
 let _ = [%ext new x] [@attr]
-let _ = f ((new%ext x) [@attr])
+let _ = f (new%ext x [@attr])
 let _ = f ([%ext new x] [@attr])
 
 let _ =

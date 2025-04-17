@@ -128,16 +128,16 @@ let foo x = (* comment *) (y : z)
 
 
 let _ = (*a*)s(*b*).(*c*)((*d*)i(*e*))
-let _ = (*a*)s(*b*).(*c*)((*d*)i(*e*))(*f*)<-(*g*)x 
+let _ = (*a*)s(*b*).(*c*)((*d*)i(*e*))(*f*)<-(*g*)x
 
 let _ = (*a*)s(*b*).(*c*)[(*d*)i(*e*)]
-let _ = (*a*)s(*b*).(*c*)[(*d*)i(*e*)](*f*)<-(*g*)x 
+let _ = (*a*)s(*b*).(*c*)[(*d*)i(*e*)](*f*)<-(*g*)x
 
 let _ = (*a*)s(*b*).(*c*){(*d*)i(*e*)}
-let _ = (*a*)s(*b*).(*c*){(*d*)i(*e*)}(*f*)<-(*g*)x 
+let _ = (*a*)s(*b*).(*c*){(*d*)i(*e*)}(*f*)<-(*g*)x
 
 let _ = (*a*)s(*b*).%{(*c*)i(*d*)}
-let _ = (*a*)s(*b*).%{(*c*)i(*d*)}(*e*)<-(*f*)x 
+let _ = (*a*)s(*b*).%{(*c*)i(*d*)}(*e*)<-(*f*)x
 
 
 type t = {
@@ -147,7 +147,7 @@ a : int [@default a]
 
 let () =
   (* *)
-  
+
   (* *)
   ()
 
@@ -240,7 +240,7 @@ type foo = Alpha | Beta [@@ocaml.warning "-37" (* Explanation of warning *)]
 
 type foo =
   | Alpha______________________________
-  | Beta_______________________________ 
+  | Beta_______________________________
   [@@ocaml.warning "-37" (* Explanation of warning *)]
 
 let y = f (* a *) (* b *) x
@@ -332,3 +332,9 @@ let _ =
   ()
 
 let vexpr (*aa*) (type (*bb*) a) (*cc*) (type (*dd*) b) (*ee*) : _ -> _ = k
+
+let a =
+  (  (* this is a comment *)
+    match%lwt a with
+    | A -> e
+  )

@@ -351,17 +351,13 @@ let pat_of_label lbl =
   Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
 *)
 
-let wrap_exp_attrs ~loc body (ext, attrs) =
+let wrap_exp_attrs' ~loc body (ext, attrs) =
   let ghexp = ghexp ~loc in
   (* todo: keep exact location for the entire attribute *)
   let body = {body with pexp_attributes = attrs @ body.pexp_attributes} in
   match ext with
   | None -> body
   | Some id -> ghexp(Pexp_extension (id, PStr [mkstrexp body []]))
-
-let mkexp_attrs ~loc d attrs =
-  wrap_exp_attrs ~loc (mkexp ~loc d) attrs
-
 let wrap_typ_attrs ~loc typ (ext, attrs) =
   (* todo: keep exact location for the entire attribute *)
   let typ = {typ with ptyp_attributes = attrs @ typ.ptyp_attributes} in
@@ -494,7 +490,7 @@ let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
 
 let expr_of_let_bindings ~loc ~loc_in lbs body =
-  mkexp_attrs ~loc (Pexp_let (mk_let_bindings lbs, body, loc_in)) (None, [])
+  mkexp ~loc (Pexp_let (mk_let_bindings lbs, body, loc_in))
 
 let class_of_let_bindings ~loc ~loc_in lbs body =
   (* Our use of let_bindings(no_ext) guarantees the following: *)
@@ -560,8 +556,8 @@ let mkfunction params body_constraint body =
       | Some newtypes ->
           mkghost_newtype_function_body newtypes body_constraint body_exp
 *)
-let mkfunction params body_constraint body =
-  Pexp_function (params, body_constraint, body)
+let mkfunction params body_constraint body infix_ext_attrs =
+  Pexp_function (params, body_constraint, body, infix_ext_attrs)
 
 let mk_functor_typ ~loc ~attrs ~short args mty =
   let mty =
@@ -2220,7 +2216,7 @@ class_type_declarations:
 %inline or_function(EXPR):
   | EXPR
       { $1 }
-  | FUNCTION ext_attributes match_cases
+  | FUNCTION expr_ext_attributes match_cases
       { let loc = make_loc $sloc in
         let cases = $3 in
         (* There are two choices of where to put attributes: on the
@@ -2229,9 +2225,10 @@ class_type_declarations:
            Pfunction_cases attributes for enabling/disabling warnings in
            typechecking. For standalone function cases, we want the compiler to
            respect, e.g., [@inline] attributes.
+           For printing, this is reverted.
         *)
-        let desc = mkfunction [] None (Pfunction_cases (cases, loc, [])) in
-        mkexp_attrs ~loc:$sloc desc $2
+        let desc = mkfunction [] None (Pfunction_cases (cases, loc, Attr.empty_infix_ext_attrs)) $2 in
+        mkexp ~loc:$sloc desc
       }
 ;
 
@@ -2249,12 +2246,10 @@ fun_seq_expr:
   | fun_expr    %prec below_SEMI  { $1 }
   | fun_expr SEMI                 { $1 }
   | mkexp(fun_expr SEMI seq_expr
-    { Pexp_sequence($1, $3) })
+    { Pexp_sequence($1, $3, None) })
     { $1 }
   | fun_expr SEMI PERCENT attr_id seq_expr
-    { let seq = mkexp ~loc:$sloc (Pexp_sequence ($1, $5)) in
-      let payload = PStr [mkstrexp seq []] in
-      mkexp ~loc:$sloc (Pexp_extension ($4, payload)) }
+    { mkexp ~loc:$sloc (Pexp_sequence ($1, $5, Some $4)) }
 ;
 seq_expr:
   | or_function(fun_seq_expr) { $1 }
@@ -2333,8 +2328,8 @@ fun_expr:
     simple_expr %prec below_HASH
       { $1 }
   | fun_expr_attrs
-      { let desc, attrs = $1 in
-        mkexp_attrs ~loc:$sloc desc attrs }
+      { let desc = $1 in
+        mkexp ~loc:$sloc desc }
   | mkexp(expr_)
       { $1 }
   | let_bindings(ext) IN seq_expr
@@ -2373,51 +2368,47 @@ fun_expr:
   | or_function(fun_expr) { $1 }
 ;
 %inline fun_expr_attrs:
-  | LET MODULE ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
-      { Pexp_letmodule($4, $5, $6, $8), $3 }
-  | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
-      { Pexp_letexception($4, $6), $3 }
-  | LET OPEN override_flag ext_attributes module_expr IN seq_expr
+  | LET MODULE expr_ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
+      { Pexp_letmodule($4, $5, $6, $8, $3) }
+  | LET EXCEPTION expr_ext_attributes let_exception_declaration IN seq_expr
+      { Pexp_letexception($4, $6, $3) }
+  | LET OPEN override_flag expr_ext_attributes module_expr IN seq_expr
       { let open_loc = make_loc ($startpos($2), $endpos($5)) in
         let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
-        Pexp_letopen(od, $7), $4 }
+        Pexp_letopen(od, $7, $4) }
   /* Cf #5939: we used to accept (fun p when e0 -> e) */
-  | FUN ext_attributes expr_fun_params preceded(COLON, atomic_type)?
+  | FUN expr_ext_attributes expr_fun_params preceded(COLON, atomic_type)?
       MINUSGREATER fun_body
       { let body_constraint = Option.map (fun x -> Pconstraint x) $4 in
-        mkfunction $3 body_constraint $6, $2
+        mkfunction $3 body_constraint $6 $2
       }
-  | MATCH ext_attributes seq_expr WITH match_cases
-      { Pexp_match($3, $5), $2 }
-  | TRY ext_attributes seq_expr WITH match_cases
-      { Pexp_try($3, $5), $2 }
-  | TRY ext_attributes seq_expr WITH error
+  | MATCH expr_ext_attributes seq_expr WITH match_cases
+      { Pexp_match($3, $5, $2) }
+  | TRY expr_ext_attributes seq_expr WITH match_cases
+      { Pexp_try($3, $5, $2) }
+  | TRY expr_ext_attributes seq_expr WITH error
       { syntax_error() }
-  | IF ext_attributes seq_expr THEN expr ELSE else_=expr
-      { let ext, attrs = $2 in
+  | IF expr_ext_attributes seq_expr THEN expr ELSE else_=expr
+      {
         let if_loc_then = make_loc $loc($4)
         and loc_else = make_loc $loc($6) in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
-        let ite =
-          match else_.pexp_desc with
-          | Pexp_ifthenelse(brs, else_) -> Pexp_ifthenelse(br :: brs, else_)
-          | _ -> Pexp_ifthenelse([br], Some (else_, loc_else))
-        in
-        ite, (ext, []) }
-  | IF ext_attributes seq_expr THEN expr
-      { let ext, attrs = $2 in
-        let if_loc_then = make_loc $loc($4) in
-        let br = { if_cond = $3; if_body = $5; if_attrs = attrs; if_loc_then } in
-        Pexp_ifthenelse ([br], None), (ext, []) }
-  | WHILE ext_attributes seq_expr do_done_expr
-      { Pexp_while($3, $4), $2 }
-  | FOR ext_attributes pattern EQUAL seq_expr direction_flag seq_expr
+        let br = { if_cond = $3; if_body = $5; if_attrs = $2; if_loc_then } in
+        match else_.pexp_desc with
+        | Pexp_ifthenelse(brs, else_) -> Pexp_ifthenelse(br :: brs, else_)
+        | _ -> Pexp_ifthenelse([br], Some (else_, loc_else)) }
+  | IF expr_ext_attributes seq_expr THEN expr
+      { let if_loc_then = make_loc $loc($4) in
+        let br = { if_cond = $3; if_body = $5; if_attrs = $2; if_loc_then } in
+        Pexp_ifthenelse ([br], None) }
+  | WHILE expr_ext_attributes seq_expr do_done_expr
+      { Pexp_while($3, $4, $2) }
+  | FOR expr_ext_attributes pattern EQUAL seq_expr direction_flag seq_expr
     do_done_expr
-      { Pexp_for($3, $5, $7, $6, $8), $2 }
-  | ASSERT ext_attributes simple_expr %prec below_HASH
-      { Pexp_assert $3, $2 }
-  | LAZY ext_attributes simple_expr %prec below_HASH
-      { Pexp_lazy $3, $2 }
+      { Pexp_for($3, $5, $7, $6, $8, $2) }
+  | ASSERT expr_ext_attributes simple_expr %prec below_HASH
+      { Pexp_assert ($3, $2) }
+  | LAZY expr_ext_attributes simple_expr %prec below_HASH
+      { Pexp_lazy ($3, $2) }
 ;
 %inline do_done_expr:
   | DO e = seq_expr DONE
@@ -2460,29 +2451,28 @@ simple_expr:
   | indexop_error (qualified_dotop, expr_semi_list) { $1 }
   | metaocaml_expr { $1 }
   | simple_expr_attrs
-    { let desc, attrs = $1 in
-      mkexp_attrs ~loc:$sloc desc attrs }
+    { mkexp ~loc:$sloc $1 }
   | mkexp(simple_expr_)
       { $1 }
 ;
 %inline simple_expr_attrs:
-  | BEGIN ext_attributes seq_expr END
-      { Pexp_beginend $3, $2 }
-  | BEGIN ext_attributes END
-      { Pexp_construct (mkloc (Lident "()") (make_loc $sloc), None), $2 }
-  | BEGIN ext_attributes seq_expr error
+  | BEGIN expr_ext_attributes seq_expr END
+      { Pexp_beginend ($3, $2) }
+  | BEGIN expr_ext_attributes END
+      { Pexp_construct_unit_beginend $2 }
+  | BEGIN expr_ext_attributes seq_expr error
       { unclosed "begin" $loc($1) "end" $loc($4) }
-  | NEW ext_attributes mkrhs(class_longident)
-      { Pexp_new($3), $2 }
-  | LPAREN MODULE ext_attributes module_expr RPAREN
-      { Pexp_pack ($4, None), $3 }
-  | LPAREN MODULE ext_attributes module_expr COLON package_type RPAREN
-      { Pexp_pack ($4, Some $6), $3 }
-  | LPAREN MODULE ext_attributes module_expr COLON error
+  | NEW expr_ext_attributes mkrhs(class_longident)
+      { Pexp_new($3, $2) }
+  | LPAREN MODULE expr_ext_attributes module_expr RPAREN
+      { Pexp_pack ($4, None, $3) }
+  | LPAREN MODULE expr_ext_attributes module_expr COLON package_type RPAREN
+      { Pexp_pack ($4, Some $6, $3) }
+  | LPAREN MODULE expr_ext_attributes module_expr COLON error
       { unclosed "(" $loc($1) ")" $loc($6) }
-  | OBJECT ext_attributes class_structure END
-      { Pexp_object $3, $2 }
-  | OBJECT ext_attributes class_structure error
+  | OBJECT expr_ext_attributes class_structure END
+      { Pexp_object ($3, $2) }
+  | OBJECT expr_ext_attributes class_structure error
       { unclosed "object" $loc($1) "end" $loc($4) }
 ;
 
@@ -2497,10 +2487,10 @@ simple_expr:
 *)
 %inline metaocaml_expr:
   | METAOCAML_ESCAPE e = simple_expr
-    { wrap_exp_attrs ~loc:$sloc e
+    { wrap_exp_attrs' ~loc:$sloc e
        (Some (mknoloc "metaocaml.escape"), []) }
   | METAOCAML_BRACKET_OPEN e = seq_expr METAOCAML_BRACKET_CLOSE
-    { wrap_exp_attrs ~loc:$sloc e
+    { wrap_exp_attrs' ~loc:$sloc e
        (Some  (mknoloc "metaocaml.bracket"),[]) }
 ;
 
@@ -2581,11 +2571,11 @@ simple_expr:
   | mod_longident DOT
     LBRACKET expr_semi_list error
       { unclosed "[" $loc($3) "]" $loc($5) }
-  | od=open_dot_declaration DOT LPAREN MODULE ext_attributes module_expr COLON
+  | od=open_dot_declaration DOT LPAREN MODULE expr_ext_attributes module_expr COLON
     package_type RPAREN
       { let modexp =
-          mkexp_attrs ~loc:($startpos($3), $endpos)
-            (Pexp_pack ($6, Some $8)) $5 in
+          mkexp ~loc:($startpos($3), $endpos)
+            (Pexp_pack ($6, Some $8, $5)) in
         Pexp_open(od, modexp) }
   | mod_longident DOT
     LPAREN MODULE ext_attributes module_expr COLON error
@@ -2725,16 +2715,8 @@ strict_binding(body):
         $1, tc, $4 }
 ;
 fun_body:
-  | FUNCTION ext_attributes match_cases
-      { let ext, attrs = $2 in
-        match ext with
-        | None -> Pfunction_cases ($3, make_loc $sloc, attrs)
-        | Some _ ->
-          (* function%foo extension nodes interrupt the arity *)
-            let cases = Pfunction_cases ($3, make_loc $sloc, []) in
-            Pfunction_body
-              (mkexp_attrs ~loc:$sloc (mkfunction [] None cases) $2)
-      }
+  | FUNCTION expr_ext_attributes match_cases
+      {  Pfunction_cases ($3, make_loc $sloc, $2) }
   | fun_seq_expr
       { Pfunction_body $1 }
 ;
@@ -4119,6 +4101,9 @@ ext:
 %inline ext_attributes:
   ext attributes    { $1, $2 }
 ;
+%inline expr_ext_attributes:
+  ext_attributes { let infix_ext, infix_attrs = $1 in {infix_ext; infix_attrs}}
+
 extension:
   | LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
   | QUOTED_STRING_EXPR

@@ -183,10 +183,10 @@ let _ =
   | Bfoooooooooooooooooooooo fooooooooo -> true
 ;;
 
-let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
+let _ = foo >>= fun[@warning "-4"] x -> fooooooooooooooooooooooo
 
 let _ =
-  foo >>= fun [@warning "-4"] x y ->
+  foo >>= fun[@warning "-4"] x y ->
   fooooooooooooooooooooooo
     fooooooooooooooooooooooo
     fooooooooooooooooooooooo
@@ -200,7 +200,7 @@ let _ =
 ;;
 
 let _ =
-  foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
+  foo >>= fun(* foo before *) [@warning "-4"] (* foo after *) x ->
   fooooooooooooooooooooooo
 ;;
 

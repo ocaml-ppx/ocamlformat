@@ -198,7 +198,9 @@ module Parse = struct
           let exprs = List.(rev (tl_exn (rev l))) in
           {e with pexp_desc= Pexp_list exprs}
       (* Removing beginend *)
-      | {pexp_desc= Pexp_beginend e'; pexp_attributes= []; _}
+      | { pexp_desc= Pexp_beginend (e', {infix_ext= None; infix_attrs= []})
+        ; pexp_attributes= []
+        ; _ }
         when not preserve_beginend ->
           m.expr m e'
       (* Field alias shorthand *)
@@ -223,7 +225,8 @@ module Parse = struct
       (* [(module M) : (module T)] -> [(module M : T)] *)
       | { pexp_desc=
             Pexp_constraint
-              ( { pexp_desc= Pexp_pack (name, None)
+              ( { pexp_desc=
+                    Pexp_pack (name, None, {infix_ext= None; infix_attrs= []})
                 ; pexp_attributes= []
                 ; pexp_loc
                 ; _ }
@@ -235,7 +238,10 @@ module Parse = struct
              the constraint, we want to shorten the second: - [let _ :
              (module S) = (module M)] - [let _ = ((module M) : (module
              S))] *)
-          {p with pexp_desc= Pexp_pack (name, Some pt)}
+          { p with
+            pexp_desc=
+              Pexp_pack (name, Some pt, {infix_ext= None; infix_attrs= []})
+          }
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}

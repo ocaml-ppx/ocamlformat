@@ -49,6 +49,24 @@ profile. This started with version 0.26.0.
 - Fix misplaced `;;` due to interaction with floating doc comments.
   (#2691, @EmileTrotignon)
 
+- The formatting of attributes of expression is now aware of the attributes
+  infix or postix positions: `((fun [@a] x -> y) [@b])` is formatted without
+  moving attributes. (#2676, @EmileTrotignon)
+
+- `begin%e ... end` and `begin [@a] ... end` nodes are always preserved.
+  (#2676, @EmileTrotignon)
+
+- `begin end` syntax for `()` is now preserved. (#2676, @EmileTrotignon)
+
+- \* The formatting of infix extensions is now consistent with regular
+  formatting by construction. This reduces indentation in `f @@ match%e`
+  expressions to the level of indentation in `f @@ match`. Other unknown
+  inconsistencies might also be fixed. (#2676, @EmileTrotignon)
+
+- \* The spacing of infix attributes is now consistent across keywords. Every
+  keyword but `begin` `function`, and `fun` had attributes stuck to the keyword:
+  `match[@a]`, but `fun [@a]`. Now its also `fun[@a]`. (#2676, @EmileTrotignon)
+
 ### Changed
 
 - \* `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match` and

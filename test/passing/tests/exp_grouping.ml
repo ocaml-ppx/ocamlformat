@@ -482,9 +482,24 @@ let _ =
   end
 
 
-  let _ =
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    |>>>>> begin
-      xxxxxxxxxxxxxxxxxxxxxxx ;
-      aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
-    end
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin
+    xxxxxxxxxxxxxxxxxxxxxxx ;
+    aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
+let main =
+  Lwt.run
+  @@
+  match a with
+  | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let main =
+  Lwt.run
+  @@
+  match%lwt a with
+  | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let _ = begin a end [@a]

@@ -69,9 +69,9 @@ let () =
        c_________________________________________________________________)
 
 let () =
-  if [@test] true then
+  if[@test] true then
     ()
-  else if [@other] true then
+  else if[@other] true then
     ()
 
 let foo =

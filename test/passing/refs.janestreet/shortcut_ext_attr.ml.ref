@@ -7,14 +7,14 @@ let () =
     ())
     [@foo]];
   [%foo M.(()) [@foo]];
-  [%foo fun [@foo] x -> ()];
+  [%foo fun[@foo] x -> ()];
   [%foo
     function[@foo]
     | x -> ()];
   [%foo
     try[@foo] () with
     | _ -> ()];
-  [%foo if [@foo] () then () else ()];
+  [%foo if[@foo] () then () else ()];
   [%foo
     while () do
       ()
