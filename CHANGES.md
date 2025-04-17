@@ -104,6 +104,22 @@ profile. This started with version 0.26.0.
   let a = 3
   ```
 
+- \* Infix apply docking behaviour from --ocp-indent-compat is promoted to
+ everyone. The most common effect is that `|> map (fun` is now indented from
+ `|>` and not from `map`:
+  ```ocaml
+  (* before *)
+  v
+  |>>>>>> map (fun x ->
+              x )
+  (* after *)
+  v
+  |>>>>>> map (fun x ->
+      x )
+  ```
+  `@@ match` can now also be on one line.
+  (#2694, @EmileTrotignon)
+
 ## 0.27.0
 
 ### Highlight
