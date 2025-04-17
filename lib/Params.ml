@@ -252,7 +252,7 @@ module Exp = struct
       then 4
       else 2
     in
-    let name = "Params.box_fun_expr" in
+    let name = Printf.sprintf "Params.box_fun_expr %i" indent in
     let mkbox = if ctx_is_let_or_fun ~ctx ctx0 then hvbox else hovbox in
     (mkbox ~name indent, ~-indent)
 

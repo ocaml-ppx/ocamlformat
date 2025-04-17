@@ -1706,7 +1706,8 @@ and expression_width c xe =
        (fun () -> fmt_expression c xe)
        c.cmts )
 
-and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
+and fmt_args_grouped ?pro:(global_pro = noop) ?epi:(global_epi = noop) c ctx
+    args =
   let fmt_arg c ~first:_ ~last (lbl, arg) =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
     let box =
@@ -1726,7 +1727,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   let fmt_args ~first ~last args =
     hovbox
       (if first then 2 else 0)
-      (list_fl args (fmt_arg c) $ fmt_if last global_epi)
+      ( fmt_if first global_pro
+      $ list_fl args (fmt_arg c)
+      $ fmt_if last global_epi )
     $ fmt_if (not last) (break 1 0)
   in
   let is_simple (lbl, x) =
@@ -1958,7 +1961,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     let cmts_in_pro =
       match exp.pexp_desc with
       | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_beginend _
-       |Pexp_ifthenelse _ ->
+       |Pexp_ifthenelse _ | Pexp_apply _ ->
           noop
       | _ -> Cmts.fmt_before c ?eol pexp_loc
     in
@@ -1969,8 +1972,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let ctx = Exp exp in
-  let fmt_args_grouped ?epi e0 a1N =
-    fmt_args_grouped c ctx ?epi ((Nolabel, e0) :: a1N)
+  let fmt_args_grouped ?pro ?epi e0 a1N =
+    fmt_args_grouped c ctx ?pro ?epi ((Nolabel, e0) :: a1N)
   in
   hvbox_if box 0 ~name:"expr"
   @@ fmt_cmts_after
@@ -2192,7 +2195,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              $ fmt_expression c ~box (sub_exp ~ctx e)
              $ fmt_atrs ) )
   | Pexp_apply (e0, e1N1) -> (
-      let wrap =
+      let cmts_before = Cmts.fmt_before c ?eol pexp_loc in
+      let args_box =
         if c.conf.fmt_opts.wrap_fun_args.v then hovbox 2 else hvbox 2
       in
       let (lbl, last_arg), args_before =
@@ -2229,10 +2233,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             let wrap_intro x =
               fmt_if inner_parens (str "(")
               $ hvbox 0
-                  ( intro_epi
-                  $ wrap
-                      ( fmt_args_grouped e0 args_before
-                      $ break 1 0 $ hvbox 0 x ) )
+                  (args_box
+                     ( fmt_args_grouped ~pro:intro_epi e0 args_before
+                     $ break 1 0 $ hvbox 0 x ) )
               $ break 1 0
             in
             let force_closing_paren =
@@ -2247,7 +2250,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
           in
           hvbox_if has_attr 0
-            ( expr_epi
+            ( cmts_before $ expr_epi
             $ Params.parens_if outer_parens c.conf
                 (args $ fmt_atrs $ fmt_if inner_parens (str ")")) )
       | _ ->
@@ -2259,7 +2262,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               Fit
             else Break
           in
-          pro
+          cmts_before $ pro
           $ fmt_if parens (str "(")
           $ hvbox 2
               ( fmt_args_grouped ~epi:fmt_atrs e0 e1N1
