@@ -1866,7 +1866,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
     else
       match xarg.ast.pexp_desc with
-      | Pexp_function _ | Pexp_beginend _ | Pexp_match _ ->
+      | Pexp_function _ | Pexp_beginend _ | Pexp_match _ | Pexp_try _ ->
           hvbox 0 (fmt_expression c ~pro ~parens xarg)
       | _ ->
           hvbox 0

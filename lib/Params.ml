@@ -940,7 +940,7 @@ let match_indent ?(default = 0) (c : Conf.t) ~parens ~(ctx : Ast.t) =
   match (c.fmt_opts.match_indent_nested.v, ctx) with
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.fmt_opts.match_indent.v
   | _, Exp {pexp_desc= Pexp_infix _; _}
-    when c.fmt_opts.ocp_indent_compat.v && parens ->
+    when parens ->
       2 (* Match is docked *)
   | _ -> default
 

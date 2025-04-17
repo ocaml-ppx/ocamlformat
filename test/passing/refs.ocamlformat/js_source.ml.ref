@@ -466,19 +466,19 @@ end
 let _ =
   foo
   $$ ( match group with
-  | [] ->
-      impossible "previous match"
-  | [cmt] ->
-      fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+    | [] ->
+        impossible "previous match"
+    | [cmt] ->
+        fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
   $$ bar
 
 let _ =
   foo
   $$ ( try group with
-     | [] ->
-         impossible "previous match"
-     | [cmt] ->
-         fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
+    | [] ->
+        impossible "previous match"
+    | [cmt] ->
+        fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt )
   $$ bar
 
 let _ =
