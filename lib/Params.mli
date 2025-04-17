@@ -86,7 +86,7 @@ module Exp : sig
 
   val box_beginend : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
 
-  val box_beginend_subexpr: Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
+  val box_beginend_subexpr : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
 
   val match_inner_pro : ctx0:Ast.t -> parens:bool -> bool
   (**  whether the [pro] argument of [fmt_match] should be displayed as an inner

@@ -2946,8 +2946,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend (e, infix_ext_attrs) ->
-      fmt_beginend c ~loc:pexp_loc ~box ~pro ~ctx ~ctx0 ~fmt_atrs ~infix_ext_attrs
-        ~indent_wrap ?eol e
+      fmt_beginend c ~loc:pexp_loc ~box ~pro ~ctx ~ctx0 ~fmt_atrs
+        ~infix_ext_attrs ~indent_wrap ?eol e
   | Pexp_parens e ->
       pro
       $ hvbox 0
@@ -2987,23 +2987,27 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~ctx0 ~fmt_atrs
     $ str "end" $ fmt_atrs
   in
   let box_beginend_sb = Params.Exp.box_beginend_subexpr c.conf ~ctx ~ctx0 in
-  let beginend_box = if Params.Exp.box_beginend c.conf ~ctx ~ctx0 then hvbox ~name:"beginend" 2 else Fn.id in
+  let beginend_box =
+    if Params.Exp.box_beginend c.conf ~ctx ~ctx0 then
+      hvbox ~name:"beginend" 2
+    else Fn.id
+  in
   cmts_before
   $
   match e.pexp_desc with
   | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ ->
       beginend_box
-        ( fmt_expression c
-            ~pro:(pro $ begin_ $ str " ")
-            ~box:false ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e))
-        $ end_
+        (fmt_expression c
+           ~pro:(pro $ begin_ $ str " ")
+           ~box:false ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e) )
+      $ end_
   | _ ->
       beginend_box
         ( hvbox 0 (pro $ begin_)
         $ break 1 2
-        $ fmt_expression c ~box:box_beginend_sb ?eol ~parens:false ~indent_wrap
-            (sub_exp ~ctx e))
-        $ end_
+        $ fmt_expression c ~box:box_beginend_sb ?eol ~parens:false
+            ~indent_wrap (sub_exp ~ctx e) )
+      $ end_
 
 and fmt_let_bindings c ~ctx0 ~parens ~has_attr ~fmt_atrs ~fmt_expr ~loc_in
     rec_flag bindings body =

@@ -343,13 +343,23 @@ module Exp = struct
         hvbox (2 - String.length "begin ")
     | _ -> Fn.id
 
-
-  let box_beginend c ~ctx0 ~ctx  =
-    let contains_fun = match ctx with Exp {pexp_desc=Pexp_beginend ({pexp_desc=Pexp_function _; _}, _); _} -> true | _ -> false in
-    (contains_fun) && not (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ~ctx0 )
+  let box_beginend c ~ctx0 ~ctx =
+    let contains_fun =
+      match ctx with
+      | Exp {pexp_desc= Pexp_beginend ({pexp_desc= Pexp_function _; _}, _); _}
+        ->
+          true
+      | _ -> false
+    in
+    contains_fun
+    && not
+         (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
+            ~ctx0 )
 
   let box_beginend_subexpr c ~ctx0 ~ctx =
-    not (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ~ctx0 )
+    not
+      (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
+         ~ctx0 )
 
   let match_inner_pro ~ctx0 ~parens =
     if parens then false
