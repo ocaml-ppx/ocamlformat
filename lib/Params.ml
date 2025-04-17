@@ -172,10 +172,16 @@ module Exp = struct
       | Some ((Labelled _ | Optional _), _, _) -> true
       | _ -> false
     in
+    let is_ctx_beginend =
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_beginend _; _} -> true
+      | _ -> false
+    in
     if Conf.(c.fmt_opts.ocp_indent_compat.v) then
       if last_arg || is_labelled_arg then break 1 2 else str " "
     else if is_labelled_arg then break 1 2
     else if last_arg then break 1 0
+    else if is_ctx_beginend then break 1 0
     else str " "
 
   let box_fun_decl_args ~ctx ~ctx0 ?(last_arg = false) ?epi c ~parens ~kw
@@ -224,38 +230,42 @@ module Exp = struct
         $ hvbox_if should_box_args 0 (args $ fmt_opt annot $ fmt_opt epi) )
 
   let box_fun_expr (c : Conf.t) ~source ~ctx0 ~ctx =
-    let indent =
-      if ctx_is_rhs_of_infix ~ctx0 ~ctx then 0
-      else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
-        c.fmt_opts.function_indent.v
-      else if ctx_is_let_or_fun ~ctx ctx0 then
-        if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
-      else if ocp c then
-        let begins_line loc =
-          Source.begins_line ~ignore_spaces:true source loc
+    match ctx0 with
+    | Exp {pexp_desc= Pexp_beginend _; _} -> (Fn.id, 0)
+    | _ ->
+        let indent =
+          if ctx_is_rhs_of_infix ~ctx0 ~ctx then 0
+          else if Poly.equal c.fmt_opts.function_indent_nested.v `Always then
+            c.fmt_opts.function_indent.v
+          else if ctx_is_let_or_fun ~ctx ctx0 then
+            if c.fmt_opts.let_binding_deindent_fun.v then 1 else 0
+          else if ocp c then
+            let begins_line loc =
+              Source.begins_line ~ignore_spaces:true source loc
+            in
+            match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with
+            | Some (Nolabel, fun_exp, is_last_arg) ->
+                if begins_line fun_exp.pexp_loc then
+                  if is_last_arg then 5 else 3
+                else 2
+            | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
+                if begins_line fun_exp.pexp_loc then
+                  (* The [fun] had to break after the label, nested boxes
+                     must be indented less. The last argument is special as
+                     the box structure is different. *)
+                  if is_last_arg then 4 else 2
+                else if begins_line x.loc then 4
+                else 2
+            | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
+          else if
+            ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
+              ~ctx0
+          then 4
+          else 2
         in
-        match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with
-        | Some (Nolabel, fun_exp, is_last_arg) ->
-            if begins_line fun_exp.pexp_loc then if is_last_arg then 5 else 3
-            else 2
-        | Some ((Labelled x | Optional x), fun_exp, is_last_arg) ->
-            if begins_line fun_exp.pexp_loc then
-              (* The [fun] had to break after the label, nested boxes must be
-                 indented less. The last argument is special as the box
-                 structure is different. *)
-              if is_last_arg then 4 else 2
-            else if begins_line x.loc then 4
-            else 2
-        | None -> if ctx_is_apply_and_exp_is_func ~ctx ctx0 then 3 else 2
-      else if
-        ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx
-          ~ctx0
-      then 4
-      else 2
-    in
-    let name = "Params.box_fun_expr" in
-    let mkbox = if ctx_is_let_or_fun ~ctx ctx0 then hvbox else hovbox in
-    (mkbox ~name indent, ~-indent)
+        let name = "Params.box_fun_expr" in
+        let mkbox = if ctx_is_let_or_fun ~ctx ctx0 then hvbox else hovbox in
+        (mkbox ~name indent, ~-indent)
 
   (* if the function is the last argument of an apply and no other arguments
      are "complex" (approximation). *)
@@ -317,6 +327,7 @@ module Exp = struct
 
   let box_fun_decl ~ctx0 c k =
     match ctx0 with
+    | Exp {pexp_desc= Pexp_beginend _; _} -> hovbox 2 k
     | _ when ocp c -> hvbox 2 k
     (* Avoid large indentation for [let _ = function]. *)
     | Lb
@@ -325,6 +336,20 @@ module Exp = struct
         hovbox 2 k
     | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
     | _ -> hvbox 2 k
+
+  let box_fun_decl_after_pro ~ctx0 =
+    match ctx0 with
+    | Exp {pexp_desc= Pexp_beginend _; _} ->
+        hvbox (2 - String.length "begin ")
+    | _ -> Fn.id
+
+
+  let box_beginend c ~ctx0 ~ctx  =
+    let contains_fun = match ctx with Exp {pexp_desc=Pexp_beginend ({pexp_desc=Pexp_function _; _}, _); _} -> true | _ -> false in
+    (contains_fun) && not (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ~ctx0 )
+
+  let box_beginend_subexpr c ~ctx0 ~ctx =
+    not (ctx_is_apply_and_exp_is_last_arg_and_other_args_are_simple c ~ctx ~ctx0 )
 
   let match_inner_pro ~ctx0 ~parens =
     if parens then false
@@ -854,7 +879,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= branch_pro ()
       ; wrap_parens= wrap_parens ~wrap_breaks:(wrap (break 1000 2) noop)
-      ; box_expr= Some false
+      ; box_expr= Some beginend
       ; expr_pro= None
       ; expr_eol= Some (break 1 2)
       ; branch_expr

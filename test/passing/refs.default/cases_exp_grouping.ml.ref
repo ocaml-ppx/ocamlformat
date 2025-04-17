@@ -116,7 +116,9 @@ let a =
   | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   end
 
-let a = begin match f x i with A -> a | B -> b end
+let a =
+  begin match f x i with A -> a | B -> b
+  end
 
 let a =
   begin[@a] match[@b]
@@ -175,7 +177,9 @@ let a =
   | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   end
 
-let a = begin try f x i with A -> a | B -> b end
+let a =
+  begin try f x i with A -> a | B -> b
+  end
 
 let a =
   begin[@a] try[@b]

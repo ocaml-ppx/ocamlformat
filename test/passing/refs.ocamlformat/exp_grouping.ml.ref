@@ -360,8 +360,7 @@ let _ =
 
 let () =
   if a then begin
-    b
-  (* asd *)
+    b (* asd *)
   end
 
 let x =
@@ -399,7 +398,10 @@ let _ =
 
 let _ = match x with _ -> begin[@foo] y end
 
-let v = map x begin fun x y z -> y end
+let v =
+  map x begin fun x y z ->
+      y
+    end
 
 let v =
   map x
@@ -409,9 +411,11 @@ let v =
 
 let v =
   map x
-    begin fun x
+    begin fun
+      x
       arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
-    -> y
+    ->
+      y
     end
 
 let v =
@@ -421,11 +425,13 @@ let v =
 
 let v =
   map x
-    begin fun x
+    begin fun
+      x
       argggggggggggggggggggggggggggggggggg
       gggggggggggggggggggg
       ggggggggggggggg
-    -> y
+    ->
+      y
     end
 
 let v =
@@ -433,9 +439,15 @@ let v =
     (fun x yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy z ->
       print y ; z )
 
-let v = map x begin fun x y z -> ya f ; a f b end
+let v =
+  map x begin fun x y z ->
+      ya f ; a f b
+    end
 
-let v = map x begin%ext1 fun%ext2 x y z -> ya f ; a f b end
+let v =
+  map x begin%ext1 fun%ext2 x y z ->
+      ya f ; a f b
+    end
 
 let _ =
   lazy begin
@@ -459,10 +471,11 @@ let _ =
   end
 
 let _ =
-  lazy begin fun xxxxxxxxxxxxxxxxxxxxxxx
-    yyyyyyyyyyyyyyyyyyy
-    zzzzzzzzzzzzzzzzzzzzzzzz
-  ->
+  lazy begin fun
+         xxxxxxxxxxxxxxxxxxxxxxx
+         yyyyyyyyyyyyyyyyyyy
+         zzzzzzzzzzzzzzzzzzzzzzzz
+       ->
     print_endline xxxxxxxxx ;
     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
   end
@@ -547,10 +560,11 @@ let _ =
 
 let _ =
   f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
-    ~label:begin fun x
-      aaaaaaaaaaaaaaaaaaaaaaaaa
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    ->
+    ~label:begin fun
+             x
+             aaaaaaaaaaaaaaaaaaaaaaaaa
+             aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+           ->
       function_ body ;
       force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk ;
       return value

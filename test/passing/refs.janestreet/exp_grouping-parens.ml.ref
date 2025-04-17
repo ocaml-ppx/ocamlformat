@@ -447,9 +447,7 @@ let v =
 ;;
 
 let v =
-  map
-    x
-    begin%ext1 fun%ext2 x y z ->
+  map x begin%ext1 fun%ext2 x y z ->
       ya f;
       a f b
     end
