@@ -55,8 +55,8 @@ module Make (Itv : IN) = struct
            if Itv.contains root elt then
              let ancestors = root :: ancestors in
              ( match Map.find map root with
-             | Some children -> parents map children ~ancestors elt
-             | None -> ancestors )
+               | Some children -> parents map children ~ancestors elt
+               | None -> ancestors )
              |> Option.some
            else None ) )
 

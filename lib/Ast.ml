@@ -995,14 +995,14 @@ end = struct
         assert (
           List.exists ptype_params ~f:fst_f
           || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
-                 typ == t1 || typ == t2 )
+              typ == t1 || typ == t2 )
           || ( match ptype_kind with
-             | Ptype_variant cd1N ->
-                 List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
-                     check_cstr pcd_args || Option.exists pcd_res ~f )
-             | Ptype_record ld1N ->
-                 List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
-             | _ -> false )
+            | Ptype_variant cd1N ->
+                List.exists cd1N ~f:(fun {pcd_args; pcd_res; _} ->
+                    check_cstr pcd_args || Option.exists pcd_res ~f )
+            | Ptype_record ld1N ->
+                List.exists ld1N ~f:(fun {pld_type; _} -> typ == pld_type)
+            | _ -> false )
           || Option.exists ptype_manifest ~f )
     | Cty {pcty_desc; _} ->
         assert (
@@ -1534,13 +1534,13 @@ end = struct
     | Pexp_record (e1N, e0) ->
         Option.for_all e0 ~f:Exp.is_trivial
         && List.for_all e1N ~f:(fun (_, c, eo) ->
-               Option.is_none c && Option.for_all eo ~f:Exp.is_trivial )
+            Option.is_none c && Option.for_all eo ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
     | Pexp_indexop_access {pia_lhs; pia_kind; pia_rhs= None; _} ->
         Exp.is_trivial pia_lhs
         && ( match pia_kind with
-           | Builtin idx -> Exp.is_trivial idx
-           | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
+          | Builtin idx -> Exp.is_trivial idx
+          | Dotop (_, _, idx) -> List.for_all idx ~f:Exp.is_trivial )
         && fit_margin c (width xexp)
     | Pexp_prefix (_, e) -> Exp.is_trivial e && fit_margin c (width xexp)
     | Pexp_infix ({txt= ":="; _}, _, _) -> false
@@ -2218,7 +2218,7 @@ end = struct
         | Pexp_infix (_, _, e2)
           when e2 == exp
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
-                      Prec.compare p Apply < 0 ) ->
+                   Prec.compare p Apply < 0 ) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false

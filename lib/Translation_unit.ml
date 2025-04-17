@@ -297,7 +297,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
       let exn_args () =
         [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
         |> List.filter_map ~f:(fun (s, f_opt) ->
-               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
+            Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
       let* ext_t_new =
         match
@@ -339,7 +339,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
             ; ("old ast", old_ast)
             ; ("new ast", new_ast) ]
             |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
+                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
           in
           if
             Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
