@@ -467,7 +467,7 @@ let is_in_listing_file ~listings ~filename =
               In_channel.input_lines ch
               |> Migrate_ast.Location.of_lines ~filename:listing_filename
               |> List.filter ~f:(fun Location.{txt= l; _} ->
-                     not (drop_line l) )
+                  not (drop_line l) )
             in
             List.find_map lines ~f:(fun {txt= line; loc} ->
                 match Fpath.of_string line with
