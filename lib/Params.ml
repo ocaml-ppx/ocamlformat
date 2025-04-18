@@ -145,7 +145,11 @@ module Exp = struct
         | Pexp_apply (_, args) -> (
           (* Rhs is an apply and it ends with a [fun]. *)
           match List.last_exn args with
-          | _, {pexp_desc= Pexp_function _; _} -> true
+          | _, {pexp_desc= Pexp_function _; _}
+           |( _
+            , { pexp_desc= Pexp_beginend ({pexp_desc= Pexp_function _; _}, _)
+              ; _ } ) ->
+              true
           | _ -> false )
         | Pexp_match _ | Pexp_try _ -> true
         | _ -> false

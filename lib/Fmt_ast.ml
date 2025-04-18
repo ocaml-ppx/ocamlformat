@@ -1875,7 +1875,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
     in
     if Params.Exp.Infix_op_arg.dock c.conf xarg then
       (* Indentation of docked fun or function start before the operator. *)
-      hovbox 2 (fmt_expression c ~parens ~box:false ~pro xarg)
+      hovbox ~name:"Infix_op_arg docked" 2
+        (fmt_expression c ~parens ~box:false ~pro xarg)
     else
       match xarg.ast.pexp_desc with
       | Pexp_function _ | Pexp_beginend _ ->
@@ -2300,14 +2301,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             else Break
           in
           let pro =
-            pro
+            intro_epi
             $ fmt_if parens (str "(")
             $ ( fmt_args_grouped ~epi:fmt_atrs e0 args_before
               $ fmt_if parens (closing_paren c ~force ~offset:(-3)) )
           in
           let label_sep = Params.Exp.fun_label_sep c.conf in
           let pro = pro $ break 1 0 $ fmt_label lbl label_sep in
-          hovbox 4 (fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg))
+          expr_epi
+          $ hovbox 4
+              (fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg))
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes
