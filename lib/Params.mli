@@ -81,6 +81,13 @@ module Exp : sig
   val box_fun_decl : ctx0:Ast.t -> Conf.t -> Fmt.t -> Fmt.t
   (** Box a function decl from the label to the arrow. *)
 
+  val box_fun_decl_after_pro : ctx0:Ast.t -> Fmt.t -> Fmt.t
+  (** Box a function decl from after the [pro] to the arrow. *)
+
+  val box_beginend : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
+
+  val box_beginend_subexpr : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
+
   val match_inner_pro : ctx0:Ast.t -> parens:bool -> bool
   (**  whether the [pro] argument of [fmt_match] should be displayed as an inner
      or outer prologue.*)

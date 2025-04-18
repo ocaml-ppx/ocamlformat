@@ -360,8 +360,7 @@ let _ =
 
 let () =
   if a then begin
-    b
-  (* asd *)
+    b (* asd *)
   end
 
 let x =
@@ -397,7 +396,11 @@ let _ =
       end
 
 let _ = match x with _ -> begin[@foo] y end
-let v = map x begin fun x y z -> y end
+
+let v =
+  map x begin fun x y z ->
+      y
+    end
 
 let v =
   map x
@@ -407,9 +410,11 @@ let v =
 
 let v =
   map x
-    begin fun x
+    begin fun
+      x
       arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
-    -> y
+    ->
+      y
     end
 
 let v =
@@ -420,11 +425,13 @@ let v =
 
 let v =
   map x
-    begin fun x
+    begin fun
+      x
       argggggggggggggggggggggggggggggggggg
       gggggggggggggggggggg
       ggggggggggggggg
-    -> y
+    ->
+      y
     end
 
 let v =
@@ -434,15 +441,13 @@ let v =
       z)
 
 let v =
-  map x
-    begin fun x y z ->
+  map x begin fun x y z ->
       ya f;
       a f b
     end
 
 let v =
-  map x
-    begin%ext1 fun%ext2 x y z ->
+  map x begin%ext1 fun%ext2 x y z ->
       ya f;
       a f b
     end
@@ -468,10 +473,11 @@ let _ =
   end
 
 let _ =
-  lazy begin fun xxxxxxxxxxxxxxxxxxxxxxx
-    yyyyyyyyyyyyyyyyyyy
-    zzzzzzzzzzzzzzzzzzzzzzzz
-  ->
+  lazy begin fun
+         xxxxxxxxxxxxxxxxxxxxxxx
+         yyyyyyyyyyyyyyyyyyy
+         zzzzzzzzzzzzzzzzzzzzzzzz
+       ->
     print_endline xxxxxxxxx;
     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
   end
@@ -557,10 +563,11 @@ let _ =
 
 let _ =
   f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
-    ~label:begin fun x
-      aaaaaaaaaaaaaaaaaaaaaaaaa
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    ->
+    ~label:begin fun
+             x
+             aaaaaaaaaaaaaaaaaaaaaaaaa
+             aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+           ->
       function_ body;
       force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
       return value
@@ -627,3 +634,51 @@ let _ =
     a
   end
   [@a]
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
+
+let () =
+  fooooo
+  |>>>>> List.iter
+           begin fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
+
+let () =
+  fooooo
+  |>>>>> List.iter aaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa
+           aaaaaaaaaaaaaa
+           begin fun
+             aaaaaaaaaaaaaaaaaaaaaaaaaaa
+             aa
+             aaaaaaaaaaa
+             aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+           ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
