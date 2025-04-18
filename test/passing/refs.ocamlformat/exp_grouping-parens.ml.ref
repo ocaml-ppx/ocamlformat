@@ -557,3 +557,47 @@ let _ =
     a
   end
   [@a]
+
+let () =
+  fooooo
+  |>>>>> List.iter (fun a ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x )
+
+let () =
+  fooooo
+  |>>>>> List.iter
+           (fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x )
+
+let () =
+  fooooo
+  |>>>>> List.iter (fun a ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x )
+
+let () =
+  fooooo
+  |>>>>> List.iter aaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa
+           aaaaaaaaaaaaaa
+           (fun
+             aaaaaaaaaaaaaaaaaaaaaaaaaaa
+             aa
+             aaaaaaaaaaa
+             aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+           ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x )

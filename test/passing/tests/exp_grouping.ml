@@ -503,3 +503,47 @@ let main =
   | B -> bbbbbbbbbbbbbbbbbbbbbb
 
 let _ = begin a end [@a]
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
+
+let () =
+  fooooo
+  |>>>>> List.iter
+           begin fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
+
+let () =
+  fooooo
+  |>>>>> List.iter aaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa
+           aaaaaaaaaaaaaa
+           begin fun aaaaaaaaaaaaaaaaaaaaaaaaaaa
+                   aa
+                   aaaaaaaaaaa
+                   aaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
