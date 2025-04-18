@@ -72,7 +72,7 @@ let _ =
   make_single_trace create_loc message
   :: make_single_trace create_loc create_message
   :: List.map call_chain ~f:(fun foooooooooooooooooooooooooooo ->
-         fooooooooooooooooooooooooooooooo foooooooooooo [])
+      fooooooooooooooooooooooooooooooo foooooooooooo [])
   :: foooooooo :: fooooooooooooooooo
 
 let _ =

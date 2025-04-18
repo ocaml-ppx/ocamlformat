@@ -595,19 +595,19 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
-         | [] -> impossible "previous match"
-         | [cmt] ->
-             let break =
-               fmt_if
-                 ( conf.fmt_opts.ocp_indent_compat.v
-                 && Poly.(pos = Cmt.After)
-                 && String.contains (Cmt.txt cmt) '\n' )
-                 (break_unless_newline 1000 0)
-             in
-             break $ fmt_cmt conf cmt ~fmt_code
-         | group ->
-             list group force_break (fun cmt ->
-                 wrap (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
+           | [] -> impossible "previous match"
+           | [cmt] ->
+               let break =
+                 fmt_if
+                   ( conf.fmt_opts.ocp_indent_compat.v
+                   && Poly.(pos = Cmt.After)
+                   && String.contains (Cmt.txt cmt) '\n' )
+                   (break_unless_newline 1000 0)
+               in
+               break $ fmt_cmt conf cmt ~fmt_code
+           | group ->
+               list group force_break (fun cmt ->
+                   wrap (str "(*") (str "*)") (str (Cmt.txt cmt)) ) )
          $
          match next with
          | Some (next :: _) ->

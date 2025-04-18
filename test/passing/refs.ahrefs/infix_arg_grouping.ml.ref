@@ -13,23 +13,21 @@ user_error
 hvbox 1
   (str "\""
   $ list_pn lines (fun ?prev curr ?next ->
-      let drop = function
-        | ' ' -> true
-        | _ -> false
+    let drop = function
+      | ' ' -> true
+      | _ -> false
+    in
+    let line = if Option.is_none prev then curr else String.lstrip ~drop curr in
+    fmt_line line
+    $ opt next (fun next ->
+      let spc =
+        match String.lfindi next ~f:(fun _ c -> not (drop c)) with
+        | Some 0 -> ""
+        | Some i -> escape_string (String.sub next 0 i)
+        | None -> escape_string next
       in
-      let line =
-        if Option.is_none prev then curr else String.lstrip ~drop curr
-      in
-      fmt_line line
-      $ opt next (fun next ->
-          let spc =
-            match String.lfindi next ~f:(fun _ c -> not (drop c)) with
-            | Some 0 -> ""
-            | Some i -> escape_string (String.sub next 0 i)
-            | None -> escape_string next
-          in
-          fmt "\\n"
-          $ fmt_if_k (not (String.is_empty next)) (str spc $ pre_break 0 "\\" 0)))
+      fmt "\\n"
+      $ fmt_if_k (not (String.is_empty next)) (str spc $ pre_break 0 "\\" 0)))
   $ str "\""
   $ Option.call ~f:epi)
 ;;
@@ -62,13 +60,13 @@ hvbox 0
   $ wrap "(" ")"
       (str txt
       $ opt mt (fun _ ->
-          fmt "@ : "
-          $ Option.call ~f:pro_t
-          $ psp_t
-          $ fmt "@;<1 2>"
-          $ bdy_t
-          $ esp_t
-          $ Option.call ~f:epi_t))
+        fmt "@ : "
+        $ Option.call ~f:pro_t
+        $ psp_t
+        $ fmt "@;<1 2>"
+        $ bdy_t
+        $ esp_t
+        $ Option.call ~f:epi_t))
   $ fmt " ->@ "
   $ Option.call ~f:pro_e
   $ psp_e

@@ -97,14 +97,14 @@ let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
   let results =
     metrics_by_test |> Hashtbl.to_seq
     |> Seq.map (fun (test_name, metrics) ->
-           let metrics =
-             metrics |> Hashtbl.to_seq
-             |> Seq.map (fun (metric_name, ols) ->
-                    (metric_name, json_of_ols ols) )
-             |> List.of_seq
-             |> fun bindings -> `Assoc bindings
-           in
-           `Assoc [("name", `String test_name); ("metrics", metrics)] )
+        let metrics =
+          metrics |> Hashtbl.to_seq
+          |> Seq.map (fun (metric_name, ols) ->
+              (metric_name, json_of_ols ols) )
+          |> List.of_seq
+          |> fun bindings -> `Assoc bindings
+        in
+        `Assoc [("name", `String test_name); ("metrics", metrics)] )
     |> List.of_seq
     |> fun items -> `List items
   in
