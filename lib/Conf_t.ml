@@ -99,6 +99,7 @@ type fmt_opts =
   ; match_indent: int elt
   ; match_indent_nested: [`Always | `Auto | `Never] elt
   ; max_indent: int option elt
+  ; module_indent: int elt
   ; module_item_spacing: [`Compact | `Preserve | `Sparse] elt
   ; nested_match: [`Wrap | `Align] elt
   ; ocp_indent_compat: bool elt
