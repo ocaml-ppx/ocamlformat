@@ -1,4 +1,4 @@
-name: Build and test
+name: Build on Dune PM
 
 on: [push, pull_request]
 
@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [ ubuntu-latest ]
+        runs-on: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.runs-on }}
 
     steps:
