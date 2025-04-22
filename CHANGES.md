@@ -47,6 +47,7 @@ profile. This started with version 0.26.0.
     some code
   end
   ```
+- Add a CI workflow for dune package management (#2695, @Sudha247)
 
 ## 0.27.0
 
