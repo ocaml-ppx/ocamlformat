@@ -78,7 +78,7 @@ module Exp : sig
 
   val single_line_function : ctx:Ast.t -> ctx0:Ast.t -> args:'a list -> bool
 
-  val box_fun_decl : ctx0:Ast.t -> Conf.t -> Fmt.t -> Fmt.t
+  val box_fun_decl : ctx0:Ast.t -> ctx:Ast.t -> Conf.t -> Fmt.t -> Fmt.t
   (** Box a function decl from the label to the arrow. *)
 
   val box_fun_decl_after_pro : ctx0:Ast.t -> Fmt.t -> Fmt.t

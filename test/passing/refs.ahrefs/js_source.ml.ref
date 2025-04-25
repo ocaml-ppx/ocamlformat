@@ -587,8 +587,13 @@ let _ =
 
 let _ =
   let x = x in
-  fun foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo
-    foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo -> ()
+  fun foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+  -> ()
 
 module type For_let_syntax_local =
   For_let_syntax_gen

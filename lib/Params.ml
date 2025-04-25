@@ -329,16 +329,21 @@ module Exp = struct
         then Fn.id
         else hvbox indent
 
-  let box_fun_decl ~ctx0 c k =
-    match ctx0 with
-    | Exp {pexp_desc= Pexp_beginend _; _} -> hovbox 2 k
+  let box_fun_decl ~ctx0 ~ctx c k =
+    match (ctx0, ctx) with
+    | Exp {pexp_desc= Pexp_beginend _; _}, _ -> hovbox 2 k
     | _ when ocp c -> hvbox 2 k
     (* Avoid large indentation for [let _ = function]. *)
-    | Lb
-        { pvb_body= Pfunction_body {pexp_desc= Pexp_function ([], _, _, _); _}
-        ; _ } ->
+    | ( Lb
+          { pvb_body=
+              Pfunction_body {pexp_desc= Pexp_function ([], _, _, _); _}
+          ; _ }
+      , _ ) ->
         hovbox 2 k
-    | Str _ | Lb _ | Clf _ | Exp {pexp_desc= Pexp_let _; _} -> hovbox 4 k
+    | (Str _ | Lb _ | Clf _), _ -> hovbox 4 k
+    | Exp {pexp_desc= Pexp_let (_, e, _); _}, Exp e'
+      when not (phys_equal e e') ->
+        hovbox 4 k
     | _ -> hvbox 2 k
 
   let box_fun_decl_after_pro ~ctx0 =

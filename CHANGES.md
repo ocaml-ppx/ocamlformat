@@ -67,6 +67,10 @@ profile. This started with version 0.26.0.
   keyword but `begin` `function`, and `fun` had attributes stuck to the keyword:
   `match[@a]`, but `fun [@a]`. Now its also `fun[@a]`. (#2676, @EmileTrotignon)
 
+- \* The formatting of`let a = b in fun ...` is now consistent with other
+  contexts like `a ; fun ...`. A check for the syntax `let a = fun ... in ...`
+  was made more precise. (#2705, @EmileTrotignon)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
