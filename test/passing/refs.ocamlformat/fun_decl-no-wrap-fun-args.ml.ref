@@ -5,7 +5,8 @@ let _ = fun (x : int) : int -> (some_large_computation : int)
 let fooo = List.foooo ~f:(fun foooo foooo : bool -> foooooooooooooooooooooo)
 
 let _ =
- fun (x : int)
+ fun
+     (x : int)
      (x : int)
      (x : int)
      (x : int)
@@ -15,7 +16,8 @@ let _ =
   some_large_computation
 
 let _ =
- fun (x : int)
+ fun
+     (x : int)
      (x : int)
      (x : int)
      (x : int)
@@ -100,17 +102,19 @@ let _ =
 
 let _ =
   let _ = () in
-  fun (context : Context.t)
-      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t)
-    ->
+  fun
+    (context : Context.t)
+    ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t)
+  ->
     let _ = () in
     ()
 
 let _ =
   print_endline "foo" ;
-  fun (context : Context.t)
-      ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t)
-    ->
+  fun
+    (context : Context.t)
+    ~(local_bins : origin Appendable_list.t Filename.Map.t Memo.Lazy.t)
+  ->
     let _ = () in
     ()
 
