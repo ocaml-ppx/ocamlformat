@@ -1664,7 +1664,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
         ( pro_outer
         $ hvbox_if has_cmts_outer 0
             ( cmts_outer
-            $ Params.Exp.box_fun_decl ~ctx0 c.conf
+            $ Params.Exp.box_fun_decl ~ctx0 ~ctx c.conf
                 ( pro_inner $ cmts_inner
                 $ Params.Exp.box_fun_decl_after_pro ~ctx0
                     (opn_attr_paren $ opn_paren $ head) ) ) )
