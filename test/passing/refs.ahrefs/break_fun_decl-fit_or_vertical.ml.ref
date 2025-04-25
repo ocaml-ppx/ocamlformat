@@ -148,3 +148,24 @@ let new_specialised_args =
       :
       Flambda.specialised_to
     -> ())
+
+(* With a label it is actually consistent *)
+
+let new_specialised_args =
+  Variable.Map.mapi
+    ~a:(fun
+        new_inner_var______
+        (definition : Definition.t)
+        :
+        Flambda.specialised_to
+      -> ())
+    foo
+
+let new_specialised_args =
+  Variable.Map.mapi
+    ~a:(fun
+        new_inner_var______
+        (definition : Definition.t)
+        :
+        Flambda.specialised_to
+      -> ())
