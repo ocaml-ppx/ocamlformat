@@ -71,6 +71,9 @@ profile. This started with version 0.26.0.
   contexts like `a ; fun ...`. A check for the syntax `let a = fun ... in ...`
   was made more precise. (#2705, @EmileTrotignon)
 
+- \* The formatting of `f (fun` is now consistent with `f ~a:(fun`.
+  (#2706, @EmileTrotignon)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
