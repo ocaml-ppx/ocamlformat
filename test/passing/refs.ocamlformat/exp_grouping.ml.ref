@@ -644,12 +644,11 @@ let _ =
 let () =
   fooooo
   |>>>>> List.iter begin fun a ->
-             let x =
-               some_really_really_really_long_name_that_doesn't_fit_on_the_line
-               $ y
-             in
-             fooooooooooo x
-           end
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
 
 let () =
   fooooo
@@ -665,12 +664,11 @@ let () =
 let () =
   fooooo
   |>>>>> List.iter begin fun a ->
-             let x =
-               some_really_really_really_long_name_that_doesn't_fit_on_the_line
-               $ y
-             in
-             fooooooooooo x
-           end
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
 
 let () =
   fooooo
