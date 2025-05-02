@@ -109,18 +109,21 @@ module type Module_type_fail = sig
 
   module F : functor (_ : T) -> sig end
 
-  include S end
+  include S
+end
 
 module A : sig
   type a
 
-  type b end =
+  type b
+end =
   B
 
 module A : sig
   type a
 
-  type b end = struct
+  type b
+end = struct
   type a
 
   type b
