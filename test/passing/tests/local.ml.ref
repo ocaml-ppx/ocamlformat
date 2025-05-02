@@ -196,3 +196,228 @@ let _ = (exclave_ x) |> f
 let _ = exclave_ x + y
 
 let _ = exclave_ x |> f
+
+let _ =
+  (* 1 *)
+  M.x (* 2 *) l (* 3 *)
+    ~f:((* 4 *)
+        (* 5 *)
+        (* 6 *)
+      local_ fun
+        x (* 7 *) ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
+        (* 7 *)
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  List.iter l ~f:(local_ fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  (* 1 *)
+  M.x (* 2 *) l (* 3 *)
+      ~f:((* 4 *)
+          (* 5 *)
+          (* 6 *) local_ function x (* 7 *) ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
+        (* 8 *)
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  List.iter l ~f:(local_ function xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  (* 1 *)
+  M.x (* 2 *) l (* 3 *)
+    ~f:((* 4 *)
+        (* 5 *)
+        (* 6 *) local_ function
+    | _ ->
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxx
+          (* 8 *)
+          ( module struct
+            type nonrec t = M.t
+          end )
+    | _ ->
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxx
+          (* 9 *)
+          ( module struct
+            type nonrec t = M.t
+          end ) )
+
+let _ =
+  List.iter l ~f:(local_ function
+    | _ ->
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
+          ( module struct
+            type nonrec t = M.t
+          end )
+    | _ ->
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
+          ( module struct
+            type nonrec t = M.t
+          end ) )
+
+let _ =
+  List.iter l (* 1 *)
+    ~f:((* 2 *)
+        (* 3 *)
+      local_ fun
+        (* 4 *) xxxxx ->
+      (* 5 *)
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+    ~g:x
+
+let _ =
+  List.iter l
+    ~f:(local_ fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+    ~g:x
+
+let _ =
+  List.iter l (* 1 *)
+    ~f:((* 2 *)
+        (* 3 *) local_ function
+      (* 4 *)
+      | xxxxx ->
+          (* 5 *)
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
+let _ =
+  List.iter l
+    ~f:(local_ function
+      | xxxxx ->
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
+let _ =
+  List.iter l (* 1 *)
+    ~f:((* 2 *)
+        (* 3 *) local_ function
+      (* 4 *)
+      | _ (* 5 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
+      | _ (* 6 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x )
+    ~g:x
+
+let _ =
+  List.iter l
+    ~f:(local_ function
+      | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
+      | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x )
+    ~g:x
+
+(* [exclave_] *)
+let _ =
+  List.iter l
+    ~f:(local_ function
+      (* x *)
+      | xxxxx (* y *) ->
+          (* z *)
+          exclave_
+          (* w *)
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
+let _ =
+  List.iter l ~f:(local_ fun (* x *) xxxxx (* y *) ->
+      (* z *)
+      exclave_
+      (* w *)
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  List.iter l
+    ~f:(local_ function
+      | xxxxx ->
+          exclave_
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
+let _ =
+  List.iter l ~f:(local_ fun xxxxx ->
+      exclave_
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+(* Two funs breaks comments *)
+let _ = M.f ~x:(fun _ -> x) ~y:((* c *) stack_ fun _ -> y)
+
+(* No [local_] (for reference) *)
+let _ =
+  List.iter l ~f:(fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+
+let _ =
+  List.iter l
+    ~f:(fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        ( module struct
+          type nonrec t = M.t
+        end ) )
+    ~g:x
+
+let _ =
+  List.iter l
+    ~f:(function
+      | xxxxx ->
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
+(* Two arguments *)
+let xxxxxxxxxxxxxxxxx xxxxxxx ~xxx =
+  xxxxxxx
+    (local_ fun () ->
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ;
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx )
+    (local_ fun () ->
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ;
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx )
+
+(* Comment shouldn't split [local_ fun] *)
+let x =
+  xxxxxxx
+    ~xxxxxxxxxxxxxxxxxxxxxxxxxxx:(fun _ -> x)
+    ~xxxxxxxxxxxxxxxxxxxxxxxxxxx:((* xxxxxxxxxxxxxxxxxxxxxxxxxx *)
+      local_ fun
+        _ _ -> xxxxxxxxxxxxxxxxxxxxxx )

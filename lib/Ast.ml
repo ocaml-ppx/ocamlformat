@@ -1711,6 +1711,7 @@ end = struct
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
+    | Pexp_pack (m, _) when mod_is_simple m -> true
     | _ -> false
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within

@@ -8221,3 +8221,28 @@ end
     ]
   ;;
 *)
+
+let _ = List.sum l (module M) ~f:(fun x -> print_endline "*"; x)
+let _ = List.sum l (module M : S with type t = t) ~f:(fun x -> print_endline "*"; x)
+let _ = List.sum l (module M : S with type t = t and type u = u) ~f:(fun x -> y; x)
+
+let _ =
+  M.ffffffffffffff
+    ~aaaaaaaaaaaaaaaaaaaa:(ffffffffffffff xxxxxxxxxxxxxxxxxxxxxxxxxxx)
+    ~aaaaaaaaaaaaaaaaaaaa:(function
+      | _ -> ffffffff xxxxxxxxxxxxxxxxx
+      | _ -> ffffffff xxxxxxxxxxxxxxxxx)
+
+let _ =
+  f ~f:(fun _ -> exclave_
+    Mmmmmmmmmmmmmmmmmmmmm.xxxxxxxxxxxxxxxxxxxxx
+    |> fffffffffffffffffffff ~xxxxxxxxxxxxxxxxxxxxx
+    (* ccccccccccccccccccccccccccccccccccccccccc *))
+
+let x =
+  Mmmmmmmmmmmmmmmmmmmmm.xxxxxxxxxxxxxxxxxxxxx
+    ~xxxxxxxxxxxx:
+      (fun
+        ttttttttttttttttttttttttttttttttttttt tttttttttttttttttttttt -> function
+      | _ -> let x = x in x
+      | _ -> let x = x in x)

@@ -149,3 +149,164 @@ let _ = stack_ fun x -> x [@bar]
 let _ = stack_ fun x -> (x [@bar])
 let _ = stack_ ((fun x -> x) [@bar])
 let _ = (stack_ fun x -> x) [@bar]
+
+(* Test labelled argument and long func *)
+
+let _ = (* 1 *) M.x (* 2 *) l (* 3 *) ~f:(* 4 *)((* 5 *) stack_ (* 6 *) (fun x (* 7 *) ->
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx (* 8 *) (module struct type nonrec t = M.t end)))
+
+let _ = List.iter l ~f:(stack_ (fun xxxxx ->
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx (module struct type nonrec t = M.t end)))
+
+let _ = (* 1 *) x (* 2 *) l (* 3 *) ~f:(* 4 *)((* 5 *) stack_ (* 6 *) (function x (* 7 *) ->
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx (* 8 *) (module struct type nonrec t = M.t end)))
+
+let _ = List.iter l ~f:(stack_ (function xxxxx ->
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx (module struct type nonrec t = M.t end)))
+
+let _ = (* 1 *) M.x (* 2 *) l (* 3 *) ~f:(* 4 *)((* 5 *) stack_ (* 6 *) (function
+  | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxx (* 8 *) (module struct type nonrec t = M.t end)
+  | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxx (* 9 *) (module struct type nonrec t = M.t end)
+))
+
+let _ = List.iter l ~f:(stack_ (function
+  | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxx (module struct type nonrec t = M.t end)
+  | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxx (module struct type nonrec t = M.t end)
+))
+
+let _ =
+  List.iter
+    l
+    (* 1 *)
+    ~f:(* 2 *)((* 3 *) stack_ (* 4 *) (fun (* 5 *) xxxxx -> (* 6 *)
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end)))
+    ~g:x
+;;
+
+let _ =
+  List.iter
+    l
+    ~f:(stack_ (fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end)))
+    ~g:x
+;;
+
+let _ =
+  List.iter
+    l
+    (* 1 *)
+    ~f:(* 2 *)((* 3 *) stack_ (* 4 *) (function (* 5 *) xxxxx -> (* 6 *)
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end)))
+    ~g:x
+;;
+
+let _ =
+  List.iter
+    l
+    ~f:(stack_ (function xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end)))
+    ~g:x
+;;
+
+let _ =
+  List.iter
+    l
+    (* 1 *)
+    ~f:(* 2 *)((* 3 *) stack_ (* 4 *) (function (* 5 *)
+      | _ (* 6 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
+      | _ (* 7 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x))
+    ~g:x
+;;
+
+let _ =
+  List.iter
+    l
+    ~f:(stack_ (function
+      | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
+      | _ -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x))
+    ~g:x
+;;
+
+(* [exclave_] *)
+let _ =
+  List.iter
+    l
+    ~f:(stack_ function (* x *) xxxxx (* y *) -> (* z *) exclave_ (* w *)
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end))
+    ~g:x
+;;
+
+let _ = List.iter l ~f:(stack_ fun (* x *) xxxxx (* y *) -> (* z *) exclave_ (* w *)
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx (module struct type nonrec t = M.t end))
+;;
+
+let _ =
+  List.iter
+    l
+    ~f:(stack_ function xxxxx -> exclave_
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end))
+    ~g:x
+;;
+
+let _ = List.iter l ~f:(stack_ fun xxxxx -> exclave_
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx (module struct type nonrec t = M.t end))
+;;
+
+(* Two funs breaks comments *)
+let _ =
+  M.f
+    ~x:(fun _ -> x)
+    ~y:(* c *) (stack_ fun _ -> y)
+
+(* No [stack_] (for reference) *)
+let _ = List.iter l ~f:( (fun xxxxx ->
+  Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx (module struct type nonrec t = M.t end)))
+
+let _ =
+  List.iter
+    l
+    ~f:(fun xxxxx ->
+      Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+        (module struct
+          type nonrec t = M.t
+        end))
+    ~g:x
+;;
+
+(* Two arguments *)
+let xxxxxxxxxxxxxxxxx xxxxxxx ~xxx =
+  xxxxxxx
+    (stack_ fun () ->
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+    (stack_ fun () ->
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+;;
+
+(* Comment shouldn't split [stack_ fun] *)
+let x =
+  xxxxxxx
+    ~xxxxxxxxxxxxxxxxxxxxxxxxxxx:(fun _ -> x)
+    ~xxxxxxxxxxxxxxxxxxxxxxxxxxx:
+      (* xxxxxxxxxxxxxxxxxxxxxxxxxx *)
+      (stack_ fun _ _ -> xxxxxxxxxxxxxxxxxxxxxx)
+;;

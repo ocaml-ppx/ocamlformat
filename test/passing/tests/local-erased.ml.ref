@@ -1,176 +1,194 @@
-(* These tests from the campiler test suite *)
+let f a b c = 1
 
-let f = ref (fun x -> x)
+let f a ~foo:b ?foo:(c = 1) ~d = ()
 
-let f = ref (2, 3)
+let f ~x ~(y : string) ?(z : string) = ()
 
-let f = ignore_local (2, 3)
+let xs = [(fun a (type b) ~c -> 1)]
 
-let f = ref Foo
-
-let f = ref (Bar 42)
-
-let f = ignore_local (Bar 42)
-
-let f = ref `Foo
-
-let f = ref (`Bar 42)
-
-let f = ignore_local (`Bar 42)
-
-let f = ref {x= "hello"}
-
-let f = ref {x= "hello"}
-
-let f = ignore_local {x= "hello"}
-
-let f (r : r) = ref r.x
-
-let f (r : r) = ref r.x
-
-let f (r : r) = ignore_local r.x [@nontail]
-
-let f = ref [|42; 56|]
-
-let f = ignore_local [|42; 56|]
-
-let f () = (3, 5)
-
-let f () = (3, 5)
+let xs = [(fun a (type b) ~c -> 1)]
 
 let f () =
-  let g x = x in
-  g 42
-
-let f () = (fun x -> x) 42
-
-let f () = List.length [1; 2; 3]
-
-let f () = [i for i = 0 to 9]
-
-let f () = [|i for i = 0 to 9|]
-
-let f () = new cla
-
-class foo cla =
-  object
-    method bar = {<>}
-  end
-
-let f () = object end
-
-let f () = lazy "hello"
-
-module M = struct end
-
-module type S = sig end
-
-let f () = (module M : S)
+  let a = [1] in
+  let r = 1 in
+  let f : 'a. 'a -> 'a = fun x -> x in
+  let g a b c : int = 1 in
+  let () = g (fun () -> ()) in
+  "asdfasdfasdfasdfasdfasdfasdf"
 
 let f () =
-  let r = ref "hello" in
-  let _ = (r.contents, r.contents) in
-  r.contents
+  let a = [1] in
+  let r = 1 in
+  let f : 'a. 'a -> 'a = fun x -> x in
+  let g a b c : int = 1 in
+  let () = g (fun () -> ()) in
+  "asdfasdfasdfasdfasdfasdfasdf"
 
-let f () =
-  let r = "hello" in
-  let _ = (r, r) in
-  r
+type 'a r = {mutable a: 'a; b: 'a; c: 'a [@globalized]}
 
-let mk () =
-  let r = {x= [1; 2; 3]; y= [4; 5; 6]} in
-  r.y
+type 'a r =
+  | Foo of ('a[@globalized])
+  | Bar of 'a * ('a[@globalized])
+  | Baz of (int[@globalized]) * string * ('a[@globalized])
 
-let mk () =
-  let r = {x= [1; 2; 3]; y= [4; 5; 6]} in
-  r.x
+type ('a, 'b) cfn = a:'a -> ?b:b -> 'a -> int -> 'b
 
-(* More tests *)
+let _ = ()
 
-let f = ref (function x -> x)
+let _ = ()
 
-let f = ref (function x -> x | y -> y)
+let () = x
 
-let f =
-  (* 1 *)
-  ref (* 2 *) (function
-      (* 3 *)
-      (* 4 *)
-      (* 5 *)
-      (* 6 *) x -> x )
+let () = x
 
-let x = ((2, "hello"), ~x:(Foo x))
+let {b} = ()
 
-let x =
-  (* 1 *)
-  (* 2 *)
-  ( (* 3 *)
-    (* 4 *)
-    ((* 5 *) 1 (* 6 *), (* 7 *) "hello" (* 8 *))
-    (* 9 *)
-  , (* 10 *)
-  ~x:((* 11 *)
-      (* 12 *)
-        Foo
-        x ) )
+let {b} = ()
 
-(* Constructor precedence *)
+let () = r
 
-let x = Foo ((), ())
+let () = r
 
-let x = () :: []
+let x : string = "hi"
 
-(* Tuples *)
+let (x : string) = "hi"
 
-let x = (1, 2)
+let (x : string) = "hi"
 
-let x = (1, 2)
+let x = ("hi" : string)
 
-let x = (~x:1, ~y:2)
+let x = ("hi" : string)
 
-(* Expressions rejected by the typechecker *)
+let x : 'a. 'a -> 'a = "hi"
 
-let x = x + y
+let x : 'a. 'a -> 'a = "hi"
 
-let x = -x
+let f : 'a. 'a -> 'a = "hi"
 
-let x = -42
+let foo () =
+  if true then () ;
+  ()
 
-let x = +x
+let[@ocaml.local] upstream_local_attr_long x = x
 
-let x = 42
+module type S = functor (_ : S) (_ : S) -> S
 
-let x = - (-x)
+let[@ocaml.local never] upstream_local_attr_never_long x = x
 
-let x = 42
+let[@ocaml.local always] upstream_local_attr_always_long x = x
 
-let x = Foo x
+let[@ocaml.local maybe] upstream_local_attr_maybe_long x = x
 
-let x =
+let[@local] upstream_local_attr_short x = x
+
+let[@local never] upstream_local_attr_never_short x = x
+
+let[@local always] upstream_local_attr_always_short x = x
+
+let[@local maybe] upstream_local_attr_maybe_short x = x
+
+let f x =
+  (* a *)
+  (* b *)
+  (* c *)
+  (* d *)
   let y = 1 in
-  Some y
+  x + y
 
-let x = c#x
+let f x =
+  (* a *)
+  (* b *)
+  (* c *)
+  (* d *)
+  let y = 1 in
+  x + y
 
-let x = r.x <- x
+let x =
+  (* a *)
+  (* b *)
+  (* c *)
+  (* d *)
+  let y = 1 in
+  y
 
-let x = if x then y else z
+let x =
+  (* a *)
+  (* b *)
+  (* c *)
+  (* d *)
+  let y = 1 in
+  y
 
-let _ = X foo [@bar]
+module type S = functor (_ : S) (_ : S) -> S
+(* this is here to make sure we pass the AST equality checks even when the
+   extended AST is different *)
 
-let _ = X (foo [@bar])
+let f
+    (* a *)
+    (* b *)
+    (* c *)
+    (* d *) a
+    ~foo:
+      (* e *)
+      (* f *)
+      (* g *)
+      (* h *) b ?foo:(c = 1) ~d =
+  ()
 
-let _ = X foo [@bar]
+type 'a r =
+  { mutable a: 'a
+  ; b: 'a
+  ; (* a *)
+    (* b *)
+    (* c *)
+    (* d *) c: 'a [@globalized] }
 
-let _ = fun x -> x [@bar]
+type 'a r =
+  | Foo of
+      (* a *)
+      (* b *)
+      (* c *)
+      (* d *)
+      ('a[@globalized])
+  | Bar of
+      'a
+      * (* e *)
+        (* f *)
+        (* g *)
+        (* h *)
+      ('a[@globalized])
+  | Baz of
+      (int[@globalized])
+      * string
+      * (* i *)
+        (* j *)
+        (* k *)
+        (* l *)
+      ('a[@globalized])
 
-let _ = fun x -> x [@bar]
+let () =
+  let foo (_ : int) = 10 in
+  let bar (Some x : _) = Some 10 in
+  let baz (Some x) = Some 10 in
+  ()
 
-let _ = fun [@bar] x -> x
+type t
 
-let _ = fun [@bar] x -> x
+let _ = x + y
 
-(* Test labelled argument and long func *)
+let _ = x |> f
+
+let _ = x + y
+
+let _ = x |> f
+
+let _ = x + y
+
+let _ = x |> f
+
+let _ = x + y
+
+let _ = x |> f
 
 let _ =
   (* 1 *)
@@ -181,7 +199,7 @@ let _ =
         (* 6 *) x (* 7 *)
       ->
       Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
-        (* 8 *)
+        (* 7 *)
         ( module struct
           type nonrec t = M.t
         end ) )
@@ -195,7 +213,7 @@ let _ =
 
 let _ =
   (* 1 *)
-  x
+  M.x
     (* 2 *)
     l
     (* 3 *)
@@ -240,25 +258,24 @@ let _ =
 let _ =
   List.iter l ~f:(function
     | _ ->
-        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxx
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
           ( module struct
             type nonrec t = M.t
           end )
     | _ ->
-        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxx
+        Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxx
           ( module struct
             type nonrec t = M.t
           end ) )
 
 let _ =
   List.iter l (* 1 *)
-    ~f:(* 2 *)
-      (fun
+    ~f:(fun
+        (* 2 *)
         (* 3 *)
-        (* 4 *)
-        (* 5 *) xxxxx
+        (* 4 *) xxxxx
       ->
-      (* 6 *)
+      (* 5 *)
       Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
         ( module struct
           type nonrec t = M.t
@@ -276,12 +293,12 @@ let _ =
 
 let _ =
   List.iter l (* 1 *)
-    ~f:(* 2 *) (function
+    ~f:(function
+      (* 2 *)
       (* 3 *)
       (* 4 *)
-      (* 5 *)
       | xxxxx ->
-          (* 6 *)
+          (* 5 *)
           Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
             ( module struct
               type nonrec t = M.t
@@ -300,12 +317,12 @@ let _ =
 
 let _ =
   List.iter l (* 1 *)
-    ~f:(* 2 *) (function
+    ~f:(function
+      (* 2 *)
       (* 3 *)
       (* 4 *)
-      (* 5 *)
-      | _ (* 6 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
-      | _ (* 7 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x )
+      | _ (* 5 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x
+      | _ (* 6 *) -> Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx x )
     ~g:x
 
 let _ =
@@ -358,7 +375,7 @@ let _ =
 (* Two funs breaks comments *)
 let _ = M.f ~x:(fun _ -> x) ~y:(* c *) (fun _ -> y)
 
-(* No [stack_] (for reference) *)
+(* No [local_] (for reference) *)
 let _ =
   List.iter l ~f:(fun xxxxx ->
       Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
@@ -375,6 +392,16 @@ let _ =
         end ) )
     ~g:x
 
+let _ =
+  List.iter l
+    ~f:(function
+      | xxxxx ->
+          Xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxx
+            ( module struct
+              type nonrec t = M.t
+            end ) )
+    ~g:x
+
 (* Two arguments *)
 let xxxxxxxxxxxxxxxxx xxxxxxx ~xxx =
   xxxxxxx
@@ -385,7 +412,7 @@ let xxxxxxxxxxxxxxxxx xxxxxxx ~xxx =
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ;
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx )
 
-(* Comment shouldn't split [stack_ fun] *)
+(* Comment shouldn't split [local_ fun] *)
 let x =
   xxxxxxx
     ~xxxxxxxxxxxxxxxxxxxxxxxxxxx:(fun _ -> x)
