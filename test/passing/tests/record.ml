@@ -89,3 +89,4 @@ let x = A(B).a
 
 let x = (1).a
 
+type 'a t = A : 'b. {a: 'a} -> 'a t
