@@ -26,6 +26,7 @@ module Core = struct
             type t = int
 
             let compare = compare
+
             let ( + ) x y = x + y
         end
 
