@@ -71,6 +71,8 @@ profile. This started with version 0.26.0.
   contexts like `a ; fun ...`. A check for the syntax `let a = fun ... in ...`
   was made more precise. (#2705, @EmileTrotignon)
 
+- Fix a crash on `type 'a t = A : 'a. {a: 'a} -> 'a t`. (#2710, @EmileTrotignon)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
