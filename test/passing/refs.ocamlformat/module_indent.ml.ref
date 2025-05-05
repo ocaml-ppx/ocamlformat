@@ -1,9 +1,9 @@
 (* Signature module type with attributes and comments *)
 module type M = sig
+    (** Type of elements *)
     type t
     [@@ocaml.doc
       "Abstract type....................................................."]
-    (** Type of elements *)
 
     val f : (string * int) list -> int
     [@@ocaml.doc "Processes a list of (string * int) pairs"]
