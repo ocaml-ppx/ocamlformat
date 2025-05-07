@@ -1,2 +1,2 @@
---max-iter=3
+--max-iters=3
 --module-item-spacing=sparse

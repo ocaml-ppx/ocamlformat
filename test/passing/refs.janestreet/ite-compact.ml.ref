@@ -41,6 +41,7 @@ f
 f
   (if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then ()
    else ())
+;;
 
 let () =
   f
@@ -49,7 +50,7 @@ let () =
      else c_________________________________________________________________)
 ;;
 
-let () = if [@test] true then () else if [@other] true then ()
+let () = if[@test] true then () else if[@other] true then ()
 let foo = if cond1 then arm1 else if cond2 then arm2 else arm3
 
 let _ =

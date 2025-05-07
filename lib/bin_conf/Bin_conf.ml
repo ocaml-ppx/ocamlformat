@@ -166,17 +166,17 @@ let check =
 let inputs =
   let docv = "SRC" in
   let file_or_dash =
-    let parse, print = Arg.non_dir_file in
+    let parse = Arg.conv_parser Arg.non_dir_file in
+    let print = Arg.conv_printer Arg.non_dir_file in
     let print fmt = function
       | Stdin -> print fmt "<standard input>"
       | File x -> print fmt x
     in
     let parse = function
-      | "-" -> `Ok Stdin
-      | s -> (
-        match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
+      | "-" -> Ok Stdin
+      | s -> parse s |> Result.map ~f:(fun x -> File x)
     in
-    (parse, print)
+    Arg.conv (parse, print)
   in
   let doc =
     "Input files. At least one is required, and exactly one without \
@@ -467,7 +467,7 @@ let is_in_listing_file ~listings ~filename =
               In_channel.input_lines ch
               |> Migrate_ast.Location.of_lines ~filename:listing_filename
               |> List.filter ~f:(fun Location.{txt= l; _} ->
-                     not (drop_line l) )
+                  not (drop_line l) )
             in
             List.find_map lines ~f:(fun {txt= line; loc} ->
                 match Fpath.of_string line with

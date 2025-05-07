@@ -6,6 +6,16 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Deprecated
+
+- Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
+  the case, the tool no longer accepts unambiguous option names prefixes. For
+  example, `--max-iter` is not accepted anymore, you have to pass the full
+  option `--max-iters`. This does not apply to the keys in the `.ocamlformat`
+  configuration files, which have always required the full name.
+  See dbuenzli/cmdliner#200.
+  (#2680, @emillon)
+
 ### Fixed
 
 - Fixed `wrap-comments=true` not working with the janestreet profile (#2645, @Julow)
@@ -33,13 +43,47 @@ profile. This started with version 0.26.0.
 
 - Fix crash due to edge case with asterisk-prefixed comments (#2674, @Julow)
 
+
 - Fix crash when formatting `mld` files that cannot be lexed as ocaml (e.g.
   containing LaTeX or C code) (#2684, @emillon)
+
+- \* Fix double parens around module constraint in functor application :
+  `module M = F ((A : T))` becomes `module M = F (A : T)`. (#2678, @EmileTrotignon)
+
+- Fix misplaced `;;` due to interaction with floating doc comments.
+  (#2691, @EmileTrotignon)
+
+- The formatting of attributes of expression is now aware of the attributes
+  infix or postix positions: `((fun [@a] x -> y) [@b])` is formatted without
+  moving attributes. (#2676, @EmileTrotignon)
+
+- `begin%e ... end` and `begin [@a] ... end` nodes are always preserved.
+  (#2676, @EmileTrotignon)
+
+- `begin end` syntax for `()` is now preserved. (#2676, @EmileTrotignon)
+
+- \* The formatting of infix extensions is now consistent with regular
+  formatting by construction. This reduces indentation in `f @@ match%e`
+  expressions to the level of indentation in `f @@ match`. Other unknown
+  inconsistencies might also be fixed. (#2676, @EmileTrotignon)
+
+- \* The spacing of infix attributes is now consistent across keywords. Every
+  keyword but `begin` `function`, and `fun` had attributes stuck to the keyword:
+  `match[@a]`, but `fun [@a]`. Now its also `fun[@a]`. (#2676, @EmileTrotignon)
+
+- \* The formatting of`let a = b in fun ...` is now consistent with other
+  contexts like `a ; fun ...`. A check for the syntax `let a = fun ... in ...`
+  was made more precise. (#2705, @EmileTrotignon)
+
+- Fix a crash on `type 'a t = A : 'a. {a: 'a} -> 'a t`. (#2710, @EmileTrotignon)
+
 ### Changed
 
-- `begin if`, `lazy begin`, `begin match` and `begin fun` can now be printed on
-  the same line, with one less indentation level for the body of the inner
-  expression. (#2664, #2666, #2671, #2672, @EmileTrotignon) For example :
+- `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
+  `begin fun` and `map li begin fun`  can now be printed on the same line, with
+  one less indentation level for the body of the inner expression.
+  (#2664, #2666, #2671, #2672, #2681, #2685, #2693, @EmileTrotignon)
+  For example :
   ```ocaml
   (* before *)
   begin
@@ -51,6 +95,36 @@ profile. This started with version 0.26.0.
     some code
   end
   ```
+
+- \* `break-struct=natural` now also applies to `sig ... end`. (#2682, @EmileTrotignon)
+
+- \* `;;` is added at the of every toplevel-expression, except if its the last
+  thing in the struct (#2683, @EmileTrotignon) For example:
+  ```ocaml
+  (* before *)
+  print_endline "foo"
+  let a = 3
+
+  (* after *)
+  print_endline "foo" ;;
+  let a = 3
+  ```
+
+- \* Infix apply docking behaviour from --ocp-indent-compat is promoted to
+ everyone. The most common effect is that `|> map (fun` is now indented from
+ `|>` and not from `map`:
+  ```ocaml
+  (* before *)
+  v
+  |>>>>>> map (fun x ->
+              x )
+  (* after *)
+  v
+  |>>>>>> map (fun x ->
+      x )
+  ```
+  `@@ match` can now also be on one line.
+  (#2694, @EmileTrotignon)
 
 ## 0.27.0
 

@@ -27,7 +27,7 @@ let _ = f (( let* ) x (function y -> z))
 let _ = ( let+ ) [@attr]
 let _ = f (( let+ ) [@attr]);;
 
-( let+ ) [@attr]
+( let+ ) [@attr];;
 
 let _ =
   let* (args, _) : bar = () in

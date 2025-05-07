@@ -124,10 +124,12 @@ let a =
       bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   end
 
-let a = begin match f x i with A -> a | B -> b end
+let a =
+  begin match f x i with A -> a | B -> b
+  end
 
 let a =
-  begin [@a] match[@b]
+  begin[@a] match[@b]
     f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
   with
@@ -138,16 +140,15 @@ let a =
   end
 
 let a =
-  [%e
-    begin [@a] match%lwt[@b]
-      f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
-        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
-    with
-    | A ->
-        f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    | B ->
-        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    end]
+  begin%e[@a] match%lwt[@b]
+    f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
+  with
+  | A ->
+      f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B ->
+      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
 
 let a =
   begin match
@@ -200,10 +201,12 @@ let a =
       bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   end
 
-let a = begin try f x i with A -> a | B -> b end
+let a =
+  begin try f x i with A -> a | B -> b
+  end
 
 let a =
-  begin [@a] try[@b]
+  begin[@a] try[@b]
     f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
   with
@@ -214,16 +217,15 @@ let a =
   end
 
 let a =
-  [%e
-    begin [@a] try%lwt[@b]
-      f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
-        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
-    with
-    | A ->
-        f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    | B ->
-        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    end]
+  begin%e[@a] try%lwt[@b]
+    f xxxx xxxxx xxxxx xxxxxxxxxxxxxxxxx
+      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx i iiiiiiiiiiiiiiiiiii
+  with
+  | A ->
+      f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B ->
+      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
 
 let a =
   begin try

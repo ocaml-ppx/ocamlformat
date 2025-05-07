@@ -43,7 +43,7 @@ let dedup_cmts fragment ast comments =
 let normalize_comments ~normalize_cmt dedup fmt comments =
   dedup comments
   |> List.sort ~compare:(fun a b ->
-         Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
+      Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
   |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (normalize_cmt cmt))
 
 let normalize_parse_result ~normalize_cmt ast_kind ast comments =
@@ -129,13 +129,14 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
     | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
     | Pexp_sequence
         ( exp1
-        , { pexp_desc= Pexp_sequence (exp2, exp3)
+        , { pexp_desc= Pexp_sequence (exp2, exp3, ext2)
           ; pexp_loc= loc2
           ; pexp_attributes= attrs2
-          ; _ } ) ->
+          ; _ }
+        , ext1 ) ->
         m.expr m
-          (Exp.sequence ~loc:loc1 ~attrs:attrs1
-             (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
+          (Exp.sequence ~loc:loc1 ~attrs:attrs1 ?ext:ext1
+             (Exp.sequence ~loc:loc2 ~attrs:attrs2 ?ext:ext2 exp1 exp2)
              exp3 )
     | _ -> Ast_mapper.default_mapper.expr m exp
   in

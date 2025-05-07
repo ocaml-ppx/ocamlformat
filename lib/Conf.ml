@@ -584,14 +584,13 @@ module Formatting = struct
       (fun conf -> conf.fmt_opts.break_string_literals)
 
   let break_struct =
-    let doc = "Break struct-end module items." in
+    let doc = "Break struct-end and sig-end items." in
     let names = ["break-struct"] in
     let all =
       [ Decl.Value.make ~name:"force" `Force
-          "$(b,force) will break struct-end phrases unconditionally."
+          "$(b,force) will break items unconditionally."
       ; Decl.Value.make ~name:"natural" `Natural
-          "$(b,natural) will break struct-end phrases naturally at the \
-           margin." ]
+          "$(b,natural) will break items naturally at the margin." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt ->

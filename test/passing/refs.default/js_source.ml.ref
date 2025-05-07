@@ -17,6 +17,7 @@ end
 
 if fffffffffffffff aaaaa bb then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq
+;;
 
 include Base.Fn
 (** @open *)
@@ -220,10 +221,9 @@ let foo () =
 let _ =
   match x with
   | _
-    when f
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *) "-4"]
-             | _ -> .) ->
+    when f ~f:((function _ -> .)
+             [@ocaml.warning (* ....................................... *) "-4"])
+    ->
       y
 
 let[@a
@@ -237,18 +237,19 @@ let[@a
   with
   | _
     when f
-           ~f:(function[@ocaml.warning
-                         (* ....................................... *) "-4"]
-             | _ -> .)
-           ~f:(function[@ocaml.warning
-                         (* ....................................... *)
-                         (* ....................................... *)
-                         "foooooooooooooooooooooooooooo \
-                          fooooooooooooooooooooooooooooooooooooo"] _ -> .)
-           ~f:(function[@ocaml.warning
-                         (* ....................................... *)
-                         let x = a and y = b in
-                         x + y] _ -> .) ->
+           ~f:((function _ -> .)
+             [@ocaml.warning (* ....................................... *) "-4"])
+           ~f:((function _ -> .)
+             [@ocaml.warning
+               (* ....................................... *)
+               (* ....................................... *)
+               "foooooooooooooooooooooooooooo \
+                fooooooooooooooooooooooooooooooooooooo"])
+           ~f:((function _ -> .)
+             [@ocaml.warning
+               (* ....................................... *)
+               let x = a and y = b in
+               x + y]) ->
       y
       [@attr
         (* ... *)
@@ -297,16 +298,16 @@ let x =
 let x =
   some_value
   |> some_fun (fun x ->
-         do_something ();
-         do_something_else ();
-         return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 
 let x =
   some_value
   ^ some_fun (fun x ->
-        do_something ();
-        do_something_else ();
-        return_this_value)
+      do_something ();
+      do_something_else ();
+      return_this_value)
 
 let bind t ~f =
   unfold_step
@@ -397,20 +398,20 @@ let _ =
 let _ =
   foo
   |> List.map ~f:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
 
 let _ =
   foo
   |> List.map ~f:(fun x ->
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something ();
-         do_something_else ())
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something ();
+      do_something_else ())
   |> bar
 
 let _ =
@@ -423,11 +424,11 @@ let _ = foo |> List.map (function A -> do_something ())
 let _ =
   foo
   |> List.map (function
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something ()
-       | A -> do_something_else ())
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something ()
+    | A -> do_something_else ())
   |> bar
 
 let _ =
@@ -467,15 +468,15 @@ end
 let _ =
   foo
   $$ (match group with
-     | [] -> impossible "previous match"
-     | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
+    | [] -> impossible "previous match"
+    | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
   $$ bar
 
 let _ =
   foo
   $$ (try group with
-     | [] -> impossible "previous match"
-     | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
+    | [] -> impossible "previous match"
+    | [ cmt ] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt)
   $$ bar
 
 let _ =
@@ -559,8 +560,13 @@ let _ =
 
 let _ =
   let x = x in
-  fun foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo
-      foooooooooooooooooo foooooooooooooooooo foooooooooooooooooo -> ()
+  fun foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+    foooooooooooooooooo
+  -> ()
 
 module type For_let_syntax_local =
   For_let_syntax_gen
@@ -586,8 +592,8 @@ include S1
 type input = { name : string; action : [ `Format | `Numeric of range ] }
 
 let x =
- fun [@foo] x ->
-  fun [@foo] y ->
+ fun[@foo] x ->
+  fun[@foo] y ->
    object
      method x = y
    end
@@ -737,7 +743,7 @@ let _ =
 let _ =
   fooooooooooooooooooooooooooooooo
   |> foooooooooooooooooooooooooooo ~fooooooooooooooooooooooooooooooo (function
-         | foo -> bar)
+      | foo -> bar)
 
 let _ =
   fooooooooooooooooooooooooooooooo

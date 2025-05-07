@@ -77,6 +77,7 @@ match x with
 | Aaaaaaaaaaaaaaaaaaaa
 (* this comment is intended to refer to the case below *)
 | Bbbbbbbbbbbbbbbbbbbb -> ()
+;;
 
 let _ =
   (* this comment is intended to refer to the entire match below *)
@@ -494,3 +495,9 @@ let _ =
 ;;
 
 let vexpr (*aa*) (type (*bb*) a) (*cc*) (type (*dd*) b) (*ee*) : _ -> _ = k
+
+let a =
+  (* this is a comment *)
+  match%lwt a with
+  | A -> e
+;;

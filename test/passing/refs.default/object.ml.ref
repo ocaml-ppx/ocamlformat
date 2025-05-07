@@ -231,6 +231,7 @@ end
 {<(* check: e is effectively the index associated with e, and check that
       already in *)
    x = y>}
+;;
 
 class type a = b[@attr]
 class type a = object end[@attr]
@@ -262,8 +263,8 @@ class a x = object end
 class a x = object (self) end
 
 let x =
- fun [@foo] x ->
-  fun [@foo] y ->
+ fun[@foo] x ->
+  fun[@foo] y ->
    object
      method x = y
    end

@@ -63,24 +63,14 @@ let sequence cmts xexp =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; _} = exp in
     match pexp_desc with
-    | Pexp_extension
-        ( ext
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( ( { pexp_desc= Pexp_sequence (e1, e2)
-                        ; pexp_attributes
-                        ; _ } as exp )
-                    , _ )
-              ; pstr_loc } ] )
-      when List.is_empty pexp_attributes
-           && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
+    | Pexp_sequence (e1, e2, Some ext) ->
         let ctx = Exp exp in
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
         else (
-          Cmts.relocate cmts ~src:pstr_loc ~before:e1.pexp_loc
-            ~after:e2.pexp_loc ;
+          Cmts.relocate cmts
+            ~src:ext.loc (* todo in review : is that right ?*)
+            ~before:e1.pexp_loc ~after:e2.pexp_loc ;
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
           if Ast.exposed_right_exp Ast.Let_match e1 then
@@ -93,7 +83,7 @@ let sequence cmts xexp =
               | (_, e2) :: l2 -> (Some ext, e2) :: l2
             in
             List.append l1 l2 )
-    | Pexp_sequence (e1, e2) ->
+    | Pexp_sequence (e1, e2, None) ->
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
         else (
@@ -105,6 +95,7 @@ let sequence cmts xexp =
             List.append
               (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
               (sequence_ ~allow_attribute:false (sub_exp ~ctx e2)) )
+    | Pexp_sequence _ -> .
     | _ -> [(None, xexp)]
   in
   sequence_ xexp

@@ -430,3 +430,120 @@ let () =
     then b_________________________________________________________________
     else c_________________________________________________________________
     end
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin fun x ->
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last ~args
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin fun x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last ~args
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin match x aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa with
+      | A -> aaaaaaaaaaaa
+      | B -> bbbbbbbbbbbbbbbbb b bbbbbbbbbbbbbbbbb
+      | C -> c cccccccccccccccccc cccccccccccccccccccccccccccccc
+    end
+    ~last ~args
+
+let _ =
+  f ~aaaaaaaaaaaaaaaaaaaaaaaaaa ~bbbbbbbbbbbbbbbbbbbbbbb ~ccccccccccccccccccccc
+    ~label:begin
+      function_ body;
+      force breakkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk;
+      return value
+    end
+    ~last ~args
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin fun xxxxxxx ->
+    xxxxxxxxxxxxxxxxxxxxxxx ;
+    aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin match xxxxxxx with
+  | A -> xxxxxxxxxxxxxxxxxxxxxxx
+  | B -> aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
+
+
+let _ =
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  |>>>>> begin
+    xxxxxxxxxxxxxxxxxxxxxxx ;
+    aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaa
+  end
+let main =
+  Lwt.run
+  @@
+  match a with
+  | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let main =
+  Lwt.run
+  @@
+  match%lwt a with
+  | A -> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  | B -> bbbbbbbbbbbbbbbbbbbbbb
+
+let _ = begin a end [@a]
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
+
+let () =
+  fooooo
+  |>>>>> List.iter
+           begin fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end
+
+let () =
+  fooooo
+  |>>>>> List.iter begin fun a ->
+      let x =
+        some_really_really_really_long_name_that_doesn't_fit_on_the_line $ y
+      in
+      fooooooooooo x
+    end
+
+let () =
+  fooooo
+  |>>>>> List.iter aaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa
+           aaaaaaaaaaaaaa
+           begin fun aaaaaaaaaaaaaaaaaaaaaaaaaaa
+                   aa
+                   aaaaaaaaaaa
+                   aaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+             let x =
+               some_really_really_really_long_name_that_doesn't_fit_on_the_line
+               $ y
+             in
+             fooooooooooo x
+           end

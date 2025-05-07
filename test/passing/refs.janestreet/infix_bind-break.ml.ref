@@ -120,6 +120,7 @@ eeeeeeeeeeeee eeeeeeeeee
 |> function
 | xxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxx ->
   xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+;;
 
 let parens =
   match body with
@@ -194,11 +195,11 @@ let _ =
   | Bfoooooooooooooooooooooo fooooooooo -> true
 ;;
 
-let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
+let _ = foo >>= fun[@warning "-4"] x -> fooooooooooooooooooooooo
 
 let _ =
   foo
-  >>= fun [@warning "-4"] x y ->
+  >>= fun[@warning "-4"] x y ->
   fooooooooooooooooooooooo
     fooooooooooooooooooooooo
     fooooooooooooooooooooooo
@@ -214,7 +215,7 @@ let _ =
 
 let _ =
   foo
-  >>= fun (* foo before *) [@warning "-4"] (* foo after *) x -> fooooooooooooooooooooooo
+  >>= fun(* foo before *) [@warning "-4"] (* foo after *) x -> fooooooooooooooooooooooo
 ;;
 
 let f =

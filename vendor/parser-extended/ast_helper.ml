@@ -59,6 +59,11 @@ module Attr = struct
 
   let empty_ext_attrs =
     ext_attrs ()
+
+  let infix_ext_attrs ?ext ?(attrs=[]) ()=
+    {infix_ext=ext; infix_attrs=attrs}
+
+  let empty_infix_ext_attrs = infix_ext_attrs ()
 end
 
 module Typ = struct
@@ -195,38 +200,55 @@ module Exp = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pexp_ident a)
   let constant ?loc ?attrs a = mk ?loc ?attrs (Pexp_constant a)
   let let_ ?loc ?attrs ~loc_in a b = mk ?loc ?attrs (Pexp_let (a, b, loc_in))
-  let function_ ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_function (a, b, c))
+  let function_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b c =
+    mk ?loc ?attrs (Pexp_function (a, b, c, infix_ext_attrs))
   let apply ?loc ?attrs a b = mk ?loc ?attrs (Pexp_apply (a, b))
-  let match_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_match (a, b))
-  let try_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_try (a, b))
+  let match_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_match (a, b, infix_ext_attrs))
+  let try_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_try (a, b, infix_ext_attrs))
   let tuple ?loc ?attrs a = mk ?loc ?attrs (Pexp_tuple a)
   let construct ?loc ?attrs a b = mk ?loc ?attrs (Pexp_construct (a, b))
+
+  let construct_unit_beginend ?loc ?attrs infix_ext_attrs =
+    mk ?loc ?attrs (Pexp_construct_unit_beginend infix_ext_attrs)
   let variant ?loc ?attrs a b = mk ?loc ?attrs (Pexp_variant (a, b))
   let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
   let field ?loc ?attrs a b = mk ?loc ?attrs (Pexp_field (a, b))
   let setfield ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_setfield (a, b, c))
   let array ?loc ?attrs a = mk ?loc ?attrs (Pexp_array a)
   let list ?loc ?attrs a = mk ?loc ?attrs (Pexp_list a)
-  let ifthenelse ?loc ?attrs a b = mk ?loc ?attrs (Pexp_ifthenelse (a, b))
-  let sequence ?loc ?attrs a b = mk ?loc ?attrs (Pexp_sequence (a, b))
-  let while_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_while (a, b))
-  let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
+  let ifthenelse ?loc ?attrs a b =
+    mk ?loc ?attrs (Pexp_ifthenelse (a, b))
+  let sequence ?loc ?attrs ?ext a b = mk ?loc ?attrs (Pexp_sequence (a, b, ext))
+  let while_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_while (a, b, infix_ext_attrs))
+  let for_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b c d e =
+    mk ?loc ?attrs (Pexp_for (a, b, c, d, e, infix_ext_attrs))
   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
   let coerce ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_coerce (a, b, c))
   let send ?loc ?attrs a b = mk ?loc ?attrs (Pexp_send (a, b))
-  let new_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_new a)
+  let new_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
+    mk ?loc ?attrs (Pexp_new (a, infix_ext_attrs))
   let setinstvar ?loc ?attrs a b = mk ?loc ?attrs (Pexp_setinstvar (a, b))
   let indexop_access ?loc ?attrs pia_lhs pia_kind pia_paren pia_rhs =
     mk ?loc ?attrs (Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs})
   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
-  let letmodule ?loc ?attrs a b c d = mk ?loc ?attrs (Pexp_letmodule (a, b, c, d))
-  let letexception ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letexception (a, b))
-  let assert_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_assert a)
-  let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_lazy a)
-  let object_ ?loc ?attrs a = mk ?loc ?attrs (Pexp_object a)
-  let pack ?loc ?attrs a b = mk ?loc ?attrs (Pexp_pack (a, b))
+  let letmodule ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b c d =
+    mk ?loc ?attrs (Pexp_letmodule (a, b, c, d, infix_ext_attrs))
+  let letexception ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_letexception (a, b, infix_ext_attrs))
+  let assert_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
+    mk ?loc ?attrs (Pexp_assert (a, infix_ext_attrs))
+  let lazy_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
+    mk ?loc ?attrs (Pexp_lazy (a, infix_ext_attrs))
+  let object_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
+    mk ?loc ?attrs (Pexp_object (a, infix_ext_attrs))
+  let pack ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_pack (a, b, infix_ext_attrs))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
-  let letopen ?loc ?attrs a b = mk ?loc ?attrs (Pexp_letopen (a, b))
+  let letopen ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
+    mk ?loc ?attrs (Pexp_letopen (a, b, infix_ext_attrs))
   let letop ?loc ?attrs ~loc_in let_ ands body =
     mk ?loc ?attrs (Pexp_letop {let_; ands; body; loc_in})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
@@ -234,7 +256,8 @@ module Exp = struct
   (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   (* *)
-  let beginend ?loc ?attrs a = mk ?loc ?attrs (Pexp_beginend a)
+  let beginend ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
+    mk ?loc ?attrs (Pexp_beginend (a, infix_ext_attrs))
   let parens ?loc ?attrs a = mk ?loc ?attrs (Pexp_parens a)
   let cons ?loc ?attrs a = mk ?loc ?attrs (Pexp_cons a)
   let prefix ?loc ?attrs a b = mk ?loc ?attrs (Pexp_prefix (a, b))

@@ -1,8 +1,8 @@
-[%foo type[@foo] t = < .. > ]
+[%foo type[@foo] t = < .. > ];;
 
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
 let f (x [@warning ""]) = ()
-let v = (fun [@inline] x -> x) 1
+let v = (fun[@inline] x -> x) 1
 
 external f : (float[@unboxed]) -> int = "blah" [@@noalloc]
 val x : ?x:unit (** not dropped *) -> unit
@@ -63,14 +63,14 @@ module type M = sig
   module [@test8] T = T
 end
 
-let f = fun [@inline] [@inline never] x -> x
-let g = fun [@inline] [@something_else] [@ocaml.inline] x -> x
+let f = fun[@inline] [@inline never] x -> x
+let g = fun[@inline] [@something_else] [@ocaml.inline] x -> x
 let h x = (g [@inlined] [@ocaml.inlined never]) x
-let v = (fun [@inline] [@inlined] x -> x) 1
-let[@inline] i = fun [@inline] x -> x;;
+let v = (fun[@inline] [@inlined] x -> x) 1
+let[@inline] i = fun[@inline] x -> x;;
 
-if [@test] true then () else ();;
-if [@test] true then () else if [@test] true then () else ()
+if[@test] true then () else ();;
+if[@test] true then () else if[@test] true then () else ();;
 
 let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test])
 
@@ -112,18 +112,18 @@ let ((module X) [@test]) = ()
 let (a [@test]) = ()
 let (_ [@test]) = ()
 let ("" [@test]) = ()
-let _ = f x ~f:(fun [@test] x -> x)
-let _ = f x ~f:(function [@test] x -> x)
-let _ = f x ~f:(function [@test] X -> x | X -> x)
+let _ = f x ~f:(fun[@test] x -> x)
+let _ = f x ~f:(function[@test] x -> x)
+let _ = f x ~f:(function[@test] X -> x | X -> x)
 
 let () = ()
 and[@warning "-32"] f = ()
 
 external x : a -> b -> (a -> b[@test]) = ""
 
-let f = fun [@test] x y -> ()
-let f y = fun [@test] y -> ()
-let (f [@test]) = fun y -> fun [@test] y -> ()
+let f = fun[@test] x y -> ()
+let f y = fun[@test] y -> ()
+let (f [@test]) = fun y -> fun[@test] y -> ()
 
 module type T = sig
   class subst : ((ident -> ident)[@attr]) -> (ident -> ident) -> object
@@ -131,7 +131,7 @@ module type T = sig
   end[@attr]
 end
 
-let _ = fun [@inlined always] x y -> z
+let _ = fun[@inlined always] x y -> z
 let () = assert ((assert false [@imp Show]) 1.0 = "1.")
 let () = f (assert false)
 let _ = match x with A -> [%expr match y with e -> e]
@@ -213,7 +213,7 @@ let _ = f ((a.*?!@{b} <- c) [@a]);;
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
    (dropped parentheses around tuples with attributes). *)
 
-(0, 0) [@a]
+(0, 0) [@a];;
 
 let _ = ((0, 0) [@a])
 let _ = f ((0, 0) [@a]);;
@@ -224,6 +224,7 @@ let _ = f ((0, 0) [@a]);;
 ( a________________________________________,
   b________________________________________ )
 [@a]
+;;
 
 let _ =
   f
@@ -306,6 +307,7 @@ let (M.(A | B) [@attr]) = ();;
 ;;
 { a____________________________________ = b___________________________________ }
 [@attr]
+;;
 
 let _ =
   (match[@ocaml.warning "-4"] bar with _ -> ());
@@ -340,9 +342,9 @@ let _ =
   match x with
   | _
     when f
-           ~f:(function [@ocaml.warning
-                          (* ....................................... *)
-                          "-4"] _ -> .) ->
+           ~f:(function[@ocaml.warning
+                         (* ....................................... *)
+                         "-4"] _ -> .) ->
       y
 
 let[@a
@@ -393,10 +395,9 @@ include [@foo] M [@boo]
 let () =
   let () =
     S.ntyp Cbor_type.Reserved
-    @@ S.tok
-         begin [@warning "-4"] fun ev ->
-           match ev with Cbor_event.Reserved int -> Some int | _ -> None
-         end
+    @@ S.tok begin[@warning "-4"] fun ev ->
+        match ev with Cbor_event.Reserved int -> Some int | _ -> None
+      end
   in
   ()
 
@@ -405,11 +406,60 @@ let () =
     S.ntyp Cbor_type.Reserved
     @@ (S.tok (fun ev ->
             match ev with Cbor_event.Reserved int -> Some int | _ -> None)
-       [@warning "-4"])
+    [@warning "-4"])
   in
   ()
 ;;
 
-M.(Some x) [@foo]
+M.(Some x) [@foo];;
 
 [@@@foo:]
+
+let print = function[@a] A -> b | B -> a
+let _ = (fun[@a] x -> y) [@b]
+let _ = (match[@a] x with _ -> y) [@b]
+let _ = (try[@a] x with _ -> y) [@b]
+let _ = begin[@a] [@a] end
+
+let _ =
+  while[@a] x do
+    y
+  done
+  [@b]
+
+let _ =
+  for[@a] i = 0 to x do
+    y
+  done
+  [@b]
+
+let _ = new[@a] x [@b]
+
+let _ =
+  (let module [@a] X = Y in
+  c)
+  [@b]
+
+let _ =
+  (let exception[@a] E in
+  c)
+  [@b]
+
+let _ = assert[@a] x [@b]
+
+let _ =
+  object[@a]
+    method x = y
+  end
+  [@b]
+
+let _ = ((module[@a] X) [@b])
+
+let _ =
+  begin[@a]
+    x
+  end
+  [@b]
+
+let fold input ~init ~f =
+  foldi input ~init ~f:(fun (_ : int) acc x -> f acc x) [@nontail]

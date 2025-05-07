@@ -1,0 +1,7 @@
+(** docstring *)
+val f : unit
+(* comment *)
+
+(** docstring *)
+val g : unit
+(* comment *)

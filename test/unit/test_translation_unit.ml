@@ -14,8 +14,8 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
         Translation_unit.parse_and_format fg ~input_name:"<test>"
           ~source:input Conf.default
         |> Result.map_error ~f:(fun e ->
-               Translation_unit.Error.print Stdlib.Format.str_formatter e ;
-               Stdlib.Format.flush_str_formatter () )
+            Translation_unit.Error.print Stdlib.Format.str_formatter e ;
+            Stdlib.Format.flush_str_formatter () )
       in
       let expected = Result.map_error expected ~f:normalize_eol in
       Alcotest.(check (result string string)) test_name expected actual )

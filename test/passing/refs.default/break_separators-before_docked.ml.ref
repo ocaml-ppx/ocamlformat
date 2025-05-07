@@ -188,6 +188,7 @@ Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
      ; ("foooooo", foooooooo)
      ; ("fooooooooo", foooooooo)
      ])
+;;
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
