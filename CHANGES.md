@@ -43,6 +43,10 @@ profile. This started with version 0.26.0.
 
 - Fix crash due to edge case with asterisk-prefixed comments (#2674, @Julow)
 
+
+- Fix crash when formatting `mld` files that cannot be lexed as ocaml (e.g.
+  containing LaTeX or C code) (#2684, @emillon)
+
 - \* Fix double parens around module constraint in functor application :
   `module M = F ((A : T))` becomes `module M = F (A : T)`. (#2678, @EmileTrotignon)
 

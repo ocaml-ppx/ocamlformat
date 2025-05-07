@@ -95,8 +95,9 @@ let parse ?(disable_w50 = false) ?(disable_deprecated = false) parse fragment
           List.map ~f:mk_cmt (Lexer.comments ())
         in
         let tokens =
+          (* mld files can not always be lexed using the ocaml lexer *)
           let lexbuf, _ = fresh_lexbuf source in
-          tokens lexbuf
+          try tokens lexbuf with Lexer.Error _ -> []
         in
         let source = Source.create ~text:source ~tokens in
         {ast; comments; prefix= hash_bang; source} )
