@@ -392,3 +392,5 @@ let xxxxxx =
   { zzzzzzzzzzzzz }
 
 type%e nonrec t = t
+
+type%e [@a] nonrec t = t

@@ -699,3 +699,4 @@ let xxxxxx =
 ;;
 
 type%e nonrec t = t
+type%e[@a] nonrec t = t
