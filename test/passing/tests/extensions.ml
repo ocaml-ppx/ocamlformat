@@ -390,3 +390,7 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+type%e nonrec t = t
+
+type%e [@a] nonrec t = t

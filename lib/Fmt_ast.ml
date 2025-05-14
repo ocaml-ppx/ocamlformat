@@ -3457,7 +3457,8 @@ and fmt_class_params c ctx params =
        ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
-and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
+and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
+    {ast= decl; _} =
   protect c (Td decl)
   @@
   let { ptype_name= {txt; loc}
@@ -3497,10 +3498,10 @@ and fmt_type_declaration c ?(pre = "") ?name ?(eq = "=") {ast= decl; _} =
   in
   let box_manifest k =
     hvbox c.conf.fmt_opts.type_decl_indent.v
-      ( str pre
+      ( str kw
       $ fmt_extension_suffix c ext
       $ fmt_attributes c attrs_before
-      $ str " "
+      $ str nonrec_kw $ str " "
       $ hvbox_if
           (not (List.is_empty ptype_params))
           0
@@ -4265,12 +4266,12 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
 
 and fmt_with_constraint c ctx ~pre = function
   | Pwith_type (lid, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ~name:lid (sub_td ~ctx td)
+      fmt_type_declaration ~kw:(pre ^ " type") c ~name:lid (sub_td ~ctx td)
   | Pwith_module (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ~name:lid
+      fmt_type_declaration ~kw:(pre ^ " type") c ~eq:":=" ~name:lid
         (sub_td ~ctx td)
   | Pwith_modsubst (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
@@ -4550,10 +4551,12 @@ and fmt_type c ?eq rec_flag decls ctx =
   let is_rec = Asttypes.is_recursive rec_flag in
   let fmt_decl c ctx ~prev ~next:_ decl =
     let first = Option.is_none prev in
-    let pre =
-      if first then if is_rec then "type" else "type nonrec" else "and"
+    let kw, nonrec_kw =
+      if first then
+        if is_rec then ("type", None) else ("type", Some " nonrec")
+      else ("and", None)
     in
-    fmt_type_declaration c ~pre ?eq (sub_td ~ctx decl)
+    fmt_type_declaration c ~kw ?nonrec_kw ?eq (sub_td ~ctx decl)
   in
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls

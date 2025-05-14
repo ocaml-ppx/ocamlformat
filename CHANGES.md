@@ -77,6 +77,9 @@ profile. This started with version 0.26.0.
 
 - Fix a crash on `type 'a t = A : 'a. {a: 'a} -> 'a t`. (#2710, @EmileTrotignon)
 
+- Fix a crash where `type%e nonrec t = t` was formatted as `type nonrec%e t = t`,
+  which is invalid syntax. (#2712, @EmileTrotignon)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
