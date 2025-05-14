@@ -3807,6 +3807,13 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
         bdy= fmt_longident_loc c lid
       ; epi= Some (fmt_attributes c pmty_attributes ~pre:(Break (1, 0))) }
   | Pmty_signature s ->
+      let is_signature_multiline =
+        match s with
+        | [] -> false
+        | _ :: _ ->
+            (List.hd_exn s).psig_loc.loc_start.pos_lnum
+            <> (List.last_exn s).psig_loc.loc_start.pos_lnum
+      in
       let empty = List.is_empty s && not (Cmts.has_within c.cmts pmty_loc) in
       let before = Cmts.fmt_before c pmty_loc in
       let within = Cmts.fmt_within c ~pro:noop pmty_loc in
@@ -3821,7 +3828,8 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       ; cls= noop
       ; esp=
           fmt_if (not empty)
-            ( if c.conf.fmt_opts.break_struct.v then force_break
+            ( if c.conf.fmt_opts.break_struct.v || is_signature_multiline then
+                force_break
               else break 1 0 )
       ; epi=
           Some
