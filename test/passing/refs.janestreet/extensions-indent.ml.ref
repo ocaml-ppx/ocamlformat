@@ -697,3 +697,5 @@ let xxxxxx =
              __________ *) () = yyyyyyyy in
   { zzzzzzzzzzzzz }
 ;;
+
+type%e nonrec t = t

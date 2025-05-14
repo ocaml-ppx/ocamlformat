@@ -465,3 +465,5 @@ let xxxxxx =
     yyyyyyyy
   in
   { zzzzzzzzzzzzz }
+
+type%e nonrec t = t
