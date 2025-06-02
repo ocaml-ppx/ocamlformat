@@ -308,7 +308,7 @@ and pattern_desc =
           - If Closed, [n >= 2]
           - If Open, [n >= 1]
         *)
-  | Ppat_construct of Longident.t loc * (string loc list * pattern) option
+  | Ppat_construct of Longident.t loc * (ty_var list * pattern) option
       (** [Ppat_construct(C, args)] represents:
             - [C]               when [args] is [None],
             - [C P]             when [args] is [Some ([], P)]
@@ -1034,10 +1034,8 @@ and module_type =
 and module_type_desc =
   | Pmty_ident of Longident.t loc  (** [Pmty_ident(S)] represents [S] *)
   | Pmty_signature of signature  (** [sig ... end] *)
-  | Pmty_functor of functor_parameter loc list * module_type
-      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT] *)
-  | Pmty_gen of Location.t * module_type
-      (** [() -> MT] *)
+  | Pmty_functor of functor_parameter loc list * module_type * modes
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT @ MM] *)
   | Pmty_with of module_type * with_constraint list  (** [MT with ...] *)
   | Pmty_typeof of module_expr  (** [module type of ME] *)
   | Pmty_extension of extension  (** [[%id]] *)
@@ -1046,10 +1044,10 @@ and module_type_desc =
 
 and functor_parameter =
   | Unit  (** [()] *)
-  | Named of string option loc * module_type
-      (** [Named(name, MT)] represents:
-            - [(X : MT)] when [name] is [Some X],
-            - [(_ : MT)] when [name] is [None] *)
+  | Named of string option loc * module_type * modes
+      (** [Named(name, MT, MM)] represents:
+            - [(X : MT @ MM)] when [name] is [Some X],
+            - [(_ : MT @ MM)] when [name] is [None] *)
 
 and signature =
   {
@@ -1098,6 +1096,7 @@ and module_declaration =
      pmd_modalities: modalities;
      pmd_args: functor_parameter loc list;
      pmd_type: module_type;
+     pmd_mode: modes;
      pmd_ext_attrs : ext_attrs;
      pmd_loc: Location.t;
     }
@@ -1199,7 +1198,11 @@ and module_expr_desc =
   | Pmod_apply of module_expr * module_expr  (** [ME1(ME2)] *)
   | Pmod_apply_unit of module_expr * Location.t
       (** [ME1()]. The location argument correspond to the [()]. *)
-  | Pmod_constraint of module_expr * module_type  (** [(ME : MT)] *)
+  | Pmod_constraint of module_expr * module_type option * modes
+      (** - [(ME : MT @ modes)]
+          - [(ME @ modes)]
+          - [(ME : MT)]
+      *)
   | Pmod_unpack of expression * package_type option * package_type option
       (** [(val E : M1 :> M2)] *)
   | Pmod_extension of extension  (** [[%id]] *)
@@ -1266,7 +1269,10 @@ and value_binding =
     pvb_pat: pattern;
     pvb_expr: expression;
     pvb_constraint: value_constraint option;
-    pvb_modes: mode loc list;
+    (** the modes on the bound value (not the RHS) *)
+    pvb_modes: modes;
+    (** the local_ on the bound value (not the RHS)  *)
+    pvb_local: bool;
     pvb_is_pun: bool;
     pvb_attributes: attributes;
     pvb_loc: Location.t;

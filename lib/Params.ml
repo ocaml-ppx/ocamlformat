@@ -110,7 +110,8 @@ module Mod = struct
         ( _
         , { pmty_desc=
               Pmty_signature _ | Pmty_typeof {pmod_desc= Pmod_structure _; _}
-          ; _ } ) ->
+          ; _ }
+        , _ ) ->
         true
     | _ -> false
 

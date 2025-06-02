@@ -56,7 +56,7 @@ let (x : string) = local_ "hi"
 
 let (x : string) = exclave_ "hi"
 
-let local_ x = ("hi" : string)
+let x = local_ ("hi" : string)
 
 let x = exclave_ ("hi" : string)
 

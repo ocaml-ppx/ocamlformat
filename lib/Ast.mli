@@ -113,7 +113,7 @@ type t =
   | Pat of pattern
   | Exp of expression
   | Fp of function_param
-  | Vc of value_constraint
+  | Vc of value_constraint * modes
   | Lb of value_binding
   | Mb of module_binding
   | Md of module_declaration

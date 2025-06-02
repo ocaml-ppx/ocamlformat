@@ -379,7 +379,8 @@ let map_functor_param sub {loc; txt} =
   let txt =
     match txt with
     | Unit -> Unit
-    | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+    | Named (s, mt, mm) ->
+        Named (map_loc sub s, sub.module_type sub mt, sub.modes sub mm)
   in
   {loc; txt}
 
@@ -394,14 +395,11 @@ module MT = struct
     | Pmty_ident s -> ident ~loc ~attrs (map_loc sub s)
     | Pmty_alias s -> alias ~loc ~attrs (map_loc sub s)
     | Pmty_signature sg -> signature ~loc ~attrs (sub.signature sub sg)
-    | Pmty_functor (params, mt) ->
+    | Pmty_functor (params, mt, mm) ->
         functor_ ~loc ~attrs
           (List.map (map_functor_param sub) params)
           (sub.module_type sub mt)
-    | Pmty_gen (arg_loc, mt) ->
-        gen ~loc ~attrs
-          (sub.location sub arg_loc)
-          (sub.module_type sub mt)
+          (sub.modes sub mm)
     | Pmty_with (mt, l) ->
         with_ ~loc ~attrs (sub.module_type sub mt)
           (List.map (sub.with_constraint sub) l)
@@ -479,9 +477,9 @@ module M = struct
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
     | Pmod_apply_unit (me, lc) ->
         apply_unit ~loc ~attrs (sub.module_expr sub me) (sub.location sub lc)
-    | Pmod_constraint (m, mty) ->
-        constraint_ ~loc ~attrs (sub.module_expr sub m)
-                    (sub.module_type sub mty)
+    | Pmod_constraint (m, mty, mm) ->
+        constraint_ ~loc ~attrs (Option.map (sub.module_type sub) mty)
+          (sub.modes sub mm) (sub.module_expr sub m)
     | Pmod_unpack (e, ty1, ty2) ->
         unpack ~loc ~attrs
           (sub.expr sub e)
@@ -744,7 +742,7 @@ module P = struct
     | Ppat_construct (l, p) ->
         construct ~loc ~attrs (map_loc sub l)
           (map_opt
-             (fun (vl, p) -> List.map (map_loc sub) vl, sub.pat sub p)
+             (fun (vl, p) -> List.map (map_type_var sub) vl, sub.pat sub p)
              p)
     | Ppat_variant (l, p) ->
         variant ~loc ~attrs (variant_var sub l) (map_opt (sub.pat sub) p)
@@ -914,12 +912,13 @@ let default_mapper =
     binding_op = E.map_binding_op;
 
     module_declaration =
-      (fun this {pmd_name; pmd_modalities; pmd_args; pmd_type; pmd_ext_attrs; pmd_loc} ->
+      (fun this {pmd_name; pmd_modalities; pmd_args; pmd_type; pmd_mode; pmd_ext_attrs; pmd_loc} ->
          Md.mk
            (map_loc this pmd_name)
            (this.modalities this pmd_modalities)
            (List.map (map_functor_param this) pmd_args)
            (this.module_type this pmd_type)
+           (this.modes this pmd_mode)
            ~attrs:(this.ext_attrs this pmd_ext_attrs)
            ~loc:(this.location this pmd_loc)
       );
@@ -984,7 +983,7 @@ let default_mapper =
       );
 
     value_binding =
-      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc; pvb_modes} ->
+      (fun this {pvb_pat; pvb_expr; pvb_constraint; pvb_is_pun; pvb_attributes; pvb_loc; pvb_modes; pvb_local} ->
          let map_ct (ct:Parsetree.value_constraint) = match ct with
            | Pvc_constraint {locally_abstract_univars=vars; typ} ->
                Pvc_constraint
@@ -1005,6 +1004,7 @@ let default_mapper =
            ~loc:(this.location this pvb_loc)
            ~attrs:(this.attributes this pvb_attributes)
            ~modes:(this.modes this pvb_modes)
+           ~local:pvb_local
       );
     value_bindings = PVB.map_value_bindings;
 

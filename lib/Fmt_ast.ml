@@ -24,11 +24,16 @@ type c =
   ; cmts: Cmts.t
   ; fmt_code: Fmt_odoc.fmt_code }
 
-type modals = No_modals | Modes of modes | Modalities of modalities
+(* CR zqian: mode_crossing should just take [modalities] *)
+type modals =
+  | No_modals
+  | Modes of modes
+  | Modalities of modalities
+  | Mode_crossing of modes
 
 let is_empty_modals = function
-  | No_modals | Modes [] | Modalities [] -> true
-  | Modes (_ :: _) | Modalities (_ :: _) -> false
+  | No_modals | Modes [] | Modalities [] | Mode_crossing [] -> true
+  | Modes (_ :: _) | Modalities (_ :: _) | Mode_crossing (_ :: _) -> false
 
 module Cmts = struct
   include Cmts
@@ -591,11 +596,12 @@ let let_binding_can_be_punned ~binding ~is_ext =
        ; lb_pat
        ; lb_args
        ; lb_typ
+       ; lb_modes
        ; lb_exp
        ; lb_pun= _
        ; lb_attrs= _
        ; lb_local
-       ; lb_modes
+       ; lb_modes_binding
        ; lb_loc= _ }
         : Sugar.Let_binding.t ) =
     binding
@@ -605,10 +611,11 @@ let let_binding_can_be_punned ~binding ~is_ext =
     , lb_pat.ast.ppat_desc
     , lb_exp.ast.pexp_desc
     , lb_typ
+    , lb_modes
     , lb_args
     , (lb_pat.ast.ppat_attributes, lb_exp.ast.pexp_attributes)
     , lb_local
-    , lb_modes )
+    , lb_modes_binding )
   with
   | ( (* Binding must be inside an extension node (we do not pun operators) *)
       true
@@ -618,6 +625,8 @@ let let_binding_can_be_punned ~binding ~is_ext =
       Pexp_ident {txt= Lident right; _}
     , (* There cannot be a type annotation on the [let] *)
       None
+    , (* There cannot be a mode annotation *)
+      []
     , (* This cannot be a lambda *)
       []
     , (* There must be no attrs on either side *)
@@ -762,7 +771,7 @@ and fmt_payload c ctx pld =
       fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
   | PSig ({psg_modalities; _} as mty) ->
       fmt ":"
-      $ fmt_modals ~pro:(fmt " ") c ~ats:`Two (Modalities psg_modalities)
+      $ fmt_modals ~pro:(fmt " ") c (Modalities psg_modalities)
       $ fmt "@ "
       $ fmt_signature c ctx {mty with psg_modalities= []}
   | PTyp typ -> fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
@@ -790,17 +799,20 @@ and fmt_record_field c ?typ1 ?typ2 ?rhs lid1 =
   $ cbox 0
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
 
-and fmt_type_cstr c ?constraint_ctx xtyp =
+and fmt_type_cstr c ?constraint_ctx ?constraint_modes xtyp =
   let colon_before = Poly.(c.conf.fmt_opts.break_colon.v = `Before) in
   fmt_or_k colon_before (fits_breaks " " ~hint:(1000, 0) "") (fmt "@;<0 -1>")
   $ cbox_if colon_before 0
-      (fmt_core_type c ~pro:":" ?constraint_ctx ~pro_space:(not colon_before)
-         ~box:(not colon_before) xtyp )
+      (fmt_core_type c ~pro:":" ?constraint_ctx ?constraint_modes
+         ~pro_space:(not colon_before) ~box:(not colon_before) xtyp )
 
 and type_constr_and_body c xbody =
   let body = xbody.ast in
   match xbody.ast.pexp_desc with
-  | Pexp_constraint (exp, Some typ, []) ->
+  | Pexp_constraint (exp, typ, ([] as modes))
+   |Pexp_constraint (exp, (None as typ), modes)
+  (* [fun x : ret_t @ ret_mode ->] is banned in the parser, so don't move the
+     constraint if there are both a type and modes. *) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
       let typ_ctx = Exp body in
@@ -812,24 +824,29 @@ and type_constr_and_body c xbody =
         in
         Exp Ast_helper.(Exp.fun_ param exp)
       in
-      ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx:typ_ctx typ))
-      , sub_exp ~ctx:exp_ctx exp )
+      let fmt_typ =
+        match typ with
+        | Some typ ->
+            fmt_type_cstr c ~constraint_ctx:`Fun ~constraint_modes:modes
+              (sub_typ ~ctx:typ_ctx typ)
+        | None -> noop
+      in
+      (Some (fmt_typ $ fmt_modals c (Modes modes)), sub_exp ~ctx:exp_ctx exp)
   | _ -> (None, xbody)
 
-and fmt_modals ?(pro = fmt "@ ") c ~ats modals =
-  let fmt_ats =
-    match ats with `Zero -> str "" | `One -> str "@ " | `Two -> str "@@ "
-  in
+and fmt_modals ?(pro = fmt "@ ") c modals =
   let fmt_modal {txt; loc} = Cmts.fmt c loc (str txt) ~eol:(fmt "@ ") in
   let fmt_mode {txt= Mode mode; loc} = fmt_modal {txt= mode; loc} in
   let fmt_modality {txt= Modality modality; loc} =
     fmt_modal {txt= modality; loc}
   in
-  let fmt_modals =
+  let fmt_ats, fmt_modals =
     match modals with
-    | No_modals -> noop
-    | Modes modes -> list modes "@ " fmt_mode
-    | Modalities modalities -> list modalities "@ " fmt_modality
+    | No_modals -> (noop, noop)
+    | Modes modes -> (fmt "@@ ", list modes "@ " fmt_mode)
+    | Modalities modalities ->
+        (fmt "@@@@ ", list modalities "@ " fmt_modality)
+    | Mode_crossing modes -> (noop, list modes "@ " fmt_mode)
   in
   fmt_if_k (not (is_empty_modals modals)) (pro $ fmt_ats $ hvbox 0 fmt_modals)
 
@@ -872,7 +889,7 @@ and fmt_jkind c ~ctx {txt= jkd; loc} =
             | Default | Abbreviation _ | Kind_of _ -> assert false )
           | _ -> false
         in
-        let mode_fmt = hvbox 0 (fmt_modals ~ats:`Zero c (Modes modes)) in
+        let mode_fmt = hvbox 0 (fmt_modals c (Mode_crossing modes)) in
         let fmt =
           fmt_jkind c ~ctx:inner_ctx jkind
           $ fmt "@ mod" $ Cmts.fmt_within c loc $ mode_fmt
@@ -897,7 +914,7 @@ and fmt_jkind c ~ctx {txt= jkd; loc} =
           $ hvbox_if
               (not (List.is_empty ms))
               3
-              (fmt_modals c ~pro:(fmt " ") ~ats:`Two (Modalities ms))
+              (fmt_modals c ~pro:(fmt " ") (Modalities ms))
         in
         (parens, fmt)
     | Kind_of type_ ->
@@ -960,7 +977,7 @@ and fmt_arrow_param ~return c ctx
     | None -> core_type
     | Some f -> hovbox 2 (f $ core_type)
   in
-  let modes = fmt_modals c ~ats:`One (Modes mI) in
+  let modes = fmt_modals c (Modes mI) in
   hvbox 0 (Cmts.fmt_before c locI $ arg $ modes)
 
 (** Format [Ptyp_arrow]. [indent] can be used to override the indentation
@@ -1001,7 +1018,7 @@ and fmt_arrow_type c ~ctx ?indent ~parens ~parent_has_parens args fmt_ret_typ
    gets support for them, we should remove tydecl_param and go with whatever
    their solution is. *)
 and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
-    ?(tydecl_param = false) ({ast= typ; ctx} as xtyp) =
+    ?constraint_modes ?(tydecl_param = false) ({ast= typ; ctx} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -1050,8 +1067,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   in
   let ctx = Typ typ in
   let parenze_constraint_ctx =
-    match constraint_ctx with
-    | Some `Fun when not parens -> true
+    match (constraint_ctx, constraint_modes) with
+    | (Some `Fun, _ | _, Some (_ :: _)) when not parens -> true
     | _ -> false
   in
   match ptyp_desc with
@@ -1110,7 +1127,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         ( hovbox_if (not box) 0
             (list a1N "@ " (fmt_type_var_with_parenze ~have_tick:true c))
         $ fmt ".@ "
-        $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
+        $ fmt_core_type c ~box:true ?constraint_modes (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
         (wrap_if parenze_constraint_ctx "(" ")"
@@ -1379,7 +1396,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
              | names ->
                  hvbox 0
                    (Params.parens c.conf
-                      (str "type " $ list names "@ " (fmt_str_loc c)) )
+                      ( str "type "
+                      $ list names "@ "
+                          (fmt_type_var_with_parenze ~have_tick:false c) ) )
                  $ fmt "@ " )
            $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl
@@ -1522,14 +1541,13 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             ( match ctx0 with
             | Exp {pexp_desc= Pexp_let _; _} -> fmt "@ : "
             | _ -> fmt " :@ " )
-            $ fmt_core_type c (sub_typ ~ctx typ)
+            $ fmt_core_type c ~constraint_modes:modes (sub_typ ~ctx typ)
       in
-      let ats = if Option.is_some maybe_typ then `Two else `One in
       hvbox 2
         (Params.parens_if parens c.conf
            ( fmt_pattern c (sub_pat ~ctx pat)
            $ fmt_typ
-           $ fmt_modals c ~ats (Modes modes) ) )
+           $ fmt_modals c (Modes modes) ) )
   | Ppat_type lid -> fmt_longident_loc c ~pre:"#" lid
   | Ppat_lazy pat ->
       cbox 2
@@ -1590,9 +1608,6 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
 
 and fmt_fun_args c args =
   let fmt_fun_arg (a : function_param) =
-    let a =
-      {a with pparam_desc= Sugar.remove_local_attrs c.cmts a.pparam_desc}
-    in
     let ctx = Fp a in
     Cmts.fmt c a.pparam_loc
     @@
@@ -2633,8 +2648,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
              ( wrap_fits_breaks ~space:false c.conf "(" ")"
                  ( fmt_expression c (sub_exp ~ctx e)
                  $ fmt "@ : "
-                 $ fmt_core_type c (sub_typ ~ctx t)
-                 $ fmt_modals c ~ats:`Two (Modes modes) )
+                 $ fmt_core_type c ~constraint_modes:modes (sub_typ ~ctx t)
+                 $ fmt_modals c (Modes modes) )
              $ fmt_atrs ) )
   | Pexp_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = char txt.[0] and cls = char txt.[1] in
@@ -2823,7 +2838,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let xbody = sub_mod ~ctx pmod in
       let xbody, xmty =
         match xbody.ast with
-        | { pmod_desc= Pmod_constraint (body_me, body_mt)
+        | { pmod_desc= Pmod_constraint (body_me, Some body_mt, _)
           ; pmod_loc
           ; pmod_attributes= [] } ->
             Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
@@ -3795,7 +3810,7 @@ and fmt_value_description ?ext c ctx vd =
                  ( c.conf.fmt_opts.ocp_indent_compat.v
                  && is_arrow_or_poly pval_type ) )
             ~pro_space:true (sub_typ ~ctx pval_type)
-        $ fmt_modals c ~ats:`Two (Modalities pval_modalities)
+        $ fmt_modals c (Modalities pval_modalities)
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ hvbox_if (List.length pval_prim > 1) 0
           @@ list pval_prim "@;" fmt_val_prim )
@@ -4005,8 +4020,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
                                 $ fmt_if field_loose " " $ fmt ":" )
                             $ fmt "@ "
                             $ fmt_core_type c (sub_typ ~ctx pld_type) )
-                        $ fmt_modals c ~ats:`Two (Modalities pld_modalities)
-                        )
+                        $ fmt_modals c (Modalities pld_modalities) )
                     $ fmt_semicolon )
                 $ cmt_after_type )
             $ fmt_attributes c ~pre:(Break (1, 1)) atrs )
@@ -4068,8 +4082,7 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
                      Cmts.fmt c pca_loc
                      @@ hvbox 0
                           ( fmt_core_type_gf c ctx pca_type
-                          $ fmt_modals c ~ats:`Two (Modalities pca_modalities)
-                          ) ) )
+                          $ fmt_modals c (Modalities pca_modalities) ) ) )
       in
       pre $ vars $ cargs
   | Pcstr_record (loc, lds) ->
@@ -4199,7 +4212,7 @@ and fmt_extension_constructor c ctx ec =
 and fmt_functor_param c ctx {loc; txt= arg} =
   match arg with
   | Unit -> Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc))
-  | Named (name, mt) ->
+  | Named (name, mt, _) ->
       let xmt = sub_mty ~ctx mt in
       hvbox 0
         (Cmts.fmt c loc
@@ -4233,7 +4246,7 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       ; pro=
           Some
             ( before $ str "sig"
-            $ fmt_modals c ~ats:`Two (Modalities psg_modalities)
+            $ fmt_modals c (Modalities psg_modalities)
             $ fmt_if empty " " )
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy=
@@ -4247,7 +4260,15 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
           Some
             ( str "end" $ after
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
-  | Pmty_functor (args, mt) ->
+  | Pmty_functor (args, mt, _mm) ->
+      let rec pull_args_from_ret args mt =
+        match (mt.pmty_desc, mt.pmty_attributes) with
+        | Pmty_functor (args', mt', _mm), [] ->
+            let args', mt' = pull_args_from_ret args' mt' in
+            (args @ args', mt')
+        | _ -> (args, mt)
+      in
+      let args, mt = pull_args_from_ret args mt in
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
       { blk with
         pro=
@@ -4257,20 +4278,6 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
             $ fmt_attributes c ~pre:Blank pmty_attributes
             $ fmt "@;<1 2>"
             $ list args "@;<1 2>" (fmt_functor_param c ctx)
-            $ fmt "@;<1 2>->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or_k (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
-  | Pmty_gen (gen_loc, mt) ->
-      let blk = fmt_module_type c (sub_mty ~ctx mt) in
-      { blk with
-        pro=
-          Some
-            ( Cmts.fmt_before c pmty_loc
-            $ Cmts.fmt c gen_loc (wrap "(" ")" (Cmts.fmt_within c gen_loc))
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
       ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
@@ -4356,7 +4363,7 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       ; epi= Some epi1 }
 
 and fmt_signature c ctx sg =
-  fmt_modals c ~ats:`Two (Modalities sg.psg_modalities)
+  fmt_modals c (Modalities sg.psg_modalities)
   $ fmt_signature_item_list c ctx sg.psg_items
 
 and fmt_signature_item_list c ctx itms =
@@ -4445,7 +4452,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
             $ fmt_item_attributes c ~pre:(Break (1, 0)) atrs
             $ fmt_modals
                 ~pro:(fmt_or has_attrs "@ " " ")
-                c ~ats:`Two (Modalities modalities) )
+                c (Modalities modalities) )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_modtypesubst mtd -> fmt_module_type_declaration ~eqty:":=" c ctx mtd
@@ -4570,7 +4577,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     match txt with
     | Unit ->
         (pro $ Cmts.fmt c loc (wrap "(" ")" (Cmts.fmt_within c loc)), noop)
-    | Named (name, mt) ->
+    | Named (name, mt, _mm) ->
         if args_p.dock then
           (* All signatures, put the [epi] into the box of the next arg and
              don't break. *)
@@ -4603,7 +4610,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
     $ wrap_if
         (not (is_empty_modals modals))
         "(" ")"
-        (fmt_str_loc_opt c name $ fmt_modals c ~ats:`One modals)
+        (fmt_str_loc_opt c name $ fmt_modals c modals)
   in
   let compact =
     Poly.(c.conf.fmt_opts.let_module.v = `Compact) || not can_sparse
@@ -4645,6 +4652,7 @@ and fmt_module_declaration c ~rec_flag ~first {ast= pmd; _} =
       ; pmd_modalities
       ; pmd_args
       ; pmd_type
+      ; pmd_mode= _
       ; pmd_ext_attrs= attrs
       ; pmd_loc } =
     pmd
@@ -4857,7 +4865,8 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; _} as xmod) =
       let blk_a = fmt_module_expr c (sub_mod ~ctx me_a) in
       fmt_mod_apply c ctx ~parens ~dock_struct pmod_loc pmod_attributes me_f
         (`Block (blk_a, Mod.is_simple me_a))
-  | Pmod_constraint (me, mt) ->
+  | Pmod_constraint (me, mt, _mm) ->
+      let mt = match mt with None -> assert false | Some mt -> mt in
       let blk_e = fmt_module_expr c (sub_mod ~ctx me) in
       let blk_t = fmt_module_type c (sub_mty ~ctx mt) in
       let has_epi =
@@ -5141,18 +5150,21 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_constraint c vc_opt =
+and fmt_value_constraint c vc_opt modes =
   let fmt_sep x =
     match c.conf.fmt_opts.break_colon.v with
     | `Before -> fmt "@ " $ str x $ char ' '
     | `After -> char ' ' $ str x $ fmt "@ "
   in
+  let fmt_modes = fmt_modals c (Modes modes) in
   match vc_opt with
   | Some vc -> (
-      let ctx = Vc vc in
+      let ctx = Vc (vc, modes) in
       match vc with
       | Pvc_constraint {locally_abstract_univars= []; typ} ->
-          (noop, fmt_type_cstr c (sub_typ ~ctx typ))
+          ( noop
+          , fmt_type_cstr ~constraint_modes:modes c (sub_typ ~ctx typ)
+          , fmt_modes )
       | Pvc_constraint {locally_abstract_univars= pvars; typ} -> (
         match c.conf.fmt_opts.break_colon.v with
         | `Before ->
@@ -5163,7 +5175,9 @@ and fmt_value_constraint c vc_opt =
                   $ list pvars " "
                       (fmt_type_var_with_parenze ~have_tick:false c)
                   $ fmt ".@ "
-                  $ fmt_core_type c (sub_typ ~ctx typ) ) )
+                  $ fmt_core_type ~constraint_modes:modes c
+                      (sub_typ ~ctx typ) )
+            , fmt_modes )
         | `After ->
             ( fmt_sep ":"
               $ hvbox 0
@@ -5171,31 +5185,40 @@ and fmt_value_constraint c vc_opt =
                   $ list pvars " "
                       (fmt_type_var_with_parenze ~have_tick:false c)
                   $ str "." )
-            , fmt "@ " $ fmt_core_type c (sub_typ ~ctx typ) ) )
+            , fmt "@ "
+              $ fmt_core_type ~constraint_modes:modes c (sub_typ ~ctx typ)
+            , fmt_modes ) )
       | Pvc_coercion {ground; coercion} ->
           ( noop
           , opt ground (fun ty ->
-                fmt_sep ":" $ fmt_core_type c (sub_typ ~ctx ty) )
+                fmt_sep ":"
+                $ fmt_core_type ~constraint_modes:modes c (sub_typ ~ctx ty) )
             $ fmt_sep ":>"
-            $ fmt_core_type c (sub_typ ~ctx coercion) ) )
-  | None -> (noop, noop)
+            $ fmt_core_type ~constraint_modes:modes c (sub_typ ~ctx coercion)
+          , fmt_modes ) )
+  | None -> (noop, noop, fmt_modes)
 
 and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
     { lb_op
     ; lb_pat
     ; lb_args
     ; lb_typ
+    ; lb_modes
     ; lb_exp
     ; lb_attrs
     ; lb_local
-    ; lb_modes
+    ; lb_modes_binding
     ; lb_loc
     ; lb_pun= punned_in_source } =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let fmt_newtypes, fmt_cstr = fmt_value_constraint c lb_typ in
+  let modes_binding = Modes lb_modes_binding in
+  let fmt_modes_binding = fmt_modals c modes_binding in
+  let fmt_newtypes, fmt_cstr, fmt_modes =
+    fmt_value_constraint c lb_typ lb_modes
+  in
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ -> c.conf.fmt_opts.function_indent.v
@@ -5240,8 +5263,7 @@ and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
         , Cmts.Toplevel.fmt_after c lb_loc )
   in
   let has_args = not (List.is_empty lb_args) in
-  let has_cstr = Option.is_some lb_typ in
-  let has_modes = not (List.is_empty lb_modes) in
+  let has_modes_binding = not (is_empty_modals modes_binding) in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ cmts_before
   $ hvbox 0
@@ -5258,21 +5280,17 @@ and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
                                   $ fmt_if rec_flag " rec"
                                   $ fmt_if lb_local " local_"
                                   $ fmt_or pat_has_cmt "@ " " "
-                                  $ wrap_if (has_args && has_modes) "(" ")"
+                                  $ Params.parens_if
+                                      (has_args && has_modes_binding)
+                                      c.conf
                                       ( fmt_pattern c lb_pat
-                                      $ fmt_if_k
-                                          (has_args || not has_cstr)
-                                          (fmt_modals c ~ats:`One
-                                             (Modes lb_modes) ) ) )
+                                      $ fmt_modes_binding ) )
                               $ fmt_if_k has_args
                                   ( fmt "@ "
                                   $ wrap_fun_decl_args c
                                       (fmt_fun_args c lb_args) )
                               $ fmt_newtypes )
-                          $ fmt_cstr
-                          $ fmt_if_k
-                              ((not has_args) && has_cstr)
-                              (fmt_modals c ~ats:`Two (Modes lb_modes)) )
+                          $ fmt_cstr $ fmt_modes )
                       $ fmt_if_k (not punned_in_output)
                           (fmt_or_k c.conf.fmt_opts.ocp_indent_compat.v
                              (fits_breaks " =" ~hint:(1000, 0) "=")
@@ -5295,7 +5313,7 @@ and fmt_module_binding c ~rec_flag ~first {ast= pmb; _} =
   let xbody = sub_mod ~ctx pmb.pmb_expr in
   let xbody, xmty =
     match xbody.ast with
-    | { pmod_desc= Pmod_constraint (body_me, body_mt)
+    | { pmod_desc= Pmod_constraint (body_me, Some body_mt, _)
       ; pmod_loc
       ; pmod_attributes= [] } ->
         Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
@@ -5417,12 +5435,12 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
   | Signature, {psg_items= []; psg_modalities; _} ->
-      fmt_modals ~pro:noop c ~ats:`Two (Modalities psg_modalities)
+      fmt_modals ~pro:noop c (Modalities psg_modalities)
       $ Cmts.fmt_after ~pro:noop c Location.none
   | Structure, [] | Use_file, [] -> Cmts.fmt_after ~pro:noop c Location.none
   | Structure, l -> Chunk.split_and_fmt Structure c ctx l
   | Signature, {psg_modalities; psg_items= l; _} ->
-      fmt_modals ~pro:noop c ~ats:`Two (Modalities psg_modalities)
+      fmt_modals ~pro:noop c (Modalities psg_modalities)
       $ fmt_if (not (List.is_empty psg_modalities)) "\n@;<1000 0>"
       $ Chunk.split_and_fmt Signature c ctx l
   | Use_file, l -> Chunk.split_and_fmt Use_file c ctx l

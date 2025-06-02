@@ -15,21 +15,21 @@ let (* 1 *) f (* 2 *) x (* 3 *) y (* 4 *) =
 let[@a1] f (x[@a2]) (y[@a3]) = (()[@a4] : unit[@a5])
 
 (* RHS annotated with a type and mode *)
-let f (type a) = (() : unit @@ local)
+let f (type a) = (() : unit @ local)
 let (* 1 *) f (* 2 *) ((* 3 *) type (* 4 *) a (* 5 *)) (* 6 *) = (* 7 *)
-  (* 8 *) ( (* 9 *) () : (* 10 *) unit (* 11 *) @@ (* 12 *) local (* 13 *) )
-let[@a1] f (type a) = (()[@a2] : unit [@a3] @@ local)
+  (* 8 *) ( (* 9 *) () : (* 10 *) unit (* 11 *) @ (* 12 *) local (* 13 *) )
+let[@a1] f (type a) = (()[@a2] : (unit [@a3]) @ local)
 
-let f (type a : value) = (() : unit @@ local)
+let f (type a : value) = (() : unit @ local)
 let (* 1 *) f (* 2 *) ((* 3 *) type (* 4 *) a (* 5 *) : (* 6 *) value (* 7 *)) (* 8 *) =
-  (* 9 *) ((* 10 *) () (* 11 *) : (* 12 *) unit (* 13 *) @@ (* 14 *) local (* 15 *))
+  (* 9 *) ((* 10 *) () (* 11 *) : (* 12 *) unit (* 13 *) @ (* 14 *) local (* 15 *))
   (* 16 *)
-let[@a1] f (type a : value) = (()[@a2] : unit[@a3] @@ local)
+let[@a1] f (type a : value) = (()[@a2] : (unit[@a3]) @ local)
 
-let f x y = (() : unit @@ local)
+let f x y = (() : unit @ local)
 let (* 1 *) f (* 2 *) x (* 3 *) y (* 4 *) = (* 5 *)
-  ((* 6 *) () (* 7 *) : (* 8 *) unit (* 9 *) @@ (* 10 *) local (* 11 *)) (* 12 *)
-let[@a1] f (x[@a2]) (y[@a3]) = (()[@a4] : unit[@a5] @@ local)
+  ((* 6 *) () (* 7 *) : (* 8 *) unit (* 9 *) @ (* 10 *) local (* 11 *)) (* 12 *)
+let[@a1] f (x[@a2]) (y[@a3]) = (()[@a4] : (unit[@a5]) @ local)
 
 (* LHS and RHS annotated with the same type *)
 let f (type a) : unit = (() : unit)

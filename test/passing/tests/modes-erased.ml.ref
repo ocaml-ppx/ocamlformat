@@ -21,6 +21,8 @@ module Let_bindings = struct
 
   let x : typ1 -> typ2 = y
 
+  let x : typ1 -> typ2 = y
+
   let x : typ1 * typ2 = y
 
   let x = x
@@ -67,6 +69,10 @@ module Expressions = struct
          (z : _) )
     ; function1= (function x -> (x : _) | y -> (y : _))
     ; fun1= (fun ?(x = (x : _)) () : _ -> y)
+    ; fun2= (fun ?(x = (x : _)) () : _ -> y)
+    ; fun3= (fun ?(x = (x : _)) () : t -> y)
+    ; fun4= (fun ?(x = (x : _)) () : _ -> y)
+    ; fun5= (fun ?(x = (x : _)) () : t -> y)
     ; apply1= (x : _) (y : _)
     ; apply2= f ~lbl:(x : _)
     ; apply3= f ~x:(x : _)
@@ -133,6 +139,10 @@ module Expressions = struct
           : _ )
     ; function1= (function x -> x | y -> y : _)
     ; fun1= (fun x -> y : _)
+    ; fun2= (fun x -> y : _)
+    ; fun3= (fun x -> y : t)
+    ; fun4= (fun x -> y : _)
+    ; fun5= (fun x -> y : t)
     ; apply1= (f x : _)
     ; match1= (match x with y -> y | z -> z : _)
     ; try1= (try x with y -> y | z -> z : _)
@@ -156,12 +166,12 @@ module Expressions = struct
         while x do
           y
         done
-        @@ mode
+        @ mode
     ; for1=
         for x = y to z do
           a
         done
-        @@ mode
+        @ mode
     ; constraint1= ((x : _) : _)
     ; coerce1= ((x :> _) : _)
     ; send1= (x#y : _)
@@ -249,6 +259,35 @@ module Let_bound_functions = struct
       ?lbl:(arg : typ) ?lbl:(arg = value) ?lbl:(arg : typ = value) ?arg
       ?(arg : typ) ?(arg = value) ?(arg : typ = value) : typ =
     value
+end
+
+module LATs = struct
+  let f : 'a. b -> c = fun x -> y
+
+  let f : 'a. b -> c = fun x -> y
+
+  let f : 'a. b -> c = fun x -> y
+
+  let f : 'a. b -> c = fun x -> y
+
+  let (* aaa *) f (* bbb *) :
+      (* ccc *)
+      'a (* ddd *).
+         (* eee *)
+         (* fff *)
+         b
+         (* ggg *)
+      -> (* hhh *)
+         (* iii *)
+         (* jjj *)
+         c
+      (* kkk *)
+      (* lll *)
+      (* mmm *) =
+   (* nnn *)
+   (* ooo *)
+   (* ppp *)
+   fun (* qqq *) x -> y
 end
 
 module No_illegal_sugaring = struct

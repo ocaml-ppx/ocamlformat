@@ -124,16 +124,6 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let remove_local_attrs cmts param =
-  match param with
-  | Pparam_newtype _ -> param
-  | Pparam_val (_, label, default, pattern) ->
-      let ppat_attributes, is_local =
-        check_local_attr_and_reloc_cmts cmts pattern.ppat_attributes
-          pattern.ppat_loc
-      in
-      Pparam_val (is_local, label, default, {pattern with ppat_attributes})
-
 let get_jkind_of_legacy_attr attr =
   match (attr.attr_name.txt, attr.attr_payload) with
   | ("ocaml.immediate64" | "immediate64"), PStr [] ->
@@ -275,17 +265,18 @@ module Let_binding = struct
     ; lb_pat: pattern xt
     ; lb_args: function_param list
     ; lb_typ: value_constraint option
+    ; lb_modes: modes
     ; lb_exp: expression xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
     ; lb_local: bool
-    ; lb_modes: mode loc list
+    ; lb_modes_binding: modes
     ; lb_loc: Location.t }
 
   let split_annot cmts xargs ({ast= body; _} as xbody) =
     let ctx = Exp body in
     match body.pexp_desc with
-    | Pexp_constraint (exp, Some typ, [])
+    | Pexp_constraint (exp, Some typ, modes)
       when Source.type_constraint_is_first typ exp.pexp_loc ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
@@ -303,23 +294,31 @@ module Let_binding = struct
         in
         ( xargs
         , Some (Pvc_constraint {locally_abstract_univars= []; typ})
+        , modes
         , sub_exp ~ctx:exp_ctx exp )
     (* The type constraint is always printed before the declaration for
        functions, for other value bindings we preserve its position. *)
-    | Pexp_constraint (exp, Some typ, []) when not (List.is_empty xargs) ->
+    | Pexp_constraint (exp, Some typ, modes) when not (List.is_empty xargs)
+      ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
         ( xargs
         , Some (Pvc_constraint {locally_abstract_univars= []; typ})
+        , modes
         , sub_exp ~ctx exp )
+    | Pexp_constraint (exp, None, modes) when not (List.is_empty xargs) ->
+        Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+          ~after:exp.pexp_loc ;
+        (xargs, None, modes, sub_exp ~ctx exp)
     | Pexp_coerce (exp, typ1, typ2)
       when Source.type_constraint_is_first typ2 exp.pexp_loc ->
         Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
           ~after:exp.pexp_loc ;
         ( xargs
         , Some (Pvc_coercion {ground= typ1; coercion= typ2})
+        , []
         , sub_exp ~ctx exp )
-    | _ -> (xargs, None, xbody)
+    | _ -> (xargs, None, [], xbody)
 
   let split_fun_args cmts xpat xbody =
     let xargs, xbody =
@@ -329,150 +328,21 @@ module Let_binding = struct
       | _ -> ([], xbody)
     in
     match (xbody.ast.pexp_desc, xpat.ast.ppat_desc) with
-    | Pexp_constraint _, Ppat_constraint _ -> (xargs, None, xbody)
+    | Pexp_constraint _, Ppat_constraint _ -> (xargs, None, [], xbody)
     | _ -> split_annot cmts xargs xbody
 
-  (** Conservatively decides when to use the [let local_ ...] sugar.
-
-      Putting [local_] on the left-hand-side of a simple variable binding
-      is sugar for putting it on the right-hand-side.
-
-      {[
-        let x = local_ expression (* parses the exact same as *)
-        let local_ x = expression
-      ]}
-
-      We have to be careful about trying to sugar something that isn't
-      already sugared, though.
-
-      {[
-        let (x, y) = local_ expression (* parses while *)
-        let local_ (x, y) = expression (* does not *)
-
-        let local_ f x = expression (* parses the same as *)
-        let f = local_ fun x -> expression (* and not as *)
-        let f x = local_ expression
-      ]}
-
-      Ocamlformat checks that the formatting output does not change
-      the parsed ast, which catches and fails on these cases.
-      It also, however, fails even on changes to the ast that don't
-      have any semantic difference.
-
-      {[
-        let x : string = local_ expression (* means the same thing as *)
-        let local_ x : string = expression (* but parses differently *)
-      ]}
-
-      Currently, if there is any type annotation or coercion on the let
-      binding, then sugaring the [local_] will create a different
-      parsetree, so we just avoid sugaring in these cases.
-      *)
-  let local_pattern_can_be_sugared pvb_pat pvb_constraint exp_loc cmts =
-    (* If the original code was sugared, preserve that always. *)
-    let _, already_sugared =
-      check_local_attr_and_reloc_cmts cmts pvb_pat.ppat_attributes
-        pvb_pat.ppat_loc
-    in
-    (* Don't wipe away comments before [local_]. *)
-    let comment_before = Cmts.has_before cmts exp_loc in
-    already_sugared
-    || (not comment_before)
-       &&
-       match pvb_pat.ppat_desc with
-       | Ppat_var _ -> (
-         match pvb_constraint with
-         | None ->
-             (* [ let x = local_ "hi" ] *)
-             true
-         | Some (Pvc_constraint _) ->
-             (* [ let x : string = local_ "hi" ] [ let x : 'a. string =
-                local_ "hi" ] *)
-             false
-         | Some (Pvc_coercion _) ->
-             (* [ let x : string :> string = local_ "hi" ] [ let x :> string
-                = local_ "hi" ] *)
-             false )
-       | _ -> false
-
-  let maybe_sugar_local cmts ~ctx pvb_pat pvb_modes pvb_expr pvb_is_pun
-      pvb_constraint =
-    let is_local_pattern, ctx, pvb_pat, pvb_expr =
-      match pvb_expr.pexp_desc with
-      | Pexp_apply
-          ( { pexp_desc= Pexp_extension ({txt= extension_local; _}, PStr [])
-            ; _ }
-          , [(Nolabel, sbody)] )
-        when Conf.is_jane_street_local_annotation "local"
-               ~test:extension_local ->
-          let is_local_pattern, sbody =
-            (* The pattern part must still be rewritten as the parser
-               duplicated the type annotations and extensions into the
-               pattern and the expression. *)
-            if
-              local_pattern_can_be_sugared pvb_pat pvb_constraint
-                pvb_expr.pexp_loc cmts
-            then
-              let sattrs, _ =
-                check_local_attr_and_reloc_cmts cmts sbody.pexp_attributes
-                  sbody.pexp_loc
-              in
-              (true, {sbody with pexp_attributes= sattrs})
-            else (false, pvb_expr)
-          in
-          let pattrs, _ =
-            check_local_attr_and_reloc_cmts cmts pvb_pat.ppat_attributes
-              pvb_pat.ppat_loc
-          in
-          let pat = {pvb_pat with ppat_attributes= pattrs} in
-          let fake_ctx =
-            let pvb =
-              { pvb_pat= pat
-              ; pvb_expr= sbody
-              ; pvb_is_pun
-              ; pvb_attributes= []
-              ; pvb_loc= Location.none
-              ; pvb_constraint= None
-              ; pvb_modes }
-            in
-            match ctx with
-            | Str ({pstr_desc= Pstr_value pvbs; _} as str) ->
-                Str
-                  { str with
-                    pstr_desc= Pstr_value {pvbs with pvbs_bindings= [pvb]} }
-            | Exp ({pexp_desc= Pexp_let (pvbs, body); _} as exp) ->
-                Exp
-                  { exp with
-                    pexp_desc=
-                      Pexp_let ({pvbs with pvbs_bindings= [pvb]}, body) }
-            | Cl ({pcl_desc= Pcl_let (pvbs, body); _} as cl) ->
-                Cl
-                  { cl with
-                    pcl_desc= Pcl_let ({pvbs with pvbs_bindings= [pvb]}, body)
-                  }
-            | _ -> Lb pvb
-          in
-          (is_local_pattern, fake_ctx, pat, sbody)
-      | _ -> (false, ctx, pvb_pat, pvb_expr)
-    in
+  let type_cstr cmts ~ctx pvb_pat pvb_expr =
     let lb_pat = sub_pat ~ctx pvb_pat and lb_exp = sub_exp ~ctx pvb_expr in
-    (is_local_pattern, lb_pat, lb_exp)
-
-  let type_cstr cmts ~ctx pvb_pat pvb_expr pvb_is_pun pvb_constraint =
-    let is_local_pattern, lb_pat, lb_exp =
-      maybe_sugar_local cmts ~ctx pvb_pat [] pvb_expr pvb_is_pun
-        pvb_constraint
-    in
     let ({ast= pat; _} as xpat) = sub_pat ~ctx lb_pat.ast in
     let pat_is_extension {ppat_desc; _} =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
     let xbody = sub_exp ~ctx lb_exp.ast in
-    let pat, xargs, typ, exp =
+    let pat, xargs, typ, mode, exp =
       if
         (not (List.is_empty xbody.ast.pexp_attributes))
         || pat_is_extension pat
-      then (xpat, [], None, xbody)
+      then (xpat, [], None, [], xbody)
       else
         let xpat =
           match xpat.ast.ppat_desc with
@@ -481,10 +351,10 @@ module Let_binding = struct
               sub_pat ~ctx:xpat.ctx p
           | _ -> xpat
         in
-        let xargs, typ, xbody = split_fun_args cmts xpat xbody in
-        (xpat, xargs, typ, xbody)
+        let xargs, typ, mode, xbody = split_fun_args cmts xpat xbody in
+        (xpat, xargs, typ, mode, xbody)
     in
-    (is_local_pattern, pat, xargs, typ, exp)
+    (pat, xargs, typ, mode, exp)
 
   let should_desugar_args pat typ =
     match (pat.ast, typ) with
@@ -498,25 +368,26 @@ module Let_binding = struct
       ; pvb_is_pun
       ; pvb_attributes
       ; pvb_loc
-      ; pvb_modes } =
-    let islocal, lb_pat, lb_exp =
-      maybe_sugar_local cmts ~ctx pvb_pat pvb_modes pvb_expr pvb_is_pun
-        pvb_constraint
+      ; pvb_modes
+      ; pvb_local } =
+    let lb_pat = sub_pat ~ctx pvb_pat
+    and lb_exp = sub_exp ~ctx pvb_expr
     and lb_typ = pvb_constraint in
-    let lb_args, lb_typ, lb_exp =
+    let (lb_args, lb_typ, lb_modes, lb_exp), lb_modes_binding =
       if should_desugar_args lb_pat lb_typ then
-        split_fun_args cmts lb_pat lb_exp
-      else ([], lb_typ, lb_exp)
+        (split_fun_args cmts lb_pat lb_exp, pvb_modes)
+      else (([], lb_typ, pvb_modes, lb_exp), [])
     in
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
     ; lb_pat
     ; lb_args
     ; lb_typ
+    ; lb_modes
     ; lb_exp
     ; lb_pun= pvb_is_pun
     ; lb_attrs= pvb_attributes
-    ; lb_local= islocal
-    ; lb_modes= pvb_modes
+    ; lb_local= pvb_local
+    ; lb_modes_binding
     ; lb_loc= pvb_loc }
 
   let of_let_bindings cmts ~ctx =
@@ -524,17 +395,18 @@ module Let_binding = struct
 
   let of_binding_ops cmts ~ctx bos =
     List.map bos ~f:(fun bo ->
-        let islocal, lb_pat, lb_args, lb_typ, lb_exp =
-          type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp false None
+        let lb_pat, lb_args, lb_typ, lb_modes, lb_exp =
+          type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp
         in
         { lb_op= bo.pbop_op
         ; lb_pat
         ; lb_args
         ; lb_typ
+        ; lb_modes
         ; lb_exp
         ; lb_pun= bo.pbop_is_pun
         ; lb_attrs= []
-        ; lb_local= islocal
-        ; lb_modes= []
+        ; lb_local= false
+        ; lb_modes_binding= []
         ; lb_loc= bo.pbop_loc } )
 end

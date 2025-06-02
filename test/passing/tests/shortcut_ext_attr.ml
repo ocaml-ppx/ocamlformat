@@ -80,7 +80,6 @@ module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 (* Module type expression *)
 module type S = functor [@foo1]
   (M : S)
-  -> functor
   (_ : (module type of M) [@foo2])
   -> sig end [@foo3]
 

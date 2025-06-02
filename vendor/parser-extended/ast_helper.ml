@@ -208,8 +208,7 @@ module Mty = struct
   let ident ?loc ?attrs a = mk ?loc ?attrs (Pmty_ident a)
   let alias ?loc ?attrs a = mk ?loc ?attrs (Pmty_alias a)
   let signature ?loc ?attrs a = mk ?loc ?attrs (Pmty_signature a)
-  let functor_ ?loc ?attrs a b = mk ?loc ?attrs (Pmty_functor (a, b))
-  let gen ?loc ?attrs a b = mk ?loc ?attrs (Pmty_gen (a, b))
+  let functor_ ?loc ?attrs a b c = mk ?loc ?attrs (Pmty_functor (a, b, c))
   let with_ ?loc ?attrs a b = mk ?loc ?attrs (Pmty_with (a, b))
   let typeof_ ?loc ?attrs a = mk ?loc ?attrs (Pmty_typeof a)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmty_extension a)
@@ -226,7 +225,8 @@ let mk ?(loc = !default_loc) ?(attrs = []) d =
   let functor_ ?loc ?attrs arg body =
     mk ?loc ?attrs (Pmod_functor (arg, body))
   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
-  let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
+  let constraint_ ?loc ?attrs ty mode m =
+    mk ?loc ?attrs (Pmod_constraint (m, ty, mode))
   let unpack ?loc ?attrs a b c = mk ?loc ?attrs (Pmod_unpack (a, b, c))
   let apply_unit ?loc ?attrs a b = mk ?loc ?attrs (Pmod_apply_unit (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
@@ -395,12 +395,13 @@ end
 
 module Md = struct
   let mk ?(loc = !default_loc) ?(attrs=Attr.ext_attrs ())
-        ?(docs = empty_docs) ?(text = []) name modalities args typ =
+        ?(docs = empty_docs) ?(text = []) name modalities args typ mode =
     {
      pmd_name = name;
      pmd_modalities = modalities;
      pmd_args = args;
      pmd_type = typ;
+     pmd_mode = mode;
      pmd_ext_attrs = add_text_attrs' text (add_docs_attrs' docs attrs);
      pmd_loc = loc;
     }
@@ -465,12 +466,13 @@ end
 
 module Vb = struct
   let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
-        ?(text = []) ?value_constraint ?(modes = []) ~is_pun pat expr =
+        ?(text = []) ?value_constraint ?(modes = []) ~local ~is_pun pat expr =
     {
      pvb_pat = pat;
      pvb_expr = expr;
      pvb_constraint=value_constraint;
      pvb_modes=modes;
+     pvb_local=local;
      pvb_is_pun=is_pun;
      pvb_attributes =
        add_text_attrs text (add_docs_attrs docs attrs);

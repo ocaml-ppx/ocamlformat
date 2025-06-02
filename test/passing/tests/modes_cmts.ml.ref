@@ -16,37 +16,37 @@ let x @ mode1 mode2 (* cmt *) = y
 
 let x @ mode1 mode2 = (* cmt *) y
 
-let (* cmt *) x : typ @@ mode1 mode2 = y
+let (* cmt *) x : typ @ mode1 mode2 = y
 
-let x (* cmt *) : typ @@ mode1 mode2 = y
+let x (* cmt *) : typ @ mode1 mode2 = y
 
-let x : (* cmt *) typ @@ mode1 mode2 = y
+let x : (* cmt *) typ @ mode1 mode2 = y
 
-let x : typ (* cmt *) @@ mode1 mode2 = y
+let x : typ (* cmt *) @ mode1 mode2 = y
 
-let x : typ @@ (* cmt *) mode1 mode2 = y
+let x : typ @ (* cmt *) mode1 mode2 = y
 
-let x : typ @@ mode1 (* cmt *) mode2 = y
+let x : typ @ mode1 (* cmt *) mode2 = y
 
-let x : typ @@ mode1 mode2 (* cmt *) = y
+let x : typ @ mode1 mode2 (* cmt *) = y
 
-let x : typ @@ mode1 mode2 = (* cmt *) y
+let x : typ @ mode1 mode2 = (* cmt *) y
 
 (* expressions *)
 
-let x = ((* cmt *) expr : typ @@ mode1 mode2)
+let x = ((* cmt *) expr : typ @ mode1 mode2)
 
-let x = (expr (* cmt *) : typ @@ mode1 mode2)
+let x = (expr (* cmt *) : typ @ mode1 mode2)
 
-let x = (expr : (* cmt *) typ @@ mode1 mode2)
+let x = (expr : (* cmt *) typ @ mode1 mode2)
 
-let x = (expr : typ (* cmt *) @@ mode1 mode2)
+let x = (expr : typ (* cmt *) @ mode1 mode2)
 
-let x = (expr : typ @@ (* cmt *) mode1 mode2)
+let x = (expr : typ @ (* cmt *) mode1 mode2)
 
-let x = (expr : typ @@ mode1 (* cmt *) mode2)
+let x = (expr : typ @ mode1 (* cmt *) mode2)
 
-let x = (expr : typ @@ mode1 mode2 (* cmt *))
+let x = (expr : typ @ mode1 mode2 (* cmt *))
 
 (* lhs/rhs of arrows *)
 
@@ -80,81 +80,82 @@ type t = lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 (* cmt *) m6
 
 type t = lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 (* cmt *)
 
-let x : (* cmt *) lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : ((* cmt *) lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs (* cmt *) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs (* cmt *) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ (* cmt *) m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ (* cmt *) m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 (* cmt *) m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 (* cmt *) m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 (* cmt *) -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 (* cmt *) -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> (* cmt *) mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> (* cmt *) mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs (* cmt *) @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs (* cmt *) @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ (* cmt *) m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ (* cmt *) m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 (* cmt *) m4 -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 (* cmt *) m4 -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 (* cmt *) -> rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 (* cmt *) -> rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> (* cmt *) rhs @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> (* cmt *) rhs @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs (* cmt *) @ m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs (* cmt *) @ m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ (* cmt *) m5 m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ (* cmt *) m5 m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 (* cmt *) m6 @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 (* cmt *) m6) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 (* cmt *) @@ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 (* cmt *)) @ m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ (* cmt *) m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ (* cmt *) m7 m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 (* cmt *) m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 (* cmt *) m8 = y
 
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 (* cmt *) = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 (* cmt *) = y
 
-let x = (expr (* cmt *) : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr (* cmt *) : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : (* cmt *) lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : ((* cmt *) lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs (* cmt *) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs (* cmt *) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ (* cmt *) m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ (* cmt *) m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 (* cmt *) m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 (* cmt *) m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 (* cmt *) -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 (* cmt *) -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> (* cmt *) mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> (* cmt *) mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs (* cmt *) @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs (* cmt *) @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ (* cmt *) m3 m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ (* cmt *) m3 m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 (* cmt *) m4 -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 (* cmt *) m4 -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 (* cmt *) -> rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 (* cmt *) -> rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> (* cmt *) rhs @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> (* cmt *) rhs @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs (* cmt *) @ m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs (* cmt *) @ m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ (* cmt *) m5 m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ (* cmt *) m5 m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 (* cmt *) m6 @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 (* cmt *) m6) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 (* cmt *) @@ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 (* cmt *)) @ m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ (* cmt *) m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ (* cmt *) m7 m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 (* cmt *) m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 (* cmt *) m8)
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 (* cmt *))
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 (* cmt *))
 
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8) (* cmt *)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
+(* cmt *)
 
 (* modalities on record fields *)
 
@@ -353,7 +354,7 @@ let (f @ mode1 (* cmt *)) (arg1 @ mode2) (arg2 @ mode3) : typ = x
 
 let (f @ mode1) (* cmt *) (arg1 @ mode2) (arg2 @ mode3) : typ = x
 
-let (f @ mode1) ((* cmt *) arg1 @ mode2) (arg2 @ mode3) : typ = x
+let (f @ mode1) (* cmt *) (arg1 @ mode2) (arg2 @ mode3) : typ = x
 
 let (f @ mode1) (arg1 (* cmt *) @ mode2) (arg2 @ mode3) : typ = x
 
@@ -363,7 +364,7 @@ let (f @ mode1) (arg1 @ mode2 (* cmt *)) (arg2 @ mode3) : typ = x
 
 let (f @ mode1) (arg1 @ mode2) (* cmt *) (arg2 @ mode3) : typ = x
 
-let (f @ mode1) (arg1 @ mode2) ((* cmt *) arg2 @ mode3) : typ = x
+let (f @ mode1) (arg1 @ mode2) (* cmt *) (arg2 @ mode3) : typ = x
 
 let (f @ mode1) (arg1 @ mode2) (arg2 (* cmt *) @ mode3) : typ = x
 

@@ -43,8 +43,6 @@ val cl_fun :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val remove_local_attrs : Cmts.t -> function_param_desc -> function_param_desc
-
 val rewrite_type_declaration_imm_attr_to_jkind_annot :
   Cmts.t -> type_declaration -> type_declaration
 (** Rewrites [@@immediate] to [_ : immediate] and do the same for [@@immediate64].
@@ -80,11 +78,13 @@ module Let_binding : sig
     ; lb_pat: pattern Ast.xt
     ; lb_args: function_param list
     ; lb_typ: value_constraint option
+          (** the type on the RHS of the binding *)
+    ; lb_modes: modes  (** the modes on the RHS of the binding *)
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
-    ; lb_local: bool
-    ; lb_modes: mode loc list
+    ; lb_local: bool  (** the local_ on the bound value (not RHS) *)
+    ; lb_modes_binding: modes  (** modes on the bound value (not RHS) *)
     ; lb_loc: Location.t }
 
   val of_let_binding :

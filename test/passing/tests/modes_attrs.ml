@@ -1,13 +1,13 @@
 (* let bindings *)
 
 let[@attr] x @ mode1 mode2 = y
-let[@attr] x : typ @@ mode1 mode2 = y
+let[@attr] x : typ @ mode1 mode2 = y
 
 (* expressions *)
 
-let x = (expr [@attr] : typ @@ mode1 mode2)
-let x = (expr : (typ[@attr]) @@ mode1 mode2)
-let x = ((expr : typ @@ mode1 mode2) [@attr])
+let x = (expr [@attr] : typ @ mode1 mode2)
+let x = (expr : (typ[@attr]) @ mode1 mode2)
+let x = ((expr : typ @ mode1 mode2) [@attr])
 
 (* lhs/rhs of arrows *)
 
@@ -16,14 +16,14 @@ type t = lhs @ m1 m2 -> (mhs[@attr]) @ m3 m4 -> rhs @ m5 m6
 type t = lhs @ m1 m2 -> mhs @ m3 m4 -> (rhs[@attr]) @ m5 m6
 type t = lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 [@@attr]
 
-let x : (lhs[@attr]) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
-let x : lhs @ m1 m2 -> (mhs[@attr]) @ m3 m4 -> rhs @ m5 m6 @@ m7 m8 = y
-let x : lhs @ m1 m2 -> mhs @ m3 m4 -> (rhs[@attr]) @ m5 m6 @@ m7 m8 = y
-let x = (expr [@attr] : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
-let x = (expr : (lhs[@attr]) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
-let x = (expr : lhs @ m1 m2 -> (mhs[@attr]) @ m3 m4 -> rhs @ m5 m6 @@ m7 m8)
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> (rhs[@attr]) @ m5 m6 @@ m7 m8)
-let x = (expr : lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6 @@ m7 m8) [@@attr]
+let x : ((lhs[@attr]) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
+let x : (lhs @ m1 m2 -> (mhs[@attr]) @ m3 m4 -> rhs @ m5 m6) @ m7 m8 = y
+let x : (lhs @ m1 m2 -> mhs @ m3 m4 -> (rhs[@attr]) @ m5 m6) @ m7 m8 = y
+let x = (expr [@attr] : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
+let x = (expr : ((lhs[@attr]) @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> (mhs[@attr]) @ m3 m4 -> rhs @ m5 m6) @ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> (rhs[@attr]) @ m5 m6) @ m7 m8)
+let x = (expr : (lhs @ m1 m2 -> mhs @ m3 m4 -> rhs @ m5 m6) @ m7 m8) [@@attr]
 
 (* modalities on record fields *)
 

@@ -18,6 +18,7 @@
   :standard
   --lalr
   --strict
+  --explain
   --unused-token
   COMMENT
   --unused-token

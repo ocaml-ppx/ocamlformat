@@ -342,7 +342,7 @@ and pattern i ppf x =
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
         (fun i ppf (vl, p) ->
-          list i string_loc ppf vl;
+          list i typevar ppf vl;
           pattern i ppf p)
         ppf po
   | Ppat_variant (l, po) ->
@@ -974,9 +974,10 @@ and functor_parameter i ppf x =
   match x.txt with
   | Unit ->
       line i ppf "Unit\n"
-  | Named (s, mt) ->
+  | Named (s, mt, mm) ->
       line i ppf "Named %a\n" fmt_str_opt_loc s;
-      module_type i ppf mt
+      module_type i ppf mt;
+      modes i ppf mm
 
 and module_type i ppf x =
   line i ppf "module_type %a\n" fmt_location x.pmty_loc;
@@ -988,13 +989,11 @@ and module_type i ppf x =
   | Pmty_signature (s) ->
       line i ppf "Pmty_signature\n";
       signature i ppf s;
-  | Pmty_functor (params, mt) ->
+  | Pmty_functor (params, mt, mm) ->
       line i ppf "Pmty_functor\n";
       list i functor_parameter ppf params;
-      module_type i ppf mt
-  | Pmty_gen (loc, mt) ->
-      line i ppf "Pmty_gen %a\n" fmt_location loc;
-      module_type i ppf mt
+      module_type i ppf mt;
+      modes i ppf mm
   | Pmty_with (mt, l) ->
       line i ppf "Pmty_with\n";
       module_type i ppf mt;
@@ -1121,10 +1120,11 @@ and module_expr i ppf x =
       line i ppf "Pmod_apply\n";
       module_expr i ppf me1;
       module_expr i ppf me2;
-  | Pmod_constraint (me, mt) ->
+  | Pmod_constraint (me, mt, mm) ->
       line i ppf "Pmod_constraint\n";
       module_expr i ppf me;
-      module_type i ppf mt;
+      Option.iter (module_type i ppf) mt;
+      modes i ppf mm
   | Pmod_unpack (e, ty1, ty2) ->
       line i ppf "Pmod_unpack\n";
       expression i ppf e;

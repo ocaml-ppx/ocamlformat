@@ -337,18 +337,24 @@ let rec mty_is_simple x =
   | Pmty_signature {psg_items= _ :: _; _}
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
-   |Pmty_functor (_, _)
+   |Pmty_functor (_, _, _)
    |Pmty_strengthen _ ->
       false
-  | Pmty_gen (_, t) -> mty_is_simple t
   | Pmty_typeof e -> mod_is_simple e
   | Pmty_with (t, ([] | [_])) -> mty_is_simple t
+
+and mode_is_simple = function [] -> true | _ :: _ -> false
+
+and option_is_simple is_simple = function
+  | None -> true
+  | Some x -> is_simple x
 
 and mod_is_simple x =
   match x.pmod_desc with
   | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] | Pmod_hole -> true
   | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
-  | Pmod_constraint (e, t) -> mod_is_simple e && mty_is_simple t
+  | Pmod_constraint (e, t, m) ->
+      mod_is_simple e && option_is_simple mty_is_simple t && mode_is_simple m
   | Pmod_apply (a, b) -> mod_is_simple a && mod_is_simple b
   | Pmod_apply_unit (a, _) -> mod_is_simple a
 
@@ -726,7 +732,7 @@ module T = struct
     | Pat of pattern
     | Exp of expression
     | Fp of function_param
-    | Vc of value_constraint
+    | Vc of value_constraint * modes
     | Lb of value_binding
     | Mb of module_binding
     | Md of module_declaration
@@ -751,7 +757,9 @@ module T = struct
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Printast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Printast.expression e
     | Fp p -> Format.fprintf fs "Fp:@\n%a" Printast.function_param p
-    | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
+    | Vc (c, m) ->
+        Format.fprintf fs "Vc:@\n%a@\n%a" Printast.value_constraint c
+          (Printast.modes 0) m
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
@@ -1100,7 +1108,7 @@ end = struct
       | Pexp_let (lbs, _) -> assert (check_let_bindings lbs)
       | _ -> assert false )
     | Fp _ -> assert false
-    | Vc c -> assert (check_value_constraint c)
+    | Vc (c, _) -> assert (check_value_constraint c)
     | Lb _ -> assert false
     | Mb _ -> assert false
     | Md _ -> assert false
@@ -2011,6 +2019,13 @@ end = struct
     | {ast= {ptyp_desc= Ptyp_alias _; _}; ctx= Typ _} -> true
     | { ast= {ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _}
       ; ctx= Typ {ptyp_desc= Ptyp_class _; _} } ->
+        true
+    | { ast= {ptyp_desc= Ptyp_arrow _; _}
+      ; ctx=
+          ( Pat {ppat_desc= Ppat_constraint (_, _, modes); _}
+          | Vc (_, modes)
+          | Exp {pexp_desc= Pexp_constraint (_, _, modes); _} ) }
+      when not (List.is_empty modes) ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
