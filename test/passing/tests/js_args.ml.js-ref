@@ -77,26 +77,15 @@ let () =
 
 (* We like the indentation of most arguments, but want to get back towards the
    left margin in a few special cases: *)
-let _ =
-  foo
-    (bar (fun x ->
-       (* special: "fun _ ->" at EOL *)
-       baz))
-;;
-
+let _ = foo (bar (fun x -> (* special: "fun _ ->" at EOL *)
+                           baz))
 (* assume no more arguments to "bar" *)
 
 let _ = foo ~a_long_field_name:(check (fun bar -> baz))
 let _ = foo ~a_long_field_name:(check (fun bar -> baz))
 
-let _ =
-  foo
-    (bar
-       (quux
-          (fnord (fun x ->
-             (* any depth *)
-             baz))))
-;;
+let _ = foo (bar (quux (fnord (fun x -> (* any depth *)
+                                        baz))))
 
 (* We also wanted to tweak the operator indentation, making operators like <=
    not special cases in contexts like this:  *)
