@@ -2308,9 +2308,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           let pro = pro $ break 1 0 $ fmt_label lbl label_sep in
           expr_epi
           $ hovbox 4
-              (fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg)
-              $ fmt_if parens (closing_paren c ~force ~offset:(-3))
-              )
+              ( fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg)
+              $ fmt_if parens (closing_paren c ~force ~offset:(-3)) )
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes
