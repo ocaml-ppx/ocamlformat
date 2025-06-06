@@ -16,9 +16,10 @@ let run (main : unit -> unit) : unit =
   in
   let dequeue () =
     if Queue.is_empty run_q then () (* done *)
-    else
+    else begin
       let task = Queue.pop run_q in
       task ()
+    end
   in
   let rec spawn (f : unit -> unit) : unit =
     match f () with
@@ -32,7 +33,7 @@ let run (main : unit -> unit) : unit =
     | effect Fork f, k ->
         enqueue k ();
         spawn f
-    | effect Xchg n, k -> (
+    | effect Xchg n, k -> begin
         match !exchanger with
         | Some (n', k') ->
             exchanger := None;
@@ -40,7 +41,8 @@ let run (main : unit -> unit) : unit =
             continue k n'
         | None ->
             exchanger := Some (n, k);
-            dequeue ())
+            dequeue ()
+      end
   in
   spawn main
 
