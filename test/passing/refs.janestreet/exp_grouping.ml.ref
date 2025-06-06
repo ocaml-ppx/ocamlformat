@@ -765,3 +765,11 @@ let () =
              fooooooooooo x
            end
 ;;
+
+let f () =
+  f
+    (g a begin fun () ->
+        let x = y in
+        z
+      end)
+;;
