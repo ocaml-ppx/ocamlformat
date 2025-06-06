@@ -2302,14 +2302,15 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           let pro =
             intro_epi
             $ fmt_if parens (str "(")
-            $ ( fmt_args_grouped ~epi:fmt_atrs e0 args_before
-              $ fmt_if parens (closing_paren c ~force ~offset:(-3)) )
+            $ fmt_args_grouped ~epi:fmt_atrs e0 args_before
           in
           let label_sep = Params.Exp.fun_label_sep c.conf in
           let pro = pro $ break 1 0 $ fmt_label lbl label_sep in
           expr_epi
           $ hovbox 4
-              (fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg))
+              (fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg)
+              $ fmt_if parens (closing_paren c ~force ~offset:(-3))
+              )
       | _ ->
           let fmt_atrs =
             fmt_attributes c ~pre:(Break (1, -2)) pexp_attributes
