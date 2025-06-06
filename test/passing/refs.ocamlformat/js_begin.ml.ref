@@ -1,5 +1,7 @@
-let f = function zoo -> foo ; bar
+let f = function zoo -> begin foo ; bar end
 
 let g = function zoo -> foo ; bar
 
-let () = match foo with Bar -> snoo
+let () =
+  begin match foo with Bar -> snoo
+  end
