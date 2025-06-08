@@ -3997,6 +3997,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to module_indent.ml.stdout
+   (with-stderr-to module_indent.ml.stderr
+     (run %{bin:ocamlformat} --name module_indent.ml --margin-check --module-indent=4 %{dep:../tests/module_indent.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff module_indent.ml.ref module_indent.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff module_indent.ml.err module_indent.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to module_item_spacing-preserve.ml.stdout
    (with-stderr-to module_item_spacing-preserve.ml.stderr
      (run %{bin:ocamlformat} --name module_item_spacing-preserve.ml --margin-check --max-iters=3 --module-item-spacing=preserve %{dep:../tests/module_item_spacing.ml})))))
