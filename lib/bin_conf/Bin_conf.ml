@@ -525,7 +525,7 @@ let discard_formatter =
     formatter_of_out_functions
       { (get_formatter_out_functions ()) with
         out_string= (fun _ _ _ -> ())
-      ; out_flush= (fun () -> ()) })
+      ; out_flush= (fun () -> ()) } )
 
 let global_lib_term =
   Term.(
