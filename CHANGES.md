@@ -6,6 +6,10 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Support for OCaml 5.4 (#2717, @Julow)
+
 ### Deprecated
 
 - Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
