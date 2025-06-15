@@ -523,11 +523,9 @@ let update_using_env conf =
 let discard_formatter =
   Format.(
     formatter_of_out_functions
-      { out_string= (fun _ _ _ -> ())
-      ; out_flush= (fun () -> ())
-      ; out_newline= (fun () -> ())
-      ; out_spaces= (fun _ -> ())
-      ; out_indent= (fun _ -> ()) } )
+      { (get_formatter_out_functions ()) with
+        out_string= (fun _ _ _ -> ())
+      ; out_flush= (fun () -> ()) } )
 
 let global_lib_term =
   Term.(

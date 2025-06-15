@@ -8,6 +8,8 @@ profile. This started with version 0.26.0.
 
 ### Added 
 
+- Support for OCaml 5.4 (#2717, @Julow)
+
 - Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
   of items within modules. This affects modules and signatures. For example, 
   module-indent=4:
@@ -18,7 +20,6 @@ profile. This started with version 0.26.0.
       val f : (string * int) list -> int
   end
   ```
-
 ### Deprecated
 
 - Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
