@@ -1,0 +1,66 @@
+(* Signature module type with attributes and comments *)
+module type M = sig
+    (** Type of elements *)
+    type t
+    [@@ocaml.doc
+      "Abstract type....................................................."]
+
+    (** Function operating on a list of (string * int) *)
+    val f : (string * int) list -> int
+    [@@ocaml.doc "Processes a list of (string * int) pairs"]
+
+    (** Inner module type *)
+    module type Inner = sig
+        type inner
+        [@@ocaml.doc
+          "Inner abstract \
+           type.................................................."]
+
+        val f : int -> int
+        [@@deprecated "Use the outer module’s `f` instead"]
+        [@@ocaml.doc "Deprecated inner function"]
+    end
+end
+
+(* Module implementing part of M *)
+module A : sig
+    type t
+
+    val f : (string * int) list -> int
+    [@@ocaml.doc "Dummy implementation of M.f"]
+end = struct
+    type t
+
+    (* Function with extra params  *)
+    let f s l =
+      (* ignore params and return dummy result *)
+      0
+end
+
+(* Core module hierarchy with attributes *)
+module Core = struct
+    module Int = struct
+        module T = struct
+            type t = int
+            [@@ocaml.doc
+              "Int alias with core extensions..........................."]
+
+            let compare = compare [@inline always]
+
+            let ( + ) x y = x + y
+            [@@ocaml.doc "Addition for core ints..........................."]
+        end
+
+        include T
+
+        (* Map functor application with inline doc *)
+        module Map = Map.Make (T)
+        [@@ocaml.doc "Map over core ints......................"]
+    end
+
+    (* Re-export with comment *)
+    module Std = struct
+        module Int = Int
+        [@@ocaml.doc "Standard Int re-export......................"]
+    end
+end
