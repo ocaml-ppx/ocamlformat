@@ -3822,8 +3822,9 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
       ; pro= Some (before $ str "sig" $ fmt_if empty (str " "))
       ; psp=
           fmt_if (not empty)
-            ( if c.conf.fmt_opts.break_struct.v then break 1000 2
-              else break 1 2 )
+            ( if c.conf.fmt_opts.break_struct.v then
+                break 1000 c.conf.fmt_opts.module_indent.v
+              else break 1 c.conf.fmt_opts.module_indent.v )
       ; bdy= (within $ if empty then noop else fmt_signature c ctx s)
       ; cls= noop
       ; esp=
@@ -4469,8 +4470,9 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
       ; pro= Some (before $ str "struct" $ fmt_if empty (str " "))
       ; psp=
           fmt_if (not empty)
-            ( if c.conf.fmt_opts.break_struct.v then break 1000 2
-              else break 1 2 )
+            ( if c.conf.fmt_opts.break_struct.v then
+                break 1000 c.conf.fmt_opts.module_indent.v
+              else break 1 c.conf.fmt_opts.module_indent.v )
       ; bdy= within $ fmt_structure c ctx sis
       ; cls= noop
       ; esp=
