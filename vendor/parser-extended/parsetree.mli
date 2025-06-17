@@ -223,6 +223,7 @@ and core_type_desc =
   | Ptyp_extension of extension  (** [[%id]]. *)
 
   (* Jane Street extension *)
+  | Ptyp_of_kind of jkind_annotation (** [(type : k)] *)
   | Ptyp_constr_unboxed of Longident.t loc * core_type list
   (* End Jane Street extension *)
 

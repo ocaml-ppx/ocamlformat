@@ -1236,6 +1236,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (list t1N (Params.comma_sep c.conf)
            (sub_typ ~ctx >> fmt_core_type c) )
       $ fmt "@ " $ fmt_longident_loc c lid $ char '#'
+  | Ptyp_of_kind jk ->
+      wrap_fits_breaks c.conf "(" ")"
+        (hvbox 0
+           ( fmt "type"
+           $ fmt_jkind_constr ~ctx:(Typ typ) c {txt= jk; loc= typ.ptyp_loc}
+           ) )
 
 and fmt_labeled_tuple_type c lbl xtyp =
   match lbl with

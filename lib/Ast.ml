@@ -1054,6 +1054,7 @@ end = struct
               | {pof_desc= Otag (_, t1); _} -> typ == t1
               | {pof_desc= Oinherit t1; _} -> typ == t1 ) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f)
+      | Ptyp_of_kind _ -> assert false
       | Ptyp_constr_unboxed (_, t1N) -> assert (List.exists t1N ~f) )
     | Td {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest; _} ->
         assert (
@@ -1777,7 +1778,8 @@ end = struct
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
-       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
+       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _
+       |Ptyp_of_kind _ ->
           None
       | Ptyp_constr_unboxed (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr_unboxed _ -> Some (Apply, Non) )
@@ -1914,7 +1916,7 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None
-      | Ptyp_constr_unboxed _ -> None )
+      | Ptyp_constr_unboxed _ | Ptyp_of_kind _ -> None )
     | Td _ -> None
     | Tyv _ -> None
     | Kab _ -> None

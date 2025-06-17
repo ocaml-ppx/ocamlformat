@@ -82,6 +82,7 @@ module Typ = struct
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
 
   (* Jane Street extension *)
+  let of_kind ?loc ?attrs a = mk ?loc ?attrs (Ptyp_of_kind a)
   let constr_unboxed ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_constr_unboxed (a, b))
   (* End Jane Street extension *)
 end

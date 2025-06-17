@@ -9830,6 +9830,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to of_kind.ml.stdout
+   (with-stderr-to of_kind.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/of_kind.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/of_kind.ml of_kind.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/of_kind.ml.err of_kind.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to of_kind.ml.js-stdout
+   (with-stderr-to of_kind.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/of_kind.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/of_kind.ml.js-ref of_kind.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/of_kind.ml.js-err of_kind.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to open-closing-on-separate-line.ml.stdout
    (with-stderr-to open-closing-on-separate-line.ml.stderr
      (run %{bin:ocamlformat} --margin-check --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/open.ml})))))

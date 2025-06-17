@@ -4591,6 +4591,8 @@ atomic_type:
       { Ptyp_var (name, jkind) }
     | LPAREN mkrhs(UNDERSCORE {None}) COLON jkind=jkind_annotation RPAREN
       { Ptyp_var ($2, jkind) }
+    | LPAREN TYPE COLON jkind=jkind RPAREN
+      { Ptyp_of_kind jkind }
 
   )
   { $1 } /* end mktyp group */

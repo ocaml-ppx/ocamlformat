@@ -235,6 +235,8 @@ module T = struct
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
     (* Jane Street extension *)
+    | Ptyp_of_kind jkind ->
+        of_kind ~loc ~attrs (sub.jkind_annotation sub jkind)
     | Ptyp_constr_unboxed (lid, tl) ->
         constr_unboxed ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
     (* End Jane Street extension *)
