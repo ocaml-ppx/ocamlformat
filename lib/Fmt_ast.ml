@@ -681,7 +681,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
         ( str (Ext.Key.to_string key)
         $ fmt_str_loc c ext
         $ fmt_payload c (Pld pld) pld
-        $ fmt_if (Exposed.Right.payload pld) " " )
+        $ fmt_if (Exposed.Right_angle.payload pld) " " )
 
 and fmt_extension = fmt_extension_aux ~key:Ext.Key.Regular
 
@@ -716,7 +716,7 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
            ( str (Attr.Key.to_string key)
            $ fmt_str_loc c name
            $ fmt_payload c (Pld pld) pld
-           $ fmt_if (Exposed.Right.payload pld) " " ) )
+           $ fmt_if (Exposed.Right_angle.payload pld) " " ) )
 
 and fmt_attributes_aux c ?pre ?suf ~key attrs =
   let num = List.length attrs in
@@ -1155,7 +1155,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
                 else "@ | " )
               (fmt_row_field c ctx)
       in
-      let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
+      let protect_token = Exposed.Right_angle.(list ~elt:row_field) rfs in
       let space_around = c.conf.fmt_opts.space_around_variants.v in
       let closing =
         let empty = List.is_empty rfs in
@@ -3291,10 +3291,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           $ Params.parens_if parens c.conf
               (wrap "{<" ">}" (Cmts.fmt_within c pexp_loc) $ fmt_atrs)
       | _ ->
+          let always_end_space =
+            Exposed.Right_square.expression (snd (List.last_exn l))
+          in
           pro
           $ hvbox 0
               (Params.parens_if parens c.conf
-                 ( wrap_fits_breaks ~space:false c.conf "{<" ">}"
+                 ( wrap_fits_breaks ~space:false ~always_end_space c.conf
+                     "{<" ">}"
                      (list l "@;<0 1>; " fmt_field)
                  $ fmt_atrs ) ) )
   | Pexp_setinstvar (name, expr) ->
@@ -3845,11 +3849,11 @@ and fmt_tydcl_params c ctx params =
 
 and fmt_class_params c ctx params =
   let fmt_param ~first ~last (ty, vc) =
-    fmt_if (first && Exposed.Left.core_type ty) " "
+    fmt_if (first && Exposed.Left_angle.core_type ty) " "
     $ fmt_if_k (not first) (fmt (Params.comma_sep c.conf))
     $ fmt_variance_injectivity c vc
     $ fmt_core_type c (sub_typ ~ctx ty)
-    $ fmt_if (last && Exposed.Right.core_type ty) " "
+    $ fmt_if (last && Exposed.Right_angle.core_type ty) " "
   in
   fmt_if_k
     (not (List.is_empty params))
@@ -3929,7 +3933,7 @@ and fmt_type_declaration c ?(pre = noop) ?name ?(eq = "=") {ast= decl; _} =
           $ fmt_label_declaration c ctx x ~last
           $ fmt_if
               ( last && (not p.box_spaced)
-              && Exposed.Right.label_declaration x )
+              && Exposed.Right_angle.label_declaration x )
               " "
           $ fmt_if_k (not last) p.sep_after
         in
@@ -4100,7 +4104,8 @@ and fmt_constructor_arguments ?vars c ctx ~pre = function
         fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last
         $ fmt_if
-            (last && (not p.box_spaced) && Exposed.Right.label_declaration x)
+            ( last && (not p.box_spaced)
+            && Exposed.Right_angle.label_declaration x )
             " "
         $ fmt_if_k (not last) p.sep_after
       in

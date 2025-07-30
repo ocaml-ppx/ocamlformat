@@ -10046,6 +10046,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to override2.ml.stdout
+   (with-stderr-to override2.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/override2.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/override2.ml override2.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/override2.ml.err override2.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to override2.ml.js-stdout
+   (with-stderr-to override2.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/override2.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/override2.ml.js-ref override2.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/override2.ml.js-err override2.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to parens_tuple_patterns.ml.stdout
    (with-stderr-to parens_tuple_patterns.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/parens_tuple_patterns.ml})))))

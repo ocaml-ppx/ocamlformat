@@ -9,20 +9,20 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Predicates for determining if an AST starts/ends with a [<]/[>] symbol
+(** Predicates for determining if an AST starts/ends with a [<]/[>]/[\]] symbol
     (respectively) when printed.
 
-    These are used to avoid emitting the sequences [\{<], [\[<], [>\}] and
-    [>\]], which are reserved keywords. *)
+    These are used to avoid emitting the sequences [\{<], [\[<], [>\}], [>\]]
+    and [\]>] which are reserved keywords. *)
 
 open Extended_ast
 
 (** Predicates for [<] on the LHS of printed AST nodes. *)
-module Left : sig
+module Left_angle : sig
   val core_type : core_type -> bool
 end
 
-module Right : sig
+module Right_angle : sig
   (** Predicates for [>] on the RHS of printed AST nodes. *)
 
   val core_type : core_type -> bool
@@ -36,4 +36,13 @@ module Right : sig
   val list : elt:('a -> bool) -> 'a list -> bool
   (** [list ~elt l] holds iff [elt] holds of the {i last} element in [l], and
       is [false] if [l] is empty. *)
+end
+
+(** Predicates for [\]] on the RHS of printed AST nodes. *)
+module Right_square : sig
+  val core_type : core_type -> bool
+
+  val expression : expression -> bool
+
+  val case : case -> bool
 end

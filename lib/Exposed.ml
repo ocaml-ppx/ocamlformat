@@ -11,7 +11,7 @@
 
 open Extended_ast
 
-module Left = struct
+module Left_angle = struct
   let rec core_type typ =
     match typ.ptyp_desc with
     | Ptyp_arrow (t :: _, _, _) -> core_type t.pap_type
@@ -24,7 +24,7 @@ module Left = struct
     | _ -> false
 end
 
-module Right = struct
+module Right_angle = struct
   let list ~elt l = match List.last l with None -> false | Some x -> elt x
 
   let rec core_type = function
@@ -150,4 +150,53 @@ module Right = struct
     | PSig {psg_items; _} -> list ~elt:signature_item psg_items
     | PTyp t -> core_type t
     | PPat _ -> false
+end
+
+module Right_square = struct
+  let rec expression exp =
+    match exp.pexp_attributes with
+    | _ :: _ -> true
+    | [] -> (
+      match exp.pexp_desc with
+      | Pexp_let (_, exp) -> expression exp
+      | Pexp_function cases -> case (List.last_exn cases)
+      | Pexp_fun (_, exp) -> expression exp
+      | Pexp_apply (_, args) -> expression (snd (List.last_exn args))
+      | Pexp_match (_, (_ :: _ as cases)) -> case (List.last_exn cases)
+      | Pexp_try (_, (_ :: _ as cases)) -> case (List.last_exn cases)
+      | Pexp_list _ -> true
+      | Pexp_cons elems -> expression (List.last_exn elems)
+      | Pexp_construct ({txt= Lident "[]"; loc= _}, None) -> true
+      | Pexp_construct (_, Some exp) -> expression exp
+      | Pexp_variant (_, Some exp) -> expression exp
+      | Pexp_array _ -> true
+      | Pexp_ifthenelse (if_branch, None) ->
+          let last = (List.last_exn if_branch).if_body in
+          expression last
+      | Pexp_ifthenelse (_, Some exp) -> expression exp
+      | Pexp_sequence (_, exp) -> expression exp
+      | Pexp_setinstvar (_, exp) -> expression exp
+      | Pexp_letmodule (_, _, _, exp) -> expression exp
+      | Pexp_letexception (_, exp) -> expression exp
+      | Pexp_assert exp -> expression exp
+      | Pexp_lazy exp -> expression exp
+      | Pexp_poly (exp, None) -> expression exp
+      | Pexp_newtype (_, exp) -> expression exp
+      | Pexp_open (_, exp) -> expression exp
+      | Pexp_letop {let_= _; ands= _; body} -> expression body
+      | Pexp_extension _ -> true
+      | Pexp_stack exp -> expression exp
+      | Pexp_list_comprehension _ -> true
+      | Pexp_array_comprehension _ -> true
+      | _ -> false )
+
+  and case {pc_lhs= _; pc_guard= _; pc_rhs} = expression pc_rhs
+
+  and core_type t =
+    match t.ptyp_desc with
+    | Ptyp_extension _ -> true
+    | Ptyp_variant _ -> true
+    | Ptyp_poly (_, t) -> core_type t
+    | Ptyp_arrow (_, t, []) -> core_type t
+    | _ -> false
 end

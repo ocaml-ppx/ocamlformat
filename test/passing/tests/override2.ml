@@ -1,0 +1,54 @@
+let _ =
+  object
+    val mutable v = 0
+
+    val mutable l = []
+
+    val mutable o = None
+
+    val mutable a = [||]
+
+    val mutable ia = [::]
+
+    val mutable vv = `A
+
+    method inc = {<v = v + 1>}
+
+    method empty = {<l = [] >}
+
+    method singleton x = {<l = [x] >}
+
+    method both x = {<l = [x]; v = x>}
+
+    method both_ws x = {<v = x; l = [x] >}
+
+    method with_let1 x =
+      {< l = let p = [x] in
+             p >}
+
+    method with_let2 x =
+      {< l = let a = x + v in
+             [a] >}
+
+    method update_constr_none = {<o = None>}
+
+    method update_constr_some_empty = {<o = Some [] >}
+
+    method update_constr_some x = {<o = Some [x] >}
+
+    method prepend x = {<l = x :: l>}
+
+    method attr x = {<l = x [@a] >}
+
+    method array x = {<a = [|x|] >}
+
+    method iarray x = {<ia = [:x; x; x:] >}
+
+    method comprehension x = {<l = [2 * x for x = 1 to 10] >}
+
+    method variant = {<vv = (`A : [> `A])>}
+  end
+
+module _ = struct
+  type t = < x: [`A] >
+end
