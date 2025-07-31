@@ -1,0 +1,72 @@
+(* bindings *)
+
+module M : sig
+  type t
+end @ m = M
+
+module M : S @ m = M
+
+module M @ m = M
+
+module M : sig
+  type t
+end @ m = M
+[@@a]
+
+module M : S @ m = M
+[@@a]
+
+module M @ m = M
+[@@a]
+
+module[@a] M : sig
+  type t
+end @ m = M
+
+module[@a] M : S @ m = M
+
+module[@a] M @ m = M
+
+(* expressions *)
+
+let () =
+  let module M : sig
+      type t
+    end @ m = M
+  in
+  ()
+
+let () =
+  let module M : S @ m = M in
+  ()
+
+let () =
+  let module M @ m = M in
+  ()
+
+(* test comment preservation *)
+
+module M (* 01 *) : (* 02 *) sig (* 03 *)
+  type t
+end (* 04 *) @ (* 05 *) m (* 06 *) = (* 07 *) M (* 08 *)
+
+module M (* 09 *) : (* 10 *) S (* 11 *) @ (* 12 *) m (* 13 *) = (* 14 *) M (* 15 *)
+
+module M (* 16 *) @ (* 17 *) m (* 18 *) = (* 19 *) M (* 20 *)
+
+let () =
+  let module (* 21 *) M (* 22 *) : (* 23 *) sig (* 24 *)
+      type t
+    end (* 25 *) @ (* 26 *) m (* 27 *) = (* 28 *) M (* 29 *)
+  in
+  ()
+
+let () =
+  let module (* 30 *) M (* 31 *) : (* 32 *) S (* 33 *) @ (* 34 *) m (* 35 *) =
+    (* 36 *) M (* 37 *)
+  in
+  ()
+
+let () =
+  let module (* 38 *) M (* 39 *) @ (* 40 *) m (* 41 *) = (* 42 *) M (* 43 *) in
+  ()

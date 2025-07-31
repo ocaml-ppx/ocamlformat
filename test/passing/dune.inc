@@ -9199,6 +9199,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to module_modes.ml.stdout
+   (with-stderr-to module_modes.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iter=5 %{dep:tests/module_modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.ml.ref module_modes.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.ml.err module_modes.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to module_modes.ml.js-stdout
+   (with-stderr-to module_modes.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/module_modes.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.ml.js-ref module_modes.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/module_modes.ml.js-err module_modes.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to module_modes.mli.stdout
    (with-stderr-to module_modes.mli.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/module_modes.mli})))))
