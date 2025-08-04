@@ -599,3 +599,9 @@ let () =
                $ y
              in
              fooooooooooo x )
+
+let f () =
+  f
+    (g a (fun () ->
+         let x = y in
+         z ) )
