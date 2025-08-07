@@ -45,6 +45,8 @@ type mutable_flag = Immutable | Mutable of Location.t
 
 type virtual_flag = Virtual of Location.t | Concrete
 
+type atomic_flag = Nonatomic | Atomic of Location.t
+
 type private_virtual = {pv_priv: Location.t option; pv_virt: Location.t option}
 
 type mutable_virtual = {mv_mut: Location.t option; mv_virt: Location.t option}

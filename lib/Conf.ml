@@ -1068,7 +1068,10 @@ module Formatting = struct
 
   let module_indent =
     let docv = "COLS" in
-    let doc = "Indentation of items within struct ... end and sig ... end ($(docv) columns)." in
+    let doc =
+      "Indentation of items within struct ... end and sig ... end ($(docv) \
+       columns)."
+    in
     let names = ["module-indent"] in
     Decl.int ~names ~default ~doc ~docv ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with module_indent= elt}))
