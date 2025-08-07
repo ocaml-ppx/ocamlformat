@@ -8061,6 +8061,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to let_mutable.ml.stdout
+   (with-stderr-to let_mutable.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/let_mutable.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_mutable.ml let_mutable.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_mutable.ml.err let_mutable.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_mutable.ml.js-stdout
+   (with-stderr-to let_mutable.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/let_mutable.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_mutable.ml.js-ref let_mutable.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_mutable.ml.js-err let_mutable.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to let_punning.ml.stdout
    (with-stderr-to let_punning.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/let_punning.ml})))))

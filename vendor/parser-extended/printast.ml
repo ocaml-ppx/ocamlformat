@@ -412,7 +412,8 @@ and expression i ppf x =
       line i ppf "Pexp_constant\n";
       fmt_constant i ppf c;
   | Pexp_let (l, e) ->
-      line i ppf "Pexp_let %a\n" fmt_rec_flag l.pvbs_rec;
+      line i ppf "Pexp_let %a %a\n"
+        fmt_mutable_flag l.pvbs_mutable fmt_rec_flag l.pvbs_rec;
       value_bindings i ppf l;
       expression i ppf e;
   | Pexp_function l ->

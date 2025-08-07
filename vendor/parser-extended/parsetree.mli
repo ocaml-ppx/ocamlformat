@@ -1282,6 +1282,7 @@ and value_binding =
 and value_bindings =
   {
     pvbs_bindings: value_binding list;
+    pvbs_mutable: mutable_flag;
     pvbs_rec: rec_flag;
     pvbs_extension: string loc option
   }

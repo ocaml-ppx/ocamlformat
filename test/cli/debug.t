@@ -160,7 +160,7 @@
             comments
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
-              Pexp_let Nonrec
+              Pexp_let Immutable Nonrec
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
                   pattern (a.ml[5,90+21]..[5,90+22])
@@ -217,7 +217,7 @@
             comments
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
-              Pexp_let Nonrec
+              Pexp_let Immutable Nonrec
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
                   pattern (a.ml[5,90+21]..[5,90+22])
@@ -274,7 +274,7 @@
             comments
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
-              Pexp_let Nonrec
+              Pexp_let Immutable Nonrec
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments
@@ -330,7 +330,7 @@
             comments
               before: (* before x binding #1 *)
               before: (* before x binding #2 *)
-              Pexp_let Nonrec
+              Pexp_let Immutable Nonrec
               [
                 <def> (a.ml[5,90+2]..[10,210+28])
                 comments

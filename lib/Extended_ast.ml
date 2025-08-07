@@ -302,4 +302,6 @@ module Asttypes = struct
   let is_override = function Override -> true | Fresh -> false
 
   let is_recursive = function Recursive -> true | Nonrecursive -> false
+
+  let is_mutable = function Mutable _ -> true | Immutable -> false
 end

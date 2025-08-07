@@ -1,0 +1,63 @@
+(* Basic usage *)
+let _ =
+  let mutable x = 10 in
+  x <- 20;
+  print_int x
+;;
+
+(* Comments *)
+let _ =
+  (* C1 *)
+  let mutable
+    (* C2 *)
+    (* C3 *) x (* C4 *)
+    =
+    (* C5 *) 10 (* C6 *)
+  in
+  (* C7 *)
+  (* C8 *)
+  x <- 20;
+  (* C9 *)
+  (* C10 *)
+  print_int (* C11 *) x (* C12 *)
+;;
+
+(* Attributes and extension points *)
+let _ =
+  let%ext[@attr1 abc def ghi] mutable (x [@attr2 abcdefghi]) =
+    (10 [@attr3 aaaaa bbbbbb ccc])
+  in
+  x <- (20 [@attr4]);
+  print_int x
+;;
+
+(* Attributes, extension points, and comments *)
+let _ =
+  (* C1 *)
+  let%ext(* C2 *) [@attr1 (* C3 *) abc] (* C4 *) mutable ((* C5 *) x
+    (* C6 *) [@attr2 (* C7 *) abcdefghi] (* C8 *))
+    =
+    (* C9 *)
+    (10
+    (* C10 *) [@attr3 (* C11 *) aaaaa (* C12 *) bbbbbb (* C13 *) ccc])
+    (* C14 *)
+  in
+  (* C15 *)
+  x (* C16 *) <- (* C17 *) (20 (* C18 *) [@attr4]);
+  (* C19 *) print_int (* C20 *) x
+;;
+
+(* Illegal syntax that still can be formatted: let mutable ... and *)
+let _ =
+  let mutable x = 10
+  and y = 10 in
+  x <- 20;
+  print_int x
+;;
+
+(* Illegal syntax that still can be formatted: let mutable rec *)
+let _ =
+  let mutable x = 10 in
+  x <- 20;
+  print_int x
+;;

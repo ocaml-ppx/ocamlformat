@@ -717,10 +717,11 @@ module E = struct
 end
 
 module PVB = struct
-  let map_value_bindings sub { pvbs_bindings; pvbs_rec; pvbs_extension } =
+  let map_value_bindings sub
+    { pvbs_bindings; pvbs_mutable; pvbs_rec; pvbs_extension } =
     let pvbs_bindings = List.map (sub.value_binding sub) pvbs_bindings in
     let pvbs_extension = map_opt (map_loc sub) pvbs_extension in
-    { pvbs_bindings; pvbs_rec; pvbs_extension }
+    { pvbs_bindings; pvbs_mutable; pvbs_rec; pvbs_extension }
 end
 
 module P = struct

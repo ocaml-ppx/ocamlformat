@@ -676,6 +676,7 @@ type let_binding =
 
 type let_bindings' =
   { lbs_bindings: let_binding list;
+    lbs_mutable: mutable_flag;
     lbs_rec: rec_flag;
     lbs_extension: string Asttypes.loc option }
 
@@ -698,15 +699,16 @@ let addlb lbs lb =
   if lb.lb_is_pun && lbs.lbs_extension = None then syntax_error ();
   { lbs with lbs_bindings = lb :: lbs.lbs_bindings }
 
-let mklbs ext rf lb =
+let mklbs ext mf rf lb =
   let lbs = {
     lbs_bindings = [];
+    lbs_mutable = mf;
     lbs_rec = rf;
     lbs_extension = ext;
   } in
   addlb lbs lb
 
-let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
+let mk_let_bindings { lbs_bindings; lbs_mutable; lbs_rec; lbs_extension } =
   let pvbs_bindings =
     List.rev_map
       (fun lb ->
@@ -719,7 +721,8 @@ let mk_let_bindings { lbs_bindings; lbs_rec; lbs_extension } =
            lb.lb_pattern lb.lb_expression)
       lbs_bindings
   in
-  { pvbs_bindings; pvbs_rec = lbs_rec; pvbs_extension = lbs_extension }
+  { pvbs_bindings; pvbs_mutable = lbs_mutable; pvbs_rec = lbs_rec;
+    pvbs_extension = lbs_extension }
 
 let val_of_let_bindings ~loc lbs =
   mkstr ~loc (Pstr_value (mk_let_bindings lbs))
@@ -3100,12 +3103,13 @@ let_bindings(EXT):
   LET
   ext = EXT
   attrs1 = attributes
+  mutable_flag = mutable_flag
   rec_flag = rec_flag
   body = let_binding_body
   attrs2 = post_item_attributes
     {
       let attrs = attrs1 @ attrs2 in
-      mklbs ext rec_flag (mklb ~loc:$sloc true body attrs)
+      mklbs ext mutable_flag rec_flag (mklb ~loc:$sloc true body attrs)
     }
 ;
 and_let_binding:

@@ -2815,13 +2815,13 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let ext = lbs.pvbs_extension in
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-          lbs.pvbs_rec bindings body
+          lbs.pvbs_mutable lbs.pvbs_rec bindings body
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       pro
       $ fmt_let_bindings c ?ext ~parens ~fmt_atrs ~fmt_expr ~has_attr
-          Nonrecursive bd body
+          Immutable Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -3373,8 +3373,8 @@ and fmt_comprehension_iterator c ~ctx : iterator -> _ = function
       $ fmt_expression c (sub_exp ~ctx stop)
   | In seq -> fmt "in@;<1 0>" $ fmt_expression c (sub_exp ~ctx seq)
 
-and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
-    bindings body =
+and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr
+    mutable_flag rec_flag bindings body =
   let indent_after_in =
     match body.pexp_desc with
     | Pexp_let _ | Pexp_letmodule _
@@ -3391,8 +3391,8 @@ and fmt_let_bindings c ?ext ~parens ~has_attr ~fmt_atrs ~fmt_expr rec_flag
         0
     | _ -> c.conf.fmt_opts.indent_after_in.v
   in
-  fmt_let c ~ext ~rec_flag ~bindings ~parens ~has_attr ~fmt_atrs ~fmt_expr
-    ~body_loc:body.pexp_loc ~indent_after_in
+  fmt_let c ~ext ~mutable_flag ~rec_flag ~bindings ~parens ~has_attr
+    ~fmt_atrs ~fmt_expr ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
@@ -3563,8 +3563,9 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let has_attr = not (List.is_empty pcl_attributes) in
-      fmt_let c ~ext:None ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~has_attr
-        ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
+      fmt_let c ~ext:None ~mutable_flag:lbs.pvbs_mutable
+        ~rec_flag:lbs.pvbs_rec ~bindings ~parens ~has_attr ~fmt_atrs
+        ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -5108,8 +5109,11 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_kind_abbrev kab -> fmt_kind_abbreviation c kab
-  | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings; pvbs_extension}
-    ->
+  | Pstr_value
+      { pvbs_mutable= mutable_flag
+      ; pvbs_rec= rec_flag
+      ; pvbs_bindings= bindings
+      ; pvbs_extension } ->
       let update_config c i = update_config ~quiet:true c i.pvb_attributes in
       let ast x = Lb x in
       let fmt_item c ctx ~prev ~next b =
@@ -5126,8 +5130,9 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
                 (fits_breaks "" ~hint:(1000, 0) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
+        let mutable_flag = first && Asttypes.is_mutable mutable_flag in
         let ext = if first then pvbs_extension else None in
-        fmt_value_binding c ~rec_flag ?ext ?epi b
+        fmt_value_binding c ~mutable_flag ~rec_flag ?ext ?epi b
       in
       fmt_item_list c ctx update_config ast fmt_item bindings
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
@@ -5147,8 +5152,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
       fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
 
-and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
-    ~has_attr ~indent_after_in =
+and fmt_let c ~ext ~mutable_flag ~rec_flag ~bindings ~parens ~fmt_atrs
+    ~fmt_expr ~body_loc ~has_attr ~indent_after_in =
   let is_ext = Option.is_some ext in
   let parens = parens || has_attr in
   let fmt_in indent =
@@ -5174,7 +5179,9 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~body_loc
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (fmt_in indent) in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ~punned_in_output ?ext ~in_ binding
+    let mutable_flag = first && Asttypes.is_mutable mutable_flag in
+    fmt_value_binding c ~mutable_flag ~rec_flag ~punned_in_output ?ext ~in_
+      binding
     $ fmt_if (not last)
         ( match (c.conf.fmt_opts.let_and.v, all_punned) with
         | `Sparse, _ | `Compact_only_in_let_pun, false -> "@;<1000 0>"
@@ -5240,7 +5247,8 @@ and fmt_value_constraint c vc_opt modes =
           , fmt_modes ) )
   | None -> (noop, noop, fmt_modes)
 
-and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
+and fmt_value_binding c ~mutable_flag ~rec_flag ?(punned_in_output = false)
+    ?ext ?in_ ?epi
     { lb_op
     ; lb_pat
     ; lb_args
@@ -5319,6 +5327,7 @@ and fmt_value_binding c ~rec_flag ?(punned_in_output = false) ?ext ?in_ ?epi
                                   ( fmt_str_loc c lb_op
                                   $ fmt_extension_suffix c ext
                                   $ fmt_attributes c at_attrs
+                                  $ fmt_if mutable_flag " mutable"
                                   $ fmt_if rec_flag " rec"
                                   $ fmt_if lb_local " local_"
                                   $ fmt_or pat_has_cmt "@ " " "
