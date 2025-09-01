@@ -642,3 +642,8 @@ let _ = ~x:((); 1), 2
 let ~(x:int), _ = ~x:0, 1
 
 let _ = ~(x:int), ~(y:int);;
+
+
+(** Comment tests *)
+type t = (*before*) x:int * (* after x *) y:(*after y, before the type*)int
+  (* after the type, before * *) * (* before the z label *)  z: (*after z label *)float (*end*)

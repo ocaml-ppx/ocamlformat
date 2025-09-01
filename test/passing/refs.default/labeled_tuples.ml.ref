@@ -532,3 +532,16 @@ let _ =
 
 let ~(x : int), _ = (~x:0, 1)
 let _ = (~(x : int), ~(y : int))
+
+type t =
+  (*before*)
+  x:int
+  * y:(* after x *)
+      (*after y, before the type*)
+      int
+      (* after the type, before * *)
+  * z:(* before the z label *)
+      (*after z label *)
+      float
+(** Comment tests *)
+(*end*)
