@@ -3649,7 +3649,8 @@ function_type:
     { $1 }
   | label = LIDENT COLON proper_tuple_type %prec MINUSGREATER
     { let ty, ltys = $3 in
-      mktyp ~loc:$sloc (Ptyp_tuple ((Some label, ty) :: ltys))
+      let label = Some (mkrhs label $loc(label)) in
+      mktyp ~loc:$sloc (Ptyp_tuple ((label, ty) :: ltys))
     }
 ;
 %inline arg_label:
@@ -3690,7 +3691,7 @@ tuple_type:
   | atomic_type %prec STAR
      { None, $1 }
   | label = LIDENT COLON ty = atomic_type %prec STAR
-     { Some label, ty }
+     { Some (mkrhs label $loc(label)), ty }
 ;
 
 (* Atomic types are the most basic level in the syntax of types.

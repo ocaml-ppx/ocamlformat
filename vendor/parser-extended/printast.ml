@@ -192,7 +192,11 @@ let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
 
-let labeled_tuple_element f i ppf (l, ct) =
+let labeled_tuple_type f i ppf (l, ct) =
+  option i string_loc ppf l;
+  f i ppf ct
+
+let labeled_tuple_element f i ppf (l,ct) =
   option i string ppf l;
   f i ppf ct
 
@@ -213,7 +217,7 @@ let rec core_type i ppf x =
       core_type i ppf ct2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
-      list i (labeled_tuple_element core_type) ppf l;
+      list i (labeled_tuple_type core_type) ppf l;
   | Ptyp_constr (li, l) ->
       line i ppf "Ptyp_constr %a\n" fmt_longident_loc li;
       list i core_type ppf l;

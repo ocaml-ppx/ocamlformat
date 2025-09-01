@@ -373,6 +373,12 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l.txt $ sep
   | Optional l -> str "?" $ str l.txt $ sep
 
+let fmt_tuple_type_label c lbl =
+  (* No comment can be attached here. *)
+  match lbl with
+  | None -> noop
+  | Some l -> fmt_str_loc c l $ str ":"
+
 let fmt_tuple_label sym lbl sep =
   (* No comment can be attached here. *)
   match lbl with
@@ -967,8 +973,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
             (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       let with_label (lbl, typ) =
-        fmt_tuple_label noop lbl (str ":")
-        $ fmt_core_type c (sub_typ ~ctx typ)
+        let label = fmt_tuple_type_label c lbl in
+        label $ fmt_core_type c (sub_typ ~ctx typ)
       in
       hvbox 0
         (wrap_if parenze_constraint_ctx (str "(") (str ")")

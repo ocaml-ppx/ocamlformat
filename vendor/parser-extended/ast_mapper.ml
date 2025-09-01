@@ -249,8 +249,9 @@ module T = struct
     | Ptyp_arrow (params, t2) ->
         arrow ~loc ~attrs (List.map (map_arrow_param sub) params)
           (sub.typ sub t2)
-    | Ptyp_tuple tyl -> 
-        tuple ~loc ~attrs (List.map (fun (l, t) -> l, sub.typ sub t) tyl)
+    | Ptyp_tuple tyl ->
+        let elt (l,t) = Option.map (map_loc sub) l, sub.typ sub t in
+        tuple ~loc ~attrs (List.map elt tyl)
     | Ptyp_constr (lid, tl) ->
         constr ~loc ~attrs (map_loc_lid sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_object (l, o) ->
