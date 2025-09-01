@@ -3315,14 +3315,10 @@ type_variance:
   | BANG PLUS   { [ mkvarinj "!" $loc($1); mkvarinj "+" $loc($2) ] }
   | MINUS BANG  { [ mkvarinj "-" $loc($1); mkvarinj "!" $loc($2) ] }
   | BANG MINUS  { [ mkvarinj "!" $loc($1); mkvarinj "-" $loc($2) ] }
-  | INFIXOP2
-      { if $1 = "+!" ||  $1 = "-!" || $1 = "+-"|| $1 = "-+"
-        ||  $1 = "+-!" || $1 = "-+!"  then [ mkvarinj $1 $sloc ]
-        else expecting $loc($1) "type_variance" }
-  | PREFIXOP
-      { if ($1 = "!+") || ($1 = "!-") || ($1 = "!+-") || ($1 = "!-+")
-        then [ mkvarinj $1 $sloc ]
-        else expecting $loc($1) "type_variance" }
+  | INFIXOP2 | PREFIXOP
+      {  [ mkvarinj $1 $sloc ]
+         (* we accept any token with the right precedence and choices of "+-!" *)
+      }
 ;
 
 (* A sequence of constructor declarations is either a single BAR, which
