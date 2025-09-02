@@ -244,14 +244,16 @@ and object_field_desc =
   | Otag of label loc * core_type
   | Oinherit of core_type
 
-and 'elt labeled_tuple_element = {
-  te_label: string loc option;
-  te_elt:'elt
-}
+and ('elt,'c) labeled_tuple_element_with_pun =
+  | Lte_pun of string loc
+  | Lte_constrained_pun of
+      { loc:Location.t; label: string loc; type_constraint: 'c }
+  | Lte_simple of 'elt labeled_tuple_element
 
-and label_pun =
-  | Simple
-  | With_type_constraint of core_type
+and 'elt labeled_tuple_element = {
+    lte_label: string loc option;
+    lte_elt: 'elt;
+  }
 
 (** {2 Patterns} *)
 
@@ -275,7 +277,8 @@ and pattern_desc =
 
            Other forms of interval are recognized by the parser
            but rejected by the type-checker. *)
-  | Ppat_tuple of pattern labeled_tuple_element list * Asttypes.closed_flag
+  | Ppat_tuple of
+      (pattern, core_type) labeled_tuple_element_with_pun list * Asttypes.closed_flag
       (** [Ppat_tuple(pl, Closed)] represents
           - [(P1, ..., Pn)]
               when [pl] is [(None, P1); ...; (None, Pn)]
@@ -390,7 +393,7 @@ and expression_desc =
       (** [match E0 with P1 -> E1 | ... | Pn -> En] *)
   | Pexp_try of expression * case list * infix_ext_attrs
       (** [try E0 with P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_tuple of expression labeled_tuple_element list
+  | Pexp_tuple of (expression,type_constraint) labeled_tuple_element_with_pun list
       (** [Pexp_tuple(el)] represents
           - [(E1, ..., En)]
               when [el] is [(None, E1); ...; (None, En)]

@@ -532,6 +532,11 @@ let _ =
 
 let ~(x : int), _ = (~x:0, 1)
 let _ = (~(x : int), ~(y : int))
+let _ = (~(x : int :> float), ~y, ~z)
+
+(** Normalization *)
+
+let ~x:{ x }, ~y, ~(z : t), .. = (~x:{ x }, ~y, ~(z : t), ~(w : t :> t))
 
 type t =
   (*before*)
@@ -541,3 +546,25 @@ type t =
   * (* before the z label *)
   z:(*after z label *) float (*end*)
 (** Comment tests *)
+
+let
+    (*before*)
+    ( ~(x
+      (*l-ty*)
+      :
+      int (*after-ty*))
+      (*after x*),
+      (*before y*)
+      ~y
+      (* after y *),
+      (* bz *)
+      ~z:(*zv*) 0 (*end*) ) =
+  (*before*)
+  ( ~(x
+    : (*l-ty*) int (*after-ty*))
+    (*after x*),
+    (*before y*)
+    ~y
+    (* after y *),
+    (* bz *)
+    ~z:(*zv*) 0 (*end*) )

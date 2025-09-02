@@ -138,11 +138,22 @@ let map_value_constraint sub = function
       let coercion = sub.typ sub coercion in
       Pvc_coercion { ground; coercion }
 
+let map_tuple_elt sub f te =
+    let lte_label = Option.map (map_loc sub) te.lte_label in
+    { lte_label; lte_elt = f sub te.lte_elt }
+
 let map_tuple_elts sub f elts =
-  let elt te = {
-    te_label = Option.map (map_loc sub) te.te_label;
-    te_elt = f sub te.te_elt
-  }
+  List.map (map_tuple_elt sub f) elts
+
+let map_tuple_elts_with_pun sub typ_f f elts =
+  let elt = function
+    | Lte_pun s -> Lte_pun (map_loc sub s)
+    | Lte_constrained_pun { loc; label; type_constraint } ->
+        let loc = sub.location sub loc in
+        let label = map_loc sub label in
+        let type_constraint = typ_f sub type_constraint in
+        Lte_constrained_pun { loc; label; type_constraint }
+    | Lte_simple lte -> Lte_simple (map_tuple_elt sub f lte)
   in
   List.map elt elts
 
@@ -590,7 +601,7 @@ module E = struct
         match_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e) (sub.cases sub pel)
     | Pexp_try (e, pel, iea) -> try_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e) (sub.cases sub pel)
     | Pexp_tuple el ->
-        tuple ~loc ~attrs (map_tuple_elts sub sub.expr el)
+        tuple ~loc ~attrs (map_tuple_elts_with_pun sub map_constraint sub.expr el)
     | Pexp_construct (lid, arg) ->
         construct ~loc ~attrs (map_loc_lid sub lid) (map_opt (sub.expr sub) arg)
     | Pexp_variant (lab, eo) ->
@@ -720,7 +731,7 @@ module P = struct
     | Ppat_interval (c1, c2) ->
         interval ~loc ~attrs (sub.constant sub c1) (sub.constant sub c2)
     | Ppat_tuple (pl,c) ->
-        tuple ~loc ~attrs (map_tuple_elts sub sub.pat pl) c
+        tuple ~loc ~attrs (map_tuple_elts_with_pun sub sub.typ sub.pat pl) c
     | Ppat_construct (l, p) ->
         construct ~loc ~attrs (map_loc_lid sub l)
           (map_opt

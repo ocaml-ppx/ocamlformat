@@ -193,8 +193,17 @@ let typevars ppf vs =
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
 
 let labeled_tuple_element f i ppf te =
-  option i string_loc ppf te.te_label;
-  f i ppf te.te_elt
+  option i string_loc ppf te.lte_label;
+  f i ppf te.lte_elt
+
+let labeled_tuple_element_with_pun type_constraint f i ppf lte =
+  match lte with
+  | Lte_simple lte -> labeled_tuple_element f i ppf lte
+  | Lte_pun s -> line i ppf "Punned tuple element %a\n" fmt_string_loc s
+  | Lte_constrained_pun p ->
+      line i ppf "Punned tuple element with type constraint %a(%a)\n"
+        fmt_string_loc p.label fmt_location p.loc;
+        type_constraint (i+1) ppf p.type_constraint
 
 let variant_var i ppf (x : variant_var) =
   line i ppf "variant_var %a\n" fmt_location x.loc;
@@ -289,7 +298,7 @@ and pattern i ppf x =
       fmt_constant i ppf c2;
   | Ppat_tuple (l, c) ->
       line i ppf "Ppat_tuple\n %a\n" fmt_closed_flag c;
-      list i (labeled_tuple_element pattern) ppf l;
+      list i (labeled_tuple_element_with_pun core_type pattern) ppf l;
   | Ppat_construct (li, po) ->
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
@@ -379,7 +388,7 @@ and expression i ppf x =
       list i case ppf l;
   | Pexp_tuple (l) ->
       line i ppf "Pexp_tuple\n";
-      list i (labeled_tuple_element expression) ppf l;
+      list i (labeled_tuple_element_with_pun type_constraint expression) ppf l;
   | Pexp_construct (li, eo) ->
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;

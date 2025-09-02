@@ -978,7 +978,7 @@ end = struct
       | Ptyp_arrow (t, t2) ->
           assert (List.exists t ~f:(fun x -> typ == x.pap_type) || typ == t2)
       | Ptyp_tuple t1N ->
-          assert (List.exists t1N ~f:(fun x -> x.te_elt == typ))
+          assert (List.exists t1N ~f:(fun x -> x.lte_elt == typ))
       | Ptyp_constr (_, t1N) -> assert (List.exists t1N ~f)
       | Ptyp_variant (r1N, _, _) ->
           assert (
@@ -1023,6 +1023,11 @@ end = struct
           assert (List.exists ptyp.ppt_cstrs ~f:(fun (_, t) -> typ == t))
       | Ppat_record (l, _) ->
           assert (List.exists l ~f:(fun (_, t, _) -> Option.exists t ~f))
+      | Ppat_tuple (l, _) ->
+          assert (
+            List.exists l ~f:(function
+              | Lte_constrained_pun x -> x.type_constraint == typ
+              | _ -> false ) )
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
@@ -1041,6 +1046,16 @@ end = struct
                 Option.exists c ~f:check_type_constraint ) )
       | Pexp_let (lbs, _, _) -> assert (check_let_bindings lbs)
       | Pexp_function (_, Some t1, _, _) -> assert (check_type_constraint t1)
+      | Pexp_tuple l ->
+          assert (
+            List.exists l ~f:(function
+              | Lte_constrained_pun
+                  {type_constraint= Pconstraint t | Pcoerce (None, t); _} ->
+                  t == typ
+              | Lte_constrained_pun
+                  {type_constraint= Pcoerce (Some bty, ty); _} ->
+                  typ == bty || typ == ty
+              | _ -> false ) )
       | _ -> assert false )
     | Fpe _ | Fpc _ -> assert false
     | Vc c -> assert (check_value_constraint c)
@@ -1258,7 +1273,10 @@ end = struct
         let f pI = pI == pat in
         match ctx.ppat_desc with
         | Ppat_tuple (p1N, _) ->
-            assert (List.exists p1N ~f:(fun x -> f x.te_elt))
+            assert (
+              List.exists p1N ~f:(function
+                | Lte_simple s -> f s.lte_elt
+                | _ -> false ) )
         | Ppat_array p1N | Ppat_list p1N | Ppat_cons p1N ->
             assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) ->
@@ -1428,7 +1446,10 @@ end = struct
             (* FAIL *)
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N ->
-            assert (List.exists e1N ~f:(fun te -> te.te_elt == exp))
+            assert (
+              List.exists e1N ~f:(function
+                | Lte_simple te -> te.lte_elt == exp
+                | _ -> false ) )
         | Pexp_array e1N | Pexp_list e1N | Pexp_cons e1N ->
             assert (List.exists e1N ~f)
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
@@ -1536,7 +1557,10 @@ end = struct
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         Exp.is_trivial e0
     | Pexp_tuple e1N ->
-        List.for_all e1N ~f:(fun te -> Exp.is_trivial te.te_elt)
+        List.for_all e1N ~f:(function
+          | Lte_pun _ -> true
+          | Lte_constrained_pun _ -> false
+          | Lte_simple lte -> Exp.is_trivial lte.lte_elt )
         && fit_margin c (width xexp)
     | Pexp_array e1N | Pexp_list e1N ->
         List.for_all e1N ~f:Exp.is_trivial && fit_margin c (width xexp)
@@ -1640,8 +1664,9 @@ end = struct
     | {ast= Typ _; _} -> None
     | {ctx= Exp {pexp_desc; _}; ast= Exp exp} -> (
       match pexp_desc with
-      | Pexp_tuple ({te_elt= e0; _} :: _) ->
+      | Pexp_tuple (Lte_simple {lte_elt= e0; _} :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
+      | Pexp_tuple (_ :: _) -> Some (Comma, Right)
       | Pexp_cons l ->
           Some (ColonColon, if exp == List.last_exn l then Right else Left)
       | Pexp_construct
@@ -1857,7 +1882,7 @@ end = struct
           ( Str {pstr_desc= Pstr_exception _; _}
           | Sig {psig_desc= Psig_exception _; _} ) } ->
         true
-    | { ast= {ptyp_desc= Ptyp_tuple ({te_label= Some _; _} :: _); _}
+    | { ast= {ptyp_desc= Ptyp_tuple ({lte_label= Some _; _} :: _); _}
       ; ctx= Typ {ptyp_desc= Ptyp_arrow _; _} } ->
         true
     | _ -> (
@@ -2051,6 +2076,9 @@ end = struct
     register_reset (fun () -> Hashtbl.clear memo) ;
     memo
 
+  let last_tuple_and_simple f l =
+    match List.last_exn l with Lte_simple l -> f l.lte_elt | _ -> false
+
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
       which satisfies [Exp.mem_cls cls] and is not parenthesized. *)
   let rec exposed_right_exp =
@@ -2099,7 +2127,7 @@ end = struct
          |Pexp_try (_, cases, _) ->
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
-        | Pexp_tuple es -> continue (List.last_exn es).te_elt
+        | Pexp_tuple es -> last_tuple_and_simple continue es
         | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
          |Pexp_constraint _
          |Pexp_construct (_, None)
@@ -2180,7 +2208,7 @@ end = struct
       | Pexp_indexop_access {pia_rhs= rhs; _} -> (
         match rhs with Some e -> continue e | None -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
-      | Pexp_tuple es -> continue (List.last_exn es).te_elt
+      | Pexp_tuple es -> last_tuple_and_simple continue es
       | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
        |Pexp_constraint _
        |Pexp_construct (_, None)
@@ -2232,7 +2260,7 @@ end = struct
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                    Prec.compare p Apply < 0 ) ->
             true
-        | Pexp_tuple e1N -> (List.last_exn e1N).te_elt == xexp.ast
+        | Pexp_tuple e1N -> last_tuple_and_simple (( == ) xexp.ast) e1N
         | _ -> false
       in
       match ambig_prec (sub_ast ~ctx (Exp exp)) with

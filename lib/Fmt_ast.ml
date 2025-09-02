@@ -966,7 +966,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ fmt_core_type c ?box:box_core_type ~pro_space:false
             (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
-      let with_label {te_label= lbl; te_elt= typ} =
+      let with_label {lte_label= lbl; lte_elt= typ} =
         let label = fmt_tuple_label c lbl (str ":") in
         label $ fmt_core_type c (sub_typ ~ctx typ)
       in
@@ -1164,20 +1164,20 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let parens =
         parens || Poly.(c.conf.fmt_opts.parens_tuple_patterns.v = `Always)
       in
-      let with_label {te_label= lbl; te_elt= pat} =
-        match (lbl, pat) with
-        | ( Some {txt= label; loc}
-          , { ppat_desc=
-                ( Ppat_var var
-                | Ppat_constraint ({ppat_desc= Ppat_var var; _}, _) )
-            ; ppat_attributes= []
-            ; _ } )
-          when String.(var.txt = label) ->
-            Cmts.fmt c loc @@ str "~" $ fmt_pattern c (sub_pat ~ctx pat)
-        | (Some _ as lbl), {ppat_desc= Ppat_construct _; _} ->
+      let with_label = function
+        | Lte_pun l -> fmt_str_loc c ~pre:"~" l
+        | Lte_constrained_pun {loc; label; type_constraint} ->
+            Cmts.fmt c loc
+              ( str "~(" $ fmt_str_loc c label $ space_break $ str ":"
+              $ space_break
+              $ fmt_core_type c (sub_typ ~ctx type_constraint)
+              $ str ")" )
+        | Lte_simple
+            { lte_label= Some _ as lbl
+            ; lte_elt= {ppat_desc= Ppat_construct _; _} as pat } ->
             let label = fmt_tuple_label c ~pre:"~" lbl (str ":") in
             label $ fmt_pattern ~parens:true c (sub_pat ~ctx pat)
-        | lbl, _ ->
+        | Lte_simple {lte_label= lbl; lte_elt= pat} ->
             let label = fmt_tuple_label c ~pre:"~" lbl (str ":") in
             label $ fmt_pattern c (sub_pat ~ctx pat)
       in
@@ -2863,23 +2863,22 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       in
       let outer_wrap = has_attr && parens in
       let inner_wrap = has_attr || parens in
-      let with_label {te_label= lbl; te_elt= exp} =
-        match (lbl, exp) with
-        | ( Some {txt; loc}
-          , { pexp_desc=
-                ( Pexp_ident {txt= Lident i; _}
-                | Pexp_constraint
-                    ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
-            ; pexp_attributes= []
-            ; _ } )
-          when String.equal i txt ->
-            Cmts.fmt c loc @@ str "~" $ fmt_expression c (sub_exp ~ctx exp)
-        | (Some _ as lbl), {pexp_desc= Pexp_apply _ | Pexp_function _; _} ->
+      let with_label = function
+        | Lte_pun l -> fmt_str_loc c ~pre:"~" l
+        | Lte_constrained_pun {loc; label; type_constraint} ->
+            Cmts.fmt c loc
+              ( str "~(" $ fmt_str_loc c label
+              $ fmt_type_constraint c ctx type_constraint
+              $ str ")" )
+        | Lte_simple
+            { lte_label= Some _ as lbl
+            ; lte_elt= {pexp_desc= Pexp_apply _ | Pexp_function _; _} as exp
+            } ->
             fmt_tuple_label c ~pre:"~" lbl (str ":")
             $ fmt_expression ~parens:true c (sub_exp ~ctx exp)
-        | lbl, _ ->
-            fmt_tuple_label c ~pre:"~" lbl (str ":")
-            $ fmt_expression c (sub_exp ~ctx exp)
+        | Lte_simple {lte_label= lbl; lte_elt= pat} ->
+            let label = fmt_tuple_label c ~pre:"~" lbl (str ":") in
+            label $ fmt_expression c (sub_exp ~ctx pat)
       in
       pro
       $ hvbox_if outer_wrap 0

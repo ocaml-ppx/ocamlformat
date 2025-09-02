@@ -643,6 +643,11 @@ let ~(x:int), _ = ~x:0, 1
 
 let _ = ~(x:int), ~(y:int);;
 
+let _ = ~(x:int:>float), ~y, ~z
+
+(** Normalization *)
+
+let ~x:{x=x}, ~y:y, ~z:(z:t), .. = ~x:{x=x}, ~y:y, ~z:(z:t), ~w:(w:t:>t)
 
 (** Comment tests *)
 type t = (*before*) x:int * (* after x *) y:(*after y, before the type*)int
