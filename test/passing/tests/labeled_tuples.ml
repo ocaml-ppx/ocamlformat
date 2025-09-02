@@ -647,3 +647,8 @@ let _ = ~(x:int), ~(y:int);;
 (** Comment tests *)
 type t = (*before*) x:int * (* after x *) y:(*after y, before the type*)int
   (* after the type, before * *) * (* before the z label *)  z: (*after z label *)float (*end*)
+
+let (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
+    (*before y*) ~y (* after y *), (* bz *) ~z:(*zv*)0 (*end*) =
+  (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
+    (*before y*) ~y (* after y *), (* bz *)~z:(*zv*)0 (*end*)

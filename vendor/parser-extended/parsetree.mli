@@ -122,7 +122,7 @@ and core_type_desc =
             - [?l:T1 -> T2] when [lbl] is
                                      {{!Asttypes.arg_label.Optional}[Optional]}.
          *)
-  | Ptyp_tuple of (string loc option * core_type) list
+  | Ptyp_tuple of core_type labeled_tuple_element list
       (** [Ptyp_tuple(tl)] represents a product type:
           - [T1 * ... * Tn]
               when [tl] is [(None, T1); ...; (None, Tn)]
@@ -244,6 +244,15 @@ and object_field_desc =
   | Otag of label loc * core_type
   | Oinherit of core_type
 
+and 'elt labeled_tuple_element = {
+  te_label: string loc option;
+  te_elt:'elt
+}
+
+and label_pun =
+  | Simple
+  | With_type_constraint of core_type
+
 (** {2 Patterns} *)
 
 and pattern =
@@ -266,7 +275,7 @@ and pattern_desc =
 
            Other forms of interval are recognized by the parser
            but rejected by the type-checker. *)
-  | Ppat_tuple of (string option * pattern) list * Asttypes.closed_flag
+  | Ppat_tuple of pattern labeled_tuple_element list * Asttypes.closed_flag
       (** [Ppat_tuple(pl, Closed)] represents
           - [(P1, ..., Pn)]
               when [pl] is [(None, P1); ...; (None, Pn)]
@@ -381,7 +390,7 @@ and expression_desc =
       (** [match E0 with P1 -> E1 | ... | Pn -> En] *)
   | Pexp_try of expression * case list * infix_ext_attrs
       (** [try E0 with P1 -> E1 | ... | Pn -> En] *)
-  | Pexp_tuple of (string option * expression) list
+  | Pexp_tuple of expression labeled_tuple_element list
       (** [Pexp_tuple(el)] represents
           - [(E1, ..., En)]
               when [el] is [(None, E1); ...; (None, En)]

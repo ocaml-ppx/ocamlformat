@@ -373,17 +373,11 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l.txt $ sep
   | Optional l -> str "?" $ str l.txt $ sep
 
-let fmt_tuple_type_label c lbl =
+let fmt_tuple_label c ?pre lbl sep =
   (* No comment can be attached here. *)
   match lbl with
   | None -> noop
-  | Some l -> fmt_str_loc c l $ str ":"
-
-let fmt_tuple_label sym lbl sep =
-  (* No comment can be attached here. *)
-  match lbl with
-  | None -> noop
-  | Some l -> sym $ str l $ sep
+  | Some l -> fmt_str_loc ?pre c l $ sep
 
 let fmt_direction_flag = function
   | Upto -> space_break $ str "to "
@@ -972,8 +966,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ fmt_core_type c ?box:box_core_type ~pro_space:false
             (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
-      let with_label (lbl, typ) =
-        let label = fmt_tuple_type_label c lbl in
+      let with_label {te_label= lbl; te_elt= typ} =
+        let label = fmt_tuple_label c lbl (str ":") in
         label $ fmt_core_type c (sub_typ ~ctx typ)
       in
       hvbox 0
@@ -1170,22 +1164,22 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let parens =
         parens || Poly.(c.conf.fmt_opts.parens_tuple_patterns.v = `Always)
       in
-      let with_label (lbl, pat) =
+      let with_label {te_label= lbl; te_elt= pat} =
         match (lbl, pat) with
-        | ( Some txt
+        | ( Some {txt= label; loc}
           , { ppat_desc=
                 ( Ppat_var var
                 | Ppat_constraint ({ppat_desc= Ppat_var var; _}, _) )
             ; ppat_attributes= []
             ; _ } )
-          when String.(var.txt = txt) ->
-            str "~" $ fmt_pattern c (sub_pat ~ctx pat)
-        | Some _, {ppat_desc= Ppat_construct _; _} ->
-            fmt_tuple_label (str "~") lbl (str ":")
-            $ fmt_pattern ~parens:true c (sub_pat ~ctx pat)
-        | _ ->
-            fmt_tuple_label (str "~") lbl (str ":")
-            $ fmt_pattern c (sub_pat ~ctx pat)
+          when String.(var.txt = label) ->
+            Cmts.fmt c loc @@ str "~" $ fmt_pattern c (sub_pat ~ctx pat)
+        | (Some _ as lbl), {ppat_desc= Ppat_construct _; _} ->
+            let label = fmt_tuple_label c ~pre:"~" lbl (str ":") in
+            label $ fmt_pattern ~parens:true c (sub_pat ~ctx pat)
+        | lbl, _ ->
+            let label = fmt_tuple_label c ~pre:"~" lbl (str ":") in
+            label $ fmt_pattern c (sub_pat ~ctx pat)
       in
       let close =
         match open_pat with Open -> str ", .." | Closed -> noop
@@ -2869,27 +2863,22 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       in
       let outer_wrap = has_attr && parens in
       let inner_wrap = has_attr || parens in
-      let with_label (lbl, exp) =
+      let with_label {te_label= lbl; te_elt= exp} =
         match (lbl, exp) with
-        | ( Some txt
-          , { pexp_desc= Pexp_ident {txt= Lident i; loc}
+        | ( Some {txt; loc}
+          , { pexp_desc=
+                ( Pexp_ident {txt= Lident i; _}
+                | Pexp_constraint
+                    ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
             ; pexp_attributes= []
-            ; pexp_loc
             ; _ } )
           when String.equal i txt ->
-            Cmts.fmt c loc @@ Cmts.fmt c ?eol pexp_loc @@ str "~" $ str txt
-        | ( Some l
-          , { pexp_desc=
-                Pexp_constraint
-                  ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _)
-            ; _ } )
-          when String.equal l i && List.is_empty exp.pexp_attributes ->
-            str "~" $ fmt_expression c (sub_exp ~ctx exp)
-        | Some _, {pexp_desc= Pexp_apply _ | Pexp_function _; _} ->
-            fmt_tuple_label (str "~") lbl (str ":")
+            Cmts.fmt c loc @@ str "~" $ fmt_expression c (sub_exp ~ctx exp)
+        | (Some _ as lbl), {pexp_desc= Pexp_apply _ | Pexp_function _; _} ->
+            fmt_tuple_label c ~pre:"~" lbl (str ":")
             $ fmt_expression ~parens:true c (sub_exp ~ctx exp)
-        | _ ->
-            fmt_tuple_label (str "~") lbl (str ":")
+        | lbl, _ ->
+            fmt_tuple_label c ~pre:"~" lbl (str ":")
             $ fmt_expression c (sub_exp ~ctx exp)
       in
       pro

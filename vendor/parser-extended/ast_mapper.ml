@@ -138,6 +138,14 @@ let map_value_constraint sub = function
       let coercion = sub.typ sub coercion in
       Pvc_coercion { ground; coercion }
 
+let map_tuple_elts sub f elts =
+  let elt te = {
+    te_label = Option.map (map_loc sub) te.te_label;
+    te_elt = f sub te.te_elt
+  }
+  in
+  List.map elt elts
+
 module FP = struct
   let map_param_val sub ((lab, def, p) : pparam_val) : pparam_val =
     (sub.arg_label sub lab, map_opt (sub.expr sub) def, sub.pat sub p)
@@ -249,9 +257,7 @@ module T = struct
     | Ptyp_arrow (params, t2) ->
         arrow ~loc ~attrs (List.map (map_arrow_param sub) params)
           (sub.typ sub t2)
-    | Ptyp_tuple tyl ->
-        let elt (l,t) = Option.map (map_loc sub) l, sub.typ sub t in
-        tuple ~loc ~attrs (List.map elt tyl)
+    | Ptyp_tuple tyl -> tuple ~loc ~attrs (map_tuple_elts sub sub.typ tyl)
     | Ptyp_constr (lid, tl) ->
         constr ~loc ~attrs (map_loc_lid sub lid) (List.map (sub.typ sub) tl)
     | Ptyp_object (l, o) ->
@@ -584,7 +590,7 @@ module E = struct
         match_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e) (sub.cases sub pel)
     | Pexp_try (e, pel, iea) -> try_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e) (sub.cases sub pel)
     | Pexp_tuple el ->
-        tuple ~loc ~attrs (List.map (fun (l, e) -> l, sub.expr sub e) el)
+        tuple ~loc ~attrs (map_tuple_elts sub sub.expr el)
     | Pexp_construct (lid, arg) ->
         construct ~loc ~attrs (map_loc_lid sub lid) (map_opt (sub.expr sub) arg)
     | Pexp_variant (lab, eo) ->
@@ -714,7 +720,7 @@ module P = struct
     | Ppat_interval (c1, c2) ->
         interval ~loc ~attrs (sub.constant sub c1) (sub.constant sub c2)
     | Ppat_tuple (pl,c) ->
-        tuple ~loc ~attrs (List.map (fun (l, p) -> l, sub.pat sub p) pl) c
+        tuple ~loc ~attrs (map_tuple_elts sub sub.pat pl) c
     | Ppat_construct (l, p) ->
         construct ~loc ~attrs (map_loc_lid sub l)
           (map_opt

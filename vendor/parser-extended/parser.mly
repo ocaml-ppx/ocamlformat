@@ -2792,16 +2792,17 @@ fun_params:
    in one base case for each case of [labeled_tuple_element].  *)
 %inline labeled_tuple_element :
   | expr
-     { None, $1 }
+     { { te_label=None; te_elt=$1 } }
   | LABEL simple_expr %prec below_HASH
-     { Some $1, $2 }
+     { { te_label = Some (mkrhs $1 $loc($1)); te_elt= $2 } }
   | TILDE label = LIDENT
      { let loc = $loc(label) in
-       Some label, mkexpvar ~loc label }
+       { te_label = Some (mkrhs label $sloc); te_elt = mkexpvar ~loc label } }
   | TILDE LPAREN label = LIDENT c = type_constraint RPAREN %prec below_HASH
-      { Some label,
-        mkexp_constraint ~loc:($startpos($2), $endpos)
-          (mkexpvar ~loc:$loc(label) label) c }
+      { { te_label = Some (mkrhs label $sloc);
+          te_elt= mkexp_constraint ~loc:($startpos($2), $endpos)
+          (mkexpvar ~loc:$loc(label) label) c
+        } }
 ;
 reversed_labeled_tuple_body:
   (* > 2 elements *)
@@ -2813,16 +2814,16 @@ reversed_labeled_tuple_body:
 | x1 = expr
   COMMA
   x2 = labeled_tuple_element
-    { [ x2; None, x1 ] }
+    { [ x2; { te_label=None; te_elt=x1 } ] }
 | l1 = LABEL x1 = simple_expr
   COMMA
   x2 = labeled_tuple_element
-    { [ x2; Some l1, x1 ] }
+    { [ x2; { te_label = Some (mkrhs l1 $loc(l1)); te_elt= x1 } ] }
 | TILDE l1 = LIDENT
   COMMA
   x2 = labeled_tuple_element
   { let loc = $loc(l1) in
-    [ x2; Some l1, mkexpvar ~loc l1] }
+    [ x2; { te_label=Some (mkrhs l1 loc); te_elt=mkexpvar ~loc l1}] }
 | TILDE LPAREN l1 = LIDENT c = type_constraint RPAREN
   COMMA
   x2 = labeled_tuple_element
@@ -2830,7 +2831,7 @@ reversed_labeled_tuple_body:
       mkexp_constraint ~loc:($startpos($2), $endpos)
         (mkexpvar ~loc:$loc(l1) l1) c
     in
-    [ x2; Some l1, x1] }
+    [ x2; { te_label = Some (mkrhs l1 $sloc); te_elt=x1 } ] }
 ;
 %inline labeled_tuple:
   xs = rev(reversed_labeled_tuple_body)
@@ -3069,31 +3070,36 @@ simple_delimited_pattern:
    without them suitable for use in other locations.
 *)
 %inline labeled_tuple_pat_element(self):
-  | self { None, $1 }
+  | self { {te_label=None; te_elt=$1} }
   | LABEL simple_pattern %prec COMMA
-      { Some $1, $2 }
+      { {te_label=Some (mkrhs $1 $loc($1)); te_elt=$2} }
   | TILDE label = LIDENT
       { let loc = $loc(label) in
-        Some label, mkpatvar ~loc label }
+        { te_label=Some (mkrhs label $sloc); te_elt = mkpatvar ~loc label} }
   | TILDE LPAREN label = LIDENT COLON cty = core_type RPAREN %prec COMMA
       { let lbl_loc = $loc(label) in
         let pat_loc = $startpos($2), $endpos in
         let pat = mkpatvar ~loc:lbl_loc label in
-        Some label, mkpat ~loc:pat_loc (Ppat_constraint(pat, cty)) }
+        let te_label = Some (mkrhs label $sloc) in
+        { te_label; te_elt = mkpat ~loc:pat_loc (Ppat_constraint(pat, cty))}
+      }
 ;
 (* If changing this, don't forget to change its copy just above. *)
 %inline labeled_tuple_pat_element_noprec(self):
-  | self { None, $1 }
+  | self { {te_label=None; te_elt= $1} }
   | LABEL simple_pattern
-      { Some $1, $2 }
+      { {te_label=Some (mkrhs $1 $loc($1)); te_elt=$2 } }
   | TILDE label = LIDENT
       { let loc = $loc(label) in
-        Some label, mkpatvar ~loc label }
+        { te_label = Some (mkrhs label $sloc); te_elt=mkpatvar ~loc label }
+      }
   | TILDE LPAREN label = LIDENT COLON cty = core_type RPAREN
       { let lbl_loc = $loc(label) in
         let pat_loc = $startpos($2), $endpos in
         let pat = mkpatvar ~loc:lbl_loc label in
-        Some label, mkpat ~loc:pat_loc (Ppat_constraint(pat, cty)) }
+        let te_label = Some (mkrhs label $sloc) in
+        { te_label; te_elt=mkpat ~loc:pat_loc (Ppat_constraint(pat, cty)) }
+      }
 ;
 labeled_tuple_pat_element_list(self):
   | labeled_tuple_pat_element_list(self) COMMA labeled_tuple_pat_element(self)
@@ -3635,7 +3641,7 @@ function_type:
         { let ty, ltys = tuple in
           let tuple_loc = $loc(tuple) in
           let domain =
-            mktyp ~loc:tuple_loc (Ptyp_tuple ((None, ty) :: ltys))
+            mktyp ~loc:tuple_loc (Ptyp_tuple ({te_label=None; te_elt=ty} :: ltys))
           in
           let domain = extra_rhs_core_type domain ~pos:(snd tuple_loc) in
           let arrow_type = {
@@ -3649,8 +3655,8 @@ function_type:
     { $1 }
   | label = LIDENT COLON proper_tuple_type %prec MINUSGREATER
     { let ty, ltys = $3 in
-      let label = Some (mkrhs label $loc(label)) in
-      mktyp ~loc:$sloc (Ptyp_tuple ((label, ty) :: ltys))
+      let te_label = Some (mkrhs label $loc(label)) in
+      mktyp ~loc:$sloc (Ptyp_tuple ({te_label; te_elt=ty} :: ltys))
     }
 ;
 %inline arg_label:
@@ -3679,7 +3685,7 @@ tuple_type:
       { ty }
   | proper_tuple_type %prec below_WITH
     { let ty, ltys = $1 in
-      mktyp ~loc:$sloc (Ptyp_tuple ((None, ty) :: ltys)) }
+      mktyp ~loc:$sloc (Ptyp_tuple ( {te_label=None; te_elt=ty} :: ltys)) }
 ;
 %inline proper_tuple_type:
   | ty = atomic_type
@@ -3689,9 +3695,9 @@ tuple_type:
 ;
 %inline labeled_tuple_typ_element :
   | atomic_type %prec STAR
-     { None, $1 }
+     { { te_label = None; te_elt=$1} }
   | label = LIDENT COLON ty = atomic_type %prec STAR
-     { Some (mkrhs label $loc(label)), ty }
+     { { te_label = Some (mkrhs label $loc(label)); te_elt=ty } }
 ;
 
 (* Atomic types are the most basic level in the syntax of types.
