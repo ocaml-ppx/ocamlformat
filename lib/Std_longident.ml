@@ -103,7 +103,7 @@ let is_symbol i = is_prefix i || is_infix i || is_index_op i
 
 let field_alias_str ~field y =
   match field with
-  | Ldot (_, x) | Lident x -> String.equal x y
+  | Ldot (_, {txt= x; _}) | Lident x -> String.equal x y
   | Lapply _ -> false
 
 let field_alias ~field = function

@@ -3438,6 +3438,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to labeled_tuples.ml.stdout
+   (with-stderr-to labeled_tuples.ml.stderr
+     (run %{bin:ocamlformat} --name labeled_tuples.ml --margin-check %{dep:../tests/labeled_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff labeled_tuples.ml.ref labeled_tuples.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff labeled_tuples.ml.err labeled_tuples.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to labelled_args-414.ml.stdout
    (with-stderr-to labelled_args-414.ml.stderr
      (run %{bin:ocamlformat} --name labelled_args-414.ml --margin-check --ocaml-version=4.14.0 %{dep:../tests/labelled_args.ml})))))
