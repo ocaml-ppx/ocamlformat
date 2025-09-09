@@ -6,9 +6,12 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
-### Added 
+### Added
 
 - Support for OCaml 5.4 (#2717, #2720, @Julow, @Octachron)
+  OCamlformat now supports OCaml 5.4 syntax.
+  Module packing of the form `((module M) : (module S))` are no longer
+  rewritten to `(module M : S)` because these are now two different syntaxes.
 
 - Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
   of items within modules. This affects modules and signatures. For example, 
