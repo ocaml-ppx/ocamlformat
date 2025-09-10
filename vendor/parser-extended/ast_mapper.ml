@@ -665,8 +665,9 @@ module E = struct
     | Pexp_override sel ->
         override ~loc ~attrs
           (List.map (map_tuple (map_loc sub) (sub.expr sub)) sel)
-    | Pexp_letmodule (s, args, me, e) ->
+    | Pexp_letmodule (s, m, args, me, e) ->
         letmodule ~loc ~attrs (map_loc sub s)
+          (sub.modes sub m)
           (List.map (map_functor_param sub) args)
           (sub.module_expr sub me)
           (sub.expr sub e)
@@ -947,8 +948,9 @@ let default_mapper =
       );
 
     module_binding =
-      (fun this {pmb_name; pmb_args; pmb_expr; pmb_ext_attrs; pmb_loc} ->
+      (fun this {pmb_name; pmb_modes; pmb_args; pmb_expr; pmb_ext_attrs; pmb_loc} ->
          Mb.mk (map_loc this pmb_name)
+           (this.modes this pmb_modes)
            (List.map (map_functor_param this) pmb_args)
            (this.module_expr this pmb_expr)
            ~attrs:(this.ext_attrs this pmb_ext_attrs)

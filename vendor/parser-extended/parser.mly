@@ -1697,14 +1697,15 @@ structure_item:
 %inline module_binding:
   MODULE
   ext = ext attrs1 = attributes
-  name = mkrhs(module_name)
+  name_ = module_name_modal(at_mode_expr)
   args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
       let loc = make_loc $sloc in
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
-      let body = Mb.mk name args body ~attrs ~loc ~docs in
+      let name, modes = name_ in
+      let body = Mb.mk name modes args body ~attrs ~loc ~docs in
       Pstr_module body }
 ;
 
@@ -1747,7 +1748,7 @@ module_binding_body:
   ext = ext
   attrs1 = attributes
   REC
-  name = mkrhs(module_name)
+  name_ = module_name_modal(at_mode_expr)
   args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
@@ -1755,7 +1756,8 @@ module_binding_body:
     let loc = make_loc $sloc in
     let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let docs = symbol_docs $sloc in
-    Mb.mk name args body ~attrs ~loc ~docs
+    let name, modes = name_ in
+    Mb.mk name modes args body ~attrs ~loc ~docs
   }
 ;
 
@@ -1763,7 +1765,7 @@ module_binding_body:
 %inline and_module_binding:
   AND
   attrs1 = attributes
-  name = mkrhs(module_name)
+  name_ = module_name_modal(at_mode_expr)
   args = functor_args
   body = module_binding_body
   attrs2 = post_item_attributes
@@ -1772,7 +1774,8 @@ module_binding_body:
     let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
     let docs = symbol_docs $sloc in
     let text = symbol_text $symbolstartpos in
-    Mb.mk name args body ~attrs ~loc ~text ~docs
+    let name, modes = name_ in
+    Mb.mk name modes args body ~attrs ~loc ~text ~docs
   }
 ;
 
@@ -2703,8 +2706,9 @@ expr:
      { mkexp_exclave ~loc:$sloc $2 }
 ;
 %inline expr_attrs:
-  | LET MODULE ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
-      { Pexp_letmodule($4, $5, $6, $8), $3 }
+  | LET MODULE ext_attributes module_name_modal(at_mode_expr) functor_args module_binding_body IN seq_expr
+      { let name, modes = $4 in
+        Pexp_letmodule(name, modes, $5, $6, $8), $3 }
   | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
       { Pexp_letexception($4, $6), $3 }
   | LET OPEN override_flag ext_attributes module_expr IN seq_expr

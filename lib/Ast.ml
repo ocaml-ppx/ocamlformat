@@ -1585,7 +1585,7 @@ end = struct
          |Pexp_unboxed_field (e, _)
          |Pexp_lazy e
          |Pexp_letexception (_, e)
-         |Pexp_letmodule (_, _, _, e)
+         |Pexp_letmodule (_, _, _, _, e)
          |Pexp_newtype (_, e)
          |Pexp_open (_, e)
          |Pexp_letopen (_, e)
@@ -2291,7 +2291,7 @@ end = struct
         | Pexp_let (_, e)
          |Pexp_letop {body= e; _}
          |Pexp_letexception (_, e)
-         |Pexp_letmodule (_, _, _, e) -> (
+         |Pexp_letmodule (_, _, _, _, e) -> (
           match cls with Match | Then | ThenElse -> continue e | _ -> false )
         | Pexp_match _ when match cls with Then -> true | _ -> false ->
             false
@@ -2370,7 +2370,7 @@ end = struct
       | Pexp_let (_, e)
        |Pexp_letop {body= e; _}
        |Pexp_letexception (_, e)
-       |Pexp_letmodule (_, _, _, e) ->
+       |Pexp_letmodule (_, _, _, _, e) ->
           continue e
       | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
@@ -2461,7 +2461,7 @@ end = struct
       | Exp {pexp_desc; _} -> (
         match pexp_desc with
         | Pexp_let (_, e)
-         |Pexp_letmodule (_, _, _, e)
+         |Pexp_letmodule (_, _, _, _, e)
          |Pexp_letexception (_, e)
          |Pexp_letopen (_, e)
          |Pexp_open (_, e)

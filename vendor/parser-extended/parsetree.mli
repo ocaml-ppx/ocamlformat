@@ -499,7 +499,7 @@ and expression_desc =
   | Pexp_setinstvar of label loc * expression  (** [x <- 2] *)
   | Pexp_override of (label loc * expression) list
       (** [{< x1 = E1; ...; xn = En >}] *)
-  | Pexp_letmodule of string option loc * functor_parameter loc list * module_expr * expression
+  | Pexp_letmodule of string option loc * modes * functor_parameter loc list * module_expr * expression
       (** [let module M = ME in E] *)
   | Pexp_letexception of extension_constructor * expression
       (** [let exception C in E] *)
@@ -1290,6 +1290,8 @@ and value_bindings =
 and module_binding =
     {
      pmb_name: string option loc;
+     pmb_modes: modes;
+     (** The modes on the identifier *)
      pmb_args: functor_parameter loc list;
      pmb_expr: module_expr;
      pmb_ext_attrs : ext_attrs;

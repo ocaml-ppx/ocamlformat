@@ -975,7 +975,10 @@ let unboxed_type sloc lident tys =
 let maybe_pmod_constraint mode expr =
   match mode with
   | [] -> expr
-  | _ :: _ -> Mod.constraint_ None mode expr
+  | _ :: _ ->
+      match expr.pmod_desc with
+      | Pmod_constraint (me, mty, []) -> { expr with pmod_desc = Pmod_constraint (me, mty, mode) }
+      | _ -> Mod.constraint_ None mode expr
 %}
 
 /* Tokens */

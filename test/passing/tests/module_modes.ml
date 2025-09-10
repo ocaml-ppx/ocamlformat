@@ -70,3 +70,100 @@ let () =
 let () =
   let module (* 38 *) M (* 39 *) @ (* 40 *) m (* 41 *) = (* 42 *) M (* 43 *) in
   ()
+
+(* test mode on ident *)
+
+module (M @ foo) = struct end
+
+module (M @ foo) : S = struct end
+
+(* No functor args: [bar] should move onto [M] *)
+
+module (M @ foo) @ bar = struct end
+
+module (M @ foo) : S @ bar = struct end
+
+module (F @ foo) () = struct end
+
+module (F @ foo) () : S = struct end
+
+(* There are functor args: [bar] is not allowed to move *)
+
+module (F @ foo) () @ bar = struct end
+
+module (F @ foo) () : S @ bar = struct end
+
+module rec (M @ foo) : S @ bar = struct end
+and (N @ foo) : S @ bar = struct end
+
+module rec (F @ foo) () : S @ bar = struct end
+and (G @ foo) () : S @ bar = struct end
+
+(* attributes *)
+
+module[@a] (M @ foo) = struct end
+
+module[@a] (M @ foo) : S = struct end
+
+module[@a] (M @ foo) @ bar = struct end
+
+module[@a] (M @ foo) : S @ bar = struct end
+
+module[@a] (F @ foo) () = struct end
+
+module[@a] (F @ foo) () : S = struct end
+
+module[@a] (F @ foo) () @ bar = struct end
+
+module[@a] (F @ foo) () : S @ bar = struct end
+
+module rec (M @ foo) = (struct end : S @ bar) [@a]
+and (N @ foo) = (struct end : S @ bar) [@a]
+
+module rec (F @ foo) () = (struct end : S @ bar) [@a]
+and (G @ foo) () = (struct end : S @ bar) [@a]
+
+module rec (M @ foo) : S @ bar = (struct end [@a])
+and (N @ foo) : S @ bar = (struct end [@a])
+
+module rec (F @ foo) () : S @ bar = (struct end [@a])
+and (G @ foo) () : S @ bar = (struct end [@a])
+
+let () =
+  let module (M @ foo) = struct end in ()
+
+let () =
+  let module (M @ foo) : S = struct end in ()
+
+let () =
+  let module (M @ foo) @ bar = struct end in ()
+
+let () =
+  let module (M @ foo) : S @ bar = struct end in ()
+
+let () =
+  let module (F @ foo) () = struct end in ()
+
+let () =
+  let module (F @ foo) () : S = struct end in ()
+
+let () =
+  let module (F @ foo) () @ bar = struct end in ()
+
+let () =
+  let module (F @ foo) () : S @ bar = struct end in ()
+
+(* comments *)
+
+module rec (* 44 *) ( (* 45 *) F (* 46 *) @ (* 47 *) foo (* 48 *)) (* 49 *) () (* 50 *)
+  : (* 51 *) S (* 52 *) @ (* 53 *) bar (* 54 *) = (* 55 *) (struct (* 55 *) end (* 56 *)
+    [@a]) (* 57 *)
+and (* 58 *) (G (* 59 *) @ (* 60 *) foo (* 61 *)) (* 62 *) () (* 63 *)
+  : (* 64 *) S (* 65 *) @ (* 66 *) bar (* 67 *) = (* 68 *) (struct (* 69 *) end (* 70 *)
+    [@a]) (* 71 *)
+
+module (* 72 *) ( (* 73 *) M (* 74 *) @ (* 75 *) foo (* 76 *)) (* 77 *) @ (* 78 *) bar
+  (* 79 *) = (* 80 *) struct (* 81 *) end (* 82 *)
+
+module (* 83 *) ( (* 84 *) M (* 85 *) @ (* 86 *) foo (* 87 *)) (* 88 *)
+  : (* 89 *) S (* 90 *) @ (* 91 *) bar (* 92 *) = (* 93 *) struct (* 94 *) end (* 95 *)

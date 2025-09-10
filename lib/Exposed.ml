@@ -176,7 +176,7 @@ module Right_square = struct
       | Pexp_ifthenelse (_, Some exp) -> expression exp
       | Pexp_sequence (_, exp) -> expression exp
       | Pexp_setinstvar (_, exp) -> expression exp
-      | Pexp_letmodule (_, _, _, exp) -> expression exp
+      | Pexp_letmodule (_, _, _, _, exp) -> expression exp
       | Pexp_letexception (_, exp) -> expression exp
       | Pexp_assert exp -> expression exp
       | Pexp_lazy exp -> expression exp

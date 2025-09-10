@@ -640,6 +640,28 @@ let let_binding_can_be_punned ~binding ~is_ext =
       true
   | _ -> false
 
+let extract_module_binding_constraints c ctx modes body =
+  let xbody = sub_mod ~ctx body in
+  let xbody, xmty, xmodes =
+    match xbody.ast with
+    | { pmod_desc= Pmod_constraint (body_me, body_mt, body_mm)
+      ; pmod_loc
+      ; pmod_attributes= [] } ->
+        let xbody = sub_mod ~ctx body_me in
+        let xmty, after =
+          match body_mt with
+          | None -> (None, body_me.pmod_loc)
+          | Some body_mt -> (Some (sub_mty ~ctx body_mt), body_mt.pmty_loc)
+        in
+        Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc ~after ;
+        (xbody, xmty, body_mm)
+    | _ -> (xbody, None, [])
+  in
+  (* [xmodes_id] is the modes on the identifier, while [xmodes] is the modes
+     on the RHS. For example, [module (F @ xmodes_id) () @ xmodes = ...]. *)
+  let xmodes_id = modes in
+  (xmodes_id, xmty, xmodes, xbody)
+
 let rec fmt_extension_aux c ctx ~key (ext, pld) =
   match (ext.txt, pld, ctx) with
   (* Quoted extensions (since ocaml 4.11). *)
@@ -2839,25 +2861,10 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               $ fmt "@;<1000 0>"
               $ fmt_expression c (sub_exp ~ctx exp) )
           $ fmt_atrs )
-  | Pexp_letmodule (name, args, pmod, exp) ->
+  | Pexp_letmodule (name, modes, args, pmod, exp) ->
       let keyword = "let module" in
-      let xbody = sub_mod ~ctx pmod in
-      let xbody, xmty, xmmodes =
-        match xbody.ast with
-        | { pmod_desc= Pmod_constraint (body_me, body_mt, body_mm)
-          ; pmod_loc
-          ; pmod_attributes= [] } ->
-            let xbody = sub_mod ~ctx body_me in
-            let xmty, after =
-              match body_mt with
-              | None -> (None, body_me.pmod_loc)
-              | Some body_mt ->
-                  (Some (sub_mty ~ctx body_mt), body_mt.pmty_loc)
-            in
-            Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-              ~after ;
-            (xbody, xmty, body_mm)
-        | _ -> (xbody, None, [])
+      let xmodes_id, xmty, xmodes, xbody =
+        extract_module_binding_constraints c ctx modes pmod
       in
       let can_sparse =
         match xbody.ast.pmod_desc with
@@ -2870,8 +2877,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               (parens || not (List.is_empty pexp_attributes))
               c.conf
               ( hvbox 2
-                  (fmt_module c ctx keyword ~eqty:":" name (Modes xmmodes)
-                     args (Some xbody) xmty
+                  (fmt_module c ctx keyword ~eqty:":" name (Modes xmodes_id)
+                     args (Some xbody) xmty (Modes xmodes)
                      ~attrs:(Ast_helper.Attr.ext_attrs ?ext ())
                      ~epi:(str "in") ~can_sparse ~rec_flag:false )
               $ fmt "@;<1000 0>"
@@ -4569,7 +4576,7 @@ and fmt_class_exprs ?ext c ctx cls =
            @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after) )
 
 and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
-    name modals xargs xbody xmty ~attrs ~rec_flag =
+    name modals_id xargs xbody xmty modals ~attrs ~rec_flag =
   let ext = attrs.attrs_extension in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
@@ -4579,20 +4586,11 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
             Some (str " " $ str eqty $ opt blk.pro (fun pro -> str " " $ pro))
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
-  let fmt_name, fmt_trailing_modals =
-    match modals with
-    | Modes _ ->
-        (* [module M : S @ m = M] *)
-        (fmt_str_loc_opt c name, fmt_modals c modals)
-    | Modalities _ ->
-        (* [module (M @@ m) : S] *)
-        ( wrap_if
-            (not (is_empty_modals modals))
-            "(" ")"
-            (fmt_str_loc_opt c name $ fmt_modals c modals)
-        , noop )
-    | No_modals -> (fmt_str_loc_opt c name, noop)
-    | Mode_crossing _ -> assert false
+  let fmt_name =
+    wrap_if
+      (not (is_empty_modals modals_id))
+      "(" ")"
+      (fmt_str_loc_opt c name $ fmt_modals c modals_id)
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let fmt_name_and_mt ~pro ~loc name mt =
@@ -4656,7 +4654,7 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
                 ( hvbox args_p.indent
                     (fmt_args ~pro:intro xargs $ fmt_opt blk_t.pro)
                 $ blk_t.psp $ blk_t.bdy )
-            $ blk_t.esp $ fmt_opt blk_t.epi $ fmt_trailing_modals
+            $ blk_t.esp $ fmt_opt blk_t.epi $ fmt_modals c modals
             $ fmt_if (Option.is_some xbody) " ="
             $ fmt_if_k compact fmt_pro )
         $ fmt_if_k (not compact) fmt_pro
@@ -4697,7 +4695,7 @@ and fmt_module_declaration c ~rec_flag ~first {ast= pmd; _} =
   in
   Cmts.fmt c pmd_loc
     (fmt_module ~rec_:rec_flag c ctx keyword pmd_name
-       (Modalities pmd_modalities) pmd_args None ?eqty (Some xmty)
+       (Modalities pmd_modalities) pmd_args None ?eqty (Some xmty) No_modals
        ~rec_flag:(rec_flag && first) ~attrs )
 
 and fmt_module_substitution c ctx pms =
@@ -4714,7 +4712,7 @@ and fmt_module_substitution c ctx pms =
   let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
     (fmt_module c ctx "module" ~eqty:":=" pms_name No_modals [] None
-       (Some xmty) ~attrs ~rec_flag:false )
+       (Some xmty) No_modals ~attrs ~rec_flag:false )
 
 and fmt_module_type_declaration ?eqty c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_ext_attrs= attrs; pmtd_loc} = pmtd in
@@ -4724,7 +4722,7 @@ and fmt_module_type_declaration ?eqty c ctx pmtd =
   fmt_module ?eqty c ctx "module type" pmtd_name No_modals [] None
     ~rec_flag:false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
-    ~attrs
+    No_modals ~attrs
 
 and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
@@ -4787,14 +4785,14 @@ and fmt_with_constraint c ctx ~pre = function
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c ctx "module type" m1 No_modals [] None ~rec_flag:false
-          m2
+          m2 No_modals
           ~attrs:(Ast_helper.Attr.ext_attrs ())
   | Pwith_modtypesubst (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
       str pre $ break 1 2
       $ fmt_module c ctx ~eqty:":=" "module type" m1 No_modals [] None
-          ~rec_flag:false m2
+          ~rec_flag:false m2 No_modals
           ~attrs:(Ast_helper.Attr.ext_attrs ())
 
 and fmt_mod_apply c ctx loc attrs ~parens ~dock_struct me_f arg =
@@ -5361,26 +5359,13 @@ and fmt_module_binding c ~rec_flag ~first {ast= pmb; _} =
   @@ fun c ->
   let ctx = Mb pmb in
   let keyword = if first then "module" else "and" in
-  let xbody = sub_mod ~ctx pmb.pmb_expr in
-  let xbody, xmty, xmodes =
-    match xbody.ast with
-    | { pmod_desc= Pmod_constraint (body_me, body_mt, body_mm)
-      ; pmod_loc
-      ; pmod_attributes= [] } ->
-        let xbody = sub_mod ~ctx body_me in
-        let xmty, after =
-          match body_mt with
-          | None -> (None, body_me.pmod_loc)
-          | Some body_mt -> (Some (sub_mty ~ctx body_mt), body_mt.pmty_loc)
-        in
-        Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc ~after ;
-        (xbody, xmty, body_mm)
-    | _ -> (xbody, None, [])
+  let xmodes_id, xmty, xmodes, xbody =
+    extract_module_binding_constraints c ctx pmb.pmb_modes pmb.pmb_expr
   in
   Cmts.fmt c pmb.pmb_loc
     (fmt_module ~rec_:rec_flag c ctx keyword ~rec_flag:(rec_flag && first)
-       ~eqty:":" pmb_name (Modes xmodes) pmb.pmb_args (Some xbody) xmty
-       ~attrs )
+       ~eqty:":" pmb_name (Modes xmodes_id) pmb.pmb_args (Some xbody) xmty
+       (Modes xmodes) ~attrs )
 
 let fmt_toplevel_directive c ~semisemi dir =
   let fmt_dir_arg = function
