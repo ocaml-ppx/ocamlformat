@@ -87,13 +87,14 @@ let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 let pstr_include (body, ext) =
   (Pstr_include body, ext)
+let pstr_recmodule (ext, bindings) =
+  (Pstr_recmodule bindings, ext)
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
 let psig_value (vd, ext) =
   (Psig_value vd, ext)
 *)
-
 let psig_type (nr, tys) =
   Psig_type (nr, tys)
 let psig_typesubst (nr, tys) =
@@ -143,25 +144,14 @@ let mkpatvar ~loc name =
   mkpat ~loc (Ppat_var (mkrhs name loc))
 
 (*
-  Ghost expressions and patterns:
-  expressions and patterns that do not appear explicitly in the
-  source file they have the loc_ghost flag set to true.
-  Then the profiler will not try to instrument them and the
-  -annot option will not try to display their type.
+  See ./location.mli for when to use a ghost location or not.
 
   Every grammar rule that generates an element with a location must
   make at most one non-ghost element, the topmost one.
-
-  How to tell whether your location must be ghost:
-  A location corresponds to a range of characters in the source file.
-  If the location contains a piece of code that is syntactically
-  valid (according to the documentation), and corresponds to the
-  AST node, then the location must be real; in all other cases,
-  it must be ghost.
 *)
-let ghexp ~loc d = Exp.mk ~loc:(ghost_loc loc) d
-let ghpat ~loc d = Pat.mk ~loc:(ghost_loc loc) d
-let ghtyp ~loc d = Typ.mk ~loc:(ghost_loc loc) d
+let ghexp ~loc ?attrs d = Exp.mk ~loc:(ghost_loc loc) ?attrs d
+let ghpat ~loc ?attrs d = Pat.mk ~loc:(ghost_loc loc) ?attrs d
+let ghtyp ~loc ?attrs d = Typ.mk ~loc:(ghost_loc loc) ?attrs d
 (*
 let ghloc ~loc d = { txt = d; loc = ghost_loc loc }
 let ghstr ~loc d = Str.mk ~loc:(ghost_loc loc) d
@@ -211,13 +201,15 @@ let mk_attr ~loc name payload =
 (* TODO define an abstraction boundary between locations-as-pairs
    and locations-as-Location.t; it should be clear when we move from
    one world to the other *)
-
 (*
 let mkexp_cons_desc consloc args =
   Pexp_construct(mkrhs (Lident "::") consloc, Some args)
-let mkexp_cons ~loc consloc args =
-  mkexp ~loc (mkexp_cons_desc consloc args)
-
+*)
+let mkexp_cons ~loc _consloc lhs rhs =
+  match rhs.pexp_desc, rhs.pexp_attributes with
+  | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc loc) (lhs :: l)
+  | _ -> Exp.cons ~loc:(make_loc loc) [lhs; rhs]
+(*
 let mkpat_cons_desc consloc args =
   Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
 let mkpat_cons ~loc consloc args =
@@ -235,7 +227,9 @@ let rec mktailexp nilloc = let open Location in function
   | e1 :: el ->
       let exp_el, el_loc = mktailexp nilloc el in
       let loc = (e1.pexp_loc.loc_start, snd el_loc) in
-      let arg = ghexp ~loc (Pexp_tuple [e1; ghexp ~loc:el_loc exp_el]) in
+      let arg =
+        ghexp ~loc (Pexp_tuple [None, e1; None, ghexp ~loc:el_loc exp_el])
+      in
       ghexp_cons_desc loc arg, loc
 
 let rec mktailpat nilloc = let open Location in function
@@ -245,10 +239,12 @@ let rec mktailpat nilloc = let open Location in function
   | p1 :: pl ->
       let pat_pl, el_loc = mktailpat nilloc pl in
       let loc = (p1.ppat_loc.loc_start, snd el_loc) in
-      let arg = ghpat ~loc (Ppat_tuple [p1; ghpat ~loc:el_loc pat_pl]) in
+      let arg =
+        ghpat ~loc
+          (Ppat_tuple ([None, p1; None, ghpat ~loc:el_loc pat_pl], Closed))
+      in
       ghpat_cons_desc loc arg, loc
 *)
-
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -259,7 +255,6 @@ let mkexp_desc_constraint e t =
 
 let mkexp_constraint ~loc e t =
   mkexp ~loc (mkexp_desc_constraint e t)
-
 (*
 let mkexp_opt_constraint ~loc e = function
   | None -> e
@@ -269,7 +264,6 @@ let mkpat_opt_constraint ~loc p = function
   | None -> p
   | Some typ -> mkpat ~loc (Ppat_constraint(p, typ))
 *)
-
 let syntax_error () =
   raise Syntaxerr.Escape_error
 
@@ -337,21 +331,17 @@ let loc_last (id : Longident.t Location.loc) : string Location.loc =
 
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
   loc_map (fun x -> Lident x) id
-
 (*
 let exp_of_longident lid =
   let lid = loc_map (fun id -> Lident (Longident.last id)) lid in
   Exp.mk ~loc:lid.loc (Pexp_ident lid)
 *)
-
 let exp_of_label lbl =
   Exp.mk ~loc:lbl.loc (Pexp_ident (loc_lident lbl))
-
 (*
 let pat_of_label lbl =
   Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
 *)
-
 let wrap_exp_attrs' ~loc body (ext, attrs) =
   let ghexp = ghexp ~loc in
   (* todo: keep exact location for the entire attribute *)
@@ -384,23 +374,16 @@ let wrap_mod_attrs ~loc:_ attrs body =
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
 
-let wrap_str_ext ~loc body ext =
-  match ext with
-  | None -> body
-  | Some id -> ghstr ~loc (Pstr_extension ((id, PStr [body]), []))
-
 let wrap_mkstr_ext ~loc (item, ext) =
-  wrap_str_ext ~loc (mkstr ~loc item) ext
-
-let wrap_sig_ext ~loc body ext =
   match ext with
-  | None -> body
-  | Some id -> ghsig ~loc (Psig_extension ((id, PSig [body]), []))
+  | None -> mkstr ~loc item
+  | Some id -> mkstr ~loc (Pstr_extension ((id, PStr [ghstr ~loc item]), []))
 
 let wrap_mksig_ext ~loc (item, ext) =
-  wrap_sig_ext ~loc (mksig ~loc item) ext
+  match ext with
+  | None -> mksig ~loc item
+  | Some id -> mksig ~loc (Psig_extension ((id, PSig [ghsig ~loc item]), []))
 *)
-
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
   let const = Const.mk ~loc:strloc (Pconst_string (str, strloc, delim)) in
@@ -947,9 +930,10 @@ The precedences must be listed from low to high.
 
 %inline wrap_mkstr_ext(symb): symb
     { wrap_mkstr_ext ~loc:$sloc $1 }
+(*
 %inline wrap_mksig_ext(symb): symb
     { wrap_mksig_ext ~loc:$sloc $1 }
-
+*)
 %inline mk_directive_arg(symb): symb
     { mk_directive_arg ~loc:$sloc $1 }
 
@@ -1004,7 +988,6 @@ reversed_nonempty_concat(X):
     { List.rev x }
 | xs = reversed_nonempty_concat(X) x = X
     { List.rev_append x xs }
-
 (* Not needed. Upstream uses it only for desugaring (type a b c)
 (* [nonempty_concat(X)] recognizes a nonempty sequence of [X]s
    (each of which is a list), and produces an OCaml list of their concatenation
@@ -1028,7 +1011,6 @@ reversed_nonempty_concat(X):
    use site, and will give rise there to two productions. This can be used
    to avoid certain conflicts. *)
 *)
-
 %inline inline_reversed_separated_nonempty_llist(separator, X):
   x = X
     { [ x ] }
@@ -1601,10 +1583,12 @@ open_declaration:
   attrs1 = attributes
   me = module_expr
   attrs2 = post_item_attributes
-  { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+  {
+    let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
     let loc = make_loc $sloc in
     let docs = symbol_docs $sloc in
-    Opn.mk me ~override ~attrs ~loc ~docs }
+    Opn.mk me ~override ~attrs ~loc ~docs
+  }
 ;
 
 open_description:
@@ -1744,7 +1728,6 @@ signature_item:
     Md.mk name args body ~attrs ~loc ~docs
   }
 ;
-
 (* Module arguments are attached to declarations
 (* The body (right-hand side) of a module declaration. *)
 module_declaration_body:
@@ -1760,7 +1743,6 @@ module_declaration_body:
     { $1 }
 ;
 *)
-
 (* A module alias declaration (in a signature). *)
 %inline module_alias:
   MODULE
@@ -2344,10 +2326,9 @@ fun_expr:
           {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc}
         in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body; loc_in}) }
-  | expr COLONCOLON e = expr
-      { match e.pexp_desc, e.pexp_attributes with
-        | Pexp_cons l, [] -> Exp.cons ~loc:(make_loc $sloc) ($1 :: l)
-        | _ -> Exp.cons ~loc:(make_loc $sloc) [$1; e] }
+  | fun_expr COLONCOLON expr
+      { mkexp_cons ~loc:$sloc $loc($2)
+          $1 $3 }
   | mkrhs(label) LESSMINUS expr
       { mkexp ~loc:$sloc (Pexp_setinstvar($1, $3)) }
   | simple_expr DOT mkrhs(label_longident) LESSMINUS expr
@@ -2356,7 +2337,7 @@ fun_expr:
     { mk_builtin_indexop_expr ~loc:$sloc $1 }
   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
     { mk_dotop_indexop_expr ~loc:$sloc $1 }
-  | expr attribute
+  | fun_expr attribute
       { Exp.attr $1 $2 }
 /* BEGIN AVOID */
   (* Allowed in exprs. Commented-out to reduce diffs with upstream.
@@ -3090,7 +3071,7 @@ simple_delimited_pattern:
   | LABEL simple_pattern
       { Lte_simple {lte_label=Some (mkrhs $1 $loc($1)); lte_elt=$2} }
   | TILDE label = LIDENT
-       { Lte_pun (mkrhs label $sloc) }
+      { Lte_pun (mkrhs label $sloc) }
   | TILDE LPAREN label = LIDENT COLON cty = core_type RPAREN
       {
         let label = mkrhs label $loc(label) in
@@ -3816,7 +3797,7 @@ atomic_type:
   | /* empty */
       { [] }
   | ty = atomic_type
-      { [ty] }
+      { [ ty ] }
   | LPAREN tys = separated_nontrivial_llist(COMMA, core_type) RPAREN
       { tys }
 ;
@@ -4021,12 +4002,11 @@ type_longident:
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
-mod_longident_disam:
-  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
-;
 mod_ext_longident:
     mk_longident(mod_ext_longident, UIDENT) { $1 }
-  | mod_longident_disam { $1 }
+  (* Allow identifiers like [M/2]. *)
+  | UIDENT SLASH TYPE_DISAMBIGUATOR
+      { Lident ($1 ^ "/" ^ $3) }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $loc($1) $3 $loc($3) }
   | mod_ext_longident LPAREN error
