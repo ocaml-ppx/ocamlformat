@@ -68,3 +68,8 @@ type variance =
 type injectivity =
   | Injective
   | NoInjectivity
+
+let string_of_label = function
+    Nolabel -> ""
+  | Labelled s -> s
+  | Optional s -> "?"^s

@@ -852,10 +852,10 @@ let default_mapper =
 
     directive_argument =
       (fun this a ->
-         { pdira_desc= (match a.pdira_desc with
-               | Pdir_ident i -> Pdir_ident (map_lid this i)
-               | x -> x
-             )
+         { pdira_desc= begin match a.pdira_desc with
+               | Pdir_ident lid -> Pdir_ident (map_lid this lid)
+               | Pdir_int _ | Pdir_bool _ | Pdir_string _ as x -> x
+             end
          ; pdira_loc= this.location this a.pdira_loc} );
 
     toplevel_directive =
@@ -908,7 +908,7 @@ module PpxContext = struct
   open Asttypes
   open Ast_helper
 
-  let lid name = { txt = Lident name; loc = Location.none }
+  let lid name = mknoloc (Lident name)
 
   let make_string s = Exp.constant (Const.string s)
 
@@ -1013,10 +1013,12 @@ module PpxContext = struct
                              { %s }] pair syntax" name
       and get_option elem = function
         | { pexp_desc =
-              Pexp_construct ({ txt = Longident.Lident "Some" }, Some exp) } ->
+              Pexp_construct ({ txt = Longident.Lident "Some" },
+                              Some exp) } ->
             Some (elem exp)
         | { pexp_desc =
-              Pexp_construct ({ txt = Longident.Lident "None" }, None) } ->
+              Pexp_construct ({ txt = Longident.Lident "None" },
+                              None) } ->
             None
         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
                              { %s }] option syntax" name
