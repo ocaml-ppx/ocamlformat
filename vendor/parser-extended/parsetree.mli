@@ -465,7 +465,18 @@ and expression_desc =
            Note: [assert false] is treated in a special way by the
            type-checker. *)
   | Pexp_lazy of expression * infix_ext_attrs  (** [lazy E] *)
+  (*
+  | Pexp_poly of expression * core_type option
+      (** Used for method bodies.
+
+           Can only be used as the expression under
+           {{!class_field_kind.Cfk_concrete}[Cfk_concrete]} for methods (not
+           values). *)
+  *)
   | Pexp_object of class_structure * infix_ext_attrs  (** [object ... end] *)
+  (*
+  | Pexp_newtype of string loc * expression  (** [fun (type t) -> E] *)
+  *)
   | Pexp_pack of module_expr * package_type option * infix_ext_attrs
       (** - [(module M)] is represented as [Pexp_pack(M, None)]
           - [(module M : S)] is represented as [Pexp_pack(M, Some S)] *)
@@ -819,7 +830,8 @@ and class_type_field_desc =
   | Pctf_val of (label loc * mutable_virtual * core_type)
       (** [val x: T] *)
   | Pctf_method of (label loc * private_virtual * core_type)
-      (** [method x: T] *)
+      (** [method x: T]
+        *)
   | Pctf_constraint of (core_type * core_type)  (** [constraint T1 = T2] *)
   | Pctf_attribute of attribute  (** [[\@\@\@id]] *)
   | Pctf_extension of extension  (** [[%%id]] *)

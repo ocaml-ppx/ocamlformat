@@ -43,9 +43,9 @@ type private_flag = Private of Location.t | Public
 
 type mutable_flag = Immutable | Mutable of Location.t
 
-type virtual_flag = Virtual of Location.t | Concrete
-
 type atomic_flag = Nonatomic | Atomic of Location.t
+
+type virtual_flag = Virtual of Location.t | Concrete
 
 type private_virtual = {pv_priv: Location.t option; pv_virt: Location.t option}
 
@@ -76,6 +76,21 @@ type 'a loc = 'a Location.loc = {
 type variant_var = string loc loc  (** [`A] *)
 
 type variance_and_injectivity = string loc list
+(*
+type variance =
+  | Covariant
+  | Contravariant
+  | NoVariance
+  | Bivariant
+
+type injectivity =
+  | Injective
+  | NoInjectivity
+*)
+let string_of_label = function
+    Nolabel -> ""
+  | Labelled s -> s.txt
+  | Optional s -> "?"^s.txt
 
 (* For Pexp_indexop_access *)
 type paren_kind = Paren | Brace | Bracket

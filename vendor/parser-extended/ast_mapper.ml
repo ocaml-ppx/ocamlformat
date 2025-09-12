@@ -51,6 +51,7 @@ type mapper = {
   constant: mapper -> constant -> constant;
   constructor_declaration: mapper -> constructor_declaration
                            -> constructor_declaration;
+  directive_argument: mapper -> directive_argument -> directive_argument;
   expr: mapper -> expression -> expression;
   extension: mapper -> extension -> extension;
   extension_constructor: mapper -> extension_constructor
@@ -86,7 +87,6 @@ type mapper = {
   value_bindings: mapper -> value_bindings -> value_bindings;
   value_description: mapper -> value_description -> value_description;
   with_constraint: mapper -> with_constraint -> with_constraint;
-  directive_argument: mapper -> directive_argument -> directive_argument;
   repl_phrase: mapper -> repl_phrase -> repl_phrase;
 }
 
@@ -362,6 +362,12 @@ module T = struct
       (map_loc sub pext_name)
       (map_extension_constructor_kind sub pext_kind)
 
+  let map_package_type sub {ppt_loc; ppt_path; ppt_cstrs; ppt_attrs} =
+    let loc = sub.location sub ppt_loc in
+    let attrs = sub.attributes sub ppt_attrs in
+    Typ.package_type ~loc ~attrs (map_loc_lid sub ppt_path)
+      (List.map (map_tuple (map_loc_lid sub) (sub.typ sub)) ppt_cstrs)
+
 end
 
 module CT = struct
@@ -406,14 +412,13 @@ module CT = struct
       (List.map (sub.class_type_field sub) pcsig_fields)
 end
 
+let map_functor_param sub = function
+  | Unit -> Unit
+  | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
+
 let map_functor_param sub {loc; txt} =
   let loc = sub.location sub loc in
-  let txt =
-    match txt with
-    | Unit -> Unit
-    | Named (s, mt) -> Named (map_loc sub s, sub.module_type sub mt)
-  in
-  {loc; txt}
+  {loc; txt = map_functor_param sub txt}
 
 module MT = struct
   (* Type expressions for the module language *)
@@ -1045,10 +1050,10 @@ let default_mapper =
 
     directive_argument =
       (fun this a ->
-         { pdira_desc= (match a.pdira_desc with
-               | Pdir_ident i -> Pdir_ident (map_lid this i)
-               | x -> x
-             )
+         { pdira_desc= begin match a.pdira_desc with
+               | Pdir_ident lid -> Pdir_ident (map_lid this lid)
+               | Pdir_int _ | Pdir_bool _ | Pdir_string _ as x -> x
+             end
          ; pdira_loc= this.location this a.pdira_loc} );
 
     toplevel_directive =
@@ -1107,7 +1112,7 @@ module PpxContext = struct
   open Asttypes
   open Ast_helper
 
-  let lid name = { txt = Lident name; loc = Location.none }
+  let lid name = mknoloc (Lident name)
 
   let make_string s = Exp.constant (Const.string s)
 
@@ -1212,10 +1217,12 @@ module PpxContext = struct
                              { %s }] pair syntax" name
       and get_option elem = function
         | { pexp_desc =
-              Pexp_construct ({ txt = Longident.Lident "Some" }, Some exp) } ->
+              Pexp_construct ({ txt = Longident.Lident "Some" },
+                              Some exp) } ->
             Some (elem exp)
         | { pexp_desc =
-              Pexp_construct ({ txt = Longident.Lident "None" }, None) } ->
+              Pexp_construct ({ txt = Longident.Lident "None" },
+                              None) } ->
             None
         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
                              { %s }] option syntax" name
