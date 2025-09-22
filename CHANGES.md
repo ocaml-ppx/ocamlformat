@@ -97,6 +97,9 @@ profile. This started with version 0.26.0.
 - Fix a crash where `type%e nonrec t = t` was formatted as `type nonrec%e t = t`,
   which is invalid syntax. (#2712, @EmileTrotignon)
 
+- Fix commandline parsing being quadratic in the number of arguments 
+  (#2724, @let-def)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
@@ -1801,3 +1804,4 @@ profile. This started with version 0.26.0.
 ## 0.1 (2017-10-19)
 
 - Initial release.
+
