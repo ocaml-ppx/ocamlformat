@@ -535,7 +535,7 @@ let global_lib_term =
         new_global.lib_conf )
     $ global_term )
 
-let update_using_cmdline info config =
+let update_using_cmdline config =
   match
     Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
       (Cmd.v info global_lib_term)
@@ -559,7 +559,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       read_config_file ~version_check:false ~disable_conf_attrs:false
     in
     List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+    |> update_using_env |> update_using_cmdline
   in
   let conf =
     let opr_opts =
@@ -571,7 +571,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   in
   let conf =
     List.fold fs.configuration_files ~init:conf ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+    |> update_using_env |> update_using_cmdline
   in
   if
     (not is_stdin)
