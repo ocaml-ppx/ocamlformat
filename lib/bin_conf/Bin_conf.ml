@@ -535,11 +535,13 @@ let global_lib_term =
         new_global.lib_conf )
     $ global_term )
 
+let global_lib_term_eval = lazy (
+  Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
+    (Cmd.v info global_lib_term)
+)
+
 let update_using_cmdline config =
-  match
-    Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
-      (Cmd.v info global_lib_term)
-  with
+  match Lazy.force global_lib_term_eval with
   | Ok (`Ok conf_modif) -> conf_modif config
   | Error _ | Ok (`Version | `Help) -> config
 
