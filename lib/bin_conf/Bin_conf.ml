@@ -539,11 +539,13 @@ let global_lib_term =
         new_global.lib_conf )
     $ global_term )
 
-let update_using_cmdline info config =
-  match
-    Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
-      (Cmd.v info global_lib_term)
-  with
+let global_lib_term_eval =
+  lazy
+    (Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
+       (Cmd.v info global_lib_term) )
+
+let update_using_cmdline config =
+  match Lazy.force global_lib_term_eval with
   | Ok (`Ok conf_modif) -> conf_modif config
   | Error _ | Ok (`Version | `Help) -> config
 
@@ -563,7 +565,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
       read_config_file ~version_check:false ~disable_conf_attrs:false
     in
     List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+    |> update_using_env |> update_using_cmdline
   in
   let conf =
     let opr_opts =
@@ -575,7 +577,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   in
   let conf =
     List.fold fs.configuration_files ~init:conf ~f:read_config_file
-    |> update_using_env |> update_using_cmdline info
+    |> update_using_env |> update_using_cmdline
   in
   if
     (not is_stdin)

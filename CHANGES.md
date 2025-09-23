@@ -23,6 +23,8 @@ profile. This started with version 0.26.0.
 - Fixed bug with attributes on sub-expressions of infix operators (#2459, @tdelvecchio-jsc)
 - \* Fix cinaps comment formatting to not change multiline string contents (#2463, @tdelvecchio-jsc)
 - Fix position of comments around function parameters (#2471, @gpetiot)
+- Fix commandline parsing being quadratic in the number of arguments
+  (#2724, @let-def)
 
 ## 0.26.1 (2023-09-15)
 
@@ -1553,3 +1555,4 @@ profile. This started with version 0.26.0.
 ## 0.1 (2017-10-19)
 
 - Initial release.
+
