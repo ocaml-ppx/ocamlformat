@@ -1,8 +1,10 @@
 let read_traces filename =
   let ic = open_in_bin filename in
-  read_hashtable ~t:[%t: contracts_trace] 0 40 ic tbl1 ;
-  read_hashtable ~t:[%t: variables_trace] 40 70 ic tbl2 ;
-  read_hashtable ~t:[%t: expressions_trace] 70 100 ic tbl3 ;
+  begin
+    read_hashtable ~t:[%t: contracts_trace] 0 40 ic tbl1 ;
+    read_hashtable ~t:[%t: variables_trace] 40 70 ic tbl2 ;
+    read_hashtable ~t:[%t: expressions_trace] 70 100 ic tbl3
+  end ;
   close_in ic
 
 let foo x y =
