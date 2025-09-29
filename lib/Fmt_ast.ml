@@ -872,7 +872,7 @@ and fmt_modals ?(pro = fmt "@ ") c modals =
   in
   fmt_if_k (not (is_empty_modals modals)) (pro $ fmt_ats $ hvbox 0 fmt_modals)
 
-and fmt_type_var ~have_tick c (s : ty_var) =
+and fmt_type_var ~have_tick ~tydecl_param_atrs c (s : ty_var) =
   let {txt= name_opt; loc= name_loc}, jkind_opt = s in
   ( Cmts.fmt c name_loc
   @@
@@ -887,13 +887,16 @@ and fmt_type_var ~have_tick c (s : ty_var) =
             (String.length var_name > 1 && Char.equal var_name.[1] '\'')
             " " )
       $ str var_name )
+  $ ( match tydecl_param_atrs with
+     | [] -> noop
+     | _ -> fmt_attributes c ~pre:Cut tydecl_param_atrs)
   $ Option.value_map jkind_opt ~default:noop
       ~f:(fmt_jkind_constr ~ctx:(Tyv s) c)
 
 and fmt_type_var_with_parenze ~have_tick c (s : ty_var) =
   let jkind_annot = type_var_has_jkind_annot s in
   cbox_if jkind_annot 0
-    (wrap_if jkind_annot "(" ")" (fmt_type_var ~have_tick c s))
+    (wrap_if jkind_annot "(" ")" (fmt_type_var ~have_tick ~tydecl_param_atrs:[] c s))
 
 and fmt_jkind c ~ctx {txt= jkd; loc} =
   let inner_ctx = Jkd jkd in
@@ -1064,6 +1067,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | None -> noop )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
+  (* we defer handling attrs on tydecl params, as they must precede jkind annotations *)
+  let tydecl_param_atrs, atrs = if tydecl_param then atrs, [] else [], atrs in
   Cmts.fmt c ptyp_loc
   @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( match atrs with
@@ -1071,7 +1076,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
      | _ ->
          fun k ->
            hvbox 0
-             (Params.parens_if (not tydecl_param) c.conf
+             (Params.parens c.conf
                 (k $ fmt_attributes c ~pre:Cut atrs) ) )
   @@
   let parens = (not tydecl_param) && parenze_typ xtyp in
@@ -1100,7 +1105,12 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
            ( fmt_core_type c (sub_typ ~ctx typ)
            $ fmt "@ as@ "
            $ fmt_type_var_with_parenze ~have_tick:true c str ) )
-  | Ptyp_any -> str "_"
+  | Ptyp_any ->
+    str "_"
+    $
+    (match tydecl_param_atrs with
+     | [] -> noop
+     | _ -> fmt_attributes c ~pre:Cut tydecl_param_atrs)
   | Ptyp_arrow (args, ret_typ, modes) ->
       Cmts.relocate c.cmts ~src:ptyp_loc
         ~before:(List.hd_exn args).pap_type.ptyp_loc ~after:ret_typ.ptyp_loc ;
@@ -1163,7 +1173,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
            (list typs "@ * " (fun (lbl, typ) ->
                 let typ = sub_typ ~ctx typ in
                 fmt_labeled_tuple_type c lbl typ ) ) )
-  | Ptyp_var s -> fmt_type_var ~have_tick:true c s
+  | Ptyp_var s -> fmt_type_var ~have_tick:true ~tydecl_param_atrs c s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
         match rfs with
@@ -1739,7 +1749,8 @@ and fmt_fun_args c args =
     | Pparam_newtype [] -> impossible "not accepted by parser"
     | Pparam_newtype names ->
         let fmt =
-          if List.length names = 1 then fmt_type_var ~have_tick:false
+          if List.length names = 1 then
+            fmt_type_var ~have_tick:false ~tydecl_param_atrs:[]
           else fmt_type_var_with_parenze ~have_tick:false
         in
         cbox 0 (Params.parens c.conf (str "type " $ list names "@ " (fmt c)))

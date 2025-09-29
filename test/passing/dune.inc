@@ -11876,6 +11876,42 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to type_param_with_jkind_and_attr.ml.stdout
+   (with-stderr-to type_param_with_jkind_and_attr.ml.stderr
+     (run %{bin:ocamlformat} --margin-check %{dep:tests/type_param_with_jkind_and_attr.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/type_param_with_jkind_and_attr.ml type_param_with_jkind_and_attr.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/type_param_with_jkind_and_attr.ml.err type_param_with_jkind_and_attr.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to type_param_with_jkind_and_attr.ml.js-stdout
+   (with-stderr-to type_param_with_jkind_and_attr.ml.js-stderr
+     (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/type_param_with_jkind_and_attr.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/type_param_with_jkind_and_attr.ml.js-ref type_param_with_jkind_and_attr.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/type_param_with_jkind_and_attr.ml.js-err type_param_with_jkind_and_attr.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to types-compact-space_around-docked.ml.stdout
    (with-stderr-to types-compact-space_around-docked.ml.stderr
      (run %{bin:ocamlformat} --margin-check --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants --break-separators=after --dock-collection-brackets %{dep:tests/types.ml})))))
