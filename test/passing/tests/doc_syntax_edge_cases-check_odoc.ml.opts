@@ -1,2 +1,2 @@
---max-iter 5
+--max-iters 5
 --check-odoc-parsing

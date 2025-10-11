@@ -2185,6 +2185,38 @@ and fmt_match c ?pro ~parens ?ext ctx xexp cs e0 keyword =
              $ fmt "@ with" )
          $ fmt "@ " $ fmt_cases c ctx cs ) )
 
+and fmt_block_access c ctx ba =
+  match ba with
+  | Baccess_field lid -> str "." $ fmt_longident_loc c lid
+  | Baccess_array (mut, idx, expr) ->
+      let dot =
+        match mut with Mutable _ -> str "." | Immutable -> str ".:"
+      in
+      let suff =
+        match idx with
+        | Index_int -> noop
+        | Index_unboxed_int64 -> str "L"
+        | Index_unboxed_int32 -> str "l"
+        | Index_unboxed_int16 -> str "S"
+        | Index_unboxed_int8 -> str "s"
+        | Index_unboxed_nativeint -> str "n"
+      in
+      hvbox 0
+        ( dot $ suff
+        $ Params.parens c.conf
+            (fmt "@;<0 0>" $ fmt_expression c (sub_exp ~ctx expr)) )
+  | Baccess_block (mut, expr) ->
+      let dot =
+        match mut with
+        | Mutable _ -> str ".idx_mut"
+        | Immutable -> str ".idx_imm"
+      in
+      dot $ Params.parens c.conf (fmt_expression c (sub_exp ~ctx expr))
+
+and fmt_unboxed_access c ua =
+  match ua with
+  | Uaccess_unboxed_field lid -> str ".#" $ fmt_longident_loc c lid
+
 and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     ?(indent_wrap = 0) ?ext ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Exp exp)
@@ -2647,6 +2679,15 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                     (sub_exp ~ctx >> fmt_expression c)
                     p pexp_loc )
              $ fmt_atrs ) )
+  | Pexp_idx (ba, uas) ->
+      pro
+      $ hvbox_if has_attr 2
+          ( Params.parens c.conf
+              (hvbox 0
+                 ( fmt_block_access c (Exp exp) ba
+                 $ fmt_if (not (List.is_empty uas)) "@;<0 0>"
+                 $ list uas "@;<0 0>" (fmt_unboxed_access c) ) )
+          $ fmt_atrs )
   | Pexp_list e1N ->
       let p = Params.get_list_expr c.conf in
       let offset =

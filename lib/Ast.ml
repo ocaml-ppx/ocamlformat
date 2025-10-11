@@ -220,7 +220,7 @@ module Exp = struct
      |Pexp_override _ | Pexp_open _ | Pexp_extension _ | Pexp_hole
      |Pexp_record _ | Pexp_record_unboxed_product _ | Pexp_array _
      |Pexp_list _ | Pexp_list_comprehension _ | Pexp_array_comprehension _
-     |Pexp_unboxed_tuple _ ->
+     |Pexp_unboxed_tuple _ | Pexp_idx _ ->
         true
     | Pexp_constant c -> not (is_uminus_constant c)
     | Pexp_prefix (op, _) -> not (is_uminus_op op || is_uplus_op op)
@@ -1448,7 +1448,7 @@ end = struct
        |Pexp_variant _ | Pexp_while _ | Pexp_hole | Pexp_beginend _
        |Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ | Pexp_stack _
-        ->
+       |Pexp_idx _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1569,6 +1569,11 @@ end = struct
             assert (List.exists e1N ~f:(fun (_, e) -> f e))
         | Pexp_array (_, e1N) | Pexp_list e1N | Pexp_cons e1N ->
             assert (List.exists e1N ~f)
+        | Pexp_idx (ba, _) -> (
+          match ba with
+          | Baccess_field _ -> assert false
+          | Baccess_array (_, _, e) | Baccess_block (_, e) ->
+              assert (e == exp) )
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
             assert (Option.exists e ~f)
         | Pexp_record (e1N, e0) | Pexp_record_unboxed_product (e1N, e0) ->
@@ -2318,7 +2323,7 @@ end = struct
          |Pexp_variant (_, None)
          |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
          |Pexp_indexop_access _ | Pexp_list_comprehension _
-         |Pexp_array_comprehension _ ->
+         |Pexp_array_comprehension _ | Pexp_idx _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2400,7 +2405,8 @@ end = struct
        |Pexp_record_unboxed_product _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
        |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
-       |Pexp_list_comprehension _ | Pexp_array_comprehension _ ->
+       |Pexp_list_comprehension _ | Pexp_array_comprehension _ | Pexp_idx _
+        ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp

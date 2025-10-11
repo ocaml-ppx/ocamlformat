@@ -192,6 +192,8 @@ module T = struct
           (List.map (map_tuple (map_loc sub) (sub.typ sub)) l)
     | Ptyp_open (mod_ident, t) ->
         open_ ~loc ~attrs (map_loc sub mod_ident) (sub.typ sub t)
+    | Ptyp_of_kind jkind ->
+        of_kind ~loc ~attrs (sub.jkind_annotation sub jkind)
     | Ptyp_extension x -> extension ~loc ~attrs (sub.extension sub x)
 
   let map_type_declaration sub
@@ -493,6 +495,14 @@ module E = struct
       ret_mode_annotations = sub.modes sub ret_mode_annotations
     }
 
+  let map_block_access sub = function
+    | Baccess_field lid -> Baccess_field (map_loc sub lid)
+    | Baccess_array (mut, ik, e) -> Baccess_array (mut, ik, sub.expr sub e)
+    | Baccess_block (mut, e) -> Baccess_block (mut, sub.expr sub e)
+
+  let map_unboxed_access sub = function
+    | Uaccess_unboxed_field lid -> Uaccess_unboxed_field (map_loc sub lid)
+
   let map_iterator sub = function
     | Pcomp_range { start; stop; direction } ->
       Pcomp_range { start = sub.expr sub start;
@@ -529,8 +539,8 @@ module E = struct
     match desc with
     | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
     | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
-    | Pexp_let (r, vbs, e) ->
-        let_ ~loc ~attrs r (List.map (sub.value_binding sub) vbs)
+    | Pexp_let (m, r, vbs, e) ->
+        let_ ~loc ~attrs m r (List.map (sub.value_binding sub) vbs)
           (sub.expr sub e)
     | Pexp_function (ps, c, b) ->
       function_ ~loc ~attrs
@@ -565,6 +575,9 @@ module E = struct
         setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
           (sub.expr sub e2)
     | Pexp_array (mut, el) -> array ~loc ~attrs mut (List.map (sub.expr sub) el)
+    | Pexp_idx (ba, uas) ->
+      idx ~loc ~attrs (map_block_access sub ba)
+        (List.map (map_unboxed_access sub) uas)
     | Pexp_ifthenelse (e1, e2, e3) ->
         ifthenelse ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
           (map_opt (sub.expr sub) e3)
@@ -583,7 +596,7 @@ module E = struct
     | Pexp_send (e, s) ->
         send ~loc ~attrs (sub.expr sub e) (map_loc sub s)
     | Pexp_new lid -> new_ ~loc ~attrs (map_loc sub lid)
-    | Pexp_setinstvar (s, e) ->
+    | Pexp_setvar (s, e) ->
         setinstvar ~loc ~attrs (map_loc sub s) (sub.expr sub e)
     | Pexp_override sel ->
         override ~loc ~attrs

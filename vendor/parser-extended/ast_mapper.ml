@@ -573,6 +573,20 @@ module E = struct
     let if_attrs = sub.attributes sub if_attrs in
     { if_cond; if_body; if_attrs }
 
+  let map_block_access sub = function
+    | Baccess_field lid -> Baccess_field (map_loc sub lid)
+    | Baccess_array (mut, idx_kind, expr) ->
+        let mut = Flag.map_mutable sub mut in
+        let expr = sub.expr sub expr in
+        Baccess_array (mut, idx_kind, expr)
+    | Baccess_block (mut, expr) ->
+        let mut = Flag.map_mutable sub mut in
+        let expr = sub.expr sub expr in
+        Baccess_block (mut, expr)
+
+  let map_unboxed_access sub = function
+    | Uaccess_unboxed_field lid -> Uaccess_unboxed_field (map_loc sub lid)
+
   let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs; pexp_loc_stack = _} =
     let open Exp in
     let loc = sub.location sub loc in
@@ -632,6 +646,10 @@ module E = struct
           (sub.expr sub e2)
     | Pexp_array (mf, el) ->
         array ~loc ~attrs (Flag.map_mutable sub mf) (List.map (sub.expr sub) el)
+    | Pexp_idx (bacc, uaccs) ->
+        let bacc = map_block_access sub bacc in
+        let uaccs = List.map (map_unboxed_access sub) uaccs in
+        idx ~loc ~attrs bacc uaccs
     | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
     | Pexp_ifthenelse (eN, e2) ->
         ifthenelse ~loc ~attrs (List.map (map_if_branch sub) eN)

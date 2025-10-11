@@ -476,6 +476,9 @@ and expression_desc =
   | Pexp_array of mutable_flag * expression list
       (** [[| E1; ...; En |]] (flag = Mutable)
           [[: E1; ...; En :]] (flag = Immutable) *)
+  | Pexp_idx of block_access * unboxed_access list
+      (** [(BA1 UA1 UA2 ...)] e.g. [(.foo.#bar.#baz)]
+          Above, BA1=.foo, UA1=.#bar, and UA2=#.baz *)
   | Pexp_list of expression list  (** [[ E1; ...; En ]] *)
   | Pexp_ifthenelse of if_branch list * expression option
       (** [if E1 then E2 else E3] *)
@@ -543,6 +546,24 @@ and expression_desc =
       (** [[|BODY ...CLAUSES...|]] (flag = Mutable)
           [[:BODY ...CLAUSES...:]] (flag = Immutable)
           (only allowed with [-extension immutable_arrays]) *)
+
+and block_access =
+  | Baccess_field of Longident.t loc
+      (** [.foo] *)
+  | Baccess_array of mutable_flag * index_kind * expression
+      (** Mutable array accesses: [.(E)], [.L(E)], [.l(E)], [.n(E)]
+          Immutable array accesses: [.:(E)], [.:L(E)], [.:l(E)], [.:n(E)]
+
+          Indexed by [int], [int64#], [int32#], or [nativeint#], respectively.
+      *)
+  | Baccess_block of mutable_flag * expression
+      (** Access using another block index: [.idx_imm(E)], [.idx_mut(E)]
+          (usually followed by unboxed accesses, to deepen the index).
+      *)
+
+and unboxed_access =
+  | Uaccess_unboxed_field of Longident.t loc
+      (** [.#foo] *)
 
 and iterator =
   | Range of { start     : expression

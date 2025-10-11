@@ -1,2 +1,2 @@
 --ocaml-version=4.14.0
---max-iter=5
+--max-iters=5

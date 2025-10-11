@@ -202,6 +202,7 @@ and core_type_desc =
          *)
   | Ptyp_package of package_type  (** [(module S)]. *)
   | Ptyp_open of Longident.t loc * core_type (** [M.(T)] *)
+  | Ptyp_of_kind of jkind_annotation (** [(type : k)] *)
   | Ptyp_extension of extension  (** [[%id]]. *)
 
 and arg_label = Asttypes.arg_label =
@@ -364,13 +365,18 @@ and expression_desc =
   | Pexp_constant of constant
       (** Expressions constant such as [1], ['a'], ["true"], [1.0], [1l],
             [1L], [1n] *)
-  | Pexp_let of rec_flag * value_binding list * expression
-      (** [Pexp_let(flag, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
+  | Pexp_let of mutable_flag * rec_flag * value_binding list * expression
+      (** [Pexp_let(mut, rec, [(P1,E1) ; ... ; (Pn,En)], E)] represents:
             - [let P1 = E1 and ... and Pn = EN in E]
-               when [flag] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]},
+               when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]}
+               and [mut] = {{!Asttypes.mutable_flag.Immutable}[Immutable]}.
             - [let rec P1 = E1 and ... and Pn = EN in E]
-               when [flag] is {{!Asttypes.rec_flag.Recursive}[Recursive]}.
-         *)
+               when [rec] is {{!Asttypes.rec_flag.Recursive}[Recursive]}
+               and [mut] = {{!Asttypes.mutable_flag.Immutable}[Immutable]}.
+            - [let mutable P1 = E1 in E]
+               when [rec] is {{!Asttypes.rec_flag.Nonrecursive}[Nonrecursive]}
+               and [mut] = {{!Asttypes.mutable_flag.Mutable}[Mutable]}.
+          Invariant: If [mut = Mutable] then [n = 1] and [rec = Nonrecursive] *)
   | Pexp_function of
       function_param list * function_constraint * function_body
   (** [Pexp_function ([P1; ...; Pn], C, body)] represents any construct
@@ -449,6 +455,9 @@ and expression_desc =
       (** [E1.l <- E2] *)
   | Pexp_array of mutable_flag * expression list
       (** [[| E1; ...; En |]] or [[: E1; ...; En :]] *)
+  | Pexp_idx of block_access * unboxed_access list
+      (** [(BA1 UA1 UA2 ...)] e.g. [(.foo.#bar.#baz)]
+          Above, BA1=.foo, UA1=.#bar, and UA2=#.baz *)
   | Pexp_ifthenelse of expression * expression * expression option
       (** [if E1 then E2 else E3] *)
   | Pexp_sequence of expression * expression  (** [E1; E2] *)
@@ -468,7 +477,11 @@ and expression_desc =
          *)
   | Pexp_send of expression * label loc  (** [E # m] *)
   | Pexp_new of Longident.t loc  (** [new M.c] *)
-  | Pexp_setinstvar of label loc * expression  (** [x <- 2] *)
+  | Pexp_setvar of label loc * expression
+      (** [x <- 2]
+
+           Represents both setting an instance variable
+           and setting a mutable variable. *)
   | Pexp_override of (label loc * expression) list
       (** [{< x1 = E1; ...; xn = En >}] *)
   | Pexp_letmodule of string option loc * module_expr * expression
@@ -618,6 +631,24 @@ and function_constraint =
     (** The type constraint placed on a function's body. *)
   }
 (** See the comment on {{!expression_desc.Pexp_function}[Pexp_function]}. *)
+
+and block_access =
+  | Baccess_field of Longident.t loc
+      (** [.foo] *)
+  | Baccess_array of mutable_flag * index_kind * expression
+      (** Mutable array accesses: [.(E)], [.L(E)], [.l(E)], [.n(E)]
+          Immutable array accesses: [.:(E)], [.:L(E)], [.:l(E)], [.:n(E)]
+
+          Indexed by [int], [int64#], [int32#], or [nativeint#], respectively.
+      *)
+  | Baccess_block of mutable_flag * expression
+      (** Access using another block index: [.idx_imm(E)], [.idx_mut(E)]
+          (usually followed by unboxed accesses, to deepen the index).
+      *)
+
+and unboxed_access =
+  | Uaccess_unboxed_field of Longident.t loc
+      (** [.#foo] *)
 
 and comprehension_iterator =
   | Pcomp_range of
@@ -1213,7 +1244,7 @@ and module_expr_desc =
       (** [Foo(Param1)(Arg1(Param2)(Arg2)) [@jane.non_erasable.instances]]
 
           The name of an instance module. Gets converted to [Global.Name.t] in
-          the flambda-backend compiler. *)
+          the OxCaml compiler. *)
 
 and module_instance =
   { pmod_instance_head : string;

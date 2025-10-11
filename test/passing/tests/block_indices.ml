@@ -1,0 +1,110 @@
+(* basic syntax *)
+
+let idx_r () = (.foo)
+let idx_r_r () = (.foo.#foo)
+let idx_array x = (.(x))
+let idx_array_L x = (.L(x))
+let idx_array_l x = (.l(x))
+let idx_array_S x = (.S(x))
+let idx_array_s x = (.s(x))
+let idx_array_n x = (.n(x))
+let idx_iarray x = (.:(x))
+let idx_iarray_L x = (.:L(x))
+let idx_iarray_l x = (.:l(x))
+let idx_iarray_S x = (.:S(x))
+let idx_iarray_s x = (.:s(x))
+let idx_iarray_n x = (.:n(x))
+let idx_imm x = (.idx_imm(x))
+let idx_mut x = (.idx_mut(x))
+
+(* long chains *)
+
+let idx_r () = (.Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array x = (.(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array_L x = (.L(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array_l x = (.l(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array_S x = (.S(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array_s x = (.s(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_array_n x = (.n(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray x = (.:(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray_L x = (.:L(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray_l x = (.:l(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray_S x = (.:S(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray_s x = (.:s(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_iarray_n x = (.:n(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_imm x = (.idx_imm(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+let idx_mut x = (.idx_mut(x).#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890.#Foo.Bar.baz1234567890)
+
+(* more interesting indices *)
+
+let idx_array x = (.(x, y, z))
+let idx_array_L x = (.L([x; y; z]))
+let idx_array_l x = (.l(List.map l ~f:(fun x -> let y, z = g x in (y, z))))
+let idx_array_n x = (.n(function | _ -> x | _ -> y))
+let idx_iarray x = (.:(~x, ~y, ~z))
+let idx_iarray_L x = (.:L((.:L({ x ; y ; z }))))
+let idx_iarray_l x = (.:l((.:l(#{ x ; y ; z }))))
+let idx_iarray_n x = (.:n(x + y + z * (x + y + z)))
+let idx_imm x = (.idx_imm(if x then y else z))
+let idx_mut x = (.idx_mut(let%foo x = y in z))
+let idx_imm x = (.idx_imm((module M)))
+let idx_mut x = (.idx_mut(assert false))
+
+(* more interesting contexts *)
+
+let idx_r () = (.foo), ~foo:(.foo), ~bar:(.foo)
+let idx_r_r () = (.foo.#foo) + (let x = y in z)
+let idx_array x = let i = (.(x)) in f i
+let idx_array_L x = List.map (.L(x)) ~f:(fun x -> let y, z = g x in (y, z))
+let idx_array_l x = match (.l(x)) with | _ -> []
+let idx_array_n x = [ (.n(x)); (.n(x)); (.n(x)) ]
+let idx_iarray x = { x = (.:(x)); y = (.:(y)) }
+let idx_iarray_L x = #{ x = (.:L(x)); y = (.:L(y)) }
+let idx_iarray_l x = stack_ (.:l(x))
+let idx_iarray_n x = let open M in (.:n(x))
+let idx_imm x = lazy (.idx_imm(x))
+let idx_mut x = !(.idx_mut(x))
+
+(* attributes *)
+
+let idx_r () = (.foo) [@attr]
+let idx_r_r () = (.foo.#foo) [@attr] [@bttr] [@cttr defg]
+let idx_array x = (.(x)) [@attr] [@bttr] [@cttr defg]
+let idx_array_L x = (.L(x)) [@attr]
+let idx_array_l x = (.l(x)) [@attr] [@bttr]
+let idx_array_S x = (.S(x)) [@attr] [@bttr] [@cttr defg]
+let idx_array_s x = (.s(x)) [@attr] [@bttr] [@cttr defg]
+let idx_array_n x = (.n(x)) [@attr] [@bttr] [@cttr defg]
+let idx_iarray x = (.:(x)) [@attr] [@bttr]
+let idx_iarray_L x = (.:L(x)) [@attr]
+let idx_iarray_l x = (.:l(x)) [@attr]
+let idx_iarray_S x = (.:S(x)) [@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattr] [@bttr] [@cttr defg]
+let idx_iarray_s x = (.:s(x)) [@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattr] [@bttr] [@cttr defg]
+let idx_iarray_n x = (.:n(x)) [@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattr] [@bttr] [@cttr defg]
+let idx_imm x = (.idx_imm(x)) [@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattr] [@bttr] [@cttr defg]
+let idx_mut x = (.idx_mut(x)) [@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattr] [@bttr] [@cttr defg]
+
+(* attributes inside *)
+
+let idx_array x = (.(x, y, z[@attr]))
+let idx_array_L x = (.L([x; y; z][@attr]))
+let idx_array_l x = (.l((List.map l ~f:(fun x -> let y, z = g x in (y, z)))[@attr]))
+let idx_array_n x = (.n(function[@attr] | _ -> x | _ -> y))
+let idx_iarray x = (.:((~x, ~y, ~z)[@attr]))
+let idx_iarray_L x = (.:L((.:L({ x ; y ; z }[@attr]))))
+let idx_iarray_l x = (.:l((.:l(#{ x ; y ; z }[@attr]))))
+let idx_iarray_n x = (.:n((x + y + z * (x + y + z))[@attr]))
+let idx_imm x = (.idx_imm(if[@attr] x then y else z))
+let idx_mut x = (.idx_mut(let%foo[@attr] x = y in z))
+let idx_imm x = (.idx_imm((module M)[@attr]))
+let idx_mut x = (.idx_mut((assert false)[@attr]))
+
+(* comments *)
+
+let idx_r () = (* 01 *) ( (* 02 *) . (* 03 *) foo (* 04 *) ) (* 05 *)
+let idx_r_r () = (* 06 *) ( (* 07 *) . (* 08 *) foo (* 09 *) .# (* 10 *) foo (* 11 *) ) (* 12 *)
+let idx_array x = (* 13 *) ( (* 14 *) . (* 15 *) ( (* 16 *) x (* 17 *) ) (* 18 *))
+let idx_array_L x = (* 21 *) ( (* 22 *) . (* 23 *) L (* 24 *) ( (* 25 *) x (* 26 *) ) (* 27 *))
+let idx_iarray x = ( (* 28 *) .:( (* 29 *) x (* 30 *)) (* 31 *))
+let idx_imm x = ( (* 32 *) .idx_imm (* 33 *) ( (* 34 *) x (* 35 *)) (* 36 *))
+let idx_mut x = ( (* 37 *) .idx_mut (* 38 *) ( (* 39 *) x (* 40 *)) (* 41 *))
