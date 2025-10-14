@@ -3,7 +3,7 @@
  (deps %{bin:ocamlformat}))
 
 (cram
- (applies_to large_string conf removed_option repl_file_errors debug)
+ (applies_to env large_string conf removed_option repl_file_errors debug)
  (enabled_if
   (and
    (>= %{ocaml_version} 5.3.0)
