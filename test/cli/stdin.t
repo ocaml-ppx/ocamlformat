@@ -3,15 +3,18 @@
 One of '--impl', '--intf' or '--name' is required when the input is read from stdin:
 
   $ ocamlformat -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+  ocamlformat: Must specify at least one of --name, --impl or --intf when
+               reading from stdin
   [1]
 
   $ echo 'let x =       1' | ocamlformat -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+  ocamlformat: Must specify at least one of --name, --impl or --intf when
+               reading from stdin
   [1]
 
   $ ocamlformat --inplace -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+  ocamlformat: Must specify at least one of --name, --impl or --intf when
+               reading from stdin
   [1]
 
 Nominal cases:
@@ -30,7 +33,8 @@ The kind of syntax --impl/--intf is inferred from the name:
 The syntax cannot be inferred if the extension of the file is unsupported:
 
   $ ocamlformat --name a.cpp -
-  ocamlformat: Cannot deduce file kind from passed --name. Please specify --impl or --intf
+  ocamlformat: Cannot deduce file kind from passed --name. Please specify
+               --impl or --intf
   [1]
 
 Cannot specify files with stdin:
