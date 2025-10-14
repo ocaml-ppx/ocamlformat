@@ -102,11 +102,11 @@ FIND_ARGS= \
 
 .PHONY: test_inplace
 test_inplace:
-	@find $(DIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --quiet -i
+	@find $(DIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --no-comment-check --quiet -i
 
 .PHONY: test_extra
 test_extra:
-	@-find $(XDIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --quiet -i
+	@-find $(XDIRS) $(FIND_ARGS) | parallel "$(OCAMLFORMAT_EXE)" --no-version-check --enable-outside-detected-project --no-comment-check --quiet -i
 
 .PHONY: test_margins
 test_margins:

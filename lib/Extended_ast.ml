@@ -154,6 +154,81 @@ module Parse = struct
           (f, Some t, None)
       | _ -> (f, t, Option.map ~f:(m.pat m) v)
     in
+    let map_labeled_tuple_element m f = function
+      | Lte_simple lte -> f m lte
+      | (Lte_constrained_pun _ | Lte_pun _) as x -> x
+    in
+    let pat_tuple_elt m te =
+      match (te.lte_label, te.lte_elt) with
+      (* [ ~x:x ] -> [ ~x ] *)
+      | ( Some lbl
+        , {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _} )
+        when String.equal lbl.txt v_txt ->
+          Lte_pun lbl
+      (* [~x:(x : t)] -> [ ~(x : t)] *)
+      | ( Some lbl
+        , { ppat_desc=
+              Ppat_constraint
+                ( { ppat_desc= Ppat_var {txt= v_txt; _}
+                  ; ppat_attributes= []
+                  ; _ }
+                , t )
+          ; ppat_attributes= []
+          ; ppat_loc
+          ; _ } )
+        when String.equal lbl.txt v_txt ->
+          Lte_constrained_pun
+            { loc= {lbl.loc with loc_end= ppat_loc.loc_end}
+            ; label= lbl
+            ; type_constraint= t }
+      | lte_label, pat -> Lte_simple {lte_label; lte_elt= m.pat m pat}
+    in
+    let pat_tuple_elt m lte =
+      map_labeled_tuple_element m pat_tuple_elt lte
+    in
+    let exp_tuple_elt m te =
+      match (te.lte_label, te.lte_elt) with
+      (* [ ~x:x ] -> [ ~x ] *)
+      | ( Some lbl
+        , { pexp_desc= Pexp_ident {txt= Lident v_txt; _}
+          ; pexp_attributes= []
+          ; _ } )
+        when String.equal lbl.txt v_txt ->
+          Lte_pun lbl
+      (* [~x:(x : t)] -> [ ~(x : t)] *)
+      | ( Some lbl
+        , { pexp_desc=
+              Pexp_constraint
+                ( { pexp_desc= Pexp_ident {txt= Lident v_txt; _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , t )
+          ; pexp_attributes= []
+          ; pexp_loc
+          ; _ } )
+        when String.equal lbl.txt v_txt ->
+          Lte_constrained_pun
+            { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
+            ; label= lbl
+            ; type_constraint= Pconstraint t }
+      (* [~x:(x : t1 :> t2)] -> [ ~(x : t1 :> t2)] *)
+      | ( Some lbl
+        , { pexp_desc=
+              Pexp_coerce
+                ({pexp_desc= Pexp_ident {txt= Lident v_txt; _}; _}, bty, tty)
+          ; pexp_attributes= []
+          ; pexp_loc
+          ; _ } )
+        when String.equal lbl.txt v_txt ->
+          Lte_constrained_pun
+            { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
+            ; label= lbl
+            ; type_constraint= Pcoerce (bty, tty) }
+      | lte_label, exp -> Lte_simple {lte_label; lte_elt= m.expr m exp}
+    in
+    let exp_tuple_elt m lte =
+      map_labeled_tuple_element m exp_tuple_elt lte
+    in
     let binding_op (m : Ast_mapper.mapper) b =
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
@@ -184,6 +259,9 @@ module Parse = struct
               , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
         ; _ } as p ->
           {p with ppat_desc= Ppat_unpack (name, Some pt)}
+      | {ppat_desc= Ppat_tuple (l, oc); _} as p ->
+          let l = List.map ~f:(pat_tuple_elt m) l in
+          {p with ppat_desc= Ppat_tuple (l, oc)}
       | p -> Ast_mapper.default_mapper.pat m p
     in
     let expr (m : Ast_mapper.mapper) = function
@@ -222,26 +300,9 @@ module Parse = struct
              && not (Std_longident.is_monadic_binding longident) ->
           let label_loc = {txt= op; loc= loc_op} in
           {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
-      (* [(module M) : (module T)] -> [(module M : T)] *)
-      | { pexp_desc=
-            Pexp_constraint
-              ( { pexp_desc=
-                    Pexp_pack (name, None, {infix_ext= None; infix_attrs= []})
-                ; pexp_attributes= []
-                ; pexp_loc
-                ; _ }
-              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; ptyp_loc; _}
-              )
-        ; _ } as p
-        when Migrate_ast.Location.compare_start ptyp_loc pexp_loc > 0 ->
-          (* Match locations to differentiate between the two position for
-             the constraint, we want to shorten the second: - [let _ :
-             (module S) = (module M)] - [let _ = ((module M) : (module
-             S))] *)
-          { p with
-            pexp_desc=
-              Pexp_pack (name, Some pt, {infix_ext= None; infix_attrs= []})
-          }
+      | {pexp_desc= Pexp_tuple l; _} as p ->
+          let l = List.map ~f:(exp_tuple_elt m) l in
+          {p with pexp_desc= Pexp_tuple l}
       | e -> Ast_mapper.default_mapper.expr m e
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}

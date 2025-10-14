@@ -88,7 +88,6 @@ module Typ = struct
   let package ?loc ?attrs p = mk ?loc ?attrs (Ptyp_package p)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
   let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
-
 (*
   let force_poly t =
     match t.ptyp_desc with
@@ -109,7 +108,8 @@ module Typ = struct
             Ptyp_var x
         | Ptyp_arrow (label,core_type,core_type') ->
             Ptyp_arrow(label, loop core_type, loop core_type')
-        | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
+        | Ptyp_tuple lst ->
+            Ptyp_tuple (List.map (fun (l, t) -> l, loop t) lst)
         | Ptyp_constr( { txt = Longident.Lident s }, [])
           when List.mem s var_names ->
             Ptyp_var s
@@ -129,8 +129,8 @@ module Typ = struct
           List.iter (fun v ->
             check_variable var_names t.ptyp_loc v.txt) string_lst;
             Ptyp_poly(string_lst, loop core_type)
-        | Ptyp_package(longident,lst) ->
-            Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
+        | Ptyp_package ptyp ->
+            Ptyp_package (loop_package_type ptyp)
         | Ptyp_open (mod_ident, core_type) ->
             Ptyp_open (mod_ident, loop core_type)
         | Ptyp_extension (s, arg) ->
@@ -153,9 +153,17 @@ module Typ = struct
             Oinherit (loop t)
       in
       { field with pof_desc; }
+    and loop_package_type ptyp =
+      { ptyp with
+        ppt_cstrs = List.map (fun (n,typ) -> (n,loop typ) ) ptyp.ppt_cstrs }
     in
     loop t
 *)
+  let package_type ?(loc = !default_loc) ?(attrs = []) p c =
+    {ppt_loc = loc;
+     ppt_path = p;
+     ppt_cstrs = c;
+     ppt_attrs = attrs}
 end
 
 module Pat = struct
@@ -171,7 +179,7 @@ module Pat = struct
   let alias ?loc ?attrs a b = mk ?loc ?attrs (Ppat_alias (a, b))
   let constant ?loc ?attrs a = mk ?loc ?attrs (Ppat_constant a)
   let interval ?loc ?attrs a b = mk ?loc ?attrs (Ppat_interval (a, b))
-  let tuple ?loc ?attrs a = mk ?loc ?attrs (Ppat_tuple a)
+  let tuple ?loc ?attrs a b = mk ?loc ?attrs (Ppat_tuple (a, b))
   let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
   let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
   let record ?loc ?attrs a b = mk ?loc ?attrs (Ppat_record (a, b))
@@ -306,9 +314,9 @@ module Mod = struct
   let functor_ ?loc ?attrs arg body =
     mk ?loc ?attrs (Pmod_functor (arg, body))
   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
+  let apply_unit ?loc ?attrs a b = mk ?loc ?attrs (Pmod_apply_unit (a, b))
   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
   let unpack ?loc ?attrs a b c = mk ?loc ?attrs (Pmod_unpack (a, b, c))
-  let apply_unit ?loc ?attrs a b = mk ?loc ?attrs (Pmod_apply_unit (a, b))
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
   (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
@@ -447,6 +455,9 @@ module Cf = struct
     List.map
       (fun ds -> attribute ~loc:(docstring_loc ds) (text_attr ds))
       f_txt
+
+  let virtual_ ct = Cfk_virtual ct
+  let concrete o a e = Cfk_concrete (o, a, e)
 
   let attr d a = {d with pcf_attributes = d.pcf_attributes @ [a]}
 

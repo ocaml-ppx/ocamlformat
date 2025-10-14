@@ -16,6 +16,14 @@ type +!'a t = private 'a
 
 type -!'a t = private 'a -> unit
 
+type +-'a t = int
+type -+'a t = int
+
+type !+-'a t = A
+type !-+'a t = A
+type +-!'a t = A
+type -+!'a t = A
+
 module M : sig
   type +!'a t
 end = struct

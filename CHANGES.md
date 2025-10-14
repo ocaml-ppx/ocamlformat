@@ -6,6 +6,23 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Support for OCaml 5.4 (#2717, #2720, @Julow, @Octachron)
+  OCamlformat now supports OCaml 5.4 syntax.
+  Module packing of the form `((module M) : (module S))` are no longer
+  rewritten to `(module M : S)` because these are now two different syntaxes.
+
+- Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
+  of items within modules. This affects modules and signatures. For example, 
+  module-indent=4:
+  ```ocaml
+  module type M = sig
+      type t
+
+      val f : (string * int) list -> int
+  end
+  ```
 ### Deprecated
 
 - Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
@@ -79,6 +96,9 @@ profile. This started with version 0.26.0.
 
 - Fix a crash where `type%e nonrec t = t` was formatted as `type nonrec%e t = t`,
   which is invalid syntax. (#2712, @EmileTrotignon)
+
+- Fix commandline parsing being quadratic in the number of arguments 
+  (#2724, @let-def)
 
 ### Changed
 
@@ -1784,3 +1804,4 @@ profile. This started with version 0.26.0.
 ## 0.1 (2017-10-19)
 
 - Initial release.
+
