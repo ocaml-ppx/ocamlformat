@@ -74,9 +74,9 @@ let fmt_location f loc =
 let rec fmt_longident_aux f x =
   match x with
   | Longident.Lident (s) -> fprintf f "%s" s
-  | Longident.Ldot (y, s) -> fprintf f "%a.%s" fmt_longident_aux y s
+  | Longident.Ldot (y, s) -> fprintf f "%a.%s" fmt_longident_aux y.txt s.txt
   | Longident.Lapply (y, z) ->
-      fprintf f "%a(%a)" fmt_longident_aux y fmt_longident_aux z
+      fprintf f "%a(%a)" fmt_longident_aux y.txt fmt_longident_aux z.txt
 
 let fmt_longident f x = fprintf f "\"%a\"" fmt_longident_aux x
 
@@ -192,6 +192,19 @@ let typevars ppf vs =
   List.iter (fun x ->
       fprintf ppf " %a %a" Pprintast.tyvar x.txt fmt_location x.loc) vs
 
+let labeled_tuple_element f i ppf te =
+  option i string_loc ppf te.lte_label;
+  f i ppf te.lte_elt
+
+let labeled_tuple_element_with_pun type_constraint f i ppf lte =
+  match lte with
+  | Lte_simple lte -> labeled_tuple_element f i ppf lte
+  | Lte_pun s -> line i ppf "Punned tuple element %a\n" fmt_string_loc s
+  | Lte_constrained_pun p ->
+      line i ppf "Punned tuple element with type constraint %a(%a)\n"
+        fmt_string_loc p.label fmt_location p.loc;
+        type_constraint (i+1) ppf p.type_constraint
+
 let variant_var i ppf (x : variant_var) =
   line i ppf "variant_var %a\n" fmt_location x.loc;
   string_loc (i+1) ppf x.txt
@@ -209,7 +222,7 @@ let rec core_type i ppf x =
       core_type i ppf ct2;
   | Ptyp_tuple l ->
       line i ppf "Ptyp_tuple\n";
-      list i core_type ppf l;
+      list i (labeled_tuple_element core_type) ppf l;
   | Ptyp_constr (li, l) ->
       line i ppf "Ptyp_constr %a\n" fmt_longident_loc li;
       list i core_type ppf l;
@@ -229,9 +242,9 @@ let rec core_type i ppf x =
   | Ptyp_poly (sl, ct) ->
       line i ppf "Ptyp_poly%a\n" typevars sl;
       core_type i ppf ct;
-  | Ptyp_package pt ->
+  | Ptyp_package ptyp ->
       line i ppf "Ptyp_package\n";
-      package_type i ppf pt
+      package_type i ppf ptyp;
   | Ptyp_open (mod_ident, t) ->
       line i ppf "Ptyp_open \"%a\"\n" fmt_longident_loc mod_ident;
       core_type i ppf t
@@ -256,14 +269,15 @@ and object_field i ppf x =
       line i ppf "Oinherit\n";
       core_type i ppf ct
 
+and package_type i ppf ptyp =
+  let i = i + 1 in
+  line i ppf "package_type %a\n" fmt_longident_loc ptyp.ppt_path;
+  attributes i ppf ptyp.ppt_attrs;
+  list i package_with ppf ptyp.ppt_cstrs;
+
 and package_with i ppf (s, t) =
   line i ppf "with type %a\n" fmt_longident_loc s;
   core_type i ppf t
-
-and package_type i ppf (s, l, attrs) =
-  line i ppf "package_type %a\n" fmt_longident_loc s;
-  attributes (i+1) ppf attrs;
-  list i package_with ppf l
 
 and pattern i ppf x =
   line i ppf "pattern %a\n" fmt_location x.ppat_loc;
@@ -282,9 +296,9 @@ and pattern i ppf x =
       line i ppf "Ppat_interval\n";
       fmt_constant i ppf c1;
       fmt_constant i ppf c2;
-  | Ppat_tuple (l) ->
-      line i ppf "Ppat_tuple\n";
-      list i pattern ppf l;
+  | Ppat_tuple (l, c) ->
+      line i ppf "Ppat_tuple\n %a\n" fmt_closed_flag c;
+      list i (labeled_tuple_element_with_pun core_type pattern) ppf l;
   | Ppat_construct (li, po) ->
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
@@ -374,7 +388,7 @@ and expression i ppf x =
       list i case ppf l;
   | Pexp_tuple (l) ->
       line i ppf "Pexp_tuple\n";
-      list i expression ppf l;
+      list i (labeled_tuple_element_with_pun type_constraint expression) ppf l;
   | Pexp_construct (li, eo) ->
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;

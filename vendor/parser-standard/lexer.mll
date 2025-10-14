@@ -431,7 +431,10 @@ let prepare_error loc = function
       let msg = "Illegal empty character literal ''" in
       let sub =
         [Location.msg
-           "@{<hint>Hint@}: Did you mean ' ' or a type variable 'a?"] in
+           "@{<hint>Hint@}: Did you mean %a or a type variable %a?"
+           Style.inline_code "' '"
+           Style.inline_code "'a"
+        ] in
       Location.error ~loc ~sub msg
   | Keyword_as_label kwd ->
       Location.errorf ~loc
@@ -450,7 +453,7 @@ let prepare_error loc = function
   | Invalid_encoding s ->
     Location.errorf ~loc "Invalid encoding of identifier %s." s
   | Invalid_char_in_ident u ->
-      Location.errorf ~loc "Invalid character U+%X in identifier"
+      Location.errorf ~loc "Invalid character U+%04X in identifier"
          (Uchar.to_int u)
   | Capitalized_raw_identifier lbl ->
       Location.errorf ~loc
@@ -501,7 +504,6 @@ let symbolchar_or_hash =
 let kwdopchar =
   ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|']
 
-let ident = (lowercase | uppercase) identchar*
 let ident_ext = identstart_ext  identchar_ext*
 let extattrident = ident_ext ('.' ident_ext)*
 
@@ -850,7 +852,7 @@ and comment = parse
         store_normalized_newline nl;
         comment lexbuf
       }
-  | ident
+  | ident_ext
       { store_lexeme lexbuf; comment lexbuf }
   | _
       { store_lexeme lexbuf; comment lexbuf }
