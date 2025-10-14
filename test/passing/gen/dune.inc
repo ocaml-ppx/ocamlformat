@@ -4482,6 +4482,7 @@
 
 (rule
  (deps .ocamlformat)
+ (enabled_if (>= %{ocaml_version} 5.3.0))
  (package ocamlformat)
  (action
   (with-stdout-to option.ml.stdout
@@ -4490,11 +4491,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 5.3.0))
  (package ocamlformat)
  (action (diff option.ml.ref option.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 5.3.0))
  (package ocamlformat)
  (action (diff option.ml.err option.ml.stderr)))
 

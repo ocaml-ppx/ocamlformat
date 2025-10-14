@@ -5,4 +5,6 @@
 (cram
  (applies_to large_string conf removed_option repl_file_errors debug)
  (enabled_if
-  (<> %{os_type} Win32)))
+  (and
+   (>= %{ocaml_version} 5.3.0)
+   (<> %{os_type} Win32))))
