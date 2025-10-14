@@ -6,3 +6,10 @@
  (applies_to large_string conf removed_option repl_file_errors debug)
  (enabled_if
   (<> %{os_type} Win32)))
+
+; Avoid unstable output from Cmdliner
+
+(env
+ (_
+  (env-vars
+   (TERM dumb))))
