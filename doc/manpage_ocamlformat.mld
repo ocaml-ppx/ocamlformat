@@ -174,11 +174,11 @@ OPTIONS (CODE FORMATTING STYLE)
            on the preceding line and closed on the following line. The flag
            is set by default.
 
-       --exp-grouping={parens|preserve}
-           Style of expression grouping. parens groups expressions using
-           parentheses. preserve preserves the original grouping syntax
-           (parentheses or begin/end). The default value is parens. Cannot be
-           set in attributes.
+       --exp-grouping={preserve|parens}
+           Style of expression grouping. preserve preserves the original
+           grouping syntax (parentheses or begin/end). parens groups
+           expressions using parentheses. The default value is preserve.
+           Cannot be set in attributes.
 
        --extension-indent=COLS
            Indentation of items inside extension nodes (COLS columns). The
