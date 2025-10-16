@@ -20,11 +20,6 @@
 
 *)
 
-type 'a loc = 'a Location.loc = {
-  txt : 'a;
-  loc : Location.t;
-}
-
 type constant =
     Const_int of int
   | Const_char of char
@@ -39,41 +34,42 @@ type rec_flag = Nonrecursive | Recursive
 type direction_flag = Upto | Downto
 
 (* Order matters, used in polymorphic comparison *)
-type private_flag = Private of Location.t | Public
+type private_flag = Private | Public
 
-type mutable_flag = Immutable | Mutable of Location.t
+type mutable_flag = Immutable | Mutable
 
-type virtual_flag = Virtual of Location.t | Concrete
+type atomic_flag = Nonatomic | Atomic
 
-type private_virtual = {pv_priv: Location.t option; pv_virt: Location.t option}
-
-type mutable_virtual = {mv_mut: Location.t option; mv_virt: Location.t option}
+type virtual_flag = Virtual | Concrete
 
 type override_flag = Override | Fresh
 
 type closed_flag = Closed | Open
 
-type obj_closed_flag =
-  | OClosed
-  | OOpen of Location.t
-
 type label = string
 
 type arg_label =
     Nolabel
-  | Labelled of string loc (** [label:T -> ...] *)
-  | Optional of string loc (** [?label:T -> ...] *)
+  | Labelled of string (** [label:T -> ...] *)
+  | Optional of string (** [?label:T -> ...] *)
 
-(* Moved to the top of the file
 type 'a loc = 'a Location.loc = {
   txt : 'a;
   loc : Location.t;
 }
-*)
 
-type variant_var = string loc loc  (** [`A] *)
 
-type variance_and_injectivity = string loc list
+type variance =
+  | Covariant
+  | Contravariant
+  | NoVariance
+  | Bivariant
 
-(* For Pexp_indexop_access *)
-type paren_kind = Paren | Brace | Bracket
+type injectivity =
+  | Injective
+  | NoInjectivity
+
+let string_of_label = function
+    Nolabel -> ""
+  | Labelled s -> s
+  | Optional s -> "?"^s

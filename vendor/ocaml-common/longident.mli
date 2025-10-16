@@ -25,8 +25,12 @@
 
 type t =
     Lident of string
-  | Ldot of t * string
-  | Lapply of t * t
+  | Ldot of t Location.loc * string Location.loc
+  | Lapply of t Location.loc * t Location.loc
+
+(** [same t t'] compares the longidents [t] and [t'] without taking locations
+    into account. *)
+val same: t -> t -> bool
 
 val flatten: t -> string list
 val unflatten: string list -> t option

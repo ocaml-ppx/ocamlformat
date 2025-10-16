@@ -17,6 +17,7 @@ module Clflags : sig
   val applicative_functors : bool ref
   val for_package : string option ref
   val transparent_modules : bool ref
+  val no_alias_deps: bool ref
   val locations : bool ref
   val color : Misc.Color.setting option ref
   val error_style : Misc.Error_style.setting option ref
@@ -35,6 +36,7 @@ end = struct
   let applicative_functors = ref true     (* -no-app-funct *)
   let for_package = ref (None: string option) (* -for-pack *)
   let transparent_modules = ref false     (* -trans-mod *)
+  let no_alias_deps = transparent_modules
   let locations = ref true                (* -d(no-)locations *)
   let color = ref None                    (* -color *)
   let error_style = ref None              (* -error-style *)

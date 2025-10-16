@@ -295,6 +295,10 @@ OPTIONS (CODE FORMATTING STYLE)
            the offset of the previous line. The default value is 68. Cannot
            be set in attributes.
 
+       --module-indent=COLS
+           Indentation of items within struct ... end and sig ... end (COLS
+           columns). The default value is 2.
+
        --module-item-spacing={compact|sparse|preserve}
            Spacing between items of structures and signatures. compact will
            not leave open lines between one-liners of similar sorts. sparse
@@ -467,16 +471,16 @@ OPTIONS (CODE FORMATTING STYLE)
            Style for function call. The flag is set by default.
 
 OPTIONS (REMOVED)
-       --align-cases=VAL
+       --align-cases=VALUE
            This option has been removed in version 0.22.
 
-       --align-constructors-decl=VAL
+       --align-constructors-decl=VALUE
            This option has been removed in version 0.22.
 
-       --align-variants-decl=VAL
+       --align-variants-decl=VALUE
            This option has been removed in version 0.22.
 
-       --doc-comments-val=VAL
+       --doc-comments-val=VALUE
            This option has been removed in version 0.16. If you are using
            `doc-comments-val=before` in combination with
            `doc-comments=before` then only `doc-comments=before` is now
@@ -491,19 +495,19 @@ OPTIONS (REMOVED)
            `doc-comments-val=unset` the same behavior can now be achieved by
            setting `doc-comments` only.
 
-       --escape-chars=VAL
+       --escape-chars=VALUE
            This option has been removed in version 0.16. Concrete syntax will
            now always be preserved.
 
-       --escape-strings=VAL
+       --escape-strings=VALUE
            This option has been removed in version 0.16. Concrete syntax will
            now always be preserved.
 
-       --extension-sugar=VAL
+       --extension-sugar=VALUE
            This option has been removed in version 0.17. Concrete syntax will
            now always be preserved.
 
-       --let-open=VAL
+       --let-open=VALUE
            This option has been removed in version 0.17. Concrete syntax will
            now always be preserved.
 
@@ -511,7 +515,7 @@ OPTIONS
        Unless mentioned otherwise non-formatting options cannot be set in
        attributes or .ocamlformat files.
 
-       -c VAL, --config=VAL (absent OCAMLFORMAT env)
+       -c =[,…], --config==[,…] (absent OCAMLFORMAT env)
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
 
