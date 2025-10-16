@@ -149,6 +149,9 @@ profile. This started with version 0.26.0.
   `@@ match` can now also be on one line.
   (#2694, @EmileTrotignon)
 
+- `exp-grouping=preserve` is now the default in `default` and `ocamlformat`
+  profiles. This means that its now possible to use `begin ... end` without
+  tweaking ocamlformat. (#2716, @EmileTrotignon)
 ## 0.27.0
 
 ### Highlight

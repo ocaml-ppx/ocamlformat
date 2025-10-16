@@ -70,7 +70,7 @@ let conventional_profile from =
   ; doc_comments_padding= elt 2
   ; doc_comments_tag_only= elt `Default
   ; dock_collection_brackets= elt true
-  ; exp_grouping= elt `Parens
+  ; exp_grouping= elt `Preserve
   ; extension_indent= elt 2
   ; field_space= elt `Loose
   ; function_indent= elt 2
@@ -140,7 +140,7 @@ let ocamlformat_profile from =
   ; doc_comments_padding= elt 2
   ; doc_comments_tag_only= elt `Default
   ; dock_collection_brackets= elt false
-  ; exp_grouping= elt `Parens
+  ; exp_grouping= elt `Preserve
   ; extension_indent= elt 2
   ; field_space= elt `Tight
   ; function_indent= elt 2
@@ -745,11 +745,11 @@ module Formatting = struct
     let doc = "Style of expression grouping." in
     let names = ["exp-grouping"] in
     let all =
-      [ Decl.Value.make ~name:"parens" `Parens
-          "$(b,parens) groups expressions using parentheses."
-      ; Decl.Value.make ~name:"preserve" `Preserve
+      [ Decl.Value.make ~name:"preserve" `Preserve
           "$(b,preserve) preserves the original grouping syntax \
-           (parentheses or $(i,begin)/$(i,end))." ]
+           (parentheses or $(i,begin)/$(i,end))."
+      ; Decl.Value.make ~name:"parens" `Parens
+          "$(b,parens) groups expressions using parentheses." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind ~allow_inline:false
       (fun conf elt -> update conf ~f:(fun f -> {f with exp_grouping= elt}))
