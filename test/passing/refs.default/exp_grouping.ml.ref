@@ -411,9 +411,7 @@ let v =
 let v =
   map x
     begin fun
-      x
-      arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
-    ->
+      x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
       y
     end
 
@@ -474,10 +472,7 @@ let _ =
 
 let _ =
   lazy begin fun
-         xxxxxxxxxxxxxxxxxxxxxxx
-         yyyyyyyyyyyyyyyyyyy
-         zzzzzzzzzzzzzzzzzzzzzzzz
-       ->
+         xxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzzzzz ->
     print_endline xxxxxxxxx;
     f xxxxxxxxxx yyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzzzz
   end
