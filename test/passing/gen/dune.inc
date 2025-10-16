@@ -4484,24 +4484,6 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
-  (with-stdout-to option.ml.stdout
-   (with-stderr-to option.ml.stderr
-     (run %{bin:ocamlformat} --name option.ml --margin-check %{dep:../tests/option.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff option.ml.ref option.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff option.ml.err option.ml.stderr)))
-
-(rule
- (deps .ocamlformat)
- (package ocamlformat)
- (action
   (with-stdout-to override.ml.stdout
    (with-stderr-to override.ml.stderr
      (run %{bin:ocamlformat} --name override.ml --margin-check %{dep:../tests/override.ml})))))
