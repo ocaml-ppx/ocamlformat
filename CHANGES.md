@@ -6,6 +6,23 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Support for OCaml 5.4 (#2717, #2720, @Julow, @Octachron)
+  OCamlformat now supports OCaml 5.4 syntax.
+  Module packing of the form `((module M) : (module S))` are no longer
+  rewritten to `(module M : S)` because these are now two different syntaxes.
+
+- Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
+  of items within modules. This affects modules and signatures. For example, 
+  module-indent=4:
+  ```ocaml
+  module type M = sig
+      type t
+
+      val f : (string * int) list -> int
+  end
+  ```
 ### Deprecated
 
 - Starting in this release, ocamlformat can use cmdliner >= 2.0.0. When that is
@@ -83,6 +100,9 @@ profile. This started with version 0.26.0.
 - \* The formatting of `f (fun` is now consistent with `f ~a:(fun`.
   (#2706, @EmileTrotignon)
 
+- Fix commandline parsing being quadratic in the number of arguments 
+  (#2724, @let-def)
+
 ### Changed
 
 - `|> begin`, `~arg:begin`, `begin if`, `lazy begin`, `begin match`,
@@ -132,6 +152,9 @@ profile. This started with version 0.26.0.
   `@@ match` can now also be on one line.
   (#2694, @EmileTrotignon)
 
+- `exp-grouping=preserve` is now the default in `default` and `ocamlformat`
+  profiles. This means that its now possible to use `begin ... end` without
+  tweaking ocamlformat. (#2716, @EmileTrotignon)
 ## 0.27.0
 
 ### Highlight
@@ -1787,3 +1810,4 @@ profile. This started with version 0.26.0.
 ## 0.1 (2017-10-19)
 
 - Initial release.
+

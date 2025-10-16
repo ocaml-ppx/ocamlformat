@@ -70,7 +70,7 @@ let conventional_profile from =
   ; doc_comments_padding= elt 2
   ; doc_comments_tag_only= elt `Default
   ; dock_collection_brackets= elt true
-  ; exp_grouping= elt `Parens
+  ; exp_grouping= elt `Preserve
   ; extension_indent= elt 2
   ; field_space= elt `Loose
   ; function_indent= elt 2
@@ -91,6 +91,7 @@ let conventional_profile from =
   ; match_indent= elt 0
   ; match_indent_nested= elt `Never
   ; max_indent= elt None
+  ; module_indent= elt 2
   ; module_item_spacing= elt `Compact
   ; nested_match= elt `Wrap
   ; ocp_indent_compat= elt false
@@ -139,7 +140,7 @@ let ocamlformat_profile from =
   ; doc_comments_padding= elt 2
   ; doc_comments_tag_only= elt `Default
   ; dock_collection_brackets= elt false
-  ; exp_grouping= elt `Parens
+  ; exp_grouping= elt `Preserve
   ; extension_indent= elt 2
   ; field_space= elt `Tight
   ; function_indent= elt 2
@@ -160,6 +161,7 @@ let ocamlformat_profile from =
   ; match_indent= elt 0
   ; match_indent_nested= elt `Never
   ; max_indent= elt None
+  ; module_indent= elt 2
   ; module_item_spacing= elt `Sparse
   ; nested_match= elt `Wrap
   ; ocp_indent_compat= elt false
@@ -228,6 +230,7 @@ let janestreet_profile from =
   ; match_indent= elt 0
   ; match_indent_nested= elt `Never
   ; max_indent= elt None
+  ; module_indent= elt 2
   ; module_item_spacing= elt `Compact
   ; nested_match= elt `Wrap
   ; ocp_indent_compat= elt true
@@ -742,11 +745,11 @@ module Formatting = struct
     let doc = "Style of expression grouping." in
     let names = ["exp-grouping"] in
     let all =
-      [ Decl.Value.make ~name:"parens" `Parens
-          "$(b,parens) groups expressions using parentheses."
-      ; Decl.Value.make ~name:"preserve" `Preserve
+      [ Decl.Value.make ~name:"preserve" `Preserve
           "$(b,preserve) preserves the original grouping syntax \
-           (parentheses or $(i,begin)/$(i,end))." ]
+           (parentheses or $(i,begin)/$(i,end))."
+      ; Decl.Value.make ~name:"parens" `Parens
+          "$(b,parens) groups expressions using parentheses." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind ~allow_inline:false
       (fun conf elt -> update conf ~f:(fun f -> {f with exp_grouping= elt}))
@@ -1063,6 +1066,17 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with max_indent= elt}))
       (fun conf -> conf.fmt_opts.max_indent)
 
+  let module_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of items within struct ... end and sig ... end ($(docv) \
+       columns)."
+    in
+    let names = ["module-indent"] in
+    Decl.int ~names ~default ~doc ~docv ~kind
+      (fun conf elt -> update conf ~f:(fun f -> {f with module_indent= elt}))
+      (fun conf -> conf.fmt_opts.module_indent)
+
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
     let names = ["module-item-spacing"] in
@@ -1344,6 +1358,7 @@ module Formatting = struct
       ; elt match_indent
       ; elt match_indent_nested
       ; elt max_indent
+      ; elt module_indent
       ; elt module_item_spacing
       ; elt nested_match
       ; elt ocp_indent_compat

@@ -2,16 +2,10 @@
 
 One of '--impl', '--intf' or '--name' is required when the input is read from stdin:
 
-  $ ocamlformat -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+  $ echo 'let x = 1' | ocamlformat - 2>/dev/null
   [1]
 
-  $ echo 'let x =       1' | ocamlformat -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
-  [1]
-
-  $ ocamlformat --inplace -
-  ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+  $ echo 'let x = 1' | ocamlformat --inplace - 2>/dev/null
   [1]
 
 Nominal cases:
@@ -29,15 +23,13 @@ The kind of syntax --impl/--intf is inferred from the name:
 
 The syntax cannot be inferred if the extension of the file is unsupported:
 
-  $ ocamlformat --name a.cpp -
-  ocamlformat: Cannot deduce file kind from passed --name. Please specify --impl or --intf
+  $ ocamlformat --name a.cpp - 2>/dev/null
   [1]
 
 Cannot specify files with stdin:
 
   $ echo 'let x = 1' > a.ml
-  $ ocamlformat a.ml -
-  ocamlformat: Cannot specify stdin together with other inputs
+  $ ocamlformat a.ml - 2>/dev/null
   [1]
 
 The input is named after the '--name' argument in formatting error messages:

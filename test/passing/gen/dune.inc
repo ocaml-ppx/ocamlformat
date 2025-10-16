@@ -3438,6 +3438,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to labeled_tuples.ml.stdout
+   (with-stderr-to labeled_tuples.ml.stderr
+     (run %{bin:ocamlformat} --name labeled_tuples.ml --margin-check %{dep:../tests/labeled_tuples.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff labeled_tuples.ml.ref labeled_tuples.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff labeled_tuples.ml.err labeled_tuples.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to labelled_args-414.ml.stdout
    (with-stderr-to labelled_args-414.ml.stderr
      (run %{bin:ocamlformat} --name labelled_args-414.ml --margin-check --ocaml-version=4.14.0 %{dep:../tests/labelled_args.ml})))))
@@ -3997,6 +4015,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to module_indent.ml.stdout
+   (with-stderr-to module_indent.ml.stderr
+     (run %{bin:ocamlformat} --name module_indent.ml --margin-check --module-indent=4 %{dep:../tests/module_indent.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff module_indent.ml.ref module_indent.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff module_indent.ml.err module_indent.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to module_item_spacing-preserve.ml.stdout
    (with-stderr-to module_item_spacing-preserve.ml.stderr
      (run %{bin:ocamlformat} --name module_item_spacing-preserve.ml --margin-check --max-iters=3 --module-item-spacing=preserve %{dep:../tests/module_item_spacing.ml})))))
@@ -4443,24 +4479,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff open_types.ml.err open_types.ml.stderr)))
-
-(rule
- (deps .ocamlformat)
- (package ocamlformat)
- (action
-  (with-stdout-to option.ml.stdout
-   (with-stderr-to option.ml.stderr
-     (run %{bin:ocamlformat} --name option.ml --margin-check %{dep:../tests/option.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff option.ml.ref option.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff option.ml.err option.ml.stderr)))
 
 (rule
  (deps .ocamlformat)
