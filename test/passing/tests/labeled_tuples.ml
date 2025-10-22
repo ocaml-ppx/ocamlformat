@@ -657,3 +657,10 @@ let (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
     (*before y*) ~y (* after y *), (* bz *) ~z:(*zv*)0 (*end*) =
   (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
     (*before y*) ~y (* after y *), (* bz *)~z:(*zv*)0 (*end*)
+
+(** With infix expressions **)
+let labeled_tuple () = (~x:1, ~y:(1 + 2))
+let labeled_tuple2 () = (1 + 2, ~y:1)
+let labeled_tuple3 () = (1 + 2, ~y:(1 + 2))
+let ~x, .. = labeled_tuple ()
+let ~y, .. = labeled_tuple2 ()

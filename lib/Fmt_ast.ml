@@ -2219,6 +2219,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             ; _ }
           when not (Std_longident.is_infix id) ->
             has_attr && parens
+        | Exp {pexp_desc= Pexp_tuple tuples; _}
+          when List.exists tuples ~f:(fun tuple ->
+                   match tuple with
+                   | Lte_simple {lte_label= Some _; lte_elt} -> phys_equal lte_elt exp
+                   | _ -> false ) ->
+            true
         | Lb {pvb_body= Pfunction_body body; _} when phys_equal body exp ->
             has_attr && parens
         | _ -> has_attr && not parens
