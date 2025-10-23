@@ -270,3 +270,10 @@ let _ =
   else
     w
 ;;
+
+let () =
+  if true then (* a *)
+    ()
+  else
+    ()
+;;

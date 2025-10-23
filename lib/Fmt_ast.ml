@@ -2550,16 +2550,22 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
                          in
+                         let wrap_beginend =
+                           match p.beginend_loc with
+                           | Some loc -> Cmts.fmt c loc
+                           | None -> Fn.id
+                         in
                          parens_prev_bch := parens_bch ;
                          p.box_branch
                            ( p.cond
                            $ p.box_keyword_and_expr
                                ( p.branch_pro
-                               $ p.wrap_parens
-                                   ( fmt_expression c ?box:p.box_expr
-                                       ~parens:false ?pro:p.expr_pro
-                                       ?eol:p.expr_eol p.branch_expr
-                                   $ p.break_end_branch ) ) )
+                               $ wrap_beginend
+                                   (p.wrap_parens
+                                      ( fmt_expression c ?box:p.box_expr
+                                          ~parens:false ?pro:p.expr_pro
+                                          ?eol:p.expr_eol p.branch_expr
+                                      $ p.break_end_branch ) ) ) )
                          $ fmt_if (not last) p.space_between_branches ) ) )
              $ fmt_atrs ) )
   | Pexp_let (lbs, body, loc_in) ->
