@@ -207,6 +207,8 @@ type if_then_else =
   ; box_keyword_and_expr: Fmt.t -> Fmt.t
   ; branch_pro: Fmt.t
   ; wrap_parens: Fmt.t -> Fmt.t
+  ; beginend_loc: Location.t option
+        (** Location of the [beign..end] node, if any, for placing comments. *)
   ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option

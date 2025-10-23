@@ -816,6 +816,7 @@ type if_then_else =
   ; box_keyword_and_expr: Fmt.t -> Fmt.t
   ; branch_pro: Fmt.t
   ; wrap_parens: Fmt.t -> Fmt.t
+  ; beginend_loc: Location.t option
   ; box_expr: bool option
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
@@ -827,17 +828,21 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
     ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_infix_ext_attrs
     ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
-  let beginend, infix_ext_attrs_beginend, branch_expr =
+  let beginend_loc, infix_ext_attrs_beginend, branch_expr =
     let ast = xbch.Ast.ast in
     match ast with
     | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
       ; pexp_attributes= []
+      ; pexp_loc
       ; _ } ->
-        (true, Some infix_ext_attrs, sub_exp ~ctx:(Exp ast) nested_exp)
-    | _ -> (false, None, xbch)
+        ( Some pexp_loc
+        , Some infix_ext_attrs
+        , sub_exp ~ctx:(Exp ast) nested_exp )
+    | _ -> (None, None, xbch)
   in
+  let has_beginend = Option.is_some beginend_loc in
   let wrap_parens ~wrap_breaks k =
-    if beginend then
+    if has_beginend then
       let infix_ext_attrs_beginend =
         Option.value_exn infix_ext_attrs_beginend
       in
@@ -848,15 +853,15 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
   in
   let get_parens_breaks ~opn_hint_indent ~cls_hint:(ch_sp, ch_sl) =
     let brk hint = fits_breaks "" ~hint "" in
-    let oh_other = ((if beginend then 1 else 0), opn_hint_indent) in
-    if beginend then
+    if has_beginend then
       let _, offset = ch_sl in
-      wrap (brk oh_other) (break 1000 offset)
+      wrap (brk (1, opn_hint_indent)) (break 1000 offset)
     else
       match imd with
       | `Space -> wrap (brk (1, opn_hint_indent)) (brk ch_sp)
-      | `No -> wrap (brk oh_other) noop
-      | `Closing_on_separate_line -> wrap (brk oh_other) (brk ch_sl)
+      | `No -> wrap (brk (0, opn_hint_indent)) noop
+      | `Closing_on_separate_line ->
+          wrap (brk (0, opn_hint_indent)) (brk ch_sl)
   in
   let cond () =
     match xcond with
@@ -875,7 +880,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
   in
   let branch_pro ?(indent = 2) () =
     if Option.is_some cmts_after_kw then break 1000 indent
-    else if beginend || parens_bch then str " "
+    else if has_beginend || parens_bch then str " "
     else break 1 indent
   in
   match c.fmt_opts.if_then_else.v with
@@ -889,6 +894,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
+      ; beginend_loc
       ; box_expr= Some false
       ; expr_pro= None
       ; expr_eol= None
@@ -901,13 +907,15 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= branch_pro ()
       ; wrap_parens= wrap_parens ~wrap_breaks:(wrap (break 1000 2) noop)
-      ; box_expr= Some beginend
+      ; beginend_loc
+      ; box_expr= Some has_beginend
       ; expr_pro= None
       ; expr_eol= Some (break 1 2)
       ; branch_expr
       ; break_end_branch=
-          fmt_if (parens_bch || beginend || not last) (break 1000 0)
-      ; space_between_branches= fmt_if (beginend || parens_bch) (str " ") }
+          fmt_if (parens_bch || has_beginend || not last) (break 1000 0)
+      ; space_between_branches= fmt_if (has_beginend || parens_bch) (str " ")
+      }
   | `Fit_or_vertical ->
       { box_branch=
           hovbox
@@ -922,6 +930,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:2
                  ~cls_hint:((1, 0), (1000, 0)) )
+      ; beginend_loc
       ; box_expr= Some false
       ; expr_pro=
           Some
@@ -933,7 +942,8 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
       ; break_end_branch= noop
       ; space_between_branches=
           ( match imd with
-          | `Closing_on_separate_line when beginend || parens_bch -> str " "
+          | `Closing_on_separate_line when has_beginend || parens_bch ->
+              str " "
           | _ -> space_break ) }
   | `Vertical ->
       { box_branch= Fn.id
@@ -945,6 +955,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:2
                  ~cls_hint:((1, 0), (1000, 0)) )
+      ; beginend_loc
       ; box_expr= None
       ; expr_pro= Some (break_unless_newline 1000 2)
       ; expr_eol= None
@@ -979,6 +990,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
             ~wrap_breaks:
               (get_parens_breaks ~opn_hint_indent:0
                  ~cls_hint:((1, 0), (1000, -2)) )
+      ; beginend_loc
       ; box_expr= None
       ; expr_pro= None
       ; expr_eol= None

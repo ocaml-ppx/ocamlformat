@@ -10,6 +10,8 @@ profile. This started with version 0.26.0.
 
 - Fix crash with tuples of the form `~lbl:(1 + 2)` (#2732, #2733, @cod1r, @Julow)
 
+- Fix dropped comment in `if then (* comment *) begin .. end` (#2734, @Julow)
+
 ## 0.28.0
 
 ### Highlight

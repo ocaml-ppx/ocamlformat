@@ -221,3 +221,11 @@ let compare s1 s2 =
 
 let _ = if x then 42 (* dummy *) else y
 let _ = if x then 42 (* dummy *) else if y then z else w
+
+let () =
+  if true
+  then (* a *)
+    begin
+    ()
+  end
+  else ()
