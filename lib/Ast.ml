@@ -1664,6 +1664,16 @@ end = struct
     | {ast= Typ _; _} -> None
     | {ctx= Exp {pexp_desc; _}; ast= Exp exp} -> (
       match pexp_desc with
+      | Pexp_tuple elts
+        when List.exists
+               ~f:(function
+                 | Lte_pun _
+                  |Lte_simple {lte_label= None; _}
+                  |Lte_constrained_pun _ ->
+                     false
+                 | Lte_simple {lte_label= Some _; lte_elt} -> lte_elt == exp )
+               elts ->
+          Some (Apply, Right) (* Tuple element with a labels. *)
       | Pexp_tuple (Lte_simple {lte_elt= e0; _} :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_tuple (_ :: _) -> Some (Comma, Right)

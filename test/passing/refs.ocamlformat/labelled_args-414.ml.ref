@@ -37,3 +37,25 @@ let () =
         very_long_argument_name_three
       -> () )
     foo
+
+let labeled_tuple () = (~x:1, ~y:(1 + 2))
+
+let ~x, .. = labeled_tuple ()
+
+let _ = (~x:1, ~y:(f 1))
+
+let _ = (1 + 2, 1 + 2)
+
+let _ = (1 + 2, ~y:(1 + 2))
+
+let _ = (1 + 2, ~y)
+
+let _ = (1 + 2, ~(y : t))
+
+(* No parens *)
+
+let _ = (x, ~y:a.b)
+
+let _ = (x, ~y:a#.b)
+
+let _ = (x, ~y:a#b)
