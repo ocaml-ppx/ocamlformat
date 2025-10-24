@@ -572,7 +572,8 @@ let _ =
 
 let _ =
   let x = x in
-  fun foooooooooooooooooo
+  fun
+    foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
     foooooooooooooooooo
@@ -627,7 +628,8 @@ module M =
 
 let _ =
   Some
-    (fun fooooooooooooooooooooooooooooooo
+    (fun
+      fooooooooooooooooooooooooooooooo
       fooooooooooooooooooooooooooooooo
       fooooooooooooooooooooooooooooooo
     -> foo )
