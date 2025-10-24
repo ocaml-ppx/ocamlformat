@@ -4,6 +4,14 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
+## unreleased
+
+### Fixed
+
+- `Ast_mapper` now iterates on *all* locations inside of Longident.t,
+  instead of only some.
+  (#2737, @v-gb)
+
 ## 0.28.1
 
 ### Highlight
