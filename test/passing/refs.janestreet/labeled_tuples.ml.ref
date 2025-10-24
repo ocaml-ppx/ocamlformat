@@ -633,6 +633,6 @@ module type T = sig
   val x
     :  from:ttttttttttttttttttttttttttttttttt * ttttttttttttttttttttttttttttttttttt
     -> tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
-       -> a
-       -> 'b
+    -> a
+    -> 'b
 end
