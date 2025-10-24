@@ -657,3 +657,11 @@ let (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
     (*before y*) ~y (* after y *), (* bz *) ~z:(*zv*)0 (*end*) =
   (*before*) ~(x (*l-ty*):int (*after-ty*)) (*after x*),
     (*before y*) ~y (* after y *), (* bz *)~z:(*zv*)0 (*end*)
+
+module type T = sig
+  val x
+    :  from:ttttttttttttttttttttttttttttttttt * ttttttttttttttttttttttttttttttttttt
+    -> tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+    -> a
+    -> 'b
+end
