@@ -3627,7 +3627,12 @@ function_type:
             pap_type = domain;
           }
           in
-          Ptyp_arrow([arrow_type], codomain) }
+          let params, codomain =
+            match codomain.ptyp_attributes, codomain.ptyp_desc with
+            | [], Ptyp_arrow (params, codomain) -> params, codomain
+            | _, _ -> [], codomain
+          in
+          Ptyp_arrow(arrow_type :: params, codomain) }
     )
     { $1 }
   | label = LIDENT COLON proper_tuple_type %prec MINUSGREATER
