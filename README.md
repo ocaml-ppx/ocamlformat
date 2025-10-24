@@ -47,7 +47,7 @@ To configure ocamlformat to your liking, create an `.ocamlformat` configuration 
 
 ```
 profile = default
-version = 0.27.0
+version = 0.28.1
 ```
 
 Refer to our [documentation](https://ocaml.org/p/ocamlformat/latest/doc/index.html) or use `ocamlformat --help` for a full list of configuration options.

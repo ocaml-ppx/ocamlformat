@@ -4,19 +4,12 @@ Items marked with an asterisk (\*) are changes that are likely to format
 existing code differently from the previous release when using the default
 profile. This started with version 0.26.0.
 
-## unreleased
-
-### Fixed
-
-- Fix crash with tuples of the form `~lbl:(1 + 2)` (#2732, #2733, @cod1r, @Julow)
-
-- Fix dropped comment in `if then (* comment *) begin .. end` (#2734, @Julow)
-
-## 0.28.0
+## 0.28.1
 
 ### Highlight
 
-- \* Support for OCaml 5.4 (#2717, #2720, @Julow, @Octachron)
+- \* Support for OCaml 5.4
+  (#2717, #2720, #2732, #2733, #2735, @Julow, @Octachron, @cod1r, @EmileTrotignon)
   OCamlformat now supports OCaml 5.4 syntax.
   Module packing of the form `((module M) : (module S))` are no longer
   rewritten to `(module M : S)` because these are now two different syntaxes.
@@ -161,6 +154,8 @@ profile. This started with version 0.26.0.
   print_endline "foo" ;;
   let a = 3
   ```
+
+- Fix dropped comment in `if then (* comment *) begin .. end` (#2734, @Julow)
 
 ## 0.27.0
 
