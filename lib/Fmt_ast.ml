@@ -1633,6 +1633,7 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
           in
           fmt_infix_ext_attrs c ~pro:function_ infix_ext_attrs
         in
+        let cmt_after_cases = Cmts.fmt_after c function_loc in
         let box_cases ~pro cases =
           let pro_inner, pro_outer, indent =
             (* Formatting of if-then-else relies on the ~box argument. *)
@@ -1653,8 +1654,9 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
                   ( fmt_pattern c ~pro:(if_newline "| ") (sub_pat ~ctx pc_lhs)
                   $ space_break $ str "->" )
                 $ space_break
-                $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs)) )
-          | _ -> (box, fmt_cases c ctx cs)
+                $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
+                $ cmt_after_cases )
+          | _ -> (box, fmt_cases c ctx cs $ cmt_after_cases)
         in
         (fun_ $ function_, box_cases cases, box, 0)
   in
