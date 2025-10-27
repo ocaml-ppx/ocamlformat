@@ -9,11 +9,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
+type global_conf
 val build_config :
      enable_outside_detected_project:bool
   -> root:Fpath.t option
   -> file:string
   -> is_stdin:bool
+  -> ?global_conf:global_conf
+  -> unit
   -> (Ocamlformat_lib.Conf.t, string) Result.t
 
 type file = Stdin | File of string
@@ -35,5 +38,4 @@ type action =
   | Print_config of Ocamlformat_lib.Conf.t
       (** Print the configuration and exit. *)
 
-val action :
-  unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
+val term : action Cmdliner.Cmd.t

@@ -62,10 +62,10 @@ let run_config conf c =
   in
   update conf c
 
-let run_path path =
+let run_path ~global_conf path =
   match
     Bin_conf.build_config ~enable_outside_detected_project:false ~root:None
-      ~file:path ~is_stdin:false
+      ~file:path ~is_stdin:false ?global_conf ()
   with
   | Ok _ as ok -> ok
   | Error e -> Error (`Path_error e)
@@ -93,9 +93,9 @@ let run_format conf x =
     ; format Expression
     ; format Use_file ]
 
-let run_format_with_args {Rpc.path; config} conf x =
+let run_format_with_args ~global_conf {Rpc.path; config} conf x =
   let open Result in
-  Option.value_map path ~default:(Ok conf) ~f:run_path
+  Option.value_map path ~default:(Ok conf) ~f:(run_path ~global_conf)
   >>= fun conf ->
   Option.value_map config ~default:(Ok conf) ~f:(fun c -> run_config conf c)
   >>= fun conf -> run_format conf x
@@ -124,7 +124,8 @@ let handle_error e output =
   | `Config_error e -> handle_config_error e output
   | `Path_error e -> handle_path_error e output
 
-let rec rpc_main = function
+let rpc_main ~global_conf v =
+  let rec rpc_main = function
   | Waiting_for_version -> (
     match Protocol.Init.read_input stdin with
     | `Halt -> Ok ()
@@ -146,7 +147,7 @@ let rec rpc_main = function
       | `Unknown | `Error _ -> rpc_main state
       | `Format x ->
           let conf =
-            match run_format_with_args Rpc.empty_args conf x with
+            match run_format_with_args ~global_conf Rpc.empty_args conf x with
             | Ok (`Format formatted) ->
                 Protocol.V1.output stdout (`Format formatted) ;
                 conf
@@ -169,7 +170,7 @@ let rec rpc_main = function
       | `Unknown | `Error _ -> rpc_main state
       | `Format (x, format_args) ->
           let conf =
-            match run_format_with_args format_args conf x with
+            match run_format_with_args ~global_conf format_args conf x with
             | Ok (`Format formatted) ->
                 Protocol.V2.output stdout (`Format (formatted, format_args)) ;
                 conf
@@ -178,8 +179,10 @@ let rec rpc_main = function
                 conf
           in
           rpc_main (Version_defined (v, conf)) ) )
+  in
+  rpc_main v
 
-let run () =
+let run ~global_conf () =
   Stdio.In_channel.set_binary_mode stdin true ;
   Stdio.Out_channel.set_binary_mode stdout true ;
-  rpc_main Waiting_for_version
+  rpc_main ~global_conf Waiting_for_version
