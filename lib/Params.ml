@@ -174,17 +174,10 @@ module Exp = struct
       | Some ((Labelled _ | Optional _), _, _) -> true
       | _ -> false
     in
-    let is_ctx_beginend =
-      match ctx0 with
-      | Exp {pexp_desc= Pexp_beginend _; _} -> true
-      | _ -> false
-    in
     if Conf.(c.fmt_opts.ocp_indent_compat.v) then
       if last_arg || is_labelled_arg then break 1 2 else str " "
     else if is_labelled_arg then break 1 2
-    else if last_arg then break 1 0
-    else if is_ctx_beginend then break 1 0
-    else str " "
+    else break 1 0
 
   let box_fun_decl_args ~ctx ~ctx0 ?(last_arg = false) ?epi c ~parens ~kw
       ~args ~annot =
@@ -215,11 +208,8 @@ module Exp = struct
             match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with
             | Some (_, _, true) ->
                 (* Is last arg. *) hvbox ~name (if parens then 0 else 2)
-            | Some (Nolabel, _, false) ->
-                (* TODO: Inconsistent formatting of fun args. *)
-                hovbox ~name 0
-            | Some ((Labelled _ | Optional _), _, false) -> hvbox ~name 0
-            | None -> Fn.id
+            | Some (_, _, false) -> hvbox ~name 0
+            | None -> hvbox ~name 0
         in
         (box, not c.fmt_opts.wrap_fun_args.v)
     in
