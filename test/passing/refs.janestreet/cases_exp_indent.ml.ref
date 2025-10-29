@@ -1,0 +1,30 @@
+[@@@ocamlformat "break-cases=fit-or-vertical"]
+
+let () =
+  match () with
+  | () ->
+      aaaaaaaaaaa
+        aaaaaaaaaaaaaaa
+        aaaaaaaaaaaaa
+        aaaaaaaaaaaaaa
+        aaaaaaaaaaaa
+        aaaaaaaaaaaaa
+        ()
+  | () ->
+      aaaaaaaaaaa
+        aaaaaaaaaaaaaaa
+        aaaaaaaaaaaaa
+        aaaaaaaaaaaaaa
+        aaaaaaaaaaaa
+        aaaaaaaaaaaaa
+        ()
+  | () ->
+      (match () with
+       | () -> ())
+  | () ->
+      (match () with
+       | () -> ())
+  | () ->
+  match () with
+  | () -> ()
+;;
