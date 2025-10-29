@@ -1,9 +1,13 @@
 let _ =
   match x with
-  | A -> begin match B with A -> fooooooooooooo end
-  | A -> begin match B with A -> fooooooooooooo | B -> fooooooooooooo end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with A -> fooooooooooooo
+    end
+  | A ->
+    begin match B with A -> fooooooooooooo | B -> fooooooooooooo
+    end
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
@@ -14,14 +18,14 @@ let _ =
 
 let _ =
   match x with
-  | A -> begin
-    match B with A -> fooooooooooooo
-  end
-  | A -> begin
-    match B with A -> fooooooooooooo | B -> fooooooooooooo
-  end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with A -> fooooooooooooo
+    end
+  | A ->
+    begin match B with A -> fooooooooooooo | B -> fooooooooooooo
+    end
+  | A ->
+    begin match B with
     | A ->
       fooooooooooooo
     | B ->
@@ -36,17 +40,17 @@ let _ =
 
 let _ =
   match x with
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
@@ -57,17 +61,17 @@ let _ =
 
 let _ =
   match x with
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
@@ -78,17 +82,17 @@ let _ =
 
 let _ =
   match x with
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     end
-  | A -> begin
-    match B with
+  | A ->
+    begin match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo

@@ -537,12 +537,18 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
     else (parenze_exp xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
+  let nested_exp_has_special_beginend exp =
+    match exp with
+    | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ -> true
+    | _ -> false
+  in
   let open_paren_branch, close_paren_branch, branch_expr =
     match ast with
     | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
       ; pexp_attributes= []
       ; _ }
-      when not cmts_before ->
+      when (not cmts_before)
+           && not (nested_exp_has_special_beginend nested_exp.pexp_desc) ->
         let close_paren =
           let offset = if indent >= 2 then 2 - indent else 0 in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"

@@ -33,8 +33,8 @@ let run (main : unit -> unit) : unit =
     | effect Fork f, k ->
         enqueue k ();
         spawn f
-    | effect Xchg n, k -> begin
-        match !exchanger with
+    | effect Xchg n, k ->
+        begin match !exchanger with
         | Some (n', k') ->
             exchanger := None;
             enqueue k' n;
@@ -42,7 +42,7 @@ let run (main : unit -> unit) : unit =
         | None ->
             exchanger := Some (n, k);
             dequeue ()
-      end
+        end
   in
   spawn main
 

@@ -9,15 +9,15 @@ let () =
   | () ->
       aaaaaaaaaaa aaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaa
         aaaaaaaaaaaaa ()
-  | () -> begin
-    match () with
+  | () ->
+    begin match () with
     | () -> ()
     end
   | () -> (
     match () with
     | () -> () )
-  | () -> begin
-    match () with
+  | () ->
+    begin match () with
     | () -> ()
     end
   end

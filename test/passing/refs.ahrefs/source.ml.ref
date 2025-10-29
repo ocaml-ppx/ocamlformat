@@ -1146,13 +1146,13 @@ let rec get_case : type a b e.
   (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option =
  fun sel cases ->
   match cases with
-  | (name, TCnoarg sel') :: rem -> begin
-    match eq_sel sel sel' with
+  | (name, TCnoarg sel') :: rem ->
+    begin match eq_sel sel sel' with
     | None -> get_case sel rem
     | Some Eq -> name, None
     end
-  | (name, TCarg (sel', ty)) :: rem -> begin
-    match eq_sel sel sel' with
+  | (name, TCarg (sel', ty)) :: rem ->
+    begin match eq_sel sel sel' with
     | None -> get_case sel rem
     | Some Eq -> name, Some ty
     end
@@ -1214,8 +1214,8 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
     | Econs (t, e') -> devariantize e' t v)
   | Conv (s, proj, inj, t), VConv (s', v) when s = s' ->
     inj (devariantize e t v)
-  | Sum ops, VSum (tag, a) -> begin
-    try
+  | Sum ops, VSum (tag, a) ->
+    begin try
       match List.assoc tag ops.sum_cases, a with
       | TCarg (sel, t), Some a -> ops.sum_inj (sel, devariantize e t a)
       | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
@@ -1558,8 +1558,8 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
  fun a b ->
   match a, b with
   | NZ, NZ -> Some Eq
-  | NS a', NS b' -> begin
-    match sameNat a' b' with
+  | NS a', NS b' ->
+    begin match sameNat a' b' with
     | Some Eq -> Some Eq
     | None -> None
     end
@@ -1754,13 +1754,13 @@ let rec del : type n. int -> n avl -> n avl_del =
   | Node (bal, l, x, r) ->
     if x = y then begin
       match r with
-      | Leaf -> begin
-        match bal with
+      | Leaf ->
+        begin match bal with
         | Same -> Ddecr (Eq, l)
         | More -> Ddecr (Eq, l)
         end
-      | Node _ -> begin
-        match bal, del_min r with
+      | Node _ ->
+        begin match bal, del_min r with
         | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
         | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
         | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
@@ -1773,8 +1773,8 @@ let rec del : type n. int -> n avl -> n avl_del =
     else if y < x then begin
       match del y l with
       | Dsame l -> Dsame (Node (bal, l, x, r))
-      | Ddecr (Eq, l) -> begin
-        match bal with
+      | Ddecr (Eq, l) ->
+        begin match bal with
         | Same -> Dsame (Node (Less, l, x, r))
         | More -> Ddecr (Eq, Node (Same, l, x, r))
         | Less ->
@@ -1786,8 +1786,8 @@ let rec del : type n. int -> n avl -> n avl_del =
     else begin
       match del y r with
       | Dsame r -> Dsame (Node (bal, l, x, r))
-      | Ddecr (Eq, r) -> begin
-        match bal with
+      | Ddecr (Eq, r) ->
+        begin match bal with
         | Same -> Dsame (Node (More, l, x, r))
         | Less -> Ddecr (Eq, Node (Same, l, x, r))
         | More ->
@@ -1914,16 +1914,16 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
   match ra, rb with
   | Rint, Rint -> Some Eq
   | Rbool, Rbool -> Some Eq
-  | Rpair (a1, a2), Rpair (b1, b2) -> begin
-    match rep_equal a1 b1 with
+  | Rpair (a1, a2), Rpair (b1, b2) ->
+    begin match rep_equal a1 b1 with
     | None -> None
     | Some Eq ->
     match rep_equal a2 b2 with
     | None -> None
     | Some Eq -> Some Eq
     end
-  | Rfun (a1, a2), Rfun (b1, b2) -> begin
-    match rep_equal a1 b1 with
+  | Rfun (a1, a2), Rfun (b1, b2) ->
+    begin match rep_equal a1 b1 with
     | None -> None
     | Some Eq ->
     match rep_equal a2 b2 with
@@ -2033,8 +2033,8 @@ let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
  fun a b ->
   match a, b with
   | I, I -> Inr Eq
-  | Ar (x, y), Ar (s, t) -> begin
-    match compare x s with
+  | Ar (x, y), Ar (s, t) ->
+    begin match compare x s with
     | Inl _ as e -> e
     | Inr Eq ->
     match compare y t with
@@ -2073,23 +2073,23 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
  fun n ctx t ->
   match t with
   | V s -> lookup s ctx
-  | Ap (f, x) -> begin
-    match tc n ctx f with
+  | Ap (f, x) ->
+    begin match tc n ctx f with
     | Cerror _ as e -> e
     | Cok (f', ft) ->
     match tc n ctx x with
     | Cerror _ as e -> e
     | Cok (x', xt) ->
     match ft with
-    | Ar (a, b) -> begin
-      match compare a xt with
+    | Ar (a, b) ->
+      begin match compare a xt with
       | Inl s -> Cerror s
       | Inr Eq -> Cok (App (f', x'), b)
       end
     | _ -> Cerror "Non fun in Ap"
     end
-  | Ab (s, t, body) -> begin
-    match tc (NS n) (Ccons (n, s, t, ctx)) body with
+  | Ab (s, t, body) ->
+    begin match tc (NS n) (Ccons (n, s, t, ctx)) body with
     | Cerror _ as e -> e
     | Cok (body', et) -> Cok (Abs (n, body'), Ar (t, et))
     end
@@ -2180,8 +2180,8 @@ let rec rule : type a b.
   (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
  fun v1 v2 ->
   match v1, v2 with
-  | Lam (x, body), v -> begin
-    match subst body (Bind (x, v, Id)) with
+  | Lam (x, body), v ->
+    begin match subst body (Bind (x, v, Id)) with
     | Ex term ->
     match mode term with
     | Pexp -> Inl term
@@ -2193,13 +2193,13 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Const (r, v) -> Inr (Const (r, v))
   | App (e1, e2) ->
   match mode e1, mode e2 with
-  | Pexp, _ -> begin
-    match onestep e1 with
+  | Pexp, _ ->
+    begin match onestep e1 with
     | Inl e -> Inl (App (e, e2))
     | Inr v -> Inl (App (v, e2))
     end
-  | Pval, Pexp -> begin
-    match onestep e2 with
+  | Pval, Pexp ->
+    begin match onestep e2 with
     | Inl e -> Inl (App (e1, e))
     | Inr v -> Inl (App (e1, v))
     end
