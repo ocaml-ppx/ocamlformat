@@ -85,6 +85,10 @@ profile. This started with version 0.26.0.
   end
   ```
 
+- \* Allow `begin end` on one line in most cases. (#2745, @EmileTrotignon).
+  `f begin fun x -> y end` is not supported for now and is still always
+  multiline.
+
 ## 0.28.1
 
 ### Highlight
