@@ -1,26 +1,30 @@
 let _ =
   match x with
-  | A -> begin match B with A -> fooooooooooooo end
-  | A -> begin match B with A -> fooooooooooooo | B -> fooooooooooooo end
-  | A -> begin
-      match B with
+  | A ->
+      begin match B with A -> fooooooooooooo
+      end
+  | A ->
+      begin match B with A -> fooooooooooooo | B -> fooooooooooooo
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
       | C -> fooooooooooooo
       | D -> fooooooooooooo
-    end
+      end
 [@@ocamlformat "break-cases=fit"]
 
 let _ =
   match x with
-  | A -> begin
-      match B with A -> fooooooooooooo
-  end
-  | A -> begin
-      match B with A -> fooooooooooooo | B -> fooooooooooooo
-  end
-  | A -> begin
-      match B with
+  | A ->
+      begin match B with A -> fooooooooooooo
+      end
+  | A ->
+      begin match B with A -> fooooooooooooo | B -> fooooooooooooo
+      end
+  | A ->
+      begin match B with
       | A ->
           fooooooooooooo
       | B ->
@@ -34,62 +38,62 @@ let _ =
 
 let _ =
   match x with
-  | A -> begin
-      match B with
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
       | C -> fooooooooooooo
       | D -> fooooooooooooo
-    end
+      end
 [@@ocamlformat "break-cases=toplevel"]
 
 let _ =
   match x with
-  | A -> begin
-      match B with
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
       | C -> fooooooooooooo
       | D -> fooooooooooooo
-    end
+      end
 [@@ocamlformat "break-cases=fit-or-vertical"]
 
 let _ =
   match x with
-  | A -> begin
-      match B with
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
-    end
-  | A -> begin
-      match B with
+      end
+  | A ->
+      begin match B with
       | A -> fooooooooooooo
       | B -> fooooooooooooo
       | C -> fooooooooooooo
       | D -> fooooooooooooo
-    end
+      end
 [@@ocamlformat "break-cases=all"]
 
 let a =
@@ -206,4 +210,49 @@ let a =
   with
   | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  end
+
+let () =
+  if true then
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+  else
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+
+let () =
+  (* this is ugly but should never be used. *)
+  if true then begin
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+  end
+  end
+
+let () =
+  (* Add a third one and it has indentation on `end`. *)
+  if true then begin begin
+      begin match () with
+      | () -> ()
+      | aaaaaaaaaaaa -> aaaaaaaaaaa
+      | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+      end
+  end
+  end
+
+let () =
+  if true then begin
+    ();
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
   end
