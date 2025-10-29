@@ -256,6 +256,12 @@ OPTIONS (CODE FORMATTING STYLE)
            not fit on a single line. The default value is 2. Cannot be set in
            attributes.
 
+       --let-binding-punning={preserve|always|never}
+           Name  punning  in  extended  let bindings preserve uses let-punning
+           only when it exists in the source. always uses let-punning whenever
+           possible. never  never  uses  let-punning.  The  default  value  is
+           preserve.
+
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
