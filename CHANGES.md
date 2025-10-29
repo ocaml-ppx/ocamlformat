@@ -82,7 +82,7 @@ profile. This started with version 0.26.0.
     match () with
     | () -> ()
 
-- use shortcut `begin end` in `match` cases and `if then else` body. (#2744, @EmileTrotignon)
+- \* use shortcut `begin end` in `match` cases and `if then else` body. (#2744, @EmileTrotignon)
   ```ocaml
   (* before *)
   match () with
