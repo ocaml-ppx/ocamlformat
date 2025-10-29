@@ -93,6 +93,7 @@ type fmt_opts =
   ; let_binding_indent: int elt
   ; let_binding_deindent_fun: bool elt
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon] elt
+  ; let_binding_punning: [`Always | `Preserve | `Never] elt
   ; let_module: [`Compact | `Sparse] elt
   ; line_endings: [`Lf | `Crlf] elt
   ; margin: int elt

@@ -37,6 +37,7 @@ module Parse : sig
        'a t
     -> ocaml_version:Ocaml_version.t
     -> preserve_beginend:bool
+    -> prefer_let_puns:bool option
     -> input_name:string
     -> string
     -> 'a

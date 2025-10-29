@@ -85,6 +85,7 @@ let conventional_profile from =
   ; let_binding_indent= elt 2
   ; let_binding_deindent_fun= elt true
   ; let_binding_spacing= elt `Compact
+  ; let_binding_punning= elt `Preserve
   ; let_module= elt `Compact
   ; line_endings= elt `Lf
   ; margin= elt 80
@@ -155,6 +156,7 @@ let ocamlformat_profile from =
   ; let_binding_indent= elt 2
   ; let_binding_deindent_fun= elt true
   ; let_binding_spacing= elt `Compact
+  ; let_binding_punning= elt `Preserve
   ; let_module= elt `Compact
   ; line_endings= elt `Lf
   ; margin= elt 80
@@ -224,6 +226,7 @@ let janestreet_profile from =
   ; let_binding_indent= elt 2
   ; let_binding_deindent_fun= elt false
   ; let_binding_spacing= elt `Double_semicolon
+  ; let_binding_punning= elt `Preserve
   ; let_module= elt `Sparse
   ; line_endings= elt `Lf
   ; margin= elt 90
@@ -978,6 +981,22 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with let_binding_spacing= elt}) )
       (fun conf -> conf.fmt_opts.let_binding_spacing)
 
+  let let_binding_punning =
+    let doc = "Name punning in extended let bindings" in
+    let names = ["let-binding-punning"] in
+    let all =
+      [ Decl.Value.make ~name:"preserve" `Preserve
+          "$(b,preserve) uses let-punning only when it exists in the source."
+      ; Decl.Value.make ~name:"always" `Always
+          "$(b,always) uses let-punning whenever possible."
+      ; Decl.Value.make ~name:"never" `Never
+          "$(b,never) never uses let-punning." ]
+    in
+    Decl.choice ~names ~all ~default ~doc ~kind
+      (fun conf elt ->
+        update conf ~f:(fun f -> {f with let_binding_punning= elt}) )
+      (fun conf -> conf.fmt_opts.let_binding_punning)
+
   let let_module =
     let doc = "Module binding formatting." in
     let all =
@@ -1352,6 +1371,7 @@ module Formatting = struct
       ; elt let_binding_indent
       ; elt let_binding_deindent_fun
       ; elt let_binding_spacing
+      ; elt let_binding_punning
       ; elt let_module
       ; elt line_endings
       ; elt margin

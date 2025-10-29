@@ -6,7 +6,8 @@ let ocaml_version = Ocaml_version.sys_version
 let extended_ast ppf syntax ~input_name content =
   let open Extended_ast in
   let (Any kind) = of_syntax syntax in
-  Parse.ast kind ~ocaml_version ~preserve_beginend:true ~input_name content
+  Parse.ast kind ~ocaml_version ~preserve_beginend:true ~prefer_let_puns:None
+    ~input_name content
   |> Printast.ast kind ppf
 
 let std_ast ppf syntax ~input_name content =
