@@ -10,7 +10,7 @@ profile. This started with version 0.26.0.
 
 - Fix dropped comment in `(function _ -> x (* cmt *))` (#2739, @Julow)
 
-- `cases-matching-exp-indent=compact` does not impact `begin end` nodes that
+- \* `cases-matching-exp-indent=compact` does not impact `begin end` nodes that
   don't have a match inside. (#2742, @EmileTrotignon)
   ```ocaml
   (* before *)
