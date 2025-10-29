@@ -9,6 +9,4 @@ let g = function
       foo;
       bar
 
-let () =
-  begin match foo with Bar -> snoo
-  end
+let () = begin match foo with Bar -> snoo end

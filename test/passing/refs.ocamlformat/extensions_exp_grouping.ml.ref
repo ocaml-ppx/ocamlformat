@@ -1,39 +1,14 @@
-let _ =
-  begin%ext
-    y >>= z
-  end
+let _ = begin%ext y >>= z end
 
-let _ =
-  [%ext
-    begin
-      y >>= z
-    end]
+let _ = [%ext begin y >>= z end]
 
-let _ =
-  x
-  >>= begin%ext
-    y >>= z
-  end
+let _ = x >>= begin%ext y >>= z end
 
-let _ =
-  x
-  >>= [%ext
-        begin
-          y >>= z
-        end]
+let _ = x >>= [%ext begin y >>= z end]
 
-let _ =
-  f
-    begin%ext
-      y >>= z
-    end
+let _ = f begin%ext y >>= z end
 
-let _ =
-  f
-    [%ext
-      begin
-        y >>= z
-      end]
+let _ = f [%ext begin y >>= z end]
 
 let _ = (module%ext S)
 
