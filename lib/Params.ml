@@ -851,9 +851,7 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
     ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_infix_ext_attrs
     ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
-  let ( beginend_loc
-      , infix_ext_attrs_beginend
-      , branch_expr ) =
+  let beginend_loc, infix_ext_attrs_beginend, branch_expr =
     let ast = xbch.Ast.ast in
     match ast with
     | {pexp_desc= Pexp_beginend ({pexp_desc; _}, _); _}
