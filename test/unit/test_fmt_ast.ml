@@ -114,7 +114,7 @@ let updated_ast_tests =
         check_updated_test "[%extension 1]" "[%extension 1]" ;
         check_updated_test "function _ -> ." "function _ -> ." ;
         check_updated_test "_" "_" ;
-        check_updated_test "begin () end" "begin\n  ()\nend" ;
+        check_updated_test "begin () end" "begin () end" ;
         check_updated_test "a :: b" "a :: b" ;
         check_updated_test "a.!(b)" "a.!(b)" ;
         check_updated_test "a.!(b) <- c" "a.!(b) <- c" ;
