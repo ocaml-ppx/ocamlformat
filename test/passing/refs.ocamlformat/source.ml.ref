@@ -1857,8 +1857,8 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
       Inr (Node (Same, Leaf, x, Leaf))
   | Node (bal, a, y, b) ->
       if x = y then Inl t
-      else if x < y then begin
-        match ins x a with
+      else if x < y then
+        begin match ins x a with
         | Inl a ->
             Inl (Node (bal, a, y, b))
         | Inr a -> (
@@ -1869,9 +1869,9 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
               Inr (Node (More, a, y, b))
           | More ->
               rotr a y b )
-      end
-      else begin
-        match ins x b with
+        end
+      else
+        begin match ins x b with
         | Inl b ->
             Inl (Node (bal, a, y, b) : n avl)
         | Inr b -> (
@@ -1882,7 +1882,7 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
               Inr (Node (Less, a, y, b) : n succ avl)
           | Less ->
               rotl a y b )
-      end
+        end
 
 let insert x (Avl t) = match ins x t with Inl t -> Avl t | Inr t -> Avl t
 
@@ -1915,8 +1915,8 @@ let rec del : type n. int -> n avl -> n avl_del =
   | Leaf ->
       Dsame Leaf
   | Node (bal, l, x, r) ->
-      if x = y then begin
-        match r with
+      if x = y then
+        begin match r with
         | Leaf ->
           begin match bal with Same -> Ddecr (Eq, l) | More -> Ddecr (Eq, l)
           end
@@ -1931,9 +1931,9 @@ let rec del : type n. int -> n avl -> n avl_del =
           | More, (z, Inl r) -> (
             match rotr l z r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
           end
-      end
-      else if y < x then begin
-        match del y l with
+        end
+      else if y < x then
+        begin match del y l with
         | Dsame l ->
             Dsame (Node (bal, l, x, r))
         | Ddecr (Eq, l) ->
@@ -1945,9 +1945,9 @@ let rec del : type n. int -> n avl -> n avl_del =
           | Less -> (
             match rotl l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
           end
-      end
-      else begin
-        match del y r with
+        end
+      else
+        begin match del y r with
         | Dsame r ->
             Dsame (Node (bal, l, x, r))
         | Ddecr (Eq, r) ->
@@ -1959,7 +1959,7 @@ let rec del : type n. int -> n avl -> n avl_del =
           | More -> (
             match rotr l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
           end
-      end
+        end
 
 let delete x (Avl t) =
   match del x t with Dsame t -> Avl t | Ddecr (_, t) -> Avl t
@@ -7866,14 +7866,14 @@ module Bootstrap
         raise Not_found
     | BE.H (x, p) ->
         if PrimH.isEmpty p then BE.E
-        else begin
-          match PrimH.findMin p with
+        else
+          begin match PrimH.findMin p with
           | BE.H (y, p1) ->
               let p2 = PrimH.deleteMin p in
               BE.H (y, PrimH.merge p1 p2)
           | BE.E ->
               assert false
-        end
+          end
 end
 
 module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element =

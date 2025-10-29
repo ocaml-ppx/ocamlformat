@@ -3053,8 +3053,7 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~ctx0 ~fmt_atrs
   let cmts_before = Cmts.fmt_before c ?eol loc in
   let begin_ = fmt_infix_ext_attrs c ~pro:(str "begin") infix_ext_attrs
   and end_ =
-    (if not box then break 1000 (-2) else break 1000 0)
-    $ str "end" $ fmt_atrs
+    Params.Exp.end_break_beginend ~ctx0 ~box $ str "end" $ fmt_atrs
   in
   let box_beginend_sb = Params.Exp.box_beginend_subexpr c.conf ~ctx ~ctx0 in
   let beginend_box =

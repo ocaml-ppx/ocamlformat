@@ -354,6 +354,13 @@ module Exp = struct
         hvbox (2 - String.length "begin ")
     | _ -> Fn.id
 
+  let end_break_beginend ~ctx0 ~box =
+    if box then break 1000 0
+    else
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_ifthenelse _; _} -> break 1000 0
+      | _ -> break 1000 (-2)
+
   let box_beginend c ~ctx0 ~ctx =
     let contains_fun =
       match ctx with
@@ -488,6 +495,21 @@ let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
             ~breaks:("", 0, if space then " | " else " |")
       | `Unsafe_no -> break nspaces 0 $ str "| " )
 
+(** [is_special_beginend exp] returns true if [begin `exp` end] can be formatted
+as
+{[begin abc
+  ...
+end]}
+instead of
+{[begin
+  abc
+    ...
+end]}*)
+let is_special_beginend exp =
+  match exp with
+  | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ -> true
+  | _ -> false
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t
@@ -537,18 +559,13 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
     else (parenze_exp xast && not body_has_parens, Some false)
   in
   let indent = if align_nested_match then 0 else indent in
-  let nested_exp_has_special_beginend exp =
-    match exp with
-    | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ -> true
-    | _ -> false
-  in
   let open_paren_branch, close_paren_branch, branch_expr =
     match ast with
     | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
       ; pexp_attributes= []
       ; _ }
       when (not cmts_before)
-           && not (nested_exp_has_special_beginend nested_exp.pexp_desc) ->
+           && not (is_special_beginend nested_exp.pexp_desc) ->
         let close_paren =
           let offset = if indent >= 2 then 2 - indent else 0 in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
@@ -834,9 +851,14 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
     ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_infix_ext_attrs
     ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
-  let beginend_loc, infix_ext_attrs_beginend, branch_expr =
+  let ( beginend_loc
+      , infix_ext_attrs_beginend
+      , branch_expr ) =
     let ast = xbch.Ast.ast in
     match ast with
+    | {pexp_desc= Pexp_beginend ({pexp_desc; _}, _); _}
+      when is_special_beginend pexp_desc ->
+        (None, None, xbch)
     | { pexp_desc= Pexp_beginend (nested_exp, infix_ext_attrs)
       ; pexp_attributes= []
       ; pexp_loc
