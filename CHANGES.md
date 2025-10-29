@@ -12,7 +12,7 @@ profile. This started with version 0.26.0.
 
 ### Changed
 
-- allow shortcut `begin end` in `match` cases and `if then else` body. (#2744, @EmileTrotignon)
+- \* allow shortcut `begin end` in `match` cases and `if then else` body. (#2744, @EmileTrotignon)
   ```ocaml
   (* before *)
   match () with
