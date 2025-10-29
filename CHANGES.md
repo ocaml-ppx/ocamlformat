@@ -81,6 +81,21 @@ profile. This started with version 0.26.0.
   | () -> begin
     match () with
     | () -> ()
+
+- use shortcut `begin end` in `match` cases and `if then else` body. (#2744, @EmileTrotignon)
+  ```ocaml
+  (* before *)
+  match () with
+  | () -> begin
+      match () with
+      | () ->
+    end
+  end
+  (* after *)
+  match () with
+  | () ->
+    begin match () with
+      | () ->
     end
   end
   ```
