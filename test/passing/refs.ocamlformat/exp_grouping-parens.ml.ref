@@ -300,20 +300,11 @@ let _ = x y
 
 let _ = (* foo *) x y
 
-let _ =
-  begin%ext
-    x y
-  end
+let _ = begin%ext x y end
 
-let _ =
-  begin%ext
-    (* foo *) x y
-  end
+let _ = begin%ext (* foo *) x y end
 
-let _ =
-  begin[@landmark "parse_constant_dividends"]
-    market_data_items := ()
-  end
+let _ = begin[@landmark "parse_constant_dividends"] market_data_items := () end
 
 let () = if a then b (* asd *)
 
@@ -552,11 +543,7 @@ let main =
   | B ->
       bbbbbbbbbbbbbbbbbbbbbb
 
-let _ =
-  begin
-    a
-  end
-  [@a]
+let _ = begin a end [@a]
 
 let () =
   fooooo
