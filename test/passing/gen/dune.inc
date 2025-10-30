@@ -3726,6 +3726,42 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to let_punning_denied.ml.stdout
+   (with-stderr-to let_punning_denied.ml.stderr
+     (run %{bin:ocamlformat} --name let_punning_denied.ml --margin-check --letop-punning=never --ocaml-version=4.14.0 %{dep:../tests/let_punning_denied.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning_denied.ml.ref let_punning_denied.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning_denied.ml.err let_punning_denied.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_punning_preferred.ml.stdout
+   (with-stderr-to let_punning_preferred.ml.stderr
+     (run %{bin:ocamlformat} --name let_punning_preferred.ml --margin-check --letop-punning=always --ocaml-version=4.14.0 %{dep:../tests/let_punning_preferred.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning_preferred.ml.ref let_punning_preferred.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning_preferred.ml.err let_punning_preferred.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to line_directives.ml.stdout
    (with-stderr-to line_directives.ml.stderr
      (with-accepted-exit-codes 1

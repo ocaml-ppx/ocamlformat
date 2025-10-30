@@ -6,6 +6,15 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Added option `letop-punning` (#2746, @WardBrian) to control whether
+  punning is used in extended binding operators.
+  For example, the code `let+ x = x in ...` can be formatted as
+  `let+ x in ...` when `letop-punning=always`. With `letop-punning=never`, it
+  becomes `let+ x = x in ...`. The default is `preserve`, which will
+  only use punning when it exists in the source.
+
 ### Fixed
 
 - Fix dropped comment in `(function _ -> x (* cmt *))` (#2739, @Julow)

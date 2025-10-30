@@ -86,6 +86,7 @@ let conventional_profile from =
   ; let_binding_deindent_fun= elt true
   ; let_binding_spacing= elt `Compact
   ; let_module= elt `Compact
+  ; letop_punning= elt `Preserve
   ; line_endings= elt `Lf
   ; margin= elt 80
   ; match_indent= elt 0
@@ -156,6 +157,7 @@ let ocamlformat_profile from =
   ; let_binding_deindent_fun= elt true
   ; let_binding_spacing= elt `Compact
   ; let_module= elt `Compact
+  ; letop_punning= elt `Preserve
   ; line_endings= elt `Lf
   ; margin= elt 80
   ; match_indent= elt 0
@@ -225,6 +227,7 @@ let janestreet_profile from =
   ; let_binding_deindent_fun= elt false
   ; let_binding_spacing= elt `Double_semicolon
   ; let_module= elt `Sparse
+  ; letop_punning= elt `Preserve
   ; line_endings= elt `Lf
   ; margin= elt 90
   ; match_indent= elt 0
@@ -994,6 +997,27 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with let_module= elt}))
       (fun conf -> conf.fmt_opts.let_module)
 
+  let letop_punning =
+    let doc = "Name punning in bindings using extended let operators." in
+    let names = ["letop-punning"] in
+    let all =
+      [ Decl.Value.make ~name:"preserve" `Preserve
+          "$(b,preserve) uses let-punning only when it exists in the \
+           source; the code \"$(i,let* foo and* z = z in ...)\" will be \
+           left unchanged."
+      ; Decl.Value.make ~name:"always" `Always
+          "$(b,always) uses let-punning whenever possible; the code \
+           \"$(i,let* foo and* z = z in ...)\" will be rewritten to \
+           \"$(i,let* foo and* z in ...)\"."
+      ; Decl.Value.make ~name:"never" `Never
+          "$(b,never) never uses let-punning; the code \"$(i,let* foo and* \
+           z = z in ...)\" will be rewritten to \"$(i,let* foo = foo and* z \
+           = z in ...)\". " ]
+    in
+    Decl.choice ~names ~all ~default ~doc ~kind
+      (fun conf elt -> update conf ~f:(fun f -> {f with letop_punning= elt}))
+      (fun conf -> conf.fmt_opts.letop_punning)
+
   let let_open =
     let names = ["let-open"] in
     let msg = concrete_syntax_preserved_msg in
@@ -1353,6 +1377,7 @@ module Formatting = struct
       ; elt let_binding_deindent_fun
       ; elt let_binding_spacing
       ; elt let_module
+      ; elt letop_punning
       ; elt line_endings
       ; elt margin
       ; elt match_indent

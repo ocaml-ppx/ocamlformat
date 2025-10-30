@@ -57,7 +57,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let normalize_mapper ~ocaml_version ~preserve_beginend =
+  let normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns =
     let open Asttypes in
     let open Ast_mapper in
     let enable_short_field_annot =
@@ -233,7 +233,17 @@ module Parse = struct
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
         let loc_end = b.pbop_exp.pexp_loc.loc_end in
-        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}}
+        let pbop_is_pun =
+          match prefer_let_puns with
+          | None -> b.pbop_is_pun
+          | Some false -> false
+          | Some true -> (
+            match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
+            | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
+                String.equal v e
+            | _ -> false )
+        in
+        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
       in
       Ast_mapper.default_mapper.binding_op m b'
     in
@@ -307,9 +317,10 @@ module Parse = struct
     in
     Ast_mapper.{default_mapper with expr; pat; binding_op}
 
-  let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend ~input_name
-      str : a =
-    map fg (normalize_mapper ~ocaml_version ~preserve_beginend)
+  let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend
+      ~prefer_let_puns ~input_name str : a =
+    map fg
+      (normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns)
     @@
     let lexbuf = Lexing.from_string str in
     let ocaml_version =
