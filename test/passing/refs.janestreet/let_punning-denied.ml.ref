@@ -13,8 +13,8 @@ let p =
 ;;
 
 let q =
-  let%foo x
+  let%foo x = x
   and y = y
-  and z in
+  and z = z in
   x, y, z
 ;;

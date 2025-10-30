@@ -4,5 +4,11 @@ ocamlformat: Cannot process "tests/letop_broken.ml".
 File "tests/letop_broken.ml", line 13, characters 33-40:
 Error: comment (*  3  *) dropped.
   BUG: comment changed.
+File "tests/letop_broken.ml", line 16, characters 36-43:
+Error: comment (*  3  *) dropped.
+  BUG: comment changed.
 File "tests/letop_broken.ml", line 13, characters 43-50:
+Error: comment (*  4  *) dropped.
+  BUG: comment changed.
+File "tests/letop_broken.ml", line 16, characters 46-53:
 Error: comment (*  4  *) dropped.

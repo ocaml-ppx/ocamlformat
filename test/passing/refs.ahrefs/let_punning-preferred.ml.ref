@@ -16,6 +16,6 @@ let p =
 
 let q =
   let%foo x
-  and y = y
+  and y
   and z in
   x, y, z
