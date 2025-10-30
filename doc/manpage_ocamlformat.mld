@@ -272,14 +272,14 @@ OPTIONS (CODE FORMATTING STYLE)
            a single line. The default value is compact.
 
        --letop-punning={preserve|always|never}
-           Name punning in bindings using extended let operators. preserve
-           uses let-punning only when it exists in the source; the code "let*
-           foo and* z = z in ..." will be left unchanged. always uses
-           let-punning whenever possible; the code "let* foo and* z = z in
-           ..." will be rewritten to "let* foo and* z in ...". never never
-           uses let-punning; the code "let* foo and* z = z in ..." will be
-           rewritten to "let* foo = foo and* z = z in ...". The default value
-           is preserve.
+           Name punning in bindings using extended let operators and let%ext
+           bindings. preserve uses let-punning only when it exists in the
+           source; the code "let* foo and* z = z in ..." will be left
+           unchanged. always uses let-punning whenever possible; the code
+           "let* foo and* z = z in ..." will be rewritten to "let* foo and* z
+           in ...". never never uses let-punning; the code "let* foo and* z =
+           z in ..." will be rewritten to "let* foo = foo and* z = z in ...".
+           The default value is preserve.
 
        --line-endings={lf|crlf}
            Line endings used. lf uses Unix line endings. crlf uses Windows
