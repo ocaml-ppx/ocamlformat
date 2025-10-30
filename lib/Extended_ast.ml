@@ -238,8 +238,7 @@ module Parse = struct
             (prefer_let_puns, (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc))
           with
           | None, _ -> (b.pbop_is_pun, b.pbop_pat)
-          | ( Some true
-            , (Ppat_var {txt; loc= _}, Pexp_ident {txt= Lident e; loc}) )
+          | Some true, (Ppat_var {txt; _}, Pexp_ident {txt= Lident e; loc})
             when String.equal txt e ->
               (true, {b.pbop_pat with ppat_desc= Ppat_var {txt; loc}})
           | _ -> (false, b.pbop_pat)
