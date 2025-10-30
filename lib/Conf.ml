@@ -1002,12 +1002,17 @@ module Formatting = struct
     let names = ["letop-punning"] in
     let all =
       [ Decl.Value.make ~name:"preserve" `Preserve
-          "$(b,preserve) uses let-punning only when it exists in the source."
+          "$(b,preserve) uses let-punning only when it exists in the \
+           source; the code \"$(i,let* foo and* z = z in ...)\" will be \
+           left unchanged."
       ; Decl.Value.make ~name:"always" `Always
-          "$(b,always) uses let-punning whenever possible."
+          "$(b,always) uses let-punning whenever possible; the code \
+           \"$(i,let* foo and* z = z in ...)\" will be rewritten to \
+           \"$(i,let* foo and* z in ...)\"."
       ; Decl.Value.make ~name:"never" `Never
-          "$(b,never) never uses let-punning. Existing usages will be \
-           rewritten to explicit bindings. " ]
+          "$(b,never) never uses let-punning; the code \"$(i,let* foo and* \
+           z = z in ...)\" will be rewritten to \"$(i,let* foo = foo and* z \
+           = z in ...)\". " ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with letop_punning= elt}))
