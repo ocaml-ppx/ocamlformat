@@ -238,10 +238,12 @@ module Parse = struct
           | None -> b.pbop_is_pun
           | Some false -> false
           | Some true -> (
-            match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
-            | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
-                String.equal v e
-            | _ -> false )
+              b.pbop_is_pun
+              ||
+              match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
+              | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
+                  String.equal v e
+              | _ -> false )
         in
         {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
       in
@@ -259,12 +261,14 @@ module Parse = struct
           | None -> vb.pvb_is_pun
           | Some false -> false
           | Some true -> (
-            match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
-            | ( Ppat_var {txt= v; _}
-              , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
-              ) ->
-                String.equal v e
-            | _ -> false )
+              vb.pvb_is_pun
+              ||
+              match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
+              | ( Ppat_var {txt= v; _}
+                , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
+                ) ->
+                  String.equal v e
+              | _ -> false )
         in
         (is_extension, {vb with pvb_is_pun})
       in
