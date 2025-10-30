@@ -9435,19 +9435,19 @@ let h = fun ?l:(p = 1) ?y:u ?(x = 3) -> 2
 
 let _ = function
   | a, s, ba1, ba2, ba3, bg -> begin
-    ignore
-      ( Array.get x 1 + Array.get [||] 0 + Array.get [|1|] 1
-      + Array.get [|1; 2|] 2 ) ;
-    ignore [String.get s 1; String.get "" 2; String.get "123" 3] ;
-    ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
+      ignore
+        ( Array.get x 1 + Array.get [||] 0 + Array.get [|1|] 1
+        + Array.get [|1; 2|] 2 ) ;
+      ignore [String.get s 1; String.get "" 2; String.get "123" 3] ;
+      ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
     end
   | b, s, ba1, ba2, ba3, bg -> begin
-    y.(0) <- 1 ;
-    s.![1] <- 'c' ;
-    ba1.{1} <- 2 ;
-    ba2.{1, 2} <- 3 ;
-    ba3.{1, 2, 3} <- 4 ;
-    bg.{1, 2, 3, 4, 5} <- 0
+      y.(0) <- 1 ;
+      s.![1] <- 'c' ;
+      ba1.{1} <- 2 ;
+      ba2.{1, 2} <- 3 ;
+      ba3.{1, 2, 3} <- 4 ;
+      bg.{1, 2, 3, 4, 5} <- 0
     end
 
 let f (type t) () =

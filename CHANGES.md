@@ -10,6 +10,43 @@ profile. This started with version 0.26.0.
 
 - Fix dropped comment in `(function _ -> x (* cmt *))` (#2739, @Julow)
 
+- \* `cases-matching-exp-indent=compact` does not impact `begin end` nodes that
+  don't have a match inside. (#2742, @EmileTrotignon)
+  ```ocaml
+  (* before *)
+  begin match () with
+  | () -> begin
+    f x
+  end
+  end
+  (* after *)
+  begin match () with
+  | () -> begin
+      f x
+    end
+  end
+  ```
+
+
+### Changed
+
+- indentation of the `end` keyword in a match-case is now always at least 2. (#2742, @EmileTrotignon)
+  ```ocaml
+  (* before *)
+  begin match () with
+  | () -> begin
+    match () with
+    | () -> ()
+  end
+  end
+  (* after *)
+  begin match () with
+  | () -> begin
+    match () with
+    | () -> ()
+    end
+  end
+  ```
 ## 0.28.1
 
 ### Highlight
@@ -38,7 +75,7 @@ profile. This started with version 0.26.0.
 ### Added
 
 - Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
-  of items within modules. This affects modules and signatures. For example, 
+  of items within modules. This affects modules and signatures. For example,
   module-indent=4:
   ```ocaml
   module type M = sig
@@ -146,7 +183,7 @@ profile. This started with version 0.26.0.
 - Fix a crash where `type%e nonrec t = t` was formatted as `type nonrec%e t = t`,
   which is invalid syntax. (#2712, @EmileTrotignon)
 
-- Fix commandline parsing being quadratic in the number of arguments 
+- Fix commandline parsing being quadratic in the number of arguments
   (#2724, @let-def)
 
 - \* Fix `;;` being added after a documentation comment (#2683, @EmileTrotignon)

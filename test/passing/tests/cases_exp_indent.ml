@@ -1,0 +1,23 @@
+[@@@ocamlformat "break-cases=fit-or-vertical"]
+
+let () =
+  begin match () with
+  | () -> begin
+      aaaaaaaaaaa aaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaa
+        aaaaaaaaaaaaa ()
+    end
+  | () ->
+      aaaaaaaaaaa aaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaa
+        aaaaaaaaaaaaa ()
+  | () ->
+    begin match () with
+    | () -> ()
+    end
+  | () -> (
+    match () with
+    | () -> () )
+  | () ->
+    begin match () with
+    | () -> ()
+    end
+  end

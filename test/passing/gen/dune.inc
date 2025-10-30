@@ -874,6 +874,24 @@
 
 (rule
  (deps .ocamlformat)
+ (package ocamlformat)
+ (action
+  (with-stdout-to cases_exp_indent.ml.stdout
+   (with-stderr-to cases_exp_indent.ml.stderr
+     (run %{bin:ocamlformat} --name cases_exp_indent.ml --margin-check --nested-match=align --cases-exp-indent=4 %{dep:../tests/cases_exp_indent.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff cases_exp_indent.ml.ref cases_exp_indent.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff cases_exp_indent.ml.err cases_exp_indent.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action

@@ -1152,12 +1152,12 @@ let rec get_case : type a b e.
     match eq_sel sel sel' with
     | None -> get_case sel rem
     | Some Eq -> name, None
-  end
+    end
   | (name, TCarg (sel', ty)) :: rem -> begin
     match eq_sel sel sel' with
     | None -> get_case sel rem
     | Some Eq -> name, Some ty
-  end
+    end
   | [] -> raise Not_found
 
 (* Untyped representation of values *)
@@ -1223,7 +1223,7 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
       | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
       | _ -> raise VariantMismatch
     with Not_found -> raise VariantMismatch
-  end
+    end
   | _ -> raise VariantMismatch
 
 (* First attempt: represent 1-constructor variants using Conv *)
@@ -1564,7 +1564,7 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
     match sameNat a' b' with
     | Some Eq -> Some Eq
     | None -> None
-  end
+    end
   | _ -> None
 
 (* Extra: associativity of addition *)
@@ -1760,7 +1760,7 @@ let rec del : type n. int -> n avl -> n avl_del =
         match bal with
         | Same -> Ddecr (Eq, l)
         | More -> Ddecr (Eq, l)
-      end
+        end
       | Node _ -> begin
         match bal, del_min r with
         | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
@@ -1770,7 +1770,7 @@ let rec del : type n. int -> n avl -> n avl_del =
         match rotr l z r with
         | Inl t -> Ddecr (Eq, t)
         | Inr t -> Dsame t
-      end
+        end
     end
     else if y < x then begin
       match del y l with
@@ -1783,7 +1783,7 @@ let rec del : type n. int -> n avl -> n avl_del =
         match rotl l x r with
         | Inl t -> Ddecr (Eq, t)
         | Inr t -> Dsame t
-      end
+        end
     end
     else begin
       match del y r with
@@ -1796,7 +1796,7 @@ let rec del : type n. int -> n avl -> n avl_del =
         match rotr l x r with
         | Inl t -> Ddecr (Eq, t)
         | Inr t -> Dsame t
-      end
+        end
     end
 
 let delete x (Avl t) =
@@ -1923,7 +1923,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
     match rep_equal a2 b2 with
     | None -> None
     | Some Eq -> Some Eq
-  end
+    end
   | Rfun (a1, a2), Rfun (b1, b2) -> begin
     match rep_equal a1 b1 with
     | None -> None
@@ -1931,7 +1931,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
     match rep_equal a2 b2 with
     | None -> None
     | Some Eq -> Some Eq
-  end
+    end
   | _ -> None
 
 type assoc = Assoc : string * 'a rep * 'a -> assoc
@@ -2042,7 +2042,7 @@ let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
     match compare y t with
     | Inl _ as e -> e
     | Inr Eq as e -> e
-  end
+    end
   | I, Ar _ -> Inl "I <> Ar _"
   | Ar _, I -> Inl "Ar _ <> I"
 
@@ -2087,14 +2087,14 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
       match compare a xt with
       | Inl s -> Cerror s
       | Inr Eq -> Cok (App (f', x'), b)
-    end
+      end
     | _ -> Cerror "Non fun in Ap"
-  end
+    end
   | Ab (s, t, body) -> begin
     match tc (NS n) (Ccons (n, s, t, ctx)) body with
     | Cerror _ as e -> e
     | Cok (body', et) -> Cok (Abs (n, body'), Ar (t, et))
-  end
+    end
   | C m -> Cok (Const m, I)
 
 let ctx0 =
@@ -2188,7 +2188,7 @@ let rec rule : type a b.
     match mode term with
     | Pexp -> Inl term
     | Pval -> Inr term
-  end
+    end
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Lam (v, body) -> Inr (Lam (v, body))
@@ -2199,12 +2199,12 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
     match onestep e1 with
     | Inl e -> Inl (App (e, e2))
     | Inr v -> Inl (App (v, e2))
-  end
+    end
   | Pval, Pexp -> begin
     match onestep e2 with
     | Inl e -> Inl (App (e1, e))
     | Inr v -> Inl (App (e1, v))
-  end
+    end
   | Pval, Pval -> rule e1 e2
 type ('env, 'a) var =
   | Zero : ('a * 'env, 'a) var
@@ -8426,7 +8426,7 @@ let _ = function
       + Array.get [| 1; 2 |] 2);
     ignore [ String.get s 1; String.get "" 2; String.get "123" 3 ];
     ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
-  end
+    end
   | b, s, ba1, ba2, ba3, bg -> begin
     y.(0) <- 1;
     s.![1] <- 'c';
@@ -8434,7 +8434,7 @@ let _ = function
     ba2.{1, 2} <- 3;
     ba3.{1, 2, 3} <- 4;
     bg.{1, 2, 3, 4, 5} <- 0
-  end
+    end
 
 let f (type t) () =
   let exception F of t in

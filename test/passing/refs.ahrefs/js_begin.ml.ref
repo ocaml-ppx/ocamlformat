@@ -2,7 +2,7 @@ let f = function
   | zoo -> begin
     foo;
     bar
-  end
+    end
 let g = function
   | zoo ->
     foo;

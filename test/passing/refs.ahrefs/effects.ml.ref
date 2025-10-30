@@ -42,7 +42,7 @@ let run (main : unit -> unit) : unit =
       | None ->
         exchanger := Some (n, k);
         dequeue ()
-    end
+      end
   in
   spawn main
 
