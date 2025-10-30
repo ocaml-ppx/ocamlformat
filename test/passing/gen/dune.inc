@@ -3710,7 +3710,7 @@
  (action
   (with-stdout-to let_punning_denied.ml.stdout
    (with-stderr-to let_punning_denied.ml.stderr
-     (run %{bin:ocamlformat} --name let_punning_denied.ml --margin-check --let-binding-punning=never --ocaml-version=4.14.0 %{dep:../tests/let_punning_denied.ml})))))
+     (run %{bin:ocamlformat} --name let_punning_denied.ml --margin-check --letop-punning=never --ocaml-version=4.14.0 %{dep:../tests/let_punning_denied.ml})))))
 
 (rule
  (alias runtest)
@@ -3728,7 +3728,7 @@
  (action
   (with-stdout-to let_punning_preferred.ml.stdout
    (with-stderr-to let_punning_preferred.ml.stderr
-     (run %{bin:ocamlformat} --name let_punning_preferred.ml --margin-check --let-binding-punning=always --ocaml-version=4.14.0 %{dep:../tests/let_punning_preferred.ml})))))
+     (run %{bin:ocamlformat} --name let_punning_preferred.ml --margin-check --letop-punning=always --ocaml-version=4.14.0 %{dep:../tests/let_punning_preferred.ml})))))
 
 (rule
  (alias runtest)

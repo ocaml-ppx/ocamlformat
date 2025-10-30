@@ -107,7 +107,7 @@ let parse ?(disable_w50 = false) ?(disable_deprecated = false) parse fragment
 let parse_ast (conf : Conf.t) fg ~ocaml_version ~input_name s =
   let preserve_beginend = Poly.(conf.fmt_opts.exp_grouping.v = `Preserve) in
   let prefer_let_puns =
-    match conf.fmt_opts.let_binding_punning.v with
+    match conf.fmt_opts.letop_punning.v with
     | `Always -> Some true
     | `Never -> Some false
     | `Preserve -> None

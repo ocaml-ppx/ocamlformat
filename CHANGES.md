@@ -8,7 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Added
 
-- Added option `let-binding-punning` (#2746, @WardBrian) to control whether
+- Added option `letop-punning` (#2746, @WardBrian) to control whether
   punning is used in extended binding operators.
 
 ### Fixed
