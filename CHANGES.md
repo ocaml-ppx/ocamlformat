@@ -14,6 +14,7 @@ profile. This started with version 0.26.0.
   `let+ x in ...` when `letop-punning=always`. With `letop-punning=never`, it
   becomes `let+ x = x in ...`. The default is `preserve`, which will
   only use punning when it exists in the source.
+  This also applies to `let%ext` bindings (#2747, @WardBrian).
 
 ### Fixed
 
