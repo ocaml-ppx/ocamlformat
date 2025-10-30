@@ -233,19 +233,21 @@ module Parse = struct
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
         let loc_end = b.pbop_exp.pexp_loc.loc_end in
-        let pbop_is_pun =
-          match prefer_let_puns with
-          | None -> b.pbop_is_pun
-          | Some false -> false
-          | Some true -> (
-              b.pbop_is_pun
-              ||
-              match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
-              | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
-                  String.equal v e
-              | _ -> false )
+        let pbop_is_pun, pbop_pat =
+          match
+            (prefer_let_puns, (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc))
+          with
+          | ( Some true
+            , (Ppat_var {txt; loc= _}, Pexp_ident {txt= Lident e; loc}) )
+            when String.equal txt e ->
+              (true, {b.pbop_pat with ppat_desc= Ppat_var {txt; loc}})
+          | None, _ -> (b.pbop_is_pun, b.pbop_pat)
+          | _ -> (false, b.pbop_pat)
         in
-        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
+        { b with
+          pbop_loc= {b.pbop_loc with loc_start; loc_end}
+        ; pbop_is_pun
+        ; pbop_pat }
       in
       Ast_mapper.default_mapper.binding_op m b'
     in
@@ -254,23 +256,18 @@ module Parse = struct
         let is_extension =
           is_extension || Option.is_some vb.pvb_attributes.attrs_extension
         in
-        let pvb_is_pun =
-          is_extension
-          &&
-          match prefer_let_puns with
-          | None -> vb.pvb_is_pun
-          | Some false -> false
-          | Some true -> (
-              vb.pvb_is_pun
-              ||
-              match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
-              | ( Ppat_var {txt= v; _}
-                , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
-                ) ->
-                  String.equal v e
-              | _ -> false )
+        let pvb_is_pun, pvb_pat =
+          match (prefer_let_puns, (vb.pvb_pat.ppat_desc, vb.pvb_body)) with
+          | None, _ -> (vb.pvb_is_pun, vb.pvb_pat)
+          | ( Some true
+            , ( Ppat_var {txt; _}
+              , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; loc}; _}
+              ) )
+            when String.equal txt e ->
+              (true, {vb.pvb_pat with ppat_desc= Ppat_var {txt; loc}})
+          | _ -> (false, vb.pvb_pat)
         in
-        (is_extension, {vb with pvb_is_pun})
+        (is_extension, {vb with pvb_is_pun; pvb_pat})
       in
       let vbs' =
         { vbs with
