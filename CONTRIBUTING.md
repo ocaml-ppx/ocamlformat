@@ -30,7 +30,7 @@ Unit tests are located in the `test/unit` directory and are written using [Alcot
 
 #### Golden Tests
 
-The most tests of `ocamlformat` are so called "golden" or "expect" tests. These
+The majority of tests for `ocamlformat` are so called "golden" or "expect" tests. These
 tests all consist of running `ocamlformat` on `.ml` files and comparing the
 output to expected output stored in reference files. The `dune` configuration
 for this is automatically generated for you based on the files present in these
