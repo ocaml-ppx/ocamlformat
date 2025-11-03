@@ -47,9 +47,11 @@ module Let_binding : sig
     ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }
 
-  val of_let_binding : ctx:Ast.t -> first:bool -> value_binding -> t
+  val of_let_binding :
+    ctx:Ast.t -> first:bool -> cmts:Cmts.t -> value_binding -> t
 
-  val of_let_bindings : ctx:Ast.t -> value_binding list -> t list
+  val of_let_bindings :
+    ctx:Ast.t -> cmts:Cmts.t -> value_binding list -> t list
 
-  val of_binding_ops : binding_op list -> t list
+  val of_binding_ops : cmts:Cmts.t -> binding_op list -> t list
 end

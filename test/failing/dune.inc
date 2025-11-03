@@ -185,19 +185,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-   (with-outputs-to letop_broken.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} --ocaml-version=4.14 --letop-punning=always %{dep:tests/letop_broken.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/letop_broken.ml.broken-ref letop_broken.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
    (with-outputs-to lwt.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:tests/lwt.ml})))))

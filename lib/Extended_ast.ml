@@ -241,8 +241,8 @@ module Parse = struct
               b.pbop_is_pun
               ||
               match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
-              | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
-                  String.equal v e
+              | Ppat_var {txt; _}, Pexp_ident {txt= Lident e; _} ->
+                  String.equal txt e
               | _ -> false )
         in
         {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
@@ -252,6 +252,8 @@ module Parse = struct
     let value_bindings (m : Ast_mapper.mapper) vbs =
       let punning is_extension vb =
         let is_extension =
+          (* [and] nodes don't have extensions, so we need to track if the
+             earlier [let] did *)
           is_extension || Option.is_some vb.pvb_attributes.attrs_extension
         in
         let pvb_is_pun =
@@ -264,10 +266,10 @@ module Parse = struct
               vb.pvb_is_pun
               ||
               match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
-              | ( Ppat_var {txt= v; _}
+              | ( Ppat_var {txt; _}
                 , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
                 ) ->
-                  String.equal v e
+                  String.equal txt e
               | _ -> false )
         in
         (is_extension, {vb with pvb_is_pun})
