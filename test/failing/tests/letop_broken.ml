@@ -1,0 +1,18 @@
+let ( let* ) x f = f x
+
+let ( and* ) a b = (a, b)
+
+let x = 1
+
+and y = 2
+
+and z = 3
+
+
+
+let r = let* (* 1 *) x (* 2 *) = (* 3 *) x (* 4 *)
+and* (* 5 *) y (* 6 *) in (x, y)
+
+let s = let%foo (* 1 *) x (* 2 *) = (* 3 *) x (* 4 *)
+and (* 5 *) y (* 6 *) in (x, y)
+
