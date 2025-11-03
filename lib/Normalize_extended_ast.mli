@@ -9,11 +9,19 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
+open Extended_ast
+
+val rewrite_type_declaration_imm_attr_to_jkind_annot :
+  type_declaration -> attribute option * type_declaration
+(** Rewrites [@@immediate] to [_ : immediate] and does the same for [@@immediate64].
+    This only happens if there's no existing jkind annotation AND there's only
+    one immediacy attribute. If the rewrite occurred, also returns the attribute that
+    participated. *)
+
+val dedup_cmts : 'a t -> 'a -> Cmt.t list -> Cmt.t list
 (** Remove comments that duplicate docstrings (or other comments). *)
 
-val equal :
-  'a Extended_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
+val equal : 'a t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
 val diff_cmts :

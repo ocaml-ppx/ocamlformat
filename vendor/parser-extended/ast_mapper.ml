@@ -260,8 +260,13 @@ module T = struct
           sub.typ sub ct, sub.variance_and_injectivity sub var_inj)
         ptype_params
     in
+    let jkind = 
+      map_opt
+        (fun jkind -> map_loc_txt sub sub.jkind_annotation jkind)
+        ptype_jkind 
+    in
     Type.mk ~loc ~attrs (map_loc sub ptype_name)
-      ?jkind:(ptype_jkind)
+      ?jkind
       ~params
       ~priv:(Flag.map_private sub ptype_private)
       ~cstrs:(List.map

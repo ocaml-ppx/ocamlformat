@@ -124,33 +124,17 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   in
   fun_ ~will_keep_first_ast_node xexp
 
-let get_jkind_of_legacy_attr attr =
-  match (attr.attr_name.txt, attr.attr_payload) with
-  | ("ocaml.immediate64" | "immediate64"), PStr [] ->
-      Some (Abbreviation (Location.mknoloc "immediate64"))
-  | ("ocaml.immediate" | "immediate"), PStr [] ->
-      Some (Abbreviation (Location.mknoloc "immediate"))
-  | _ -> None
-
 let rewrite_type_declaration_imm_attr_to_jkind_annot cmts decl =
-  let immediate_attrs, remaining_attrs =
-    decl.ptype_attributes
-    |> List.partition_map ~f:(fun attr ->
-           match get_jkind_of_legacy_attr attr with
-           | Some jkind -> First (jkind, attr)
-           | None -> Second attr )
+  let attr, decl =
+    Normalize_extended_ast.rewrite_type_declaration_imm_attr_to_jkind_annot
+      decl
   in
-  match (decl.ptype_jkind, immediate_attrs) with
-  | None, [(jkind, attr)] ->
-      (* We only do this rewrite if (1.) there's no jkind annotation already
-         present and (2.) only one immediate attribute is attached *)
-      let ptype_jkind = Some Location.(mknoloc jkind) in
+  Option.iter attr ~f:(fun attr ->
       Cmts.relocate_all_to_before cmts ~src:attr.attr_name.loc
         ~before:decl.ptype_loc ;
       Cmts.relocate_all_to_before cmts ~src:attr.attr_loc
-        ~before:decl.ptype_loc ;
-      {decl with ptype_attributes= remaining_attrs; ptype_jkind}
-  | _ -> decl
+        ~before:decl.ptype_loc ) ;
+  decl
 
 module Exp = struct
   let infix cmts prec xexp =

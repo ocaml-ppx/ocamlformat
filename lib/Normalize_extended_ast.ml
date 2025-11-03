@@ -11,6 +11,30 @@
 
 open Extended_ast
 
+let rewrite_type_declaration_imm_attr_to_jkind_annot decl =
+  let get_jkind_of_legacy_attr attr =
+    match (attr.attr_name.txt, attr.attr_payload) with
+    | ("ocaml.immediate64" | "immediate64"), PStr [] ->
+        Some (Abbreviation (Location.mknoloc "immediate64"))
+    | ("ocaml.immediate" | "immediate"), PStr [] ->
+        Some (Abbreviation (Location.mknoloc "immediate"))
+    | _ -> None
+  in
+  let immediate_attrs, remaining_attrs =
+    decl.ptype_attributes
+    |> List.partition_map ~f:(fun attr ->
+           match get_jkind_of_legacy_attr attr with
+           | Some jkind -> First (jkind, attr)
+           | None -> Second attr )
+  in
+  match (decl.ptype_jkind, immediate_attrs) with
+  | None, [(jkind, attr)] ->
+      (* We only do this rewrite if (1.) there's no jkind annotation already
+         present and (2.) only one immediate attribute is attached *)
+      let ptype_jkind = Some Location.(mknoloc jkind) in
+      (Some attr, {decl with ptype_attributes= remaining_attrs; ptype_jkind})
+  | _ -> (None, decl)
+
 let dedup_cmts fragment ast comments =
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
@@ -202,6 +226,10 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
     in
     Ast_mapper.default_mapper.label_declaration m ld
   in
+  let type_declaration (m : Ast_mapper.mapper) td =
+    let _, td = rewrite_type_declaration_imm_attr_to_jkind_annot td in
+    Ast_mapper.default_mapper.type_declaration m td
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
@@ -210,7 +238,8 @@ let make_mapper ~ignore_doc_comments ~normalize_doc =
   ; expr
   ; pat
   ; typ
-  ; label_declaration }
+  ; label_declaration
+  ; type_declaration }
 
 let normalize_cmt (conf : Conf.t) =
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
