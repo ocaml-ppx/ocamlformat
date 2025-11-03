@@ -36,6 +36,9 @@ profile. This started with version 0.26.0.
   end
   ```
 
+### Internal
+
+- Added information on writing tests to `CONTRIBUTING.md` (#2838, @WardBrian)
 
 ### Changed
 
