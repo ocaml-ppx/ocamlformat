@@ -24,35 +24,31 @@ We heartily welcome pull requests. To ensure an effective contribution, please a
 
 ### Adding a Test
 
-#### Unit Tests
-
-Unit tests are located in the `test/unit` directory and are written using [Alcotest](https://github.com/mirage/alcotest).
-
 #### Golden Tests
 
 The majority of tests for `ocamlformat` are so called "golden" or "expect" tests. These
 tests all consist of running `ocamlformat` on `.ml` files and comparing the
 output to expected output stored in reference files. The `dune` configuration
 for this is automatically generated for you based on the files present in these
-directories.
+directories the first time `dune runtest` is executed.
 
 These are separated into `test/failing` and `test/passing` directories.
 
 To add a test showing currently incorrect behavior, add a `.ml` file to
 `test/failing/tests`. If command line arguments are needed, create a
-corresponding `.opts` file with the same base name. The output of these tests
-will be stored in `.broken-ref` files.
+corresponding `.ml.opts` file with the same name. The output of these tests
+will be stored in `.ml.broken-ref` files.
 
 To add a test showing correct behavior, add a `.ml` file to `test/passing/tests`
 or update an existing file there. These tests are similar to the failing tests,
-including the use of the `.opts` files for command line arguments, however the
+including the use of the `.ml.opts` files for command line arguments, however the
 same file will be tested against all of the built-in configurations (e.g.
 `default`, `janestreet`, etc.), with outputs appearing in sub folders named
 `refs.<configuration>`.
 
 In both cases, if multiple sets of options are desired, you can create multiple
-`.opts` files with names provided after a `-`, for example `mytest.ml` can have
-`mytest-foo.opts` and `mytest-bar.opts`. This will create multiple test targets.
+`.ml.opts` files with names provided after a `-`, for example `mytest.ml` can have
+`mytest-foo.ml.opts` and `mytest-bar.ml.opts`. This will create multiple test targets.
 
 The first time you [run the tests](#running-the-tests), the `dune.inc` file will
 be updated. Once you have promoted this, subsequent runs will show you any
@@ -70,6 +66,10 @@ These are found in `test/cli` and are written using
 Each test is a `.t` file that contains shell commands and their expected
 outputs. To add a new test, create a new `.t` file, or add new commands (lines
 beginning with ` $`) to an existing file.
+
+#### Unit Tests
+
+Unit tests are located in the `test/unit` directory and are written using [Alcotest](https://github.com/mirage/alcotest).
 
 ### Running the Tests
 
