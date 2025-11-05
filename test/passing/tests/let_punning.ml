@@ -9,9 +9,9 @@ and y = 2
 and z = 3
 
 let p =
-  let* x and* y and* z in
+  let* x = x and* y and* z = z in
   (x, y, z)
 
 let q =
-  let%foo x = x and y = y and z = z in
+  let%foo x and y = y and z in
   (x, y, z)
