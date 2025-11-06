@@ -123,7 +123,18 @@ module Let_binding = struct
     ; lb_attrs: ext_attrs
     ; lb_loc: Location.t }
 
-  let of_let_binding ~ctx ~first vb =
+  let of_let_binding ~ctx ~first ~cmts vb =
+    if vb.pvb_is_pun then
+      (* this is a no-op if it was parsed as a pun, but if
+         letop-punning=always was specified this is needed to move comments
+         from the now-elided body *)
+      Cmts.relocate cmts
+        ~src:
+          ( match vb.pvb_body with
+          | Pfunction_body e -> e.pexp_loc
+          | Pfunction_cases (_, l, _) ->
+              (* NB: should be impossible for puns *) l )
+        ~before:vb.pvb_pat.ppat_loc ~after:vb.pvb_pat.ppat_loc ;
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
     ; lb_pat= sub_pat ~ctx vb.pvb_pat
     ; lb_args= vb.pvb_args
@@ -133,11 +144,14 @@ module Let_binding = struct
     ; lb_attrs= vb.pvb_attributes
     ; lb_loc= vb.pvb_loc }
 
-  let of_let_bindings ~ctx =
-    List.mapi ~f:(fun i -> of_let_binding ~ctx ~first:(i = 0))
+  let of_let_bindings ~ctx ~cmts =
+    List.mapi ~f:(fun i -> of_let_binding ~ctx ~first:(i = 0) ~cmts)
 
-  let of_binding_ops bos =
+  let of_binding_ops ~cmts bos =
     List.map bos ~f:(fun bo ->
+        if bo.pbop_is_pun then
+          Cmts.relocate cmts ~src:bo.pbop_exp.pexp_loc
+            ~before:bo.pbop_pat.ppat_loc ~after:bo.pbop_pat.ppat_loc ;
         let ctx = Bo bo in
         { lb_op= bo.pbop_op
         ; lb_pat= sub_pat ~ctx bo.pbop_pat

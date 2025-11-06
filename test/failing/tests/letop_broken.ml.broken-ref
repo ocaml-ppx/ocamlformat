@@ -1,8 +1,0 @@
-ocamlformat: Cannot process "tests/letop_broken.ml".
-  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
-  BUG: comment changed.
-File "tests/letop_broken.ml", line 13, characters 33-40:
-Error: comment (*  3  *) dropped.
-  BUG: comment changed.
-File "tests/letop_broken.ml", line 13, characters 43-50:
-Error: comment (*  4  *) dropped.

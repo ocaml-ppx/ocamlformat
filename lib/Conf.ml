@@ -998,7 +998,10 @@ module Formatting = struct
       (fun conf -> conf.fmt_opts.let_module)
 
   let letop_punning =
-    let doc = "Name punning in bindings using extended let operators." in
+    let doc =
+      "Name punning in bindings using extended let operators and \
+       $(i,let%ext) bindings."
+    in
     let names = ["letop-punning"] in
     let all =
       [ Decl.Value.make ~name:"preserve" `Preserve
