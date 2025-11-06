@@ -1,3 +1,7 @@
+Make CI & local builds behave the same
+
+  $ export TERM=dumb
+
 Invalid version:
 
   $ echo 'version = bad' > .ocamlformat

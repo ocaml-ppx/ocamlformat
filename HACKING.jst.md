@@ -80,10 +80,12 @@ time.
 Before building
 ---------------
 
-You will need to install several libraries. This command may work:
+You will need to create a switch on ocaml5.2.1 and install several
+libraries. These commands may work:
 
 ```
-opam install menhir.20210419 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version stdio
+opam switch create ocamlformat 5.2.1
+opam install menhir.20210419 fix ocp-indent bechamel-js alcotest camlp-streams fpath either dune-build-info uuseg ocaml-version stdio cmdliner.2.0.0
 ```
 
 Building

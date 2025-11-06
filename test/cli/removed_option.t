@@ -1,3 +1,7 @@
+Make CI & local builds behave the same
+
+  $ export TERM=dumb
+
   $ echo 'let x = y' > a.ml
 
 Setting a removed option on the command line should display an error message:

@@ -1,3 +1,7 @@
+Make CI & local builds behave the same
+
+  $ export TERM=dumb
+
 Invalid option:
 
   $ echo 'let x = 1' | OCAMLFORMAT="unknown=true" ocamlformat --impl -
