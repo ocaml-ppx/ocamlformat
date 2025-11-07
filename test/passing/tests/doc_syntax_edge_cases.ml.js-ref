@@ -20,8 +20,7 @@
 
 (* {01 very important} *)
 
-(* [     code
-    with newline     ] *)
+(* [     code with newline     ] *)
 
 (* We want nested bulleted lists.
    - Here's one layer of the list
@@ -35,16 +34,15 @@
    Now this is a paragraph
 
    - Now it's a list
-     - One more time.
-     Note this won't be part of this first bullet again --- that probably makes sense.
+     - One more time. Note this won't be part of this first bullet again --- that probably
+       makes sense.
 *)
 
 (* - If the first line of a comment is a list
    - This should work, as long as we handle the comment sigil correctly
 *)
 
-(*
-   - This should even be true
+(* - This should even be true
    - If there is a blank line before the first line
 *)
 
@@ -58,13 +56,14 @@
 
 (* Also for explicit lists
    {ul
-   {- This is a list.}
-   {- One of the bullets
+    {- This is a list. }
+    {- One of the bullets
 
       has some paragraphs
 
-      inside}
-   {- Then there's another bullet.}
+      inside
+   }
+    {- Then there's another bullet. }
    }
 *)
 
@@ -72,42 +71,87 @@
 
    {v
    no space
-   some space    
-   some more space    v}
+   some space
+   some more space
+   v}
 *)
 
 (* Numbered list examples:
 
    1. Top-level
    2. Second bullet
-     - With a nested
-     - numbered list
-  - Or a not nested bulleted list
+      - With a nested
+      - numbered list
+
+   - Or a not nested bulleted list
      (a) with a nested numbered list
-   (b) this is still nested
+     (b) this is still nested
 
    a) This is a new list
 
-   Avoid breaking the line if list-like: 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
+   Avoid breaking the line if
+   list-like: 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
 
    A) We can also have a numbered list with line breaks between the bullets
 
-   B) You can see this is true from the indentation of the seeeeeeeeeeeeeeeeeeeecond liiiiiiiiiiiiiiiiiiiine
+   B) You can see this is true from the indentation of the seeeeeeeeeeeeeeeeeeeecond
+      liiiiiiiiiiiiiiiiiiiine
 
    But this paragraph is already not part of the list
 
    C) And so this is not a third list item, but just a normal paragraph (see
-      indeeeeeeeeeeeeeeeeeeeentation)
+   indeeeeeeeeeeeeeeeeeeeentation)
 
    (* CR-someday comments: Fix this edge case *)
 
    here's a funny edge case:
-   a) + b)
+   a) +
+   b)
 
-   big num: 999999999999999999999999999999.
+   big num: 999999999999999999999999999999
 
    big float: 999999999999999999999999999999.0
 *)
+
+(* Also[1] footnote-style comments[2]:
+
+   [1] See this paper
+   [2] Thanks for the advice
+
+   [A] this does not [B] work, however, since it is likely to be code
+*)
+
+(* Regression for comment preservation check \[0\] *)
+
+(* Regression for comment preservation check [1] *)
+
+(* [1] Regression for comment preservation check *)
+
+(* this is a comment that could be code that cares about space: "  hello  " *)
+
+(* so is this: {|  hello  |} *)
+
+(* and this: {%foo bar|  hello  |bar} *)
+
+(* let x = { y = z } *)
+
+(* let f : _ @ a -> _ @ b = g *)
+
+(* this comment will become " sus " *)
+
+(* syntax change regression test
+   {[
+     type t : immediate
+   ]}
+*)
+
+(* flower comment
+ * with
+ *      strange
+ * indentation
+ *)
+
+(* /**)
 
 (** [{xinvalid markup}] *)
 
@@ -128,7 +172,7 @@
 
 (** Markup contains numbered list: {i O(log n)} *)
 
-(** Here is an \@ and here are two \@@ and here's a bad tag \@yo *)
+(** Here is an @ and here are two @@ and here's a bad tag @yo *)
 
 (** {1 very important} *)
 
@@ -216,6 +260,38 @@
 
     big float: 999999999999999999999999999999.0 *)
 
+(** Also[1] footnote-style comments[2]:
+
+    [1] See this paper
+    [2] Thanks for the advice
+
+    [A] this does not [B] work, however, since it is likely to be code *)
+
+(** Regression for comment preservation check \[0\] *)
+
+(** Regression for comment preservation check [1] *)
+
+(** [1] Regression for comment preservation check *)
+
+(**/**)
+
+(** this is a comment that could be code that cares about space: " hello " *)
+
+(** so is this: [{|  hello  |}] *)
+
+(** and this: {%foo bar|  hello  |bar} *)
+
+(** let x = [{ y = z }] *)
+
+(** let f : _ @ a -> _ @ b = g *)
+
+(** this comment will become " sus " *)
+
+(** syntax change regression test
+    {[
+      type t : immediate
+    ]} *)
+
 (*_ {xinvalid markup} *)
 
 (*_ valid markup {but no space} *)
@@ -238,8 +314,7 @@
 
 (*_ {01 very important} *)
 
-(*_ [     code
-     with newline     ] *)
+(*_ [     code with newline     ] *)
 
 (*_ We want nested bulleted lists.
     - Here's one layer of the list
@@ -253,17 +328,16 @@
     Now this is a paragraph
 
     - Now it's a list
-      - One more time.
-      Note this won't be part of this first bullet again --- that probably makes sense.
+      - One more time. Note this won't be part of this first bullet again --- that
+        probably makes sense.
 *)
 
 (*_ - If the first line of a comment is a list
     - This should work, as long as we handle the comment sigil correctly
 *)
 
-(*_ 
-   - This should even be true
-   - If there is a blank line before the first line
+(*_ - This should even be true
+    - If there is a blank line before the first line
 *)
 
 (*_ We want big things to be able to go inside lists nicely.
@@ -276,13 +350,14 @@
 
 (*_ Also for explicit lists
     {ul
-    {- This is a list.}
-    {- One of the bullets
+     {- This is a list. }
+     {- One of the bullets
 
        has some paragraphs
 
-       inside}
-    {- Then there's another bullet.}
+       inside
+    }
+     {- Then there's another bullet. }
     }
 *)
 
@@ -290,37 +365,76 @@
 
     {v
     no space
-    some space    
-    some more space    v}
+    some space
+    some more space
+    v}
 *)
 
 (*_ Numbered list examples:
 
     1. Top-level
     2. Second bullet
-      - With a nested
-      - numbered list
-   - Or a not nested bulleted list
+       - With a nested
+       - numbered list
+
+    - Or a not nested bulleted list
       (a) with a nested numbered list
-    (b) this is still nested
+      (b) this is still nested
 
     a) This is a new list
 
-    Avoid breaking the line if list-like: 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
+    Avoid breaking the line if
+    list-like: 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
 
     A) We can also have a numbered list with line breaks between the bullets
 
-    B) You can see this is true from the indentation of the seeeeeeeeeeeeeeeeeeeecond liiiiiiiiiiiiiiiiiiiine
+    B) You can see this is true from the indentation of the seeeeeeeeeeeeeeeeeeeecond
+       liiiiiiiiiiiiiiiiiiiine
 
     But this paragraph is already not part of the list
 
     C) And so this is not a third list item, but just a normal paragraph (see
-       indeeeeeeeeeeeeeeeeeeeentation)
+    indeeeeeeeeeeeeeeeeeeeentation)
 
     here's a funny edge case:
-    a) + b)
+    a) +
+    b)
 
-    big num: 999999999999999999999999999999.
+    big num: 999999999999999999999999999999
 
     big float: 999999999999999999999999999999.0
 *)
+
+(*_ Also[1] footnote-style comments[2]:
+
+    [1] See this paper
+    [2] Thanks for the advice
+
+    [A] this does not [B] work, however, since it is likely to be code
+*)
+
+(*_ Regression for comment preservation check \[0\] *)
+
+(*_ Regression for comment preservation check [1] *)
+
+(*_ [1] Regression for comment preservation check *)
+
+(*_ this is a comment that could be code that cares about space: "  hello  " *)
+
+(*_ so is this: {|  hello  |} *)
+
+(*_ and this: {%foo bar|  hello  |bar} *)
+
+(*_ let x = { y = z } *)
+
+(*_ let f : _ @ a -> _ @ b = g *)
+
+(*_ this comment will become " sus " *)
+
+(*_ syntax change regression test
+    {[
+      type t : immediate
+    ]}
+*)
+
+(*_ /**)

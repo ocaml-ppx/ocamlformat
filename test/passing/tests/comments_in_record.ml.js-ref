@@ -47,9 +47,11 @@ let x =
 
 type t =
   { a : int option
-      (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *)
+      (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccc
+         ddddddddddddddddd eeeee *)
   ; b : float
-  (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *)
+  (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccc
+     ddddddddddddddddd eeeee *)
   }
 
 type t =

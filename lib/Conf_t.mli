@@ -118,6 +118,9 @@ type fmt_opts =
   ; type_decl: [`Compact | `Sparse] elt
   ; type_decl_indent: int elt
   ; wrap_comments: bool elt  (** Wrap comments at margin. *)
+  ; preserve_ambiguous_line_comments: bool elt
+        (** If a comment's contents may contain code whose semantics depend on whitespace, do
+      not wrap it. *)
   ; wrap_docstrings: bool elt
   ; wrap_fun_args: bool elt }
 

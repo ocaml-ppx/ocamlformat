@@ -13,8 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* XXXXXXX xxxxxxxxxxxxx XXXXXXXXXXXXXXXXXXXXx xxxxxxxxx xxxxxxxxx x xxxxxx
-   xxxxxx. *)
+(* XXXXXXX xxxxxxxxxxxxx XXXXXXXXXXXXXXXXXXXXx xxxxxxxxx xxxxxxxxx x xxxxxx xxxxxx. *)
 
 open Module
 
@@ -43,8 +42,7 @@ type typ = typ
 (* xx xxxxxxxxxxxxxx, x xxxxxxxxxxxxxx "xxxxxxxxx" xxxxxxxxxxxxxxxxxxxx
    xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxx xxxxx. *)
 
-(* TEST
-  arguments = "???"
+(* TEST arguments = "???"
 *)
 
 (* On Windows the runtime expand windows wildcards (asterisks and

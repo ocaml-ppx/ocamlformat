@@ -1,4 +1,4 @@
-(* This file is a copy of a labeled tuples test from the compiler.  Not everything here
+(* This file is a copy of a labeled tuples test from the compiler. Not everything here
    typechecks, but everything should parse. *)
 
 (* Test match statements with exception patterns *)

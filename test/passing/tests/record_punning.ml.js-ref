@@ -17,10 +17,10 @@ let d = { x = x [@foo] }
 let e = { x = y }
 let { x } = f
 let deep = { x; y = { x } }
-let x = { (*test*) aaa : aa; bbb : bb }
+let x = { (* test *) aaa : aa; bbb : bb }
 let x = { aaa : aa (* A *); bbb : bb }
 let x = { aaa : aa; (* A *) bbb : bb }
-let x = { (*test*) aaa : aa = aa; bbb : bb }
+let x = { (* test *) aaa : aa = aa; bbb : bb }
 let x = { aaa : aa (* A *) = aa; bbb : bb }
 let x = { aaa : aa = (* A *) aa; bbb : bb }
 let x = { aaa : aa; (* A *) bbb : bb }

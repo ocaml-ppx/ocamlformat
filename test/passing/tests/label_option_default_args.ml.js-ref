@@ -78,8 +78,8 @@ let (* 0 *) f
   e
 ;;
 
-(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1260
-   (optional argument rebound to non-variable without necessary parens). *)
+(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1260 (optional
+   argument rebound to non-variable without necessary parens). *)
 
 (* Safe without parens *)
 let f ?any:_ = ()

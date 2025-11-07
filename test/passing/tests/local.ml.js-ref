@@ -110,8 +110,8 @@ let x =
 ;;
 
 module type S = functor (_ : S) (_ : S) -> S
-(* this is here to make sure we pass the AST equality checks even when the
-   extended AST is different *)
+(* this is here to make sure we pass the AST equality checks even when the extended AST is
+   different *)
 
 let f
   (local_ (* a *)

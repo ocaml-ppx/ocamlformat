@@ -1,8 +1,8 @@
 (* Tests of special cases added to avoid emitting [>\] and [>\}], which are
    keywords. *)
 
-(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1295
-   (unnecessary trailing spaces added after object types with attributes). *)
+(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1295 (unnecessary
+   trailing spaces added after object types with attributes). *)
 
 type t = { foo : (< .. >[@a]) }
 type t = { foo : < .. > [@a] }
@@ -34,9 +34,8 @@ module Space_around = struct
 end
 
 module Inside_payloads = struct
-  (* Regression tests for
-     https://github.com/ocaml-ppx/ocamlformat/issues/1267 (failure to protect
-     against object types inside extension and attribute payloads). *)
+  (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1267 (failure to
+     protect against object types inside extension and attribute payloads). *)
 
   let _ = [%ext: < .. > ]
 

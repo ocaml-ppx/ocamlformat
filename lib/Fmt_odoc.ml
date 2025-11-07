@@ -74,9 +74,24 @@ let escape_balanced_brackets s =
   in
   insert_ats s "\\" (brackets_to_escape [] [] 0)
 
+let looks_like_number w =
+  let w =
+    match String.chop_suffix w ~suffix:")" with
+    | Some w -> Some (String.chop_prefix_if_exists w ~prefix:"(")
+    | None -> (
+      match String.chop_suffix w ~suffix:"]" with
+      | Some w -> String.chop_prefix w ~prefix:"["
+      | None -> String.chop_suffix w ~suffix:"." )
+  in
+  match w |> Option.map ~f:String.to_list with
+  | Some [c] -> Char.is_alphanum c && not Char.(equal c '0')
+  | Some (leading :: _ as w) ->
+      List.for_all ~f:Char.is_digit w && not Char.(equal leading '0')
+  | Some [] | None -> false
+
 let escape_all s =
   let escapeworthy = function '{' | '}' | '[' | ']' -> true | _ -> false in
-  ensure_escape ~escapeworthy s
+  if looks_like_number s then s else ensure_escape ~escapeworthy s
 
 let split_on_whitespaces =
   String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
@@ -211,17 +226,6 @@ let space_elt c : inline_element with_location =
   let sp = if c.conf.fmt_opts.wrap_docstrings.v then "" else " " in
   Loc.(at (span []) (`Space sp))
 
-let looks_like_number w =
-  let w =
-    match String.chop_suffix w ~suffix:")" with
-    | Some w -> Some (String.chop_prefix_if_exists w ~prefix:"(")
-    | None -> String.chop_suffix w ~suffix:"."
-  in
-  match w |> Option.map ~f:String.to_list with
-  | Some [c] -> Char.is_alphanum c
-  | Some (_ :: _ as w) -> List.for_all ~f:Char.is_digit w
-  | Some [] | None -> false
-
 let non_wrap_space sp = if String.contains sp '\n' then fmt "@\n" else str sp
 
 let rec fmt_inline_elements c elements =
@@ -249,7 +253,10 @@ let rec fmt_inline_elements c elements =
           (non_wrap_space sp)
         $ aux t
     | `Word w :: t ->
-        fmt_if (String.is_prefix ~prefix:"@" w) "\\"
+        fmt_if
+          ( String.is_prefix ~prefix:"@" w
+          && List.mem Odoc_parser.tag_list ~equal:String.equal w )
+          "\\"
         $ str_normalized c w $ aux t
     | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Math_span s :: t -> fmt_math_span s $ aux t
@@ -407,8 +414,7 @@ let beginning_offset (conf : Conf.t) input =
       whitespace_count
   else min whitespace_count 1
 
-let fmt_parsed (conf : Conf.t) ~actually_a_doc_comment ~fmt_code ~input
-    ~offset parsed =
+let fmt_parsed (conf : Conf.t) ~fmt_code ~input ~offset parsed =
   let open Fmt in
   let begin_offset = beginning_offset conf input in
   (* The offset is used to adjust the margin when formatting code blocks. *)
@@ -420,9 +426,7 @@ let fmt_parsed (conf : Conf.t) ~actually_a_doc_comment ~fmt_code ~input
     str (String.make begin_offset ' ') $ fmt_ast conf ~fmt_code parsed
   in
   match parsed with
-  | _ when not (conf.fmt_opts.parse_docstrings.v && actually_a_doc_comment)
-    ->
-      str input
+  | _ when not conf.fmt_opts.parse_docstrings.v -> str input
   | Ok parsed -> fmt_parsed parsed
   | Error msgs ->
       if (not conf.opr_opts.quiet.v) && conf.opr_opts.check_odoc_parsing.v

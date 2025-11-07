@@ -1,13 +1,13 @@
-(* The first half of this file tests basic formatting of the [@]-based mode syntax
-   in various positions to make sure we are able to handle them all, and that
-   they are correctly parenthesized. The second half more thoroughly checks
-   formatting when there are line breaks in various positions. *)
+(* The first half of this file tests basic formatting of the [@]-based mode syntax in
+   various positions to make sure we are able to handle them all, and that they are
+   correctly parenthesized. The second half more thoroughly checks formatting when there
+   are line breaks in various positions. *)
 
 (* Modes on arbitrary patterns were supported in the parser during development of
-   ocamlformat support for modes, but were later unsupported in the parser. Tests of
-   modes on patterns have thus been moved to [test/failing/tests/modes_on_patterns.ml].
-   If patterns are ever again supported in the parser, move those tests back to this
-   file (and other [modes*.ml] files in this directory). *)
+   ocamlformat support for modes, but were later unsupported in the parser. Tests of modes
+   on patterns have thus been moved to [test/failing/tests/modes_on_patterns.ml]. If
+   patterns are ever again supported in the parser, move those tests back to this file
+   (and other [modes*.ml] files in this directory). *)
 
 module Let_bindings = struct
   let x @ mode = y

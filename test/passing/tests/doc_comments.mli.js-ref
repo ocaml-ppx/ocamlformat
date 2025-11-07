@@ -273,7 +273,7 @@ end
 
 (** [[ ] [] \]] *)
 
-(** \{ \} \[ \] \@ \@ *)
+(** \{ \} \[ \] @ @ *)
 
 (** @canonical Foo *)
 
@@ -456,7 +456,7 @@ end
 (** This is a comment with code inside
     {[
       (** This is a comment with code inside [ let code inside = f inside ] *)
-      let code inside (* comment   *) = f inside
+      let code inside (* comment *) = f inside
     ]}
 
     Code block with metadata:
@@ -470,7 +470,7 @@ end
 
     {@ocaml kind=toplevel env=e1[
       (** This is a comment with code inside [ let code inside = f inside ] *)
-      let code inside (* comment   *) = f inside
+      let code inside (* comment *) = f inside
     ]} *)
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo oooooooooo}
@@ -567,29 +567,25 @@ val k : int
     risus sed rhoncus. Ut condimentum rhoncus orci, sit amet eleifend erat tempus quis. *)
 
 (** {[
-      (* a
-         b *)
+      (* a b *)
     ]} *)
 
 val a
   :  fooooooooooooooooooooooooooo
      (** {[
-           (* a
-              b *)
+           (* a b *)
          ]} *)
   -> fooooooooooooooooooooooooo
 
 type x =
   { a : t
   (** {[
-        (* a
-           b *)
+        (* a b *)
       ]} *)
   ; b :
       [ `A
         (** {[
-              (* a
-                 b *)
+              (* a b *)
             ]} *)
       ]
   }
@@ -597,13 +593,11 @@ type x =
 type x =
   | A of a
   (** {[
-        (* a
-           b *)
+        (* a b *)
       ]} *)
   | B of b
   (** {[
-        (* a
-           b *)
+        (* a b *)
       ]} *)
 
 (** Set a different language name in the block metadata to not format as OCaml:
@@ -671,4 +665,4 @@ type x =
 
 (** at@ *)
 
-(** \@at *)
+(** @at *)

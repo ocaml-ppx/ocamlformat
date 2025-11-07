@@ -34,9 +34,8 @@ val f
   -> long_argument_1234567890
   -> long_result_1234567890
 
-(* uncommon case where quantified types with layouts have to line wrap; note
-   that the type and layout may be split onto multiple lines in the middle of
-   wrapping *)
+(* uncommon case where quantified types with layouts have to line wrap; note that the type
+   and layout may be split onto multiple lines in the middle of wrapping *)
 val f
   : ('long_quantified_variable_a : layout) ('long_quantified_variable_b : layout)
     ('long_quantified_variable_c : layout) ('long_quantified_variable_d : layout).

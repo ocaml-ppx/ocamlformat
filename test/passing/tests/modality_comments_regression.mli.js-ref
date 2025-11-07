@@ -3,7 +3,7 @@
    mm
    mmmmm
    mmmmmmmmm
-   (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*)
+   (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
    mmmmmmmmmm
    mmmmmmmmmm
 
@@ -14,7 +14,7 @@ val command
      mmmmm
      mmmmm
      mmmmmm
-     (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*)
+     (* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *)
      mmmmmmm
      mmmmmmmm
      mmmmmmmm

@@ -14,8 +14,8 @@ module type M = sig
     : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
-    (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *)
+    (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo foooooooooooooo
+       foooooooooooo *)
     : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val imported_sets_of_closures_table
@@ -90,8 +90,8 @@ let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n (a : 'a array)
 let to_clambda_function (id, (function_decl : Flambda.function_declaration))
   : Clambda.ufunction
   =
-  (* All that we need in the environment, for translating one closure from a
-     closed set of closures, is the substitutions for variables bound to the
-     various closures in the set. Such closures will always be ... *)
+  (* All that we need in the environment, for translating one closure from a closed set of
+     closures, is the substitutions for variables bound to the various closures in the
+     set. Such closures will always be ... *)
   x
 ;;

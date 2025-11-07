@@ -47,8 +47,8 @@ let foo = foo
   [1;2;3] ) *)
 let foo = foo
 
-(* Cinaps comment should not wrap if they don't parse. The first one would
-   crash and the second become a mess *)
+(* Cinaps comment should not wrap if they don't parse. The first one would crash and the
+   second become a mess *)
 
 (*$(**)"
   "*)
@@ -64,8 +64,7 @@ let foo = foo
 (*$*)
 
 (*$
-  (*
-     x
+  (* x
   *)
 *)
 

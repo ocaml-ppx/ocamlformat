@@ -119,3 +119,24 @@ let parse_comment ~location ~text =
 (* Accessor functions, as [t] is opaque *)
 let warnings t = t.warnings
 let ast t = t.ast
+
+let tag_list =
+  [ "@author"
+  ; "@deprecated"
+  ; "@param"
+  ; "@raise"
+  ; "@raises"
+  ; "@return"
+  ; "@returns"
+  ; "@see"
+  ; "@see"
+  ; "@see"
+  ; "@since"
+  ; "@before"
+  ; "@version"
+  ; "@canonical"
+  ; "@inline"
+  ; "@open"
+  ; "@closed"
+  ]
+;;

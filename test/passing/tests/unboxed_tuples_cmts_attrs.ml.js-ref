@@ -1,5 +1,5 @@
-(* Tests making sure comments and attributes are handled reasonably by
-   unboxed tuple printing. *)
+(* Tests making sure comments and attributes are handled reasonably by unboxed tuple
+   printing. *)
 
 (* Attrs around expressions *)
 let y = #(z, (z [@attr]))

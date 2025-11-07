@@ -334,6 +334,9 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-toplevel-phrases
            Unset parse-toplevel-phrases.
 
+       --no-preserve-ambiguous-line-comment
+           Unset preserve-ambiguous-line-comment.
+
        --no-space-around-arrays
            Unset space-around-arrays.
 
@@ -400,6 +403,11 @@ OPTIONS (CODE FORMATTING STYLE)
        --parse-toplevel-phrases
            Parse and format toplevel phrases and their output. The flag is
            unset by default.
+
+       --preserve-ambiguous-line-comment
+           Do not format comments that are one-line long and may contain
+           whitespace-sensitive code (e.g. strings) The flag is unset by
+           default.
 
        --sequence-blank-line={preserve-one|compact}
            Blank line between expressions of a sequence. preserve will keep a

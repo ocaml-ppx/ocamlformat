@@ -1,6 +1,5 @@
-(* Check that comments are not dropped or moved in unusual ways.
-   A few commented out tests where comments move have explanations, and are
-   tested in [modes_cmts_move.ml]. *)
+(* Check that comments are not dropped or moved in unusual ways. A few commented out tests
+   where comments move have explanations, and are tested in [modes_cmts_move.ml]. *)
 
 (* let bindings *)
 
@@ -265,8 +264,8 @@ type t =
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 (* cmt *) @ m6) @@ m7 m8 -> t
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ (* cmt *) m6) @@ m7 m8 -> t
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ m6 (* cmt *)) @@ m7 m8 -> t
-  (* Comment moves between [@@] and [m7]:
-     | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ m6) (* cmt *) @@ m7 m8 -> t *)
+  (* Comment moves between [@@] and [m7]: | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4
+     @ m6) (* cmt *) @@ m7 m8 -> t *)
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ m6) @@ (* cmt *) m7 m8 -> t
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ m6) @@ m7 (* cmt *) m8 -> t
   | A : t1 @@ m1 m2 * t2 @@ m3 m4 * (t3 @ m5 -> t4 @ m6) @@ m7 m8 (* cmt *) -> t
@@ -291,8 +290,8 @@ end
 
 (* let-bound functions *)
 
-(* Comment moves to between [(] and [f]:
-   let (* cmt *) (f @ mode1) (arg1 @ mode2) (arg2 @ mode3) : typ = x *)
+(* Comment moves to between [(] and [f]: let (* cmt *) (f @ mode1) (arg1 @ mode2) (arg2 @
+   mode3) : typ = x *)
 
 let ((* cmt *) f @ mode1) (arg1 @ mode2) (arg2 @ mode3) : typ = x
 let (f (* cmt *) @ mode1) (arg1 @ mode2) (arg2 @ mode3) : typ = x
@@ -309,7 +308,7 @@ let (f @ mode1) (arg1 @ mode2) (arg2 (* cmt *) @ mode3) : typ = x
 let (f @ mode1) (arg1 @ mode2) (arg2 @ (* cmt *) mode3) : typ = x
 let (f @ mode1) (arg1 @ mode2) (arg2 @ mode3 (* cmt *)) : typ = x
 
-(* Comment moves to after [=], but not because of modes:
-   let (f @ mode1) (arg1 @ mode2) (arg2 @ mode3) (* cmt *) : typ = x *)
+(* Comment moves to after [=], but not because of modes: let (f @ mode1) (arg1 @ mode2)
+   (arg2 @ mode3) (* cmt *) : typ = x *)
 
 let (f @ mode1) (arg1 @ mode2) (arg2 @ mode3) : (* cmt *) typ = x

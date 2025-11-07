@@ -126,8 +126,7 @@ let _ =
 
 let _ = a.{a, b}
 
-(* Integers on the left of indexing operators must be surrounded by
-   parentheses *)
+(* Integers on the left of indexing operators must be surrounded by parentheses *)
 let _ = (0).*(0)
 
 (* Integers with suffix and floats are fine *)

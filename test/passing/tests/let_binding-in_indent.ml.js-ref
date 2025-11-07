@@ -1,5 +1,12 @@
-(* Note that {[ let ident : typ = exp ]} is different from {[ let (ident :
-   typ) = exp ]}. The difference should be maintained *)
+(* Note that
+   {[
+     let ident : typ = exp
+   ]}
+   is different from
+   {[
+     let (ident : typ) = exp
+   ]}
+   . The difference should be maintained *)
 
 let (_ : int) = x1
 let (x : int) = x2

@@ -1,5 +1,5 @@
-(* Tests making sure comments and attributes are handled reasonably by
-   unboxed record printing. *)
+(* Tests making sure comments and attributes are handled reasonably by unboxed record
+   printing. *)
 
 (* Attrs around expressions *)
 let y = #{ a = z; b = z [@attr] }

@@ -1,5 +1,4 @@
-(* examples taken from:
-   ocaml/testsuite/tests/typing-modules/include_functor.ml *)
+(* examples taken from: ocaml/testsuite/tests/typing-modules/include_functor.ml *)
 
 (* In structure *)
 module type S = sig

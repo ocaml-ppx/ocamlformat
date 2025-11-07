@@ -2,33 +2,31 @@
 
 type t =
   | Aaaaaaaaaa
-    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+       incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb
 
 let _ =
   [ "a"
-  ; "b"
-    (* first line
-     second line *)
+  ; "b" (* first line second line *)
   ; "c"
     (* first line
 
-     second line
+       second line
     *)
   ; "d"
     (* first line
 
-
-     second line *)
+       second line *)
   ; "e"
     (* first line
 
-     second line
+       second line
     *)
   ; "f"
     (* first line
 
-     second line
+       second line
     *)
   ; "g"
   ]
@@ -36,34 +34,29 @@ let _ =
 
 let _ =
   let _ =
-    (* This is indented 7
-This 0 *)
+    (* This is indented 7 This 0 *)
     0
   in
   0
 ;;
 
 let _ =
-  (*no space before
-    no space after*)
+  (* no space before no space after *)
   0
 ;;
 
 let _ =
-  (*
-     blah blah
+  (* blah blah
   *)
   ()
 ;;
 
 (*
-   * foo
+ * foo
  * bar
-*)
+ *)
 
-(*
-   * foo
-   bar
+(* * foo bar
 *)
 
 (* foo
@@ -77,8 +70,8 @@ let _ =
  * *)
 
 module _ = struct
-  (* xxx = -xxx * xxxx.xxx + x * xxxx.xxx = -xxx * x + xx = -xxx
-     xxx = -xxx * xxxx.xxx + x * xxxx.xxx = -xxx * x + xx =  -xx
+  (* xxx = -xxx * xxxx.xxx + x * xxxx.xxx = -xxx * x + xx = -xxx xxx = -xxx * xxxx.xxx +
+     x * xxxx.xxx = -xxx * x + xx = -xx
   *)
 end
 
@@ -93,87 +86,85 @@ let _ =
  * + 2
  * ---
  *   3
-*)
+ *)
 
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
   | Aaaaaaaaaa
-    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+       incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb
 
 let rex =
   Pcre.regexp
     ("^[0-9]{2}"
-     (* xxxxxxxxxxx               *)
+     (* xxxxxxxxxxx *)
      ^ "(.{12})"
-     (* xxxxxxxxxxxxxxxxxx        *)
+     (* xxxxxxxxxxxxxxxxxx *)
      ^ "(.{4})"
-     (* xxxxxxxxxxxx              *)
+     (* xxxxxxxxxxxx *)
      ^ "([0-9]{3})"
-     (* xxxxxxxx                  *)
+     (* xxxxxxxx *)
      ^ "(.{60})"
-     (* xxxxxxxxxxxxxxxxxxxx      *)
+     (* xxxxxxxxxxxxxxxxxxxx *)
      ^ "(.{12})"
-     (* xxxxxxxxxxxxxxx           *)
+     (* xxxxxxxxxxxxxxx *)
      ^ "(.{12})"
-     (* xxxxxxxxxxxxxxxxxxx       *)
+     (* xxxxxxxxxxxxxxxxxxx *)
      ^ "([0-9]{3})"
      (* xxxxxxxxxxxxxxxxxxxxxxxxx *)
      ^ "([0-9]{3})"
-     (* xxxxxxxxxxx               *)
+     (* xxxxxxxxxxx *)
      ^ "(.{15})"
-     (* xxxxxxxxxxxxxxxxxx        *)
+     (* xxxxxxxxxxxxxxxxxx *)
      ^ "([0-9]{7})"
-     (* xxxxxxxxxxxxx             *)
+     (* xxxxxxxxxxxxx *)
      ^ "(.{10})"
-     (* xxxxxxxxxxxxx             *)
+     (* xxxxxxxxxxxxx *)
      ^ date_fmt
-     (* xxxxxxxxxxxxx             *)
+     (* xxxxxxxxxxxxx *)
      ^ "([0-9]{18})"
-     (* xxxxx                     *)
+     (* xxxxx *)
      ^ "(.)"
-     (* xxxxxxxxxxx               *)
+     (* xxxxxxxxxxx *)
      ^ "([0-9]{3})"
-     (* xxxxxxxxxxxxxx            *)
+     (* xxxxxxxxxxxxxx *)
      ^ "(.{15})"
-     (* xxxxxxxxxxxxxxxxxxxx      *)
+     (* xxxxxxxxxxxxxxxxxxxx *)
      ^ "(.{3})"
-     (* xxxxxxxxxx                *)
+     (* xxxxxxxxxx *)
      ^ "(.{27})$")
 ;;
 
 type foo =
   { some_field : int
       (* long long long long long long long long long long long long long long
-     * long long long long *)
+       * long long long long *)
   ; another_field : string
   }
 
 let _ =
   [ "a"
-  ; "b"
-    (* first line
-     second line *)
+  ; "b" (* first line second line *)
   ; "c"
     (* first line
 
-     second line
+       second line
     *)
   ; "d"
     (* first line
 
-
-     second line *)
+       second line *)
   ; "e"
     (* first line
 
-     second line
+       second line
     *)
   ; "f"
     (* first line
 
-     second line
+       second line
     *)
   ; "g"
   ]
@@ -181,22 +172,19 @@ let _ =
 
 let _ =
   let _ =
-    (* This is indented 7
-This 0 *)
+    (* This is indented 7 This 0 *)
     0
   in
   0
 ;;
 
 let _ =
-  (*no space before
-    no space after*)
+  (* no space before no space after *)
   0
 ;;
 
 let _ =
-  (*no space before
-    just newline after
+  (* no space before just newline after
   *)
   0
 ;;
@@ -214,25 +202,22 @@ let _ =
         4-----o--------o--o--|-----o--4
               |              |     |
         5-----o--------------o-----o--5
-      v} *)
+     v} *)
   ()
 ;;
 
 let _ =
-  (*
-     blah blah
+  (* blah blah
   *)
   ()
 ;;
 
 (*
-   * foo
+ * foo
  * bar
-*)
+ *)
 
-(*
-   * foo
-   bar
+(* * foo bar
 *)
 
 let _ =
@@ -284,4 +269,4 @@ let _ =
  * + 2
  * ---
  *   3
-*)
+ *)

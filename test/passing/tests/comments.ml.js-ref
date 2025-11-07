@@ -8,12 +8,12 @@
 (*$ *)
 (*$  *)
 
-let _ = f (*f*) a (*a*) ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
+let _ = f (*f*) a (*a*) ~b (* comment *) ~c:(* comment *) c' ?d ?e ()
 
 let _ =
   let _ =
     f
-      (*comment*)
+      (* comment *)
       (let open M in
        let x = x in
        e)
@@ -21,7 +21,7 @@ let _ =
   ()
 ;;
 
-let _ = (*comment*) a (*comment*), b
+let _ = (* comment *) a (* comment *), b
 
 let foo = function
   | Blah ((* old *) x, y) -> ()
@@ -106,13 +106,13 @@ let (b :: c (* d *)) = x
 
 module rec A = struct end
 
-(*test*)
+(* test *)
 and B = struct end
 
 module type T = sig
   module rec A : sig end
 
-  (*test*)
+  (* test *)
   and B : sig end
 end
 
@@ -205,7 +205,8 @@ let () =
 
 type t =
   | Aaaaaaaaaa
-    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+       incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
   | Bbbbbbbbbb (* foo *)
 
@@ -222,10 +223,10 @@ let () =
 ;;
 
 let rec fooooooooooo = function
-  (*XX*)
-  | x :: t (*YY*) -> k
-  (* AA*)
-  | [ (*BB*)
+  (* XX *)
+  | x :: t (* YY *) -> k
+  (* AA *)
+  | [ (* BB *)
       (* CC *)
       x
       (* DD *)
@@ -235,15 +236,15 @@ let rec fooooooooooo = function
       (* GG *)
     ]
   (* HH *) -> k
-  (* AA*)
-  (*BB*)
+  (* AA *)
+  (* BB *)
   (* CC *)
   | x (* DD *) :: (* EE *) t
   (* FF *)
   (* GG *)
   (* HH *) -> k
-  (* AA*)
-  (*BB*)
+  (* AA *)
+  (* BB *)
   (* CC *)
   | x
     (* DD *)

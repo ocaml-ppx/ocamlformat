@@ -44,3 +44,6 @@ val position_of_point : t -> Loc.point -> Lexing.position
     the usual representation in the Lexing module. Note that this relies on
     the information passed in {!parse_comment}, and hence requires the result
     of that call in addition to the {!Loc.point} being converted. *)
+
+val tag_list : string list
+(** All valid odoc tags. *)

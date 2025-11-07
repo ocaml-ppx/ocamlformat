@@ -305,7 +305,7 @@ let (* 1 *) _ (* 2 *) =
   f
     (* 4 *)
     (fun
-        (* 5*)
+        (* 5 *)
         (* 6 *) x
         (* 7 *)
         (* 8 *)
@@ -328,7 +328,7 @@ let (* 1 *) _ (* 2 *) =
   f
     (* 4 *)
     (fun
-        (* 5*)
+        (* 5 *)
         (* 6 *) x
         : (* 8 *) unit (* 9 *)
       ->
@@ -346,11 +346,9 @@ let[@a1] _ =
   (f [@a2]) (fun (x [@a3]) : (unit[@a4]) -> fun (y [@a5]) : (unit[@a6]) -> z [@a7])
 ;;
 
-(* CR: Some of the comment movement above are kind of sad. For
-   example this:
-     let f (* 2 *) (type (* 3 *) a) = (() : unit @@ local)
-   becomes:
-     let f (type (* 3 *) a) = (* 2 *) (() : unit @@ local)
+(* CR: Some of the comment movement above are kind of sad. For example this: let f (* 2 *)
+   (type (* 3 *) a) = (() : unit @@ local) becomes: let f (type (* 3 *) a) = (* 2 *) (() :
+   unit @@ local)
 
    Why does (* 2 *) get moved out to the rhs? *)
 

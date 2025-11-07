@@ -611,38 +611,32 @@ end
 
 module Doc = struct
   let fmt ~pro ~epi ~fmt_code conf ~loc txt ~offset =
-    (* Whether the doc starts and ends with an empty line. *)
-    let pre_nl, trail_nl =
-      let lines = String.split ~on:'\n' txt in
-      match lines with
-      | [] | [_] -> (false, false)
-      | h :: _ ->
-          let l = List.last_exn lines in
-          (is_only_whitespaces h, is_only_whitespaces l)
+    let trail_nl =
+      String.split ~on:'\n' txt |> List.last_exn |> is_only_whitespaces
     in
-    let txt = if pre_nl then String.lstrip txt else txt in
-    let txt = if trail_nl then String.rstrip txt else txt in
+    let trail_asterisk = String.is_suffix ~suffix:"*" txt in
+    let txt = String.rstrip txt in
     let parsed = Docstring.parse ~loc ~pro txt in
     (* Disable warnings when parsing of code blocks fails. *)
     let quiet = Conf_t.Elt.make true `Default in
     let conf = {conf with Conf.opr_opts= {conf.Conf.opr_opts with quiet}} in
-    let doc =
-      Fmt_odoc.fmt_parsed conf ~actually_a_doc_comment:false ~fmt_code
-        ~input:txt ~offset parsed
-    in
+    let doc = Fmt_odoc.fmt_parsed conf ~fmt_code ~input:txt ~offset parsed in
     let open Fmt in
-    hvbox 2
-      ( str pro
-      $ fmt_if pre_nl "@;<1000 1>"
-      $ doc
-      $ fmt_if trail_nl "@;<1000 -2>"
-      $ epi )
+    let trailing_space =
+      if trail_asterisk then noop else fmt_or trail_nl "@;<1000 -2>" " "
+    in
+    hvbox 2 (str pro $ doc $ trailing_space $ epi)
 end
 
 let fmt_cmt (conf : Conf.t) cmt ~fmt_code =
   let open Fmt in
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
-  let decoded = Cmt.decode ~parse_comments_as_doc cmt in
+  let preserve_ambiguous_line_comments =
+    conf.fmt_opts.preserve_ambiguous_line_comments.v
+  in
+  let decoded =
+    Cmt.decode ~parse_comments_as_doc ~preserve_ambiguous_line_comments cmt
+  in
   (* TODO: Offset should be computed from location. *)
   let offset = 2 + String.length decoded.prefix in
   let pro_str = "(*" ^ decoded.prefix

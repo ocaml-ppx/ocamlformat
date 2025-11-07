@@ -248,7 +248,7 @@ class type castable = object
   method cast : 'a. 'a name -> 'a
 end
 
-(* Lets create a castable class with a name*)
+(* Lets create a castable class with a name *)
 
 class type foo_t = object
   inherit castable
@@ -915,8 +915,7 @@ let g (type t) (x : t) (tag : t ty) =
   | Int -> x > 0
 ;;
 
-(* Error: This expression has type bool but an expression was expected of type
-t = int *)
+(* Error: This expression has type bool but an expression was expected of type t = int *)
 
 let id x = x
 
@@ -1503,8 +1502,8 @@ let rec length : type a n. (a, n) seq -> n nat = function
   | Scons (_, s) -> NS (length s)
 ;;
 
-(* app returns the catenated lists with a witness proving that
-   the size is the sum of its two inputs *)
+(* app returns the catenated lists with a witness proving that the size is the sum of its
+   two inputs *)
 type (_, _, _) app = App : ('a, 'p) seq * ('n, 'm, 'p) plus -> ('a, 'n, 'm) app
 
 let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
@@ -1653,15 +1652,9 @@ let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
 
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
-(*
-   let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
-  fun le a b ->
-  match a, b, le with
-  | NZ, m, _ -> Diff (m, PlusZ m)
-  | NS x, NZ, _ -> assert false
-  | NS x, NS y, q ->
-      match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p)
-;;
+(* let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff = fun le a b -> match
+   a, b, le with | NZ, m, _ -> Diff (m, PlusZ m) | NS x, NZ, _ -> assert false | NS x, NS
+   y, q -> match diff (smaller q) x y with Diff (m, p) -> Diff (m, PlusS p) ;;
 *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -2093,8 +2086,8 @@ let v3 = eval_lam env0 ex3
 
 (* 5.13: Constructing typing derivations at runtime *)
 
-(* Modified slightly to use the language of 5.10, since this is more fun.
-   Of course this works also with the language of 5.12. *)
+(* Modified slightly to use the language of 5.10, since this is more fun. Of course this
+   works also with the language of 5.12. *)
 
 type _ rep =
   | I : int rep
@@ -2847,10 +2840,8 @@ type _ fin =
   | FZ : 'a succ fin
   | FS : 'a fin -> 'a succ fin
 
-(* We cannot define
-     val empty : zero fin -> 'a
-   because we cannot write an empty pattern matching.
-   This might be useful to have *)
+(* We cannot define val empty : zero fin -> 'a because we cannot write an empty pattern
+   matching. This might be useful to have *)
 
 (* In place, prove that the parameter is 'a succ *)
 type _ is_succ = IS : 'a succ is_succ
@@ -2877,8 +2868,7 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(*  val comp_subst :
-    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(* val comp_subst : ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -2973,7 +2963,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-(*  val subst' : 'a ealist -> 'a term -> 'a term *)
+(* val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -3221,9 +3211,9 @@ let test_bar () =
 val test_bar : unit -> unit = <fun>
 |}]
 
-(* Uncomment these to test. Should see substantial speedup!
-let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
-let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
+(* Uncomment these to test. Should see substantial speedup! let () = Printf.printf "No
+   @@immediate: %fs\n" (test test_foo) let () = Printf.printf "With @@immediate: %fs\n"
+   (test test_bar) *)
 
 (* INVALID DECLARATIONS *)
 
@@ -4631,21 +4621,15 @@ module M' : module type of Std'.M = Std2.M
 
 let f3 (x : M'.t) : Std2.M.t = x
 
-(* original report required Core_kernel:
-module type S = sig
-open Core_kernel.Std
+(* original report required Core_kernel: module type S = sig open Core_kernel.Std
 
-module Hashtbl1 : module type of Hashtbl
-module Hashtbl2 : sig
-  include (module type of Hashtbl)
-end
+   module Hashtbl1 : module type of Hashtbl module Hashtbl2 : sig include (module type of
+   Hashtbl) end
 
-module Coverage : Core_kernel.Std.Hashable
+   module Coverage : Core_kernel.Std.Hashable
 
-type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
-type doesnt_type = unit
-  constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-end
+   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t type
+   doesnt_type = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t end
 *)
 module type INCLUDING = sig
   include module type of List
@@ -4812,21 +4796,12 @@ module type PR6513 = sig
     S with type u = < foo : Html5.uri >
 end
 
-(* Requires -package tyxml
-module type PR6513_orig = sig
-module type S =
-sig
-        type t
-        type u
-end
+(* Requires -package tyxml module type PR6513_orig = sig module type S = sig type t type u
+   end
 
-module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
-end
+   module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a and type 'a wrap =
+   'a and type 'a list_wrap = 'a list) -> S with type t = Html5_types.div Html5.elt and
+   type u = < foo: Html5.uri > end
 *)
 module type S = sig
   include Set.S
@@ -4955,7 +4930,7 @@ module X = struct
   end
 end
 
-(* open X  (* works! *) *)
+(* open X (* works! *) *)
 module Y = X.Y
 
 type 'a arg_t = 'at constraint 'a = (module Y.S with type t = 'at)
@@ -5032,10 +5007,8 @@ struct
   let uniq (type a b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
 end
 
-(* This would allow:
-module FixId = Fix (struct type 'a f = 'a end)
- let bad : (int, string) eq = FixId.uniq Eq Eq
- let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+(* This would allow: module FixId = Fix (struct type 'a f = 'a end) let bad : (int,
+   string) eq = FixId.uniq Eq Eq let _ = Printf.printf "Oh dear: %s" (cast bad 42)
 *)
 module M = struct
   module type S = sig
@@ -5618,8 +5591,7 @@ struct end
 
 module G = F (M.Y)
 
-(*module N = G (M);;
-module N = F (M.Y) (M);;*)
+(* module N = G (M);; module N = F (M.Y) (M);; *)
 
 (* PR#6307 *)
 
@@ -5677,17 +5649,14 @@ end
 
 (* fail *)
 
-(* (* if the above succeeded, one could break invariants *)
-module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
+(* (* if the above succeeded, one could break invariants *) module rec M2 : S' = M2;; (*
+   should succeed! (but this is bad) *)
 
-let M2.W eq = W Eq;;
+   let M2.W eq = W Eq;;
 
-let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
-module SInt2 = Set.Make(Int2);;
-let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-let s' : SInt2.t = conv eq s;;
-SInt2.elements s';;
-SInt2.mem 2 s';; (* invariants are broken *)
+   let s = List.fold_right SInt.add [1;2;3] SInt.empty;; module SInt2 = Set.Make(Int2);;
+   let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;; let s' : SInt2.t = conv eq
+   s;; SInt2.elements s';; SInt2.mem 2 s';; (* invariants are broken *)
 *)
 
 (* Check behavior with submodules *)
@@ -5870,15 +5839,13 @@ end = struct
   include A
 end
 
-(* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+(* The following introduces a (useless) dependency on A: module C : sig module L : module
+   type of List end = A
 *)
 
 include D'
 
-(*
-   let () =
-  print_endline (string_of_int D'.M.y)
+(* let () = print_endline (string_of_int D'.M.y)
 *)
 open A
 
@@ -5891,8 +5858,8 @@ end = struct
   include A
 end
 
-(* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+(* The following introduces a (useless) dependency on A: module C : sig module L : module
+   type of List end = A
 *)
 
 (* No dependency on D *)
@@ -5912,8 +5879,7 @@ module type S' = sig
   type u = bool
 end
 
-(* ok to convert between structurally equal signatures, and parameters
-   are inferred *)
+(* ok to convert between structurally equal signatures, and parameters are inferred *)
 let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
@@ -6499,10 +6465,7 @@ module M : sig
 end = struct
   type refer = { poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) }
 end
-(*
-   ocamlc -c pr3918a.mli pr3918b.mli
-  rm -f pr3918a.cmi
-  ocamlc -c pr3918c.ml
+(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml
 *)
 
 open Pr3918b
@@ -6898,8 +6861,8 @@ let f Test2.A = ()
 let a = Test2.A
 
 (* fail *)
-(* The following should fail from a semantical point of view,
-   but allow it for backward compatibility *)
+(* The following should fail from a semantical point of view, but allow it for backward
+   compatibility *)
 module Test2 : module type of Test with type t = private Test.t = Test
 
 (* PR#6331 *)
@@ -7129,8 +7092,7 @@ module PR_4450_2 = struct
   end
 end
 
-(* A synthetic example of bootstrapped data structure
-   (suggested by J-C Filliatre) *)
+(* A synthetic example of bootstrapped data structure (suggested by J-C Filliatre) *)
 
 module type ORD = sig
   type t
@@ -7381,11 +7343,7 @@ let _ =
 
 (* Early strict evaluation *)
 
-(*
-   module rec Cyclic
-  : sig val x : int end
-  = struct let x = Cyclic.x + 1 end
-;;
+(* module rec Cyclic : sig val x : int end = struct let x = Cyclic.x + 1 end ;;
 *)
 
 (* Reordering of evaluation based on dependencies *)
@@ -7478,19 +7436,16 @@ end
 
 (* Wrong LHS signatures (PR#4336) *)
 
-(*
-   module type ASig = sig type a val a:a val print:a -> unit end
-module type BSig = sig type b val b:b val print:b -> unit end
+(* module type ASig = sig type a val a:a val print:a -> unit end module type BSig = sig
+   type b val b:b val print:b -> unit end
 
-module A = struct type a = int let a = 0 let print = print_int end
-module B = struct type b = float let b = 0.0 let print = print_float end
+   module A = struct type a = int let a = 0 let print = print_int end module B = struct
+   type b = float let b = 0.0 let print = print_float end
 
-module MakeA (Empty:sig end) : ASig = A
-module MakeB (Empty:sig end) : BSig = B
+   module MakeA (Empty:sig end) : ASig = A module MakeB (Empty:sig end) : BSig = B
 
-module
-   rec NewA : ASig = MakeA (struct end)
-   and NewB : BSig with type b = NewA.a = MakeB (struct end);;
+   module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b = NewA.a =
+   MakeB (struct end);;
 *)
 
 (* Expressions and bindings *)
@@ -8190,8 +8145,8 @@ module M2 = struct
   type v = A.B.t
 end
 
-(* Adapted from: An Expressive Language of Signatures
-   by Norman Ramsey, Kathleen Fisher and Paul Govereau *)
+(* Adapted from: An Expressive Language of Signatures by Norman Ramsey, Kathleen Fisher
+   and Paul Govereau *)
 
 module type VALUE = sig
   type value (* a Lua value *)
@@ -8542,8 +8497,8 @@ external i : (int -> float[@unboxed]) = "i" "i_nat"
 (* Bad: unboxing a "deep" sub-type. *)
 external j : int -> (float[@unboxed]) * float = "j" "j_nat"
 
-(* This should be rejected, but it is quite complicated to do
-   in the current state of things *)
+(* This should be rejected, but it is quite complicated to do in the current state of
+   things *)
 
 external k : int -> (float[@unboxd]) = "k" "k_nat"
 
@@ -8623,7 +8578,7 @@ let f
   | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
 
-(*| _ -> _ *)
+(* | _ -> _ *)
 
 (* Unused cases *)
 let f (x : int t) =
@@ -8946,7 +8901,7 @@ end
 
 (* fails for -principal *)
 
-(* Use type information with modules*)
+(* Use type information with modules *)
 module M = struct
   type t = { x : int }
   type u = { x : bool }
@@ -9661,13 +9616,7 @@ let _ =
        long_function_name long_argument_name__________________________________________)
 ;;
 
-let g =
-  f
-    ~x
-      (* this is a multiple-line-spanning
-                comment *)
-    ~y
-;;
+let g = f ~x (* this is a multiple-line-spanning comment *) ~y
 
 let formula_base x =
   let open Formula.Infix in
@@ -9686,9 +9635,7 @@ f
 
 let f =
   very_long_function_name
-    ~x:very_long_variable_name
-      (* this is a multiple-line-spanning
-       comment *)
+    ~x:very_long_variable_name (* this is a multiple-line-spanning comment *)
     ~y
 ;;
 
@@ -9729,7 +9676,7 @@ type t =
   (* Here is some verbatim formatted text:
      {v
        starting at column 7
-     v}*)
+     v} *)
   }
 
 module Intro_sort = struct
@@ -9745,7 +9692,7 @@ module Intro_sort = struct
           4-----o--------o--o--|-----o--4
                 |              |     |
           5-----o--------------o-----o--5
-        v} *)
+       v} *)
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo;
     foooooooooo fooooo fooo
@@ -9761,11 +9708,10 @@ let _ =
 let nullsafe_optimistic_third_party_params_in_non_strict =
   CLOpt.mk_bool
     ~long:"nullsafe-optimistic-third-party-params-in-non-strict"
-      (* Turned on for compatibility reasons. Historically this is because
-         there was no actionable way to change third party annotations. Now
-         that we have such a support, this behavior should be reconsidered,
-         provided our tooling and error reporting is friendly enough to be
-         smoothly used by developers. *)
+      (* Turned on for compatibility reasons. Historically this is because there was no
+         actionable way to change third party annotations. Now that we have such a
+         support, this behavior should be reconsidered, provided our tooling and error
+         reporting is friendly enough to be smoothly used by developers. *)
     ~default:true
     "Nullsafe: in this mode we treat non annotated third party method params as if they \
      were annotated as nullable."
@@ -9780,8 +9726,7 @@ let foo () =
 ;;
 
 let xxxxxx =
-  let%map (* _____________________________
-             __________ *) () = yyyyyyyy in
+  let%map (* _____________________________ __________ *) () = yyyyyyyy in
   { zzzzzzzzzzzzz }
 ;;
 
@@ -9817,7 +9762,8 @@ let _ =
 ;;
 
 let[@a
-     (* .............................................. ........................... .......................... ...................... *)
+     (* .............................................. ...........................
+        .......................... ...................... *)
      foo
      (* ....................... *)
      (* ................................. *)
@@ -10343,11 +10289,9 @@ type t =
   (* ____________________________________ *)
   }
 
-(*{v
-
+(* {v
       foo
-
-v}*)
+   v} *)
 
 let _ =
   match () with
@@ -10470,13 +10414,9 @@ let _ =
 (** xxxxxxxxxxxxxxxxxxxxxxxxxxx [xxxxxxx xxxx] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     [xxxxxxx] *)
 
-(*    Hand-aligned comment
-        .
-      . *)
+(* Hand-aligned comment . . *)
 
-(*    First line is indented more
-    .
-      . *)
+(* First line is indented more . . *)
 
 module type M = sig
   val imported_sets_of_closures_table

@@ -89,8 +89,8 @@ let () =
 let foo =
   match instr with
   | Store (Lvar lhs_pvar, lhs_typ, rhs_exp, loc) when Pvar.is_ssa_frontend_tmp lhs_pvar ->
-    (* do not need to add deref here as it is added implicitly in of_pvar
-         by forgetting the & *)
+    (* do not need to add deref here as it is added implicitly in of_pvar by forgetting
+       the & *)
     analyze_id_assignment (Var.of_pvar lhs_pvar) rhs_exp lhs_typ loc
   | Call
       ( (ret_id, _)
@@ -141,7 +141,7 @@ let rec loop items =
     (* a comment *)
     loop items
   | _ :: items ->
-    (* another comment*)
+    (* another comment *)
     loop items
   | _ ->
     let a = 3 in
@@ -235,13 +235,13 @@ let _ =
 
 let foooooooooooooo = function
   | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *)
-  | Foo (* foooooo foooo fooooo fooooooo fooooooo fooooo  *)
+  | Foo (* foooooo foooo fooooo fooooooo fooooooo fooooo *)
   | Foooooooooooooooo (* foooooo foooo fooooooooooo *)
   | Foooooooooooooo _
   (* Foooooooooooooooooooooooooooo fooooooooooooooooooooooooooo fooooooooo.
      Foooooooooooooooooooooooooooooooooooo foooooooooooooooooooooooo foooooo.
-     Foooooooooooooooooooooooooooooooooooooo foooooooooooooooooooo foooooooooooooooooo foooooooo.
-     Foooooooooooo fooooooooooo fooooooooooooo foooooooooooooo foooooo.
+     Foooooooooooooooooooooooooooooooooooooo foooooooooooooooooooo foooooooooooooooooo
+     foooooooo. Foooooooooooo fooooooooooo fooooooooooooo foooooooooooooo foooooo.
   *)
   | Foooooooooo
   | FooooFoooooFoooooo (* fooooooooooooooooooooooooooooooooooo *)

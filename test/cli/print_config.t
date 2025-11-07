@@ -74,6 +74,7 @@ No redundant values:
   type-decl=compact (profile conventional (file .ocamlformat:1))
   type-decl-indent=2 (profile conventional (file .ocamlformat:1))
   wrap-comments=false (profile conventional (file .ocamlformat:1))
+  preserve-ambiguous-line-comment=false (profile conventional (file .ocamlformat:1))
   wrap-fun-args=true (profile conventional (file .ocamlformat:1))
   profile=conventional (file .ocamlformat:1)
 
@@ -153,6 +154,7 @@ Redundant values from the conventional profile:
   type-decl=compact (profile conventional (file .ocamlformat:1))
   type-decl-indent=2 (profile conventional (file .ocamlformat:1))
   wrap-comments=false (profile conventional (file .ocamlformat:1))
+  preserve-ambiguous-line-comment=false (profile conventional (file .ocamlformat:1))
   wrap-fun-args=true (profile conventional (file .ocamlformat:1))
   profile=conventional (file .ocamlformat:1)
 
@@ -232,5 +234,6 @@ Redundant values from the ocamlformat profile:
   type-decl=compact (profile ocamlformat (file .ocamlformat:1))
   type-decl-indent=2 (profile ocamlformat (file .ocamlformat:1))
   wrap-comments=false (profile ocamlformat (file .ocamlformat:1))
+  preserve-ambiguous-line-comment=false (profile ocamlformat (file .ocamlformat:1))
   wrap-fun-args=true (profile ocamlformat (file .ocamlformat:1))
   profile=ocamlformat (file .ocamlformat:1)

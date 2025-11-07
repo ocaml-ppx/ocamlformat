@@ -1,7 +1,7 @@
 (* Tests making sure comments and attributes are handled reasonably by labeled tuple
-   printing.  This test has examples where the comments stay in exactly the same place -
+   printing. This test has examples where the comments stay in exactly the same place -
    see [labeled_tuples_cmts_attrs_move.ml] for examples where we allow ourselves to
-   slightly shift a comment or add a pun.  *)
+   slightly shift a comment or add a pun. *)
 
 (* Attrs around expressions *)
 let y = ~z, ~z:(z [@attr])

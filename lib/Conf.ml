@@ -112,6 +112,7 @@ let conventional_profile from =
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
   ; wrap_comments= elt false
+  ; preserve_ambiguous_line_comments= elt false
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
 
@@ -183,6 +184,7 @@ let ocamlformat_profile from =
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
   ; wrap_comments= elt false
+  ; preserve_ambiguous_line_comments= elt false
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
 
@@ -253,6 +255,7 @@ let janestreet_profile from =
   ; type_decl= elt `Sparse
   ; type_decl_indent= elt 2
   ; wrap_comments= elt true
+  ; preserve_ambiguous_line_comments= elt true
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt false }
 
@@ -1310,6 +1313,19 @@ module Formatting = struct
       (fun conf elt -> update conf ~f:(fun f -> {f with wrap_comments= elt}))
       (fun conf -> conf.fmt_opts.wrap_comments)
 
+  let preserve_ambiguous_line_comments =
+    let doc =
+      "Do not format comments that are one-line long and may contain \
+       whitespace-sensitive code (e.g. strings)"
+    in
+    Decl.flag ~default
+      ~names:["preserve-ambiguous-line-comment"]
+      ~doc ~kind
+      (fun conf elt ->
+        update conf ~f:(fun f ->
+            {f with preserve_ambiguous_line_comments= elt} ) )
+      (fun conf -> conf.fmt_opts.preserve_ambiguous_line_comments)
+
   let wrap_fun_args =
     let doc = "Style for function call." in
     let names = ["wrap-fun-args"] in
@@ -1378,6 +1394,7 @@ module Formatting = struct
       ; elt type_decl
       ; elt type_decl_indent
       ; elt wrap_comments
+      ; elt preserve_ambiguous_line_comments
       ; elt wrap_fun_args
       ; (* removed options *)
         elt align_cases

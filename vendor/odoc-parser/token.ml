@@ -5,7 +5,7 @@
 type section_heading = [ `Begin_section_heading of int * string option ]
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 type paragraph_style = [ `Left | `Center | `Right ]
-type list_punctuation = [ `Dot | `Paren | `Two_paren ]
+type list_punctuation = [ `Dot | `Paren | `Two_paren | `Two_brace ]
 type list_number = [ `Number of int | `Lower_case of char | `Upper_case of char ]
 
 type tag =
@@ -83,6 +83,7 @@ let print_list_number punc num =
      | `Dot -> "", "."
      | `Paren -> "", ")"
      | `Two_paren -> "(", ")"
+     | `Two_brace -> "[", "]"
     )
   in
   let n = 

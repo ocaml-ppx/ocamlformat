@@ -109,6 +109,48 @@
    big float: 999999999999999999999999999999.0
 *)
 
+(* Also[1] footnote-style comments[2]:
+
+   [1] See this paper
+   [2] Thanks for the advice
+
+   [A] this does not
+   [B] work, however, since it is likely to be code
+*)
+
+(* Regression for comment preservation check \[0\] *)
+
+(* Regression for comment preservation check \[1\] *)
+
+(* \[1\] Regression for comment preservation check *)
+
+(* this is a comment that could be code that cares about space: "  hello  " *)
+
+(* so is this: {|  hello  |} *)
+
+(* and this: {%foo bar|  hello  |bar} *)
+
+(* let x = { y = z } *)
+
+(* let f : _ @ a -> _ @ b = g *)
+
+(* this comment
+   will become "  sus  " *)
+
+(* syntax change regression test
+   {[
+   type t [@@immediate]
+   ]}
+*)
+
+(* flower comment
+   * with
+     *      strange
+ * indentation
+*)
+
+(*/**)
+
 (** {xinvalid markup} *)
 
 (** valid markup {but no space} *)
@@ -216,6 +258,42 @@
     big num: 999999999999999999999999999999.
 
     big float: 999999999999999999999999999999.0
+*)
+
+(** Also[1] footnote-style comments[2]:
+
+    [1] See this paper
+    [2] Thanks for the advice
+
+    [A] this does not
+    [B] work, however, since it is likely to be code
+*)
+
+(** Regression for comment preservation check \[0\] *)
+
+(** Regression for comment preservation check \[1\] *)
+
+(** \[1\] Regression for comment preservation check *)
+
+(**/**)
+
+(** this is a comment that could be code that cares about space: "  hello  " *)
+
+(** so is this: {|  hello  |} *)
+
+(** and this: {%foo bar|  hello  |bar} *)
+
+(** let x = { y = z } *)
+
+(** let f : _ @ a -> _ @ b = g *)
+
+(** this comment
+    will become "  sus  " *)
+
+(** syntax change regression test
+    {[
+    type t [@@immediate]
+    ]}
 *)
 
 (*_ {xinvalid markup} *)
@@ -326,3 +404,40 @@
 
     big float: 999999999999999999999999999999.0
 *)
+
+(*_ Also[1] footnote-style comments[2]:
+
+    [1] See this paper
+    [2] Thanks for the advice
+
+    [A] this does not
+    [B] work, however, since it is likely to be code
+*)
+
+(*_ Regression for comment preservation check \[0\] *)
+
+(*_ Regression for comment preservation check \[1\] *)
+
+(*_ \[1\] Regression for comment preservation check *)
+
+(*_ this is a comment that could be code that cares about space: "  hello  " *)
+
+(*_ so is this: {|  hello  |} *)
+
+(*_ and this: {%foo bar|  hello  |bar} *)
+
+(*_ let x = { y = z } *)
+
+(*_ let f : _ @ a -> _ @ b = g *)
+
+(*_ this comment
+    will become "  sus  " *)
+
+(*_ syntax change regression test
+    {[
+    type t [@@immediate]
+    ]}
+*)
+
+(*_/**)
+

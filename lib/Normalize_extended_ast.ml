@@ -245,7 +245,16 @@ let normalize_cmt (conf : Conf.t) =
   let parse_comments_as_doc = conf.fmt_opts.ocp_indent_compat.v in
   object (self)
     method cmt c =
-      let decoded = Cmt.decode ~parse_comments_as_doc c in
+      (* Always pass [~preserve_ambiguous_line_comments:false] because we may
+         sometimes turn a multi-line comment that deserves formatting into a
+         single-line comment that does not. In this case, if we passed the
+         [preserve_ambiguous_line_comments] from the config, the former AST
+         would decode the comment as a [Doc] comment and the latter as
+         [Verbatim]. *)
+      let decoded =
+        Cmt.decode ~parse_comments_as_doc
+          ~preserve_ambiguous_line_comments:false c
+      in
       match decoded.Cmt.kind with
       | Verbatim txt -> txt
       | Doc txt ->

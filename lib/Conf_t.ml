@@ -120,6 +120,7 @@ type fmt_opts =
   ; type_decl: [`Compact | `Sparse] elt
   ; type_decl_indent: int elt
   ; wrap_comments: bool elt
+  ; preserve_ambiguous_line_comments: bool elt
   ; wrap_docstrings: bool elt
   ; wrap_fun_args: bool elt }
 

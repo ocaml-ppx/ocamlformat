@@ -424,13 +424,15 @@ let fmt_parsed_docstring c ~loc ?pro ~epi input parsed =
     pos.pos_cnum - pos.pos_bol + 3
   and fmt_code = c.fmt_code in
   let doc =
-    if
-      c.conf.fmt_opts.parse_docstrings.v
-      && String.for_all ~f:Char.is_whitespace input
-    then noop
-    else
-      Fmt_odoc.fmt_parsed c.conf ~actually_a_doc_comment:true ~fmt_code
-        ~offset ~input parsed
+    match input with
+    | "/*" ->
+        (* Special-case the form that toggles odoc: [(**/**)] *) str input
+    | _ ->
+        if
+          c.conf.fmt_opts.parse_docstrings.v
+          && String.for_all ~f:Char.is_whitespace input
+        then noop
+        else Fmt_odoc.fmt_parsed c.conf ~fmt_code ~offset ~input parsed
   in
   let closing_space =
     match parsed with
