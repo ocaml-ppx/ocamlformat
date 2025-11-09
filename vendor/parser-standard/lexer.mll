@@ -733,7 +733,6 @@ rule token = parse
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
   | "/>" { SLASHGREATER }
-  | ">]" { GREATERRBRACKET }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }
@@ -979,6 +978,28 @@ and skip_hash_bang = parse
            preceded by a blank line *)
 
   and docstring = Docstrings.docstring
+
+  let token_with_comments lexbuf =
+    match token_with_comments lexbuf with
+    | LBRACKETLESS ->
+      (* Check if the next character (if any) could start an identifier.
+         UIDENT starts with A-Z, LIDENT starts with a-z or _ *)
+      let should_split =
+        lexbuf.Lexing.lex_curr_pos < lexbuf.Lexing.lex_buffer_len &&
+        begin
+          let next = Bytes.get lexbuf.Lexing.lex_buffer lexbuf.Lexing.lex_curr_pos in
+          next >= 'A' && next <= 'Z' || next >= 'a' && next <= 'z' || next = '_'
+        end
+      in
+      if should_split then begin
+        (* Backtrack one character to before the "<" so it will be lexed separately *)
+        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
+        let lex_curr_p = lexbuf.lex_curr_p in
+        lexbuf.lex_curr_p <- { lex_curr_p with pos_cnum = lex_curr_p.pos_cnum - 1 };
+        LBRACKET
+      end else
+        LBRACKETLESS
+    | tok -> tok
 
   let token lexbuf =
     let post_pos = lexeme_end_p lexbuf in
