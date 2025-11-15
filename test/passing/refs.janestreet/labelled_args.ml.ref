@@ -1,6 +1,6 @@
 let _ =
   let f ~y = y + 1 in
-  f ~y:(y : int)
+  f ~(y : int)
 ;;
 
 let () =
