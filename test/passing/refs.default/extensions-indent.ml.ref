@@ -323,9 +323,9 @@ let _ =
 
 let _ =
   f
-    (object%ext
-       method x = y
-    end)
+    object%ext
+      method x = y
+    end
 
 let _ =
   f
