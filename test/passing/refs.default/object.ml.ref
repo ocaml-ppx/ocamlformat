@@ -56,8 +56,8 @@ type t = (int, int) #q
 let _ = object%js end
 let _ = object%js (super) end
 let _ = object%js (super : 'a) end
-let _ = f (object end)
-let _ = f (object%js end)
+let _ = f object end
+let _ = f object%js end
 
 class t ~a =
   object
