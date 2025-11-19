@@ -6,11 +6,64 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Added
+
+- Added option `letop-punning` (#2746, @WardBrian) to control whether
+  punning is used in extended binding operators.
+  For example, the code `let+ x = x in ...` can be formatted as
+  `let+ x in ...` when `letop-punning=always`. With `letop-punning=never`, it
+  becomes `let+ x = x in ...`. The default is `preserve`, which will
+  only use punning when it exists in the source.
+  This also applies to `let%ext` bindings (#2747, @WardBrian).
+
 ### Fixed
+
+- Fix dropped comment in `(function _ -> x (* cmt *))` (#2739, @Julow)
+
+- \* `cases-matching-exp-indent=compact` does not impact `begin end` nodes that
+  don't have a match inside. (#2742, @EmileTrotignon)
+  ```ocaml
+  (* before *)
+  begin match () with
+  | () -> begin
+    f x
+  end
+  end
+  (* after *)
+  begin match () with
+  | () -> begin
+      f x
+    end
+  end
+  ```
 
 - `Ast_mapper` now iterates on *all* locations inside of Longident.t,
   instead of only some.
   (#2737, @v-gb)
+
+### Internal
+
+- Added information on writing tests to `CONTRIBUTING.md` (#2838, @WardBrian)
+
+### Changed
+
+- indentation of the `end` keyword in a match-case is now always at least 2. (#2742, @EmileTrotignon)
+  ```ocaml
+  (* before *)
+  begin match () with
+  | () -> begin
+    match () with
+    | () -> ()
+  end
+  end
+  (* after *)
+  begin match () with
+  | () -> begin
+    match () with
+    | () -> ()
+    end
+  end
+  ```
 
 ## 0.28.1
 
@@ -40,7 +93,7 @@ profile. This started with version 0.26.0.
 ### Added
 
 - Added option `module-indent` option (#2711, @HPRIOR) to control the indentation
-  of items within modules. This affects modules and signatures. For example, 
+  of items within modules. This affects modules and signatures. For example,
   module-indent=4:
   ```ocaml
   module type M = sig
@@ -148,7 +201,7 @@ profile. This started with version 0.26.0.
 - Fix a crash where `type%e nonrec t = t` was formatted as `type nonrec%e t = t`,
   which is invalid syntax. (#2712, @EmileTrotignon)
 
-- Fix commandline parsing being quadratic in the number of arguments 
+- Fix commandline parsing being quadratic in the number of arguments
   (#2724, @let-def)
 
 - \* Fix `;;` being added after a documentation comment (#2683, @EmileTrotignon)

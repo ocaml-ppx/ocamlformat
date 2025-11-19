@@ -86,3 +86,12 @@ let f = function
           | ElementHole -> ElementHole
           | Element e -> Element (m#expression e)
           | ElementSpread e -> ElementSpread (m#expression e)))
+
+let _ =
+  f
+    (function
+      | _ ->
+          x
+          (* o::other reverses the list, in order to keep
+             Remote and other order-sensitive stanzas intact
+             we need to List.rev the [tl] list. *))

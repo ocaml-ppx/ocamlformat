@@ -391,10 +391,10 @@ let _ =
 let _ =
   match x with
   | _ ->
-    (* xxx *)
-    begin
-      y
-    end
+      (* xxx *)
+      begin
+        y
+      end
 
 let _ = match x with _ -> begin[@foo] y end
 

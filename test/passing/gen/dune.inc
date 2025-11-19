@@ -874,6 +874,24 @@
 
 (rule
  (deps .ocamlformat)
+ (package ocamlformat)
+ (action
+  (with-stdout-to cases_exp_indent.ml.stdout
+   (with-stderr-to cases_exp_indent.ml.stderr
+     (run %{bin:ocamlformat} --name cases_exp_indent.ml --margin-check --nested-match=align --cases-exp-indent=4 %{dep:../tests/cases_exp_indent.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff cases_exp_indent.ml.ref cases_exp_indent.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff cases_exp_indent.ml.err cases_exp_indent.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
  (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
@@ -3685,6 +3703,42 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff let_module.ml.err let_module.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_punning-denied.ml.stdout
+   (with-stderr-to let_punning-denied.ml.stderr
+     (run %{bin:ocamlformat} --name let_punning-denied.ml --margin-check --letop-punning=never --ocaml-version=4.14.0 %{dep:../tests/let_punning.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning-denied.ml.ref let_punning-denied.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning-denied.ml.err let_punning-denied.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
+  (with-stdout-to let_punning-preferred.ml.stdout
+   (with-stderr-to let_punning-preferred.ml.stderr
+     (run %{bin:ocamlformat} --name let_punning-preferred.ml --margin-check --letop-punning=always --ocaml-version=4.14.0 %{dep:../tests/let_punning.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning-preferred.ml.ref let_punning-preferred.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_punning-preferred.ml.err let_punning-preferred.ml.stderr)))
 
 (rule
  (deps .ocamlformat)

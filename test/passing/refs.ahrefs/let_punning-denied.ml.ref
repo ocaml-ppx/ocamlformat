@@ -1,17 +1,24 @@
 let ( let* ) x f = f x
-let ( and* ) a b = (a, b)
+
+let ( and* ) a b = a, b
 
 let x = 1
+
 and y = 2
+
 and z = 3
 
 let p =
-  let* x = x and* y = y and* z = z in
-  (x, y, z)
+  let* x = x
+  and* y = y
+  and* z = z in
+  x, y, z
 
 let q =
-  let%foo x = x and y = y and z = z in
-  (x, y, z)
+  let%foo x = x
+  and y = y
+  and z = z in
+  x, y, z
 
 let r =
   let* (* 1 *) x (* 2 *) = (* 3 *) x (* 4 *)
@@ -19,7 +26,7 @@ let r =
     y
     (* 6 *)
   in
-  (x, y)
+  x, y
 
 let s =
   let%foo (* 1 *) x (* 2 *) = (* 3 *) x (* 4 *)
@@ -27,4 +34,4 @@ let s =
     y
     (* 6 *)
   in
-  (x, y)
+  x, y

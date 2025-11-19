@@ -8,7 +8,7 @@ let _ =
     | B -> fooooooooooooo
     | C -> fooooooooooooo
     | D -> fooooooooooooo
-  end
+    end
 [@@ocamlformat "break-cases=fit"]
 ;;
 
@@ -39,19 +39,19 @@ let _ =
   | A -> begin
     match B with
     | A -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
     | D -> fooooooooooooo
-  end
+    end
 [@@ocamlformat "break-cases=toplevel"]
 ;;
 
@@ -60,19 +60,19 @@ let _ =
   | A -> begin
     match B with
     | A -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
     | D -> fooooooooooooo
-  end
+    end
 [@@ocamlformat "break-cases=fit-or-vertical"]
 ;;
 
@@ -81,19 +81,19 @@ let _ =
   | A -> begin
     match B with
     | A -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
-  end
+    end
   | A -> begin
     match B with
     | A -> fooooooooooooo
     | B -> fooooooooooooo
     | C -> fooooooooooooo
     | D -> fooooooooooooo
-  end
+    end
 [@@ocamlformat "break-cases=all"]
 ;;
 

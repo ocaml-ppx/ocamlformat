@@ -15,10 +15,10 @@ let _ =
   match x with
   | A -> begin
       match B with A -> fooooooooooooo
-  end
+end
   | A -> begin
       match B with A -> fooooooooooooo | B -> fooooooooooooo
-  end
+end
   | A -> begin
       match B with
       | A ->
@@ -29,7 +29,7 @@ let _ =
           fooooooooooooo
       | D ->
           fooooooooooooo
-      end
+    end
 [@@ocamlformat "break-cases=nested"]
 
 let _ =

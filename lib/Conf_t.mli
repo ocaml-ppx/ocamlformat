@@ -92,6 +92,7 @@ type fmt_opts =
         (** De-indent the [fun] in a let-binding body. *)
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon] elt
   ; let_module: [`Compact | `Sparse] elt
+  ; letop_punning: [`Always | `Preserve | `Never] elt
   ; line_endings: [`Lf | `Crlf] elt
   ; margin: int elt  (** Format code to fit within [margin] columns. *)
   ; match_indent: int elt

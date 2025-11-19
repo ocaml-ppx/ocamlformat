@@ -57,7 +57,7 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Documentation -> Fn.id
 
 module Parse = struct
-  let normalize_mapper ~ocaml_version ~preserve_beginend =
+  let normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns =
     let open Asttypes in
     let open Ast_mapper in
     let enable_short_field_annot =
@@ -233,9 +233,53 @@ module Parse = struct
       let b' =
         let loc_start = b.pbop_op.loc.loc_start in
         let loc_end = b.pbop_exp.pexp_loc.loc_end in
-        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}}
+        let pbop_is_pun =
+          match prefer_let_puns with
+          | None -> b.pbop_is_pun
+          | Some false -> false
+          | Some true -> (
+              b.pbop_is_pun
+              ||
+              match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
+              | Ppat_var {txt; _}, Pexp_ident {txt= Lident e; _} ->
+                  String.equal txt e
+              | _ -> false )
+        in
+        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
       in
       Ast_mapper.default_mapper.binding_op m b'
+    in
+    let value_bindings (m : Ast_mapper.mapper) vbs =
+      let punning is_extension vb =
+        let is_extension =
+          (* [and] nodes don't have extensions, so we need to track if the
+             earlier [let] did *)
+          is_extension || Option.is_some vb.pvb_attributes.attrs_extension
+        in
+        let pvb_is_pun =
+          is_extension
+          &&
+          match prefer_let_puns with
+          | None -> vb.pvb_is_pun
+          | Some false -> false
+          | Some true -> (
+              vb.pvb_is_pun
+              ||
+              match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
+              | ( Ppat_var {txt; _}
+                , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
+                ) ->
+                  String.equal txt e
+              | _ -> false )
+        in
+        (is_extension, {vb with pvb_is_pun})
+      in
+      let vbs' =
+        { vbs with
+          pvbs_bindings=
+            snd @@ List.fold_map ~init:false ~f:punning vbs.pvbs_bindings }
+      in
+      Ast_mapper.default_mapper.value_bindings m vbs'
     in
     let pat m = function
       | {ppat_desc= Ppat_cons (_ :: _ :: _ :: _ as l); _} as p
@@ -305,11 +349,12 @@ module Parse = struct
           {p with pexp_desc= Pexp_tuple l}
       | e -> Ast_mapper.default_mapper.expr m e
     in
-    Ast_mapper.{default_mapper with expr; pat; binding_op}
+    Ast_mapper.{default_mapper with expr; pat; binding_op; value_bindings}
 
-  let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend ~input_name
-      str : a =
-    map fg (normalize_mapper ~ocaml_version ~preserve_beginend)
+  let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend
+      ~prefer_let_puns ~input_name str : a =
+    map fg
+      (normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns)
     @@
     let lexbuf = Lexing.from_string str in
     let ocaml_version =

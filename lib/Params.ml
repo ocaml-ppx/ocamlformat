@@ -512,7 +512,9 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
                   Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_let _
               ; _ }
           | Lb {pvb_body= Pfunction_cases _; _} )
-        , (Pexp_match _ | Pexp_try _ | Pexp_beginend _) ) ) ->
+        , ( Pexp_match _ | Pexp_try _
+          | Pexp_beginend ({pexp_desc= Pexp_match _ | Pexp_try _; _}, _) ) )
+      ) ->
         2
     | _, _ -> c.fmt_opts.cases_exp_indent.v
   in
@@ -542,9 +544,7 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
       ; _ }
       when not cmts_before ->
         let close_paren =
-          let offset =
-            match c.fmt_opts.break_cases.v with `Nested -> 0 | _ -> -2
-          in
+          let offset = if indent >= 2 then 2 - indent else 0 in
           fits_breaks " end" ~level:1 ~hint:(1000, offset) "end"
         in
         ( break 1 0 $ fmt_infix_ext_attrs ~pro:(str "begin") infix_ext_attrs
