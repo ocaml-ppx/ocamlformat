@@ -520,13 +520,6 @@ let update_using_env conf =
   | [] -> conf
   | l -> failwith_user_errors ~from:"OCAMLFORMAT environment variable" l
 
-let discard_formatter =
-  Format.(
-    formatter_of_out_functions
-      { (get_formatter_out_functions ()) with
-        out_string= (fun _ _ _ -> ())
-      ; out_flush= (fun () -> ()) } )
-
 let global_lib_term =
   Term.(
     const (fun conf_modif lib_conf ->
@@ -537,8 +530,9 @@ let global_lib_term =
 
 let global_lib_term_eval =
   lazy
-    (Cmd.eval_value ~err:discard_formatter ~help:discard_formatter
-       (Cmd.v info global_lib_term) )
+    (let discard = Format.make_formatter (fun _ _ _ -> ()) ignore in
+     Cmd.eval_value ~err:discard ~help:discard (Cmd.v info global_lib_term)
+    )
 
 let update_using_cmdline config =
   match Lazy.force global_lib_term_eval with
