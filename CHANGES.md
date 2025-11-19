@@ -37,6 +37,10 @@ profile. This started with version 0.26.0.
   end
   ```
 
+- `Ast_mapper` now iterates on *all* locations inside of Longident.t,
+  instead of only some.
+  (#2737, @v-gb)
+
 ### Internal
 
 - Added information on writing tests to `CONTRIBUTING.md` (#2838, @WardBrian)
@@ -60,6 +64,7 @@ profile. This started with version 0.26.0.
     end
   end
   ```
+
 ## 0.28.1
 
 ### Highlight
