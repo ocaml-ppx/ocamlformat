@@ -16,6 +16,18 @@ profile. This started with version 0.26.0.
   only use punning when it exists in the source.
   This also applies to `let%ext` bindings (#2747, @WardBrian).
 
+- Support the unnamed functor parameters syntax in module types (#2755, @Julow)
+  ```ocaml
+  module type F = ARG -> S
+  ```
+  The following lines are now formatted as they are in the source file:
+  ```ocaml
+  module M : (_ : S) -> (_ : S) -> S = N
+  module M : S -> S -> S = N
+  (* The preceding two lines are no longer turned into this: *)
+  module M : (_ : S) (_ : S) -> S = N
+  ```
+
 ### Fixed
 
 - Fix dropped comment in `(function _ -> x (* cmt *))` (#2739, @Julow)
