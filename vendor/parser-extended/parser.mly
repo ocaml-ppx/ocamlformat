@@ -543,16 +543,6 @@ let mkfunction params body_constraint body =
 let mkfunction params body_constraint body infix_ext_attrs =
   Pexp_function (params, body_constraint, body, infix_ext_attrs)
 
-let mk_functor_typ ~loc ~attrs ~short args mty =
-  let mty =
-    match attrs, mty with
-    | [], {pmty_desc= Pmty_functor (args', mty', short'); pmty_attributes= []; _}
-      when short = short' ->
-        Pmty_functor (args @ args', mty', short)
-    | _ -> Pmty_functor (args, mty, short)
-  in
-  mkmty ~loc ~attrs mty
-
 (* Alternatively, we could keep the generic module type in the Parsetree
    and extract the package type during type-checking. In that case,
    the assertions below should be turned into explicit checks. *)
@@ -1276,23 +1266,31 @@ parse_any_longident:
 (* Compared to upstream, [functor_args] can be empty and is not in reverse
    order. *)
 %inline functor_args:
-  llist(functor_arg)
+  llist(mkloc(functor_arg))
     { $1 }
 ;
 
 %inline nonempty_functor_args:
-  nonempty_llist(functor_arg)
+  nonempty_llist(mkloc(functor_arg))
     { $1 }
 ;
 
 functor_arg:
     (* An anonymous and untyped argument. *)
     LPAREN RPAREN
-      { mkloc Unit (make_loc $sloc) }
+      { Unit }
   | (* An argument accompanied with an explicit type. *)
     LPAREN x = mkrhs(module_name) COLON mty = module_type RPAREN
-      { mkloc (Named (x, mty)) (make_loc $sloc) }
+      { (Named (x, mty)) }
 ;
+
+(* functor_parameters_type: *)
+(*   FUNCTOR attrs = attributes args = nonempty_functor_args *)
+(*     { Pfunctorty_keyword (attrs, args) } *)
+(*   | args = nonempty_functor_args *)
+(*     { Pfunctorty_short args } *)
+(*   | arg = mkmty(module_type) *)
+(*     { Pfunctorty_unnamed arg } *)
 
 module_name:
     (* A named argument. *)
@@ -1624,11 +1622,11 @@ module_type:
   | FUNCTOR attrs = attributes args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { mk_functor_typ ~loc:$sloc ~attrs ~short:false args mty }
+      { mkmty ~loc:$sloc (Pmty_functor (Pfunctorty_keyword (attrs, args), mty)) }
   | args = nonempty_functor_args
     MINUSGREATER mty = module_type
       %prec below_WITH
-      { mk_functor_typ ~loc:$sloc ~attrs:[] ~short:true args mty }
+      { mkmty ~loc:$sloc (Pmty_functor (Pfunctorty_short args, mty)) }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
@@ -1640,10 +1638,9 @@ module_type:
   | mkmty(
       mkrhs(mty_longident)
         { Pmty_ident $1 }
-    | module_type MINUSGREATER module_type
+    | arg = module_type MINUSGREATER mty = module_type
         %prec below_WITH
-        { let arg_loc = make_loc $loc($1) in
-          Pmty_functor([mkloc (Named (mknoloc None, $1)) arg_loc], $3, true) }
+        { Pmty_functor (Pfunctorty_unnamed arg, mty) }
     | module_type WITH separated_nonempty_llist(AND, with_constraint)
         { Pmty_with($1, $3) }
 /*  | LPAREN MODULE mkrhs(mod_longident) RPAREN

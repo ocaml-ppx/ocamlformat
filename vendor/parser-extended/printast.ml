@@ -871,13 +871,28 @@ and class_declaration i = class_infos "class_declaration" class_expr i
 
 and functor_parameter i ppf x =
   line i ppf "functor_parameter %a\n" fmt_location x.loc;
-  let i = i+1 in
-  match x.txt with
+  functor_parameter' (i + 1) ppf x.txt
+
+and functor_parameter' i ppf = function
   | Unit ->
       line i ppf "Unit\n"
   | Named (s, mt) ->
       line i ppf "Named %a\n" fmt_str_opt_loc s;
       module_type i ppf mt
+
+and functor_parameter_type i ppf p =
+  let i = i + 1 in
+  match p with
+  | Pfunctorty_short args ->
+      line i ppf "Pfunctorty_short\n";
+      list i functor_parameter ppf args
+  | Pfunctorty_keyword (attrs, args) ->
+      line i ppf "Pfunctorty_keyword\n";
+      attributes i ppf attrs;
+      list i functor_parameter ppf args
+  | Pfunctorty_unnamed arg ->
+      line i ppf "Pfunctorty_unnamed\n";
+      module_type i ppf arg
 
 and module_type i ppf x =
   line i ppf "module_type %a\n" fmt_location x.pmty_loc;
@@ -889,9 +904,9 @@ and module_type i ppf x =
   | Pmty_signature (s) ->
       line i ppf "Pmty_signature\n";
       signature i ppf s;
-  | Pmty_functor (params, mt, short) ->
-      line i ppf "Pmty_functor short=%b\n" short;
-      list i functor_parameter ppf params;
+  | Pmty_functor (params, mt) ->
+      line i ppf "Pmty_functor\n";
+      functor_parameter_type i ppf params;
       module_type i ppf mt
   | Pmty_with (mt, l) ->
       line i ppf "Pmty_with\n";
