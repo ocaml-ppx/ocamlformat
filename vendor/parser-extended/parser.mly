@@ -1284,13 +1284,14 @@ functor_arg:
       { (Named (x, mty)) }
 ;
 
-(* functor_parameters_type: *)
-(*   FUNCTOR attrs = attributes args = nonempty_functor_args *)
-(*     { Pfunctorty_keyword (attrs, args) } *)
-(*   | args = nonempty_functor_args *)
-(*     { Pfunctorty_short args } *)
-(*   | arg = mkmty(module_type) *)
-(*     { Pfunctorty_unnamed arg } *)
+functor_parameters_type_arrow:
+  FUNCTOR attrs = attributes args = nonempty_functor_args MINUSGREATER
+    { Pfunctorty_keyword (attrs, args) }
+  | args = nonempty_functor_args MINUSGREATER
+    { Pfunctorty_short args }
+  | arg = module_type MINUSGREATER
+    { Pfunctorty_unnamed arg }
+;
 
 module_name:
     (* A named argument. *)
@@ -1619,14 +1620,6 @@ module_type:
       { unclosed "sig" $loc($1) "end" $loc($4) }
   | STRUCT error
       { expecting $loc($1) "sig" }
-  | FUNCTOR attrs = attributes args = nonempty_functor_args
-    MINUSGREATER mty = module_type
-      %prec below_WITH
-      { mkmty ~loc:$sloc (Pmty_functor (Pfunctorty_keyword (attrs, args), mty)) }
-  | args = nonempty_functor_args
-    MINUSGREATER mty = module_type
-      %prec below_WITH
-      { mkmty ~loc:$sloc (Pmty_functor (Pfunctorty_short args, mty)) }
   | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
       { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
   | LPAREN module_type RPAREN
@@ -1638,9 +1631,9 @@ module_type:
   | mkmty(
       mkrhs(mty_longident)
         { Pmty_ident $1 }
-    | arg = module_type MINUSGREATER mty = module_type
+    | params = functor_parameters_type_arrow mty = module_type
         %prec below_WITH
-        { Pmty_functor (Pfunctorty_unnamed arg, mty) }
+        { (Pmty_functor (params, mty)) }
     | module_type WITH separated_nonempty_llist(AND, with_constraint)
         { Pmty_with($1, $3) }
 /*  | LPAREN MODULE mkrhs(mod_longident) RPAREN
@@ -1650,6 +1643,7 @@ module_type:
     )
     { $1 }
 ;
+
 (* A signature, which appears between SIG and END (among other places),
    is a list of signature elements. *)
 signature:
