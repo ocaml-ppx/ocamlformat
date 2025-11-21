@@ -277,9 +277,9 @@ let rec mty_is_simple x =
   | Pmty_signature (_ :: _)
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
-   |Pmty_functor (_, _, false) ->
+   |Pmty_functor (Pfunctorty_keyword _, _) ->
       false
-  | Pmty_functor (_, t, true) -> mty_is_simple t
+  | Pmty_functor (_, t) -> mty_is_simple t
   | Pmty_typeof e -> mod_is_simple e
   | Pmty_with (t, ([] | [_])) -> mty_is_simple t
 
@@ -1915,6 +1915,13 @@ end = struct
     ||
     match (ctx, mty.pmty_desc) with
     | Mty {pmty_desc= Pmty_with _; _}, Pmty_with _ -> true
+    | ( Mty
+          { pmty_desc=
+              Pmty_with (lhs, _) | Pmty_functor (Pfunctorty_unnamed lhs, _)
+          ; _ }
+      , Pmty_functor _ )
+      when lhs == mty ->
+        true
     | _ -> false
 
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be

@@ -410,13 +410,22 @@ module CT = struct
       (List.map (sub.class_type_field sub) pcsig_fields)
 end
 
-let map_functor_param sub = function
+let map_functor_param' sub = function
   | Unit -> Unit
   | Named (s, mt) -> Named (map_string_opt_loc sub s, sub.module_type sub mt)
 
 let map_functor_param sub {loc; txt} =
   let loc = sub.location sub loc in
-  {loc; txt = map_functor_param sub txt}
+  {loc; txt = map_functor_param' sub txt}
+
+let map_functor_params sub params =
+  List.map (map_functor_param sub) params
+
+let map_functor_parameters_type sub = function
+  | Pfunctorty_short p -> Pfunctorty_short (map_functor_params sub p)
+  | Pfunctorty_keyword (attrs, p) ->
+      Pfunctorty_keyword (sub.attributes sub attrs, map_functor_params sub p)
+  | Pfunctorty_unnamed mt -> Pfunctorty_unnamed (sub.module_type sub mt)
 
 module MT = struct
   (* Type expressions for the module language *)
@@ -429,11 +438,10 @@ module MT = struct
     | Pmty_ident s -> ident ~loc ~attrs (map_loc_lid sub s)
     | Pmty_alias s -> alias ~loc ~attrs (map_loc_lid sub s)
     | Pmty_signature sg -> signature ~loc ~attrs (sub.signature sub sg)
-    | Pmty_functor (params, mt, short) ->
+    | Pmty_functor (params, mt) ->
         functor_ ~loc ~attrs
-          (List.map (map_functor_param sub) params)
+          (map_functor_parameters_type sub params)
           (sub.module_type sub mt)
-          short
     | Pmty_with (mt, l) ->
         with_ ~loc ~attrs (sub.module_type sub mt)
           (List.map (sub.with_constraint sub) l)
@@ -496,7 +504,7 @@ module M = struct
     | Pmod_structure str -> structure ~loc ~attrs (sub.structure sub str)
     | Pmod_functor (params, body) ->
         functor_ ~loc ~attrs
-          (List.map (map_functor_param sub) params)
+          (map_functor_params sub params)
           (sub.module_expr sub body)
     | Pmod_apply (m1, m2) ->
         apply ~loc ~attrs (sub.module_expr sub m1) (sub.module_expr sub m2)
