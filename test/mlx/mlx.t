@@ -180,3 +180,15 @@ JSX elements as props:
   let _ = <div element=(<Componient />) />
   $ echo 'let _ = <Big element=(<Component />) />' | fmt
   let _ = <Big element=(<Component />) />
+
+  $ echo 'let _ = <Big>(<Component />)</Big>' | fmt
+  let _ = <Big><Component /></Big>
+
+  $ echo 'let _ = <Big>(React.string children)</Big>' | fmt
+  let _ = <Big>(React.string children)</Big>
+
+  $ echo 'let _ = <Big>(match x with | A -> "33" | B -> "44")</Big>' | fmt
+  let _ = <Big>(match x with A -> "33" | B -> "44")</Big>
+
+  $ echo 'let _ = <Big>(<Lola />)</Big>' | fmt
+  let _ = <Big><Lola /></Big>
