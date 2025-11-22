@@ -162,3 +162,11 @@ Comments:
   <App (* 1 *) />
   $ echo '<App.name (* 1 *) />' | fmt
   <App.name (* 1 *) />
+
+JSX elements as props:
+  $ echo 'let _ = <div element=(<span />) />' | fmt
+  let _ = <div element=(<span />) />
+  $ echo 'let _ = <div element=(<Componient />) />' | fmt
+  let _ = <div element=(<Componient />) />
+  $ echo 'let _ = <Big element=(<Component />) />' | fmt
+  let _ = <Big element=(<Component />) />
