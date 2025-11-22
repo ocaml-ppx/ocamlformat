@@ -2305,13 +2305,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           match props with
           | [] -> str ""
           | props ->
+            let is_jsx_element e =
+              match e.pexp_attributes with
+              | [{attr_name={txt="JSX";_}; attr_payload=PStr []; _}] -> true
+              | _ -> false
+            in
             let fmt_labelled ?(prefix="") label e =
               let flabel = str (Printf.sprintf "%s%s" prefix label.txt) in
               match e.pexp_desc with
               | Pexp_ident {txt=Lident id; loc=_} when String.equal id label.txt ->
                 flabel
               | _ ->
-                flabel $ str "=" $ fmt_expression c (sub_exp ~ctx e)
+                if is_jsx_element e then
+                  flabel $ str "=" $ fmt_expression c ~parens:true (sub_exp ~ctx e)
+                else
+                  flabel $ str "=" $ fmt_expression c (sub_exp ~ctx e)
             in
             let fmt_prop = function
               | Nolabel, e -> fmt_expression c (sub_exp ~ctx e)
@@ -2320,20 +2328,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             in
             space_break $ hvbox 0 (list props (break 1 0) fmt_prop)
         in
-        begin match !children with
-        | None -> hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
-        | Some (children_loc, []) when not (Cmts.has_after c.cmts children_loc) ->
-          hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
-        | Some (children_loc, children) ->
-          let head = hvbox 2 (start_tag () $ props $ str ">") in
-          let children =
-            hvbox 0 (
-              list children (break 1 0)
-              (fun e -> fmt_expression c (sub_exp ~ctx e))
-              $ Cmts.fmt_after c children_loc)
-          in
-          hvbox 2 (head $ break 0 0 $ children $ break 0 (-2) $ end_tag ())
-        end
+        Params.parens_if parens c.conf (
+          match !children with
+          | None -> hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
+          | Some (children_loc, []) when not (Cmts.has_after c.cmts children_loc) ->
+            hvbox 2 (start_tag () $ props) $ space_break $ str "/>"
+          | Some (children_loc, children) ->
+            let head = hvbox 2 (start_tag () $ props $ str ">") in
+            let children =
+              hvbox 0 (
+                list children (break 1 0)
+                (fun e -> fmt_expression c ~parens:false (sub_exp ~ctx e))
+                $ Cmts.fmt_after c children_loc)
+            in
+            hvbox 2 (head $ break 0 0 $ children $ break 0 (-2) $ end_tag ())
+        )
       | _ ->
       let wrap =
         if c.conf.fmt_opts.wrap_fun_args.v then hovbox 2 else hvbox 2
