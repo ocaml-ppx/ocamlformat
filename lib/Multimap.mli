@@ -1,13 +1,13 @@
-(**************************************************************************)
-(*                                                                        *)
-(*                              OCamlFormat                               *)
-(*                                                                        *)
-(*            Copyright (c) Facebook, Inc. and its affiliates.            *)
-(*                                                                        *)
-(*      This source code is licensed under the MIT license found in       *)
-(*      the LICENSE file in the root directory of this source tree.       *)
-(*                                                                        *)
-(**************************************************************************)
+(**************************************************************************
+ *                                                                        *
+ *                              OCamlFormat                               *
+ *                                                                        *
+ *            Copyright (c) Facebook, Inc. and its affiliates.            *
+ *                                                                        *
+ *      This source code is licensed under the MIT license found in       *
+ *      the LICENSE file in the root directory of this source tree.       *
+ *                                                                        *
+ **************************************************************************)
 
 (** Maps with a list of values attached to a key. This is an extension of the
     [Map] module, so these are compatible with [Map.mem], etc. *)

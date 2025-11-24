@@ -1,13 +1,13 @@
-(**************************************************************************)
-(*                                                                        *)
-(*                              OCamlFormat                               *)
-(*                                                                        *)
-(*            Copyright (c) Facebook, Inc. and its affiliates.            *)
-(*                                                                        *)
-(*      This source code is licensed under the MIT license found in       *)
-(*      the LICENSE file in the root directory of this source tree.       *)
-(*                                                                        *)
-(**************************************************************************)
+(**************************************************************************
+ *                                                                        *
+ *                              OCamlFormat                               *
+ *                                                                        *
+ *            Copyright (c) Facebook, Inc. and its affiliates.            *
+ *                                                                        *
+ *      This source code is licensed under the MIT license found in       *
+ *      the LICENSE file in the root directory of this source tree.       *
+ *                                                                        *
+ **************************************************************************)
 
 (** Placing and formatting comments in a parsetree. *)
 
@@ -669,8 +669,8 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
              in
              break $ fmt_cmt conf cmt ~fmt_code
          | group ->
-             list group "@;<1000 0>" (fun cmt ->
-                 wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
+             list group "@;<1000 0>" (fun cmt -> fmt_cmt conf cmt ~fmt_code)
+         )
          $
          match next with
          | Some (next :: _) ->

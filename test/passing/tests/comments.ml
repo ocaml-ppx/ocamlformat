@@ -318,15 +318,27 @@ let _ = x ^ (y ^ z) [@attr]
 
 let _ =
   ();
-  (* indentation preserved
+  (* indentation not
+     preserved
   *)
   ();
-  (* indentation preserved
+  (* indentation not
+     preserved
    *)
   ();
-  (* indentation preserved
+  (* indentation not
+     preserved
      *)
   ();
-  (* indentation not preserved
+  (* indentation
+     not preserved
 *)
+  (* one
+     comment *)
+  (* after another
+     comment *)
   ()
+  (* one
+     comment *)
+  (* after another
+     comment *)

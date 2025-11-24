@@ -5,7 +5,7 @@
 (* *)
 
 (*$*)
-(*$ *)
+(*$  *)
 (*$  *)
 
 let _ = f (*f*) a (*a*) ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
@@ -351,7 +351,7 @@ let _ = foo
 
 let a =
   [ b
-    (*  *)
+    (* *)
     (* c *) ]
 
 let _ =
@@ -427,11 +427,15 @@ let _ = x ^ (y ^ z) [@attr]
 
 let _ =
   () ;
-  (* indentation preserved *)
-  () ;
-  (* indentation preserved *)
-  () ;
-  (* indentation preserved *)
+  (* indentation not preserved *)
   () ;
   (* indentation not preserved *)
+  () ;
+  (* indentation not preserved *)
+  () ;
+  (* indentation not preserved *)
+  (* one comment *)
+  (* after another comment *)
   ()
+(* one comment *)
+(* after another comment *)
