@@ -17,6 +17,8 @@
      sequence of block elements, so [block_element_list] is the top-level
      parser. It is also used for list item and tag content. *)
 
+open! Compat
+
 type 'a with_location = 'a Loc.with_location
 
 (* {2 Input} *)
