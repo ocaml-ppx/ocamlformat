@@ -38,6 +38,12 @@ let unclosed_bracket :
 let no_leading_whitespace_in_verbatim : Loc.span -> Warning.t =
   Warning.make "'{v' should be followed by whitespace."
 
+let not_enough_indentation_in_code_block : what:string -> Loc.span -> Warning.t
+    =
+ fun ~what ->
+  Warning.make "%ss should be indented at the opening `{`."
+    (String.capitalize_ascii what)
+
 let no_trailing_whitespace_in_verbatim : Loc.span -> Warning.t =
   Warning.make "'v}' should be preceded by whitespace."
 

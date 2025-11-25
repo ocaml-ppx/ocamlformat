@@ -7,9 +7,9 @@ foo
 (** This is verbatim:
 
     {v
-   o  o
-  /\  /\
-  /\  /\
+     o  o
+    /\  /\
+    /\  /\
     v}
 
     This is preformated code:

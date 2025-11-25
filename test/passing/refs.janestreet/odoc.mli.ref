@@ -154,16 +154,16 @@
     ]}
 
     {[
-      {[
+    {[
     ]}
     {[
       foo
     ]}
     {[
-      ]
+    ]
     ]}
     {[
-      foo]]bar
+    foo]]bar
     ]}
 
     {[
@@ -191,16 +191,16 @@
     ]}
 
     {[
-      foo][output {b foo}
+    foo][output {b foo}
     ]}
     {@ocaml[
-      foo][output {b foo}
+    foo][output {b foo}
     ]}
     {@ocaml[
-      foo]unexpected[output {b foo}
+    foo]unexpected[output {b foo}
     ]}
     {delim@ocaml[
-      foo]wrong[output {b foo}
+    foo]wrong[output {b foo}
     ]delim}
 
     {@ocaml[

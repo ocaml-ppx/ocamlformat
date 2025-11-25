@@ -43,3 +43,29 @@ val position_of_point : t -> Loc.point -> Lexing.position
     the usual representation in the Lexing module. Note that this relies on the
     information passed in {!parse_comment}, and hence requires the result of
     that call in addition to the {!Loc.point} being converted. *)
+
+val codeblock_content : Loc.span -> string -> string * Warning.t list
+(** Process the content of a code block, following the rules described
+    {{!/odoc/odoc_for_authors.indentation_code_blocks}here}. To achieve this, it
+    needs the location of the code block (including the separators) and the raw
+    content of the code block. For instance, with the following code block:
+
+    {delim@ocaml[
+      {[
+        hello
+      ]}
+    ]delim}
+
+    We can go from the raw content ["\n    hello\n  "] to the processed content
+    ["  hello"] with:
+    {[
+      match codeblock.value with
+      | `Code_block { content; _ } ->
+          codeblock_content codeblock.location content.value
+    ]}
+
+    Also returns a list of warnings, eg if the content is not appropriately
+    indented. *)
+
+val verbatim_content : Loc.span -> string -> string * Warning.t list
+(** Similar to {!codeblock_content} but for verbatims. *)

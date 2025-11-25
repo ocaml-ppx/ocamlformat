@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 open Fmt
+open Ocamlformat_odoc_parser
 open Ocamlformat_odoc_parser.Ast
 module Loc = Ocamlformat_odoc_parser.Loc
 
@@ -95,14 +96,23 @@ let rec drop_leading_spaces = function
 
 let ign_loc ~f with_loc = f with_loc.Loc.value
 
-let fmt_verbatim_block ~loc s =
-  let force_break = loc.Loc.start.line < loc.end_.line in
-  let content =
-    (* Literal newline to avoid indentation *)
-    if force_break then wrap (str "\n") force_newline (str s)
-    else fits_breaks " " "\n" $ str s $ fits_breaks " " ~hint:(0, 0) ""
+(** Format the content of code and verbatim blocks. *)
+let fmt_multiline_text txt =
+  let fmt_line ~first ~last:_ l =
+    let l = String.rstrip l in
+    if first then str l
+    else if String.length l = 0 then str_as 0 "\n"
+    else force_break $ str l
   in
-  hvbox 0 (wrap (str "{v") (str "v}") content)
+  let lines = String.split_lines txt in
+  vbox 0 (list_fl lines fmt_line)
+
+let fmt_verbatim_block ~loc s =
+  let content =
+    let s, _warnings = Odoc_parser.verbatim_content loc s in
+    fmt_multiline_text s
+  in
+  hvbox 0 (str "{v" $ space_break $ content $ space_break $ str "v}")
 
 let fmt_code_span ~wrap s =
   let s = escape_balanced_brackets s in
@@ -300,7 +310,7 @@ and fmt_nestable_block_element c (elm : nestable_block_element with_location)
   | `Paragraph elems ->
       hovbox 0
         (fmt_inline_elements c ~wrap:c.conf.fmt_opts.wrap_docstrings.v elems)
-  | `Code_block code_block -> fmt_code_block c code_block
+  | `Code_block code_block -> fmt_code_block ~loc:elm.location c code_block
   | `Math_block s -> fmt_math_block s
   | `Verbatim s -> fmt_verbatim_block ~loc:elm.location s
   | `Modules mods ->
@@ -435,14 +445,16 @@ and fmt_code_block_tag = function
   | `Tag t -> ign_loc ~f:str t
   | `Binding (k, v) -> ign_loc ~f:str k $ str "=" $ ign_loc ~f:str v
 
-and fmt_code_block c (b : code_block) =
-  let content =
-    let content = b.content.value in
+and fmt_code_block c ~loc (b : code_block) =
+  let content, content_was_formatted =
+    let content, _warnings =
+      Odoc_parser.codeblock_content loc b.content.value
+    in
     match b.meta with
     | Some {language= {value= "ocaml"; _}; _} | None -> (
       (* [offset] doesn't take into account code blocks nested into lists. *)
       match c.fmt_code c.conf ~offset:2 ~set_margin:true content with
-      | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval
+      | Ok formatted -> (formatted |> Format_.asprintf "%a" Fmt.eval, true)
       | Error (`Msg message) ->
           if
             (not (String.is_empty message))
@@ -452,18 +464,8 @@ and fmt_code_block c (b : code_block) =
             Docstring.warn Stdlib.Format.err_formatter
               { location= b.content.location
               ; message= Format.sprintf "invalid code block: %s" message } ;
-          content )
-    | Some _ -> content
-  in
-  let fmt_line ~first ~last:_ l =
-    let l = String.rstrip l in
-    if first then str l
-    else if String.length l = 0 then str_as 0 "\n"
-    else force_break $ str l
-  in
-  let fmt_code s =
-    let lines = String.split_lines s in
-    vbox 0 (list_fl lines fmt_line)
+          (content, false) )
+    | Some _ -> (content, false)
   in
   let delim = opt b.delimiter str in
   let opening =
@@ -485,9 +487,12 @@ and fmt_code_block c (b : code_block) =
           $ str "]}" )
     | None -> str "]" $ delim $ str "}"
   in
-  hvbox 2
-    ( opening $ force_break $ fmt_code content $ break 1 ~-2
-    $ output_or_closing )
+  (* The content might contain an indentation when it was not formatted. *)
+  let indent = if content_was_formatted then 2 else 0 in
+  hvbox 0
+    ( opening $ break 1000 indent
+    $ fmt_multiline_text content
+    $ space_break $ output_or_closing )
 
 and fmt_nestable_block_elements c elems =
   list_block_elem c elems (fmt_nestable_block_element c)
