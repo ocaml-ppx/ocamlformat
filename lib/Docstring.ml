@@ -179,6 +179,10 @@ let odoc_tag c fmt : Ast.tag -> unit = function
   | `Hidden -> fpf fmt "Hidden"
   | `Children_order elems ->
       odoc_implicitly_ended_tag c fmt "Children_order" elems
+  | `Toc_status txt ->
+      fpf fmt "Toc_status(%a)" (odoc_nestable_block_elements c) txt
+  | `Order_category txt ->
+      fpf fmt "Order_category(%a)" (odoc_nestable_block_elements c) txt
   | `Short_title elems -> odoc_implicitly_ended_tag c fmt "Short_title" elems
 
 let odoc_block_element c fmt = function

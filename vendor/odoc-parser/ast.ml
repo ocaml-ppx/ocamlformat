@@ -85,6 +85,8 @@ type internal_tag =
   | `Closed
   | `Hidden
   | `Children_order of nestable_block_element with_location list
+  | `Toc_status of nestable_block_element with_location list
+  | `Order_category of nestable_block_element with_location list
   | `Short_title of nestable_block_element with_location list ]
 
 (** Internal tags are used to exercise fine control over the output of odoc.

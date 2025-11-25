@@ -544,6 +544,12 @@ and token input = parse
   | ("@children_order")
     { emit input (`Tag `Children_order) }
 
+  | ("@toc_status")
+    { emit input (`Tag `Toc_status) }
+
+  | ("@order_category")
+    { emit input (`Tag `Order_category) }
+
   | ("@short_title")
     { emit input (`Tag `Short_title) }
 
@@ -774,8 +780,6 @@ and verbatim buffer last_false_terminator start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       verbatim buffer last_false_terminator start_offset input lexbuf }
-
-
 
 and bad_markup_recovery start_offset input = parse
   | [^ '}']+ as text '}' as rest

@@ -518,6 +518,8 @@ let fmt_tag c : tag -> _ = function
   | `Hidden -> fmt_tag_args c "hidden"
   | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
   | `Children_order txt -> fmt_tag_args c "children_order" ~txt
+  | `Toc_status txt -> fmt_tag_args c "toc_status" ~txt
+  | `Order_category txt -> fmt_tag_args c "order_category" ~txt
   | `Short_title txt -> fmt_tag_args c "short_title" ~txt
 
 let fmt_block_element c elm =
