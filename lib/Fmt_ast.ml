@@ -3864,7 +3864,7 @@ and fmt_functor_param_type c ctx = function
   | Pfunctorty_short args -> list args (break 1 2) (fmt_functor_param c ctx)
   | Pfunctorty_keyword (attrs, args) ->
       str "functor"
-      $ fmt_attributes c ?pre:None attrs
+      $ fmt_attributes c ~pre:Blank attrs
       $ break 1 2
       $ list args (break 1 2) (fmt_functor_param c ctx)
   | Pfunctorty_unnamed arg ->
