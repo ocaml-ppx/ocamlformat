@@ -3860,6 +3860,16 @@ and fmt_functor_param c ctx {loc; txt= arg} =
                  ( hovbox 0 (fmt_str_loc_opt c name $ space_break $ str ": ")
                  $ compose_module (fmt_module_type c xmt) ~f:Fn.id ) ) ) )
 
+and fmt_functor_param_type c ctx = function
+  | Pfunctorty_short args -> list args (break 1 2) (fmt_functor_param c ctx)
+  | Pfunctorty_keyword (attrs, args) ->
+      str "functor"
+      $ fmt_attributes c ~pre:Blank attrs
+      $ break 1 2
+      $ list args (break 1 2) (fmt_functor_param c ctx)
+  | Pfunctorty_unnamed arg ->
+      compose_module (fmt_module_type c (sub_mty ~ctx arg)) ~f:Fn.id
+
 and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
@@ -3904,24 +3914,22 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
           Some
             ( str "end" $ after
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
-  | Pmty_functor (args, mt, short) ->
-      let keyword =
-        if short && List.is_empty pmty_attributes then noop
-        else
-          str "functor"
-          $ fmt_attributes c ~pre:Blank pmty_attributes
-          $ break 1 2
-      in
+  | Pmty_functor (paramty, mt) ->
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
       { blk with
         pro=
           Some
             ( Cmts.fmt_before c pmty_loc
-            $ keyword
-            $ list args (break 1 2) (fmt_functor_param c ctx)
+            $ fmt_if parens (str "(")
+            $ fmt_functor_param_type c ctx paramty
             $ break 1 2 $ str "->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
+      ; epi=
+          Some
+            ( fmt_opt blk.epi
+            $ fmt_if parens (str ")")
+            $ fmt_attributes c pmty_attributes ~pre:Space
+            $ Cmts.fmt_after c pmty_loc )
       ; psp=
           fmt_or (Option.is_none blk.pro)
             (fits_breaks " " ~hint:(1, 2) "")

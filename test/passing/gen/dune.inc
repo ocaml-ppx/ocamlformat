@@ -2316,6 +2316,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to functor-414.ml.stdout
+   (with-stderr-to functor-414.ml.stderr
+     (run %{bin:ocamlformat} --name functor-414.ml --margin-check --ocaml-version=4.14 %{dep:../tests/functor.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff functor-414.ml.ref functor-414.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff functor-414.ml.err functor-414.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to functor.ml.stdout
    (with-stderr-to functor.ml.stderr
      (run %{bin:ocamlformat} --name functor.ml --margin-check %{dep:../tests/functor.ml})))))

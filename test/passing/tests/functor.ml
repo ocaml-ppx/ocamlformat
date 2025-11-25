@@ -35,6 +35,19 @@ module M = (functor (S : S) (T : T) -> (struct end : U)) (S) (T)
 
 module rec A (S : S) = S
 
+module type S = S -> S -> S
+module type S = (S -> S) -> S
+module type S = (functor (M : S) -> S) -> S
+module type S = functor (M : S -> S) -> S
+module type S = ((M : S) -> S) -> S
+module type S = (M : S -> S) -> S
+
+module M : X -> X = Y
+module M : X -> (Y : T) -> (_ : T) -> Z = M
+module M : X -> (Y : T) (_ : T) -> Z = M
+module M : (X : T) -> T -> (_ : T) -> Z = M
+module M : (_ : X) -> X = Y
+
 module type S = sig
   module rec A : functor (S : S) -> S
 end
@@ -111,6 +124,13 @@ module M : functor (A : S) (B : S) -> S = N
 module M : functor (A : S) -> functor (B : S) -> S = N
 module M : (A : S) -> functor (B : S) -> S = N
 
+module M : X -> X =
+functor (X : X) -> struct
+  let x = X.x
+end
+
+module M : (_ : X) -> X = Y
+
 [@@@ocamlformat "break-struct=natural"]
 
 module M = F ((struct type t end : sig type t end))
@@ -118,3 +138,4 @@ module M = F ((struct type t end : sig type t end))
 module M = struct type t end
 
 module type S = sig type t end
+

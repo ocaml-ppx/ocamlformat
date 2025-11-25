@@ -979,9 +979,9 @@ and module_type =
 and module_type_desc =
   | Pmty_ident of Longident.t loc  (** [Pmty_ident(S)] represents [S] *)
   | Pmty_signature of signature  (** [sig ... end] *)
-  | Pmty_functor of functor_parameter loc list * module_type * bool
-      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT], third argument codes
-          whether the short syntax is used. *)
+  | Pmty_functor of functor_parameters_type * module_type
+      (** [functor (X1 : MT1) ... (Xn : MTn) -> MT -> ... -> MT]. The [functor]
+          keyword is optional. *)
   | Pmty_with of module_type * with_constraint list  (** [MT with ...] *)
   | Pmty_typeof of module_expr  (** [module type of ME] *)
   | Pmty_extension of extension  (** [[%id]] *)
@@ -993,6 +993,14 @@ and functor_parameter =
       (** [Named(name, MT)] represents:
             - [(X : MT)] when [name] is [Some X],
             - [(_ : MT)] when [name] is [None] *)
+
+and functor_parameters_type =
+  | Pfunctorty_short of functor_parameter loc list
+      (** [(A : T) (_ : T) ... ->]. *)
+  | Pfunctorty_keyword of attributes * functor_parameter loc list
+      (** [functor (A : T) (_ : T) ... ->]. *)
+  | Pfunctorty_unnamed of module_type
+      (** [T ->]. *)
 
 and signature = signature_item list
 
