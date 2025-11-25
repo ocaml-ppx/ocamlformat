@@ -53,8 +53,7 @@ type t =
        tokens are emitted by the lexer. Otherwise, there would be the need for
        unbounded lookahead, a (co-?)ambiguity between
        [Single_newline Single_newline] and [Blank_line], and other problems. *)
-    `Space of
-    string
+    `Space of string
   | `Single_newline of string
   | `Blank_line of string
   | (* A right curly brace ([}]), i.e. end of markup. *)
@@ -67,8 +66,7 @@ type t =
        and [Minus] tokens. The parser combines plus and minus into words, except
        when they appear first on a line, in which case the tokens are list item
        bullets. *)
-    `Word of
-    string
+    `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string
   | `Math_span of string

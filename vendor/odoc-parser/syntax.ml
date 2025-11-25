@@ -323,7 +323,8 @@ and delimited_inline_element_list :
     requires_leading_whitespace:bool ->
     input ->
     Ast.inline_element with_location list * Loc.span =
- fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace input ->
+ fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace
+     input ->
   (* [~at_start_of_line] is used to interpret [`Minus] and [`Plus]. These are
      word tokens if not the first non-whitespace tokens on their line. Then,
      they are allowed in a non-link element list. *)
@@ -585,8 +586,7 @@ type ('block, 'stops_at_which_tokens) context =
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
-let accepted_in_all_contexts :
-    type block stops_at_which_tokens.
+let accepted_in_all_contexts : type block stops_at_which_tokens.
     (block, stops_at_which_tokens) context ->
     Ast.nestable_block_element ->
     block =
@@ -630,8 +630,7 @@ let tag_to_words = function
    - tables,
    - lists, and
    - section headings. *)
-let rec block_element_list :
-    type block stops_at_which_tokens.
+let rec block_element_list : type block stops_at_which_tokens.
     (block, stops_at_which_tokens) context ->
     parent_markup:[< Token.t | `Comment ] ->
     input ->
@@ -932,12 +931,12 @@ let rec block_element_list :
         let block =
           accepted_in_all_contexts context
             (`Code_block
-              {
-                Ast.meta;
-                delimiter;
-                content = { value = s; location = v_loc };
-                output;
-              })
+               {
+                 Ast.meta;
+                 delimiter;
+                 content = { value = s; location = v_loc };
+                 output;
+               })
         in
         let block = Loc.at location block in
         let acc = block :: acc in

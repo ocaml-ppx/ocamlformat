@@ -27,6 +27,7 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
+
 type math_kind =
   Inline | Block
 
