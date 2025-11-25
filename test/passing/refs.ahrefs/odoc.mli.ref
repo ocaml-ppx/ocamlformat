@@ -211,8 +211,7 @@
       code
     ]}
 
-    {@ocaml kind=toplevel
-  env=e1[
+    {@ocaml kind=toplevel env=e1[
       code
     ]}
 

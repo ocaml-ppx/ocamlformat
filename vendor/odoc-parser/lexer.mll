@@ -142,6 +142,7 @@ type input = {
   offset_to_location : int -> Loc.point;
   warnings : Warning.t list ref;
   lexbuf : Lexing.lexbuf;
+  string_buffer : Buffer.t;
 }
 
 let with_location_adjustments
@@ -178,9 +179,36 @@ let with_location_adjustments
 let emit =
   with_location_adjustments (fun _ -> Loc.at)
 
+let warning_loc =
+  fun input location error ->
+    input.warnings := (error location) :: !(input.warnings)
+
 let warning =
-  with_location_adjustments (fun input location error ->
-    input.warnings := (error location) :: !(input.warnings))
+  with_location_adjustments warning_loc
+
+(* From ocaml.git/parsing/lexer.mll *)
+let digit_value c =
+  match c with
+  | 'a' .. 'f' -> 10 + Char.code c - Char.code 'a'
+  | 'A' .. 'F' -> 10 + Char.code c - Char.code 'A'
+  | '0' .. '9' -> Char.code c - Char.code '0'
+  | _ -> assert false
+
+let num_value lexbuf ~base ~first ~last =
+  let c = ref 0 in
+  for i = first to last do
+    let v = digit_value (Lexing.lexeme_char lexbuf i) in
+    assert(v < base);
+    c := (base * !c) + v
+  done;
+  !c
+
+let char_for_decimal_code input lexbuf i =
+  let c = num_value lexbuf ~base:10 ~first:i ~last:(i+2) in
+  if (c < 0 || c > 255) then
+    (warning input (Parse_error.invalid_char_code c);
+    'x')
+  else Char.chr c
 
 let reference_token media start target input lexbuf =
   match start with
@@ -240,8 +268,8 @@ let emit_verbatim input start_offset buffer =
   emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
-   the []`Code_block] location matches the entirety of the block including the terminator,
-   and the content location is precicely the location of the text of the code itself.
+   the [`Code_block] location matches the entirety of the block including the terminator,
+   and the content location is precisely the location of the text of the code itself.
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
@@ -303,6 +331,13 @@ let language_tag_char =
 
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
+
+let tag_unquoted_char = (_ # '=' # '"' # space_char # '[')
+let tag_unquoted_atom = tag_unquoted_char+
+
+let tag_escape = '\\' '"'
+let tag_quoted_char = _ # '"'
+let tag_quoted_atom = (tag_quoted_char | tag_escape)*
 
 rule reference_paren_content input start ref_offset start_offset depth_paren
   buffer =
@@ -447,7 +482,7 @@ and token input = parse
       in
       let emit_truncated_code_block () =
         let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
-        emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
+        emit ~start_offset input (`Code_block (Some (lang_tag, []), delim, empty_content, false))
       in
       (* Disallow result block sections for code blocks without a delimiter.
          This avoids the surprising parsing of '][' ending the code block. *)
@@ -459,15 +494,11 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail input lexbuf with
+      match code_block_metadata_tail input None [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
-      | `Invalid_char c ->
-          warning input ~start_offset
-            (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block_with_metadata None
     }
 
   | "{@" horizontal_space* '['
@@ -791,24 +822,80 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-(* The second field of the metadata.
-   This rule keeps whitespaces and newlines in the 'metadata' field except the
-   ones just before the '['. *)
-and code_block_metadata_tail input = parse
- | (space_char+ as prefix)
-   ((space_char* (_ # space_char # ['['])+)+ as meta)
-   ((space_char* '[') as suffix)
-    {
-      let meta =
-        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) input meta
-      in
-      `Ok (Some meta)
-    }
-  | (newline | horizontal_space)* '['
-    { `Ok None }
-  | _ as c
-    { `Invalid_char c }
+(* Based on OCaml's parsing/lexer.mll
+   We're missing a bunch of cases here, and can add them
+   if necessary. Using the missing cases will cause a warning *)
+and string input = parse
+ | '\"'
+   { let result = Buffer.contents input.string_buffer in
+     Buffer.clear input.string_buffer;
+     result }
+ | '\\' newline [' ' '\t']*
+   { string input lexbuf }
+ | '\\' (['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as c)
+   { Buffer.add_char input.string_buffer
+       (match c with
+        | '\\' -> '\\'
+        | '\'' -> '\''
+        | '\"' -> '\"'
+        | 'n' -> '\n'
+        | 't' -> '\t'
+        | 'b' -> '\b'
+        | 'r' -> '\r'
+        | ' ' -> ' '
+        | _ -> assert false);
+     string input lexbuf }
+  | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
+    { Buffer.add_char input.string_buffer (char_for_decimal_code input lexbuf 1);
+      string input lexbuf }
+  | '\\' (_ as c)
+    { warning input (Parse_error.should_not_be_escaped c);
+      Buffer.add_char input.string_buffer c;
+      string input lexbuf }
   | eof
+    { warning input Parse_error.truncated_string;
+      Buffer.contents input.string_buffer }
+  | (_ as c)
+    { Buffer.add_char input.string_buffer c;
+      string input lexbuf }
+  
+and code_block_metadata_atom input = parse
+ | '"'
+   {
+    let start_offset = Lexing.lexeme_start input.lexbuf in
+    Buffer.clear input.string_buffer;
+    let s = string input lexbuf in
+    with_location_adjustments ~start_offset (fun _ -> Loc.at) input s }
+ | (tag_unquoted_atom as value)
+   { with_location_adjustments (fun _ -> Loc.at) input value }
+ | ('=' as c) 
+   { warning input (Parse_error.code_block_tag_invalid_char c);
+     with_location_adjustments (fun _ -> Loc.at) input "" }
+
+and code_block_metadata_tail input tag acc = parse
+ | space_char+
+   { let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
+     let tag = code_block_metadata_atom input lexbuf in
+     code_block_metadata_tail input (Some tag) acc lexbuf }
+ | space_char* '[' (* Nb this will be a longer match than the above case! *)
+   {
+     let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
+     `Ok (List.rev acc) }
+ | '='
+   { match tag with
+     | Some t ->
+       let value = code_block_metadata_atom input lexbuf in
+       code_block_metadata_tail input None (`Binding (t, value) :: acc) lexbuf
+     | None ->
+       warning input (Parse_error.code_block_tag_invalid_char '=');
+       code_block_metadata_tail input None acc lexbuf }
+ | (_ # space_char # '[' # '=' as c) (_ # space_char # '[')*
+   {
+      let start_offset = Lexing.lexeme_start input.lexbuf in
+      let end_offset = start_offset + 1 in
+      warning input ~start_offset ~end_offset (Parse_error.code_block_tag_invalid_char c);
+    code_block_metadata_tail input None acc lexbuf }
+ | eof
     { `Eof }
 
 and code_block allow_result_block start_offset content_offset metadata prefix delim input = parse

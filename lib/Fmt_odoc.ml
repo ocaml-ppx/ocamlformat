@@ -431,6 +431,10 @@ and fmt_table c table =
   | Some light -> fmt_table_light c light
   | None -> fmt_table_heavy c table
 
+and fmt_code_block_tag = function
+  | `Tag t -> ign_loc ~f:str t
+  | `Binding (k, v) -> ign_loc ~f:str k $ str "=" $ ign_loc ~f:str v
+
 and fmt_code_block c (b : code_block) =
   let content =
     let content = b.content.value in
@@ -467,7 +471,7 @@ and fmt_code_block c (b : code_block) =
       opt b.meta (fun meta ->
           str "@"
           $ ign_loc ~f:str meta.language
-          $ opt meta.tags (fun tags -> str " " $ ign_loc ~f:str tags) )
+          $ list meta.tags noop (fun t -> char ' ' $ fmt_code_block_tag t) )
     in
     str "{" $ delim $ meta $ str "["
   in

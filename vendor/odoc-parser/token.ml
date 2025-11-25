@@ -43,6 +43,12 @@ let s_of_media kind media =
   | `Replaced, `Video -> "{{video!"
   | `Replaced, `Image -> "{{image!"
 
+type code_block_tag =
+  [ `Tag of string Loc.with_location
+  | `Binding of string Loc.with_location * string Loc.with_location ]
+
+type code_block_tags = code_block_tag list
+
 type t =
   [ (* End of input. *)
     `End
@@ -83,7 +89,7 @@ type t =
   | media_markup
   | (* Leaf block element markup. *)
     `Code_block of
-    (string Loc.with_location * string Loc.with_location option) option
+    (string Loc.with_location * code_block_tags) option
     * string
     * string Loc.with_location
     * bool

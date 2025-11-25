@@ -59,6 +59,9 @@ let truncated_see : Loc.span -> Warning.t =
   Warning.make
     "'@see' should be followed by <url>, 'file', or \"document title\"."
 
+let truncated_string : Loc.span -> Warning.t =
+  Warning.make "Truncated string literal"
+
 let unknown_tag : string -> Loc.span -> Warning.t =
   Warning.make "Unknown tag '%s'."
 
@@ -76,6 +79,12 @@ let language_tag_invalid_char lang_tag : char -> Loc.span -> Warning.t =
   let suggestion = "try '{@" ^ lang_tag ^ "[ ... ]}'." in
   Warning.make ~suggestion "Invalid character '%c' in language tag."
 
+let code_block_tag_invalid_char : char -> Loc.span -> Warning.t =
+  Warning.make "Invalid character in code block metadata tag '%c'."
+
+let invalid_char_code : int -> Loc.span -> Warning.t =
+  Warning.make "Invalid escape sequence '\\%d"
+
 let truncated_code_block_meta : Loc.span -> Warning.t =
   Warning.make ~suggestion:"try '{@ocaml[ ... ]}'." "Missing end of code block."
 
@@ -86,3 +95,8 @@ let end_not_allowed : in_what:string -> Loc.span -> Warning.t =
  fun ~in_what ->
   Warning.make ~suggestion:"add '}'." "End of text is not allowed in %s."
     in_what
+
+let should_not_be_escaped : char -> Loc.span -> Warning.t =
+ fun c ->
+  Warning.make ~suggestion:"Remove \\."
+    "The '%c' character should not be escaped." c

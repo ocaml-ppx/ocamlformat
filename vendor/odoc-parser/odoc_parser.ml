@@ -103,13 +103,20 @@ let position_of_point : t -> Loc.point -> Lexing.position =
 let parse_comment ~location ~text =
   let warnings = ref [] in
   let reversed_newlines = reversed_newlines ~input:text in
+  let string_buffer = Buffer.create 256 in
   let token_stream =
     let lexbuf = Lexing.from_string text in
     let offset_to_location =
       offset_to_location ~reversed_newlines ~comment_location:location
     in
     let input : Lexer.input =
-      { file = location.Lexing.pos_fname; offset_to_location; warnings; lexbuf }
+      {
+        file = location.Lexing.pos_fname;
+        offset_to_location;
+        warnings;
+        lexbuf;
+        string_buffer;
+      }
     in
     Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in

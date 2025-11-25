@@ -105,13 +105,17 @@ let fmt_media_href fmt = function
   | `Reference s -> fpf fmt "Reference(%s)" s
   | `Link s -> fpf fmt "Link(%s)" s
 
+let fmt_code_block_tag fmt = function
+  | `Tag s -> fpf fmt "Tag(%a)" (ign_loc str) s
+  | `Binding (a, b) ->
+      fpf fmt "Binding(%a, %a)" (ign_loc str) a (ign_loc str) b
+
 let rec odoc_nestable_block_element c fmt : Ast.nestable_block_element -> _ =
   function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (b : Ast.code_block) ->
       let fmt_metadata fmt (m : Ast.code_block_meta) =
-        fpf fmt "(%a, %a)" (ign_loc str) m.language
-          (option (ign_loc str))
+        fpf fmt "(%a, %a)" (ign_loc str) m.language (list fmt_code_block_tag)
           m.tags
       in
       let fmt_content =
