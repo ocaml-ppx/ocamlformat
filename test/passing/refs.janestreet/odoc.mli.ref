@@ -128,36 +128,36 @@
     } *)
 
 (** {[
-      foo
+    foo
     ]}
     {[
-      foo
-    ]}
-
-    {[
-      foo bar
-    ]}
-    {[
-      foo bar
+    foo
     ]}
 
     {[
-      foo bar
+    foo bar
+    ]}
+    {[
+    foo bar
     ]}
 
     {[
-      foo bar
+    foo bar
     ]}
 
     {[
-      foo bar
+    foo bar
+    ]}
+
+    {[
+    foo bar
     ]}
 
     {[
     {[
     ]}
     {[
-      foo
+    foo
     ]}
     {[
     ]
@@ -167,25 +167,25 @@
     ]}
 
     {[
-      (** foo *)
-      let bar = ()
+    (** foo *)
+    let bar = ()
     ]}
 
     {@ocaml env=f1 version>=4.06[
-      code goes here
+    code goes here
     ]}
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       output {b foo}
     ]}
 
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       foo
       {[
-        bar
+      bar
       ]}
       baz
     ]}
@@ -204,26 +204,26 @@
     ]delim}
 
     {@ocaml[
-      code
+    code
     ]}
 
     {@ocaml kind=toplevel[
-      code
+    code
     ]}
 
     {@ocaml kind=toplevel env=e1[
-      code
+    code
     ]}
 
     {@ocaml kind=toplevel[
-      code
+    code
     ]}
 
     {@ocaml kind=toplevel[
-      code
+    code
     ]}
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       ]} *)
 

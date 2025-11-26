@@ -291,11 +291,11 @@ let a = 1
     ]} *)
 
 (** {@ocaml[
-      let _ =
-        f @@ { aaa = aaa bbb ccc; bbb = aaa bbb ccc; ccc = aaa bbb ccc }
-        >>= fun () ->
-        let _ = x in
-        f @@ g @@ h @@ fun x -> y
+    let _ =
+      f @@ { aaa = aaa bbb ccc; bbb = aaa bbb ccc; ccc = aaa bbb ccc }
+      >>= fun () ->
+      let _ = x in
+      f @@ g @@ h @@ fun x -> y
     ]} *)
 
 (**{v

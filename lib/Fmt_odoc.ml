@@ -446,15 +446,15 @@ and fmt_code_block_tag = function
   | `Binding (k, v) -> ign_loc ~f:str k $ str "=" $ ign_loc ~f:str v
 
 and fmt_code_block c ~loc (b : code_block) =
-  let content, content_was_formatted =
+  let content =
     let content, _warnings =
       Odoc_parser.codeblock_content loc b.content.value
     in
     match b.meta with
     | Some {language= {value= "ocaml"; _}; _} | None -> (
       (* [offset] doesn't take into account code blocks nested into lists. *)
-      match c.fmt_code c.conf ~offset:2 ~set_margin:true content with
-      | Ok formatted -> (formatted |> Format_.asprintf "%a" Fmt.eval, true)
+      match c.fmt_code c.conf ~offset:0 ~set_margin:true content with
+      | Ok formatted -> formatted |> Format_.asprintf "%a" Fmt.eval
       | Error (`Msg message) ->
           if
             (not (String.is_empty message))
@@ -464,8 +464,8 @@ and fmt_code_block c ~loc (b : code_block) =
             Docstring.warn Stdlib.Format.err_formatter
               { location= b.content.location
               ; message= Format.sprintf "invalid code block: %s" message } ;
-          (content, false) )
-    | Some _ -> (content, false)
+          content )
+    | Some _ -> content
   in
   let delim = opt b.delimiter str in
   let opening =
@@ -488,9 +488,8 @@ and fmt_code_block c ~loc (b : code_block) =
     | None -> str "]" $ delim $ str "}"
   in
   (* The content might contain an indentation when it was not formatted. *)
-  let indent = if content_was_formatted then 2 else 0 in
   hvbox 0
-    ( opening $ break 1000 indent
+    ( opening $ force_break
     $ fmt_multiline_text content
     $ space_break $ output_or_closing )
 

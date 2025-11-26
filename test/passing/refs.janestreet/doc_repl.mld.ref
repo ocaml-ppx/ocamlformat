@@ -1,20 +1,20 @@
 Block delimiters should be on their own line:
 
 {[
-  let x = 1
+let x = 1
 ]}
 
 As of odoc 2.1, a block can carry metadata:
 
 {@ocaml[
-  let x = 2
+let x = 2
 ]}
 
 An OCaml block that should break:
 
 {[
-  let x = 2 in
-  x + x
+let x = 2 in
+x + x
 ]}
 
 A toplevel phrase with no output:
