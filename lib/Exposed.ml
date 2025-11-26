@@ -21,6 +21,7 @@ module Left_angle = struct
       | None, typ -> core_type typ )
     | Ptyp_object _ -> true
     | Ptyp_alias (typ, _) -> core_type typ
+    | Ptyp_quote _ -> true
     | _ -> false
 end
 
@@ -37,6 +38,7 @@ module Right_angle = struct
         | Some _, _ -> false
         | None, typ -> core_type typ )
       | Ptyp_object _ -> true
+      | Ptyp_quote _ -> true
       | _ -> false )
 
   let constructor_arguments = function

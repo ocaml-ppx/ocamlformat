@@ -291,6 +291,12 @@ let rec core_type i ppf x =
   | Ptyp_constr_unboxed (li, l) ->
       line i ppf "Ptyp_constr_unboxed %a\n" fmt_longident_loc li;
       list i core_type ppf l
+  | Ptyp_quote ct ->
+      line i ppf "Ptyp_quote\n";
+      core_type i ppf ct
+  | Ptyp_splice ct ->
+      line i ppf "Ptyp_splice\n";
+      core_type i ppf ct
   (* End Jane Street extension *)
 
 and arrow_param i ppf {pap_label; pap_loc; pap_type; pap_modes} =
@@ -615,6 +621,12 @@ and expression i ppf x =
   | Pexp_array_comprehension (m, c) ->
       line i ppf "Pexp_array_comprehension %a\n" fmt_mutable_flag m;
       comprehension i ppf c
+  | Pexp_quote e ->
+      line i ppf "Pexp_quote\n";
+      expression i ppf e
+  | Pexp_splice e ->
+      line i ppf "Pexp_splice\n";
+      expression i ppf e
 
 and block_access i ppf = function
   | Baccess_field lid ->
@@ -1390,12 +1402,22 @@ let rec toplevel_phrase i ppf x =
   | Ptop_def (s) ->
       line i ppf "Ptop_def\n";
       structure (i+1) ppf s;
-  | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
+  | Ptop_dir {pdir_name; pdir_arg; pdir_loc} -> begin
       line i ppf "Ptop_dir %a %a\n" fmt_string_loc pdir_name
         fmt_location pdir_loc;
       match pdir_arg with
       | None -> ()
       | Some da -> directive_argument i ppf da;
+    end
+  | Ptop_lex l ->
+      line i ppf "Ptop_lex\n";
+      lexer_directive (i + 1) ppf l.plex_desc;
+
+and lexer_directive i ppf x =
+  match x with
+  | Plex_syntax s ->
+      line i ppf "Plex_syntax %a %s\n" fmt_string_loc s.psyn_mode
+        (string_of_bool s.psyn_toggle);
 
 and directive_argument i ppf x =
   line i ppf "directive_argument %a\n" fmt_location x.pdira_loc;

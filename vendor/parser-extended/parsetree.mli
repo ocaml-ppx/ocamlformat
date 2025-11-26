@@ -225,6 +225,8 @@ and core_type_desc =
   (* Jane Street extension *)
   | Ptyp_of_kind of jkind_annotation (** [(type : k)] *)
   | Ptyp_constr_unboxed of Longident.t loc * core_type list
+  | Ptyp_quote of core_type (** [<[T]>] *)
+  | Ptyp_splice of core_type (** [$T] *)
   (* End Jane Street extension *)
 
 and package_type =
@@ -546,6 +548,8 @@ and expression_desc =
       (** [[|BODY ...CLAUSES...|]] (flag = Mutable)
           [[:BODY ...CLAUSES...:]] (flag = Immutable)
           (only allowed with [-extension immutable_arrays]) *)
+  | Pexp_quote of expression (** runtime metaprogramming quotations <[E]> *)
+  | Pexp_splice of expression (** runtime metaprogramming splicing $(E) *)
 
 and block_access =
   | Baccess_field of Longident.t loc
@@ -1341,6 +1345,7 @@ and kind_abbreviation = string loc * jkind_annotation loc
 type toplevel_phrase =
   | Ptop_def of structure
   | Ptop_dir of toplevel_directive  (** [#use], [#load] ... *)
+  | Ptop_lex of lexer_directive
 
 and toplevel_directive =
   {
@@ -1360,6 +1365,22 @@ and directive_argument_desc =
   | Pdir_int of string * char option
   | Pdir_ident of Longident.t
   | Pdir_bool of bool
+
+(** Lexer directives: ugly hack to avoid their deletion *)
+and syntax_directive =
+  {
+    psyn_mode: string loc; (* which syntax feature e.g. quotations *)
+    psyn_toggle: bool; (* on/off *)
+  }
+
+and lexer_directive_desc =
+  | Plex_syntax of syntax_directive
+
+and lexer_directive =
+  {
+    plex_desc: lexer_directive_desc;
+    plex_loc: Location.t
+  }
 
 type repl_phrase =
   {

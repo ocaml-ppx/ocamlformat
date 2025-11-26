@@ -1282,6 +1282,11 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
            ( fmt "type"
            $ fmt_jkind_constr ~ctx:(Typ typ) c {txt= jk; loc= typ.ptyp_loc}
            ) )
+  | Ptyp_quote t ->
+      wrap_fits_breaks c.conf "<[" "]>" (fmt_core_type c (sub_typ ~ctx t))
+  | Ptyp_splice t ->
+      fmt "$"
+      $ wrap_fits_breaks c.conf "(" ")" (fmt_core_type c (sub_typ ~ctx t))
 
 and fmt_labeled_tuple_type c lbl xtyp =
   match lbl with
@@ -3389,6 +3394,23 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro $ fmt_indexop_access c ctx ~fmt_atrs ~has_attr ~parens x
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
+  | Pexp_quote expr ->
+      pro
+      $ hvbox 0
+          (Params.Exp.wrap c.conf ~parens
+             ( wrap_fits_breaks ~space:true c.conf "<[" "]>"
+                 (fmt_expression c ~box ?eol ~parens:false ~indent_wrap ?ext
+                    (sub_exp ~ctx expr) )
+             $ fmt_atrs ) )
+  | Pexp_splice expr ->
+      pro
+      $ hvbox 0
+          ( Params.Exp.wrap c.conf ~parens
+              ( Cmts.fmt c pexp_loc
+              @@ hvbox 2
+                   ( str "$"
+                   $ fmt_expression ~parens:true c (sub_exp ~ctx expr) ) )
+          $ fmt_atrs )
   | Pexp_hole -> pro $ hvbox 0 (fmt_hole () $ fmt_atrs)
   | Pexp_beginend e ->
       let wrap_beginend k =
@@ -5456,10 +5478,22 @@ let fmt_toplevel_directive c ~semisemi dir =
   in
   Cmts.fmt c pdir_loc (box_semisemi c ~parent_ctx:Top semisemi (name $ args))
 
+let fmt_lexer_directive c ~semisemi l =
+  let toggle_to_string = function true -> "on" | false -> "off" in
+  let fmt_lexer_arg l =
+    match l.plex_desc with
+    | Plex_syntax {psyn_mode; psyn_toggle} ->
+        str
+          (Printf.sprintf "#syntax %s %s" psyn_mode.txt
+             (toggle_to_string psyn_toggle) )
+  in
+  box_semisemi c ~parent_ctx:Top semisemi (fmt_lexer_arg l)
+
 let flatten_ptop =
   List.concat_map ~f:(function
     | Ptop_def items -> List.map items ~f:(fun i -> `Item i)
-    | Ptop_dir d -> [`Directive d] )
+    | Ptop_dir d -> [`Directive d]
+    | Ptop_lex l -> [`Lexer l] )
 
 let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   let itms = flatten_ptop itms in
@@ -5479,6 +5513,7 @@ let fmt_toplevel ?(force_semisemi = false) c ctx itms =
     match itm with
     | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c ~semisemi d
+    | `Lexer l -> fmt_lexer_directive c ~semisemi l
   in
   let ast x = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms

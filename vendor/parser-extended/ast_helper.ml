@@ -84,6 +84,8 @@ module Typ = struct
   (* Jane Street extension *)
   let of_kind ?loc ?attrs a = mk ?loc ?attrs (Ptyp_of_kind a)
   let constr_unboxed ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_constr_unboxed (a, b))
+  let quote ?loc ?attrs a = mk ?loc ?attrs (Ptyp_quote a)
+  let splice ?loc ?attrs a = mk ?loc ?attrs (Ptyp_splice a)
   (* End Jane Street extension *)
 end
 
@@ -184,6 +186,11 @@ module Exp = struct
   let infix ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_infix (a, b, c))
   let list_comp ?loc ?attrs a = mk ?loc ?attrs (Pexp_list_comprehension a)
   let array_comp ?loc ?attrs a b = mk ?loc ?attrs (Pexp_array_comprehension (a, b))
+
+  (* Jane Street extension *)
+  let quote ?loc ?attrs a = mk ?loc ?attrs (Pexp_quote a)
+  let splice ?loc ?attrs a = mk ?loc ?attrs (Pexp_splice a)
+  (* End Jane Street extension *)
 
   let case lhs ?guard rhs =
     {

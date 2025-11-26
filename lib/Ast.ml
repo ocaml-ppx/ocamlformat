@@ -220,7 +220,7 @@ module Exp = struct
      |Pexp_override _ | Pexp_open _ | Pexp_extension _ | Pexp_hole
      |Pexp_record _ | Pexp_record_unboxed_product _ | Pexp_array _
      |Pexp_list _ | Pexp_list_comprehension _ | Pexp_array_comprehension _
-     |Pexp_unboxed_tuple _ | Pexp_idx _ ->
+     |Pexp_unboxed_tuple _ | Pexp_idx _ | Pexp_quote _ | Pexp_splice _ ->
         true
     | Pexp_constant c -> not (is_uminus_constant c)
     | Pexp_prefix (op, _) -> not (is_uminus_op op || is_uplus_op op)
@@ -718,7 +718,9 @@ module Class_type_field = struct
 end
 
 type toplevel_item =
-  [`Item of structure_item | `Directive of toplevel_directive]
+  [ `Item of structure_item
+  | `Directive of toplevel_directive
+  | `Lexer of lexer_directive ]
 
 (** Ast terms of various forms. *)
 module T = struct
@@ -775,6 +777,8 @@ module T = struct
         Format.fprintf fs "Ctf:@\n%a@\n" Printast.class_type_field ctf
     | Tli (`Directive d) ->
         Format.fprintf fs "Dir:@\n%a" Printast.top_phrase (Ptop_dir d)
+    | Tli (`Lexer l) ->
+        Format.fprintf fs "Lex:@\n%a" Printast.top_phrase (Ptop_lex l)
     | Jkd jkd ->
         Format.fprintf fs "Jkd:@\n%a" (Printast.jkind_annotation 0) jkd
     | Top -> Format.pp_print_string fs "Top"
@@ -836,6 +840,7 @@ let location = function
   | Ctf x -> x.pctf_loc
   | Tli (`Item x) -> x.pstr_loc
   | Tli (`Directive x) -> x.pdir_loc
+  | Tli (`Lexer x) -> x.plex_loc
   | Jkd _ -> Location.none
   | Top -> Location.none
   | Rep -> Location.none
@@ -1055,7 +1060,9 @@ end = struct
               | {pof_desc= Oinherit t1; _} -> typ == t1 ) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f)
       | Ptyp_of_kind _ -> assert false
-      | Ptyp_constr_unboxed (_, t1N) -> assert (List.exists t1N ~f) )
+      | Ptyp_constr_unboxed (_, t1N) -> assert (List.exists t1N ~f)
+      | Ptyp_quote t1 -> assert (typ == t1)
+      | Ptyp_splice t1 -> assert (typ == t1) )
     | Td {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest; _} ->
         assert (
           List.exists ptype_params ~f:fst_f
@@ -1448,7 +1455,7 @@ end = struct
        |Pexp_variant _ | Pexp_while _ | Pexp_hole | Pexp_beginend _
        |Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ | Pexp_stack _
-       |Pexp_idx _ ->
+       |Pexp_idx _ | Pexp_quote _ | Pexp_splice _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1596,7 +1603,9 @@ end = struct
          |Pexp_letopen (_, e)
          |Pexp_poly (e, _)
          |Pexp_send (e, _)
-         |Pexp_setinstvar (_, e) ->
+         |Pexp_setinstvar (_, e)
+         |Pexp_quote e
+         |Pexp_splice e ->
             assert (e == exp)
         | Pexp_sequence (e1, e2) -> assert (e1 == exp || e2 == exp)
         | Pexp_setfield (e1, _, e2) | Pexp_while (e1, e2) ->
@@ -1784,7 +1793,7 @@ end = struct
       | Ptyp_constr _ -> Some (Apply, Non)
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
        |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _
-       |Ptyp_of_kind _ ->
+       |Ptyp_of_kind _ | Ptyp_quote _ | Ptyp_splice _ ->
           None
       | Ptyp_constr_unboxed (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr_unboxed _ -> Some (Apply, Non) )
@@ -1921,7 +1930,9 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None
-      | Ptyp_constr_unboxed _ | Ptyp_of_kind _ -> None )
+      | Ptyp_constr_unboxed _ | Ptyp_of_kind _ | Ptyp_quote _ | Ptyp_splice _
+        ->
+          None )
     | Td _ -> None
     | Tyv _ -> None
     | Kab _ -> None
@@ -2313,6 +2324,7 @@ end = struct
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (snd (List.last_exn es))
         | Pexp_unboxed_tuple _ -> false
+        | Pexp_splice e -> continue e
         | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
          |Pexp_constraint _
          |Pexp_construct (_, None)
@@ -2323,7 +2335,7 @@ end = struct
          |Pexp_variant (_, None)
          |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
          |Pexp_indexop_access _ | Pexp_list_comprehension _
-         |Pexp_array_comprehension _ | Pexp_idx _ ->
+         |Pexp_array_comprehension _ | Pexp_idx _ | Pexp_quote _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2396,6 +2408,7 @@ end = struct
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (snd (List.last_exn es))
       | Pexp_unboxed_tuple _ -> false
+      | Pexp_splice e -> continue e
       | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
        |Pexp_constraint _
        |Pexp_construct (_, None)
@@ -2406,7 +2419,7 @@ end = struct
        |Pexp_variant (_, None)
        |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
        |Pexp_list_comprehension _ | Pexp_array_comprehension _ | Pexp_idx _
-        ->
+       |Pexp_quote _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp

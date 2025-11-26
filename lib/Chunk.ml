@@ -57,7 +57,8 @@ let last_loc (type a) (fg : a list item) (l : a list) =
       List.last l
       >>= function
       | Ptop_def x -> List.last x >>| fun x -> x.pstr_loc
-      | Ptop_dir x -> Some x.pdir_loc )
+      | Ptop_dir x -> Some x.pdir_loc
+      | Ptop_lex x -> Some x.plex_loc )
 
 let mk ~attr_loc ~chunk_loc state items = {attr_loc; chunk_loc; state; items}
 

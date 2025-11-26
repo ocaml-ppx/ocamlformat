@@ -85,6 +85,7 @@ type mapper = {
   with_constraint: mapper -> with_constraint -> with_constraint;
   directive_argument: mapper -> directive_argument -> directive_argument;
   toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
+  lexer_directive: mapper -> lexer_directive -> lexer_directive;
   toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
   repl_phrase: mapper -> repl_phrase -> repl_phrase;
 }
@@ -239,6 +240,10 @@ module T = struct
         of_kind ~loc ~attrs (sub.jkind_annotation sub jkind)
     | Ptyp_constr_unboxed (lid, tl) ->
         constr_unboxed ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
+    | Ptyp_quote t ->
+        quote ~loc ~attrs (sub.typ sub t)
+    | Ptyp_splice t ->
+        splice ~loc ~attrs (sub.typ sub t)
     (* End Jane Street extension *)
 
   let map_variance_and_injectivity sub = List.map (map_loc sub)
@@ -729,6 +734,8 @@ module E = struct
     | Pexp_list_comprehension c -> list_comp ~loc ~attrs (Comprehension.map sub c)
     | Pexp_array_comprehension (f, c) ->
         array_comp ~loc ~attrs (Flag.map_mutable sub f) (Comprehension.map sub c)
+    | Pexp_quote e -> quote ~loc ~attrs (sub.expr sub e)
+    | Pexp_splice e -> splice ~loc ~attrs (sub.expr sub e)
 
   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_is_pun; pbop_loc} =
     let open Exp in
@@ -1122,10 +1129,19 @@ let default_mapper =
          ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
          ; pdir_loc= this.location this d.pdir_loc } );
 
+    lexer_directive =
+      (fun this l ->
+         match l.plex_desc with
+         | Plex_syntax s ->
+           {plex_desc= Plex_syntax { psyn_mode = map_loc this s.psyn_mode
+                                   ; psyn_toggle = s.psyn_toggle };
+            plex_loc= this.location this l.plex_loc });
+
     toplevel_phrase =
       (fun this -> function
          | Ptop_def s -> Ptop_def (this.structure this s)
-         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
+         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d)
+         | Ptop_lex l -> Ptop_lex (this.lexer_directive this l) );
 
     repl_phrase =
       (fun this p ->
