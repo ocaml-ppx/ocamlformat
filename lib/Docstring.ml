@@ -79,10 +79,13 @@ let list f fmt l =
   let pp_sep _ () = () in
   Format.pp_print_list ~pp_sep f fmt l
 
-let str fmt s =
-  let pp_sep fmt () = Format.pp_print_string fmt " " in
+let str_with_sep ~pp_sep fmt s =
   Format.pp_print_list ~pp_sep Astring.String.Sub.pp fmt
     (normalize_text_subs s)
+
+let str fmt s =
+  let pp_sep fmt () = Format.pp_print_string fmt " " in
+  str_with_sep ~pp_sep fmt s
 
 let ign_loc f fmt with_loc = f fmt with_loc.Odoc_parser.Loc.value
 
@@ -154,7 +157,8 @@ let rec odoc_nestable_block_element c fmt : Ast.nestable_block_element -> _ =
           m.tags
       in
       let fmt_content =
-        ign_loc (fun fmt s -> str fmt (c.normalize_code s))
+        let pp_sep _ () = () in
+        ign_loc (fun fmt s -> str_with_sep ~pp_sep fmt (c.normalize_code s))
       in
       let fmt_output =
         option (list (ign_loc (odoc_nestable_block_element c)))
