@@ -132,10 +132,21 @@ functor
 
 module M : (_ : X) -> X = Y
 
-[@@@ocamlformat "break-struct=natural"]
+module M = struct
+  [@@@ocamlformat "break-struct=natural"]
 
-module M = F (struct type t end : sig type t end)
+  module M = F (struct type t end : sig type t end)
 
-module M = struct type t end
+  module M = struct type t end
 
-module type S = sig type t end
+  module type S = sig type t end
+end
+
+module Simple : (Parameters with type update_result := state) -> S = M
+
+module Left_variadic : (Parameters
+                         with type update_result := state * left array)
+  -> S =
+  M
+
+module N : S with module type T = (U -> U) = struct end

@@ -1914,12 +1914,9 @@ end = struct
     Mty.has_trailing_attributes mty
     ||
     match (ctx, mty.pmty_desc) with
-    | Mty {pmty_desc= Pmty_with _; _}, Pmty_with _ -> true
-    | ( Mty
-          { pmty_desc=
-              Pmty_with (lhs, _) | Pmty_functor (Pfunctorty_unnamed lhs, _)
-          ; _ }
-      , Pmty_functor _ )
+    | Mty {pmty_desc= Pmty_with _; _}, (Pmty_with _ | Pmty_functor _) -> true
+    | ( Mty {pmty_desc= Pmty_functor (Pfunctorty_unnamed lhs, _); _}
+      , (Pmty_with _ | Pmty_functor _) )
       when lhs == mty ->
         true
     | _ -> false
