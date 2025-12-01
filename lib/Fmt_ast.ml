@@ -3870,7 +3870,7 @@ and fmt_functor_param_type c ctx = function
   | Pfunctorty_unnamed arg ->
       compose_module (fmt_module_type c (sub_mty ~ctx arg)) ~f:Fn.id
 
-and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
+and fmt_module_type c ?(rec_ = false) ({ast= mty; ctx= ctx0} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
   update_config_maybe_disabled_block c pmty_loc pmty_attributes
@@ -3916,8 +3916,19 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; _} as xmty) =
             $ fmt_attributes_and_docstrings c pmty_attributes ) }
   | Pmty_functor (paramty, mt) ->
       let blk = fmt_module_type c (sub_mty ~ctx mt) in
+      let opn, cls =
+        match ctx0 with
+        (* Functor argument might not be boxed. Force a box when using the
+           short syntax. *)
+        | Mty {pmty_desc= Pmty_functor (Pfunctorty_unnamed lhs, _); _}
+          when phys_equal lhs mty ->
+            (Some (open_hovbox 2), close_box)
+        | _ -> (blk.opn, blk.cls)
+      in
       { blk with
-        pro=
+        opn
+      ; cls
+      ; pro=
           Some
             ( Cmts.fmt_before c pmty_loc
             $ fmt_if parens (str "(")
@@ -4166,7 +4177,11 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
           match xmty.ast.pmty_desc with
           (* Break functor types that use the short syntax and avoid
              misaligning the parameter types. *)
-          | Pmty_functor (Pfunctorty_unnamed _, _) -> break 1 2
+          | Pmty_functor
+              ( Pfunctorty_unnamed
+                  {pmty_desc= Pmty_with _ | Pmty_functor _; _}
+              , _ ) ->
+              break 1 2
           | _ -> str " "
         in
         let blk = fmt_module_type ?rec_ c xmty in

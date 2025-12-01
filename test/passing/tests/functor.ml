@@ -148,5 +148,14 @@ module Left_variadic:
   (Parameters with type update_result := state * left array) -> S = M
 module Left_variadic:
   S -> (Parameters with type update_result := state * left array) = M
+module Left_variadic:
+  (A -> B) ->
+  (Parameters with type update_result := state * left array) -> S = M
+module Left_variadic:
+  S ->
+  (Parameters with type update_result := state * left array) -> S = M
+module Left_variadic:
+  sig type t end ->
+  (Parameters with type update_result := state * left array) -> S = M
 
 module N : S with module type T = (U -> U) = struct end
