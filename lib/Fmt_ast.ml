@@ -4162,10 +4162,19 @@ and fmt_module c ctx ?rec_ ?epi ?(can_sparse = false) keyword ?(eqty = "=")
   let ext = attrs.attrs_extension in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
+        let break_before_ty =
+          match xmty.ast.pmty_desc with
+          (* Break functor types that use the short syntax and avoid
+             misaligning the parameter types. *)
+          | Pmty_functor (Pfunctorty_unnamed _, _) -> break 1 2
+          | _ -> str " "
+        in
         let blk = fmt_module_type ?rec_ c xmty in
+        let pro =
+          str " " $ str eqty $ opt blk.pro (fun pro -> break_before_ty $ pro)
+        in
         { blk with
-          pro=
-            Some (str " " $ str eqty $ opt blk.pro (fun pro -> str " " $ pro))
+          pro= Some pro
         ; psp= fmt_if (Option.is_none blk.pro) (break 1 2) $ blk.psp } )
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in

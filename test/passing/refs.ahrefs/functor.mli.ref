@@ -4,6 +4,6 @@ end) : S
 
 module Simple : (Parameters with type update_result := state) -> S
 
-module Left_variadic : (Parameters
-                         with type update_result := state * left array)
+module Left_variadic :
+  (Parameters with type update_result := state * left array)
   -> S

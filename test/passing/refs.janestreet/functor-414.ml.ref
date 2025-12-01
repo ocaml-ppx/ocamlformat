@@ -122,5 +122,7 @@ module M = struct
 end
 
 module Simple : (Parameters with type update_result := state) -> S = M
+module Simple : S -> Parameters with type update_result := state = M
 module Left_variadic : (Parameters with type update_result := state * left array) -> S = M
+module Left_variadic : S -> Parameters with type update_result := state * left array = M
 module N : S with module type T = (U -> U) = struct end
