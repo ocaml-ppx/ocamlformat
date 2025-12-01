@@ -128,103 +128,102 @@
     } *)
 
 (** {[
-      foo
+    foo
     ]}
     {[
-      foo
-    ]}
-
-    {[
-      foo bar
-    ]}
-    {[
-      foo bar
+    foo
     ]}
 
     {[
-      foo bar
+    foo bar
+    ]}
+    {[
+    foo bar
     ]}
 
     {[
-      foo bar
+    foo bar
     ]}
 
     {[
-      foo bar
+    foo bar
     ]}
 
     {[
-      {[
-    ]}
-    {[
-      foo
-    ]}
-    {[
-      ]
-    ]}
-    {[
-      foo]]bar
+    foo bar
     ]}
 
     {[
-      (** foo *)
-      let bar = ()
+    {[
+    ]}
+    {[
+    foo
+    ]}
+    {[
+    ]
+    ]}
+    {[
+    foo]]bar
+    ]}
+
+    {[
+    (** foo *)
+    let bar = ()
     ]}
 
     {@ocaml env=f1 version>=4.06[
-      code goes here
+    code goes here
     ]}
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       output {b foo}
     ]}
 
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       foo
       {[
-        bar
+      bar
       ]}
       baz
     ]}
 
     {[
-      foo][output {b foo}
+    foo][output {b foo}
     ]}
     {@ocaml[
-      foo][output {b foo}
+    foo][output {b foo}
     ]}
     {@ocaml[
-      foo]unexpected[output {b foo}
+    foo]unexpected[output {b foo}
     ]}
     {delim@ocaml[
-      foo]wrong[output {b foo}
+    foo]wrong[output {b foo}
     ]delim}
 
     {@ocaml[
-      code
+    code
     ]}
 
     {@ocaml kind=toplevel[
-      code
+    code
     ]}
 
-    {@ocaml kind=toplevel
-  env=e1[
-      code
-    ]}
-
-    {@ocaml kind=toplevel[
-      code
+    {@ocaml kind=toplevel env=e1[
+    code
     ]}
 
     {@ocaml kind=toplevel[
-      code
+    code
+    ]}
+
+    {@ocaml kind=toplevel[
+    code
     ]}
     {delim@ocaml[
-      foo
+    foo
     ]delim[
       ]} *)
 
@@ -271,7 +270,14 @@
     @children_order
       foo
       - bar
-        baz *)
+        baz
+
+    @toc_status open
+    @toc_status hidden
+    @toc_status foo
+
+    @order_category
+    @order_category foo *)
 
 (** {!foo}
     bar{!foo}

@@ -37,17 +37,55 @@ let is_tag_only =
 
 type norm_conf = {normalize_code: string -> string}
 
-let normalize_text s =
+(** Like [String.fields] but the separator can be of variable length.
+    [f start_index str] returns [0] if [str.[start_index]] is not the first
+    char of a separator, or returns the length of the separator.
+    [start_index] is always less than [String.length s]. *)
+let fields_pattern ?(empty = true) ~is_sep s =
+  let module Sub = Astring.String.Sub in
+  let len = String.length s in
+  (* Add a sub at the front of [acc] while respecting [empty]. *)
+  let sub' ~start ~stop acc =
+    if start = stop && not empty then acc else Sub.v ~start ~stop s :: acc
+  in
+  let rec loop acc field_start i =
+    if i = len then List.rev (sub' ~start:field_start ~stop:i acc)
+    else
+      match is_sep i s with
+      | 0 -> loop acc field_start (i + 1)
+      | sep_len ->
+          let next = i + sep_len in
+          loop (sub' ~start:field_start ~stop:i acc) next next
+  in
+  loop [] 0 0
+
+let normalize_text_subs s =
   (* normalize consecutive whitespace chars to a single space *)
-  String.concat ~sep:" "
-    (List.filter ~f:(Fn.non String.is_empty)
-       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']) )
+  let is_sep i s =
+    match s.[i] with
+    | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> 1
+    | '\\' when i + 1 < String.length s -> (
+      match s.[i + 1] with 'n' -> 2 | _ -> 0 )
+    | _ -> 0
+  in
+  fields_pattern ~empty:false ~is_sep s
+
+let normalize_text s =
+  let module Sub = Astring.String.Sub in
+  let sep = Sub.v " " in
+  Sub.concat ~sep (normalize_text_subs s) |> Sub.to_string
 
 let list f fmt l =
-  let pp_sep fmt () = Format.fprintf fmt "" in
+  let pp_sep _ () = () in
   Format.pp_print_list ~pp_sep f fmt l
 
-let str fmt s = Format.fprintf fmt "%s" (normalize_text s)
+let str_with_sep ~pp_sep fmt s =
+  Format.pp_print_list ~pp_sep Astring.String.Sub.pp fmt
+    (normalize_text_subs s)
+
+let str fmt s =
+  let pp_sep fmt () = Format.pp_print_string fmt " " in
+  str_with_sep ~pp_sep fmt s
 
 let ign_loc f fmt with_loc = f fmt with_loc.Odoc_parser.Loc.value
 
@@ -105,17 +143,22 @@ let fmt_media_href fmt = function
   | `Reference s -> fpf fmt "Reference(%s)" s
   | `Link s -> fpf fmt "Link(%s)" s
 
+let fmt_code_block_tag fmt = function
+  | `Tag s -> fpf fmt "Tag(%a)" (ign_loc str) s
+  | `Binding (a, b) ->
+      fpf fmt "Binding(%a, %a)" (ign_loc str) a (ign_loc str) b
+
 let rec odoc_nestable_block_element c fmt : Ast.nestable_block_element -> _ =
   function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (b : Ast.code_block) ->
       let fmt_metadata fmt (m : Ast.code_block_meta) =
-        fpf fmt "(%a, %a)" (ign_loc str) m.language
-          (option (ign_loc str))
+        fpf fmt "(%a, %a)" (ign_loc str) m.language (list fmt_code_block_tag)
           m.tags
       in
       let fmt_content =
-        ign_loc (fun fmt s -> str fmt (c.normalize_code s))
+        let pp_sep _ () = () in
+        ign_loc (fun fmt s -> str_with_sep ~pp_sep fmt (c.normalize_code s))
       in
       let fmt_output =
         option (list (ign_loc (odoc_nestable_block_element c)))
@@ -179,6 +222,10 @@ let odoc_tag c fmt : Ast.tag -> unit = function
   | `Hidden -> fpf fmt "Hidden"
   | `Children_order elems ->
       odoc_implicitly_ended_tag c fmt "Children_order" elems
+  | `Toc_status txt ->
+      fpf fmt "Toc_status(%a)" (odoc_nestable_block_elements c) txt
+  | `Order_category txt ->
+      fpf fmt "Order_category(%a)" (odoc_nestable_block_elements c) txt
   | `Short_title elems -> odoc_implicitly_ended_tag c fmt "Short_title" elems
 
 let odoc_block_element c fmt = function

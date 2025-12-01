@@ -239,6 +239,13 @@
    foo
    - bar
    baz
+
+   @toc_status open
+   @toc_status hidden
+   @toc_status foo
+
+   @order_category
+   @order_category foo
 *)
 
 (**

@@ -17,6 +17,8 @@
      sequence of block elements, so [block_element_list] is the top-level
      parser. It is also used for list item and tag content. *)
 
+open! Compat
+
 type 'a with_location = 'a Loc.with_location
 
 (* {2 Input} *)
@@ -323,7 +325,8 @@ and delimited_inline_element_list :
     requires_leading_whitespace:bool ->
     input ->
     Ast.inline_element with_location list * Loc.span =
- fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace input ->
+ fun ~parent_markup ~parent_markup_location ~requires_leading_whitespace
+     input ->
   (* [~at_start_of_line] is used to interpret [`Minus] and [`Plus]. These are
      word tokens if not the first non-whitespace tokens on their line. Then,
      they are allowed in a non-link element list. *)
@@ -396,14 +399,14 @@ and delimited_inline_element_list :
   let first_token = peek input in
   match first_token.value with
   | `Space _ ->
-      (* Preserve leading spaces in markups
+      (* ocamlformat: Preserve leading spaces in markups
          junk input; *)
       consume_elements ~at_start_of_line:false []
       (* [~at_start_of_line] is [false] here because the preceding token was some
          some markup like '{b', and we didn't move to the next line, so the next
          token will not be the first non-whitespace token on its line. *)
   | `Single_newline _ ->
-      (* Preserve leading spaces in markups
+      (* ocamlformat: Preserve leading spaces in markups
          junk input; *)
       consume_elements ~at_start_of_line:true []
   | `Blank_line _ as blank ->
@@ -585,8 +588,7 @@ type ('block, 'stops_at_which_tokens) context =
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
-let accepted_in_all_contexts :
-    type block stops_at_which_tokens.
+let accepted_in_all_contexts : type block stops_at_which_tokens.
     (block, stops_at_which_tokens) context ->
     Ast.nestable_block_element ->
     block =
@@ -618,6 +620,8 @@ let tag_to_words = function
   | `Since s -> [ `Word "@since"; `Space " "; `Word s ]
   | `Version s -> [ `Word "@version"; `Space " "; `Word s ]
   | `Children_order -> [ `Word "@children_order" ]
+  | `Toc_status -> [ `Word "@toc_status" ]
+  | `Order_category -> [ `Word "@order_category" ]
   | `Short_title -> [ `Word "@short_title" ]
 
 (* {3 Block element lists} *)
@@ -630,8 +634,7 @@ let tag_to_words = function
    - tables,
    - lists, and
    - section headings. *)
-let rec block_element_list :
-    type block stops_at_which_tokens.
+let rec block_element_list : type block stops_at_which_tokens.
     (block, stops_at_which_tokens) context ->
     parent_markup:[< Token.t | `Comment ] ->
     input ->
@@ -819,7 +822,8 @@ let rec block_element_list :
 
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements `After_text (tag :: acc)
-            | (`Deprecated | `Return | `Children_order | `Short_title) as tag ->
+            | ( `Deprecated | `Return | `Children_order | `Short_title
+              | `Toc_status | `Order_category ) as tag ->
                 let content, _stream_head, where_in_line =
                   block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
@@ -827,9 +831,11 @@ let rec block_element_list :
                 let tag =
                   match tag with
                   | `Deprecated -> `Deprecated content
+                  | `Toc_status -> `Toc_status content
                   | `Return -> `Return content
                   | `Children_order -> `Children_order content
                   | `Short_title -> `Short_title content
+                  | `Order_category -> `Order_category content
                 in
                 let location =
                   location :: List.map Loc.location content |> Loc.span
@@ -932,12 +938,12 @@ let rec block_element_list :
         let block =
           accepted_in_all_contexts context
             (`Code_block
-              {
-                Ast.meta;
-                delimiter;
-                content = { value = s; location = v_loc };
-                output;
-              })
+               {
+                 Ast.meta;
+                 delimiter;
+                 content = { value = s; location = v_loc };
+                 output;
+               })
         in
         let block = Loc.at location block in
         let acc = block :: acc in

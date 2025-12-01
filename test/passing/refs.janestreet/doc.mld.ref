@@ -61,7 +61,7 @@ v}
 [foo.ml]
 
 {[
-  (** I'm foo, a page child to Doe *)
+(** I'm foo, a page child to Doe *)
 ]}
 
 {2 Compilation}

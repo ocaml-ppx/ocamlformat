@@ -27,6 +27,7 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
+
 type math_kind =
   Inline | Block
 
@@ -35,112 +36,12 @@ let math_constr kind x =
   | Inline -> `Math_span x
   | Block -> `Math_block x
 
-(* This is used for code and verbatim blocks. It can be done with a regular
-   expression, but the regexp gets quite ugly, so a function is easier to
-   understand. *)
-let trim_leading_blank_lines : string -> string = fun s ->
-  let rec scan_for_last_newline : int -> int -> int =
-      fun index trim_until ->
-    if index >= String.length s then
-      String.length s
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> scan_for_last_newline (index + 1) trim_until
-      | '\n' -> scan_for_last_newline (index + 1) (index + 1)
-      | _ -> trim_until
-  in
-  let trim_until = scan_for_last_newline 0 0 in
-  String.sub s trim_until (String.length s - trim_until)
-
-let trim_trailing_blank_lines : string -> string = fun s ->
-  let rec scan_for_last_newline : int -> int option -> int option =
-      fun index trim_from ->
-    if index < 0 then
-      Some 0
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> scan_for_last_newline (index - 1) trim_from
-      | '\n' -> scan_for_last_newline (index - 1) (Some index)
-      | _ -> trim_from
-  in
-  let last = String.length s - 1 in
-  match scan_for_last_newline last None with
-  | None ->
-    s
-  | Some trim_from ->
-    let trim_from =
-      if trim_from > 0 && s.[trim_from - 1] = '\r' then
-        trim_from - 1
-      else
-        trim_from
-    in
-    String.sub s 0 trim_from
-
-(** Returns [None] for an empty, [Some ident] for an indented line. *)
-let trim_leading_whitespace : first_line_offset:int -> string -> string =
- fun ~first_line_offset s ->
-  let count_leading_whitespace line =
-    let rec count_leading_whitespace' index len =
-      if index = len then None
-      else
-        match line.[index] with
-        | ' ' | '\t' -> count_leading_whitespace' (index + 1) len
-        | _ -> Some index
-    in
-    let len = String.length line in
-    (* '\r' may remain because we only split on '\n' below. This is important
-       for the first line, which would be considered not empty without this check. *)
-    let len = if len > 0 && line.[len - 1] = '\r' then len - 1 else len in
-    count_leading_whitespace' 0 len
-  in
-
-  let lines = Astring.String.cuts ~sep:"\n" s in
-
-  let least_amount_of_whitespace =
-    List.fold_left (fun least_so_far line ->
-      match (count_leading_whitespace line, least_so_far) with
-      | (Some _ as n', None) -> n'
-      | (Some n as n', Some least) when n < least -> n'
-      | _ -> least_so_far)
-  in
-
-  let first_line_max_drop, least_amount_of_whitespace =
-    match lines with
-    | [] -> 0, None
-    | first_line :: tl ->
-      begin match count_leading_whitespace first_line with
-        | Some n ->
-          n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
-        | None ->
-          0, least_amount_of_whitespace None tl
-      end
-  in
-
-  match least_amount_of_whitespace with
-  | None ->
-    s
-  | Some least_amount_of_whitespace ->
-    let drop n line =
-      (* Since blank lines were ignored when calculating
-         [least_amount_of_whitespace], their length might be less than the
-         amount. *)
-      if String.length line < n then line
-      else String.sub line n (String.length line - n)
-    in
-    let lines =
-      match lines with
-      | [] -> []
-      | first_line :: tl ->
-        drop (min first_line_max_drop least_amount_of_whitespace) first_line
-        :: List.map (drop least_amount_of_whitespace) tl
-    in
-    String.concat "\n" lines
-
 type input = {
   file : string;
   offset_to_location : int -> Loc.point;
   warnings : Warning.t list ref;
   lexbuf : Lexing.lexbuf;
+  string_buffer : Buffer.t;
 }
 
 let with_location_adjustments
@@ -177,9 +78,36 @@ let with_location_adjustments
 let emit =
   with_location_adjustments (fun _ -> Loc.at)
 
+let warning_loc =
+  fun input location error ->
+    input.warnings := (error location) :: !(input.warnings)
+
 let warning =
-  with_location_adjustments (fun input location error ->
-    input.warnings := (error location) :: !(input.warnings))
+  with_location_adjustments warning_loc
+
+(* From ocaml.git/parsing/lexer.mll *)
+let digit_value c =
+  match c with
+  | 'a' .. 'f' -> 10 + Char.code c - Char.code 'a'
+  | 'A' .. 'F' -> 10 + Char.code c - Char.code 'A'
+  | '0' .. '9' -> Char.code c - Char.code '0'
+  | _ -> assert false
+
+let num_value lexbuf ~base ~first ~last =
+  let c = ref 0 in
+  for i = first to last do
+    let v = digit_value (Lexing.lexeme_char lexbuf i) in
+    assert(v < base);
+    c := (base * !c) + v
+  done;
+  !c
+
+let char_for_decimal_code input lexbuf i =
+  let c = num_value lexbuf ~base:10 ~first:i ~last:(i+2) in
+  if (c < 0 || c > 255) then
+    (warning input (Parse_error.invalid_char_code c);
+    'x')
+  else Char.chr c
 
 let reference_token media start target input lexbuf =
   match start with
@@ -210,7 +138,9 @@ let reference_token media start target input lexbuf =
      let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
      `Media_with_replacement_text (target, kind, content)
 
-let trim_leading_space_or_accept_whitespace input start_offset text =
+(** Verbatims' content must be separated from their delimiters: [{v content v}]
+    and not [{vcontentv}]. Such leading space is not part of the content. *)
+let verbatim_whitespace_first input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
@@ -223,39 +153,38 @@ let trim_leading_space_or_accept_whitespace input start_offset text =
       Parse_error.no_leading_whitespace_in_verbatim;
     text
 
-let trim_trailing_space_or_accept_whitespace text =
+(** Verbatims' content must be separated from their delimiters: [{v content v}]
+    and not [{vcontentv}]. Such leading space is not part of the content. *)
+let verbatim_whitespace_last text =
   match text.[String.length text - 1] with
   | ' ' -> String.sub text 0 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
+  | exception Invalid_argument _ -> ""
   | _ -> text
-  | exception Invalid_argument _ -> text
 
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
-  let t = trim_trailing_space_or_accept_whitespace t in
-  let t = trim_leading_space_or_accept_whitespace input start_offset t in
-  let t = trim_leading_blank_lines t in
-  let t = trim_trailing_blank_lines t in
+  let t = verbatim_whitespace_first input start_offset t in
+  let t = verbatim_whitespace_last t in
   emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
-   the []`Code_block] location matches the entirety of the block including the terminator,
-   and the content location is precicely the location of the text of the code itself.
+   the [`Code_block] location matches the entirety of the block including the terminator,
+   and the content location is precisely the location of the text of the code itself.
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
-let emit_code_block ~start_offset content_offset input metadata delim terminator c has_results =
-  let c = Buffer.contents c |> trim_trailing_blank_lines in
-  let content_location = input.offset_to_location content_offset in
+let emit_code_block ~start_offset content_offset input metadata delim terminator
+    c has_results =
+  let c = Buffer.contents c in
+  (* We first handle the case wehere there is no line at the beginning, then
+     remove trailing, leading lines and deindent *)
   let c =
-    with_location_adjustments
-      (fun _ _location c ->
-         let first_line_offset = content_location.column in
-         trim_leading_whitespace ~first_line_offset c)
+    with_location_adjustments ~adjust_end_by:terminator
+      ~start_offset:content_offset
+      (fun _ -> Loc.at)
       input c
   in
-  let c = trim_leading_blank_lines c in
-  let c = with_location_adjustments ~adjust_end_by:terminator ~start_offset:content_offset (fun _ -> Loc.at) input c in
   emit ~start_offset input (`Code_block (metadata, delim, c, has_results))
 
 let heading_level input level =
@@ -302,6 +231,13 @@ let language_tag_char =
 
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
+
+let tag_unquoted_char = (_ # '=' # '"' # space_char # '[')
+let tag_unquoted_atom = tag_unquoted_char+
+
+let tag_escape = '\\' '"'
+let tag_quoted_char = _ # '"'
+let tag_quoted_atom = (tag_quoted_char | tag_escape)*
 
 rule reference_paren_content input start ref_offset start_offset depth_paren
   buffer =
@@ -446,7 +382,7 @@ and token input = parse
       in
       let emit_truncated_code_block () =
         let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
-        emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
+        emit ~start_offset input (`Code_block (Some (lang_tag, []), delim, empty_content, false))
       in
       (* Disallow result block sections for code blocks without a delimiter.
          This avoids the surprising parsing of '][' ending the code block. *)
@@ -458,15 +394,11 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail input lexbuf with
+      match code_block_metadata_tail input None [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
-      | `Invalid_char c ->
-          warning input ~start_offset
-            (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block_with_metadata None
     }
 
   | "{@" horizontal_space* '['
@@ -542,6 +474,12 @@ and token input = parse
 
   | ("@children_order")
     { emit input (`Tag `Children_order) }
+
+  | ("@toc_status")
+    { emit input (`Tag `Toc_status) }
+
+  | ("@order_category")
+    { emit input (`Tag `Order_category) }
 
   | ("@short_title")
     { emit input (`Tag `Short_title) }
@@ -774,8 +712,6 @@ and verbatim buffer last_false_terminator start_offset input = parse
     { Buffer.add_char buffer c;
       verbatim buffer last_false_terminator start_offset input lexbuf }
 
-
-
 and bad_markup_recovery start_offset input = parse
   | [^ '}']+ as text '}' as rest
     { let suggestion =
@@ -786,24 +722,80 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-(* The second field of the metadata.
-   This rule keeps whitespaces and newlines in the 'metadata' field except the
-   ones just before the '['. *)
-and code_block_metadata_tail input = parse
- | (space_char+ as prefix)
-   ((space_char* (_ # space_char # ['['])+)+ as meta)
-   ((space_char* '[') as suffix)
-    {
-      let meta =
-        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) input meta
-      in
-      `Ok (Some meta)
-    }
-  | (newline | horizontal_space)* '['
-    { `Ok None }
-  | _ as c
-    { `Invalid_char c }
+(* Based on OCaml's parsing/lexer.mll
+   We're missing a bunch of cases here, and can add them
+   if necessary. Using the missing cases will cause a warning *)
+and string input = parse
+ | '\"'
+   { let result = Buffer.contents input.string_buffer in
+     Buffer.clear input.string_buffer;
+     result }
+ | '\\' newline [' ' '\t']*
+   { string input lexbuf }
+ | '\\' (['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as c)
+   { Buffer.add_char input.string_buffer
+       (match c with
+        | '\\' -> '\\'
+        | '\'' -> '\''
+        | '\"' -> '\"'
+        | 'n' -> '\n'
+        | 't' -> '\t'
+        | 'b' -> '\b'
+        | 'r' -> '\r'
+        | ' ' -> ' '
+        | _ -> assert false);
+     string input lexbuf }
+  | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
+    { Buffer.add_char input.string_buffer (char_for_decimal_code input lexbuf 1);
+      string input lexbuf }
+  | '\\' (_ as c)
+    { warning input (Parse_error.should_not_be_escaped c);
+      Buffer.add_char input.string_buffer c;
+      string input lexbuf }
   | eof
+    { warning input Parse_error.truncated_string;
+      Buffer.contents input.string_buffer }
+  | (_ as c)
+    { Buffer.add_char input.string_buffer c;
+      string input lexbuf }
+  
+and code_block_metadata_atom input = parse
+ | '"'
+   {
+    let start_offset = Lexing.lexeme_start input.lexbuf in
+    Buffer.clear input.string_buffer;
+    let s = string input lexbuf in
+    with_location_adjustments ~start_offset (fun _ -> Loc.at) input s }
+ | (tag_unquoted_atom as value)
+   { with_location_adjustments (fun _ -> Loc.at) input value }
+ | ('=' as c) 
+   { warning input (Parse_error.code_block_tag_invalid_char c);
+     with_location_adjustments (fun _ -> Loc.at) input "" }
+
+and code_block_metadata_tail input tag acc = parse
+ | space_char+
+   { let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
+     let tag = code_block_metadata_atom input lexbuf in
+     code_block_metadata_tail input (Some tag) acc lexbuf }
+ | space_char* '[' (* Nb this will be a longer match than the above case! *)
+   {
+     let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
+     `Ok (List.rev acc) }
+ | '='
+   { match tag with
+     | Some t ->
+       let value = code_block_metadata_atom input lexbuf in
+       code_block_metadata_tail input None (`Binding (t, value) :: acc) lexbuf
+     | None ->
+       warning input (Parse_error.code_block_tag_invalid_char '=');
+       code_block_metadata_tail input None acc lexbuf }
+ | (_ # space_char # '[' # '=' as c) (_ # space_char # '[')*
+   {
+      let start_offset = Lexing.lexeme_start input.lexbuf in
+      let end_offset = start_offset + 1 in
+      warning input ~start_offset ~end_offset (Parse_error.code_block_tag_invalid_char c);
+    code_block_metadata_tail input None acc lexbuf }
+ | eof
     { `Eof }
 
 and code_block allow_result_block start_offset content_offset metadata prefix delim input = parse

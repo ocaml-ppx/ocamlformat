@@ -19,6 +19,8 @@ type tag =
     | `Version of string
     | `Canonical of string
     | `Children_order
+    | `Toc_status
+    | `Order_category
     | `Short_title
     | `Inline
     | `Open
@@ -41,6 +43,12 @@ let s_of_media kind media =
   | `Replaced, `Video -> "{{video!"
   | `Replaced, `Image -> "{{image!"
 
+type code_block_tag =
+  [ `Tag of string Loc.with_location
+  | `Binding of string Loc.with_location * string Loc.with_location ]
+
+type code_block_tags = code_block_tag list
+
 type t =
   [ (* End of input. *)
     `End
@@ -53,8 +61,7 @@ type t =
        tokens are emitted by the lexer. Otherwise, there would be the need for
        unbounded lookahead, a (co-?)ambiguity between
        [Single_newline Single_newline] and [Blank_line], and other problems. *)
-    `Space of
-    string
+    `Space of string
   | `Single_newline of string
   | `Blank_line of string
   | (* A right curly brace ([}]), i.e. end of markup. *)
@@ -67,8 +74,7 @@ type t =
        and [Minus] tokens. The parser combines plus and minus into words, except
        when they appear first on a line, in which case the tokens are list item
        bullets. *)
-    `Word of
-    string
+    `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string
   | `Math_span of string
@@ -83,7 +89,7 @@ type t =
   | media_markup
   | (* Leaf block element markup. *)
     `Code_block of
-    (string Loc.with_location * string Loc.with_location option) option
+    (string Loc.with_location * code_block_tags) option
     * string
     * string Loc.with_location
     * bool
@@ -133,6 +139,8 @@ let print : [< t ] -> string = function
   | `Tag (`Raise _) -> "'@raise'"
   | `Tag `Return -> "'@return'"
   | `Tag `Children_order -> "'@children_order'"
+  | `Tag `Order_category -> "'@order_category'"
+  | `Tag `Toc_status -> "'@toc_status'"
   | `Tag `Short_title -> "'@short_title'"
   | `Tag (`See _) -> "'@see'"
   | `Tag (`Since _) -> "'@since'"
@@ -239,6 +247,8 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Closed -> "'@closed'"
   | `Tag `Hidden -> "'@hidden"
   | `Tag `Children_order -> "'@children_order"
+  | `Tag `Toc_status -> "'@toc_status"
+  | `Tag `Order_category -> "'@order_category"
   | `Tag `Short_title -> "'@short_title"
   | `Comment -> "top-level text"
 

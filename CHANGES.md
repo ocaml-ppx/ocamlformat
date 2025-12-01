@@ -6,6 +6,13 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Highlight
+
+- \* Update Odoc's parser to 3.0 (#2757, @Julow)
+  The indentation of code-blocks containing OCaml code is reduced by 2 to avoid
+  changing the generated documentation. The indentation within code-blocks is
+  now significative in Odoc and shows up in generated documentation.
+
 ### Added
 
 - Added option `letop-punning` (#2746, @WardBrian) to control whether
