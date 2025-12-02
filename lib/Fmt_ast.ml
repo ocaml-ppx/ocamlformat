@@ -3051,10 +3051,9 @@ and fmt_lazy c ~ctx ?(pro = noop) ~fmt_atrs ~infix_ext_attrs ~parens e =
 and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~ctx0 ~fmt_atrs
     ~infix_ext_attrs ~indent_wrap ?eol e =
   let cmts_before = Cmts.fmt_before c ?eol loc in
-  let begin_ = fmt_infix_ext_attrs c ~pro:(str "begin") infix_ext_attrs
-  and end_ =
-    (if not box then break 1000 (-2) else break 1000 0)
-    $ str "end" $ fmt_atrs
+  let begin_ = fmt_infix_ext_attrs c ~pro:(str "begin") infix_ext_attrs in
+  let end_ =
+    (if not box then break 1000 (-2) else break 1 0) $ str "end" $ fmt_atrs
   in
   let box_beginend_sb = Params.Exp.box_beginend_subexpr c.conf ~ctx ~ctx0 in
   let beginend_box =
