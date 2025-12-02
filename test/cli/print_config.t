@@ -18,7 +18,7 @@ No redundant values:
   disable=false
   margin-check=false
   max-iters=10
-  ocaml-version=4.04.0
+  ocaml-version=5.4.0
   quiet=false
   disable-conf-attrs=false
   version-check=true
@@ -99,7 +99,7 @@ Redundant values from the conventional profile:
   disable=false
   margin-check=false
   max-iters=10
-  ocaml-version=4.04.0
+  ocaml-version=5.4.0
   quiet=false
   disable-conf-attrs=false
   version-check=true
@@ -180,7 +180,7 @@ Redundant values from the ocamlformat profile:
   disable=false
   margin-check=false
   max-iters=10
-  ocaml-version=4.04.0
+  ocaml-version=5.4.0
   quiet=false
   disable-conf-attrs=false
   version-check=true
