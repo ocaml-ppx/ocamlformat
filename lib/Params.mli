@@ -84,6 +84,8 @@ module Exp : sig
   val box_fun_decl_after_pro : ctx0:Ast.t -> Fmt.t -> Fmt.t
   (** Box a function decl from after the [pro] to the arrow. *)
 
+  val end_break_beginend : ctx0:Ast.t -> box:bool -> Fmt.t
+
   val box_beginend : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool
 
   val box_beginend_subexpr : Conf.t -> ctx0:Ast.t -> ctx:Ast.t -> bool

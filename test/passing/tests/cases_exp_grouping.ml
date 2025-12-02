@@ -176,3 +176,49 @@ let a =
   | A -> f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   | B -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   end
+
+
+  let () =
+  if true then
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+  else
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+
+let () =
+  (* this is ugly but should never be used. *)
+  if true then begin
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+  end
+  end
+
+  let () =
+  (* Add a third one and it has indentation on `end`. *)
+  if true then begin begin
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+  end
+  end
+
+let () =
+  if true then begin
+    () ;
+    begin match () with
+    | () -> ()
+    | aaaaaaaaaaaa -> aaaaaaaaaaa
+    | bbbbbbbbbb -> bbbbbbbbbbbbbbbbb
+    end
+  end
