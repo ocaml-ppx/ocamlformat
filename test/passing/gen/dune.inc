@@ -1732,7 +1732,7 @@
 
 (rule
  (deps .ocamlformat)
- (enabled_if (> %{ocaml_version} 5.3))
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action
   (with-stdout-to effects.ml.stdout
@@ -1741,13 +1741,13 @@
 
 (rule
  (alias runtest)
- (enabled_if (> %{ocaml_version} 5.3))
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action (diff effects.ml.ref effects.ml.stdout)))
 
 (rule
  (alias runtest)
- (enabled_if (> %{ocaml_version} 5.3))
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action (diff effects.ml.err effects.ml.stderr)))
 
