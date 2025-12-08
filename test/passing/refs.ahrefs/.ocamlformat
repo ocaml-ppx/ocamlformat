@@ -1,5 +1,4 @@
 profile=default
-ocaml-version=4.14.0
 
 break-cases=toplevel
 break-infix-before-func=false
