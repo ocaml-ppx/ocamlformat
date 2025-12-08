@@ -85,6 +85,12 @@ profile. This started with version 0.26.0.
   end
   ```
 
+- \* Set the `ocaml-version` to `5.4` by default (#2750, @EmileTrotignon)
+  The main difference is that the `effect` keyword is recognized without having
+  to add `ocaml-version=5.3` to the configuration.
+  In exchange, code that use `effect` as an identifier must use
+  `ocaml-version=5.2`.
+
 ## 0.28.1
 
 ### Highlight
