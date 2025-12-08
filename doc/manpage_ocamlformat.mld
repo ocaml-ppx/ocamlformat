@@ -626,8 +626,7 @@ OPTIONS
            omitted.
 
        --ocaml-version=V
-           Version of OCaml syntax of the output. The default value is
-           4.04.0.
+           Version of OCaml syntax of the output. The default value is 5.4.0.
 
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for

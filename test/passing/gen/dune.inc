@@ -1732,19 +1732,22 @@
 
 (rule
  (deps .ocamlformat)
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action
   (with-stdout-to effects.ml.stdout
    (with-stderr-to effects.ml.stderr
-     (run %{bin:ocamlformat} --name effects.ml --margin-check --ocaml-version=5.3 %{dep:../tests/effects.ml})))))
+     (run %{bin:ocamlformat} --name effects.ml --margin-check %{dep:../tests/effects.ml})))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action (diff effects.ml.ref effects.ml.stdout)))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 5.3))
  (package ocamlformat)
  (action (diff effects.ml.err effects.ml.stderr)))
 
