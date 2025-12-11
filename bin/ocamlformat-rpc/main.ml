@@ -73,6 +73,6 @@ let info =
   Cmd.info "ocamlformat-rpc" ~version:Ocamlformat_lib.Version.current ~doc
     ~man
 
-let rpc_main_t = Term.(const Ocamlformat_rpc.run $ const ())
+let rpc_main_t = Term.(const (Ocamlformat_rpc.run ~global_conf:None) $ const ())
 
 let () = Stdlib.exit @@ Cmd.eval_result (Cmd.v info rpc_main_t)
