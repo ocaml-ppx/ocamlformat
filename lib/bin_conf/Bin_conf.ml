@@ -48,8 +48,6 @@ let default =
   ; ocp_indent_config= false
   ; config= [] }
 
-let global_conf = ref default
-
 let info =
   let doc = "A tool to format OCaml code." in
   let man =
@@ -355,11 +353,6 @@ let global_term =
   in
   term
 
-let set_global_term =
-  declare_option
-    ~set:(fun conf_modif -> global_conf := conf_modif default)
-    global_term
-
 (** Do not escape from [build_config] *)
 exception Conf_error of string
 
@@ -392,7 +385,7 @@ let update_from_ocp_indent c loc (oic : IndentConfig.t) =
       ; match_indent_nested= elt @@ convert_threechoices oic.i_strict_with }
   }
 
-let read_config_file ?version_check ?disable_conf_attrs conf = function
+let read_config_file ?version_check ?disable_conf_attrs ~ignore_invalid_options conf = function
   | File_system.Ocp_indent file -> (
       let filename = Fpath.to_string file in
       try
@@ -415,7 +408,7 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
                     (ocp_indent_conf, conf, errors)
                   with
                   | Invalid_argument e
-                    when !global_conf.ignore_invalid_options ->
+                    when ignore_invalid_options ->
                       warn ~loc "%s" e ;
                       (ocp_indent_conf, conf, errors)
                   | Invalid_argument e ->
@@ -444,7 +437,7 @@ let read_config_file ?version_check ?disable_conf_attrs conf = function
                       line
                   with
                   | Ok conf -> (conf, errors)
-                  | Error _ when !global_conf.ignore_invalid_options ->
+                  | Error _ when ignore_invalid_options ->
                       warn ~loc "ignoring invalid options %S" line ;
                       (conf, errors)
                   | Error e -> (conf, e :: errors) )
@@ -505,7 +498,12 @@ let is_in_listing_file ~listings ~filename =
         warn ~loc "%s. Ignoring file." err ;
         None )
 
-let update_using_env conf =
+type global_conf =
+  { apply_cli : t -> t
+  ; current : t
+  }
+
+let update_using_env ~global_conf conf =
   let f (config, errors) (name, value) =
     match
       Decl.update Conf.options ~config ~from:`Env ~name ~value ~inline:false
@@ -514,48 +512,34 @@ let update_using_env conf =
     | Error e -> (config, e :: errors)
   in
   let conf, errors =
-    List.fold_left !global_conf.config ~init:(conf, []) ~f
+    List.fold_left global_conf.current.config ~init:(conf, []) ~f
   in
   match List.rev errors with
   | [] -> conf
   | l -> failwith_user_errors ~from:"OCAMLFORMAT environment variable" l
 
-let global_lib_term =
-  Term.(
-    const (fun conf_modif lib_conf ->
-        let new_global = conf_modif {!global_conf with lib_conf} in
-        global_conf := new_global ;
-        new_global.lib_conf )
-    $ global_term )
+let update_using_cmdline ~global_conf config =
+  let t = global_conf.apply_cli { default with lib_conf = config } in
+  t.lib_conf, { global_conf with current = t }
 
-let global_lib_term_eval =
-  lazy
-    (let discard = Format.make_formatter (fun _ _ _ -> ()) ignore in
-     Cmd.eval_value ~err:discard ~help:discard (Cmd.v info global_lib_term)
-    )
-
-let update_using_cmdline config =
-  match Lazy.force global_lib_term_eval with
-  | Ok (`Ok conf_modif) -> conf_modif config
-  | Error _ | Ok (`Version | `Help) -> config
-
-let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
+let build_config ~enable_outside_detected_project ~root ~file ~is_stdin ~global_conf =
   let vfile = Fpath.v file in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let fs =
     File_system.make ~enable_outside_detected_project
-      ~disable_conf_files:!global_conf.disable_conf_files
-      ~ocp_indent_config:!global_conf.ocp_indent_config ~root ~file:file_abs
+      ~disable_conf_files:global_conf.current.disable_conf_files
+      ~ocp_indent_config:global_conf.current.ocp_indent_config ~root ~file:file_abs
   in
   (* [version-check] can be modified by cmdline (evaluated last) but could
      lead to errors when parsing the .ocamlformat files (evaluated first).
      Similarly, [disable-conf-attrs] could lead to incorrect config. *)
-  let forward_conf =
+  let forward_conf, global_conf =
     let read_config_file =
       read_config_file ~version_check:false ~disable_conf_attrs:false
     in
-    List.fold fs.configuration_files ~init:Conf.default ~f:read_config_file
-    |> update_using_env |> update_using_cmdline
+    List.fold fs.configuration_files ~init:Conf.default
+      ~f:(read_config_file ~ignore_invalid_options:global_conf.current.ignore_invalid_options)
+    |> update_using_env ~global_conf |> update_using_cmdline ~global_conf
   in
   let conf =
     let opr_opts =
@@ -565,10 +549,12 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     in
     {Conf.default with opr_opts}
   in
-  let conf =
-    List.fold fs.configuration_files ~init:conf ~f:read_config_file
-    |> update_using_env |> update_using_cmdline
+  let conf, global_conf =
+    List.fold fs.configuration_files ~init:conf
+      ~f:(read_config_file ~ignore_invalid_options:global_conf.current.ignore_invalid_options)
+    |> update_using_env ~global_conf |> update_using_cmdline ~global_conf
   in
+  let _ = global_conf in
   if
     (not is_stdin)
     && (not (File_system.has_ocamlformat_file fs))
@@ -603,11 +589,11 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
             {f with disable= {f.disable with v= not f.disable.v}} )
     | None -> conf
 
-let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
+let build_config ~enable_outside_detected_project ~root ~file ~is_stdin ?(global_conf = { current = default; apply_cli = Fn.id }) () =
   try
     let conf, warn_now =
       collect_warnings (fun () ->
-          build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
+          build_config ~enable_outside_detected_project ~root ~file ~is_stdin ~global_conf )
     in
     if not conf.opr_opts.quiet.v then warn_now () ;
     Ok conf
@@ -625,19 +611,19 @@ let ( let* ) = Result.( >>= )
 
 let ( let+ ) = Result.( >>| )
 
-let make_action ~enable_outside_detected_project ~root action inputs =
+let make_action ~enable_outside_detected_project ~root action inputs ~global_conf =
   let make_file ?name kind file =
     let name = Option.value ~default:file name in
     let+ conf =
       build_config ~enable_outside_detected_project ~root ~file:name
-        ~is_stdin:false
+        ~is_stdin:false ~global_conf ()
     in
     {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
     let+ conf =
       build_config ~enable_outside_detected_project ~root ~file:name
-        ~is_stdin:false
+        ~is_stdin:false ~global_conf ()
     in
     {kind; name; file= Stdin; conf}
   in
@@ -669,7 +655,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
             (File_system.root_ocamlformat_file ~root |> Fpath.to_string, true)
       in
       let+ conf =
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin ~global_conf
+          ()
       in
       Print_config conf
   | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
@@ -692,8 +679,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       let+ inputs = make_inputs inputs in
       Check inputs
 
-let validate_inputs () =
-  match (!global_conf.inputs, !global_conf.kind, !global_conf.name) with
+let validate_inputs ~global_conf =
+  match (global_conf.inputs, global_conf.kind, global_conf.name) with
   | [], _, _ -> Ok `No_input
   | [Stdin], None, None ->
       Error
@@ -728,14 +715,14 @@ let validate_inputs () =
       |> Result.all
       |> Result.map ~f:(fun files -> `Several_files files)
 
-let validate_action () =
+let validate_action ~global_conf () =
   match
     List.filter_map
       ~f:(fun s -> s)
-      [ Option.map ~f:(fun o -> (`Output o, "--output")) !global_conf.output
-      ; Option.some_if !global_conf.inplace (`Inplace, "--inplace")
-      ; Option.some_if !global_conf.check (`Check, "--check")
-      ; Option.some_if !global_conf.print_config
+      [ Option.map ~f:(fun o -> (`Output o, "--output")) global_conf.output
+      ; Option.some_if global_conf.inplace (`Inplace, "--inplace")
+      ; Option.some_if global_conf.check (`Check, "--check")
+      ; Option.some_if global_conf.print_config
           (`Print_config, "--print-config") ]
   with
   | [] -> Ok `No_action
@@ -743,21 +730,24 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-let validate () =
+let validate ~global_conf =
   let root =
-    Option.map !global_conf.root
+    Option.map global_conf.current.root
       ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
   in
   let enable_outside_detected_project =
-    !global_conf.enable_outside_detected_project && Option.is_none root
+    global_conf.current.enable_outside_detected_project && Option.is_none root
   in
   match
-    let* action = validate_action () in
-    let* inputs = validate_inputs () in
-    make_action ~enable_outside_detected_project ~root action inputs
+    let* action = validate_action ~global_conf:global_conf.current () in
+    let* inputs = validate_inputs ~global_conf:global_conf.current in
+    make_action ~enable_outside_detected_project ~root action inputs ~global_conf
   with
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
-let action () =
-  Cmd.eval_value (Cmd.v info Term.(ret (const validate $ set_global_term)))
+let term =
+  Cmd.v info
+    Term.(ret (Syntax.(
+                let+ apply_cli = global_term in
+                validate ~global_conf:{ apply_cli; current = apply_cli default })))

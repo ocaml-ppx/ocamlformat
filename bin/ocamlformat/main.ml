@@ -87,7 +87,7 @@ let run_action action =
   | Print_config conf -> Conf.print_config conf ; Ok ()
 ;;
 
-match Bin_conf.action () with
+match Cmdliner.Cmd.eval_value Bin_conf.term with
 | Ok (`Ok action) -> (
   match run_action action with
   | Ok () -> Stdlib.exit 0
