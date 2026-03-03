@@ -4595,6 +4595,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to poly_params.ml.stdout
+   (with-stderr-to poly_params.ml.stderr
+     (run %{bin:ocamlformat} --name poly_params.ml --margin-check %{dep:../tests/poly_params.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff poly_params.ml.ref poly_params.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff poly_params.ml.err poly_params.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to polytypes.ml.stdout
    (with-stderr-to polytypes.ml.stderr
      (run %{bin:ocamlformat} --name polytypes.ml --margin-check %{dep:../tests/polytypes.ml})))))
