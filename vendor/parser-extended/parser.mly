@@ -1990,13 +1990,13 @@ method_:
     no_override_flag
     attrs = attributes
     private_ = virtual_with_private_flag
-    label = mkrhs(label) COLON ty = poly_type
+    label = mkrhs(label) COLON ty = possibly_poly_type
       { (label, private_, Cfk_virtual ty), attrs }
   | override_flag attributes private_flag mkrhs(label) strict_binding(seq_expr)
       { let args, tc, exp = $5 in
         ($4, pv_of_priv $3, Cfk_concrete ($1, (args, tc), exp)), $2 }
   | override_flag attributes private_flag mkrhs(label)
-    COLON poly_type EQUAL seq_expr
+    COLON possibly_poly_type EQUAL seq_expr
       { let tc = Pvc_constraint { locally_abstract_univars= []; typ= $6 } in
         ($4, pv_of_priv $3, Cfk_concrete ($1, ([], Some tc), $8)), $2 }
   | override_flag attributes private_flag mkrhs(label) COLON TYPE lident_list
@@ -2076,7 +2076,8 @@ class_sig_field:
   | VAL attributes value_type post_item_attributes
       { let docs = symbol_docs $sloc in
         mkctf ~loc:$sloc (Pctf_val $3) ~attrs:($2@$4) ~docs }
-  | METHOD attributes private_virtual_flags mkrhs(label) COLON poly_type
+  | METHOD attributes private_virtual_flags mkrhs(label)
+    COLON possibly_poly_type
     post_item_attributes
       { let docs = symbol_docs $sloc in
         mkctf ~loc:$sloc (Pctf_method ($4, $3, $6)) ~attrs:($2@$7) ~docs }
@@ -2228,7 +2229,7 @@ fun_seq_expr:
 seq_expr:
   | or_function(fun_seq_expr) { $1 }
 ;
-labeled_simple_pattern:
+simple_param_pattern:
     QUESTION LPAREN label_let_pattern opt_default RPAREN
       { (Optional (mkrhs (fst $3) $sloc), $4, snd $3) }
   | QUESTION label_var
@@ -2245,6 +2246,10 @@ labeled_simple_pattern:
       { (Labelled (mkrhs $1 $sloc), None, $2) }
   | simple_pattern
       { (Nolabel, None, $1) }
+  | LABEL LPAREN poly_pattern RPAREN
+      { (Labelled (mkrhs $1 $sloc), None, $3) }
+  | LPAREN poly_pattern RPAREN
+      { (Nolabel, None, $2) }
 ;
 
 pattern_var:
@@ -2261,7 +2266,7 @@ pattern_var:
 label_let_pattern:
     x = label_var
       { x }
-  | x = label_var COLON cty = core_type
+  | x = label_var COLON cty = possibly_poly_type
       { let lab, pat = x in
         lab,
         mkpat ~loc:$sloc (Ppat_constraint (pat, cty)) }
@@ -2273,8 +2278,16 @@ label_let_pattern:
 let_pattern:
     pattern
       { $1 }
-  | mkpat(pattern COLON core_type
+  | mkpat(pattern COLON possibly_poly_type
       { Ppat_constraint($1, $3) })
+      { $1 }
+;
+%inline poly_pattern:
+    mkpat(
+      pat = pattern
+      COLON
+      cty = poly_type
+        { Ppat_constraint(pat, cty) })
       { $1 }
 ;
 
@@ -2721,7 +2734,7 @@ fun_param_as_list:
           (fun x -> { pparam_loc = loc; pparam_desc = Pparam_newtype x })
           ty_params
       }
-  | labeled_simple_pattern
+  | simple_param_pattern
       { let a, b, c = $1 in
         [ { pparam_loc = make_loc $sloc; pparam_desc = Pparam_val (a, b, c) } ]
       }
@@ -2811,23 +2824,19 @@ reversed_labeled_tuple_body:
 %inline labeled_tuple:
   xs = rev(reversed_labeled_tuple_body)
     { xs }
-param_val:
-  | labeled_simple_pattern
-      { $1 }
-;
 param_newtype:
   | LPAREN TYPE lident_list RPAREN
       { $3 }
 ;
 expr_fun_param:
   mkfunparam(
-      param_val { Pparam_val $1 }
+      simple_param_pattern { Pparam_val $1 }
     | param_newtype { Pparam_newtype $1 }
   ) { $1 }
 ;
 class_fun_param:
   mkfunparam (
-    param_val { $1 }
+    simple_param_pattern { $1 }
   ) { $1 }
 ;
 expr_fun_params:
@@ -3518,6 +3527,10 @@ possibly_poly(X):
     { $1 }
 ;
 %inline poly_type:
+  mktyp(poly(core_type))
+    { $1 }
+;
+%inline possibly_poly_type:
   possibly_poly(core_type)
     { $1 }
 ;
@@ -3573,7 +3586,7 @@ function_type:
       { ty }
   | mktyp(
       label = arg_label
-      domain = extra_rhs(tuple_type)
+      domain = extra_rhs(param_type)
       MINUSGREATER
       codomain = function_type
         { let arrow_type = {
@@ -3639,6 +3652,12 @@ function_type:
       { Labelled (mkrhs label $sloc) }
   | /* empty */
       { Nolabel }
+;
+%inline param_type:
+  | LPAREN poly_type RPAREN
+    { reloc_typ ~loc:$sloc $2 }
+  | ty = tuple_type
+    { ty }
 ;
 (* Tuple types include:
    - atomic types (see below);

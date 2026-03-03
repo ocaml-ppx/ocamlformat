@@ -1605,19 +1605,24 @@ end = struct
       | _ -> false
     in
     let constructor_cxt_prec_of_inner = function
-      | {ptyp_desc= Ptyp_arrow _; _} -> Some (Apply, Non)
+      | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> Some (Apply, Non)
       | {ptyp_desc= Ptyp_tuple _; _} -> Some (InfixOp3, Non)
       | _ -> None
     in
     match ctx with
     | { ctx= Td {ptype_kind= Ptype_variant v; _}
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _} as typ) }
+      ; ast=
+          Typ
+            ({ptyp_desc= Ptyp_arrow _ | Ptyp_poly _ | Ptyp_tuple _; _} as typ)
+      }
       when List.exists v ~f:(is_tuple_lvl1_in_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
           ( Str {pstr_desc= Pstr_typext {ptyext_constructors= l; _}; _}
           | Sig {psig_desc= Psig_typext {ptyext_constructors= l; _}; _} )
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _} as typ)
+      ; ast=
+          Typ
+            ({ptyp_desc= Ptyp_arrow _ | Ptyp_poly _ | Ptyp_tuple _; _} as typ)
       ; _ }
       when List.exists l ~f:(is_tuple_lvl1_in_ext_constructor typ) ->
         constructor_cxt_prec_of_inner typ
@@ -1625,7 +1630,10 @@ end = struct
           ( Str {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
           | Sig {psig_desc= Psig_exception {ptyexn_constructor= constr; _}; _}
           | Exp {pexp_desc= Pexp_letexception (constr, _, _); _} )
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _; _} as typ) }
+      ; ast=
+          Typ
+            ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _ | Ptyp_poly _; _} as typ)
+      }
       when is_tuple_lvl1_in_ext_constructor typ constr ->
         constructor_cxt_prec_of_inner typ
     | {ctx= Str _; ast= Typ _; _} -> None
@@ -1637,13 +1645,13 @@ end = struct
             else Right
           in
           Some (MinusGreater, assoc)
+      | Ptyp_poly _ -> Some (MinusGreater, Right)
       | Ptyp_tuple _ -> Some (InfixOp3, Non)
       | Ptyp_alias _ -> Some (As, Non)
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
-       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _
-       |Ptyp_open _ ->
+       |Ptyp_variant _ | Ptyp_package _ | Ptyp_extension _ | Ptyp_open _ ->
           None )
     | {ctx= Cty {pcty_desc; _}; ast= Typ typ; _} -> (
       match pcty_desc with
@@ -1772,12 +1780,11 @@ end = struct
     | Typ {ptyp_desc; _} -> (
       match ptyp_desc with
       | Ptyp_package _ -> Some Low
-      | Ptyp_arrow _ -> Some MinusGreater
+      | Ptyp_arrow _ | Ptyp_poly _ -> Some MinusGreater
       | Ptyp_tuple _ -> Some InfixOp3
       | Ptyp_alias _ -> Some As
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
-       |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _
-       |Ptyp_open _ ->
+       |Ptyp_class _ | Ptyp_variant _ | Ptyp_extension _ | Ptyp_open _ ->
           None )
     | Td _ -> None
     | Cty {pcty_desc; _} -> (
@@ -1872,7 +1879,7 @@ end = struct
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _; _}; _} -> true
     | {ast= {ptyp_desc= Ptyp_alias _; _}; ctx= Typ _} -> true
-    | { ast= {ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _}
+    | { ast= {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _ | Ptyp_tuple _; _}
       ; ctx= Typ {ptyp_desc= Ptyp_class _; _} } ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
@@ -1887,13 +1894,16 @@ end = struct
                | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
                | _ -> false ) ->
         true
-    | { ast= {ptyp_desc= Ptyp_alias _ | Ptyp_arrow _ | Ptyp_tuple _; _}
+    | { ast=
+          { ptyp_desc=
+              Ptyp_alias _ | Ptyp_arrow _ | Ptyp_poly _ | Ptyp_tuple _
+          ; _ }
       ; ctx=
           ( Str {pstr_desc= Pstr_exception _; _}
           | Sig {psig_desc= Psig_exception _; _} ) } ->
         true
     | { ast= {ptyp_desc= Ptyp_tuple ({lte_label= Some _; _} :: _); _}
-      ; ctx= Typ {ptyp_desc= Ptyp_arrow _; _} } ->
+      ; ctx= Typ {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} } ->
         true
     | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
@@ -1987,7 +1997,6 @@ end = struct
     | Fpe {pparam_desc= Pparam_val (_, _, _); _}, Ppat_cons _ -> true
     | Fpc {pparam_desc= _; _}, Ppat_cons _ -> true
     | Pat {ppat_desc= Ppat_construct _; _}, Ppat_cons _ -> true
-    | _, Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) -> false
     | ( Bo {pbop_typ= None; _}
       , ( Ppat_construct (_, Some _)
         | Ppat_cons _
