@@ -8,6 +8,8 @@ profile. This started with version 0.26.0.
 
 ### Highlight
 
+- Support OCaml 5.5 syntax (#2772, @Julow)
+
 - \* Update Odoc's parser to 3.0 (#2757, @Julow)
   The indentation of code-blocks containing OCaml code is reduced by 2 to avoid
   changing the generated documentation. The indentation within code-blocks is
