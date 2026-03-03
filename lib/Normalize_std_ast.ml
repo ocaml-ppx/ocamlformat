@@ -279,6 +279,20 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     | Pexp_unboxed_field (e, l) when erase_jane_syntax ->
         Ast_mapper.default_mapper.expr m
           {exp with pexp_desc= Pexp_field (e, l)}
+    | Pexp_unboxed_unit when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m
+          { exp with
+            pexp_desc=
+              Pexp_construct (Location.mknoloc (Longident.Lident "()"), None)
+          }
+    | Pexp_unboxed_bool b when erase_jane_syntax ->
+        Ast_mapper.default_mapper.expr m
+          { exp with
+            pexp_desc=
+              Pexp_construct
+                ( Location.mknoloc
+                    (Longident.Lident (if b then "true" else "false"))
+                , None ) }
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
@@ -309,6 +323,20 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
     | Ppat_record_unboxed_product (ps, oc) when erase_jane_syntax ->
         Ast_mapper.default_mapper.pat m
           {pat with ppat_desc= Ppat_record (ps, oc)}
+    | Ppat_unboxed_unit when erase_jane_syntax ->
+        Ast_mapper.default_mapper.pat m
+          { pat with
+            ppat_desc=
+              Ppat_construct (Location.mknoloc (Longident.Lident "()"), None)
+          }
+    | Ppat_unboxed_bool b when erase_jane_syntax ->
+        Ast_mapper.default_mapper.pat m
+          { pat with
+            ppat_desc=
+              Ppat_construct
+                ( Location.mknoloc
+                    (Longident.Lident (if b then "true" else "false"))
+                , None ) }
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =

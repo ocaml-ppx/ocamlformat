@@ -1376,6 +1376,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                      (Std_longident.String_id.is_symbol txt)
                      "( " " )" (str txt) ) ) ) )
   | Ppat_constant const -> fmt_constant c const
+  | Ppat_unboxed_unit -> str "#()"
+  | Ppat_unboxed_bool b -> str (if b then "#true" else "#false")
   | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
   | Ppat_tuple (pats, oc) | Ppat_unboxed_tuple (pats, oc) ->
       let unboxed =
@@ -2734,6 +2736,18 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (parens || not (List.is_empty pexp_attributes))
           c.conf
           (fmt_constant c const $ fmt_atrs)
+  | Pexp_unboxed_unit ->
+      pro
+      $ Params.parens_if
+          (parens || not (List.is_empty pexp_attributes))
+          c.conf
+          (str "#()" $ fmt_atrs)
+  | Pexp_unboxed_bool b ->
+      pro
+      $ Params.parens_if
+          (parens || not (List.is_empty pexp_attributes))
+          c.conf
+          (str (if b then "#true" else "#false") $ fmt_atrs)
   | Pexp_constraint (_, None, _) -> assert false
   | Pexp_constraint (e, Some t, modes) ->
       pro

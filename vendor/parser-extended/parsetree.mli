@@ -302,6 +302,8 @@ and pattern_desc =
             - If Closed, [n >= 2].
             - If Open, [n >= 1].
       *)
+  | Ppat_unboxed_unit  (** [#()] *)
+  | Ppat_unboxed_bool of bool  (** [#false] or [#true] *)
   | Ppat_unboxed_tuple of (string loc option * pattern) list * Asttypes.closed_flag
       (** Unboxed tuple patterns: [#(l1:P1, ..., ln:Pn)] is [([(Some
           l1,P1);...;(Some l2,Pn)], Closed)], and the labels are optional.  An
@@ -429,6 +431,8 @@ and expression_desc =
 
           Invariant: [n >= 2].
       *)
+  | Pexp_unboxed_unit  (** [#()] *)
+  | Pexp_unboxed_bool of bool  (** [#false] or [#true] *)
   | Pexp_unboxed_tuple of (string loc option * expression) list
       (** Unboxed tuple expressions: [Pexp_unboxed_tuple([(Some l1,P1);...;(Some
           l2,Pn)])] represents [#(l1:E1, ..., ln:En)], and the labels are

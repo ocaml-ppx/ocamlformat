@@ -1,0 +1,55 @@
+(* Unboxed unit and boolean literals *)
+
+(* Expressions *)
+let _ = #()
+let _ = #true
+let _ = #false
+
+(* Patterns *)
+let #() = #()
+let #true = #true
+let #false = #false
+
+(* In function arguments *)
+let f #() = ()
+let f #true = ()
+let f #false = ()
+
+(* In match *)
+let g x =
+  match x with
+  | #() -> 1
+;;
+
+let h b =
+  match b with
+  | #true -> 1
+  | #false -> 0
+;;
+
+(* Nested *)
+let _ = if true then #true else #false
+let _ = #(), #true, #false
+
+(* With comments *)
+let (* a *) #() (* bb *) =
+  match (* ccc *) #() (* dddd *) with
+  (* eeeee *)
+  | #() (* ffffff *) -> (* ggggggg *) #() (* hhhhhhhh *)
+;;
+
+(* With attributes *)
+let[@aaaaaaaa] (#false | #true) [@bbbbbbb] =
+  match[@cccccc] (#true, #false) [@ddddd] with
+  | ((#true, #false) [@eeee]) -> (#true [@fff])
+  | (#false [@gg]), (#true [@h]) -> #false
+;;
+
+(* With comments and attributes *)
+let[@a] (* aaaaaaaa *) (#() [@bb] (* bbbbbbb *)), (#false | #true) [@ccc] (* cccccc *) =
+  match
+    (* ddddd *) (#false [@dddd]), (#true (* eeee *) [@eeeee]), (#() [@ffffff] (* fff *))
+  with
+  | ((#false, #true, #()) (* hh *) [@hhhhhhh]) -> (#(), #true) [@g]
+;;
+(* g *)

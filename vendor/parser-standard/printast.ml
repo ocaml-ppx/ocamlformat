@@ -267,6 +267,9 @@ and pattern i ppf x =
   | Ppat_unboxed_tuple (l, c) ->
       line i ppf "Ppat_unboxed_tuple %a\n" fmt_closed_flag c;
       list i (labeled_tuple_element pattern) ppf l
+  | Ppat_unboxed_unit -> line i ppf "Ppat_unboxed_unit\n"
+  | Ppat_unboxed_bool b ->
+      line i ppf "Ppat_unboxed_bool %s\n" (if b then "true" else "false")
   | Ppat_construct (li, po) ->
       line i ppf "Ppat_construct %a\n" fmt_longident_loc li;
       option i
@@ -351,6 +354,9 @@ and expression i ppf x =
   | Pexp_unboxed_tuple (l) ->
       line i ppf "Pexp_unboxed_tuple\n";
       list i (labeled_tuple_element expression) ppf l;
+  | Pexp_unboxed_unit -> line i ppf "Pexp_unboxed_unit\n"
+  | Pexp_unboxed_bool b ->
+      line i ppf "Pexp_unboxed_bool %s\n" (if b then "true" else "false")
   | Pexp_construct (li, eo) ->
       line i ppf "Pexp_construct %a\n" fmt_longident_loc li;
       option i expression ppf eo;

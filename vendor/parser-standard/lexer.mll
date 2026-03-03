@@ -781,6 +781,8 @@ rule token = parse
   | "\'" { QUOTE }
   | "("  { LPAREN }
   | ")"  { RPAREN }
+  | "#false" { HASHFALSE }
+  | "#true"  { HASHTRUE }
   | "#(" { HASHLPAREN }
   | "#{" { HASHLBRACE }
   | "*"  { STAR }

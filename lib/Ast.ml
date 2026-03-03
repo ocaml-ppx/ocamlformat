@@ -220,7 +220,8 @@ module Exp = struct
      |Pexp_override _ | Pexp_open _ | Pexp_extension _ | Pexp_hole
      |Pexp_record _ | Pexp_record_unboxed_product _ | Pexp_array _
      |Pexp_list _ | Pexp_list_comprehension _ | Pexp_array_comprehension _
-     |Pexp_unboxed_tuple _ | Pexp_idx _ | Pexp_quote _ | Pexp_splice _ ->
+     |Pexp_unboxed_tuple _ | Pexp_idx _ | Pexp_quote _ | Pexp_splice _
+     |Pexp_unboxed_unit | Pexp_unboxed_bool _ ->
         true
     | Pexp_constant c -> not (is_uminus_constant c)
     | Pexp_prefix (op, _) -> not (is_uminus_op op || is_uplus_op op)
@@ -274,7 +275,8 @@ module Pat = struct
      |Ppat_list _ | Ppat_array _ | Ppat_any | Ppat_constant _
      |Ppat_construct (_, None)
      |Ppat_variant (_, None)
-     |Ppat_type _ | Ppat_extension _ | Ppat_unboxed_tuple _ ->
+     |Ppat_type _ | Ppat_extension _ | Ppat_unboxed_tuple _
+     |Ppat_unboxed_unit | Ppat_unboxed_bool _ ->
         true
     | Ppat_open (_, p) -> is_simple_in_parser p
     | Ppat_construct (_, Some _)
@@ -1437,7 +1439,8 @@ end = struct
         | Ppat_any | Ppat_constant _
          |Ppat_construct (_, None)
          |Ppat_interval _ | Ppat_type _ | Ppat_unpack _ | Ppat_var _
-         |Ppat_variant (_, None) ->
+         |Ppat_variant (_, None)
+         |Ppat_unboxed_unit | Ppat_unboxed_bool _ ->
             assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
@@ -1455,7 +1458,8 @@ end = struct
        |Pexp_variant _ | Pexp_while _ | Pexp_hole | Pexp_beginend _
        |Pexp_parens _ | Pexp_cons _ | Pexp_letopen _
        |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _ | Pexp_stack _
-       |Pexp_idx _ | Pexp_quote _ | Pexp_splice _ ->
+       |Pexp_idx _ | Pexp_quote _ | Pexp_splice _ | Pexp_unboxed_unit
+       |Pexp_unboxed_bool _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; _} ->
@@ -1537,7 +1541,8 @@ end = struct
             assert (check_comprehension comp (Expression exp))
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
-         |Pexp_unreachable | Pexp_hole ->
+         |Pexp_unreachable | Pexp_hole | Pexp_unboxed_unit
+         |Pexp_unboxed_bool _ ->
             assert false
         | Pexp_object _ -> assert false
         | Pexp_let ({pvbs_bindings; _}, e) ->
@@ -2335,7 +2340,8 @@ end = struct
          |Pexp_variant (_, None)
          |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
          |Pexp_indexop_access _ | Pexp_list_comprehension _
-         |Pexp_array_comprehension _ | Pexp_idx _ | Pexp_quote _ ->
+         |Pexp_array_comprehension _ | Pexp_idx _ | Pexp_quote _
+         |Pexp_unboxed_unit | Pexp_unboxed_bool _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2419,7 +2425,7 @@ end = struct
        |Pexp_variant (_, None)
        |Pexp_hole | Pexp_while _ | Pexp_beginend _ | Pexp_parens _
        |Pexp_list_comprehension _ | Pexp_array_comprehension _ | Pexp_idx _
-       |Pexp_quote _ ->
+       |Pexp_quote _ | Pexp_unboxed_unit | Pexp_unboxed_bool _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp

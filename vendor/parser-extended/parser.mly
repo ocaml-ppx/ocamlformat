@@ -893,6 +893,8 @@ let erase_call_pos_type ~arg_label ~arg_type ~loc =
 %token GREATERRBRACKET        ">]"
 %token HASHLPAREN             "#("
 %token HASHLBRACE             "#{"
+%token HASHFALSE              "#false"
+%token HASHTRUE               "#true"
 %token IF                     "if"
 %token IN                     "in"
 %token INCLUDE                "include"
@@ -1071,6 +1073,7 @@ The precedences must be listed from low to high.
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE LESSLBRACKET DOLLAR
           LBRACKETPERCENT QUOTED_STRING_EXPR HASHLBRACE HASHLPAREN
+          HASHFALSE HASHTRUE
 
 
 /* Entry points */
@@ -3090,6 +3093,18 @@ block_access:
   | mod_longident DOT
     LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($3) ")" $loc($8) }
+  | HASHLPAREN RPAREN
+      { if Erase_jane_syntax.should_erase ()
+        then Pexp_construct (mkrhs (Lident "()") $sloc, None)
+        else Pexp_unboxed_unit }
+  | HASHFALSE
+      { if Erase_jane_syntax.should_erase ()
+        then Pexp_construct (mkrhs (Lident "false") $sloc, None)
+        else Pexp_unboxed_bool false }
+  | HASHTRUE
+      { if Erase_jane_syntax.should_erase ()
+        then Pexp_construct (mkrhs (Lident "true") $sloc, None)
+        else Pexp_unboxed_bool true }
   | HASHLPAREN labeled_tuple RPAREN
       { if Erase_jane_syntax.should_erase ()
         then Pexp_tuple $2
@@ -3638,6 +3653,18 @@ simple_pattern_not_ident:
       { Ppat_interval ($1, $3) }
   | mkrhs(constr_longident)
       { Ppat_construct($1, None) }
+  | HASHLPAREN RPAREN
+      { if Erase_jane_syntax.should_erase ()
+        then Ppat_construct (mkrhs (Lident "()") $sloc, None)
+        else Ppat_unboxed_unit }
+  | HASHFALSE
+      { if Erase_jane_syntax.should_erase ()
+        then Ppat_construct (mkrhs (Lident "false") $sloc, None)
+        else Ppat_unboxed_bool false }
+  | HASHTRUE
+      { if Erase_jane_syntax.should_erase ()
+        then Ppat_construct (mkrhs (Lident "true") $sloc, None)
+        else Ppat_unboxed_bool true }
   | name_tag
       { Ppat_variant($1, None) }
   | hash mkrhs(type_longident)

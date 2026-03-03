@@ -12344,6 +12344,60 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_literals-erased.ml.stdout
+   (with-stderr-to unboxed_literals-erased.ml.stderr
+     (setenv TERM dumb (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iters=3 %{dep:tests/unboxed_literals.ml}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals-erased.ml.ref unboxed_literals-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals-erased.ml.err unboxed_literals-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_literals.ml.stdout
+   (with-stderr-to unboxed_literals.ml.stderr
+     (setenv TERM dumb (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_literals.ml}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals.ml unboxed_literals.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals.ml.err unboxed_literals.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to unboxed_literals.ml.js-stdout
+   (with-stderr-to unboxed_literals.ml.js-stderr
+     (setenv TERM dumb (run %{bin:ocamlformat} --profile=janestreet --enable-outside-detected-project --disable-conf-files %{dep:tests/unboxed_literals.ml}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals.ml.js-ref unboxed_literals.ml.js-stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_literals.ml.js-err unboxed_literals.ml.js-stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_record-erased.ml.stdout
    (with-stderr-to unboxed_record-erased.ml.stderr
      (setenv TERM dumb (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iters=3 %{dep:tests/unboxed_record.ml}))))))

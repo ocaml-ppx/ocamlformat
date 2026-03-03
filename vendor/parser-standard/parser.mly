@@ -1042,6 +1042,8 @@ let maybe_pmod_constraint mode expr =
 %token GREATERRBRACKET        ">]"
 %token HASHLPAREN             "#("
 %token HASHLBRACE             "#{"
+%token HASHFALSE              "#false"
+%token HASHTRUE               "#true"
 %token IF                     "if"
 %token IN                     "in"
 %token INCLUDE                "include"
@@ -1218,6 +1220,7 @@ The precedences must be listed from low to high.
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LBRACKETCOLON LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE LESSLBRACKET DOLLAR
           LBRACKETPERCENT QUOTED_STRING_EXPR HASHLBRACE HASHLPAREN
+          HASHFALSE HASHTRUE
 
 
 /* Entry points */
@@ -3256,6 +3259,12 @@ block_access:
   | mod_longident DOT
     LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($3) ")" $loc($8) }
+  | HASHLPAREN RPAREN
+      { Pexp_unboxed_unit }
+  | HASHFALSE
+      { Pexp_unboxed_bool false }
+  | HASHTRUE
+      { Pexp_unboxed_bool true }
   | HASHLPAREN labeled_tuple RPAREN
       { Pexp_unboxed_tuple $2 }
   | DOLLAR spliceable_expr
@@ -3835,6 +3844,12 @@ simple_pattern_not_ident:
       { Ppat_interval ($1, $3) }
   | mkrhs(constr_longident)
       { Ppat_construct($1, None) }
+  | HASHLPAREN RPAREN
+      { Ppat_unboxed_unit }
+  | HASHFALSE
+      { Ppat_unboxed_bool false }
+  | HASHTRUE
+      { Ppat_unboxed_bool true }
   | name_tag
       { Ppat_variant($1, None) }
   | hash mkrhs(type_longident)
