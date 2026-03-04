@@ -296,13 +296,6 @@ module Parse = struct
       | {ppat_desc= Ppat_record (fields, flag); _} as e ->
           let fields = List.map ~f:(pat_record_field m) fields in
           {e with ppat_desc= Ppat_record (fields, flag)}
-      (* [(module M) : (module T)] -> [(module M : T)] *)
-      | { ppat_desc=
-            Ppat_constraint
-              ( {ppat_desc= Ppat_unpack (name, None); ppat_attributes= []; _}
-              , {ptyp_desc= Ptyp_package pt; ptyp_attributes= []; _} )
-        ; _ } as p ->
-          {p with ppat_desc= Ppat_unpack (name, Some pt)}
       | {ppat_desc= Ppat_tuple (l, oc); _} as p ->
           let l = List.map ~f:(pat_tuple_elt m) l in
           {p with ppat_desc= Ppat_tuple (l, oc)}
