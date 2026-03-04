@@ -115,3 +115,15 @@ let x = (module M : S)
 module T = (val (x : (module S)))
 
 let _ = (module Int : T[@foo])
+let _ = fun ((module X) : (module M.S with type a = a)) -> X.v
+let _ = fun (module X : M.S with type a = a) -> X.v
+
+let _ =
+  let module MS = struct module type S = sig end end in
+  (fun _ -> ()) (fun (module M1 : MS.S) ((module M2) : (module MS.S)) ->
+      ((module M1 : MS.S), ((module M2) : (module MS.S))))
+
+let _ =
+  let module MS = struct module type S = sig end end in
+  (fun _ -> ()) (fun (module M1 : MS.S) ((module M2) : (module MS.S)) ->
+      (((module M1) : (module MS.S)), ((module M2) : (module MS.S))))
