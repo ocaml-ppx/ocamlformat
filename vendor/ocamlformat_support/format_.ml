@@ -58,7 +58,7 @@ end
      (the box behaves as an horizontal or vertical box but break hints split
       the line if splitting would move to the left)
 *)
-type box_type = CamlinternalFormatBasics.block_type =
+type box_type = CamlinternalFormatBasics_.block_type =
   | Pp_hbox | Pp_vbox | Pp_hvbox | Pp_hovbox | Pp_box | Pp_fits
 
 
@@ -726,6 +726,8 @@ let pp_print_bool state b = pp_print_string state (string_of_bool b)
 let pp_print_char state c =
   pp_print_as state 1 (String.make 1 c)
 
+let pp_print_nothing _state () = ()
+
 
 (* Opening boxes. *)
 let pp_open_hbox state () = pp_open_box_gen state 0 Pp_hbox
@@ -1312,30 +1314,25 @@ and set_tags =
 
 (* Convenience functions *)
 
+let pp_print_iter ?(pp_sep = pp_print_cut) iter pp_v ppf v =
+  let is_first = ref true in
+  let pp_v v =
+    if !is_first then is_first := false else pp_sep ppf ();
+    pp_v ppf v
+  in
+  iter pp_v v
+
 (* To format a list *)
-let rec pp_print_list ?(pp_sep = pp_print_cut) pp_v ppf = function
-  | [] -> ()
-  | [v] -> pp_v ppf v
-  | v :: vs ->
-    pp_v ppf v;
-    pp_sep ppf ();
-    pp_print_list ~pp_sep pp_v ppf vs
+let pp_print_list ?(pp_sep = pp_print_cut) pp_v ppf v =
+  pp_print_iter ~pp_sep List.iter pp_v ppf v
+
+(* To format an array *)
+let pp_print_array ?(pp_sep = pp_print_cut) pp_v ppf v =
+  pp_print_iter ~pp_sep Array.iter pp_v ppf v
 
 (* To format a sequence *)
-let rec pp_print_seq_in ~pp_sep pp_v ppf seq =
-  match seq () with
-  | Seq.Nil -> ()
-  | Seq.Cons (v, seq) ->
-    pp_sep ppf ();
-    pp_v ppf v;
-    pp_print_seq_in ~pp_sep pp_v ppf seq
-
 let pp_print_seq ?(pp_sep = pp_print_cut) pp_v ppf seq =
-  match seq () with
-  | Seq.Nil -> ()
-  | Seq.Cons (v, seq) ->
-    pp_v ppf v;
-    pp_print_seq_in ~pp_sep pp_v ppf seq
+  pp_print_iter ~pp_sep Seq.iter pp_v ppf seq
 
 (* To format free-flowing text *)
 let pp_print_text ppf s =
@@ -1358,6 +1355,53 @@ let pp_print_text ppf s =
       | _ -> incr right
   done;
   if !left <> len then flush ()
+
+(* To format free-flowing text *)
+let format_text fmt6 =
+  let open CamlinternalFormatBasics_ in
+  let Format(fmt,_) = fmt6 in
+  let cons_space ~spaces fmt = Formatting_lit (Break("",spaces,0), fmt) in
+  let rec skip_and_count_whites spaces newlines len s pos =
+    if pos >= len then pos, spaces, newlines else
+    match s.[pos] with
+    | ' ' -> skip_and_count_whites (1+spaces) newlines len s (1+pos)
+    | '\n' -> skip_and_count_whites spaces (1+newlines) len s (1+pos)
+    | _ -> pos, spaces, newlines
+  in
+  let[@tail_mod_cons] rec split len s pos fmt =
+    if pos >= len then fmt
+    else
+      let space = String.index_from_opt s pos ' ' in
+      let newline = String.index_from_opt s pos '\n' in
+      let first = match space, newline with
+        | Some x, Some y -> Some (min x y)
+        | None, x | x, None -> x
+      in
+      match first with
+      | None ->
+          String_literal(String.sub s pos (len-pos), fmt)
+      | Some sep ->
+          let before = String.sub s pos (sep-pos) in
+          let pos, spaces, newlines = skip_and_count_whites 0 0 len s sep in
+          let repeat, break =
+            match newlines, spaces with
+            | (0|1), spaces -> 1, Break("", max spaces 1, 0)
+            | bl, _ -> bl, Force_newline
+          in
+          String_literal(before, cons ~repeat break len s pos fmt)
+  and[@tail_mod_cons] cons ~repeat break len s pos fmt =
+    if repeat = 0 then
+      split len s pos fmt
+    else
+      Formatting_lit (break, cons ~repeat:(repeat-1) break len s pos fmt)
+  in
+  let concat s fmt = match s with
+    | `Char (' '|'\n') -> cons_space ~spaces:1 fmt
+    | `Char c -> Char_literal(c,fmt)
+    | `String s -> split (String.length s) s 0 fmt in
+  let fmt = string_concat_map {f=concat} fmt in
+  Format(fmt, CamlinternalFormat.string_of_fmt fmt)
+
 
 let pp_print_option ?(none = fun _ () -> ()) pp_v ppf = function
 | None -> none ppf ()
@@ -1389,7 +1433,7 @@ let compute_tag output tag_acc =
 
   **************************************************************)
 
-open CamlinternalFormatBasics
+open CamlinternalFormatBasics_
 open CamlinternalFormat
 
 (* Interpret a formatting entity on a formatter. *)

@@ -281,6 +281,11 @@ val pp_print_bool : formatter -> bool -> unit
 val print_bool : bool -> unit
 (** Print a boolean in the current pretty-printing box. *)
 
+val pp_print_nothing : formatter -> unit -> unit
+(** Print nothing.
+    @since 5.2
+*)
+
 (** {1:breaks Break hints} *)
 
 (** A 'break hint' tells the pretty-printer to output some space or split the
@@ -452,6 +457,13 @@ val print_newline : unit -> unit
 
 (** {1 Margin} *)
 
+val pp_infinity : int
+(** [pp_infinity] is the maximal size of the margin.
+  Its exact value is implementation dependent but is guaranteed to be greater
+  than 10{^9}.
+
+  @since 5.2*)
+
 val pp_set_margin : formatter -> int -> unit
 val set_margin : int -> unit
 (** [pp_set_margin ppf d] sets the right margin to [d] (in characters):
@@ -460,8 +472,7 @@ val set_margin : int -> unit
   Setting the margin to [d] means that the formatting engine aims at
   printing at most [d-1] characters per line.
   Nothing happens if [d] is smaller than 2.
-  If [d] is too large, the right margin is set to the maximum
-  admissible value (which is greater than [10 ^ 9]).
+  If [d >= ]{!pp_infinity}, the right margin is set to {!pp_infinity}[ - 1].
   If [d] is less than the current maximum indentation limit, the
   maximum indentation limit is decreased while trying to preserve
   a minimal ratio [max_indent/margin>=50%] and if possible
@@ -1180,6 +1191,21 @@ val pp_print_list:
   @since 4.02
 *)
 
+val pp_print_array:
+  ?pp_sep:(formatter -> unit -> unit) ->
+  (formatter -> 'a -> unit) -> (formatter -> 'a array -> unit)
+(** [pp_print_array ?pp_sep pp_v ppf a] prints items of array [a],
+  using [pp_v] to print each item, and calling [pp_sep]
+  between items ([pp_sep] defaults to {!pp_print_cut}).
+  Does nothing on empty arrays.
+
+  If [a] is mutated after [pp_print_array] is called, the printed values
+  may not be what is expected because [Format] can delay the printing.
+  This can be avoided by flushing [ppf].
+
+  @since 5.1
+*)
+
 val pp_print_seq:
   ?pp_sep:(formatter -> unit -> unit) ->
   (formatter -> 'a -> unit) -> (formatter -> 'a Seq.t -> unit)
@@ -1199,6 +1225,20 @@ val pp_print_text : formatter -> string -> unit
 
   @since 4.02
 *)
+
+val format_text: ('a,'b,'c,'d,'e,'f) format6 -> ('a,'b,'c,'d,'e,'f) format6
+(** [format_text fmt] replaces spaces and newlines in the format string literal
+    [fmt] with hint breaks or forced newlines:
+  - Blank lines (lines made only of spaces ([U+0020])) are replaced by ["\@n"].
+  - Sequences of spaces and a newline ([U+000A]) preceding a blank line are
+    replaced by ["\@n"]: blank lines remain blank lines in the output.
+  - Remaining sequences made of [k] spaces and newlines are replaced
+    by ["@;<0 k'>"] where [k' = max 1 k] is at least [1].
+  - Breaks can be avoided using non-breaking space characters ([U+00A0]).
+  - Lines can be forced by using ["@\n"]
+@since 5.4
+*)
+
 
 val pp_print_option :
   ?none:(formatter -> unit -> unit) ->
