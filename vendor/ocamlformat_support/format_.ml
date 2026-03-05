@@ -67,6 +67,7 @@ type box_type = CamlinternalFormatBasics.block_type =
    elements that drive indentation and line splitting. *)
 type pp_token =
   | Pp_text of string          (* normal text *)
+  | Pp_substring of { source:string; pos:int; len:int} (* slice of text *)
   | Pp_break of {              (* complete break *)
       fits: string * int * string;   (* line is not split *)
       breaks: string * int * string; (* line is split *)
@@ -259,6 +260,8 @@ let pp_infinity = 1000000010
 
 (* Output functions for the formatter. *)
 let pp_output_string state s = state.pp_out_string s 0 (String.length s)
+and pp_output_substring state ~pos ~len s =
+  state.pp_out_string s pos len
 and pp_output_newline state = state.pp_out_newline ()
 and pp_output_spaces state n = state.pp_out_spaces n
 and pp_output_indent state n = state.pp_out_indent n
@@ -267,6 +270,12 @@ and pp_output_indent state n = state.pp_out_indent n
 let format_pp_text state size text =
   state.pp_space_left <- state.pp_space_left - size;
   pp_output_string state text;
+  state.pp_is_new_line <- false
+
+(* Format a slice *)
+let format_pp_substring state size ~pos ~len source =
+  state.pp_space_left <- state.pp_space_left - size;
+  pp_output_substring state ~pos ~len source;
   state.pp_is_new_line <- false
 
 (* Format a string by its length, if not empty *)
@@ -358,7 +367,8 @@ let format_pp_token state size = function
 
   | Pp_text s ->
     format_pp_text state size s
-
+  | Pp_substring {source;pos;len} ->
+    format_pp_substring state size ~pos ~len source
   | Pp_begin (off, ty) ->
     let insertion_point = state.pp_margin - state.pp_space_left in
     if insertion_point > state.pp_max_indent then
@@ -495,6 +505,10 @@ let enqueue_advance state tok = pp_enqueue state tok; advance_left state
 let enqueue_string_as state size s =
   enqueue_advance state { size; token = Pp_text s; length = Size.to_int size }
 
+(* To enqueue substrings. *)
+let enqueue_substring_as ~pos ~len state size source =
+  let token = Pp_substring {source;pos;len} in
+  enqueue_advance state { size; token; length = Size.to_int size }
 
 let enqueue_string state s =
   enqueue_string_as state (Size.of_int (String.length s)) s
@@ -539,9 +553,9 @@ let set_size state ty =
           queue_elem.size <- Size.of_int (state.pp_right_total + size);
           Stack.pop_opt state.pp_scan_stack |> ignore
         end
-      | Pp_text _ | Pp_stab | Pp_tbegin _ | Pp_tend | Pp_end
-      | Pp_newline | Pp_if_newline | Pp_string_if_newline _
-      | Pp_open_tag _ | Pp_close_tag ->
+      | Pp_text _ | Pp_substring _ | Pp_stab | Pp_tbegin _ | Pp_tend | Pp_end
+      | Pp_newline | Pp_if_newline | Pp_open_tag _ | Pp_close_tag
+      | Pp_string_if_newline _ ->
         () (* scan_push is only used for breaks and boxes. *)
 
 
@@ -680,9 +694,15 @@ let pp_print_as_size state size s =
 let pp_print_as state isize s =
   pp_print_as_size state (Size.of_int isize) s
 
+let pp_print_substring_as ~pos ~len state size s =
+  if state.pp_curr_depth < state.pp_max_boxes
+  then enqueue_substring_as ~pos ~len state (Size.of_int size) s
 
 let pp_print_string state s =
   pp_print_as state (String.length s) s
+
+let pp_print_substring ~pos ~len state s =
+  pp_print_substring_as ~pos ~len state len s
 
 let pp_print_bytes state s =
   pp_print_as state (Bytes.length s) (Bytes.to_string s)
@@ -1293,7 +1313,7 @@ let pp_print_text ppf s =
   let left = ref 0 in
   let right = ref 0 in
   let flush () =
-    pp_print_string ppf (String.sub s !left (!right - !left));
+    pp_print_substring ~pos:!left ~len:(!right - !left) ppf s;
     incr right; left := !right;
   in
   while (!right <> len) do
