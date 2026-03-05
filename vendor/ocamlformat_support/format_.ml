@@ -368,7 +368,6 @@ let format_pp_break state size fits breaks =
 
 (* Formatting a token with a given size. *)
 let format_pp_token state size = function
-
   | Pp_text s ->
     format_pp_text state size s
   | Pp_substring {source;pos;len} ->
@@ -432,7 +431,7 @@ let format_pp_token state size = function
     end
 
   | Pp_if_newline ->
-    if state.pp_current_indent != state.pp_margin - state.pp_space_left
+    if state.pp_current_indent <> state.pp_margin - state.pp_space_left
     then pp_skip_token state
 
   | Pp_string_if_newline s ->
@@ -529,7 +528,7 @@ let initialize_scan_stack stack =
   Stack.push { left_total = -1; queue_elem } stack
 
 (* Setting the size of boxes on scan stack:
-   if ty = true then size of break is set else size of box is set;
+   if [break_hint = true] then size of break is set else size of box is set;
    in each case pp_scan_stack is popped.
 
    Note:
@@ -537,7 +536,7 @@ let initialize_scan_stack stack =
    empty.
    Pattern matching on token in scan stack is also exhaustive,
    since scan_push is used on breaks and opening of boxes. *)
-let set_size state ty =
+let set_size state ~break_hint =
   match Stack.top_opt state.pp_scan_stack with
   | None -> () (* scan_stack is never empty. *)
   | Some { left_total; queue_elem } ->
@@ -549,12 +548,12 @@ let set_size state ty =
       match queue_elem.token with
       | Pp_break _ | Pp_tbreak (_, _)
       | Pp_or_newline _ | Pp_fits_or_breaks _ ->
-        if ty then begin
+        if break_hint then begin
           queue_elem.size <- Size.of_int (state.pp_right_total + size);
           Stack.pop_opt state.pp_scan_stack |> ignore
         end
       | Pp_begin (_, _) ->
-        if not ty then begin
+        if not break_hint then begin
           queue_elem.size <- Size.of_int (state.pp_right_total + size);
           Stack.pop_opt state.pp_scan_stack |> ignore
         end
@@ -566,9 +565,9 @@ let set_size state ty =
 
 (* Push a token on pretty-printer scanning stack.
    If b is true set_size is called. *)
-let scan_push state b token =
+let scan_push state ~break_hint token =
   pp_enqueue state token;
-  if b then set_size state true;
+  if break_hint then set_size state ~break_hint:true;
   let elem = { left_total = state.pp_right_total; queue_elem = token } in
   Stack.push elem state.pp_scan_stack
 
@@ -581,7 +580,7 @@ let pp_open_box_gen state indent br_ty =
   if state.pp_curr_depth < state.pp_max_boxes then
     let size = Size.of_int (- state.pp_right_total) in
     let elem = { size; token = Pp_begin (indent, br_ty); length = 0 } in
-    scan_push state false elem else
+    scan_push state ~break_hint:false elem else
   if state.pp_curr_depth = state.pp_max_boxes
   then enqueue_string state state.pp_ellipsis
 
@@ -596,7 +595,7 @@ let pp_close_box state () =
     if state.pp_curr_depth < state.pp_max_boxes then
     begin
       pp_enqueue state { size = Size.zero; token = Pp_end; length = 0 };
-      set_size state true; set_size state false
+      set_size state ~break_hint:true; set_size state ~break_hint:false
     end;
     state.pp_curr_depth <- state.pp_curr_depth - 1;
   end
@@ -670,18 +669,18 @@ let pp_rinit state =
   pp_open_sys_box state
 
 let clear_tag_stack state =
-  Stack.iter (fun _ -> pp_close_tag state ()) state.pp_tag_stack
+  Stack.iter (fun _ -> pp_close_stag state ()) state.pp_tag_stack
 
 
 (* Flushing pretty-printer queue. *)
-let pp_flush_queue state b =
+let pp_flush_queue state ~end_with_newline =
   clear_tag_stack state;
   while state.pp_curr_depth > 1 do
     pp_close_box state ()
   done;
   state.pp_right_total <- pp_infinity;
   advance_left state;
-  if b then pp_output_newline state;
+  if end_with_newline then pp_output_newline state;
   pp_rinit state
 
 (*
@@ -746,9 +745,9 @@ and pp_open_box state indent = pp_open_box_gen state indent Pp_box
    [pp_print_newline] behaves as [pp_print_flush] after printing an additional
    new line. *)
 let pp_print_newline state () =
-  pp_flush_queue state true; state.pp_out_flush ()
+  pp_flush_queue state ~end_with_newline:true; state.pp_out_flush ()
 and pp_print_flush state () =
-  pp_flush_queue state false; state.pp_out_flush ()
+  pp_flush_queue state ~end_with_newline:false; state.pp_out_flush ()
 
 
 (* To get a newline when one does not want to close the current box. *)
@@ -777,7 +776,7 @@ let pp_print_custom_break state ~fits ~breaks =
       + pp_string_width state after
     in
     let elem = { size; token; length } in
-    scan_push state true elem
+    scan_push state ~break_hint:true elem
 
 (* To format a string, only in case the line has just been broken. *)
 let pp_print_string_if_newline state s =
@@ -786,7 +785,6 @@ let pp_print_string_if_newline state s =
     let size = Size.zero in
     let token = Pp_string_if_newline s in
     enqueue_advance state { size; token; length }
-
 
 (* Printing break hints:
    A break hint indicates where a box may be broken.
@@ -804,7 +802,7 @@ let pp_print_or_newline state width offset fits breaks =
     let size = Size.of_int (- state.pp_right_total) in
     let token = Pp_or_newline (width, offset, fits, breaks) in
     let width = width + pp_string_width state fits in
-    scan_push state true { size; token; length= width }
+    scan_push state ~break_hint:true { size; token; length= width }
 
 
 (* To format a string if the enclosing box fits, and otherwise to format a
@@ -814,7 +812,7 @@ let pp_print_fits_or_breaks state ?(level = 0) fits nspaces offset breaks =
     let size = Size.of_int (- state.pp_right_total) in
     let token = Pp_fits_or_breaks (level, fits, nspaces, offset, breaks) in
     let length = pp_string_width state fits in
-    scan_push state true { size; token; length }
+    scan_push state ~break_hint:true { size; token; length }
 
 
 (* Print a space :
@@ -851,7 +849,7 @@ let pp_print_tbreak state width offset =
   if state.pp_curr_depth < state.pp_max_boxes then
     let size = Size.of_int (- state.pp_right_total) in
     let elem = { size; token = Pp_tbreak (width, offset); length = width } in
-    scan_push state true elem
+    scan_push state ~break_hint:true elem
 
 
 let pp_print_tab state () = pp_print_tbreak state 0 0
@@ -1153,7 +1151,7 @@ and str_formatter = formatter_of_buffer stdbuf
    Formatter [ppf] is supposed to print to buffer [buf], otherwise this
    function is not really useful. *)
 let flush_buffer_formatter buf ppf =
-  pp_flush_queue ppf false;
+  pp_flush_queue ppf ~end_with_newline:false;
   let s = Buffer.contents buf in
   Buffer.reset buf;
   s
@@ -1570,7 +1568,7 @@ let get_all_formatter_output_functions =
    then use {!fprintf ppf} as usual. *)
 let bprintf b (Format (fmt, _) : ('a, formatter, unit) format) =
   let ppf = formatter_of_buffer b in
-  let k acc = output_acc ppf acc; pp_flush_queue ppf false in
+  let k acc = output_acc ppf acc; pp_flush_queue ppf ~end_with_newline:false in
   make_printf k End_of_acc fmt
 
 

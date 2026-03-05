@@ -15,6 +15,8 @@
 
 (** Pretty-printing.
 
+   If you are new to this module, see the {{!examples} examples} below.
+
    This module implements a pretty-printing facility to format values
    within {{!boxes}'pretty-printing boxes'} and {{!tags}'semantic tags'}
    combined with a set of {{!fpp}printf-like functions}.
@@ -30,15 +32,28 @@
    - {!std_formatter} outputs to {{!Stdlib.stdout}stdout}
    - {!err_formatter} outputs to {{!Stdlib.stderr}stderr}
 
-   Most functions in the {!Format} module come in two variants:
-   a short version that operates on {!std_formatter} and the
-   generic version prefixed by [pp_] that takes a formatter
-   as its first argument.
+   Most functions in the {!Format} module come in two variants: a short version
+   that operates on the current domain's standard formatter as obtained using
+   {!get_std_formatter} and the generic version prefixed by [pp_] that takes a
+   formatter as its first argument. For the version that operates on the
+   current domain's standard formatter, the call to {!get_std_formatter} is
+   delayed until the last argument is received.
 
    More formatters can be created with {!formatter_of_out_channel},
-   {!formatter_of_buffer}, {!formatter_of_symbolic_output_buffer}
-   or using {{!section:formatter}custom formatters}.
+   {!formatter_of_buffer}, {!formatter_of_symbolic_output_buffer} or using
+   {{!section:formatter}custom formatters}.
 
+   {b Warning}: Since {{!section:formatter}formatters} contain
+   mutable state, it is not thread-safe to use the same formatter on multiple
+   domains in parallel without synchronization. This may result in
+   [Invalid_argument] being raised or an unspecified behavior.
+
+   If multiple domains write to the same output channel using the
+   predefined formatters (as obtained by {!get_std_formatter} or
+   {!get_err_formatter}), the output from the domains will be interleaved with
+   each other at points where the formatters are flushed, such as with
+   {!print_flush}. This synchronization is not performed by formatters obtained
+   from {!formatter_of_out_channel} (on the standard out channels or others).
 *)
 
 (** {1 Introduction}
@@ -337,7 +352,7 @@ val pp_print_custom_break :
 
    The custom break is useful if you want to change which visible
    (non-whitespace) characters are printed in case of break or no break. For
-   example, when printing a list {[ [a; b; c] ]}, you might want to add a
+   example, when printing a list [ [a; b; c] ], you might want to add a
    trailing semicolon when it is printed vertically:
 
    {[
@@ -354,7 +369,7 @@ printf "@[<v 0>[@;<0 2>@[<v 0>a;@,b;@,c@]%t]@]@\n"
   (pp_print_custom_break ~fits:("", 0, "") ~breaks:(";", 0, ""))
    ]}
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 val pp_force_newline : formatter -> unit -> unit
@@ -426,7 +441,8 @@ val print_newline : unit -> unit
 
   All open pretty-printing boxes are closed, all pending text is printed.
 
-  Equivalent to {!print_flush} followed by a new line.
+  Equivalent to {!print_flush} with a new line emitted on the pretty-printer
+  low-level output device immediately before the device is flushed.
   See corresponding words of caution for {!print_flush}.
 
   Note: this is not the normal way to output a new line;
@@ -491,11 +507,8 @@ val set_max_indent : int -> unit
 
   Nothing happens if [d] is smaller than 2.
 
-  If [d] is too large, the limit is set to the maximum
-  admissible value (which is greater than [10 ^ 9]).
-
-  If [d] is greater or equal than the current margin, it is ignored,
-  and the current maximum indentation limit is kept.
+  If [d] is greater than the current margin, it is ignored, and the current
+    maximum indentation limit is kept.
 
   See also {!pp_set_geometry}.
 *)
@@ -507,14 +520,18 @@ val get_max_indent : unit -> int
 (** {1 Geometry }
 
 Geometric functions can be used to manipulate simultaneously the
-coupled variables, margin and maxixum indentation limit.
+coupled variables, margin and maximum indentation limit.
 
 *)
 
 type geometry = { max_indent:int; margin: int}
+(** @since 4.08 *)
 
 val check_geometry: geometry -> bool
-(** Check if the formatter geometry is valid: [1 < max_indent < margin] *)
+(** Check if the formatter geometry is valid:
+  [1 < max_indent < margin < ]{!pp_infinity}
+
+  @since 4.08 *)
 
 val pp_set_geometry : formatter -> max_indent:int -> margin:int -> unit
 val set_geometry : max_indent:int -> margin:int -> unit
@@ -524,7 +541,7 @@ val safe_set_geometry : max_indent:int -> margin:int -> unit
    [pp_set_geometry ppf ~max_indent ~margin] sets both the margin
    and maximum indentation limit for [ppf].
 
-   When [1 < max_indent < margin],
+   When [1 < max_indent < margin < ]{!pp_infinity},
    [pp_set_geometry ppf ~max_indent ~margin]
    is equivalent to
    [pp_set_margin ppf margin; pp_set_max_indent ppf max_indent];
@@ -534,7 +551,7 @@ val safe_set_geometry : max_indent:int -> margin:int -> unit
    Outside of this domain, [pp_set_geometry] raises an invalid argument
    exception whereas [pp_safe_set_geometry] does nothing.
 
-   @since 4.08.0
+   @since 4.08
 *)
 
 (**
@@ -545,7 +562,7 @@ val safe_set_geometry : max_indent:int -> margin:int -> unit
    Raises an invalid argument exception if the returned geometry
    does not satisfy {!check_geometry}.
 
-   @since 4.11.0
+   @since 4.11
 *)
 val pp_update_geometry : formatter -> (geometry -> geometry) -> unit
 val update_geometry : (geometry -> geometry) -> unit
@@ -554,7 +571,7 @@ val pp_get_geometry: formatter -> unit -> geometry
 val get_geometry: unit -> geometry
 (** Return the current geometry of the formatter
 
-    @since 4.08.0
+    @since 4.08
 *)
 
 
@@ -746,7 +763,7 @@ type stag += RGB of {r:int;g:int;b:int}
   Tag-marking operations may be set on or off with {!set_mark_tags}.
   Tag-printing operations may be set on or off with {!set_print_tags}.
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 type tag = string
@@ -755,7 +772,7 @@ type stag += String_tag of tag
     by explicitly using the constructor [String_tag] or by using the dedicated
     format syntax ["@{<s> ... @}"].
 
-    @since 4.08.0
+    @since 4.08
 *)
 
 val pp_open_stag : formatter -> stag -> unit
@@ -766,7 +783,7 @@ val open_stag : stag -> unit
   [t] as argument; then the opening tag marker for [t], as given by
   [mark_open_stag t], is written into the output device of the formatter.
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 val pp_close_stag : formatter -> unit -> unit
@@ -777,7 +794,7 @@ val close_stag : unit -> unit
   output device of the formatter; then the [print_close_stag] tag-printing
   function of the formatter is called with [t] as argument.
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 val pp_set_tags : formatter -> bool -> unit
@@ -854,7 +871,7 @@ type formatter_out_functions = {
   out_flush : unit -> unit;
   out_newline : unit -> unit;
   out_spaces : int -> unit;
-  out_indent : int -> unit;(** @since 4.06.0 *)
+  out_indent : int -> unit;(** @since 4.06 *)
 }
 (** The set of output functions specific to a formatter:
 - the [out_string] function performs all the pretty-printer string output.
@@ -887,7 +904,7 @@ type formatter_out_functions = {
 - field [out_newline] is equivalent to [out_string "\n" 0 1];
 - fields [out_spaces] and [out_indent] are equivalent to
   [out_string (String.make n ' ') 0 n].
-  @since 4.01.0
+  @since 4.01
 *)
 
 val pp_set_formatter_out_functions :
@@ -914,7 +931,7 @@ val get_formatter_out_functions : unit -> formatter_out_functions
 (** Return the current output functions of the pretty-printer,
   including line splitting and indentation functions. Useful to record the
   current setting and restore it afterwards.
-  @since 4.01.0
+  @since 4.01
 *)
 
 val utf_8_scalar_width: string -> pos:int -> len:int -> int
@@ -966,7 +983,7 @@ val set_formatter_stag_functions : formatter_stag_functions -> unit
   are called at tag opening and tag closing time, to output regular material
   in the pretty-printer queue.
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 val pp_get_formatter_stag_functions :
@@ -975,7 +992,7 @@ val get_formatter_stag_functions : unit -> formatter_stag_functions
 (** Return the current semantic tag operation functions of the standard
     pretty-printer.
 
-    @since 4.08.0 *)
+    @since 4.08 *)
 
 (** {1:formatter Defining formatters}
 
@@ -1002,14 +1019,15 @@ val formatter_of_out_channel : out_channel -> formatter
   to the corresponding output channel [oc].
 *)
 
+
 val std_formatter : formatter
-(** The standard formatter to write to standard output.
+(** The initial domain's standard formatter to write to standard output.
 
   It is defined as {!formatter_of_out_channel} {!Stdlib.stdout}.
 *)
 
 val err_formatter : formatter
-(** A formatter to write to standard error.
+(** The initial domain's formatter to write to standard error.
 
   It is defined as {!formatter_of_out_channel} {!Stdlib.stderr}.
 *)
@@ -1022,17 +1040,17 @@ val formatter_of_buffer : Buffer.t -> formatter
 *)
 
 val stdbuf : Buffer.t
-(** The string buffer in which [str_formatter] writes. *)
+(** The initial domain's string buffer in which [str_formatter] writes. *)
 
 val str_formatter : formatter
-(** A formatter to output to the {!stdbuf} string buffer.
+(** The initial domain's formatter to output to the {!stdbuf} string buffer.
 
   [str_formatter] is defined as {!formatter_of_buffer} {!stdbuf}.
 *)
 
 val flush_str_formatter : unit -> string
-(** Returns the material printed with [str_formatter], flushes
-  the formatter and resets the corresponding buffer.
+(** Returns the material printed with [str_formatter] of the current domain,
+    flushes the formatter and resets the corresponding buffer.
 *)
 
 val make_formatter :
@@ -1040,10 +1058,12 @@ val make_formatter :
 (** [make_formatter out flush] returns a new formatter that outputs with
   function [out], and flushes with function [flush].
 
-  For instance, {[
+  For instance,
+  {[
     make_formatter
-      (Stdlib.output oc)
-      (fun () -> Stdlib.flush oc) ]}
+      (Stdlib.output_substring oc)
+      (fun () -> Stdlib.flush oc)
+  ]}
   returns a formatter to the {!Stdlib.out_channel} [oc].
 *)
 
@@ -1055,8 +1075,10 @@ val formatter_of_out_functions :
   See definition of type {!formatter_out_functions} for the meaning of argument
   [out_funs].
 
-  @since 4.06.0
+  @since 4.06
 *)
+
+
 
 (** {2:symbolic Symbolic pretty-printing} *)
 
@@ -1090,34 +1112,34 @@ type symbolic_output_item =
   | Output_indent of int
   (** [Output_indent i]: symbolic indentation of size [i] *)
 (** Items produced by symbolic pretty-printers
-    @since 4.06.0
+    @since 4.06
 *)
 
 type symbolic_output_buffer
 (**
   The output buffer of a symbolic pretty-printer.
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val make_symbolic_output_buffer : unit -> symbolic_output_buffer
 (** [make_symbolic_output_buffer ()] returns a fresh buffer for
   symbolic output.
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val clear_symbolic_output_buffer : symbolic_output_buffer -> unit
 (** [clear_symbolic_output_buffer sob] resets buffer [sob].
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val get_symbolic_output_buffer :
   symbolic_output_buffer -> symbolic_output_item list
 (** [get_symbolic_output_buffer sob] returns the contents of buffer [sob].
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val flush_symbolic_output_buffer :
@@ -1128,21 +1150,21 @@ val flush_symbolic_output_buffer :
   [let items = get_symbolic_output_buffer sob in
    clear_symbolic_output_buffer sob; items]
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val add_symbolic_output_item :
   symbolic_output_buffer -> symbolic_output_item -> unit
 (** [add_symbolic_output_item sob itm] adds item [itm] to buffer [sob].
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 val formatter_of_symbolic_output_buffer : symbolic_output_buffer -> formatter
 (** [formatter_of_symbolic_output_buffer sob] returns a symbolic formatter
   that outputs to [symbolic_output_buffer] [sob].
 
-  @since 4.06.0
+  @since 4.06
 *)
 
 (** {1 Convenience formatting functions.} *)
@@ -1152,10 +1174,10 @@ val pp_print_list:
   (formatter -> 'a -> unit) -> (formatter -> 'a list -> unit)
 (** [pp_print_list ?pp_sep pp_v ppf l] prints items of list [l],
   using [pp_v] to print each item, and calling [pp_sep]
-  between items ([pp_sep] defaults to {!pp_print_cut}.
+  between items ([pp_sep] defaults to {!pp_print_cut}).
   Does nothing on empty lists.
 
-  @since 4.02.0
+  @since 4.02
 *)
 
 val pp_print_seq:
@@ -1175,7 +1197,7 @@ val pp_print_text : formatter -> string -> unit
 (** [pp_print_text ppf s] prints [s] with spaces and newlines respectively
   printed using {!pp_print_space} and {!pp_force_newline}.
 
-  @since 4.02.0
+  @since 4.02
 *)
 
 val pp_print_option :
@@ -1254,7 +1276,7 @@ val fprintf : formatter -> ('a, formatter, unit) format -> 'a
     optionally specified with the following syntax:
     the [<] character, followed by an integer [nspaces] value,
     then an integer [offset], and a closing [>] character.
-    If no parameters are provided, the good break defaults to a
+    If no parameters are provided, the full break defaults to a
     'space' break hint.
   - [@.]: flush the pretty-printer and split the line, as with
     [print_newline ()].
@@ -1292,16 +1314,32 @@ val fprintf : formatter -> ('a, formatter, unit) format -> 'a
 *)
 
 val printf : ('a, formatter, unit) format -> 'a
-(** Same as [fprintf] above, but output on [std_formatter]. *)
+(** Same as [fprintf] above, but output on [get_std_formatter ()].
+
+    It is defined similarly to [fun fmt -> fprintf (get_std_formatter ()) fmt]
+    but delays calling [get_std_formatter] until after the final argument
+    required by the [format] is received. When used with multiple domains, the
+    output from the domains will be interleaved with each other at points where
+    the formatter is flushed, such as with {!print_flush}.
+*)
 
 val eprintf : ('a, formatter, unit) format -> 'a
-(** Same as [fprintf] above, but output on [err_formatter]. *)
+(** Same as [fprintf] above, but output on [get_err_formatter ()].
+
+    It is defined similarly to [fun fmt -> fprintf (get_err_formatter ()) fmt]
+    but delays calling [get_err_formatter] until after the final argument
+    required by the [format] is received. When used with multiple domains, the
+    output from the domains will be interleaved with each other at points where
+    the formatter is flushed, such as with {!print_flush}.
+*)
 
 val sprintf : ('a, unit, string) format -> 'a
-(** Same as [printf] above, but instead of printing on a formatter,
+(** Same as {!printf} above, but instead of printing on a formatter,
   returns a string containing the result of formatting the arguments.
   Note that the pretty-printer queue is flushed at the end of {e each
-  call} to [sprintf].
+  call} to [sprintf]. Note that you likely want to use {!asprintf} which can
+  reuse [%a]-printers defined for {!fprintf}. Contrarily, [sprintf] requires to
+  redefine new [%a]-printers, and is kept only for backward compatibility.
 
   In case of multiple and related calls to [sprintf] to output
   material on a single string, you should consider using [fprintf]
@@ -1319,7 +1357,7 @@ val asprintf : ('a, formatter, unit, string) format4 -> 'a
   The type of [asprintf] is general enough to interact nicely with [%a]
   conversions.
 
-  @since 4.01.0
+  @since 4.01
 *)
 
 val dprintf :
@@ -1341,7 +1379,7 @@ val dprintf :
   Format.printf "@[<v>%t@]" t
 ]}
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 
@@ -1349,7 +1387,7 @@ val ifprintf : formatter -> ('a, formatter, unit) format -> 'a
 (** Same as [fprintf] above, but does not print anything.
   Useful to ignore some material when conditionally printing.
 
-  @since 3.10.0
+  @since 3.10
 *)
 
 (** Formatted Pretty-Printing with continuations. *)
@@ -1366,7 +1404,7 @@ val kdprintf :
 (** Same as {!dprintf} above, but instead of returning immediately,
   passes the suspended printer to its first argument at the end of printing.
 
-  @since 4.08.0
+  @since 4.08
 *)
 
 val ikfprintf :
@@ -1375,7 +1413,7 @@ val ikfprintf :
 (** Same as [kfprintf] above, but does not print anything.
   Useful to ignore some material when conditionally printing.
 
-  @since 3.12.0
+  @since 3.12
 *)
 
 val ksprintf : (string -> 'a) -> ('b, unit, string, 'a) format4 -> 'b
