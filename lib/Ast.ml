@@ -336,7 +336,7 @@ end
 module Tyd = struct
   let is_simple x =
     match x.ptype_kind with
-    | Ptype_abstract | Ptype_open -> true
+    | Ptype_abstract | Ptype_open | Ptype_external _ -> true
     | Ptype_variant _ | Ptype_record _ -> false
 end
 

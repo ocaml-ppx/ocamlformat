@@ -580,6 +580,10 @@ and type_declaration =
  - [type t = ..]
               when [type_kind] is {{!type_kind.Ptype_open}[Ptype_open]},
                and [manifest]  is [None].
+ - [type t = external "gmp"]
+              when [type_kind] is
+                 {{!type_kind.Ptype_external}[Ptype_external("gmp")]}
+               and [manifest]  is [None].
 *)
 
 and type_kind =
@@ -587,6 +591,7 @@ and type_kind =
   | Ptype_variant of constructor_declaration list
   | Ptype_record of label_declaration list  (** Invariant: non-empty list *)
   | Ptype_open
+  | Ptype_external of string
 
 and label_declaration =
     {

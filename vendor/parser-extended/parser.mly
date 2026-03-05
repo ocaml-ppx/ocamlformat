@@ -3255,6 +3255,8 @@ nonempty_type_kind:
     priv = inline_private_flag
     LBRACE ls = label_declarations RBRACE
       { (Ptype_record ls, priv, oty) }
+  | EXTERNAL name = raw_string
+      { (Ptype_external name, Public, None) }
 ;
 %inline type_synonym:
   ioption(terminated(core_type, EQUAL))

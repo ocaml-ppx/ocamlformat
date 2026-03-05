@@ -3602,6 +3602,11 @@ and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
         $ p.box_record (list_fl lbl_decls fmt_decl)
         $ p.break_after $ p.docked_after
     | Ptype_open -> box_manifest (fmt_manifest m $ str " ..")
+    | Ptype_external n ->
+        box_manifest
+          ( fmt_manifest m $ space_break $ str "external \""
+          $ str (String.escaped n)
+          $ str "\"" )
   in
   let fmt_cstr (t1, t2, loc) =
     Cmts.fmt c loc

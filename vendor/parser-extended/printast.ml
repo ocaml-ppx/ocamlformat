@@ -665,6 +665,8 @@ and type_kind i ppf x =
       list (i+1) label_decl ppf l;
   | Ptype_open ->
       line i ppf "Ptype_open\n";
+  | Ptype_external name ->
+      line i ppf "Ptype_external %S\n" name;
 
 and type_extension i ppf x =
   line i ppf "type_extension %a\n" fmt_location x.ptyext_loc;
