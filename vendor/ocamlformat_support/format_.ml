@@ -633,9 +633,6 @@ let pp_close_stag state () =
     | Some tag_name ->
       state.pp_print_close_tag tag_name
 
-let pp_open_tag state s = pp_open_stag state (String_tag s)
-let pp_close_tag state () = pp_close_stag state ()
-
 let pp_set_print_tags state b = state.pp_print_tags <- b
 let pp_set_mark_tags state b = state.pp_mark_tags <- b
 let pp_get_print_tags state () = state.pp_print_tags
@@ -1247,8 +1244,6 @@ and open_hvbox = pp_open_hvbox std_formatter
 and open_hovbox = pp_open_hovbox std_formatter
 and open_box = pp_open_box std_formatter
 and close_box = pp_close_box std_formatter
-and open_tag = pp_open_tag std_formatter
-and close_tag = pp_close_tag std_formatter
 and open_stag = pp_open_stag std_formatter
 and close_stag = pp_close_stag std_formatter
 and print_as = pp_print_as std_formatter
@@ -1451,7 +1446,7 @@ open CamlinternalFormat
 (* Interpret a formatting entity on a formatter. *)
 let output_formatting_lit ppf fmting_lit = match fmting_lit with
   | Close_box                 -> pp_close_box ppf ()
-  | Close_tag                 -> pp_close_tag ppf ()
+  | Close_tag                 -> pp_close_stag ppf ()
   | Break (_, width, offset)  -> pp_print_break ppf width offset
   | FFlush                    -> pp_print_flush ppf ()
   | Force_newline             -> pp_force_newline ppf ()
@@ -1585,85 +1580,3 @@ let flush_standard_formatters () =
   pp_print_flush err_formatter ()
 
 let () = at_exit flush_standard_formatters
-
-(*
-
-  Defining heterogeneous list flavours of functions defined above
-
-*)
-
-(* Deprecated : subsumed by pp_set_formatter_out_functions *)
-let pp_set_all_formatter_output_functions state
-    ~out:f ~flush:g ~newline:h ~spaces:i =
-  pp_set_formatter_output_functions state f g;
-  state.pp_out_newline <- h;
-  state.pp_out_spaces <- i
-
-(* Deprecated : subsumed by pp_get_formatter_out_functions *)
-let pp_get_all_formatter_output_functions state () =
-  (state.pp_out_string, state.pp_out_flush,
-   state.pp_out_newline, state.pp_out_spaces)
-
-
-(* Deprecated : subsumed by set_formatter_out_functions *)
-let set_all_formatter_output_functions =
-  pp_set_all_formatter_output_functions std_formatter
-
-
-(* Deprecated : subsumed by get_formatter_out_functions *)
-let get_all_formatter_output_functions =
-  pp_get_all_formatter_output_functions std_formatter
-
-
-(* Deprecated : error prone function, do not use it.
-   This function is neither compositional nor incremental, since it flushes
-   the pretty-printer queue at each call.
-   To get the same functionality, define a formatter of your own writing to
-   the buffer argument, as in
-   let ppf = formatter_of_buffer b
-   then use {!fprintf ppf} as usual. *)
-let bprintf b (Format (fmt, _) : ('a, formatter, unit) format) =
-  let ppf = formatter_of_buffer b in
-  let k acc = output_acc ppf acc; pp_flush_queue ppf ~end_with_newline:false in
-  make_printf k End_of_acc fmt
-
-
-(* Deprecated : alias for ksprintf. *)
-let kprintf = ksprintf
-
-
-
-(* Deprecated tag functions *)
-
-type formatter_tag_functions = {
-  mark_open_tag : tag -> string;
-  mark_close_tag : tag -> string;
-  print_open_tag : tag -> unit;
-  print_close_tag : tag -> unit;
-}
-
-
-let pp_set_formatter_tag_functions state {
-     mark_open_tag = mot;
-     mark_close_tag = mct;
-     print_open_tag = pot;
-     print_close_tag = pct;
-   } =
-  let stringify f e = function String_tag s -> f s | _ -> e in
-  state.pp_mark_open_tag <- stringify mot "";
-  state.pp_mark_close_tag <- stringify mct "";
-  state.pp_print_open_tag <- stringify pot ();
-  state.pp_print_close_tag <- stringify pct ()
-
-let pp_get_formatter_tag_functions fmt () =
-  let funs = pp_get_formatter_stag_functions fmt () in
-  let mark_open_tag s = funs.mark_open_stag (String_tag s) in
-  let mark_close_tag s = funs.mark_close_stag (String_tag s) in
-  let print_open_tag s = funs.print_open_stag (String_tag s) in
-  let print_close_tag s = funs.print_close_stag (String_tag s) in
-  {mark_open_tag; mark_close_tag; print_open_tag; print_close_tag}
-
-let set_formatter_tag_functions =
-  pp_set_formatter_tag_functions std_formatter
-and get_formatter_tag_functions =
-  pp_get_formatter_tag_functions std_formatter
