@@ -592,21 +592,12 @@ let set_size state ~break_hint =
         () (* scan_push is only used for breaks and boxes. *)
 
 
-(*
-This changes the behavior of OCamlformat.
-It was introduced in https://github.com/ocaml/ocaml/pull/13853
-Called from [scan_push].
-
 (* Enter a break hint in the pretty-printer queue, taking care of increasing the
    rightward position *after* we update the pending break *)
 let pp_enqueue_break state token =
   Queue.add token state.pp_queue;
   set_size state ~break_hint:true;
   state.pp_right_total <- state.pp_right_total + token.length
-*)
-let pp_enqueue_break state token =
-  pp_enqueue state token;
-  set_size state ~break_hint:true
 
 (* Push a token on pretty-printer scanning stack.
    If b is true set_size is called. *)
