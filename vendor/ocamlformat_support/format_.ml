@@ -491,11 +491,15 @@ let rec advance_left state =
   | Some { size; token; length } ->
     let pending_count = state.pp_right_total - state.pp_left_total in
     if Size.is_known size || pending_count >= state.pp_space_left then begin
-      Queue.take state.pp_queue |> ignore; (* Not empty: we peek into it *)
-      let size = if Size.is_known size then Size.to_int size else pp_infinity in
-      format_pp_token state size token;
-      state.pp_left_total <- length + state.pp_left_total;
-      (advance_left [@tailcall]) state
+      match Queue.take_opt state.pp_queue with
+      | None -> invalid_arg "Format: Unsynchronized access to formatter"
+      | Some _ ->  (* Not empty: we peek into it *)
+        let size =
+          if Size.is_known size then Size.to_int size else pp_infinity
+        in
+        format_pp_token state size token;
+        state.pp_left_total <- length + state.pp_left_total;
+        (advance_left [@tailcall]) state
     end
 
 
@@ -562,11 +566,18 @@ let set_size state ~break_hint =
         () (* scan_push is only used for breaks and boxes. *)
 
 
+(* Enter a break hint in the pretty-printer queue, taking care of increasing the
+   rightward position *after* we update the pending break *)
+let pp_enqueue_break state token =
+  Queue.add token state.pp_queue;
+  set_size state ~break_hint:true;
+  state.pp_right_total <- state.pp_right_total + token.length
+
 (* Push a token on pretty-printer scanning stack.
    If b is true set_size is called. *)
 let scan_push state ~break_hint token =
-  pp_enqueue state token;
-  if break_hint then set_size state ~break_hint:true;
+  if break_hint then pp_enqueue_break state token
+  else pp_enqueue state token;
   let elem = { left_total = state.pp_right_total; queue_elem = token } in
   Stack.push elem state.pp_scan_stack
 
