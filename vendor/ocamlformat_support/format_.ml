@@ -438,6 +438,32 @@ let format_pp_token state size = function
     then format_string state s
 
   | Pp_break { fits; breaks } ->
+    (* Code moved to [format_pp_break]
+    let before, off, _ = breaks in
+    begin match Stack.top_opt state.pp_format_stack with
+    | None -> () (* No open box. *)
+    | Some { box_type; width } ->
+      begin match box_type with
+      | Pp_hovbox ->
+        if size + pp_string_width state before > state.pp_space_left
+        then break_new_line state breaks width
+        else break_same_line state fits
+      | Pp_box ->
+        (* Have the line just been broken here ? *)
+        if state.pp_is_new_line then break_same_line state fits else
+        if size + pp_string_width state before > state.pp_space_left
+          then break_new_line state breaks width else
+        (* break the line here leads to new indentation ? *)
+        if state.pp_current_indent > state.pp_margin - width + off
+        then break_new_line state breaks width
+        else break_same_line state fits
+      | Pp_hvbox -> break_new_line state breaks width
+      | Pp_fits -> break_same_line state fits
+      | Pp_vbox -> break_new_line state breaks width
+      | Pp_hbox -> break_same_line state fits
+      end
+    end
+    *)
     format_pp_break state size fits breaks
 
 
