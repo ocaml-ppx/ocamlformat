@@ -222,8 +222,8 @@ let nullsafe_optimistic_third_party_params_in_non_strict =
          provided our tooling and error reporting is friendly enough to be
          smoothly used by developers. *)
     ~default:true
-    "Nullsafe: in this mode we treat non annotated third party method params \
-     as if they were annotated as nullable."
+    "Nullsafe: in this mode we treat non annotated third party method params as \
+     if they were annotated as nullable."
 
 let foo () =
   if%bind

@@ -232,8 +232,7 @@ let handler =
 let _ =
   match abc with
   | Fooooooooooooooooo (* comment *)
-  | Baaaaaaaaaaaaaaaar
-  (* comment *)
+  | Baaaaaaaaaaaaaaaar (* comment *)
   | Baaaaaaaaaaaaaaaaz (* comment *) ->
       ()
 

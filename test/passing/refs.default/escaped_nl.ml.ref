@@ -1,6 +1,6 @@
 let s1 =
-  "No field 'install', but a field 'remove': install instructions probably \
-   part of 'build'. Use the 'install' field or a .install file"
+  "No field 'install', but a field 'remove': install instructions probably part \
+   of 'build'. Use the 'install' field or a .install file"
 
 let x =
   cond 40 `Warning

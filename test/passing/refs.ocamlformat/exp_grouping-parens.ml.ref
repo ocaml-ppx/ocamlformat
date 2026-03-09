@@ -220,17 +220,17 @@ let () = if a then b (* asd *)
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
-  if x then (
+  if x then ( 
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
-  else if y then (
+  else if y then ( 
     f 0 ; f 2 )
-  else (
+  else ( 
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
 
 let () =
-  if a then
+  if a then 
     b (* asd *)
 
 [@@@ocamlformat "if-then-else=keyword-first"]
@@ -383,8 +383,7 @@ let v =
 let v = map x (fun x y z -> ya f ; a f b)
 
 let v =
-  map x begin%ext1 fun%ext2 x y z ->
-      ya f ; a f b
+  map x begin%ext1 fun%ext2 x y z -> ya f ; a f b
     end
 
 let _ =
@@ -416,58 +415,58 @@ let _ =
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
-  if b then (
+  if b then ( 
     e1 ; e2 )
-  else (
+  else ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
 
 let _ =
-  if b then (
+  if b then ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
-  else if b1 then (
+  else if b1 then ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
-  else
+  else 
     e
 ;;
 
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
-  ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+  ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
   ( if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-    then
+    then 
       ()
-    else
+    else 
       () )
 ;;
 
 let () =
   f
     ( if a___________________________________________________________________
-      then
+      then 
         b_________________________________________________________________
-      else
+      else 
         c_________________________________________________________________ )
 
 let _ =

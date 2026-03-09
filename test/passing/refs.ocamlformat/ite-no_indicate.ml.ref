@@ -174,7 +174,6 @@ let _ = if x then 42 (* dummy *) else if y then z else w
 
 let () =
   if true then (* a *)
-    begin
-    ()
+    begin ()
   end
   else ()

@@ -173,8 +173,7 @@ let handler =
 let _ =
   match abc with
   | Fooooooooooooooooo (* comment *)
-  | Baaaaaaaaaaaaaaaar
-  (* comment *)
+  | Baaaaaaaaaaaaaaaar (* comment *)
   | Baaaaaaaaaaaaaaaaz (* comment *) ->
     ()
 ;;
@@ -191,8 +190,7 @@ let _ =
 let _ =
   match x with
   | { y =
-        ( Z
-        (* _____________________________________________________________________ *)
+        ( Z (* _____________________________________________________________________ *)
         | X _ | Y _ )
     } ->
     ()

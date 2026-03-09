@@ -12,9 +12,9 @@ let i x = (!r [@attr]) x
 let _ = ( * ) [@attr]
 let _ = f (( * ) [@attr]);;
 
-(( * ) [@attr]) (* TEST_BELOW *)
-(* Int and float plus and minus operators *)
-- 1
+(( * ) [@attr])
+(* TEST_BELOW *)
+(* Int and float plus and minus operators *) - 1
 ;;
 
 1;;

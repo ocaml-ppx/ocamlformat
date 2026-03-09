@@ -547,8 +547,7 @@ type t =
   z:(*after z label *) float (*end*)
 (** Comment tests *)
 
-let
-    (*before*)
+let (*before*)
     ( ~(x
       (*l-ty*)
       :

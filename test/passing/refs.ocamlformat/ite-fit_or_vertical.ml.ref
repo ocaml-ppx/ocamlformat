@@ -1,65 +1,65 @@
 let _ = if b then e else (e1 ; e2)
 
 let _ =
-  if b then
+  if b then 
     e
-  else (
+  else ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
 
 let _ =
-  if b then (
+  if b then ( 
     e1 ; e2 )
-  else (
+  else ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
 
 let _ =
-  if b then (
+  if b then ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
-  else if b1 then (
+  else if b1 then ( 
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
-  else
+  else 
     e
 ;;
 
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
-  ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+  ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
       ()
-    else
+    else 
       () )
 ;;
 
 f
   ( if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-    then
+    then 
       ()
-    else
+    else 
       () )
 ;;
 
 let () =
   f
     ( if a___________________________________________________________________
-      then
+      then 
         b_________________________________________________________________
-      else
+      else 
         c_________________________________________________________________ )
 
 let () = if[@test] true then () else if[@other] true then ()
@@ -67,56 +67,56 @@ let () = if[@test] true then () else if[@other] true then ()
 let foo = if cond1 then arm1 else if cond2 then arm2 else arm3
 
 let _ =
-  if condition then
+  if condition then 
     let a = 1 in
     let b = 2 in
     a + b
-  else if other_condition then
+  else if other_condition then 
     12
-  else
+  else 
     0
 
 let _ =
-  if foo then
+  if foo then 
     let a = 1 in
     let b = 2 in
     a + b
-  else if foo then
+  else if foo then 
     12
-  else
+  else 
     0
 
 let foo =
-  if is_sugared_list e2 then
+  if is_sugared_list e2 then 
     Some (Semi, Non)
-  else
+  else 
     Some (ColonColon, if exp == e2 then Right else Left)
 
 let foo =
-  if is_sugared_list e2 then
+  if is_sugared_list e2 then 
     Some (Semi, Non)
-  else
+  else 
     Some
       ( ColonColon
-      , if exp == e2 then
+      , if exp == e2 then 
           Right
-        else
+        else 
           (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo) )
 
 let foo =
-  if cond1 then (
+  if cond1 then ( 
     arm1 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo ) )
-  else if cond2 then (
+  else if cond2 then ( 
     arm2 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo ) )
-  else (
+  else ( 
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
@@ -124,18 +124,18 @@ let foo =
         fooooooooooooo ) )
 
 let foo =
-  if some condition then
+  if some condition then 
     if some nested condition then some action else some other action
-  else
+  else 
     some default action
 
 let foo =
-  if some condition then
-    if some nested condition then
+  if some condition then 
+    if some nested condition then 
       some action + foooo + foooo + foooooooo + foooo + foooooo
-    else
+    else 
       some other action
-  else
+  else 
     some default action
 
 let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
@@ -151,17 +151,17 @@ let foo =
     false
   else if cmp > 0 then (* context higher prec than ast: add parens *)
     true
-  else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non) then
+  else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non) then 
     foo
 
 let _ =
-  if fooo then
+  if fooo then 
     ( + )
-  else if bar then
+  else if bar then 
     ( * ) [@attr]
-  else if foobar then
+  else if foobar then 
     ( / )
-  else
+  else 
     ( - )
 
 let _ =
@@ -176,30 +176,30 @@ let _ =
   if
     (* foooooooooooooooooooooooooooooooooooooooooo *)
     foooooooooooooooooooooooooooooooooooooooooo
-  then
+  then 
     foooooooooooooooooooooooooooooooooooooooooo
-  else
+  else 
     foooooooooooooooooooooooooooooooooooooooooo
 
 let _ =
   if
     (* foo *)
     foo
-  then
+  then 
     0
   else if
     (* bar *)
     bar
-  then
+  then 
     1
-  else
+  else 
     2
 
 let compare s1 s2 =
   if String.equal s1 s2 then (* this simplifies the next two cases *)
     0
   else if String.equal s1 Cmdliner.Manpage.s_options then
-    (* ensure OPTIONS section is last (hence first in the manual) *)
+    (* ensure OPTIONS section is last (hence first in the manual) *) 
     1
   else if String.equal s2 Cmdliner.Manpage.s_options then (* same as above *)
     -1
@@ -212,8 +212,8 @@ let _ = if x then 42 (* dummy *) else if y then z else w
 
 let () =
   if true then (* a *)
-    begin
+    begin 
     ()
   end
-  else
+  else 
     ()

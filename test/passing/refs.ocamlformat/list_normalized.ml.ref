@@ -31,8 +31,7 @@ let [x; (y [@attr])] = e
 
 let (*a*) (x (*b*) :: (*c*) y (*d*)) = e
 
-let
-    (*a*)
+let (*a*)
     [ x (*b*)
     ; (*c*)
       y
@@ -42,8 +41,7 @@ let
 
 let (*a*) (x (*b*) :: (*c*) y (*d*) :: (*e*) ([] [@attr])) (*f*) = e
 
-let
-    (*a*)
+let (*a*)
     [ x (*b*)
     ; (*c*)
       (y [@attr])
