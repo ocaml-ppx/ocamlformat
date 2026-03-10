@@ -288,22 +288,22 @@ let () =
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
-  if x then begin 
+  if x then begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
-  else if y then begin 
+  else if y then begin
     f 0;
     f 2
   end
-  else begin 
+  else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
 ;;
 
 let () =
-  if a then begin 
+  if a then begin
     b (* asd *)
   end
 ;;
@@ -549,66 +549,66 @@ let _ =
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
-  if b then begin 
+  if b then begin
     e1;
     e2
   end
-  else begin 
+  else begin
     something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   end
 ;;
 
 let _ =
-  if b then begin 
+  if b then begin
     something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   end
-  else if b1 then begin 
+  else if b1 then begin
     something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   end
-  else 
+  else
     e
 ;;
 
 f
-  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then 
+  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
     ()
-  else 
-    ()
-  end
-;;
-
-f
-  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
-    ()
-  else 
+  else
     ()
   end
 ;;
 
 f
-  begin if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
+  begin if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
     ()
-  else 
+  else
     ()
   end
 ;;
 
 f
-  begin if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
+  begin if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
     ()
-  else 
+  else
+    ()
+  end
+;;
+
+f
+  begin if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+    ()
+  else
     ()
   end
 ;;
 
 let () =
   f
-    begin if a___________________________________________________________________ then 
+    begin if a___________________________________________________________________ then
       b_________________________________________________________________
-    else 
+    else
       c_________________________________________________________________
     end
 ;;

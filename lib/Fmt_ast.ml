@@ -2538,7 +2538,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          in
                          let cmts_after_kw =
                            if Cmts.has_after c.cmts keyword_loc then
-                             Some (Cmts.fmt_after c keyword_loc)
+                             Some
+                               (Cmts.fmt_after ~epi:force_break c keyword_loc)
                            else None
                          in
                          let p =

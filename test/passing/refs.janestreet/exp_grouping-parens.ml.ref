@@ -283,7 +283,7 @@ let _ =
 ;;
 
 let () =
-  if a then 
+  if a then
     b (* asd *)
 ;;
 
@@ -500,43 +500,43 @@ let _ =
   else if b1 then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more)
-  else 
+  else
     e
 ;;
 
 f
-  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then 
+  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
      ()
-   else 
+   else
      ())
 ;;
 
 f
-  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
+  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
      ()
-   else 
+   else
      ())
 ;;
 
 f
-  (if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
+  (if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
      ()
-   else 
+   else
      ())
 ;;
 
 f
-  (if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then 
+  (if and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
      ()
-   else 
+   else
      ())
 ;;
 
 let () =
   f
-    (if a___________________________________________________________________ then 
+    (if a___________________________________________________________________ then
        b_________________________________________________________________
-     else 
+     else
        c_________________________________________________________________)
 ;;
 
