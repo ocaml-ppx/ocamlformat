@@ -262,7 +262,8 @@ let rec fmt_longident c (li : Longident.t) =
         $ wrap (cut_break $ str "(") (str ")") (fmt_longident_loc c li2) )
 
 and fmt_longident_loc c ?pre {txt; loc} =
-  Cmts.fmt c loc (opt pre str $ fmt_longident c txt)
+  let box = if Cmts.has_after c.cmts loc then hvbox 0 else Fn.id in
+  box (Cmts.fmt c loc (opt pre str $ fmt_longident c txt))
 
 let str_longident c x =
   Format_.asprintf "%a" (fun fs x -> eval fs (fmt_longident c x)) x
