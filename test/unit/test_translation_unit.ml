@@ -109,8 +109,8 @@ File "<test>", line 1, characters 0-3:
            \    name : string;\n\
            \    version : string option;\n\
            \  }\n\n\
-           \  val create_serverInfo : name:string -> ?version:string -> \
-            unit -> serverInfo\n\n\
+           \  val create_serverInfo : name:string -> ?version:string -> unit \
+            -> serverInfo\n\n\
            \  type t = InitializeResult.t = {\n\
            \    capabilities : ServerCapabilities.t;\n\
            \    serverInfo : serverInfo option;\n\

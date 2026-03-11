@@ -3155,8 +3155,7 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then
-      (* Side effect order is important. *)
+    if List.is_empty fields then (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in
