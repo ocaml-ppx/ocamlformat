@@ -113,7 +113,9 @@ let () =
 
 let () =
   (* Open the repo *)
-  initialise (* Perform a subsequent action *) >>= subsequent_action
+  initialise
+  (* Perform a subsequent action *)
+  >>= subsequent_action
   (* Keep going... *)
   >|= another_action
   (* And finally do this *)

@@ -1927,8 +1927,17 @@ and fmt_infix_op_args c ~parens xexp op_args =
             $ hovbox_if (not very_last) 2 (fmt_expression c ~parens xarg) )
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-    let indent = if first_grp && parens then -2 else 0 in
-    hovbox indent
+    let box =
+      let indent = if first_grp && parens then -2 else 0 in
+      if
+        List.exists
+          ~f:(fun (cmts_before, cmts_after, _) ->
+            Option.is_some cmts_before || Option.is_some cmts_after )
+          args
+      then hvbox indent
+      else hovbox indent
+    in
+    box
       (list_fl args
          (fun ~first ~last (cmts_before, cmts_after, (op, xarg)) ->
            let very_first = first_grp && first in
