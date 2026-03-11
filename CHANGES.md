@@ -63,6 +63,8 @@ profile. This started with version 0.26.0.
   instead of only some.
   (#2737, @v-gb)
 
+- Remove line break in `M with module N = N (* cmt *)` (#2779, @Julow)
+
 ### Internal
 
 - Added information on writing tests to `CONTRIBUTING.md` (#2838, @WardBrian)
