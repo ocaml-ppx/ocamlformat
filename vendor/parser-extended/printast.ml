@@ -463,17 +463,6 @@ and expression i ppf x =
   | Pexp_override (l) ->
       line i ppf "Pexp_override\n";
       list i string_x_expression ppf l;
-  | Pexp_letmodule (s, args, me, e, iea) ->
-      line i ppf "Pexp_letmodule %a\n" fmt_str_opt_loc s;
-      infix_ext_attrs i ppf iea;
-      list i functor_parameter ppf args;
-      module_expr i ppf me;
-      expression i ppf e;
-  | Pexp_letexception (cd, e, iea) ->
-      line i ppf "Pexp_letexception\n";
-      infix_ext_attrs i ppf iea;
-      extension_constructor i ppf cd;
-      expression i ppf e;
   | Pexp_assert (e, iea) ->
       line i ppf "Pexp_assert\n";
       infix_ext_attrs i ppf iea;
@@ -495,11 +484,6 @@ and expression i ppf x =
       line i ppf "Pexp_open\n";
       longident_loc i ppf lid;
       expression i ppf e
-  | Pexp_letopen (o, e, iea) ->
-      line i ppf "Pexp_letopen\n";
-      infix_ext_attrs i ppf iea;
-      open_declaration i ppf o;
-      expression i ppf e
   | Pexp_letop {let_; ands; body} ->
       line i ppf "Pexp_letop\n";
       binding_op i ppf let_;
@@ -510,6 +494,11 @@ and expression i ppf x =
       payload i ppf arg
   | Pexp_unreachable ->
       line i ppf "Pexp_unreachable\n"
+  | Pexp_struct_item (si, e, iea) ->
+      line i ppf "Pexp_struct_item\n";
+      infix_ext_attrs i ppf iea;
+      structure_item i ppf si;
+      expression i ppf e
   | Pexp_hole ->
       line i ppf "Pexp_hole\n"
   | Pexp_beginend (e, iea) ->

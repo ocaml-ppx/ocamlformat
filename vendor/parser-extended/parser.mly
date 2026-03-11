@@ -73,40 +73,47 @@ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 let mkfunparam ~loc x = { pparam_loc = make_loc loc; pparam_desc = x }
 
-(* These are not needed because extension are put directly in the AST
-let pstr_typext (te, ext) =
-  (Pstr_typext te, ext)
-let pstr_primitive (vd, ext) =
-  (Pstr_primitive vd, ext)
-*)
+let pstr_extension body attrs =
+  Pstr_extension (body, attrs)
+let pstr_attribute body =
+  Pstr_attribute body
+let pstr_typext te =
+  Pstr_typext te
+let pstr_primitive vd =
+  Pstr_primitive vd
 let pstr_type (nr, tys) =
   Pstr_type (nr, tys)
 
-(* These are not needed because extension are put directly in the AST
-let pstr_exception (te, ext) =
-  (Pstr_exception te, ext)
-let pstr_include (body, ext) =
-  (Pstr_include body, ext)
-let pstr_recmodule (ext, bindings) =
-  (Pstr_recmodule bindings, ext)
+let pstr_exception te =
+  Pstr_exception te
+let pstr_include body =
+  Pstr_include body
+let pstr_module body =
+  Pstr_module body
+let pstr_recmodule bindings =
+  Pstr_recmodule bindings
+let pstr_modtype body =
+  Pstr_modtype body
+let pstr_open body =
+  Pstr_open body
+let pstr_class l =
+  Pstr_class l
+let pstr_class_type l =
+  Pstr_class_type l
 
-let psig_typext (te, ext) =
-  (Psig_typext te, ext)
-let psig_value (vd, ext) =
-  (Psig_value vd, ext)
-*)
+let psig_typext te =
+  Psig_typext te
+let psig_value vd =
+  Psig_value vd
 let psig_type (nr, tys) =
   Psig_type (nr, tys)
 let psig_typesubst (nr, tys) =
   assert (nr = Recursive); (* see [no_nonrec_flag] *)
   Psig_typesubst tys
-
-(* These are not needed because extension are put directly in the AST
-let psig_exception (te, ext) =
-  (Psig_exception te, ext)
-let psig_include (body, ext) =
-  (Psig_include body, ext)
-*)
+let psig_exception te =
+  Psig_exception te
+let psig_include body =
+  Psig_include body
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -373,7 +380,10 @@ let wrap_mod_attrs ~loc:_ attrs body =
   {body with pmod_attributes = attrs @ body.pmod_attributes}
 let wrap_mty_attrs ~loc:_ attrs body =
   {body with pmty_attributes = attrs @ body.pmty_attributes}
+*)
 
+(* Extension points are embedded in each constructors to avoid creating ghost
+   Pstr_extension nodes.
 let wrap_mkstr_ext ~loc (item, ext) =
   match ext with
   | None -> mkstr ~loc item
@@ -384,6 +394,8 @@ let wrap_mksig_ext ~loc (item, ext) =
   | None -> mksig ~loc item
   | Some id -> mksig ~loc (Psig_extension ((id, PSig [ghsig ~loc item]), []))
 *)
+let wrap_mkstr_ext = mkstr
+
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
   let const = Const.mk ~loc:strloc (Pconst_string (str, strloc, delim)) in
@@ -1428,36 +1440,46 @@ structure:
 structure_item:
     let_bindings(ext)
       { val_of_let_bindings ~loc:$sloc $1 }
-  | mkstr(
+  | wrap_mkstr_ext(
+      include_statement(module_expr)
+        { pstr_include $1 }
+    )
+    { $1 }
+  | local_structure_item
+    { $1 }
+;
+
+(* A local structure item (= can appear in let expressions) *)
+local_structure_item:
+  | wrap_mkstr_ext(
       item_extension post_item_attributes
-        { let docs = symbol_docs $sloc in
-          Pstr_extension ($1, add_docs_attrs docs $2) }
+        { pstr_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
     | floating_attribute
-        { Pstr_attribute $1 }
-    | module_binding
-        { $1 }
-    | rec_module_bindings
-        { Pstr_recmodule $1 }
-    | module_type_declaration
-        { Pstr_modtype $1 }
+        { pstr_attribute $1 }
     | primitive_declaration
-        { Pstr_primitive $1 }
+        { pstr_primitive $1 }
     | value_description
-        { Pstr_primitive $1 }
+        { pstr_primitive $1 }
     | type_declarations
         { pstr_type $1 }
     | str_type_extension
-        { Pstr_typext $1 }
+        { pstr_typext $1 }
     | str_exception_declaration
-        { Pstr_exception $1 }
-    | open_declaration
-        { Pstr_open $1 }
+        { pstr_exception $1 }
+    | rec_module_bindings
+        { pstr_recmodule $1 }
+    | module_type_declaration
+        { pstr_modtype $1 }
     | class_declarations
-        { Pstr_class $1 }
+        { pstr_class $1 }
     | class_type_declarations
-        { Pstr_class_type $1 }
-    | include_statement(module_expr)
-        { Pstr_include $1 }
+        { pstr_class_type $1 }
+    | sig_exception_declaration
+        { pstr_exception $1 }
+    | module_binding
+        { pstr_module $1 }
+    | open_declaration
+        { pstr_open $1 }
     )
     { $1 }
 ;
@@ -1474,7 +1496,7 @@ structure_item:
       let loc = make_loc $sloc in
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let body = Mb.mk name args body ~attrs ~loc ~docs in
-      Pstr_module body }
+      body }
 ;
 
 (* The body (right-hand side) of a module binding. *)
@@ -1683,19 +1705,19 @@ signature_item:
     | value_description
         { Psig_value $1 }
     | primitive_declaration
-        { Psig_value $1 }
+        { psig_value $1 }
     | type_declarations
         { psig_type $1 }
     | type_subst_declarations
         { psig_typesubst $1 }
     | sig_type_extension
-        { Psig_typext $1 }
+        { psig_typext $1 }
     | sig_exception_declaration
-        { Psig_exception $1 }
+        { psig_exception $1 }
     | open_description
         { Psig_open $1 }
     | include_statement(module_type)
-        { Psig_include $1 }
+        { psig_include $1 }
     | class_descriptions
         { Psig_class $1 }
     | class_type_declarations
@@ -2354,14 +2376,8 @@ fun_expr:
   | or_function(fun_expr) { $1 }
 ;
 %inline fun_expr_attrs:
-  | LET MODULE expr_ext_attributes mkrhs(module_name) functor_args module_binding_body IN seq_expr
-      { Pexp_letmodule($4, $5, $6, $8, $3) }
-  | LET EXCEPTION expr_ext_attributes let_exception_declaration IN seq_expr
-      { Pexp_letexception($4, $6, $3) }
-  | LET OPEN override_flag expr_ext_attributes module_expr IN seq_expr
-      { let open_loc = make_loc ($startpos($2), $endpos($5)) in
-        let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
-        Pexp_letopen(od, $7, $4) }
+  | LET expr_ext_attributes local_structure_item IN seq_expr
+      { Pexp_struct_item($3, $5, $2) }
   /* Cf #5939: we used to accept (fun p when e0 -> e) */
   | FUN expr_ext_attributes expr_fun_params preceded(COLON, atomic_type)?
       MINUSGREATER fun_body
@@ -3343,9 +3359,7 @@ generic_constructor_declaration(opening):
     }
 ;
 str_exception_declaration:
-  sig_exception_declaration
-    { $1 }
-| EXCEPTION
+  EXCEPTION
   ext = ext
   attrs1 = attributes
   id = mkrhs(constr_ident)
@@ -3375,11 +3389,6 @@ sig_exception_declaration:
       Te.mk_exception ~attrs
         (Te.decl id ~vars ~args ?res ~attrs:attrs2 ~loc ~docs)
     }
-;
-%inline let_exception_declaration:
-    mkrhs(constr_ident) generalized_constructor_arguments attributes
-      { let vars, args, res = $2 in
-        Te.decl $1 ~vars ~args ?res ~attrs:$3 ~loc:(make_loc $sloc) }
 ;
 generalized_constructor_arguments:
     /*empty*/                     { ([],Pcstr_tuple [],None) }
@@ -3445,7 +3454,8 @@ label_declaration_semi:
   attrs2 = post_item_attributes
     { let docs = symbol_docs $sloc in
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
-      Te.mk tid cs ~params ~priv ~attrs ~docs }
+      let loc = make_loc $sloc in
+      Te.mk tid cs ~params ~priv ~attrs ~docs ~loc }
 ;
 %inline extension_constructor(opening):
     extension_constructor_declaration(opening)
