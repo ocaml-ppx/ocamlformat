@@ -363,14 +363,6 @@ and expression i ppf x =
   | Pexp_override (l) ->
       line i ppf "Pexp_override\n";
       list i string_x_expression ppf l;
-  | Pexp_letmodule (s, me, e) ->
-      line i ppf "Pexp_letmodule %a\n" fmt_str_opt_loc s;
-      module_expr i ppf me;
-      expression i ppf e;
-  | Pexp_letexception (cd, e) ->
-      line i ppf "Pexp_letexception\n";
-      extension_constructor i ppf cd;
-      expression i ppf e;
   | Pexp_assert (e) ->
       line i ppf "Pexp_assert\n";
       expression i ppf e;
@@ -391,10 +383,6 @@ and expression i ppf x =
       line i ppf "Pexp_pack\n";
       module_expr i ppf me;
       option i package_type ppf optyp
-  | Pexp_open (o, e) ->
-      line i ppf "Pexp_open %a\n" fmt_override_flag o.popen_override;
-      module_expr i ppf o.popen_expr;
-      expression i ppf e
   | Pexp_letop {let_; ands; body} ->
       line i ppf "Pexp_letop\n";
       binding_op i ppf let_;
@@ -405,6 +393,10 @@ and expression i ppf x =
       payload i ppf arg
   | Pexp_unreachable ->
       line i ppf "Pexp_unreachable"
+  | Pexp_struct_item (si, e) ->
+      line i ppf "Pexp_struct_item\n";
+      structure_item i ppf si;
+      expression i ppf e
   | Pexp_hole ->
       line i ppf "Pexp_hole"
 

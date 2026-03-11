@@ -60,6 +60,10 @@ let mkclass ~loc ?attrs d = Cl.mk ~loc:(make_loc loc) ?attrs d
 let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
 let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 
+let pstr_extension body attrs =
+  (Pstr_extension (body, attrs), None)
+let pstr_attribute body =
+  (Pstr_attribute body, None)
 let pstr_typext (te, ext) =
   (Pstr_typext te, ext)
 let pstr_primitive (vd, ext) =
@@ -70,8 +74,18 @@ let pstr_exception (te, ext) =
   (Pstr_exception te, ext)
 let pstr_include (body, ext) =
   (Pstr_include body, ext)
+let pstr_module (body, ext) =
+  (Pstr_module body, ext)
 let pstr_recmodule (ext, bindings) =
   (Pstr_recmodule bindings, ext)
+let pstr_modtype (body, ext) =
+  (Pstr_modtype body, ext)
+let pstr_open (body, ext) =
+  (Pstr_open body, ext)
+let pstr_class (ext, l) =
+  (Pstr_class l, ext)
+let pstr_class_type (ext, l) =
+  (Pstr_class_type l, ext)
 
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
@@ -1522,15 +1536,23 @@ structure:
 structure_item:
     let_bindings(ext)
       { val_of_let_bindings ~loc:$sloc $1 }
-  | mkstr(
-      item_extension post_item_attributes
-        { let docs = symbol_docs $sloc in
-          Pstr_extension ($1, add_docs_attrs docs $2) }
-    | floating_attribute
-        { Pstr_attribute $1 }
-    )
   | wrap_mkstr_ext(
-      primitive_declaration
+      include_statement(module_expr)
+        { pstr_include $1 }
+    )
+    { $1 }
+  | local_structure_item
+    { $1 }
+;
+
+(* A local structure item (= can appear in let expressions) *)
+local_structure_item:
+  | wrap_mkstr_ext(
+      item_extension post_item_attributes
+        { pstr_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
+    | floating_attribute
+        { pstr_attribute $1 }
+    | primitive_declaration
         { pstr_primitive $1 }
     | value_description
         { pstr_primitive $1 }
@@ -1540,20 +1562,20 @@ structure_item:
         { pstr_typext $1 }
     | str_exception_declaration
         { pstr_exception $1 }
-    | module_binding
-        { $1 }
     | rec_module_bindings
         { pstr_recmodule $1 }
     | module_type_declaration
-        { let (body, ext) = $1 in (Pstr_modtype body, ext) }
-    | open_declaration
-        { let (body, ext) = $1 in (Pstr_open body, ext) }
+        { pstr_modtype $1 }
     | class_declarations
-        { let (ext, l) = $1 in (Pstr_class l, ext) }
+        { pstr_class $1 }
     | class_type_declarations
-        { let (ext, l) = $1 in (Pstr_class_type l, ext) }
-    | include_statement(module_expr)
-        { pstr_include $1 }
+        { pstr_class_type $1 }
+    | sig_exception_declaration
+        { pstr_exception $1 }
+    | module_binding
+        { pstr_module $1 }
+    | open_declaration
+        { pstr_open $1 }
     )
     { $1 }
 ;
@@ -1569,7 +1591,7 @@ structure_item:
       let loc = make_loc $sloc in
       let attrs = attrs1 @ attrs2 in
       let body = Mb.mk name body ~attrs ~loc ~docs in
-      Pstr_module body, ext }
+      body, ext }
 ;
 
 (* The body (right-hand side) of a module binding. *)
@@ -2464,14 +2486,8 @@ fun_expr:
   | or_function(fun_expr) { $1 }
 ;
 %inline fun_expr_attrs:
-  | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
-      { Pexp_letmodule($4, $5, $7), $3 }
-  | LET EXCEPTION ext_attributes let_exception_declaration IN seq_expr
-      { Pexp_letexception($4, $6), $3 }
-  | LET OPEN override_flag ext_attributes module_expr IN seq_expr
-      { let open_loc = make_loc ($startpos($2), $endpos($5)) in
-        let od = Opn.mk $5 ~override:$3 ~loc:open_loc in
-        Pexp_open(od, $7), $4 }
+  | LET ext_attributes local_structure_item IN seq_expr
+      { Pexp_struct_item($3, $5), $2 }
   /* Cf #5939: we used to accept (fun p when e0 -> e) */
   | FUN ext_attributes fun_params preceded(COLON, atomic_type)?
       MINUSGREATER fun_body
@@ -2600,10 +2616,10 @@ simple_expr:
   | simple_expr DOT mkrhs(label_longident)
       { Pexp_field($1, $3) }
   | od=open_dot_declaration DOT LPAREN seq_expr RPAREN
-      { Pexp_open(od, $4) }
+      { Pexp_struct_item(Str.open_ od, $4) }
   | od=open_dot_declaration DOT LBRACELESS object_expr_content GREATERRBRACE
       { (* TODO: review the location of Pexp_override *)
-        Pexp_open(od, mkexp ~loc:$sloc (Pexp_override $4)) }
+        Pexp_struct_item(Str.open_ od, mkexp ~loc:$sloc (Pexp_override $4)) }
   | mod_longident DOT LBRACELESS object_expr_content error
       { unclosed "{<" $loc($3) ">}" $loc($5) }
   | simple_expr HASH mkrhs(label)
@@ -2615,7 +2631,8 @@ simple_expr:
   | UNDERSCORE
       { Pexp_hole }
   | od=open_dot_declaration DOT mkrhs(LPAREN RPAREN {Lident "()"})
-      { Pexp_open(od, mkexp ~loc:($loc($3)) (Pexp_construct($3, None))) }
+      { Pexp_struct_item(Str.open_ od,
+                         mkexp ~loc:($loc($3)) (Pexp_construct($3, None))) }
   | mod_longident DOT LPAREN seq_expr error
       { unclosed "(" $loc($3) ")" $loc($5) }
   | LBRACE record_expr_content RBRACE
@@ -2625,8 +2642,9 @@ simple_expr:
       { unclosed "{" $loc($1) "}" $loc($3) }
   | od=open_dot_declaration DOT LBRACE record_expr_content RBRACE
       { let (exten, fields) = $4 in
-        Pexp_open(od, mkexp ~loc:($startpos($3), $endpos)
-                        (Pexp_record(fields, exten))) }
+        Pexp_struct_item(Str.open_ od,
+                         mkexp ~loc:($startpos($3), $endpos)
+                           (Pexp_record(fields, exten))) }
   | mod_longident DOT LBRACE record_expr_content error
       { unclosed "{" $loc($3) "}" $loc($5) }
   | LBRACKETBAR expr_semi_list BARRBRACKET
@@ -2636,10 +2654,12 @@ simple_expr:
   | LBRACKETBAR BARRBRACKET
       { Pexp_array [] }
   | od=open_dot_declaration DOT LBRACKETBAR expr_semi_list BARRBRACKET
-      { Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array($4))) }
+      { Pexp_struct_item(Str.open_ od,
+                         mkexp ~loc:($startpos($3), $endpos) (Pexp_array($4))) }
   | od=open_dot_declaration DOT LBRACKETBAR BARRBRACKET
       { (* TODO: review the location of Pexp_array *)
-        Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
+        Pexp_struct_item(Str.open_ od,
+                         mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
   | mod_longident DOT
     LBRACKETBAR expr_semi_list error
       { unclosed "[|" $loc($3) "|]" $loc($5) }
@@ -2652,9 +2672,10 @@ simple_expr:
           (* TODO: review the location of list_exp *)
           let tail_exp, _tail_loc = mktailexp $loc($5) $4 in
           mkexp ~loc:($startpos($3), $endpos) tail_exp in
-        Pexp_open(od, list_exp) }
+        Pexp_struct_item(Str.open_ od, list_exp) }
   | od=open_dot_declaration DOT mkrhs(LBRACKET RBRACKET {Lident "[]"})
-      { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
+      { Pexp_struct_item(Str.open_ od,
+                         mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
   | mod_longident DOT
     LBRACKET expr_semi_list error
       { unclosed "[" $loc($3) "]" $loc($5) }
@@ -2663,7 +2684,7 @@ simple_expr:
       { let modexp =
           mkexp_attrs ~loc:($startpos($3), $endpos)
             (Pexp_pack ($6, Some ptyp)) $5 in
-        Pexp_open(od, modexp) }
+        Pexp_struct_item(Str.open_ od, modexp) }
   | mod_longident DOT
     LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($3) ")" $loc($8) }
@@ -3440,9 +3461,7 @@ generic_constructor_declaration(opening):
     }
 ;
 str_exception_declaration:
-  sig_exception_declaration
-    { $1 }
-| EXCEPTION
+  EXCEPTION
   ext = ext
   attrs1 = attributes
   id = mkrhs(constr_ident)
@@ -3470,11 +3489,6 @@ sig_exception_declaration:
       Te.mk_exception ~attrs ~loc
         (Te.decl id ~vars ~args ?res ~attrs:(attrs1 @ attrs2) ~loc ~docs)
       , ext }
-;
-%inline let_exception_declaration:
-    mkrhs(constr_ident) generalized_constructor_arguments attributes
-      { let vars, args, res = $2 in
-        Te.decl $1 ~vars ~args ?res ~attrs:$3 ~loc:(make_loc $sloc) }
 ;
 generalized_constructor_arguments:
     /*empty*/                     { ([],Pcstr_tuple [],None) }
