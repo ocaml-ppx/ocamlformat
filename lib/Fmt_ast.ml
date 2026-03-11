@@ -1951,7 +1951,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
                    (str " ")
              in
              match cmts_after with
-             | Some c -> (noop, hovbox 0 (op $ space_break $ c))
+             | Some c -> (noop, hovbox 0 (op $ force_break $ c))
              | None -> (op $ break, noop)
            in
            fmt_opt cmts_before $ before_arg

@@ -109,7 +109,8 @@ let sigma_seed =
 
 match
   "\"" ^ line ^ " \""
-  |> (* split by whitespace *)
+  |>
+  (* split by whitespace *)
   Str.split (Str.regexp_string "\" \"")
 with
 | prog :: args -> fooooooooooooooooooooo
@@ -118,9 +119,11 @@ with
 let () =
   (* Open the repo *)
   initialise
-  >>= (* Perform a subsequent action *)
+  >>=
+  (* Perform a subsequent action *)
   subsequent_action
-  >|= (* Keep going... *)
+  >|=
+  (* Keep going... *)
   another_action
   |> fun t ->
   (* And finally do this *)
@@ -138,12 +141,14 @@ let () =
 
 let _ =
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  - (* ___________________________________ *)
+  -
+  (* ___________________________________ *)
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 let _ =
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  >= (* ___________________________________ *)
+  >=
+  (* ___________________________________ *)
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 let _ =
