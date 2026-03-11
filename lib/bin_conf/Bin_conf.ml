@@ -57,27 +57,27 @@ let info =
     ; `P "$(tname) automatically formats OCaml code."
     ; `S (Decl.section_name Decl.Formatting `Valid)
     ; `P
-        "Unless otherwise noted, any option \
-         $(b,--)$(i,option)$(b,=)$(i,VAL) detailed in this section can be \
-         set in many ways, its value is determined in the following order \
-         (of increasing priority): the default value is used if no other \
-         value is specified. The value of a boolean option $(b,--foo) or \
-         $(b,--no-foo) can be modified in an $(b,.ocamlformat) \
-         configuration file with '$(b,foo = ){$(b,true),$(b,false)}', it \
-         can be done for any other option with an '$(b,option = )$(i,VAL)' \
-         line (*), or using the OCAMLFORMAT environment variable: \
+        "Unless otherwise noted, any option $(b,--)$(i,option)$(b,=)$(i,VAL) \
+         detailed in this section can be set in many ways, its value is \
+         determined in the following order (of increasing priority): the \
+         default value is used if no other value is specified. The value of \
+         a boolean option $(b,--foo) or $(b,--no-foo) can be modified in an \
+         $(b,.ocamlformat) configuration file with '$(b,foo = \
+         ){$(b,true),$(b,false)}', it can be done for any other option with \
+         an '$(b,option = )$(i,VAL)' line (*), or using the OCAMLFORMAT \
+         environment variable: \
          $(b,OCAMLFORMAT=)$(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL), \
          or as an optional parameter on the command line, or with a global \
          $(b,[@@@ocamlformat \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute \
          in the processed file, or with an $(b,[@@ocamlformat \
-         \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute on expression in \
-         the processed file."
+         \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute on expression in the \
+         processed file."
     ; `P
-        "(*) $(b,.ocamlformat) files in current and all ancestor \
-         directories for each input file are used, applied from top to \
-         bottom, overriding the settings each time a file is applied, \
-         stopping at the project root. If no project root and no \
-         $(b,ocamlformat) file has been found, and if the option \
+        "(*) $(b,.ocamlformat) files in current and all ancestor directories \
+         for each input file are used, applied from top to bottom, \
+         overriding the settings each time a file is applied, stopping at \
+         the project root. If no project root and no $(b,ocamlformat) file \
+         has been found, and if the option \
          $(b,enable-outside-detected-project) is set, the global \
          $(b,ocamlformat) file defined in $(b,\\$XDG_CONFIG_HOME) (or in \
          $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined) is \
@@ -90,13 +90,13 @@ let info =
          Shell-style regular expressions are supported. Lines starting with \
          $(b,#) are ignored and can be used as comments."
     ; `P
-        "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
-         file specifies files that OCamlFormat should format even when the \
+        "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) file \
+         specifies files that OCamlFormat should format even when the \
          $(b,disable) option is set. Each line in an \
          $(b,.ocamlformat-enable) file specifies a filename relative to the \
-         directory containing the $(b,.ocamlformat-enable) file. \
-         Shell-style regular expressions are supported. Lines starting with \
-         $(b,#) are ignored and can be used as comments."
+         directory containing the $(b,.ocamlformat-enable) file. Shell-style \
+         regular expressions are supported. Lines starting with $(b,#) are \
+         ignored and can be used as comments."
     ; `S (Decl.section_name Decl.Operational `Valid)
     ; `P
         "Unless mentioned otherwise non-formatting options cannot be set in \
@@ -156,8 +156,8 @@ let inplace =
 
 let check =
   let doc =
-    "Check whether the input files already are formatted. Mutually \
-     exclusive with --inplace and --output."
+    "Check whether the input files already are formatted. Mutually exclusive \
+     with --inplace and --output."
   in
   declare_option
     ~set:(fun check conf -> {conf with check})
@@ -705,8 +705,8 @@ let validate_inputs () =
     | Some kind -> Ok (`Stdin (Some name, kind))
     | None ->
         Error
-          "Cannot deduce file kind from passed --name. Please specify \
-           --impl or --intf" )
+          "Cannot deduce file kind from passed --name. Please specify --impl \
+           or --intf" )
   | [File f], Some kind, name -> Ok (`Single_file (kind, name, f))
   | [File f], None, name ->
       let kind =

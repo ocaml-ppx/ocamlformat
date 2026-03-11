@@ -63,6 +63,10 @@ profile. This started with version 0.26.0.
   instead of only some.
   (#2737, @v-gb)
 
+- \* Removed unecessary line breaks in several places (#2778, @Julow)
+  Many line breaks were caused by a bug in the implementation of `Format`
+  rather than a deliberate choice.
+
 ### Internal
 
 - Added information on writing tests to `CONTRIBUTING.md` (#2838, @WardBrian)

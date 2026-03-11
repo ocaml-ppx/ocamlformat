@@ -877,22 +877,27 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
     else if parens_bch then wrap (str "(") (str ")") (wrap_breaks k)
     else k
   in
-  let get_parens_breaks ~opn_hint_indent ~cls_hint:(ch_sp, ch_sl) =
-    let brk hint = fits_breaks "" ~hint "" in
+  let get_parens_breaks ?(force_break_before = false) ~opn_hint_indent
+      ~cls_hint:(ch_sp, ch_sl) =
+    let brk hint =
+      if force_break_before then break 1000 opn_hint_indent
+      else fits_breaks "" ~hint ""
+    in
     if has_beginend then
       let _, offset = ch_sl in
       wrap (brk (1, opn_hint_indent)) (break 1000 offset)
     else
       match imd with
-      | `Space -> wrap (brk (1, opn_hint_indent)) (brk ch_sp)
+      | `Space ->
+          wrap (brk (1, opn_hint_indent)) (fits_breaks "" ~hint:ch_sp "")
       | `No -> wrap (brk (0, opn_hint_indent)) noop
       | `Closing_on_separate_line ->
-          wrap (brk (0, opn_hint_indent)) (brk ch_sl)
+          wrap (brk (0, opn_hint_indent)) (fits_breaks "" ~hint:ch_sl "")
   in
   let cond () =
     match xcond with
     | Some xcnd ->
-        hvbox 2
+        hovbox 2
           ( hvbox 0
               ( hvbox 2
                   ( pro
@@ -943,6 +948,20 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
       ; space_between_branches= fmt_if (has_beginend || parens_bch) (str " ")
       }
   | `Fit_or_vertical ->
+      let is_multi_line =
+        not (Location.is_single_line expr_loc c.fmt_opts.margin.v)
+      in
+      let branch_pro, force_break_before =
+        if parens_bch || has_beginend then
+          if Option.is_some cmts_after_kw then (break 1000 0, is_multi_line)
+          else (str " ", is_multi_line)
+        else if is_multi_line then (break 1000 2, false)
+        else (break 1 2, false)
+      in
+      let wrap_breaks =
+        get_parens_breaks ~force_break_before ~opn_hint_indent:2
+          ~cls_hint:((1, 0), (1000, 0))
+      in
       { box_branch=
           hovbox
             ( match imd with
@@ -950,20 +969,12 @@ let get_if_then_else (c : Conf.t) ~pro ~first ~last ~parens_bch
             | _ -> 0 )
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro= branch_pro ()
-      ; wrap_parens=
-          wrap_parens
-            ~wrap_breaks:
-              (get_parens_breaks ~opn_hint_indent:2
-                 ~cls_hint:((1, 0), (1000, 0)) )
+      ; branch_pro
+      ; wrap_parens= wrap_parens ~wrap_breaks
       ; beginend_loc
       ; box_expr= Some false
-      ; expr_pro=
-          Some
-            (fmt_if
-               (not (Location.is_single_line expr_loc c.fmt_opts.margin.v))
-               (break_unless_newline 1000 2) )
-      ; expr_eol= Some (break 1 2)
+      ; expr_pro= None
+      ; expr_eol= Some (break 1000 2)
       ; branch_expr
       ; break_end_branch= noop
       ; space_between_branches=

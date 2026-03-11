@@ -28,16 +28,16 @@ let info =
     ; `P
         "Before the client and the server agree on a common version to use \
          the following commands are available: $(b,Halt) to close the \
-         connection to the RPC; $(b,Version) $(i,v) to ask the server to \
-         use version $(i,v). If the server agrees upon the version he will \
-         send the reply $(b,Version) $(i,v) and the protocol version is set \
-         to $(i,v), to use another version later the client has to close \
-         the connexion and start a new one. If the server cannot use \
-         version $(i,v) he might propose another version $(i,w) by sending \
-         the reply $(b,Version) $(i,w) that the client can accept by \
-         sending the same request for version $(i,w), or propose another \
-         version. If the server cannot propose another version it will \
-         close the connection. Unknown commands are ignored."
+         connection to the RPC; $(b,Version) $(i,v) to ask the server to use \
+         version $(i,v). If the server agrees upon the version he will send \
+         the reply $(b,Version) $(i,v) and the protocol version is set to \
+         $(i,v), to use another version later the client has to close the \
+         connexion and start a new one. If the server cannot use version \
+         $(i,v) he might propose another version $(i,w) by sending the reply \
+         $(b,Version) $(i,w) that the client can accept by sending the same \
+         request for version $(i,w), or propose another version. If the \
+         server cannot propose another version it will close the connection. \
+         Unknown commands are ignored."
     ; `P
         "Once the client and the server agree on a common version, the \
          requests you can send may differ from one version to another."

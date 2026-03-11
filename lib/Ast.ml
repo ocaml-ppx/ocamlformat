@@ -74,10 +74,10 @@ type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 module Token = struct
   let is_infix = function
     | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | BAR | BARBAR | COLON
-     |COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER
-     |HASHOP _ | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
-     |INFIXOP4 _ | LESS | LESSMINUS | LETOP _ | MINUS | MINUSDOT
-     |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SLASH | STAR ->
+     |COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER | HASHOP _
+     |INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _ | LESS
+     |LESSMINUS | LETOP _ | MINUS | MINUSDOT | MINUSGREATER | PERCENT | PLUS
+     |PLUSDOT | PLUSEQ | SLASH | STAR ->
         true
     | _ -> false
 end
@@ -1307,8 +1307,8 @@ end = struct
        |Pexp_send _ | Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
        |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _
        |Pexp_hole | Pexp_beginend _ | Pexp_parens _ | Pexp_cons _
-       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _
-       |Pexp_infix _ | Pexp_construct_unit_beginend _ ->
+       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _
+       |Pexp_construct_unit_beginend _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object ({pcstr_self; _}, _) ->
@@ -1650,8 +1650,8 @@ end = struct
       | Ptyp_alias _ -> Some (As, Non)
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
-      | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
-       |Ptyp_variant _ | Ptyp_package _ | Ptyp_extension _ | Ptyp_open _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _ | Ptyp_variant _
+       |Ptyp_package _ | Ptyp_extension _ | Ptyp_open _ ->
           None )
     | {ctx= Cty {pcty_desc; _}; ast= Typ typ; _} -> (
       match pcty_desc with
@@ -1743,8 +1743,8 @@ end = struct
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
       ; ast=
-          ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
-          | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+          ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
+          | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Fpe _ | Fpc _; ast= _}
      |{ctx= _; ast= Fpe _ | Fpc _}
      |{ctx= Vc _; ast= _}
@@ -1767,8 +1767,8 @@ end = struct
           ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
           | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
       ; ast=
-          ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) } ->
+          ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _ | Sig _
+          | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1783,8 +1783,8 @@ end = struct
       | Ptyp_arrow _ | Ptyp_poly _ -> Some MinusGreater
       | Ptyp_tuple _ -> Some InfixOp3
       | Ptyp_alias _ -> Some As
-      | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
-       |Ptyp_class _ | Ptyp_variant _ | Ptyp_extension _ | Ptyp_open _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _ | Ptyp_class _
+       |Ptyp_variant _ | Ptyp_extension _ | Ptyp_open _ ->
           None )
     | Td _ -> None
     | Cty {pcty_desc; _} -> (

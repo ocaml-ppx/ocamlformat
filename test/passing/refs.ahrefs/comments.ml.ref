@@ -72,8 +72,7 @@ match x with
 ;;
 
 match x with
-| Aaaaaaaaaaaaaaaaaaaa
-(* this comment is intended to refer to the case below *)
+| Aaaaaaaaaaaaaaaaaaaa (* this comment is intended to refer to the case below *)
 | Bbbbbbbbbbbbbbbbbbbb ->
   ()
 ;;

@@ -383,8 +383,7 @@ let v =
 let v = map x (fun x y z -> ya f ; a f b)
 
 let v =
-  map x begin%ext1 fun%ext2 x y z ->
-      ya f ; a f b
+  map x begin%ext1 fun%ext2 x y z -> ya f ; a f b
     end
 
 let _ =

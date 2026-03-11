@@ -217,8 +217,7 @@ let _ =
   |]
 
 let () =
-  if a then begin b
-    (* asd *)
+  if a then begin b (* asd *)
   end
 
 [@@@ocamlformat "if-then-else=compact"]
@@ -238,8 +237,7 @@ let _ =
   end
 
 let () =
-  if a then begin b
-    (* asd *)
+  if a then begin b (* asd *)
   end
 
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
@@ -260,8 +258,7 @@ let _ =
 
 let () =
   if a then begin
-    b
-  (* asd *)
+    b (* asd *)
   end
 
 [@@@ocamlformat "if-then-else=keyword-first"]
@@ -284,8 +281,7 @@ let _ =
 
 let () =
   if a
-  then begin
-    b (* asd *)
+  then begin b (* asd *)
   end
 
 [@@@ocamlformat "if-then-else=k-r"]
@@ -402,8 +398,7 @@ let _ =
 let _ = match x with _ -> begin[@foo] y end
 
 let v =
-  map x begin fun x y z ->
-      y
+  map x begin fun x y z -> y
     end
 
 let v =
@@ -417,8 +412,7 @@ let v =
     begin fun
       x
       arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
-    ->
-      y
+    -> y
     end
 
 let v =
@@ -434,8 +428,7 @@ let v =
       argggggggggggggggggggggggggggggggggg
       gggggggggggggggggggg
       ggggggggggggggg
-    ->
-      y
+    -> y
     end
 
 let v =

@@ -104,8 +104,8 @@ module Error = struct
             List.iter l ~f:(fun (l, w) -> Warning.print_warning l w) ;
             Format.fprintf fmt
               "@{<warning>Hint@}: (Warning 50) This file contains a \
-               documentation comment (** ... *) that the OCaml compiler \
-               does not know how to attach to the AST. OCamlformat does not \
+               documentation comment (** ... *) that the OCaml compiler does \
+               not know how to attach to the AST. OCamlformat does not \
                support these cases. You can find more information at: \
                https://github.com/ocaml-ppx/ocamlformat#overview. If you'd \
                like to disable this check and let ocamlformat make a choice \

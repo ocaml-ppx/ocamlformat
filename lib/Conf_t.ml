@@ -35,8 +35,8 @@ module Error = struct
     | Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
     | Version_mismatch {read; installed} ->
         Format.sprintf
-          "Project should be formatted using ocamlformat version %S, but \
-           the installed version is %S"
+          "Project should be formatted using ocamlformat version %S, but the \
+           installed version is %S"
           read installed
 end
 

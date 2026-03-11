@@ -71,8 +71,8 @@ module String_id = struct
     if Char_id.is_infixop i.[0] then true
     else
       match i with
-      | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
-       |"lsl" | "lsr" | "or" | "||" ->
+      | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
+       |"lsr" | "or" | "||" ->
           true
       | _ -> is_monadic_binding i
 

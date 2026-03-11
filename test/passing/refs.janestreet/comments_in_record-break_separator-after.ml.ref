@@ -107,8 +107,7 @@ type t =
 
 type t =
   { mutable ci_fixed : IntervalSet.t;
-    mutable
-      (* spilled stack slots (reg.loc = Stack (Local n)) still in use *)
+    mutable (* spilled stack slots (reg.loc = Stack (Local n)) still in use *)
       ci_spilled :
       IntervalSet.t
   }

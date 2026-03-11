@@ -304,12 +304,12 @@ let profile =
          existing code. General guidelines that have directed the design \
          include: Legibility, in the sense of making it as hard as possible \
          for quick visual parsing to give the wrong interpretation, is of \
-         highest priority; Whenever possible the high-level structure of \
-         the code should be obvious by looking only at the left margin, in \
+         highest priority; Whenever possible the high-level structure of the \
+         code should be obvious by looking only at the left margin, in \
          particular, it should not be necessary to visually jump from left \
-         to right hunting for critical keywords, tokens, etc; All else \
-         equal compact code is preferred as reading without scrolling is \
-         easier, so indentation or white space is avoided unless it helps \
+         to right hunting for critical keywords, tokens, etc; All else equal \
+         compact code is preferred as reading without scrolling is easier, \
+         so indentation or white space is avoided unless it helps \
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious."
     ; Decl.Value.make ~name:"janestreet" `janestreet
@@ -376,8 +376,8 @@ module Formatting = struct
            the end of the line and breaks after it if the whole assignment \
            expression does not fit on a single line."
       ; Decl.Value.make ~name:"begin-line" `Begin_line
-          "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
-           at the beginning of the line and breaks before it if the whole \
+          "$(b,begin-line) positions assignment operators (`:=` and `<-`) at \
+           the beginning of the line and breaks before it if the whole \
            assignment expression does not fit on a single line." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
@@ -440,11 +440,11 @@ module Formatting = struct
     let names = ["break-collection-expressions"] in
     let all =
       [ Decl.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks expressions if they do not \
+           fit on a single line."
       ; Decl.Value.make ~name:"wrap" `Wrap
-          "$(b,wrap) will group simple expressions and try to format them \
-           in a single line." ]
+          "$(b,wrap) will group simple expressions and try to format them in \
+           a single line." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt ->
@@ -506,11 +506,11 @@ module Formatting = struct
     let names = ["break-infix"] in
     let all =
       [ Decl.Value.make ~name:"wrap" `Wrap
-          "$(b,wrap) will group simple expressions and try to format them \
-           in a single line."
+          "$(b,wrap) will group simple expressions and try to format them in \
+           a single line."
       ; Decl.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks expressions if they do not \
+           fit on a single line."
       ; Decl.Value.make ~name:"wrap-or-vertical" `Wrap_or_vertical
           "$(b,wrap-or-vertical) behaves like $(b,wrap) for high precedence \
            operators and behaves like $(b,fit-or-vertical) for low \
@@ -570,8 +570,8 @@ module Formatting = struct
     let names = ["break-string-literals"] in
     let all =
       [ Decl.Value.make ~name:"auto" `Auto
-          "$(b,auto) mode breaks lines at newlines and wraps string \
-           literals at the margin."
+          "$(b,auto) mode breaks lines at newlines and wraps string literals \
+           at the margin."
       ; Decl.Value.make ~name:"never" `Never
           "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ]
@@ -629,9 +629,8 @@ module Formatting = struct
       [ Decl.Value.make ~name:"normal" `Normal
           "$(b,normal) indents as it would any other expression."
       ; Decl.Value.make ~name:"compact" `Compact
-          "$(b,compact) forces an indentation of 2, unless \
-           $(b,nested-match) is set to $(b,align) and we're on the last \
-           case." ]
+          "$(b,compact) forces an indentation of 2, unless $(b,nested-match) \
+           is set to $(b,align) and we're on the last case." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt ->
@@ -660,9 +659,9 @@ module Formatting = struct
            declarations because that would change their meaning and on \
            structures, signatures and objects for readability."
       ; Decl.Value.make ~name:"before-except-val" `Before_except_val
-          "$(b,before-except-val) puts doc comments before the \
-           corresponding code, but puts doc comments of $(b,val) and \
-           $(b,external) declarations after the corresponding declarations."
+          "$(b,before-except-val) puts doc comments before the corresponding \
+           code, but puts doc comments of $(b,val) and $(b,external) \
+           declarations after the corresponding declarations."
       ; Decl.Value.make ~name:"before" `Before
           "$(b,before) puts comments before the corresponding code." ]
     in
@@ -705,8 +704,8 @@ module Formatting = struct
     let names = ["doc-comments-val"] in
     let msg =
       "If you are using `doc-comments-val=before` in combination with \
-       `doc-comments=before` then only `doc-comments=before` is now \
-       required to achive the same behavior. If you are using \
+       `doc-comments=before` then only `doc-comments=before` is now required \
+       to achive the same behavior. If you are using \
        `doc-comments-val=before` in combination with `doc-comments=after` \
        this behavior is not available anymore. If you are using \
        `doc-comments-val=after` in combination with `doc-comments=before` \
@@ -749,8 +748,8 @@ module Formatting = struct
     let names = ["exp-grouping"] in
     let all =
       [ Decl.Value.make ~name:"preserve" `Preserve
-          "$(b,preserve) preserves the original grouping syntax \
-           (parentheses or $(i,begin)/$(i,end))."
+          "$(b,preserve) preserves the original grouping syntax (parentheses \
+           or $(i,begin)/$(i,end))."
       ; Decl.Value.make ~name:"parens" `Parens
           "$(b,parens) groups expressions using parentheses." ]
     in
@@ -786,8 +785,8 @@ module Formatting = struct
       ; Decl.Value.make ~name:"tight" `Tight
           "$(b,tight) does not use a space."
       ; Decl.Value.make ~name:"tight-decl" `Tight_decl
-          "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
-           for instantiations." ]
+          "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) for \
+           instantiations." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with field_space= elt}))
@@ -835,8 +834,8 @@ module Formatting = struct
       ; Decl.Value.make ~name:"vertical" `Vertical
           "$(b,vertical) always vertically breaks branches."
       ; Decl.Value.make ~name:"keyword-first" `Keyword_first
-          "$(b,keyword-first) formats if-then-else expressions such that \
-           the if-then-else keywords are the first on the line."
+          "$(b,keyword-first) formats if-then-else expressions such that the \
+           if-then-else keywords are the first on the line."
       ; Decl.Value.make ~name:"k-r" `K_R
           "$(b,k-r) formats if-then-else expressions with parentheses that \
            match the K&R style." ]
@@ -933,8 +932,8 @@ module Formatting = struct
     let names = ["let-and"] in
     let all =
       [ Decl.Value.make ~name:"compact" `Compact
-          "$(b,compact) will try to format `let p = e and p = e` in a \
-           single line."
+          "$(b,compact) will try to format `let p = e and p = e` in a single \
+           line."
       ; Decl.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) will always break between them." ]
     in
@@ -1005,17 +1004,17 @@ module Formatting = struct
     let names = ["letop-punning"] in
     let all =
       [ Decl.Value.make ~name:"preserve" `Preserve
-          "$(b,preserve) uses let-punning only when it exists in the \
-           source; the code \"$(i,let* foo and* z = z in ...)\" will be \
-           left unchanged."
+          "$(b,preserve) uses let-punning only when it exists in the source; \
+           the code \"$(i,let* foo and* z = z in ...)\" will be left \
+           unchanged."
       ; Decl.Value.make ~name:"always" `Always
           "$(b,always) uses let-punning whenever possible; the code \
            \"$(i,let* foo and* z = z in ...)\" will be rewritten to \
            \"$(i,let* foo and* z in ...)\"."
       ; Decl.Value.make ~name:"never" `Never
-          "$(b,never) never uses let-punning; the code \"$(i,let* foo and* \
-           z = z in ...)\" will be rewritten to \"$(i,let* foo = foo and* z \
-           = z in ...)\". " ]
+          "$(b,never) never uses let-punning; the code \"$(i,let* foo and* z \
+           = z in ...)\" will be rewritten to \"$(i,let* foo = foo and* z = \
+           z in ...)\". " ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with letop_punning= elt}))
@@ -1168,8 +1167,8 @@ module Formatting = struct
       [ Decl.Value.make ~name:"always" `Always
           "$(b,always) always uses parentheses around tuples."
       ; Decl.Value.make ~name:"multi-line-only" `Multi_line_only
-          "$(b,multi-line-only) mode will try to skip parens for \
-           single-line tuples." ]
+          "$(b,multi-line-only) mode will try to skip parens for single-line \
+           tuples." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with parens_tuple= elt}))
@@ -1180,8 +1179,8 @@ module Formatting = struct
     let names = ["parens-tuple-patterns"] in
     let all =
       [ Decl.Value.make ~name:"multi-line-only" `Multi_line_only
-          "$(b,multi-line-only) mode will try to skip parens for \
-           single-line tuple patterns."
+          "$(b,multi-line-only) mode will try to skip parens for single-line \
+           tuple patterns."
       ; Decl.Value.make ~name:"always" `Always
           "$(b,always) always uses parentheses around tuples patterns." ]
     in
@@ -1211,8 +1210,8 @@ module Formatting = struct
     let names = ["sequence-blank-line"] in
     let all =
       [ Decl.Value.make ~name:"preserve-one" `Preserve_one
-          "$(b,preserve) will keep a blank line between two expressions of \
-           a sequence if the input contains at least one."
+          "$(b,preserve) will keep a blank line between two expressions of a \
+           sequence if the input contains at least one."
       ; Decl.Value.make ~name:"compact" `Compact
           "$(b,compact) will not keep any blank line between expressions of \
            a sequence." ]
@@ -1314,8 +1313,8 @@ module Formatting = struct
   let type_decl_indent =
     let docv = "COLS" in
     let doc =
-      "Indentation of type declarations ($(docv) columns) if they do not \
-       fit on a single line."
+      "Indentation of type declarations ($(docv) columns) if they do not fit \
+       on a single line."
     in
     let names = ["type-decl-indent"] in
     Decl.int ~names ~default ~doc ~docv ~kind ~allow_inline:false
@@ -1328,8 +1327,8 @@ module Formatting = struct
       "Comments are divided into paragraphs by open lines (two or more \
        consecutive newlines), and each paragraph is wrapped at the margin. \
        Multi-line comments with vertically-aligned asterisks on the left \
-       margin are not wrapped. Consecutive comments with both left and \
-       right margin aligned are not wrapped either."
+       margin are not wrapped. Consecutive comments with both left and right \
+       margin aligned are not wrapped either."
     in
     Decl.flag ~default ~names:["wrap-comments"] ~doc ~kind
       (fun conf elt -> update conf ~f:(fun f -> {f with wrap_comments= elt}))

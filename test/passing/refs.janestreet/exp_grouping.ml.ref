@@ -259,8 +259,7 @@ let _ =
 
 let () =
   if a
-  then begin
-    b (* asd *)
+  then begin b (* asd *)
   end
 ;;
 
@@ -282,8 +281,7 @@ let _ =
 ;;
 
 let () =
-  if a then begin b
-    (* asd *)
+  if a then begin b (* asd *)
   end
 ;;
 
@@ -306,8 +304,7 @@ let _ =
 
 let () =
   if a then begin
-    b
-  (* asd *)
+    b (* asd *)
   end
 ;;
 
@@ -332,8 +329,7 @@ let _ =
 
 let () =
   if a
-  then begin
-    b (* asd *)
+  then begin b (* asd *)
   end
 ;;
 
@@ -471,20 +467,17 @@ let _ =
 ;;
 
 let v =
-  map x begin fun x y z ->
-      y
+  map x begin fun x y z -> y
     end
 ;;
 
 let v =
-  map x begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
-      y
+  map x begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg -> y
     end
 ;;
 
 let v =
-  map x begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg ->
-      y
+  map x begin fun x arggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg -> y
     end
 ;;
 
@@ -499,8 +492,7 @@ let v =
     begin fun x
             argggggggggggggggggggggggggggggggggg
             gggggggggggggggggggg
-            ggggggggggggggg ->
-      y
+            ggggggggggggggg -> y
     end
 ;;
 

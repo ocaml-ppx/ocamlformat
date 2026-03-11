@@ -1927,8 +1927,17 @@ and fmt_infix_op_args c ~parens xexp op_args =
             $ hovbox_if (not very_last) 2 (fmt_expression c ~parens xarg) )
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-    let indent = if first_grp && parens then -2 else 0 in
-    hovbox indent
+    let box =
+      let indent = if first_grp && parens then -2 else 0 in
+      if
+        List.exists
+          ~f:(fun (cmts_before, cmts_after, _) ->
+            Option.is_some cmts_before || Option.is_some cmts_after )
+          args
+      then hvbox indent
+      else hovbox indent
+    in
+    box
       (list_fl args
          (fun ~first ~last (cmts_before, cmts_after, (op, xarg)) ->
            let very_first = first_grp && first in
@@ -1942,7 +1951,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
                    (str " ")
              in
              match cmts_after with
-             | Some c -> (noop, hovbox 0 (op $ space_break $ c))
+             | Some c -> (noop, hovbox 0 (op $ force_break $ c))
              | None -> (op $ break, noop)
            in
            fmt_opt cmts_before $ before_arg
@@ -2538,7 +2547,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          in
                          let cmts_after_kw =
                            if Cmts.has_after c.cmts keyword_loc then
-                             Some (Cmts.fmt_after c keyword_loc)
+                             Some
+                               (Cmts.fmt_after ~epi:force_break c keyword_loc)
                            else None
                          in
                          let p =
@@ -3145,8 +3155,7 @@ and fmt_class_signature c ~ctx ~pro ~epi ?ext self_ fields =
   in
   let ast x = Ctf x in
   let cmts_within =
-    if List.is_empty fields then
-      (* Side effect order is important. *)
+    if List.is_empty fields then (* Side effect order is important. *)
       Cmts.fmt_within ~pro:noop c (Ast.location ctx)
     else noop
   in
