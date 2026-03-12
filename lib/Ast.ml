@@ -129,13 +129,11 @@ module Infix_ext_attrs = struct
      |Pexp_while (_, _, iea)
      |Pexp_for (_, _, _, _, _, iea)
      |Pexp_new (_, iea)
-     |Pexp_letmodule (_, _, _, _, iea)
-     |Pexp_letexception (_, _, iea)
+     |Pexp_struct_item (_, _, iea)
      |Pexp_assert (_, iea)
      |Pexp_lazy (_, iea)
      |Pexp_object (_, iea)
      |Pexp_pack (_, _, iea)
-     |Pexp_letopen (_, _, iea)
      |Pexp_beginend (_, iea) ->
         iea.infix_attrs
     | _ -> []
@@ -202,8 +200,7 @@ module Exp = struct
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_function (_, _, Pfunction_body _, _)
-            | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_open _ | Pexp_letopen _ )
+            | Pexp_let _ | Pexp_letop _ | Pexp_struct_item _ | Pexp_open _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
         true
@@ -1038,7 +1035,7 @@ end = struct
        |Pexp_extension (_, PTyp t1) ->
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
-      | Pexp_letexception (ext, _, _) -> assert (check_ext ext)
+      | Pexp_struct_item _ -> assert false
       | Pexp_object _ -> assert false
       | Pexp_record (en1, _) ->
           assert (
@@ -1302,13 +1299,13 @@ end = struct
       | Pexp_apply _ | Pexp_array _ | Pexp_list _ | Pexp_assert _
        |Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
        |Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
-       |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
-       |Pexp_open _ | Pexp_override _ | Pexp_pack _ | Pexp_record _
-       |Pexp_send _ | Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
+       |Pexp_lazy _ | Pexp_struct_item _ | Pexp_new _ | Pexp_open _
+       |Pexp_override _ | Pexp_pack _ | Pexp_record _ | Pexp_send _
+       |Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
        |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _
        |Pexp_hole | Pexp_beginend _ | Pexp_parens _ | Pexp_cons _
-       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _
-       |Pexp_infix _ | Pexp_construct_unit_beginend _ ->
+       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _
+       |Pexp_construct_unit_beginend _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object ({pcstr_self; _}, _) ->
@@ -1465,10 +1462,8 @@ end = struct
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
          |Pexp_lazy (e, _)
-         |Pexp_letexception (_, e, _)
-         |Pexp_letmodule (_, _, _, e, _)
+         |Pexp_struct_item (_, e, _)
          |Pexp_open (_, e)
-         |Pexp_letopen (_, e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
@@ -1629,7 +1624,15 @@ end = struct
     | { ctx=
           ( Str {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
           | Sig {psig_desc= Psig_exception {ptyexn_constructor= constr; _}; _}
-          | Exp {pexp_desc= Pexp_letexception (constr, _, _); _} )
+          | Exp
+              { pexp_desc=
+                  Pexp_struct_item
+                    ( { pstr_desc=
+                          Pstr_exception {ptyexn_constructor= constr; _}
+                      ; _ }
+                    , _
+                    , _ )
+              ; _ } )
       ; ast=
           Typ
             ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _ | Ptyp_poly _; _} as typ)
@@ -2123,11 +2126,11 @@ end = struct
          |Pexp_infix (_, _, e)
          |Pexp_lazy (e, _)
          |Pexp_open (_, e)
-         |Pexp_letopen (_, e, _)
          |Pexp_sequence (_, e, _)
          |Pexp_setfield (_, _, e)
          |Pexp_setinstvar (_, e)
-         |Pexp_variant (_, Some e) ->
+         |Pexp_variant (_, Some e)
+         |Pexp_struct_item (_, e, _) ->
             continue e
         | Pexp_cons l -> continue (List.last_exn l)
         | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
@@ -2138,10 +2141,7 @@ end = struct
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
-        | Pexp_let (_, e, _)
-         |Pexp_letop {body= e; _}
-         |Pexp_letexception (_, e, _)
-         |Pexp_letmodule (_, _, _, e, _) -> (
+        | Pexp_let (_, e, _) | Pexp_letop {body= e; _} -> (
           match cls with Match | Then | ThenElse -> continue e | _ -> false )
         | Pexp_match _ when match cls with Then -> true | _ -> false ->
             false
@@ -2198,19 +2198,16 @@ end = struct
        |Pexp_infix (_, _, e)
        |Pexp_lazy (e, _)
        |Pexp_open (_, e)
-       |Pexp_letopen (_, e, _)
        |Pexp_function (_, _, Pfunction_body e, _)
        |Pexp_sequence (_, e, _)
        |Pexp_setfield (_, _, e)
        |Pexp_setinstvar (_, e)
-       |Pexp_variant (_, Some e) ->
+       |Pexp_variant (_, Some e)
+       |Pexp_let (_, e, _)
+       |Pexp_letop {body= e; _}
+       |Pexp_struct_item (_, e, _) ->
           continue e
       | Pexp_cons l -> continue (List.last_exn l)
-      | Pexp_let (_, e, _)
-       |Pexp_letop {body= e; _}
-       |Pexp_letexception (_, e, _)
-       |Pexp_letmodule (_, _, _, e, _) ->
-          continue e
       | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc -> (
