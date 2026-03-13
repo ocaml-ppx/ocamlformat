@@ -1054,7 +1054,8 @@ let get_pexp_struct_item_break_in (c : Conf.t) {ast; ctx= _} =
   match ast.pstr_desc with
   | Pstr_module {pmb_expr= m; _}
    |Pstr_include {pincl_mod= m; _}
-   |Pstr_open {popen_expr= m; _} ->
+   |Pstr_open {popen_expr= m; _}
+    when not c.fmt_opts.ocp_indent_compat.v ->
       let_module m
   | _ -> space_break
 
