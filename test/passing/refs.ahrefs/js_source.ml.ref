@@ -518,8 +518,7 @@ let _ =
     include
       (val foooooooooooooooooooooooooooooooooooooooo
           : fooooooooooooooooooooooooooooooooooooooooo)
-  end
-  in
+  end in
   ()
 
 type action =

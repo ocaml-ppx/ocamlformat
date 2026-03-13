@@ -2600,7 +2600,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       let inner_pro =
         fmt_infix_ext_attrs c ~pro:(str "let") infix_ext_attrs
         $ fmt_atrs $ str " "
-      and epi = space_break $ str "in" in
+      and epi =
+        Params.get_pexp_struct_item_break_in c.conf strix $ str "in"
+      in
       hvbox 0
         ( pro
         $ fmt_if parens (str "(")

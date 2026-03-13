@@ -245,6 +245,9 @@ val comma_sep : Conf.t -> Fmt.t
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
 
+val get_pexp_struct_item_break_in : Conf.t -> structure_item Ast.xt -> Fmt.t
+(** Break before [in] in a [Pexp_struct_item]. *)
+
 module Align : sig
   (** Implement the [align_symbol_open_paren] option. *)
 

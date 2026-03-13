@@ -1036,6 +1036,25 @@ let comma_sep (c : Conf.t) : Fmt.t =
   | `Before -> cut_break $ str ", "
   | `After -> str "," $ break 1 2
 
+let get_pexp_struct_item_break_in (c : Conf.t) {ast; ctx= _} =
+  let let_module m =
+    match c.fmt_opts.let_module.v with
+    | `Compact -> (
+      match m.pmod_desc with
+      | Pmod_structure _
+       |Pmod_functor (_, {pmod_desc= Pmod_structure _; _})
+       |Pmod_apply (_, {pmod_desc= Pmod_structure _; _}) ->
+          str " "
+      | _ -> space_break )
+    | `Sparse -> space_break
+  in
+  match ast.pstr_desc with
+  | Pstr_module {pmb_expr= m; _}
+   |Pstr_include {pincl_mod= m; _}
+   |Pstr_open {popen_expr= m; _} ->
+      let_module m
+  | _ -> space_break
+
 module Align = struct
   let general (c : Conf.t) t =
     hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t

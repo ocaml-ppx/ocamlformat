@@ -766,8 +766,7 @@ let make_set (type s) cmp =
     type t = s
 
     let compare = cmp
-  end)
-  in
+  end) in
   (module S : Set.S with type elt = s)
 
 let both l =
@@ -801,8 +800,7 @@ let create (type s) to_string apply x =
     let apply = apply
 
     let x = x
-  end
-  in
+  end in
   (module M : S with type t = s)
 
 let forget (type s) x =
@@ -819,8 +817,7 @@ let apply x =
     include M
 
     let x = apply x
-  end
-  in
+  end in
   (module N : S)
 
 let () =
@@ -907,8 +904,7 @@ let pair (type s1) (type s2) t1 t2 =
     let t1 = t1
 
     let t2 = t2
-  end
-  in
+  end in
   let pair = (module P : PAIR with type t = s1 * s2) in
   Pair pair
 
@@ -2916,8 +2912,7 @@ let f (type a) (x : a t) =
     let (I : a t) = x (* fail because of toplevel let *)
 
     let x = (I : a t)
-  end
-  in
+  end in
   ()
 
 (* extra example by Stephen Dolan, using recursive modules *)
@@ -2933,8 +2928,7 @@ let bad (type a) =
 
       let e : (int, a) eq = Refl
     end
-  end
-  in
+  end in
   N.M.e
 
 type +'a n = private int
@@ -3176,8 +3170,7 @@ let magic : 'a 'b. 'a -> 'b =
       end)
       (struct
         type 'a t = unit
-      end)
-  in
+      end) in
   M.f Refl
 
 (* Variance and subtyping *)
@@ -3640,8 +3633,7 @@ let pair (type s1) (type s2) t1 t2 =
     let t1 = t1
 
     let t2 = t2
-  end
-  in
+  end in
   Typ.Pair (module P)
 
 open Typ
@@ -3708,8 +3700,7 @@ let ssmap =
 let ssmap =
   ( let module S = struct
       include SSMap
-    end
-    in
+    end in
     (module S)
     : (module MapT
          with type key = string
@@ -4709,8 +4700,7 @@ let f : type t. t prod -> _ = function
   | Prod ->
       let module M = struct
         type d = d * d
-      end
-      in
+      end in
       ()
 
 let (a : M.a) = 2
@@ -5482,8 +5472,7 @@ C3.chr 66 ;;
 let f x =
   let module M = struct
     module L = List
-  end
-  in
+  end in
   M.L.length x
 
 let g x =
@@ -6770,8 +6759,7 @@ let f flag =
     type t = int
 
     let compare = compare
-  end)
-  in
+  end) in
   let _ = match flag with `A -> 0 | `B r -> r in
   let _ = match flag with `A -> T.mem | `B r -> r in
   ()
@@ -7571,8 +7559,7 @@ let _ =
             let y = Bad.f 5 in
             fun x -> x + y
         end
-      end
-      in
+      end in
       false
     with Undefined_recursive_module _ -> true
   in
@@ -7985,8 +7972,7 @@ let _ =
       end = struct
         let x = (new BadClass1.c)#m
       end
-    end
-    in
+    end in
     test 71 true false
   with Undefined_recursive_module _ -> test 71 true true
 
@@ -8616,8 +8602,7 @@ with type 'a t := unit
 let property (type t) () =
   let module M = struct
     exception E of t
-  end
-  in
+  end in
   ((fun x -> M.E x), function M.E x -> Some x | _ -> None)
 
 let () =
@@ -8635,8 +8620,7 @@ let sort_uniq (type s) cmp l =
     type t = s
 
     let compare = cmp
-  end)
-  in
+  end) in
   S.elements (List.fold_right S.add l S.empty)
 
 let () =
@@ -9504,8 +9488,7 @@ and ['a] d () =
 let _ =
   let module M = struct
     type t = {x: int}
-  end
-  in
+  end in
   let f M.(x) = () in
   let g M.{x} = () in
   let h = function M.[] | M.[a] | M.(a :: q) -> () in
