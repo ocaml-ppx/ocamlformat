@@ -3734,10 +3734,26 @@ function_type:
     { let ty, ltys = $3 in
       mktyp ~loc:$sloc (Ptyp_tuple ((Some label, ty) :: ltys))
     }
+  | mktyp(
+      label = arg_label_no_opt
+      LPAREN
+        MODULE attrs = ext_attributes id = mkrhs(UIDENT) COLON
+        ptyp = package_type_
+      RPAREN
+      MINUSGREATER
+      codomain = function_type
+        { let ptyp = {ptyp with ppt_attrs = snd attrs @ ptyp.ppt_attrs } in
+          Ptyp_functor(label, id, ptyp, codomain) }
+    )
+    { $1 }
 ;
 %inline arg_label:
   | label = optlabel
       { Optional label }
+  | arg_label_no_opt
+      { $1 }
+
+%inline arg_label_no_opt:
   | label = LIDENT COLON
       { Labelled label }
   | /* empty */
