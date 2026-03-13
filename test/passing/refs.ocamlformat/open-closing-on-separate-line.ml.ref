@@ -182,16 +182,13 @@ class a =
 
 let _ =
   (* a *)
-  (* b *)
-  let open (* c *) struct
+  let (* b *) open (* c *) struct
     type t
-  end in
-  (* d *)
+  end
+  (* d *) in
   (* e *)
   (* f *)
-  (* g *)
-  let open (* h *) A (* i *) (B) in
-  (* j *)
+  let (* g *) open (* h *) A (* i *) (B) (* j *) in
   (* k *)
   ()
 

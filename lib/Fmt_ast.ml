@@ -2598,17 +2598,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
   | Pexp_struct_item (stri, exp, infix_ext_attrs) ->
       let strix = sub_str ~ctx stri in
       let inner_pro =
+        (* Push comments around the structure item into the [pro] and [epi]
+           as they would otherwise move to before [pro] and after [epi]. *)
         fmt_infix_ext_attrs c ~pro:(str "let") infix_ext_attrs
         $ fmt_atrs $ str " "
+        $ Cmts.fmt_before c stri.pstr_loc
       and epi =
-        Params.get_pexp_struct_item_break_in c.conf strix $ str "in"
+        Cmts.fmt_after c stri.pstr_loc
+        $ Params.get_pexp_struct_item_break_in c.conf strix
+        $ str "in"
       in
       hvbox 0
         ( pro
         $ fmt_if parens (str "(")
         $ hvbox 0
-            ( Cmts.fmt_before c stri.pstr_loc
-            $ fmt_structure_item c ~last:true ~semisemi:false ~pro:inner_pro
+            ( fmt_structure_item c ~last:true ~semisemi:false ~pro:inner_pro
                 ~epi strix
             $ force_break
             $ fmt_expression c (sub_exp ~ctx exp)
