@@ -943,7 +943,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       Cmts.fmt c ppt_loc
       @@ hvbox 2
            ( hovbox 0 (str "module" $ space_break $ fmt_longident_loc c id)
-           $ fmt_package_type c ctx cnstrs
+           $ fmt_package_type_cnstrs c ctx cnstrs
            $ fmt_attributes c attrs )
   | Ptyp_open (lid, typ) ->
       hvbox 2
@@ -1074,8 +1074,25 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
            (sub_typ ~ctx >> fmt_core_type c) )
       $ space_break
       $ fmt_longident_loc c ~pre:"#" lid
+  | Ptyp_functor (lbl, lid, ptyp, rhs) ->
+      let fmt_lbl =
+        match lbl with
+        | Nolabel -> noop
+        | Labelled l -> fmt_str_loc c l $ str ":" $ cut_break
+        | Optional _ -> assert false (* Not produced by the parser *)
+      in
+      hovbox_if box 0
+        ( hvbox 0
+            ( fmt_lbl $ str "("
+            $ hvbox 0
+                (str "module" $ space_break $ fmt_str_loc c lid $ str " :")
+            $ space_break
+            $ fmt_package_type c ctx ~pro:noop ptyp
+            $ str ")" )
+        $ space_break $ str "->" $ space_break
+        $ fmt_core_type c ~pro_space:false (sub_typ ~ctx rhs) )
 
-and fmt_package_type c ctx cnstrs =
+and fmt_package_type_cnstrs c ctx cnstrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
     fmt_or first (break 1 0) (break 1 1)
     $ hvbox 2
@@ -1084,6 +1101,14 @@ and fmt_package_type c ctx cnstrs =
         $ fmt_core_type c (sub_typ ~ctx typ) )
   in
   list_fl cnstrs fmt_cstr
+
+and fmt_package_type c ctx ~pro ptyp =
+  let {ppt_path; ppt_cstrs; ppt_attrs; ppt_loc} = ptyp in
+  Cmts.fmt c ppt_loc
+    (hvbox 2
+       ( hovbox 0 (pro $ fmt_longident_loc c ppt_path)
+       $ fmt_package_type_cnstrs c ctx ppt_cstrs
+       $ fmt_attributes c ppt_attrs ) )
 
 and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
   let c = update_config c prf_attributes in
@@ -1363,7 +1388,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                        ( hovbox 0
                            ( k $ space_break $ str ": "
                            $ fmt_longident_loc c id )
-                       $ fmt_package_type c ctx cnstrs
+                       $ fmt_package_type_cnstrs c ctx cnstrs
                        $ fmt_attributes c attrs ) ) )
         | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
       in
@@ -2731,7 +2756,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             @@ hvbox 2
                  ( hovbox 0
                      (m $ space_break $ str ": " $ fmt_longident_loc c id)
-                 $ fmt_package_type c ctx cnstrs
+                 $ fmt_package_type_cnstrs c ctx cnstrs
                  $ fmt_attributes c attrs )
         | None -> m
       in
@@ -4546,7 +4571,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
             ( hovbox 0
                 ( str sep $ Cmts.fmt_before c ppt_loc
                 $ fmt_longident_loc c lid )
-            $ fmt_package_type c ctx cstrs
+            $ fmt_package_type_cnstrs c ctx cstrs
             $ fmt_attributes c attrs $ Cmts.fmt_after c ppt_loc )
       in
       { empty with
