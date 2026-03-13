@@ -2607,16 +2607,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         $ Params.get_pexp_struct_item_break_in c.conf strix
         $ str "in"
       in
-      hovbox 0
-        ( hvbox 0
-            ( pro
-            $ fmt_if parens (str "(")
-            $ hvbox 0
-                ( fmt_structure_item_embedded_in_exp c ~pro:inner_pro ~epi
-                    strix
-                $ force_break
-                $ fmt_expression c (sub_exp ~ctx exp) ) )
-        $ fmt_if parens (break 0 0 $ str ")") )
+      hvbox 0
+        ( pro
+        $ Params.Exp.wrap c.conf ~parens ~fits_breaks:false
+            (hvbox 0
+               ( fmt_structure_item_embedded_in_exp c ~pro:inner_pro ~epi
+                   strix
+               $ force_break
+               $ fmt_expression c (sub_exp ~ctx exp) ) ) )
   | Pexp_open (lid, e0) ->
       let can_skip_parens =
         (not (Cmts.has_before c.cmts e0.pexp_loc))

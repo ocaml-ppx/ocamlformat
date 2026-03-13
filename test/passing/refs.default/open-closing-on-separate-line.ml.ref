@@ -40,7 +40,8 @@ let () =
 let () =
   (let open Arg in
    let doc = "Output all." in
-   value & flag & info [ "all" ] ~doc)
+   value & flag & info [ "all" ] ~doc
+  )
   $
   let open Arg in
   let doc = "Commit to git." in
@@ -280,7 +281,8 @@ open [@attr] [%ext]
 let g =
   M.f
     (let[@attr] open M in
-     x)
+     x
+    )
 
 let _ = M.({ f } [@warning "foo"])
 let _ = M.((* A *) { f })

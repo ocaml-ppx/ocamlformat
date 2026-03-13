@@ -91,9 +91,9 @@ let%foo _ = ()
 let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
   (let module%foo [@foo] M = M in
-   ()) ;
+   () ) ;
   (let open%foo [@foo] M in
-   ()) ;
+   () ) ;
   (fun%foo[@foo] x -> ()) ;
   (function%foo[@foo] x -> ()) ;
   (try%foo[@foo] () with _ -> ()) ;
