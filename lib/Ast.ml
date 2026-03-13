@@ -129,13 +129,11 @@ module Infix_ext_attrs = struct
      |Pexp_while (_, _, iea)
      |Pexp_for (_, _, _, _, _, iea)
      |Pexp_new (_, iea)
-     |Pexp_letmodule (_, _, _, _, iea)
-     |Pexp_letexception (_, _, iea)
+     |Pexp_struct_item (_, _, iea)
      |Pexp_assert (_, iea)
      |Pexp_lazy (_, iea)
      |Pexp_object (_, iea)
      |Pexp_pack (_, _, iea)
-     |Pexp_letopen (_, _, iea)
      |Pexp_beginend (_, iea) ->
         iea.infix_attrs
     | _ -> []
@@ -202,8 +200,7 @@ module Exp = struct
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_function (_, _, Pfunction_body _, _)
-            | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_open _ | Pexp_letopen _ )
+            | Pexp_let _ | Pexp_letop _ | Pexp_struct_item _ | Pexp_open _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
         true
@@ -660,13 +657,14 @@ module T = struct
     | Vc of value_constraint
     | Lb of value_binding
     | Bo of binding_op
-    | Mb of module_binding
+    | Mb of t * module_binding
     | Md of module_declaration
     | Cl of class_expr
     | Mty of module_type
     | Mod of module_expr
     | Sig of signature_item
     | Str of structure_item
+    | Str_exp of structure_item
     | Clf of class_field
     | Ctf of class_type_field
     | Tli of toplevel_item
@@ -684,7 +682,7 @@ module T = struct
     | Vc c -> Format.fprintf fs "Vc:@\n%a" Printast.value_constraint c
     | Lb b -> Format.fprintf fs "Lb:@\n%a" Printast.value_binding b
     | Bo b -> Format.fprintf fs "Bo:@\n%a" Printast.binding_op b
-    | Mb m -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
+    | Mb (_, m) -> Format.fprintf fs "Mb:@\n%a" Printast.module_binding m
     | Md m -> Format.fprintf fs "Md:@\n%a" Printast.module_declaration m
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Printast.class_expr cl
     | Mty mt -> Format.fprintf fs "Mty:@\n%a" Printast.module_type mt
@@ -694,7 +692,7 @@ module T = struct
         Format.fprintf fs "Ctd:@\n%a" Printast.class_type_declaration ctd
     | Mod m -> Format.fprintf fs "Mod:@\n%a" Printast.module_expr m
     | Sig s -> Format.fprintf fs "Sig:@\n%a" Printast.signature_item s
-    | Str s | Tli (`Item s) ->
+    | Str s | Str_exp s | Tli (`Item s) ->
         Format.fprintf fs "Str:@\n%a" Printast.structure_item s
     | Clf clf -> Format.fprintf fs "Clf:@\n%a@\n" Printast.class_field clf
     | Ctf ctf ->
@@ -722,7 +720,7 @@ let attributes = function
   | Vc _ -> []
   | Lb x -> attrs_of_ext_attrs x.pvb_attributes
   | Bo _ -> []
-  | Mb x -> attrs_of_ext_attrs x.pmb_ext_attrs
+  | Mb (_, x) -> attrs_of_ext_attrs x.pmb_ext_attrs
   | Md x -> attrs_of_ext_attrs x.pmd_ext_attrs
   | Cl x -> x.pcl_attributes
   | Cd x -> attrs_of_ext_attrs x.pci_attributes
@@ -731,6 +729,7 @@ let attributes = function
   | Mod x -> x.pmod_attributes
   | Sig _ -> []
   | Str _ -> []
+  | Str_exp _ -> []
   | Clf x -> x.pcf_attributes
   | Ctf x -> x.pctf_attributes
   | Top -> []
@@ -749,7 +748,7 @@ let location = function
   | Vc _ -> Location.none
   | Lb x -> x.pvb_loc
   | Bo x -> x.pbop_loc
-  | Mb x -> x.pmb_loc
+  | Mb (_, x) -> x.pmb_loc
   | Md x -> x.pmd_loc
   | Cl x -> x.pcl_loc
   | Cd x -> x.pci_loc
@@ -757,7 +756,7 @@ let location = function
   | Mty x -> x.pmty_loc
   | Mod x -> x.pmod_loc
   | Sig x -> x.psig_loc
-  | Str x -> x.pstr_loc
+  | Str x | Str_exp x -> x.pstr_loc
   | Clf x -> x.pcf_loc
   | Ctf x -> x.pctf_loc
   | Tli (`Item x) -> x.pstr_loc
@@ -780,7 +779,7 @@ let break_between s cc (i1, c1) (i2, c2) =
   | Str i1, Str i2 -> Structure_item.break_between s cc (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between s cc (i1, c1) (i2, c2)
   | Lb i1, Lb i2 -> Lb.break_between s cc (i1, c1) (i2, c2)
-  | Mb i1, Mb i2 -> Mb.break_between s cc (i1, c1) (i2, c2)
+  | Mb (_, i1), Mb (_, i2) -> Mb.break_between s cc (i1, c1) (i2, c2)
   | Md i1, Md i2 -> Md.break_between s cc (i1, c1) (i2, c2)
   | Mty _, Mty _ -> break_between_modules s cc (i1, c1) (i2, c2)
   | Mod _, Mod _ -> break_between_modules s cc (i1, c1) (i2, c2)
@@ -1038,7 +1037,7 @@ end = struct
        |Pexp_extension (_, PTyp t1) ->
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
-      | Pexp_letexception (ext, _, _) -> assert (check_ext ext)
+      | Pexp_struct_item _ -> assert false
       | Pexp_object _ -> assert false
       | Pexp_record (en1, _) ->
           assert (
@@ -1091,7 +1090,7 @@ end = struct
       | Psig_typext typext -> assert (check_typext typext)
       | Psig_exception ext -> assert (check_typexn ext)
       | _ -> assert false )
-    | Str ctx -> (
+    | Str ctx | Str_exp ctx -> (
       match ctx.pstr_desc with
       | Pstr_primitive {pval_type= t1; _} -> assert (typ == t1)
       | Pstr_type (_, _) -> assert false
@@ -1131,16 +1130,9 @@ end = struct
 
   let check_cty {ctx; ast= cty} =
     match (ctx : t) with
-    | Exp _ -> assert false
-    | Fpe _ | Fpc _ -> assert false
-    | Vc _ -> assert false
-    | Lb _ -> assert false
-    | Bo _ -> assert false
-    | Mb _ -> assert false
-    | Md _ -> assert false
-    | Pld _ -> assert false
-    | Str _ -> assert false
-    | Sig _ -> assert false
+    | Exp _ | Fpe _ | Fpc _ | Vc _ | Lb _ | Bo _ | Mb _ | Md _ | Pld _
+     |Str _ | Str_exp _ | Sig _ ->
+        assert false
     | Cty {pcty_desc; _} -> (
       match pcty_desc with
       | Pcty_arrow (_, t) -> assert (t == cty)
@@ -1190,22 +1182,10 @@ end = struct
 
   let check_cl {ctx; ast= cl} =
     match (ctx : t) with
-    | Exp _ -> assert false
-    | Fpe _ | Fpc _ -> assert false
-    | Vc _ -> assert false
-    | Lb _ -> assert false
-    | Bo _ -> assert false
-    | Mb _ -> assert false
-    | Md _ -> assert false
-    | Pld _ -> assert false
-    | Str _ -> assert false
-    | Sig _ -> assert false
-    | Cty _ -> assert false
-    | Top -> assert false
-    | Tli _ -> assert false
-    | Typ _ -> assert false
-    | Td _ -> assert false
-    | Pat _ -> assert false
+    | Exp _ | Fpe _ | Fpc _ | Vc _ | Lb _ | Bo _ | Mb _ | Md _ | Pld _
+     |Str _ | Str_exp _ | Sig _ | Cty _ | Top | Tli _ | Typ _ | Td _ | Pat _
+      ->
+        assert false
     | Cl {pcl_desc; _} ->
         assert (
           match pcl_desc with
@@ -1302,13 +1282,13 @@ end = struct
       | Pexp_apply _ | Pexp_array _ | Pexp_list _ | Pexp_assert _
        |Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
        |Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
-       |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
-       |Pexp_open _ | Pexp_override _ | Pexp_pack _ | Pexp_record _
-       |Pexp_send _ | Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
+       |Pexp_lazy _ | Pexp_struct_item _ | Pexp_new _ | Pexp_open _
+       |Pexp_override _ | Pexp_pack _ | Pexp_record _ | Pexp_send _
+       |Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
        |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _
        |Pexp_hole | Pexp_beginend _ | Pexp_parens _ | Pexp_cons _
-       |Pexp_letopen _ | Pexp_indexop_access _ | Pexp_prefix _
-       |Pexp_infix _ | Pexp_construct_unit_beginend _ ->
+       |Pexp_indexop_access _ | Pexp_prefix _ | Pexp_infix _
+       |Pexp_construct_unit_beginend _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object ({pcstr_self; _}, _) ->
@@ -1353,7 +1333,7 @@ end = struct
     | Cd _ -> assert false
     | Ctd _ -> assert false
     | Mty _ | Mod _ | Sig _ -> assert false
-    | Str str -> (
+    | Str str | Str_exp str -> (
       match str.pstr_desc with
       | Pstr_value {pvbs_bindings; _} -> assert (check_bindings pvbs_bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
@@ -1465,10 +1445,8 @@ end = struct
          |Pexp_coerce (e, _, _)
          |Pexp_field (e, _)
          |Pexp_lazy (e, _)
-         |Pexp_letexception (_, e, _)
-         |Pexp_letmodule (_, _, _, e, _)
+         |Pexp_struct_item (_, e, _)
          |Pexp_open (_, e)
-         |Pexp_letopen (_, e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
@@ -1489,7 +1467,7 @@ end = struct
     | Bo x -> assert (x.pbop_exp == exp)
     | Mb _ -> assert false
     | Md _ -> assert false
-    | Str str -> (
+    | Str str | Str_exp str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
       | Pstr_value {pvbs_bindings; _} ->
@@ -1619,6 +1597,7 @@ end = struct
         constructor_cxt_prec_of_inner typ
     | { ctx=
           ( Str {pstr_desc= Pstr_typext {ptyext_constructors= l; _}; _}
+          | Str_exp {pstr_desc= Pstr_typext {ptyext_constructors= l; _}; _}
           | Sig {psig_desc= Psig_typext {ptyext_constructors= l; _}; _} )
       ; ast=
           Typ
@@ -1628,15 +1607,25 @@ end = struct
         constructor_cxt_prec_of_inner typ
     | { ctx=
           ( Str {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
+          | Str_exp
+              {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
           | Sig {psig_desc= Psig_exception {ptyexn_constructor= constr; _}; _}
-          | Exp {pexp_desc= Pexp_letexception (constr, _, _); _} )
+          | Exp
+              { pexp_desc=
+                  Pexp_struct_item
+                    ( { pstr_desc=
+                          Pstr_exception {ptyexn_constructor= constr; _}
+                      ; _ }
+                    , _
+                    , _ )
+              ; _ } )
       ; ast=
           Typ
             ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _ | Ptyp_poly _; _} as typ)
       }
       when is_tuple_lvl1_in_ext_constructor typ constr ->
         constructor_cxt_prec_of_inner typ
-    | {ctx= Str _; ast= Typ _; _} -> None
+    | {ctx= Str _ | Str_exp _; ast= Typ _; _} -> None
     | {ctx= Typ {ptyp_desc; _}; ast= Typ typ; _} -> (
       match ptyp_desc with
       | Ptyp_arrow (t, _) ->
@@ -1744,7 +1733,7 @@ end = struct
     | { ctx= Exp _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
-          | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+          | Str _ | Str_exp _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ctx= Fpe _ | Fpc _; ast= _}
      |{ctx= _; ast= Fpe _ | Fpc _}
      |{ctx= Vc _; ast= _}
@@ -1762,13 +1751,14 @@ end = struct
      |{ ctx= Cl _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
-          | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
+          | Str_exp _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) }
      |{ ctx=
           ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
+          | Sig _ | Str _ | Str_exp _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ ) } ->
+          | Sig _ | Str _ | Str_exp _ | Clf _ | Ctf _ | Rep | Mb _ | Md _ )
+      } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1845,8 +1835,8 @@ end = struct
       | Pcl_structure _ -> Some Apply
       | Pcl_let _ -> Some Low
       | _ -> None )
-    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ | Ctf _
-     |Rep | Mb _ | Md _ | Cd _ | Ctd _ ->
+    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Str_exp _ | Tli _
+     |Clf _ | Ctf _ | Rep | Mb _ | Md _ | Cd _ | Ctd _ ->
         None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
@@ -1885,6 +1875,7 @@ end = struct
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
           ( Str {pstr_desc= Pstr_typext _; _}
+          | Str_exp {pstr_desc= Pstr_typext _; _}
           | Sig {psig_desc= Psig_typext _; _} ) } ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
@@ -1900,6 +1891,7 @@ end = struct
           ; _ }
       ; ctx=
           ( Str {pstr_desc= Pstr_exception _; _}
+          | Str_exp {pstr_desc= Pstr_exception _; _}
           | Sig {psig_desc= Psig_exception _; _} ) } ->
         true
     | { ast= {ptyp_desc= Ptyp_tuple ({lte_label= Some _; _} :: _); _}
@@ -2049,7 +2041,7 @@ end = struct
      |( (Exp {pexp_desc= Pexp_letop _; _} | Bo _)
       , (Ppat_exception _ | Ppat_effect _) ) ->
         true
-    | (Str _ | Exp _ | Lb _), Ppat_lazy _ -> true
+    | (Str _ | Str_exp _ | Exp _ | Lb _), Ppat_lazy _ -> true
     | ( (Fpe _ | Fpc _)
       , ( Ppat_tuple _ | Ppat_construct _ | Ppat_alias _ | Ppat_variant _
         | Ppat_lazy _ | Ppat_exception _ | Ppat_effect _ | Ppat_or _ ) )
@@ -2123,11 +2115,11 @@ end = struct
          |Pexp_infix (_, _, e)
          |Pexp_lazy (e, _)
          |Pexp_open (_, e)
-         |Pexp_letopen (_, e, _)
          |Pexp_sequence (_, e, _)
          |Pexp_setfield (_, _, e)
          |Pexp_setinstvar (_, e)
-         |Pexp_variant (_, Some e) ->
+         |Pexp_variant (_, Some e)
+         |Pexp_struct_item (_, e, _) ->
             continue e
         | Pexp_cons l -> continue (List.last_exn l)
         | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
@@ -2138,10 +2130,7 @@ end = struct
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
-        | Pexp_let (_, e, _)
-         |Pexp_letop {body= e; _}
-         |Pexp_letexception (_, e, _)
-         |Pexp_letmodule (_, _, _, e, _) -> (
+        | Pexp_let (_, e, _) | Pexp_letop {body= e; _} -> (
           match cls with Match | Then | ThenElse -> continue e | _ -> false )
         | Pexp_match _ when match cls with Then -> true | _ -> false ->
             false
@@ -2198,19 +2187,16 @@ end = struct
        |Pexp_infix (_, _, e)
        |Pexp_lazy (e, _)
        |Pexp_open (_, e)
-       |Pexp_letopen (_, e, _)
        |Pexp_function (_, _, Pfunction_body e, _)
        |Pexp_sequence (_, e, _)
        |Pexp_setfield (_, _, e)
        |Pexp_setinstvar (_, e)
-       |Pexp_variant (_, Some e) ->
+       |Pexp_variant (_, Some e)
+       |Pexp_let (_, e, _)
+       |Pexp_letop {body= e; _}
+       |Pexp_struct_item (_, e, _) ->
           continue e
       | Pexp_cons l -> continue (List.last_exn l)
-      | Pexp_let (_, e, _)
-       |Pexp_letop {body= e; _}
-       |Pexp_letexception (_, e, _)
-       |Pexp_letmodule (_, _, _, e, _) ->
-          continue e
       | Pexp_ifthenelse (eN, None) -> continue (List.last_exn eN).if_body
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc -> (

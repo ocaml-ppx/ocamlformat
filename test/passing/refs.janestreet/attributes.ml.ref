@@ -505,15 +505,13 @@ let _ =
 let _ = new[@a] x [@b]
 
 let _ =
-  (let module [@a] X = Y in
-  c)
-  [@b]
+  let[@b] module [@a] X = Y in
+  c
 ;;
 
 let _ =
-  (let exception[@a] E in
-  c)
-  [@b]
+  let[@b] exception [@a] E in
+  c
 ;;
 
 let _ = assert[@a] x [@b]

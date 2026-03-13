@@ -242,10 +242,6 @@ module Exp = struct
   let indexop_access ?loc ?attrs pia_lhs pia_kind pia_paren pia_rhs =
     mk ?loc ?attrs (Pexp_indexop_access {pia_lhs; pia_kind; pia_paren; pia_rhs})
   let override ?loc ?attrs a = mk ?loc ?attrs (Pexp_override a)
-  let letmodule ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b c d =
-    mk ?loc ?attrs (Pexp_letmodule (a, b, c, d, infix_ext_attrs))
-  let letexception ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
-    mk ?loc ?attrs (Pexp_letexception (a, b, infix_ext_attrs))
   let assert_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
     mk ?loc ?attrs (Pexp_assert (a, infix_ext_attrs))
   let lazy_ ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a =
@@ -255,12 +251,12 @@ module Exp = struct
   let pack ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
     mk ?loc ?attrs (Pexp_pack (a, b, infix_ext_attrs))
   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
-  let letopen ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) a b =
-    mk ?loc ?attrs (Pexp_letopen (a, b, infix_ext_attrs))
   let letop ?loc ?attrs ~loc_in let_ ands body =
     mk ?loc ?attrs (Pexp_letop {let_; ands; body; loc_in})
   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
+  let struct_item ?loc ?attrs ?(infix_ext_attrs=Attr.empty_infix_ext_attrs) si e =
+    mk ?loc ?attrs (Pexp_struct_item (si, e, infix_ext_attrs))
   (* Added *)
   let hole ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
   (* *)

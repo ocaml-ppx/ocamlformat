@@ -1036,6 +1036,29 @@ let comma_sep (c : Conf.t) : Fmt.t =
   | `Before -> cut_break $ str ", "
   | `After -> str "," $ break 1 2
 
+let get_pexp_struct_item_break_in (c : Conf.t) {ast; ctx= _} =
+  let is_compact_mod m =
+    match m.pmod_desc with
+    | Pmod_structure _ | Pmod_functor (_, {pmod_desc= Pmod_structure _; _})
+      ->
+        true
+    | Pmod_apply (lhs, {pmod_desc= Pmod_structure _; _}) ->
+        Ast.Mod.is_simple lhs
+    | _ -> false
+  in
+  let let_module m =
+    if Poly.equal c.fmt_opts.let_module.v `Compact && is_compact_mod m then
+      str " "
+    else space_break
+  in
+  match ast.pstr_desc with
+  | Pstr_open _ when c.fmt_opts.ocp_indent_compat.v -> str " "
+  | Pstr_module {pmb_expr= m; _}
+   |Pstr_include {pincl_mod= m; _}
+   |Pstr_open {popen_expr= m; _} ->
+      let_module m
+  | _ -> space_break
+
 module Align = struct
   let general (c : Conf.t) t =
     hvbox_if (not c.fmt_opts.align_symbol_open_paren.v) 0 t

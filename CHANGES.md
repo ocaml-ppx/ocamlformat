@@ -8,7 +8,8 @@ profile. This started with version 0.26.0.
 
 ### Highlight
 
-- Support OCaml 5.5 syntax (#2772, #2774, #2775, #2777, @Julow)
+- \* Support OCaml 5.5 syntax (#2772, #2774, #2775, #2777, #2780, @Julow)
+  The update brings several tiny changes, they are listed below.
 
 - \* Update Odoc's parser to 3.0 (#2757, @Julow)
   The indentation of code-blocks containing OCaml code is reduced by 2 to avoid
@@ -109,6 +110,23 @@ profile. This started with version 0.26.0.
   to add `ocaml-version=5.3` to the configuration.
   In exchange, code that use `effect` as an identifier must use
   `ocaml-version=5.2`.
+
+- The work to support OCaml 5.5 come with several improvements:
+  + Improve the indentation of `let structure-item` with the
+    `[@ocamlformat "disable"]` attribute.
+    `let structure-item` means `let module`, `let open`, `let include` and
+    `let exception`.
+  + `(let open M in e)[@a]` is turned into `let[@a] open M in e`.
+  + Long `let open ... in` no longer exceed the margin.
+  + Improve indentation of `let structure-item` within parentheses:
+    ```ocaml
+    (* before *)
+    (let module M = M in
+    M.foo)
+    (* after *)
+    (let module M = M in
+     M.foo)
+    ```
 
 ## 0.28.1
 

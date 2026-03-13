@@ -685,17 +685,6 @@ module E = struct
     | Pexp_override sel ->
         override ~loc ~attrs
           (List.map (map_tuple (map_loc map_string sub) (sub.expr sub)) sel)
-    | Pexp_letmodule (s, args, me, e, iea) ->
-        letmodule ~loc ~attrs (map_loc map_string_opt sub s)
-          ~infix_ext_attrs:(sub.infix_ext_attrs sub iea)
-          (List.map (map_functor_param sub) args)
-          (sub.module_expr sub me)
-          (sub.expr sub e)
-    | Pexp_letexception (cd, e, iea) ->
-        letexception ~loc ~attrs
-          ~infix_ext_attrs:(sub.infix_ext_attrs sub iea)
-          (sub.extension_constructor sub cd)
-          (sub.expr sub e)
     | Pexp_assert (e, iea) -> assert_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e)
     | Pexp_lazy (e, iea) -> lazy_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e)
     | Pexp_object (cls, iea) -> object_ ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.class_structure sub cls)
@@ -704,13 +693,13 @@ module E = struct
           (sub.module_expr sub me)
           (map_opt (map_package_type sub) pt)
     | Pexp_open (o, e) -> open_ ~loc ~attrs (map_loc_lid sub o) (sub.expr sub e)
-    | Pexp_letopen (o, e, iea) ->
-        letopen ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.open_declaration sub o) (sub.expr sub e)
     | Pexp_letop {let_; ands; body; loc_in} ->
         letop ~loc ~attrs ~loc_in:(sub.location sub loc_in) (sub.binding_op sub let_)
           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
+    | Pexp_struct_item (si, e, iea) ->
+        struct_item ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.structure_item sub si) (sub.expr sub e)
     (* Added *)
     | Pexp_hole -> hole ~loc ~attrs ()
     (* *)

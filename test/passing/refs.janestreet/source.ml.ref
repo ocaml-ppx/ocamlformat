@@ -82,8 +82,8 @@ let () =
   let%foo[@foo] x = 3
   and[@foo] y = 4 in
   (let module%foo [@foo] M = M in
-  ());
-  (let open%foo[@foo] M in
+   ());
+  (let open%foo [@foo] M in
    ());
   (fun%foo[@foo] x -> ());
   (function%foo[@foo]
@@ -683,8 +683,7 @@ let sort (type s) set l =
 ;;
 
 let make_set (type s) cmp =
-  let module S =
-    Set.Make (struct
+  let module S = Set.Make (struct
       type t = s
 
       let compare = cmp
@@ -6602,8 +6601,7 @@ let () =
 (* This one should fail *)
 
 let f flag =
-  let module T =
-    Set.Make (struct
+  let module T = Set.Make (struct
       type t = int
 
       let compare = compare
@@ -8439,8 +8437,7 @@ let () =
 ;;
 
 let sort_uniq (type s) cmp l =
-  let module S =
-    Set.Make (struct
+  let module S = Set.Make (struct
       type t = s
 
       let compare = cmp

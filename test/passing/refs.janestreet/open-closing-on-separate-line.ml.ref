@@ -298,9 +298,8 @@ open [@attr] [%ext]
 
 let g =
   M.f
-    ((let open M in
-      x
-     ) [@attr]
+    (let[@attr] open M in
+     x
     )
 ;;
 
