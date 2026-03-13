@@ -1038,14 +1038,17 @@ let comma_sep (c : Conf.t) : Fmt.t =
 
 let get_pexp_struct_item_break_in (c : Conf.t) {ast; ctx= _} =
   let let_module m =
-    match c.fmt_opts.let_module.v with
-    | `Compact -> (
+    let is_compact_mod m =
       match m.pmod_desc with
-      | Pmod_structure _
-       |Pmod_functor (_, {pmod_desc= Pmod_structure _; _})
-       |Pmod_apply (_, {pmod_desc= Pmod_structure _; _}) ->
-          str " "
-      | _ -> space_break )
+      | Pmod_structure _ | Pmod_functor (_, {pmod_desc= Pmod_structure _; _})
+        ->
+          true
+      | Pmod_apply (lhs, {pmod_desc= Pmod_structure _; _}) ->
+          Ast.Mod.is_simple lhs
+      | _ -> false
+    in
+    match c.fmt_opts.let_module.v with
+    | `Compact -> if is_compact_mod m then str " " else space_break
     | `Sparse -> space_break
   in
   match ast.pstr_desc with

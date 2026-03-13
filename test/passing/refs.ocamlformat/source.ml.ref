@@ -3170,7 +3170,8 @@ let magic : 'a 'b. 'a -> 'b =
       end)
       (struct
         type 'a t = unit
-      end) in
+      end)
+  in
   M.f Refl
 
 (* Variance and subtyping *)

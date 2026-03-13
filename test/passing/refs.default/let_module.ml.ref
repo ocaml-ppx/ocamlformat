@@ -39,7 +39,8 @@ let () =
       (struct
         type t = t
         type t = t
-      end) in
+      end)
+  in
   foo
 
 let f () =
