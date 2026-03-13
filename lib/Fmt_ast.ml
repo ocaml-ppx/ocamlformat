@@ -1082,13 +1082,13 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | Optional _ -> assert false (* Not produced by the parser *)
       in
       hovbox_if box 0
-        ( hvbox 0
-            ( fmt_lbl $ str "("
-            $ hvbox 0
-                (str "module" $ space_break $ fmt_str_loc c lid $ str " :")
-            $ space_break
-            $ fmt_package_type c ctx ~pro:noop ptyp
-            $ str ")" )
+        ( (let pro =
+             hvbox 2
+               ( fmt_lbl $ str "(" $ str "module" $ space_break
+               $ fmt_str_loc c lid $ str " :" )
+             $ break 1 2
+           in
+           fmt_package_type c ctx ~pro ptyp $ str ")" )
         $ space_break $ str "->" $ space_break
         $ fmt_core_type c ~pro_space:false (sub_typ ~ctx rhs) )
 
