@@ -8,7 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Highlight
 
-- \* Support OCaml 5.5 syntax (#2772, #2774, #2775, #2777, #2780, @Julow)
+- \* Support OCaml 5.5 syntax (#2772, #2774, #2775, #2777, #2780, #2781, @Julow)
   The update brings several tiny changes, they are listed below.
 
 - \* Update Odoc's parser to 3.0 (#2757, @Julow)

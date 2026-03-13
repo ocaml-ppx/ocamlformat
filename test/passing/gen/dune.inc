@@ -4036,6 +4036,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to modular_explicits.ml.stdout
+   (with-stderr-to modular_explicits.ml.stderr
+     (run %{bin:ocamlformat} --name modular_explicits.ml --margin-check %{dep:../tests/modular_explicits.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff modular_explicits.ml.ref modular_explicits.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff modular_explicits.ml.err modular_explicits.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to module.ml.stdout
    (with-stderr-to module.ml.stderr
      (run %{bin:ocamlformat} --name module.ml --margin-check %{dep:../tests/module.ml})))))

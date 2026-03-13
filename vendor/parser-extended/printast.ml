@@ -251,6 +251,12 @@ let rec core_type i ppf x =
   | Ptyp_extension (s, arg) ->
       line i ppf "Ptyp_extension %a\n" fmt_string_loc s;
       payload i ppf arg
+  | Ptyp_functor (label, name, ptyp, ct2) ->
+      line i ppf "Ptyp_functor\n";
+      arg_label i ppf label;
+      line i ppf "\"%s\"\n" name.txt;
+      package_type i ppf ptyp;
+      core_type i ppf ct2
 
 and arrow_param i ppf {pap_label; pap_loc; pap_type} =
   line i ppf "arrow_param %a\n" fmt_location pap_loc;

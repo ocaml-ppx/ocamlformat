@@ -131,3 +131,18 @@ let _ =
   (fun _ -> ())
     (fun (module M1 : MS.S) ((module M2)  : (module MS.S)) ->
        (((module M1) : (module MS.S)), ((module M2) : (module MS.S))))
+
+let f :
+    (* a *)
+    (module (* a *) M (* a *) : (* a *) S) (* a *) ->
+    (* a *)
+    fooo =
+  f
+
+let f :
+    (* a *)
+    (module (* a *) Foooooooooooooooooooooooooooooooooooooo (* a *) : (* a *) Foooooooooooooooooooooooooooooooooooooo) (* a *) ->
+    (* a *)
+    fooo =
+  f
+

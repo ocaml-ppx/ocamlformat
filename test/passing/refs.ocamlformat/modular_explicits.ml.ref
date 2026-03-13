@@ -1,0 +1,954 @@
+(* Taken from the compiler's testsuite *)
+(* testsuite/tests/typing-modular-explicits/general.ml *)
+
+module type Typ = sig
+  type t
+end
+
+module type Add = sig
+  type t
+
+  val add : t -> t -> t
+end
+
+let id (module T : Typ) (x : T.t) = x
+
+let id2 : (module T : Typ) -> T.t -> T.t = fun (module A : Typ) (x : A.t) -> x
+
+let id_infer_sig : (module T : Typ) -> T.t -> T.t =
+ fun (module A) (x : A.t) -> x
+
+let f x y = (id (module Int) x, id (module Bool) y)
+
+let f2 x y = (id (module Int : Typ) x, id (module Bool : Typ) y)
+
+let merge (module T : Typ) x y = (id (module T) x, id (module T) y)
+
+let test_lambda a = (fun (module T : Typ) (x : T.t) -> x) (module Int) a
+
+let alpha_equiv (f : (module A : Add) -> A.t -> A.t) :
+    (module T : Add) -> T.t -> T.t =
+  f
+
+(* Here we test that M is not captured inside the type of f *)
+let apply_weird (module M : Typ) (f : (module M : Typ) -> _) (x : M.t) : M.t =
+  f (module M) x
+
+(** From here on we will try applying invalid arguments to functions *)
+
+let f x (module M : Typ) (y : M.t) = (x, y)
+
+(* f does not constraint the type of the first argument of the function *)
+let invalid_arg1 = f (module Int)
+
+(* We gave too many arguments before the module argument, resulting in a type
+   error *)
+let invalid_arg2 = f 3 4 (module Int)
+
+(* Here we cannot extract the type of m *)
+let invalid_arg3 =
+  let m = (module Int : Typ) in
+  f 3 m 4
+
+(* Here we cannot extract the type of m. This could be accepted because m does
+   not hide any abstract types. *)
+let invalid_arg4 =
+  let m = (module Int : Typ with type t = int) in
+  f 3 m 4
+
+(** From here we will test things with labels *)
+
+let labelled () (module M : Typ) ~(y : M.t) = y
+
+let apply_labelled = labelled () ~y:3 (module Int)
+
+(* We cannot omit the module argument like other labelled arguments because of
+   possible type dependancy *)
+let apply_labelled_fail = labelled () ~y:3
+
+(* Here we can remove the dependancy, thus it should be accepted. *)
+let labelled' (module M : Typ with type t = int) ~(y : M.t) = y
+
+let apply_labelled_success = labelled' ~y:3
+
+(* Check that the optionnal argument is removed correctly when applying a
+module argument. *)
+let apply_opt (f : ?opt:int -> (module M : Typ) -> M.t) = f (module Int)
+
+let build_pair (module M : Typ) ~x ~y : M.t * M.t = (x, y)
+
+(* This shouldn't raise a principality warning *)
+let test_principality_of_commuting_labels = build_pair (module Int) ~y:3 ~x:1
+
+let foo f a =
+  let _ = (f ~a : (module M : Typ) -> M.t) in
+  f ~a (fun x -> x)
+
+let foo2 f a =
+  let m = (module Int : Typ) in
+  let _ = (f ~a : (module M : Typ) -> M.t) in
+  f ~a m
+
+let foo3 f a =
+  let _ = (f ~a : (module M : Typ) -> M.t) in
+  f ~a (module Int)
+
+let foo4 f a =
+  let _ = (f ~a : b:(module M : Typ) -> M.t) in
+  f ~a (module Int)
+
+let foo4 f a =
+  let _ = (f ~a : b:(module M : Typ) -> M.t) in
+  f ~a ~c:(module Int)
+
+(** From here we test possible expressions for the module argument. *)
+
+let x_from_struct =
+  id
+    ( module struct
+      type t = int
+    end )
+    3
+
+module F () : Typ = struct
+  type t = int
+end
+
+let x_from_generative_functor = id (module F ())
+
+module type Map = sig
+  type _ t
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
+end
+
+let map (module M : Map) f x = M.map f x
+
+let s_list = map (module List) string_of_int [3; 1; 4]
+
+(** Testing functor application *)
+
+module MapCombine (M1 : Map) (M2 : Map) = struct
+  type 'a t = 'a M1.t M2.t
+
+  let map f = map (module M2) (map (module M1) f)
+end
+
+let s_list_array =
+  map (module MapCombine (List) (Array)) string_of_int [|[3; 2]; [2]; []|]
+
+(* Checks that a structure as functor argument is rejected if
+   an abstract type is created. *)
+
+let s_list_arrayb =
+  map
+    ( module MapCombine
+               (struct
+                 type 'a t = A of 'a
+
+                 let map f (A x) = A (f x)
+               end)
+               (Array) )
+    string_of_int [|[]|]
+
+(* Checks that a structure as functor argument can be accepted if
+   no abstract types are created. *)
+
+let s_list_arrayb =
+  map
+    ( module MapCombine
+               (struct
+                 type 'a t = 'a list
+
+                 let map = List.map
+               end)
+               (Array) )
+    string_of_int
+    [|[3; 2]; [2]; []|]
+
+module F () : Map = struct
+  type 'a t = 'a list
+
+  let map = List.map
+end
+
+let fail = map (module F ()) string_of_int [3]
+
+(* The example above is accepted if no abstract types are created *)
+module F () = struct
+  type 'a t = 'a list
+
+  let map = List.map
+end
+
+let ok = map (module F ()) string_of_int [3]
+
+(** Various tests on the coercion between functor types. **)
+(* Here the sames rules as with first-class modules applies :
+   coercion is allowed only if the runtime representation is the same.
+*)
+
+module type AddSub = sig
+  type t
+
+  val add : t -> t -> t
+
+  val sub : t -> t -> t
+end
+
+module type SubAdd = sig
+  type t
+
+  val sub : t -> t -> t
+
+  val add : t -> t -> t
+end
+
+module type Typ' = sig
+  type t
+end
+
+(* Same signature but with a different name *)
+let id3 : (module T : Typ') -> T.t -> T.t = id
+
+(* Reflexivity of ground coercion *)
+let id4 = (id :> (module T : Typ) -> T.t -> T.t)
+
+(* Ground coercion for same signature but a different name *)
+let id5 = (id :> (module T : Typ') -> T.t -> T.t)
+
+(* Fails because this would require computation at runtime *)
+let try_unify (f : (module T : Typ) -> T.t -> T.t) =
+  (f : (module A : Add) -> A.t -> A.t)
+
+(* This also fails with ground coercion *)
+let try_coerce (f : (module T : Typ) -> T.t -> T.t) =
+  (f :> (module A : Add) -> A.t -> A.t)
+
+(* Fails because this would require computation at runtime *)
+let try_coerce2 (f : (module A : AddSub) -> A.t -> A.t) =
+  (f :> (module T : SubAdd) -> T.t -> T.t)
+
+module type Add2 = sig
+  type a
+
+  type t
+
+  val add : t -> t -> t
+end
+
+module type Add3 = sig
+  type t
+
+  type a
+
+  val add : t -> t -> t
+end
+
+module type Add4 = sig
+  type t
+
+  val add : t -> t -> t
+
+  type a
+end
+
+(* Unification does not allow changing the signature *)
+let try_coerce4 (f : (module A : Add) -> A.t -> A.t) =
+  (f : (module A : Add2) -> A.t -> A.t)
+
+(* But we can add type fields with ground coercion *)
+let coerce5 (f : (module A : Add) -> A.t -> A.t) =
+  (f :> (module A : Add2) -> A.t -> A.t)
+
+(* changing type order in signature *)
+let try_coerce6 (f : (module A : Add2) -> A.t -> A.t) =
+  (f : (module A : Add3) -> A.t -> A.t)
+
+let try_coerce7 (f : (module A : Add2) -> A.t -> A.t) =
+  (f : (module A : Add4) -> A.t -> A.t)
+
+(* We cannot decrease the signature *)
+let try_coerce8 (f : (module A : Add2) -> A.t -> A.t) =
+  (f :> (module A : Add) -> A.t -> A.t)
+
+(* Test coercions with additionnal infos *)
+
+let restrict_signature1 (x : (module T : Typ) -> T.t -> T.t) =
+  (x :> (module T : Typ with type t = int) -> T.t -> T.t)
+
+let restrict_signature2 (x : (module T : Typ) -> T.t -> T.t) =
+  (x :> (module T : Typ with type t = int) -> int -> int)
+
+let restrict_signature_to_remove_dep (x : (module T : Typ) -> T.t -> T.t) =
+  (x :> (module Typ with type t = int) -> int -> int)
+
+let restrict_signature_to_add_dep (x : (module Typ) -> int -> int) =
+  (x :> (module T : Typ with type t = int) -> T.t -> T.t)
+
+module type TypPrivInt = sig
+  type t = private int
+end
+
+let restrict_signature_with_priv_to_remove_dep =
+ fun (x : (module T : Typ) -> unit -> T.t) ->
+  (x :> (module TypPrivInt) -> unit -> int)
+
+let restrict_signature_with_priv_to_add_dep =
+ fun (x : (module Typ) -> int -> int) ->
+  (x :> (module T : TypPrivInt) -> T.t -> int)
+
+module PrivateFCM = struct
+  type t = private (module Typ with type t = int)
+end
+
+let subtyping_to_private_fcm x =
+  (x : (module M : Typ) -> M.t :> PrivateFCM.t -> int)
+
+let failed_subtyping x =
+  (x : (module A : Typ) -> A.t list :> (module B : Typ) -> B.t)
+
+class type ct = object end
+
+let test_build_subtype x =
+  let _ : (module T : Typ) -> 'a -> T.t -> < m: int > = x in
+  (x :> (module T : Typ) -> int -> T.t -> ct)
+
+(* Test moregen *)
+
+module M : sig
+  val f1 : unit -> (module M : Typ) -> 'a -> 'a
+
+  val f : (module M : Typ) -> M.t -> M.t
+end = struct
+  let f1 () (module M : Typ) : 'a -> 'a = assert false
+
+  (* unit -> (module M : T) -> 'a -> 'a *)
+  let f = f1 ()
+  (* (module M : T) -> '_weak -> '_weak *)
+end
+
+(* Test if type subtyping and unification also works with types being
+  a first-class module hidden behind a path *)
+
+type mod_with_int = (module Typ with type t = int)
+
+type mod_without_cstrs = (module Typ)
+
+let restrict_signature_in_path (x : (module T : Typ) -> T.t -> T.t) =
+  (x :> mod_with_int -> int -> int)
+
+let restrict_signature_in_path2 (x : mod_without_cstrs -> int -> int) =
+  (x :> (module T : Typ with type t = int) -> T.t -> T.t)
+
+let basic_subtyping (x : (module T : Typ with type t = int) -> T.t -> T.t) =
+  (x : mod_with_int -> int -> int)
+
+let basic_subtyping2 (x : mod_with_int -> int -> int) =
+  (x : (module T : Typ with type t = int) -> T.t -> T.t)
+
+(* Small test to ensure subtyping does not expect the arrow argument to
+   be a module *)
+let subtyping_fail (x : (module T : Typ) -> T.t) = (x :> int -> int)
+
+(** Tests about unannoted applications *)
+
+let apply f (module T : Typ) (x : T.t) : T.t = f (module T) x
+
+let apply_with_annot f (module T : Typ) (x : T.t) : T.t =
+  let _g : (module T : Typ) -> T.t -> T.t = f in
+  f (module T) x
+
+(* Used to propagate type annotations  *)
+let merge_no_mod (type a) (x : a) (y : a) = x
+
+let apply_small_annot1 (f : (module T : Typ) -> T.t -> T.t) g (module T : Typ) x
+    =
+  let r = g (module T) x in
+  let _ = merge_no_mod f g in
+  r
+
+let apply_small_annot2 (f : (module T : Typ) -> T.t -> T.t) g (module T : Typ) x
+    =
+  let _ = merge_no_mod f g in
+  g (module T) x
+
+(* This is a syntax error *)
+(* let id_bool_fail (module B : module type of Bool) (x : B.t) = x *)
+
+module MyBool = struct
+  type t = bool = false | true
+
+  let not = Bool.not
+end
+
+module type TBool = module type of MyBool
+
+let id_bool (module B : TBool) (x : B.t) = x
+
+let _ = id_bool (module MyBool) MyBool.(false)
+
+(** Escape errors **)
+
+let r = ref None
+
+let set (module T : Typ) (x : T.t) = r := Some x
+
+let f x (module A : Add) (y : A.t) = A.add x y
+
+let f (x : (module T : Typ) -> _) : (module T : Typ) -> T.t = x
+
+(** Testing the `S with type t = _` cases *)
+
+module type Coerce = sig
+  type a
+
+  type b
+
+  val coerce : a -> b
+end
+
+let coerce (module C : Coerce) x = C.coerce x
+
+let incr_general (module Cfrom : Coerce with type b = int)
+    (module Cto : Coerce with type a = int and type b = Cfrom.a) x =
+  coerce (module Cto) (1 + coerce (module Cfrom) x)
+
+module type CoerceToInt = sig
+  type a
+
+  type b = int
+
+  val coerce : a -> int
+end
+
+module type CoerceFromInt = sig
+  type a = int
+
+  type b
+
+  val coerce : int -> b
+end
+
+let for_comparison =
+  ( incr_general
+    :>    (module foo_CoerceToInt)
+       -> (module CoerceFromInt with type b = C1.a)
+       -> C1.a
+       -> C1.a )
+
+let incr_general'' =
+  ( incr_general
+    :> (module C1 : CoerceToInt)
+       -> (module CoerceFromInt with type b = C1.a) -> C1.a -> C1.a )
+
+let incr_general' =
+  ( incr_general
+    : (module C1 : CoerceToInt)
+      -> (module CoerceFromInt with type b = C1.a) -> C1.a -> C1.a )
+
+(* Test that variance is correctly used during subtyping *)
+
+module type InvTy = sig
+  type 'a t
+end
+
+module type CovTy = sig
+  type +'a t
+end
+
+type 'a t = (module M : CovTy) -> ((module N : InvTy) -> 'a M.t N.t) -> unit
+
+type 'a s = (module M : InvTy) -> ((module N : CovTy) -> 'a M.t N.t) -> unit
+
+(* When subtyping s to t, 'a M.t N.t is covariant in 'a because the relevant M,
+   N modules are both CovTy, so st has a more general type than ss or tt *)
+let ss x = (x : [> `A] s :> [`A] s)
+
+let tt x = (x : [> `A] t :> [`A] t)
+
+let st x = (x : [> `A] s :> [`A] t)
+
+(* Same as st above, but via eta-expansion instead of subtyping *)
+let st' (s : [> `A] s) : [`A] t =
+ fun (module M) f ->
+  s
+    (module M)
+    (fun (module N) -> (f (module N) : [`A] M.t N.t :> [> `A] M.t N.t))
+
+(** Recursive and mutually recursive definitions *)
+
+let rec f : (module T : Typ) -> int -> T.t -> T.t -> T.t =
+ fun (module T) n (x : T.t) (y : T.t) ->
+  if n = 0 then x else f (module T) (n - 1) y x
+
+(* Type cannot be infered because type approximation for letrecs is partial. *)
+let rec f (module T : Typ) n (x : T.t) (y : T.t) =
+  if n = 0 then x else f (module T) (n - 1) y x
+
+(* Type cannot be infered because type approximation for letrecs is partial. *)
+let rec f (module T : Typ) n (x : T.t) (y : T.t) =
+  if n = 0 then x else g (module T) x y
+
+and g (module T : Typ) n (x : T.t) (y : T.t) =
+  if n = 0 then y else f (module T) x y
+
+(* This test is similar to the previous one without the error in f definition *)
+let rec f (module T : Typ) x = g x
+
+and g x = f (module Int) x
+
+(* Test that the value letrecs does not trivially fails on dependant
+  applications *)
+let rec m = map (module List) (fun x -> x) [3]
+
+let rec m = map (module List) (fun x -> x) [3]
+
+and g = 3 :: m
+
+let rec m = (fun (module T : Typ) (x : T.t) -> x) (module Int) 3
+
+(** Typing is impacted by typing order, the following tests show this. *)
+
+let id' (f : (module T : Typ) -> T.t -> T.t) = f
+
+let typing_order1 f = (f (module Int) 3, id' f)
+
+let typing_order2 f = (id' f, f (module Int) 3)
+
+(** The following test check that tests at module unpacking still happen with
+    modular explicits *)
+
+(* we test that free type variables cannot occur *)
+module type T = sig
+  type t
+
+  val v : t
+end
+
+let foo (module X : T with type t = 'a) = X.v X.v
+
+(* Test principality warning of type *)
+let principality_warning2 f =
+  let _ : ((module T : Typ) -> T.t -> T.t) -> unit = f in
+  f (fun (module T) x -> x)
+
+(*
+    Ensure that application of a module-dependent function does not erase the
+    principality of the return type.
+*)
+let should_be_principal (f : (module M : Typ) -> (module N : Typ) -> M.t * N.t)
+    =
+  f (module Int) (module Int)
+
+(* This test check that as `t` is private we cannot inline its definition *)
+module type S = sig
+  type t = private int
+
+  val f : t
+end
+
+let check_escape : _ -> _ = fun (module M : S) -> M.f
+
+(* The following test should give a warning only once.
+  Here we test that the structure is typed only once.
+  To achieve this we wrote a code that raises a warning when typed.
+  If the warning is raised twice then that means typing happened twice.
+*)
+
+module type TInt = sig
+  type t = int
+end
+
+let f (module T : TInt) (x : T.t) = x
+
+let raise_principality_warning =
+  f
+    ( module struct
+      type t = int
+
+      let dummy_value =
+        let x = 3 in
+        0
+    end )
+
+let test_instance_nondep f =
+  let _ : (module M : Typ) -> M.t = f in
+  ignore
+    (f
+       ( module struct
+         type t = int
+       end ) ) ;
+  f
+
+(* Test relaxed value restriction *)
+
+module type Covariant = sig
+  type +'a t
+end
+
+module type Contravariant = sig
+  type -'a t
+end
+
+let f_covar () (module M : Covariant) : 'a M.t = assert false
+
+let f_contra () (module M : Contravariant) : 'a M.t = assert false
+
+let f_covar_applied = f_covar ()
+
+let f_contra_applied = f_contra ()
+
+module type M_arrow1 = sig
+  type 'a t = int -> 'a
+end
+
+let fa1 () (module M : M_arrow1) : 'a M.t = assert false
+
+let fa1_applied = fa1 ()
+
+module type M_arrow2 = sig
+  type 'a t = 'a -> int
+end
+
+let fa2 () (module M : M_arrow2) : 'a M.t = assert false
+
+let fa2_applied = fa2 ()
+
+module type Typ2 = sig
+  type +'a tp
+
+  type -'a tm
+
+  type +!'a tpb
+
+  type -!'a tmb
+
+  type !'a tb
+
+  type 'a t
+end
+
+let ftp () (module M : Typ2) : 'a M.tp = assert false
+
+let ftm () (module M : Typ2) : 'a M.tm = assert false
+
+let ftpb () (module M : Typ2) : 'a M.tpb = assert false
+
+let ftmb () (module M : Typ2) : 'a M.tmb = assert false
+
+let ftb () (module M : Typ2) : 'a M.tb = assert false
+
+let ft () (module M : Typ2) : 'a M.t = assert false
+
+let ftp_applied = ftp ()
+
+let ftm_applied = ftm ()
+
+let ftpb_applied = ftpb ()
+
+let ftmb_applied = ftmb ()
+
+let ftb_applied = ftb ()
+
+let ft_applied = ft ()
+
+let f3 (type a) () (module T : Typ with type t = a) = ()
+
+let f3_applied = f3 ()
+
+(* Ensure that subst handles module dependent functions *)
+module type S = sig end
+
+module type Ty = sig
+  type 'a t
+
+  val x : int t
+end
+
+module type Boom = Ty with type 'a t := (module M : S) -> 'a
+
+(** Tests with external functions *)
+
+external external1 : (module M : Typ) -> (module Typ) = "%identity"
+
+external external2 : ((module M : Typ) -> (module Typ) as 'a) -> 'a
+  = "%identity"
+
+(** Test printing of long trace. *)
+
+(* The goal here is to shadow Int with unification in order to create an
+   ambigous error message.
+*)
+let f (x : (module T : Typ) -> int -> Int.t) :
+    (module Int : Typ) -> int -> Int.t =
+  x
+
+(* This test does not work as intended. *)
+
+(* At one point the implementation was not robust enough and linking
+  interacted badly with linking identifiers together. *)
+
+let linking_ident1 (x : (module A : Typ with type t = int) -> int) =
+  (x : (module Z : Typ with type t = int) -> Z.t)
+
+let linking_ident2 (x : (module Z : Typ with type t = int) -> Z.t) =
+  (x : (module A : Typ with type t = int) -> int)
+
+let test_filter_arrow : (module M : Typ with type t = int) -> M.t = fun m -> 3
+
+let test_failing_filter_arrow : (module M : Typ) -> M.t = fun m -> assert false
+
+(* Here we test that the short-path mechanism does not
+   replace [Avoid__me.t] by [M.t]. *)
+module Avoid__me = struct
+  type t
+end
+
+module type S = sig
+  type t = Avoid__me.t
+end
+
+let f : (module M : S) -> Avoid__me.t -> unit = fun _ _ -> ()
+
+(* We would expect the second example to be accepted but this behaviour
+   is the same with non-dependent functions.
+*)
+
+let ok (x : [`Y | `X of (module M : Typ) -> M.t -> M.t]) =
+  match x with `X f -> f (module Int) 0 | `Y -> 0
+
+let fail (x : [< `Y | `X of (module M : Typ) -> M.t -> M.t]) =
+  match x with `X f -> f (module Int) 0 | `Y -> 0
+
+module type T = sig
+  type a = int
+
+  type v = [`A of a]
+end
+
+module M = struct
+  type a = int
+
+  type v = [`A of a]
+end
+
+let f : (module M : T) -> ([> M.v] as 'a) -> 'a = fun _ x -> x
+
+let u f = (f : (module M : T) -> ([> M.v] as 'a) -> 'a :> (module T) -> _ -> _)
+
+(* testsuite/tests/typing-modular-explicits/gadt.ml *)
+
+(* TEST
+   expect;
+*)
+
+module type T = sig
+  type t
+end
+
+module type T2 = sig
+  type t
+end
+
+module type Add = sig
+  type t
+
+  val add : t -> t -> t
+end
+
+type t1 = A1 of (int -> int) | B1 of ((module M : T) -> M.t -> M.t)
+
+let f = function A1 f -> f 1 | B1 f -> f (module Int) 2
+
+type _ t2 =
+  | A : (int -> int) t2
+  | B : ((module M : T) -> M.t -> M.t) t2
+  | C : ((module M : T2) -> M.t -> M.t) t2
+  | D : ((module M : Add) -> M.t -> M.t) t2
+
+(* matching specification *)
+
+(* Fails here due to a principality warning,
+  but it is independant of module-dependent function *)
+let f (type a) (x : a) (el : a t2) =
+  match (el, x) with
+  | A, f ->
+      f 1
+  | B, f ->
+      f (module Int) 2
+  | C, f ->
+      f (module Int) 3
+  | D, f ->
+      f (module Int) 4
+
+let f2 (type a) (x : a) (el : a t2) : int =
+  match (el, x) with
+  | A, f ->
+      f 1
+  | B, f ->
+      f (module Int) 2
+  | C, f ->
+      f (module Int) 3
+  | D, f ->
+      f (module Int) 4
+
+(* escape errors *)
+
+let f (type a) (x : a) (el : ((module N : T) -> a) t2) =
+  match (el, x) with B, f -> f | C, f -> f
+
+module R = struct
+  type 'a n
+end
+
+module type S = sig
+  type 'a t = X
+
+  type u
+
+  type v
+end
+
+let f :
+       ( (module X : S) -> (int * 'a) R.n
+       , (module X : S) -> (float * 'b) R.n )
+       Type.eq
+    -> _ = function
+  | Type.Equal ->
+      ()
+
+(* testsuite/tests/typing-modular-explicits/typedefs.ml *)
+
+(* TEST
+  expect;
+*)
+
+module type T = sig
+  type t
+end
+
+module type Add = sig
+  type t
+
+  val add : t -> t -> t
+end
+
+type t0 = (module M : T) -> M.t -> M.t
+
+type t1 = (module T : T) -> (module A : Add with type t = T.t) -> A.t -> A.t
+
+type _ t2 = A : ((module M : T) -> M.t) t2
+
+type t3 = [`A of (module M : T) -> (module N : T with type t = M.t) -> N.t]
+
+type t4 = < m: (module M : T) -> M.t >
+
+type 'a t5 = (module M : T with type t = 'a) -> 'a -> 'a
+
+type 'a t6 = 'a -> (module M : T with type t = 'a) -> 'a
+
+type t7 = < m: 'a. (module M : T with type t = 'a) -> 'a >
+
+type t8 =
+  | A of ((module T : T) -> (module A : Add with type t = T.t) -> A.t -> A.t)
+  | B of t1
+
+type t9 = C of 'a constraint 'a = (module T : T) -> T.t -> T.t
+
+(* Here we test having the same type but with a slightly different definition *)
+type t10 = t8 =
+  | A of ((module T : T) -> (module Add with type t = T.t) -> T.t -> T.t)
+  | B of ((module T : T) -> (module Add with type t = T.t) -> T.t -> T.t)
+
+(** Test constraint check, one success and the next one is a fail  *)
+let t9_success (x : (module T : T) -> T.t -> T.t) = C x
+
+let t9_fail (x : (module T : T) -> T.t -> int) = C x
+
+type 'a t6bis_good = (module M : T with type t = int) -> (M.t as 'a)
+
+(* Should succeed *)
+
+type 'a t6_fail = (module M : T) -> (M.t as 'a)
+
+(** Tests about invalid types definitions *)
+
+type t_fail1 = (module M : T) -> M.a
+
+(* N is not defined before *)
+type t_fail2 = (module M : T) -> N.t
+
+(* M is not defined before *)
+type t_fail3 = < m: (module M : T) -> M.t ; n: M.t >
+
+type +'a t_fail4 = 'a -> (module M : T with type t = 'a) -> unit
+
+type +'a t_fail5 = (module M : T with type t = 'a) -> M.t
+
+type t_fail6 = (module M : T) -> 'a constraint 'a = M.t
+
+(* tests about variance *)
+
+module type V = sig
+  type +'a p
+
+  type -'a n
+
+  type !'a i
+end
+
+(* this test is here to compare that both behave the same way *)
+module type F = functor (X : V) -> sig
+  type +'a t_pos = unit -> 'a X.p
+
+  type -'a t_neg = unit -> 'a X.n
+
+  type !'a t_inj = unit -> 'a X.i
+
+  type -'a t_npos = unit -> 'a X.p -> unit
+
+  type +'a t_pneg = unit -> 'a X.n -> unit
+end
+
+type +'a t_pos = (module X : V) -> 'a X.p
+
+type -'a t_neg = (module X : V) -> 'a X.n
+
+type !'a t_inj = (module X : V) -> 'a X.i
+
+type -'a t_npos = (module X : V) -> 'a X.p -> unit
+
+type +'a t_pneg = (module X : V) -> 'a X.n -> unit
+
+type +'a t_pos = (module X : V) -> 'a X.p -> unit
+
+type -'a t_neg = (module X : V) -> 'a X.n -> unit
+
+(** Here we test compatibility between different type definitions *)
+
+let id_fail1 (x : t0) : _ t5 = x
+
+let id_fail2 (x : _ t5) : t0 = x
+
+(* This test check that no scope escape happens when trying to replace 'a by
+    A.t *)
+type 'a wrapper = 'a
+
+type should_succeed2 = (module A : T) -> A.t wrapper
+
+(* Check that error messages are displayed correctly even if we switched
+   between a non-module-dependent function and a dependent one. *)
+
+type typ1 = A of ((module Add with type t = int) -> int -> int)
+
+type typ1bis = typ1 = A of ((module A : Add with type t = int) -> float -> int)
+
+(* Check interaction of module-dependent functions with separability. *)
+module type T = sig
+  type !'a t
+end
+
+type 'a t = 'b constraint 'a = (module M : T) -> 'b M.t
+
+type any = Any : 'a t -> any [@@unboxed]
