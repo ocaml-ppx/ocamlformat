@@ -547,7 +547,7 @@ let fmt_extension_suffix ?epi c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name $ fmt_opt epi)
 
 let is_arrow_or_poly = function
-  | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
+  | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _ | Ptyp_functor _; _} -> true
   | _ -> false
 
 let fmt_assign_arrow c =
@@ -1089,7 +1089,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
              $ break 1 2
            in
            fmt_package_type c ctx ~pro ptyp $ str ")" )
-        $ space_break $ str "->" $ space_break
+        $ arrow_sep c ~parens
         $ fmt_core_type c ~pro_space:false (sub_typ ~ctx rhs) )
 
 and fmt_package_type_cnstrs c ctx cnstrs =

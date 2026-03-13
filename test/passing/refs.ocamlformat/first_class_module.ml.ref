@@ -135,18 +135,18 @@ let _ =
 
 let f :
     (* a *)
-    (module (* a *) M (* a *) : (* a *) S) ->
-    (* a *)
-    (* a *)
-    fooo =
+    (module (* a *) M (* a *) : (* a *) S)
+    -> (* a *)
+       (* a *)
+       fooo =
   f
 
 let f :
     (* a *)
     (module (* a *) Foooooooooooooooooooooooooooooooooooooo (* a *) :
       (* a *)
-    Foooooooooooooooooooooooooooooooooooooo) ->
-    (* a *)
-    (* a *)
-    fooo =
+    Foooooooooooooooooooooooooooooooooooooo)
+    -> (* a *)
+       (* a *)
+       fooo =
   f

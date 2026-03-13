@@ -386,6 +386,10 @@ module type CoerceFromInt = sig
   val coerce : int -> b
 end
 
+let for_comparison
+  = (incr_general :>
+  (module foo_CoerceToInt) -> (module CoerceFromInt with type b = C1.a) -> C1.a -> C1.a)
+
 let incr_general''
   = (incr_general :>
   (module C1 : CoerceToInt) -> (module CoerceFromInt with type b = C1.a) -> C1.a -> C1.a)
