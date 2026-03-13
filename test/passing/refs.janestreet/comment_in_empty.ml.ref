@@ -1,7 +1,6 @@
-module M =
-  struct
-    (* this module is empty *)
-  end
+module M = struct
+  (* this module is empty *)
+end
 
 module type M = sig
   (* this module type is empty *)

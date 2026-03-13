@@ -34,11 +34,10 @@ module type M =
   with module A = A
 
 module U :
-  S with type ttttttttt = int and type uuuuuuuu = int and type vvvvvvvvvvv = int =
-  struct end
+  S with type ttttttttt = int and type uuuuuuuu = int and type vvvvvvvvvvv = int = struct end
 
 module U : S with type ttttttttt = int and type uuuuuuu = int with type vvvvvvvvv = int =
-  struct end
+struct end
 
 module U :
   S
@@ -55,8 +54,7 @@ module U :
     | `Error of string
     | `Config of (string * string) list
     | `Format of string
-    ] =
-  struct end
+    ] = struct end
 
 module U = (val S : S with type t = int and type u = int)
 module U = (val S : S with type t = int and type u = int)
@@ -85,8 +83,7 @@ module M : sig
 
   include (* fooooooooo *) module type of
       Fooooooooooooooooooooooooooo (Foooooooooo.Foo) (Fooooooooooooo) (Fooooooooooooo)
-end =
-  struct end
+end = struct end
 
 let foo
       (type foooo fooo_ooooo)

@@ -16,27 +16,24 @@ type -+!'a t = A
 
 module M : sig
   type +!'a t
-end =
-  struct
-    type 'a t = 'a list
-  end
+end = struct
+  type 'a t = 'a list
+end
 
 module N : sig
   type +'a t
-end =
-  struct
-    type 'a t = 'a list
-  end
+end = struct
+  type 'a t = 'a list
+end
 
 type !'a t = 'a list
 type !'a u = int
 
 module M : sig
   type !'a t = private < m : int ; .. >
-end =
-  struct
-    type 'a t = < m : int >
-  end
+end = struct
+  type 'a t = < m : int >
+end
 
 type 'a t = 'b constraint 'a = < b : 'b >
 type !'b u = < b : 'b > t
@@ -47,33 +44,32 @@ type !'a t = private 'b constraint 'a = < b : 'b ; c : 'c >
 
 module M : sig
   type !'a t constraint 'a = < b : 'b ; c : 'c >
-end =
-  struct
-    type nonrec 'a t = 'a t
-  end
+end = struct
+  type nonrec 'a t = 'a t
+end
 
 type !'a u = int constraint 'a = 'b t
 
 module F (X : sig
     type 'a t
   end) =
-  struct
-    type !'a u = 'b constraint 'a = < b : 'b > constraint 'b = _ X.t
-  end
+struct
+  type !'a u = 'b constraint 'a = < b : 'b > constraint 'b = _ X.t
+end
 
 module F (X : sig
     type 'a t
   end) =
-  struct
-    type !'a u = 'b X.t constraint 'a = < b : 'b X.t >
-  end
+struct
+  type !'a u = 'b X.t constraint 'a = < b : 'b X.t >
+end
 
 module F (X : sig
     type 'a t
   end) =
-  struct
-    type !'a u = 'b constraint 'a = < b : (_ X.t as 'b) >
-  end
+struct
+  type !'a u = 'b constraint 'a = < b : (_ X.t as 'b) >
+end
 
 module rec R : sig
   type !'a t = [ `A of 'a S.t ]

@@ -25,45 +25,38 @@ module A : sig
     type t
 
     val f : (string * int) list -> int [@@ocaml.doc "Dummy implementation of M.f"]
-end =
-  struct
-      type t
+end = struct
+    type t
 
-      (* Function with extra params  *)
-      let f s l =
-        (* ignore params and return dummy result *)
-        0
-      ;;
-  end
+    (* Function with extra params  *)
+    let f s l =
+      (* ignore params and return dummy result *)
+      0
+    ;;
+end
 
 (* Core module hierarchy with attributes *)
-module Core =
-  struct
-      module Int =
-        struct
-            module T =
-              struct
-                  type t = int
-                  [@@ocaml.doc
-                    "Int alias with core extensions..........................."]
+module Core = struct
+    module Int = struct
+        module T = struct
+            type t = int
+            [@@ocaml.doc "Int alias with core extensions..........................."]
 
-                  let compare = compare [@inline always]
+            let compare = compare [@inline always]
 
-                  let ( + ) x y = x + y
-                  [@@ocaml.doc "Addition for core ints..........................."]
-                  ;;
-              end
-
-            include T
-
-            (* Map functor application with inline doc *)
-            module Map = Map.Make (T)
-              [@@ocaml.doc "Map over core ints......................"]
+            let ( + ) x y = x + y
+            [@@ocaml.doc "Addition for core ints..........................."]
+            ;;
         end
 
-      (* Re-export with comment *)
-      module Std =
-        struct
-            module Int = Int [@@ocaml.doc "Standard Int re-export......................"]
-        end
-  end
+        include T
+
+        (* Map functor application with inline doc *)
+        module Map = Map.Make (T) [@@ocaml.doc "Map over core ints......................"]
+    end
+
+    (* Re-export with comment *)
+    module Std = struct
+        module Int = Int [@@ocaml.doc "Standard Int re-export......................"]
+    end
+end

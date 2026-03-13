@@ -75,13 +75,12 @@ exception First_exception
 (** Second documentation comment. *)
 exception Second_exception
 
-module M =
-  struct
-    type t
-    [@@immediate]
-    (* ______________________________________ *)
-    [@@deriving variants, sexp_of]
-  end
+module M = struct
+  type t
+  [@@immediate]
+  (* ______________________________________ *)
+  [@@deriving variants, sexp_of]
+end
 
 module type Basic3 = sig
   type ('a, 'd, 'e) t
@@ -193,10 +192,9 @@ type t =
      v}*)
   }
 
-module Intro_sort =
-  struct
-    let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
-      (* Fooooooooooooooooooooooooooo:
+module Intro_sort = struct
+  let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
+    (* Fooooooooooooooooooooooooooo:
        {v
           1--o-----o-----o--------------1
              |     |     |
@@ -208,11 +206,11 @@ module Intro_sort =
                 |              |     |
           5-----o--------------o-----o--5
         v} *)
-      foooooooooo fooooo fooo;
-      foooooooooo fooooo fooo;
-      foooooooooo fooooo fooo
-    ;;
-  end
+    foooooooooo fooooo fooo;
+    foooooooooo fooooo fooo;
+    foooooooooo fooooo fooo
+  ;;
+end
 
 let _ =
   "_ _____________________ ___________ ________ _____________ ________ _____________ \
@@ -535,22 +533,21 @@ module Stritem_attributes_indent : sig
     -> unit
     = "bigstring_memset_stub"
   [@@noalloc]
-end =
-  struct
-    let raise_length_mismatch name n1 n2 =
-      invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
-    [@@cold] [@@inline never] [@@local never] [@@specialise never]
-    ;;
+end = struct
+  let raise_length_mismatch name n1 n2 =
+    invalid_argf "length mismatch in %s: %d <> %d" name n1 n2 ()
+  [@@cold] [@@inline never] [@@local never] [@@specialise never]
+  ;;
 
-    external unsafe_memset
-      :  t
-      -> pos:int
-      -> len:int
-      -> char
-      -> unit
-      = "bigstring_memset_stub"
-    [@@noalloc]
-  end
+  external unsafe_memset
+    :  t
+    -> pos:int
+    -> len:int
+    -> char
+    -> unit
+    = "bigstring_memset_stub"
+  [@@noalloc]
+end
 
 let _ =
   foo
@@ -577,12 +574,11 @@ let _ =
 ;;
 
 let _ =
-  let module M =
-    struct
-      include
-        (val foooooooooooooooooooooooooooooooooooooooo
-          : fooooooooooooooooooooooooooooooooooooooooo)
-    end
+  let module M = struct
+    include
+      (val foooooooooooooooooooooooooooooooooooooooo
+        : fooooooooooooooooooooooooooooooooooooooooo)
+  end
   in
   ()
 ;;
@@ -756,10 +752,10 @@ module Test_gen
        with type 'a dst := 'a For_tests.Dst.t
         and type 'a dst := 'a For_tests.Dst.t
         and type 'a dst := 'a For_tests.Dst.t) =
-  struct
-    open Tested
-    open For_tests
-  end
+struct
+  open Tested
+  open For_tests
+end
 
 type t =
   { xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :

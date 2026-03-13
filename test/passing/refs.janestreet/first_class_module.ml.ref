@@ -6,10 +6,9 @@ module type S = sig
   val x : int
 end
 
-module M =
-  struct
-    let x = 0
-  end
+module M = struct
+  let x = 0
+end
 
 let m = (module M : S)
 
@@ -23,10 +22,9 @@ module type S = sig
   val x : int
 end
 
-module M =
-  struct
-    let x = 0
-  end
+module M = struct
+  let x = 0
+end
 
 let m = (module M : S)
 

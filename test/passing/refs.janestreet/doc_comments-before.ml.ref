@@ -128,114 +128,111 @@ module Comment_placement : sig
 
   (** Generative functor *)
   module Gen () : S
-end =
-  struct
-    (** Type *)
-    type t = { a : int }
+end = struct
+  (** Type *)
+  type t = { a : int }
 
-    (** Variant declaration *)
-    type t = T
+  (** Variant declaration *)
+  type t = T
 
-    (** Type extension *)
-    type t += T
+  (** Type extension *)
+  type t += T
 
-    (** Module *)
-    module A = B
+  (** Module *)
+  module A = B
 
-    (** Module *)
-    module A =
-      struct
-        type a = A
-        type b = B
-      end
-
-    (** Module *)
-    module A : sig
-      type a
-      type b
-    end =
-      B
-
-    (** Let *)
-    let a = b
-
-    (** Exception *)
-    exception E
-
-    (** Include *)
-    include M
-
-    (** Include *)
-    include struct
-      type a = A
-      type b = B
-    end
-
-    (** Open *)
-    open M
-
-    (** External *)
-    external a : b = "c"
-
-    (** Rec module *)
-    module rec A : B = C
-
-    (** Rec module *)
-    module rec A : B =
-      struct
-        type a = A
-        type b = B
-      end
-
-    (** Module type *)
-    module type A = B
-
-    (** Module type *)
-    module type A = sig
-      type a
-      type b
-    end
-
-    (** Class *)
-    class a = b
-
-    (** Class *)
-    class b =
-      object
-        (** Method *)
-        method f = 0
-
-        (** Inherit *)
-        inherit a
-
-        (** Val *)
-        val x = 1
-
-        (** Constraint *)
-        constraint 'a = [> ]
-
-        (** Initialiser *)
-        initializer do_init ()
-      end
-
-    (** Class type *)
-    class type a = b
-
-    (* [@@@some attribute] *)
-    (* (** Attribute *) *)
-
-    (** Extension *)
-    [%%some extension]
-
-    (* ;; *)
-    (* (** Eval *) *)
-    (* 1 + 1 *)
-    (* ;; *)
-
-    (** A *)
-    external a : b = "double_comment"
-    (** B *)
+  (** Module *)
+  module A = struct
+    type a = A
+    type b = B
   end
+
+  (** Module *)
+  module A : sig
+    type a
+    type b
+  end =
+    B
+
+  (** Let *)
+  let a = b
+
+  (** Exception *)
+  exception E
+
+  (** Include *)
+  include M
+
+  (** Include *)
+  include struct
+    type a = A
+    type b = B
+  end
+
+  (** Open *)
+  open M
+
+  (** External *)
+  external a : b = "c"
+
+  (** Rec module *)
+  module rec A : B = C
+
+  (** Rec module *)
+  module rec A : B = struct
+    type a = A
+    type b = B
+  end
+
+  (** Module type *)
+  module type A = B
+
+  (** Module type *)
+  module type A = sig
+    type a
+    type b
+  end
+
+  (** Class *)
+  class a = b
+
+  (** Class *)
+  class b =
+    object
+      (** Method *)
+      method f = 0
+
+      (** Inherit *)
+      inherit a
+
+      (** Val *)
+      val x = 1
+
+      (** Constraint *)
+      constraint 'a = [> ]
+
+      (** Initialiser *)
+      initializer do_init ()
+    end
+
+  (** Class type *)
+  class type a = b
+
+  (* [@@@some attribute] *)
+  (* (** Attribute *) *)
+
+  (** Extension *)
+  [%%some extension]
+
+  (* ;; *)
+  (* (** Eval *) *)
+  (* 1 + 1 *)
+  (* ;; *)
+
+  (** A *)
+  external a : b = "double_comment"
+  (** B *)
+end
 
 (** A *)
 exception A of int
@@ -245,11 +242,9 @@ exception A of int
 
 (** {2 heading without label} *)
 
-module A =
-  struct
-    module B =
-      struct
-        (** It does not try to saturate
+module A = struct
+  module B = struct
+    (** It does not try to saturate
         (1a) A = B + C  /\  B = D + E  =>  A = C + D + E
         Nor combine more than 2 equations
         (1b) A = B + C  /\  B = D + E  /\  F = C + D + E  =>  A = F
@@ -257,9 +252,9 @@ module A =
         xxxxxxxxxxxxxxxxxxxxxxxxxxxx
         (2) A = B + C  /\  B = D + E  =>  A = C + D - E
     *)
-        let a b = ()
-      end
+    let a b = ()
   end
+end
 
 (* Same with get_pure, except that when we have both "x = t" and "y = t" where t is a primed ident,
  * we add "x = y" to the result. This is crucial for the normalizer, as it tend to drop "x = t" before

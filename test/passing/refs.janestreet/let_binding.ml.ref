@@ -75,43 +75,41 @@ let _ =
   y
 ;;
 
-module Let_and_compact =
-  struct
-    [@@@ocamlformat "let-and=compact"]
+module Let_and_compact = struct
+  [@@@ocamlformat "let-and=compact"]
 
+  let x = 2
+  and y = 2
+
+  let _ =
+    let x = 2 and y = 2 in
+    3
+  ;;
+
+  let _ =
+    let%ext x = 2 and y = 2 in
+    3
+  ;;
+end
+
+module Let_and_sparse = struct
+  [@@@ocamlformat "let-and=sparse"]
+
+  let x = 2
+  and y = 2
+
+  let _ =
     let x = 2
-    and y = 2
+    and y = 2 in
+    3
+  ;;
 
-    let _ =
-      let x = 2 and y = 2 in
-      3
-    ;;
-
-    let _ =
-      let%ext x = 2 and y = 2 in
-      3
-    ;;
-  end
-
-module Let_and_sparse =
-  struct
-    [@@@ocamlformat "let-and=sparse"]
-
-    let x = 2
-    and y = 2
-
-    let _ =
-      let x = 2
-      and y = 2 in
-      3
-    ;;
-
-    let _ =
-      let%ext x = 2
-      and y = 2 in
-      3
-    ;;
-  end
+  let _ =
+    let%ext x = 2
+    and y = 2 in
+    3
+  ;;
+end
 
 let f
       aaaaaaaaaaaaaaaaaaaa
@@ -272,14 +270,13 @@ let _ =
 
 [@@@ocamlformat "let-binding-spacing=double-semicolon"]
 
-module A =
-  struct
-    let f : int S.t ab -> float S.t ab -> string =
-      fun (l : int S.t ab) (r : float S.t ab) ->
-      match l, r with
-      | A, B -> "f A B"
-    ;;
-  end
+module A = struct
+  let f : int S.t ab -> float S.t ab -> string =
+    fun (l : int S.t ab) (r : float S.t ab) ->
+    match l, r with
+    | A, B -> "f A B"
+  ;;
+end
 
 let (A (a, _, b) | B (b, a)) = A (1, 2, 3)
 

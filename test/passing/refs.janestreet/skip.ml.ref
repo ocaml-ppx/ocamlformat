@@ -16,53 +16,51 @@ let x = function
   | CCCcccc, CCCCCCCC -> 3
 ;;
 
-module S =
-  struct
-    let x = function
+module S = struct
+  let x = function
       | A       , B        -> 1
              | BBB     , _        -> 2
   | CCCcccc , CCCCCCCC -> (* cmt about 3 *) 3
                 [@@ocamlformat "disable"]
-  end
+end
 
-module S =
-  struct
-    let x = function
-      | A, B -> 1
-      | BBB, _ -> 2
-      | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
-    ;;
+module S = struct
+  let x = function
+    | A, B -> 1
+    | BBB, _ -> 2
+    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+  ;;
 
-    let x = function
-      | A, B -> 1
-      | BBB, _ -> 2
-      | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
-    ;;
+  let x = function
+    | A, B -> 1
+    | BBB, _ -> 2
+    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+  ;;
 
-    [@@@ocamlformat "disable"]
+  [@@@ocamlformat "disable"]
 
-    let x = function
+  let x = function
   | A       , B        -> 1
   | BBB     , _        -> 2
   | CCCcccc , CCCCCCCC -> (* cmt about 3 *) 3
 
-    [@@@ocamlformat "enable"]
+  [@@@ocamlformat "enable"]
 
-    let x = function
-      | A, B -> 1
-      | BBB, _ -> 2
-      | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
-    ;;
+  let x = function
+    | A, B -> 1
+    | BBB, _ -> 2
+    | CCCcccc, CCCCCCCC -> (* cmt about 3 *) 3
+  ;;
 
-    let _ =
-      let x = 3 in
-      match[@ocamlformat "disable"] x,y with
+  let _ =
+    let x = 3 in
+    match[@ocamlformat "disable"] x,y with
     | Some _, None   -> test
     | None  , Some _ -> test
     | Some _, Some _ -> test
     | None  , None   -> test
-    ;;
-  end
+  ;;
+end
 
 let x = function
   | A, B -> 1
@@ -102,10 +100,9 @@ let x =
 let _ = (x [@ocamlformat "disable"]  [@test? _ when e [@test 2]]) 3
 
 let _ =
-  let module X =
-    struct
-      let x = 4
-    end
+  let module X = struct
+    let x = 4
+  end
   in
   X.x
 ;;
@@ -119,13 +116,12 @@ let _ =
 ;;
 
 let _ =
-  let module X =
-    struct
-      module S =
-        struct
+  let module X = struct
+    module S =
+      struct
           let x    =   4
       end   [@ocamlformat "disable"]
-    end
+  end
   in
   X.x
 ;;

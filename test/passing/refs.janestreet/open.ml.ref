@@ -163,20 +163,19 @@ let x =
 
 let x =
   let open struct
-    module A =
-      struct
-        open struct
-          let x = 1
-        end
-
-        let y = x
-
-        open struct
-          let x = 1
-        end
-
-        let z = y + x
+    module A = struct
+      open struct
+        let x = 1
       end
+
+      let y = x
+
+      open struct
+        let x = 1
+      end
+
+      let z = y + x
+    end
   end
   in
   foo

@@ -4204,14 +4204,12 @@ and fmt_module c ctx ?rec_ ?epi keyword ?(eqty = "=") name xargs xbody xmty
       $ fmt_if rec_flag (str " rec")
       $ space_break $ fmt_str_loc_opt c name )
   in
-  let compact = Poly.(c.conf.fmt_opts.let_module.v = `Compact) in
   let fmt_pro = opt blk_b.pro (fun pro -> space_break $ pro) in
   let wrap_epi =
     match epi with Some epi -> fun f -> hvbox 0 (f $ epi) | None -> Fn.id
   in
   wrap_epi
-    (hvbox
-       (if compact then 0 else 2)
+    (hvbox 0
        ( doc_before
        $ blk_box blk_b
            ( (if Option.is_some blk_t.epi then hovbox else hvbox)
@@ -4222,8 +4220,7 @@ and fmt_module c ctx ?rec_ ?epi keyword ?(eqty = "=") name xargs xbody xmty
                    $ blk_t.psp $ blk_t.bdy )
                $ blk_t.esp $ fmt_opt blk_t.epi
                $ fmt_if (Option.is_some xbody) (str " =")
-               $ fmt_if compact fmt_pro )
-           $ fmt_if (not compact) fmt_pro
+               $ fmt_pro )
            $ blk_b.psp
            $ fmt_if
                (Option.is_none blk_b.pro && Option.is_some xbody)
