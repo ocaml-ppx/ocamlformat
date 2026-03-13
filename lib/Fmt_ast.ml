@@ -4203,7 +4203,9 @@ and fmt_module c ctx ?rec_ ?epi keyword ?(eqty = "=") name xargs xbody xmty
   in
   let compact =
     match ctx with
-    | Mb (Str_exp _, _) -> Poly.(c.conf.fmt_opts.let_module.v = `Compact)
+    | Mb (Str_exp _, _) ->
+        Poly.(c.conf.fmt_opts.let_module.v = `Compact)
+        || c.conf.fmt_opts.ocp_indent_compat.v
     | _ -> true
   in
   let fmt_pro = opt blk_b.pro (fun pro -> space_break $ pro) in
