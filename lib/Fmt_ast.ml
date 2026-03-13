@@ -938,13 +938,9 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         $ space_break $ fmt_longident_loc c lid )
   | Ptyp_extension ext ->
       hvbox c.conf.fmt_opts.extension_indent.v (fmt_extension c ctx ext)
-  | Ptyp_package {ppt_path= id; ppt_cstrs= cnstrs; ppt_attrs= attrs; ppt_loc}
-    ->
-      Cmts.fmt c ppt_loc
-      @@ hvbox 2
-           ( hovbox 0 (str "module" $ space_break $ fmt_longident_loc c id)
-           $ fmt_package_type_cnstrs c ctx cnstrs
-           $ fmt_attributes c attrs )
+  | Ptyp_package ptyp ->
+      let pro = str "module" $ space_break in
+      fmt_package_type c ctx ~parens:false ~pro ptyp
   | Ptyp_open (lid, typ) ->
       hvbox 2
         ( hvbox 0 (fmt_longident_loc c lid $ str ".(")
@@ -1088,7 +1084,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
                $ fmt_str_loc c lid $ str " :" )
              $ break 1 2
            in
-           fmt_package_type c ctx ~pro ptyp $ str ")" )
+           fmt_package_type c ctx ~parens:false ~pro ptyp $ str ")" )
         $ arrow_sep c ~parens
         $ fmt_core_type c ~pro_space:false (sub_typ ~ctx rhs) )
 
@@ -1102,13 +1098,14 @@ and fmt_package_type_cnstrs c ctx cnstrs =
   in
   list_fl cnstrs fmt_cstr
 
-and fmt_package_type c ctx ~pro ptyp =
+and fmt_package_type c ctx ~parens ~pro ptyp =
   let {ppt_path; ppt_cstrs; ppt_attrs; ppt_loc} = ptyp in
   Cmts.fmt c ppt_loc
     (hvbox 2
-       ( hovbox 0 (pro $ fmt_longident_loc c ppt_path)
-       $ fmt_package_type_cnstrs c ctx ppt_cstrs
-       $ fmt_attributes c ppt_attrs ) )
+       (Params.parens_if parens c.conf
+          ( hovbox 0 (pro $ fmt_longident_loc c ppt_path)
+          $ fmt_package_type_cnstrs c ctx ppt_cstrs
+          $ fmt_attributes c ppt_attrs ) ) )
 
 and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
   let c = update_config c prf_attributes in
@@ -1379,17 +1376,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_unpack (name, pt) ->
       let fmt_constraint_opt pt k =
         match pt with
-        | Some {ppt_path= id; ppt_cstrs= cnstrs; ppt_attrs= attrs; ppt_loc}
-          ->
-            Cmts.fmt c ppt_loc
-            @@ hovbox 0
-                 (Params.parens_if parens c.conf
-                    (hvbox 1
-                       ( hovbox 0
-                           ( k $ space_break $ str ": "
-                           $ fmt_longident_loc c id )
-                       $ fmt_package_type_cnstrs c ctx cnstrs
-                       $ fmt_attributes c attrs ) ) )
+        | Some pt ->
+            let pro = k $ space_break $ str ": " in
+            fmt_package_type c ctx ~parens ~pro pt
         | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
       in
       fmt_constraint_opt pt
@@ -2750,14 +2739,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       and epi = cls_paren in
       let fmt_mod m =
         match pt with
-        | Some {ppt_path= id; ppt_cstrs= cnstrs; ppt_attrs= attrs; ppt_loc}
-          ->
-            Cmts.fmt c ppt_loc
-            @@ hvbox 2
-                 ( hovbox 0
-                     (m $ space_break $ str ": " $ fmt_longident_loc c id)
-                 $ fmt_package_type_cnstrs c ctx cnstrs
-                 $ fmt_attributes c attrs )
+        | Some pt ->
+            let pro = m $ space_break $ str ": " in
+            fmt_package_type c ctx ~parens:false ~pro pt
         | None -> m
       in
       outer_pro
@@ -4566,6 +4550,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
   | Pmod_unpack (e, ty1, ty2) ->
       let package_type sep
           {ppt_path= lid; ppt_cstrs= cstrs; ppt_attrs= attrs; ppt_loc} =
+        (* TODO: Use [fmt_package_type]. *)
         break 1 (Params.Indent.mod_unpack_annot c.conf)
         $ hovbox 0
             ( hovbox 0
