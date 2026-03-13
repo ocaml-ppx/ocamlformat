@@ -62,18 +62,19 @@ let w =
 
 let k = z
 
-module N = struct
-  let x = 1
-  let z = soooooooooo is this oooooooooooooooooooooooooooooooooooooooooooone
-  let y = 2
-  let z = soooooooooo iis this oooooooooooooooooooooooooooooooooooooooooooone
-  let y = 2
+module N =
+  struct
+    let x = 1
+    let z = soooooooooo is this oooooooooooooooooooooooooooooooooooooooooooone
+    let y = 2
+    let z = soooooooooo iis this oooooooooooooooooooooooooooooooooooooooooooone
+    let y = 2
 
-  module A = AA
-  include A
-  module B = BB
-  open B
-end
+    module A = AA
+    include A
+    module B = BB
+    open B
+  end
 
 let x = x
 

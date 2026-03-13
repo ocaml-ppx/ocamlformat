@@ -73,16 +73,16 @@ module Make
     (E : sig
        type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
      end) =
-struct
-  type t = t
-end
+  struct
+    type t = t
+  end
 
 module Make
     (TT : TableFormat.TABLES)
     (IT : InspectionTableFormat.TABLES__________________________________________) =
-struct
-  type t = t
-end
+  struct
+    type t = t
+  end
 
 (* Long syntax should be preserved *)
 module M = functor (_ : S) -> struct end
@@ -101,25 +101,27 @@ module M : functor (A : S) -> functor (B : S) -> S = N
 module M : (A : S) -> functor (B : S) -> S = N
 
 module M : X -> X =
-functor
-  (X : X)
-  ->
-  struct
-    let x = X.x
-  end
+  functor
+    (X : X)
+    ->
+    struct
+      let x = X.x
+    end
 
 module M : (_ : X) -> X = Y
 
-module M = struct
-  [@@@ocamlformat "break-struct=natural"]
+module M =
+  struct
+    [@@@ocamlformat "break-struct=natural"]
 
-  module M = F (
-      struct type t end : sig type t end)
+    module M =
+      F (
+        struct type t end : sig type t end)
 
-  module M = struct type t end
+    module M = struct type t end
 
-  module type S = sig type t end
-end
+    module type S = sig type t end
+  end
 
 module Simple : (Parameters with type update_result := state) -> S = M
 module Simple : S -> Parameters with type update_result := state = M

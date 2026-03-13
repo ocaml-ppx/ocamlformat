@@ -23,23 +23,26 @@ module A = B (** @inline *)
 (** @inline *)
 module A : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 (** @inline *)
 module rec A : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 (** @author B *)
 and B : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 module type A = B (** @deprecated abc *)
 
@@ -61,7 +64,7 @@ include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated *)
+  (** @deprecated *)
 
 (** @deprecated *)
 type t = T
@@ -115,23 +118,26 @@ module A = B (** @inline *)
 (** @inline *)
 module A : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 (** @inline *)
 module rec A : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 (** @author B *)
 and B : sig
   type t
-end = struct
-  type t
-end
+end =
+  struct
+    type t
+  end
 
 module type A = B (** @deprecated abc *)
 
@@ -153,7 +159,7 @@ include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated *)
+  (** @deprecated *)
 
 (** @deprecated *)
 type t = T

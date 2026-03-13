@@ -49,7 +49,8 @@ let run (main : unit -> unit) : unit =
 let invert (type a) ~(iter : (a -> unit) -> unit) : a Seq.t =
   let module M = struct
     type _ Effect.t += Yield : a -> unit t
-  end in
+  end
+  in
   let yield v = perform (M.Yield v) in
   fun () ->
     match iter yield with

@@ -172,12 +172,13 @@ module type A = sig
   module A := A.B [@@attr]
 end
 
-module M = struct
-  type t
-  [@@immediate]
-  (* ______________________________________ *)
-  [@@deriving variants, sexp_of]
-end
+module M =
+  struct
+    type t
+    [@@immediate]
+    (* ______________________________________ *)
+    [@@deriving variants, sexp_of]
+  end
 
 let _ = {<>} [@a]
 let _ = f ({<>} [@a])
@@ -505,15 +506,13 @@ let _ =
 let _ = new[@a] x [@b]
 
 let _ =
-  (let module [@a] X = Y in
-  c)
-  [@b]
+  let[@b] module [@a] X = Y in
+  c
 ;;
 
 let _ =
-  (let exception[@a] E in
-  c)
-  [@b]
+  let[@b] exception [@a] E in
+  c
 ;;
 
 let _ = assert[@a] x [@b]

@@ -468,65 +468,73 @@ module IntString : sig
 
   val mk : (x:int * string) -> t
   val unwrap : t -> (x:int * string)
-end = struct
-  type t = string * x:int
+end =
+  struct
+    type t = string * x:int
 
-  let mk (~x, s) = s, ~x
-  let unwrap (s, ~x) = ~x, s
-end
-
-module Stringable = struct
-  module type Has_unwrap = sig
-    type t
-
-    val unwrap : t -> (x:int * string)
+    let mk (~x, s) = s, ~x
+    let unwrap (s, ~x) = ~x, s
   end
 
-  module type Has_to_string = sig
-    include Has_unwrap
+module Stringable =
+  struct
+    module type Has_unwrap = sig
+      type t
 
-    val to_string : t -> string
+      val unwrap : t -> (x:int * string)
+    end
+
+    module type Has_to_string = sig
+      include Has_unwrap
+
+      val to_string : t -> string
+    end
+
+    module Make (M : Has_unwrap) : Has_to_string with type t := M.t =
+      struct
+        include M
+
+        let to_string int_string =
+          let ~x, s = unwrap int_string in
+          Int.to_string x ^ " " ^ s
+        ;;
+      end
   end
 
-  module Make (M : Has_unwrap) : Has_to_string with type t := M.t = struct
-    include M
+module StringableIntString =
+  struct
+    module T =
+      struct
+        include IntString
+      end
 
-    let to_string int_string =
-      let ~x, s = unwrap int_string in
-      Int.to_string x ^ " " ^ s
-    ;;
+    include T
+    include Stringable.Make (T)
   end
-end
-
-module StringableIntString = struct
-  module T = struct
-    include IntString
-  end
-
-  include T
-  include Stringable.Make (T)
-end
 
 let _ = StringableIntString.to_string (StringableIntString.mk (~x:1, "hi"))
 
 module M : sig
   val f : (x:int * string) -> (x:int * string)
   val mk : unit -> (x:bool * y:string)
-end = struct
-  let f x = x
-  let mk () = ~x:false, ~y:"hi"
-end
+end =
+  struct
+    let f x = x
+    let mk () = ~x:false, ~y:"hi"
+  end
 
 (* Module inclusion failure *)
-module X_int_int = struct
-  type t = x:int * int
-end
+module X_int_int =
+  struct
+    type t = x:int * int
+  end
 
 module Y_int_int : sig
   type t = y:int * int
-end = struct
-  include X_int_int
-end
+end =
+  struct
+    include X_int_int
+  end
 
 module Int_int : sig
   type t = int * int
@@ -540,22 +548,24 @@ module rec Tree : sig
     | Branch of string * TwoTrees.t
 
   val in_order : t -> string list
-end = struct
-  type t =
-    | Leaf of string
-    | Branch of string * TwoTrees.t
+end =
+  struct
+    type t =
+      | Leaf of string
+      | Branch of string * TwoTrees.t
 
-  let rec in_order = function
-    | Leaf s -> [ s ]
-    | Branch (s, (~left, ~right)) -> in_order left @ [ s ] @ in_order right
-  ;;
-end
+    let rec in_order = function
+      | Leaf s -> [ s ]
+      | Branch (s, (~left, ~right)) -> in_order left @ [ s ] @ in_order right
+    ;;
+  end
 
 and TwoTrees : sig
   type t = left:Tree.t * right:Tree.t
-end = struct
-  type t = left:Tree.t * right:Tree.t
-end
+end =
+  struct
+    type t = left:Tree.t * right:Tree.t
+  end
 
 let leaf s = Tree.Leaf s
 let tree_abc = Tree.Branch ("b", (~left:(leaf "a"), ~right:(leaf "c")))

@@ -192,9 +192,10 @@ type u = external "u"
 
 module M : sig
   type t = external "foo"
-end = struct
-  type t = external "foo"
-end
+end =
+  struct
+    type t = external "foo"
+  end
 
 type t = external ""
 type t = external "\003"

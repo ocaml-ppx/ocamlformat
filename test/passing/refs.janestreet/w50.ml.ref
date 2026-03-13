@@ -11,11 +11,12 @@ module type T = sig
   val test_raises_this_exc : exn -> ('a -> 'b) -> 'a -> bool
 end
 
-module T = struct
-  let test_raises_some_exc = 2
+module T =
+  struct
+    let test_raises_some_exc = 2
 
-  (** CCCC *)
+    (** CCCC *)
 
-  (** DDDD *)
-  let test_raises_this_exc = 3
-end
+    (** DDDD *)
+    let test_raises_this_exc = 3
+  end

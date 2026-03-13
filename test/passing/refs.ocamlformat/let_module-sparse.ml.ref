@@ -63,7 +63,8 @@ let f () =
   let module
     (* comment *)
     M =
-  struct end in
+    struct end
+  in
   ()
 
 let f () =
@@ -72,5 +73,6 @@ let f () =
 
          comment *)
     M =
-  struct end in
+    struct end
+  in
   ()

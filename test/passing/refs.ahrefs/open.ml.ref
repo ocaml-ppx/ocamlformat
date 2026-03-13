@@ -115,7 +115,8 @@ end
 let x =
   let open struct
     type t' = t
-  end in
+  end
+  in
   foo
 
 let x =
@@ -125,7 +126,8 @@ let x =
     end
 
     let y = T
-  end in
+  end
+  in
   foo
 
 let x =
@@ -133,16 +135,19 @@ let x =
     open struct
       let counter = ref 0
     end
-  end in
+  end
+  in
   foo
 
 let x =
   let open struct
     let open struct
       let counter = ref 0
-    end in
+    end
+    in
     foo
-  end in
+  end
+  in
   foo
 
 let x =
@@ -160,7 +165,8 @@ let x =
 
       let z = y + x
     end
-  end in
+  end
+  in
   foo
 
 class type a =
@@ -177,13 +183,17 @@ class a =
 
 let _ =
   (* a *)
-  let (* b *) open (* c *) struct
+  (* b *)
+  let open (* c *) struct
     type t
   end
-  (* d *) in
+  in
+  (* d *)
   (* e *)
   (* f *)
-  let (* g *) open (* h *) A (* i *) (B) (* j *) in
+  (* g *)
+  let open (* h *) A (* i *) (B) in
+  (* j *)
   (* k *)
   ()
 
@@ -222,21 +232,24 @@ let _ =
   let open B in
   let open struct
     type t
-  end in
+  end
+  in
   let open
     functor
       (A : S)
       ->
       struct
         type t
-      end in
+      end
+  in
   let open
     functor
       (_ : S)
       ->
       struct
         type t
-      end in
+      end
+  in
   let open A (B) in
   let open (A : S) in
   let open (val x) in
@@ -271,8 +284,8 @@ open [@attr] [%ext]
 
 let g =
   M.f
-    ((let open M in
-      x) [@attr])
+    (let[@attr] open M in
+     x)
 
 let _ = M.({ f } [@warning "foo"])
 
