@@ -574,11 +574,12 @@ let _ =
 ;;
 
 let _ =
-  let module M = struct
-    include
-      (val foooooooooooooooooooooooooooooooooooooooo
-        : fooooooooooooooooooooooooooooooooooooooooo)
-  end
+  let module M =
+    struct
+      include
+        (val foooooooooooooooooooooooooooooooooooooooo
+          : fooooooooooooooooooooooooooooooooooooooooo)
+    end
   in
   ()
 ;;

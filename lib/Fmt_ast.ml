@@ -628,8 +628,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
       hvbox 0 (fmt_quoted_string c (Ext.Key.to_string key) ext str delim)
   | _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
-      fmt_structure_item c ~last:true ~semisemi:false ~pro:noop
-        (sub_str ~ctx si)
+      fmt_structure_item c ~last:true ~semisemi:false (sub_str ~ctx si)
   | _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c (sub_sig ~ctx si)
@@ -2613,8 +2612,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             ( pro
             $ fmt_if parens (str "(")
             $ hvbox 0
-                ( fmt_structure_item c ~last:true ~semisemi:false
-                    ~pro:inner_pro ~epi strix
+                ( fmt_structure_item_embedded_in_exp c ~pro:inner_pro ~epi
+                    strix
                 $ force_break
                 $ fmt_expression c (sub_exp ~ctx exp) ) )
         $ fmt_if parens (break 0 0 $ str ")") )
@@ -4204,12 +4203,18 @@ and fmt_module c ctx ?rec_ ?epi keyword ?(eqty = "=") name xargs xbody xmty
       $ fmt_if rec_flag (str " rec")
       $ space_break $ fmt_str_loc_opt c name )
   in
+  let compact =
+    match ctx with
+    | Mb (Str_exp _, _) -> Poly.(c.conf.fmt_opts.let_module.v = `Compact)
+    | _ -> true
+  in
   let fmt_pro = opt blk_b.pro (fun pro -> space_break $ pro) in
   let wrap_epi =
     match epi with Some epi -> fun f -> hvbox 0 (f $ epi) | None -> Fn.id
   in
   wrap_epi
-    (hvbox 0
+    (hvbox
+       (if compact then 0 else 2)
        ( doc_before
        $ blk_box blk_b
            ( (if Option.is_some blk_t.epi then hovbox else hvbox)
@@ -4220,7 +4225,8 @@ and fmt_module c ctx ?rec_ ?epi keyword ?(eqty = "=") name xargs xbody xmty
                    $ blk_t.psp $ blk_t.bdy )
                $ blk_t.esp $ fmt_opt blk_t.epi
                $ fmt_if (Option.is_some xbody) (str " =")
-               $ fmt_pro )
+               $ fmt_if compact fmt_pro )
+           $ fmt_if (not compact) fmt_pro
            $ blk_b.psp
            $ fmt_if
                (Option.is_none blk_b.pro && Option.is_some xbody)
@@ -4600,7 +4606,7 @@ and fmt_structure c ctx itms =
   in
   let itms = get_semisemi itms in
   let fmt_item c ctx ~prev:_ ~next (i, semisemi) =
-    fmt_structure_item c ~last:(Option.is_none next) ~semisemi ~pro:noop
+    fmt_structure_item c ~last:(Option.is_none next) ~semisemi
       (sub_str ~ctx i)
   in
   let ast (x, _) = Str x in
@@ -4621,17 +4627,23 @@ and fmt_type c ?eq rec_flag decls ctx =
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
 
-and fmt_structure_item c ~last:last_item ~semisemi ~pro ?epi
-    {ctx= parent_ctx; ast= si} =
-  protect c (Str si)
+and fmt_structure_item c ~last:last_item ~semisemi {ctx; ast} =
+  fmt_structure_item' ~ctx0:ctx c ~last:last_item ~semisemi ~pro:noop
+    ~ctx:(Str ast) ast
+
+and fmt_structure_item_embedded_in_exp c ~pro ?epi {ctx; ast} =
+  fmt_structure_item' ~ctx0:ctx c ~last:true ~semisemi:false ~pro ?epi
+    ~ctx:(Str_exp ast) ast
+
+and fmt_structure_item' ~ctx0 c ~last:last_item ~semisemi ~pro ?epi ~ctx si =
+  protect c ctx
   @@
-  let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
   (fun k ->
     fmt_cmts_before
     $ hvbox 0 ~name:"stri"
-        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)) )
+        (box_semisemi c ~parent_ctx:ctx0 semisemi (k $ fmt_cmts_after)) )
   @@
   match si.pstr_desc with
   | Pstr_attribute attr ->
@@ -4674,7 +4686,7 @@ and fmt_structure_item c ~last:last_item ~semisemi ~pro ?epi
   | Pstr_primitive vd -> fmt_value_description c ctx ~pro ?epi vd
   | Pstr_recmodule mbs ->
       fmt_recmodule c ctx mbs fmt_module_binding ~pro ?epi
-        (fun x -> Mb x)
+        (fun x -> Mb (ctx, x))
         sub_mb
   | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx ~pro ?epi te
@@ -4914,12 +4926,12 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
       $ epi )
   $ doc2
 
-and fmt_module_binding c ~rec_flag ~first ~pro ?epi {ast= pmb; _} =
+and fmt_module_binding c ~rec_flag ~first ~pro ?epi {ast= pmb; ctx} =
   let {pmb_name; pmb_ext_attrs= attrs; _} = pmb in
-  protect c (Mb pmb)
+  let ctx = Mb (ctx, pmb) in
+  protect c ctx
   @@ update_config_maybe_disabled_str_item c pmb.pmb_loc ~pro ?epi attrs
   @@ fun c ->
-  let ctx = Mb pmb in
   let keyword = pro $ str (if first then "module" else "and") in
   let xbody = sub_mod ~ctx pmb.pmb_expr in
   let xbody, xmty =
@@ -5000,8 +5012,7 @@ let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   let fmt_item c ctx ~prev:_ ~next (itm, semisemi) =
     let last = Option.is_none next in
     match itm with
-    | `Item i ->
-        fmt_structure_item c ~last ~semisemi ~pro:noop (sub_str ~ctx i)
+    | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c ~semisemi d
   in
   let ast (x, _) = Tli x in
