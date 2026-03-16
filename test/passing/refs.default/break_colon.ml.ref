@@ -90,3 +90,28 @@ let to_clambda_function (id, (function_decl : Flambda.function_declaration)) :
      closed set of closures, is the substitutions for variables bound to the
      various closures in the set. Such closures will always be ... *)
   x
+
+let f :
+    (module M : S
+      with type foo = foooooooooooooooooooooooooooooooooooooo
+       and type foo = foooooooooooooooooooooooooooooooooooooo) -> fooo =
+  f
+
+let f :
+    fooooooooooooooooooooooooooooooooooooo ->
+    (module M : S
+      with type foo = foooooooooooooooooooooooooooooooooooooo
+       and type foo = foooooooooooooooooooooooooooooooooooooo) -> fooo =
+  f
+
+let f :
+    fooooooooooooooooooooooooooooooooooooo ->
+    (module Foooooooooooooooooooooooooooooooooooooo :
+      Foooooooooooooooooooooooooooooooooooooo) -> fooo =
+  f
+
+let f :
+    (module
+      Foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo :
+      S) -> fooo =
+  f
