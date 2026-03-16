@@ -1099,12 +1099,12 @@ and fmt_package_type_cnstrs c ctx cnstrs =
   list_fl cnstrs fmt_cstr
 
 and fmt_package_type c ctx ~parens ~pro ptyp =
-  let {ppt_path; ppt_cstrs; ppt_attrs; ppt_loc} = ptyp in
+  let {ppt_path; ppt_constraints; ppt_attrs; ppt_loc} = ptyp in
   Cmts.fmt c ppt_loc
     (hvbox 2
        (Params.parens_if parens c.conf
           ( hovbox 0 (pro $ fmt_longident_loc c ppt_path)
-          $ fmt_package_type_cnstrs c ctx ppt_cstrs
+          $ fmt_package_type_cnstrs c ctx ppt_constraints
           $ fmt_attributes c ppt_attrs ) ) )
 
 and fmt_row_field c ctx {prf_desc; prf_attributes; prf_loc} =
@@ -3478,7 +3478,7 @@ and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
   @@
   let { ptype_name= {txt; loc}
       ; ptype_params
-      ; ptype_cstrs
+      ; ptype_constraints
       ; ptype_kind
       ; ptype_private= priv
       ; ptype_manifest= m
@@ -3574,7 +3574,7 @@ and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
        ( doc_before
        $ hvbox 0
            ( hvbox c.conf.fmt_opts.type_decl_indent.v
-               (fmt_manifest_kind $ fmt_cstrs ptype_cstrs)
+               (fmt_manifest_kind $ fmt_cstrs ptype_constraints)
            $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after )
        $ doc_after )
 
@@ -4549,7 +4549,8 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
             $ after ) }
   | Pmod_unpack (e, ty1, ty2) ->
       let package_type sep
-          {ppt_path= lid; ppt_cstrs= cstrs; ppt_attrs= attrs; ppt_loc} =
+          {ppt_path= lid; ppt_constraints= cstrs; ppt_attrs= attrs; ppt_loc}
+          =
         (* TODO: Use [fmt_package_type]. *)
         break 1 (Params.Indent.mod_unpack_annot c.conf)
         $ hovbox 0

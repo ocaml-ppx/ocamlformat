@@ -101,6 +101,10 @@ let pstr_class l =
 let pstr_class_type l =
   Pstr_class_type l
 
+let psig_extension body attrs =
+  (Psig_extension (body, attrs))
+let psig_attribute body =
+  (Psig_attribute body)
 let psig_typext te =
   Psig_typext te
 let psig_value vd =
@@ -114,6 +118,22 @@ let psig_exception te =
   Psig_exception te
 let psig_include body =
   Psig_include body
+let psig_module body =
+  (Psig_module body)
+let psig_modsubst body =
+  (Psig_modsubst body)
+let psig_recmodule l =
+  (Psig_recmodule l)
+let psig_modtype body =
+  (Psig_modtype body)
+let psig_modtypesubst body =
+  (Psig_modtypesubst body)
+let psig_open body =
+  (Psig_open body)
+let psig_class l =
+  (Psig_class l)
+let psig_class_type l =
+  (Psig_class_type l)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -312,11 +332,134 @@ let mk_dotop_indexop_expr ~loc (pia_lhs, (path, op), pia_paren, idx, pia_rhs) =
     (Pexp_indexop_access
        { pia_lhs; pia_kind= Dotop (path, op, idx); pia_paren; pia_rhs })
 
+(*
+(* Helper functions for desugaring array indexing operators *)
+type paren_kind = Paren | Brace | Bracket
+
+(* We classify the dimension of indices: Bigarray distinguishes
+   indices of dimension 1,2,3, or more. Similarly, user-defined
+   indexing operator behave differently for indices of dimension 1
+   or more.
+*)
+type index_dim =
+  | One
+  | Two
+  | Three
+  | Many
+type ('dot,'index) array_family = {
+
+  name:
+    Lexing.position * Lexing.position -> 'dot -> assign:bool -> paren_kind
+  -> index_dim -> Longident.t Location.loc
+  (*
+    This functions computes the name of the explicit indexing operator
+    associated with a sugared array indexing expression.
+
+    For instance, for builtin arrays, if Clflags.unsafe is set,
+    * [ a.[index] ]     =>  [String.unsafe_get]
+    * [ a.{x,y} <- 1 ]  =>  [ Bigarray.Array2.unsafe_set]
+
+    User-defined indexing operator follows a more local convention:
+    * [ a .%(index)]     => [ (.%()) ]
+    * [ a.![1;2] <- 0 ]  => [(.![;..]<-)]
+    * [ a.My.Map.?(0) => [My.Map.(.?())]
+  *);
+
+  index:
+    Lexing.position * Lexing.position -> paren_kind -> 'index
+    -> index_dim * (arg_label * expression) list
+   (*
+     [index (start,stop) paren index] computes the dimension of the
+     index argument and how it should be desugared when transformed
+     to a list of arguments for the indexing operator.
+     In particular, in both the Bigarray case and the user-defined case,
+     beyond a certain dimension, multiple indices are packed into a single
+     array argument:
+     * [ a.(x) ]       => [ [One, [Nolabel, <<x>>] ]
+     * [ a.{1,2} ]     => [ [Two, [Nolabel, <<1>>; Nolabel, <<2>>] ]
+     * [ a.{1,2,3,4} ] => [ [Many, [Nolabel, <<[|1;2;3;4|]>>] ] ]
+   *);
+
+}
+
+let bigarray_untuplify exp =
+  match exp.pexp_desc with
+  | Pexp_tuple explist
+       when List.for_all (fun (l, _) -> Option.is_none l) explist ->
+     List.map snd explist
+  | _ -> [exp]
+
+let builtin_arraylike_name loc _ ~assign paren_kind n =
+  let opname = if assign then "set" else "get" in
+  let opname = if !Clflags.unsafe then "unsafe_" ^ opname else opname in
+  let prefix = match paren_kind with
+    | Paren -> Lident "Array"
+    | Bracket ->
+        (* Syntax removed in 5.1. if assign then removed_string_set loc
+        else *)
+        Lident "String"
+    | Brace ->
+       let submodule_name = match n with
+         | One -> "Array1"
+         | Two -> "Array2"
+         | Three -> "Array3"
+         | Many -> "Genarray" in
+       Ldot(mknoloc (Lident "Bigarray"), mknoloc submodule_name) in
+   ghloc ~loc (Ldot(mknoloc prefix, mknoloc opname))
+
+let builtin_arraylike_index loc paren_kind index = match paren_kind with
+    | Paren | Bracket -> One, [Nolabel, index]
+    | Brace ->
+       (* Multi-indices for bigarray are comma-separated ([a.{1,2,3,4}]) *)
+       match bigarray_untuplify index with
+     | [x] -> One, [Nolabel, x]
+     | [x;y] -> Two, [Nolabel, x; Nolabel, y]
+     | [x;y;z] -> Three, [Nolabel, x; Nolabel, y; Nolabel, z]
+     | coords -> Many, [Nolabel, ghexp ~loc (Pexp_array coords)]
+
+let builtin_indexing_operators : (unit, expression) array_family  =
+  { index = builtin_arraylike_index; name = builtin_arraylike_name }
+*)
 let paren_to_strings = function
   | Paren -> "(", ")"
   | Bracket -> "[", "]"
   | Brace -> "{", "}"
+(*
+let user_indexing_operator_name loc (prefix,ext) ~assign paren_kind n =
+  let name =
+    let assign = if assign then "<-" else "" in
+    let mid = match n with
+        | Many | Three | Two  -> ";.."
+        | One -> "" in
+    let left, right = paren_to_strings paren_kind in
+    String.concat "" ["."; ext; left; mid; right; assign] in
+  let lid = match prefix with
+    | None -> Lident name
+    | Some p -> Ldot(mknoloc p,mknoloc name) in
+  ghloc ~loc lid
 
+let user_index loc _ index =
+  (* Multi-indices for user-defined operators are semicolon-separated
+     ([a.%[1;2;3;4]]) *)
+  match index with
+    | [a] -> One, [Nolabel, a]
+    | l -> Many, [Nolabel, mkexp ~loc (Pexp_array l)]
+
+let user_indexing_operators:
+      (Longident.t option * string, expression list) array_family
+  = { index = user_index; name = user_indexing_operator_name }
+
+let mk_indexop_expr array_indexing_operator ~loc
+      (array,dot,paren,index,set_expr) =
+  let assign = match set_expr with None -> false | Some _ -> true in
+  let n, index = array_indexing_operator.index loc paren index in
+  let fn = array_indexing_operator.name loc dot ~assign paren n in
+  let set_arg = match set_expr with
+    | None -> []
+    | Some expr -> [Nolabel, expr] in
+  let args = (Nolabel,array) :: index @ set_arg in
+  mkexp ~loc (Pexp_apply(ghexp ~loc (Pexp_ident fn), args))
+*)
 let indexop_unclosed_error loc_s s loc_e =
   let left, right = paren_to_strings s in
   unclosed left loc_s right loc_e
@@ -327,20 +470,17 @@ let lapply ~loc p1 loc_p1 p2 loc_p2 =
   else raise (Syntaxerr.Error(
                   Syntaxerr.Applicative_path (make_loc loc)))
 
-(* [loc_map] could be [Location.map]. *)
-let loc_map (f : 'a -> 'b) (x : 'a Location.loc) : 'b Location.loc =
-  { x with txt = f x.txt }
 
 let make_ghost x = { x with loc = { x.loc with loc_ghost = true }}
 
 let loc_last (id : Longident.t Location.loc) : string Location.loc =
-  loc_map Longident.last id
+  Location.map Longident.last id
 
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
-  loc_map (fun x -> Lident x) id
+  Location.map (fun x -> Lident x) id
 (*
 let exp_of_longident lid =
-  let lid = loc_map (fun id -> Lident (Longident.last id)) lid in
+  let lid = Location.map (fun id -> Lident (Longident.last id)) lid in
   Exp.mk ~loc:lid.loc (Pexp_ident lid)
 *)
 let exp_of_label lbl =
@@ -395,6 +535,7 @@ let wrap_mksig_ext ~loc (item, ext) =
   | Some id -> mksig ~loc (Psig_extension ((id, PSig [ghsig ~loc item]), []))
 *)
 let wrap_mkstr_ext = mkstr
+let wrap_mksig_ext = mksig
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
@@ -489,9 +630,9 @@ let expr_of_let_bindings ~loc ~loc_in lbs body =
   mkexp ~loc (Pexp_let (mk_let_bindings lbs, body, loc_in))
 
 let class_of_let_bindings ~loc ~loc_in lbs body =
-  (* Our use of let_bindings(no_ext) guarantees the following: *)
-  assert (not lbs.lbs_has_ext);
-  mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
+    (* Our use of let_bindings(no_ext) guarantees the following: *)
+    assert (not lbs.lbs_has_ext);
+    mkclass ~loc (Pcl_let (mk_let_bindings lbs, body, loc_in))
 
 (* This rewrite is not wanted in OCamlformat
 (* If all the parameters are [Pparam_newtype x], then return [Some xs] where
@@ -567,7 +708,7 @@ let package_type_of_module_type pmty =
         let loc = ptyp.ptype_loc in
         if ptyp.ptype_params <> [] then
           err loc Syntaxerr.Parameterized_types;
-        if ptyp.ptype_cstrs <> [] then
+        if ptyp.ptype_constraints <> [] then
           err loc Syntaxerr.Constrained_types;
         if ptyp.ptype_private <> Public then
           err loc Syntaxerr.Private_types;
@@ -911,10 +1052,6 @@ The precedences must be listed from low to high.
     { mkpat ~loc:$sloc $1 }
 %inline mktyp(symb): symb
     { mktyp ~loc:$sloc $1 }
-%inline mkstr(symb): symb
-    { mkstr ~loc:$sloc $1 }
-%inline mksig(symb): symb
-    { mksig ~loc:$sloc $1 }
 %inline mkmod(symb): symb
     { mkmod ~loc:$sloc $1 }
 %inline mkmty(symb): symb
@@ -932,10 +1069,9 @@ The precedences must be listed from low to high.
 
 %inline wrap_mkstr_ext(symb): symb
     { wrap_mkstr_ext ~loc:$sloc $1 }
-(*
 %inline wrap_mksig_ext(symb): symb
     { wrap_mksig_ext ~loc:$sloc $1 }
-*)
+
 %inline mk_directive_arg(symb): symb
     { mk_directive_arg ~loc:$sloc $1 }
 
@@ -1629,6 +1765,11 @@ open_description:
 
 %inline open_dot_declaration: mkrhs(mod_longident)
   { $1 }
+(* We have a dedicated AST node for "open dot".
+  { let loc = make_loc $loc($1) in
+    let me = Mod.ident ~loc $1 in
+    Opn.mk ~loc me }
+*)
 ;
 
 (* -------------------------------------------------------------------------- *)
@@ -1665,7 +1806,6 @@ module_type:
     )
     { $1 }
 ;
-
 (* A signature, which appears between SIG and END (among other places),
    is a list of signature elements. *)
 signature:
@@ -1684,26 +1824,13 @@ signature:
 
 (* A signature item. *)
 signature_item:
-  | item_extension post_item_attributes
-      { let docs = symbol_docs $sloc in
-        mksig ~loc:$sloc (Psig_extension ($1, (add_docs_attrs docs $2))) }
-  | mksig(
-      floating_attribute
-        { Psig_attribute $1 }
-    | module_declaration
-        { Psig_module $1 }
-    | module_alias
-        { Psig_module $1 }
-    | module_subst
-        { Psig_modsubst $1 }
-    | rec_module_declarations
-        { Psig_recmodule $1 }
-    | module_type_declaration
-        { Psig_modtype $1 }
-    | module_type_subst
-        { Psig_modtypesubst $1 }
+  | wrap_mksig_ext(
+      item_extension post_item_attributes
+        { psig_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
+    | floating_attribute
+        { psig_attribute $1 }
     | value_description
-        { Psig_value $1 }
+        { psig_value $1 }
     | primitive_declaration
         { psig_value $1 }
     | type_declarations
@@ -1714,14 +1841,26 @@ signature_item:
         { psig_typext $1 }
     | sig_exception_declaration
         { psig_exception $1 }
+    | module_declaration
+        { psig_module $1 }
+    | module_alias
+        { psig_module $1 }
+    | module_subst
+        { psig_modsubst $1 }
+    | rec_module_declarations
+        { psig_recmodule $1 }
+    | module_type_declaration
+        { psig_modtype $1 }
+    | module_type_subst
+        { psig_modtypesubst $1 }
     | open_description
-        { Psig_open $1 }
+        { psig_open $1 }
     | include_statement(module_type)
         { psig_include $1 }
     | class_descriptions
-        { Psig_class $1 }
+        { psig_class $1 }
     | class_type_declarations
-        { Psig_class_type $1 }
+        { psig_class_type $1 }
     )
     { $1 }
 
@@ -2222,7 +2361,6 @@ class_type_declarations:
            Pfunction_cases attributes for enabling/disabling warnings in
            typechecking. For standalone function cases, we want the compiler to
            respect, e.g., [@inline] attributes.
-           For printing, this is reverted.
         *)
         let desc = mkfunction [] None (Pfunction_cases (cases, loc, Attr.empty_infix_ext_attrs)) $2 in
         mkexp ~loc:$sloc desc
@@ -2343,11 +2481,11 @@ fun_expr:
       { $1 }
   | let_bindings(ext) IN seq_expr
       { expr_of_let_bindings ~loc:$sloc ~loc_in:(make_loc $loc($2)) $1 $3 }
-  | pbop_op = mkrhs(LETOP) bindings = letop_bindings _in_kw=IN body = seq_expr
+  | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
       { let (pbop_pat, pbop_args, pbop_typ, pbop_exp, pbop_is_pun, rev_ands) = bindings in
         let ands = List.rev rev_ands in
         let pbop_loc = make_loc $sloc in
-        let loc_in = make_loc $loc(_in_kw) in
+        let loc_in = make_loc $loc($3) in
         let let_ =
           {pbop_op; pbop_pat; pbop_args; pbop_typ; pbop_exp; pbop_is_pun; pbop_loc}
         in
@@ -2425,7 +2563,7 @@ fun_expr:
       { Pexp_tuple($1) }
   | mkrhs(constr_longident) simple_expr %prec below_HASH
       { Pexp_construct($1, Some $2) }
-  | name_tag simple_expr %prec below_HASH
+  | mkrhs(name_tag) simple_expr %prec below_HASH
       { Pexp_variant($1, Some $2) }
   | e1 = fun_expr op = op(infix_operator) e2 = expr
       { mkinfix e1 op e2 }
@@ -2503,7 +2641,7 @@ simple_expr:
       { Pexp_constant $1 }
   | mkrhs(constr_longident) %prec prec_constant_constructor
       { Pexp_construct($1, None) }
-  | name_tag %prec prec_constant_constructor
+  | mkrhs(name_tag) %prec prec_constant_constructor
       { Pexp_variant($1, None) }
   | op(PREFIXOP) simple_expr
       { Pexp_prefix($1, $2) }
@@ -2971,7 +3109,7 @@ pattern_gen:
     | constr=mkrhs(constr_longident) LPAREN TYPE newtypes=lident_list RPAREN
         pat=simple_pattern
         { Ppat_construct(constr, Some (newtypes, pat)) }
-    | name_tag pattern %prec prec_constr_appl
+    | mkrhs(name_tag) pattern %prec prec_constr_appl
         { Ppat_variant($1, Some $2) }
     ) { $1 }
   | LAZY ext_attributes simple_pattern
@@ -3007,7 +3145,7 @@ simple_pattern_not_ident:
       { Ppat_interval ($1, $3) }
   | mkrhs(constr_longident)
       { Ppat_construct($1, None) }
-  | name_tag
+  | mkrhs(name_tag)
       { Ppat_variant($1, None) }
   | HASH mkrhs(type_longident)
       { Ppat_type ($2) }
@@ -3219,7 +3357,7 @@ generic_type_declaration(flag, kind):
   params = type_parameters
   id = mkrhs(LIDENT)
   kind_priv_manifest = kind
-  cstrs = constraints
+  constraints = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
@@ -3227,7 +3365,7 @@ generic_type_declaration(flag, kind):
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       flag,
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
+      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
 %inline generic_and_type_declaration(kind):
@@ -3236,7 +3374,7 @@ generic_type_declaration(flag, kind):
   params = type_parameters
   id = mkrhs(LIDENT)
   kind_priv_manifest = kind
-  cstrs = constraints
+  constraints = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
@@ -3244,7 +3382,7 @@ generic_type_declaration(flag, kind):
       let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:
@@ -3490,7 +3628,7 @@ with_constraint:
           ($3,
            (Type.mk lident
               ~params:$2
-              ~cstrs:$6
+              ~constraints:$6
               ~manifest:$5
               ~priv:$4
               ~loc:(make_loc $sloc))) }
@@ -3522,8 +3660,8 @@ with_type_binder:
 /* Polymorphic types */
 
 %inline typevar:
-  QUOTE mkrhs(ident)
-    { $2 }
+  QUOTE ident
+    { mkrhs $2 $sloc }
 ;
 %inline typevar_list:
   nonempty_llist(typevar)
@@ -3617,7 +3755,7 @@ function_type:
         }
     )
     { $1 }
-  (* The next two cases are for labled tuples - see comment on [tuple_type]
+  (* The next two cases are for labeled tuples - see comment on [tuple_type]
      below.
 
      The first case is present just to resolve a shift/reduce conflict in a
@@ -3671,14 +3809,14 @@ function_type:
     { $1 }
 ;
 %inline arg_label:
-  | label = optlabel
-      { Optional (mkrhs label $sloc) }
+  | label = mkrhs(optlabel)
+      { Optional label }
   | arg_label_no_opt
       { $1 }
 
 %inline arg_label_no_opt:
-  | label = LIDENT COLON
-      { Labelled (mkrhs label $sloc) }
+  | label = mkrhs(LIDENT) COLON
+      { Labelled label }
   | /* empty */
       { Nolabel }
 ;
@@ -3698,7 +3836,7 @@ function_type:
    label is not parsed as a proper_tuple_type, but rather as a case of
    function_type above.  This resolves ambiguities around [x:t1 * t2 -> t3]
    which must continue to parse as a function with one labeled argument even in
-   the presence of labled tuples.
+   the presence of labeled tuples.
 *)
 tuple_type:
   | ty = atomic_type
@@ -3864,11 +4002,11 @@ row_field:
       { Rf.inherit_ ~loc:(make_loc $sloc) $1 }
 ;
 tag_field:
-    name_tag OF opt_ampersand amper_type_list attributes
+    mkrhs(name_tag) OF opt_ampersand amper_type_list attributes
       { let info = symbol_info $endpos in
         let attrs = add_info_attrs info $5 in
         Rf.tag ~loc:(make_loc $sloc) ~attrs $1 $3 $4 }
-  | name_tag attributes
+  | mkrhs(name_tag) attributes
       { let info = symbol_info $endpos in
         let attrs = add_info_attrs info $2 in
         Rf.tag ~loc:(make_loc $sloc) ~attrs $1 true [] }
@@ -3882,7 +4020,7 @@ opt_ampersand:
     { $1 }
 ;
 %inline name_tag_list:
-  nonempty_llist(name_tag)
+  nonempty_llist(mkrhs(name_tag))
     { $1 }
 ;
 (* A method list (in an object type). *)
@@ -4109,8 +4247,7 @@ toplevel_directive:
 ;
 
 name_tag:
-  BACKQUOTE mkrhs(ident)
-    { mkloc $2 (make_loc $sloc) }
+    BACKQUOTE mkrhs(ident)                             { $2 }
 ;
 rec_flag:
     /* empty */                                 { Nonrecursive }

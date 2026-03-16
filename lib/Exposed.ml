@@ -60,7 +60,7 @@ module Right = struct
 
   let type_declaration = function
     | {ptype_attributes= {attrs_after= _ :: _; _}; _} -> false
-    | {ptype_cstrs= _ :: _ as cstrs; _} ->
+    | {ptype_constraints= _ :: _ as cstrs; _} ->
         (* type a = ... constraint left = < ... > *)
         list ~elt:(fun (_left, right, _loc) -> core_type right) cstrs
     | {ptype_kind= Ptype_open | Ptype_record _ | Ptype_external _; _} ->
