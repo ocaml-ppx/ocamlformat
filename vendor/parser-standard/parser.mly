@@ -419,20 +419,17 @@ let lapply ~loc p1 loc_p1 p2 loc_p2 =
   else raise (Syntaxerr.Error(
                   Syntaxerr.Applicative_path (make_loc loc)))
 
-(* [loc_map] could be [Location.map]. *)
-let loc_map (f : 'a -> 'b) (x : 'a Location.loc) : 'b Location.loc =
-  { x with txt = f x.txt }
 
 let make_ghost x = { x with loc = { x.loc with loc_ghost = true }}
 
 let loc_last (id : Longident.t Location.loc) : string Location.loc =
-  loc_map Longident.last id
+  Location.map Longident.last id
 
 let loc_lident (id : string Location.loc) : Longident.t Location.loc =
-  loc_map (fun x -> Lident x) id
+  Location.map (fun x -> Lident x) id
 
 let exp_of_longident lid =
-  let lid = loc_map (fun id -> Lident (Longident.last id)) lid in
+  let lid = Location.map (fun id -> Lident (Longident.last id)) lid in
   Exp.mk ~loc:lid.loc (Pexp_ident lid)
 
 let exp_of_label lbl =
