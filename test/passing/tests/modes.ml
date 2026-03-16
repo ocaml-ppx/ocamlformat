@@ -53,6 +53,12 @@ module Expressions = struct
   let x = (expr : (typ1 -> typ2) @ mode1 mode2)
   let x = (expr : typ1 * typ2 @ mode1 mode2)
 
+  (* mode-only constraints without a type *)
+  let x = (expr : @ mode1)
+  let x = (expr : @ mode1 mode2)
+  let x = f (expr : @ mode1)
+  let x = (expr : @ mode1).field
+
   (* mode constraints in expressions *)
   let x =
     { let1 =
@@ -232,6 +238,169 @@ module Expressions = struct
     ; cons1 = (x :: y :: z : _ @ mode)
     ; prefix1 = (!x : _ @ mode)
     ; infix1 = (x + y : _ @ mode)
+    }
+  ;;
+
+  (* mode-only constraints in expressions *)
+  let x =
+    { let1 =
+        (let x = (x : @ mode)
+         and y = (y : @ mode) in
+         (z : @ mode))
+    ; function1 =
+        (function
+          | x -> (x : @ mode)
+          | y -> (y : @ mode))
+    ; fun1 = (fun ?(x = (x : @ mode)) () @ mode -> (y : @ mode))
+    ; fun2 = (fun ?(x = (x : @ mode)) () @ mode1 -> (y : @ mode2))
+    ; fun3 = (fun ?(x = (x : @ mode)) () -> (y : @ mode))
+    ; apply1 = (x : @ mode) (y : @ mode)
+    ; apply2 = f ~lbl:(x : @ mode)
+    ; apply3 = f ~x:(x : @ mode)
+    ; apply4 = f ?lbl:(x : @ mode)
+    ; apply5 = f ?x:(x : @ mode)
+    ; match1 =
+        (match (x : @ mode) with
+         | y -> (y : @ mode)
+         | z -> (z : @ mode))
+    ; try1 =
+        (try (x : @ mode) with
+         | y -> (y : @ mode))
+    ; tuple1 = (x : @ mode), (y : @ mode)
+    ; tuple2 = ~x:(x : @ mode), ~y:(z : @ mode)
+    ; construct1 = A (x : @ mode)
+    ; construct2 = A ((x : @ mode), (y : @ mode))
+    ; variant1 = `A (x : @ mode)
+    ; variant2 = `A ((x : @ mode), (y : @ mode))
+    ; field1 = (x : @ mode).x
+    ; setfield1 = (x : @ mode).x <- (y : @ mode)
+    ; array1 = [| (x : @ mode); (y : @ mode) |]
+    ; array2 = [: (x : @ mode); (y : @ mode) :]
+    ; list1 = [ (x : @ mode); (y : @ mode) ]
+    ; ite1 = (if (x : @ mode) then (y : @ mode) else (z : @ mode))
+    ; sequence1 =
+        ((x : @ mode);
+         (y : @ mode))
+    ; while1 =
+        while (x : @ mode) do
+          (y : @ mode)
+        done
+    ; for1 =
+        for i = (x : @ mode) to (y : @ mode) do
+          (z : @ mode)
+        done
+    ; constraint1 = ((x : @ mode) : @ mode)
+    ; constraint2 = ((x : @ mode) : _ @ mode)
+    ; constraint3 = ((x : _ @ mode) : @ mode)
+    ; coerce1 = ((x : @ mode) :> _)
+    ; send1 = (x : @ mode)#y
+    ; setinstvar1 = x <- (x : @ mode)
+    ; override1 = {<x = (x : @ mode); y = (y : @ mode)>}
+    ; letmodule1 =
+        (let module M = ME in
+        (x : @ mode))
+    ; letexception1 =
+        (let exception E in
+        (x : @ mode))
+    ; assert1 = assert (x : @ mode)
+    ; lazy1 = lazy (x : @ mode)
+    ; newtype1 = (fun (type t) @ mode -> (x : @ mode))
+    ; open1 = M.((x : @ mode))
+    ; letopen1 =
+        (let open M in
+         (x : @ mode))
+    ; letop1 =
+        (let* x = (x : @ mode) in
+         (y : @ mode))
+    ; extension1 = [%ext (x : @ mode)]
+    ; cons1 = (x : @ mode) :: (y : @ mode) :: (z : @ mode)
+    ; prefix1 = !(x : @ mode)
+    ; infix1 = (x : @ mode) + (y : @ mode)
+    }
+  ;;
+
+  (* expressions in mode-only constraints *)
+  let x =
+    { ident1 = (x : @ mode)
+    ; constant1 = ("" : @ mode)
+    ; let1 =
+        (let x = y in
+         z
+         : @ mode)
+    ; function1 =
+        (function
+         | x -> x
+         | y -> y
+         : @ mode)
+    ; fun1 = (fun x @ mode -> y : @ mode)
+    ; fun2 = (fun x @ mode1 -> y : @ mode2)
+    ; fun3 = (fun x -> y : @ mode)
+    ; apply1 = (f x : @ mode)
+    ; match1 =
+        ((match x with
+          | y -> y
+          | z -> z)
+         : @ mode)
+    ; try1 =
+        ((try x with
+          | y -> y
+          | z -> z)
+         : @ mode)
+    ; tuple1 = ((x, y) : @ mode)
+    ; tuple2 = ((~x, ~y) : @ mode)
+    ; construct1 = (A : @ mode)
+    ; construct2 = (A x : @ mode)
+    ; construct3 = (A (x, y) : @ mode)
+    ; construct4 = (A { x } : @ mode)
+    ; variant1 = (`A : @ mode)
+    ; variant2 = (`A x : @ mode)
+    ; record1 = ({ x } : @ mode)
+    ; field1 = (x.y : @ mode)
+    ; setfield1 = (x.y <- z : @ mode)
+    ; array1 = ([| x |] : @ mode)
+    ; array2 = ([: x :] : @ mode)
+    ; list1 = ([ x ] : @ mode)
+    ; ite1 = (if x then y else z : @ mode)
+    ; sequence1 =
+        (x;
+         y
+         : @ mode)
+    ; constraint1 = ((x : @ mode) : @ mode)
+    ; constraint2 = ((x : _ @ mode) : @ mode)
+    ; constraint3 = ((x : @ mode) : _ @ mode)
+    ; coerce1 = ((x :> _) : @ mode)
+    ; send1 = (x#y : @ mode)
+    ; new1 = (new x : @ mode)
+    ; setinstvar1 = (x <- 2 : @ mode)
+    ; override1 = ({<y = z>} : @ mode)
+    ; letmodule1 =
+        (let module M = ME in
+         x
+         : @ mode)
+    ; letexception1 =
+        (let exception E in
+         x
+         : @ mode)
+    ; assert1 = (assert x : @ mode)
+    ; lazy1 = (lazy x : @ mode)
+    ; object1 = (object end : @ mode)
+    ; newtype1 = (fun (type t) @ mode -> x : @ mode)
+    ; pack1 = ((module M) : @ mode)
+    ; pack2 = ((module M : S) : @ mode)
+    ; open1 = (M.(x y) : @ mode)
+    ; letopen1 =
+        (let open M in
+         x
+         : @ mode)
+    ; letop1 =
+        (let* x = y in
+         z
+         : @ mode)
+    ; extension1 = ([%ext] : @ mode)
+    ; hole1 = (_ : @ mode)
+    ; cons1 = (x :: y :: z : @ mode)
+    ; prefix1 = (!x : @ mode)
+    ; infix1 = (x + y : @ mode)
     }
   ;;
 end

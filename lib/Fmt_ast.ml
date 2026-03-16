@@ -2748,7 +2748,16 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           (parens || not (List.is_empty pexp_attributes))
           c.conf
           (str (if b then "#true" else "#false") $ fmt_atrs)
-  | Pexp_constraint (_, None, _) -> assert false
+  | Pexp_constraint (e, None, modes) ->
+      pro
+      $ hvbox
+          (Params.Indent.exp_constraint c.conf)
+          (Params.parens_if (parens && has_attr) c.conf
+             ( wrap_fits_breaks ~space:false c.conf "(" ")"
+                 ( fmt_expression c (sub_exp ~ctx e)
+                 $ fmt "@ :"
+                 $ fmt_modals c (Modes modes) )
+             $ fmt_atrs ) )
   | Pexp_constraint (e, Some t, modes) ->
       pro
       $ hvbox
