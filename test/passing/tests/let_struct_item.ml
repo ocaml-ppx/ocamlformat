@@ -1,0 +1,1 @@
+let () = () |> (let type u = A in f ~y:0)

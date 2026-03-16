@@ -4623,17 +4623,19 @@ and fmt_structure c ctx itms =
   let ast (x, _) = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
-and fmt_type c ?eq rec_flag decls ctx =
+and fmt_type c ?(pro = noop) ?(epi = noop) ?eq rec_flag decls ctx =
   let update_config c td = update_config_attrs c td.ptype_attributes in
   let is_rec = Asttypes.is_recursive rec_flag in
-  let fmt_decl c ctx ~prev ~next:_ decl =
-    let first = Option.is_none prev in
+  let fmt_decl c ctx ~prev ~next decl =
+    let first = Option.is_none prev and last = Option.is_none next in
     let kw, nonrec_kw =
       if first then
         if is_rec then ("type", None) else ("type", Some " nonrec")
       else ("and", None)
     in
-    fmt_type_declaration c ~kw ?nonrec_kw ?eq (sub_td ~ctx decl)
+    fmt_if first pro
+    $ fmt_type_declaration c ~kw ?nonrec_kw ?eq (sub_td ~ctx decl)
+    $ fmt_if last epi
   in
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
@@ -4699,7 +4701,7 @@ and fmt_structure_item' ~ctx0 c ~last:last_item ~semisemi ~pro ?epi ~ctx si =
       fmt_recmodule c ctx mbs fmt_module_binding ~pro ?epi
         (fun x -> Mb (ctx, x))
         sub_mb
-  | Pstr_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
+  | Pstr_type (rec_flag, decls) -> fmt_type c ~pro ?epi rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx ~pro ?epi te
   | Pstr_value {pvbs_rec= rec_flag; pvbs_bindings= bindings} ->
       let update_config c i =
