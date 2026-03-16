@@ -62,6 +62,15 @@ module Expressions = struct
 
   let x = (expr : typ1 * typ2)
 
+  (* mode-only constraints without a type *)
+  let x = expr
+
+  let x = expr
+
+  let x = f expr
+
+  let x = expr.field
+
   (* mode constraints in expressions *)
   let x =
     { let1=
@@ -206,6 +215,134 @@ module Expressions = struct
     ; cons1= (x :: y :: z : _)
     ; prefix1= (!x : _)
     ; infix1= (x + y : _) }
+
+  (* mode-only constraints in expressions *)
+  let x =
+    { let1=
+        (let x = x and y = y in
+         z )
+    ; function1= (function x -> x | y -> y)
+    ; fun1= (fun ?(x = x) () -> y)
+    ; fun2= (fun ?(x = x) () -> y)
+    ; fun3= (fun ?(x = x) () -> y)
+    ; apply1= x y
+    ; apply2= f ~lbl:x
+    ; apply3= f ~x
+    ; apply4= f ?lbl:x
+    ; apply5= f ?x
+    ; match1= (match x with y -> y | z -> z)
+    ; try1= (try x with y -> y)
+    ; tuple1= (x, y)
+    ; tuple2= (~x, ~y:z)
+    ; construct1= A x
+    ; construct2= A (x, y)
+    ; variant1= `A x
+    ; variant2= `A (x, y)
+    ; field1= x.x
+    ; setfield1= x.x <- y
+    ; array1= [|x; y|]
+    ; array2= [:x; y:]
+    ; list1= [x; y]
+    ; ite1= (if x then y else z)
+    ; sequence1= (x ; y)
+    ; while1=
+        while x do
+          y
+        done
+    ; for1=
+        for i = x to y do
+          z
+        done
+    ; constraint1= x
+    ; constraint2= (x : _)
+    ; constraint3= (x : _)
+    ; coerce1= (x :> _)
+    ; send1= x#y
+    ; setinstvar1= x <- x
+    ; override1= {<x; y>}
+    ; letmodule1=
+        (let module M = ME in
+        x )
+    ; letexception1=
+        (let exception E in
+        x )
+    ; assert1= assert x
+    ; lazy1= lazy x
+    ; newtype1= (fun (type t) -> x)
+    ; open1= M.(x)
+    ; letopen1=
+        (let open M in
+         x )
+    ; letop1=
+        (let* x = x in
+         y )
+    ; extension1= [%ext x]
+    ; cons1= x :: y :: z
+    ; prefix1= !x
+    ; infix1= x + y }
+
+  (* expressions in mode-only constraints *)
+  let x =
+    { ident1= x
+    ; constant1= ""
+    ; let1=
+        (let x = y in
+         z )
+    ; function1= (function x -> x | y -> y)
+    ; fun1= (fun x -> y)
+    ; fun2= (fun x -> y)
+    ; fun3= (fun x -> y)
+    ; apply1= f x
+    ; match1= (match x with y -> y | z -> z)
+    ; try1= (try x with y -> y | z -> z)
+    ; tuple1= (x, y)
+    ; tuple2= (~x, ~y)
+    ; construct1= A
+    ; construct2= A x
+    ; construct3= A (x, y)
+    ; construct4= A {x}
+    ; variant1= `A
+    ; variant2= `A x
+    ; record1= {x}
+    ; field1= x.y
+    ; setfield1= x.y <- z
+    ; array1= [|x|]
+    ; array2= [:x:]
+    ; list1= [x]
+    ; ite1= (if x then y else z)
+    ; sequence1= (x ; y)
+    ; constraint1= x
+    ; constraint2= (x : _)
+    ; constraint3= (x : _)
+    ; coerce1= (x :> _)
+    ; send1= x#y
+    ; new1= new x
+    ; setinstvar1= x <- 2
+    ; override1= {<y = z>}
+    ; letmodule1=
+        (let module M = ME in
+        x )
+    ; letexception1=
+        (let exception E in
+        x )
+    ; assert1= assert x
+    ; lazy1= lazy x
+    ; object1= object end
+    ; newtype1= (fun (type t) -> x)
+    ; pack1= (module M)
+    ; pack2= (module M : S)
+    ; open1= M.(x y)
+    ; letopen1=
+        (let open M in
+         x )
+    ; letop1=
+        (let* x = y in
+         z )
+    ; extension1= [%ext]
+    ; hole1= _
+    ; cons1= x :: y :: z
+    ; prefix1= !x
+    ; infix1= x + y }
 end
 
 module Arrow_params = struct

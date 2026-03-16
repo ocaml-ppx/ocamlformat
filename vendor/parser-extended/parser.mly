@@ -2802,6 +2802,8 @@ spliceable_expr:
       { let (t, m) = $3 in
         mkexp_type_constraint_with_modes
           ~ghost:true ~loc:$sloc ~modes:m $2 ~ty:t }
+  | LPAREN seq_expr COLON at_mode_expr RPAREN
+      { ghexp_constraint ~loc:$sloc ~modes:$4 $2 None }
   | mkrhs(val_longident)
       { mkexp ~loc:$sloc (Pexp_ident ($1)) }
   | error
@@ -2819,6 +2821,8 @@ simple_expr:
   | LPAREN seq_expr type_constraint_with_modes RPAREN
       { let ty, modes = $3 in
         mkexp_type_constraint_with_modes ~ghost:true ~loc:$sloc ~modes $2 ~ty }
+  | LPAREN seq_expr COLON at_mode_expr RPAREN
+      { ghexp_constraint ~loc:$sloc ~modes:$4 $2 None }
   | indexop_expr(DOT, seq_expr, { None })
       { mk_builtin_indexop_expr ~loc:$sloc $1 }
   (* Immutable array indexing is a regular operator, so it doesn't need its own
