@@ -87,6 +87,10 @@ let pstr_class (ext, l) =
 let pstr_class_type (ext, l) =
   (Pstr_class_type l, ext)
 
+let psig_extension body attrs =
+  (Psig_extension (body, attrs), None)
+let psig_attribute body =
+  (Psig_attribute body, None)
 let psig_typext (te, ext) =
   (Psig_typext te, ext)
 let psig_value (vd, ext) =
@@ -100,6 +104,22 @@ let psig_exception (te, ext) =
   (Psig_exception te, ext)
 let psig_include (body, ext) =
   (Psig_include body, ext)
+let psig_module (body, ext) =
+  (Psig_module body, ext)
+let psig_modsubst (body, ext) =
+  (Psig_modsubst body, ext)
+let psig_recmodule (ext, l) =
+  (Psig_recmodule l, ext)
+let psig_modtype (body, ext) =
+  (Psig_modtype body, ext)
+let psig_modtypesubst (body, ext) =
+  (Psig_modtypesubst body, ext)
+let psig_open (body, ext) =
+  (Psig_open body, ext)
+let psig_class (ext, l) =
+  (Psig_class l, ext)
+let psig_class_type (ext, l) =
+  (Psig_class_type l, ext)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -1024,10 +1044,6 @@ The precedences must be listed from low to high.
     { mkpat ~loc:$sloc $1 }
 %inline mktyp(symb): symb
     { mktyp ~loc:$sloc $1 }
-%inline mkstr(symb): symb
-    { mkstr ~loc:$sloc $1 }
-%inline mksig(symb): symb
-    { mksig ~loc:$sloc $1 }
 %inline mkmod(symb): symb
     { mkmod ~loc:$sloc $1 }
 %inline mkmty(symb): symb
@@ -1484,15 +1500,15 @@ paren_module_expr:
 
 (* The various ways of annotating a core language expression that
    produces a first-class module that we wish to unpack. *)
-%inline expr_colon_package_type:
+expr_colon_package_type:
     e = expr
       { e }
   | e = expr COLON ty = package_type
-      { ghexp ~loc:$loc (Pexp_constraint (e, ty)) }
+      { mkexp ~loc:$loc (Pexp_constraint (e, ty)) }
   | e = expr COLON ty1 = package_type COLONGREATER ty2 = package_type
-      { ghexp ~loc:$loc (Pexp_coerce (e, Some ty1, ty2)) }
+      { mkexp ~loc:$loc (Pexp_coerce (e, Some ty1, ty2)) }
   | e = expr COLONGREATER ty2 = package_type
-      { ghexp ~loc:$loc (Pexp_coerce (e, None, ty2)) }
+      { mkexp ~loc:$loc (Pexp_coerce (e, None, ty2)) }
 ;
 
 (* A structure, which appears between STRUCT and END (among other places),
@@ -1782,16 +1798,12 @@ signature:
 
 (* A signature item. *)
 signature_item:
-  | item_extension post_item_attributes
-      { let docs = symbol_docs $sloc in
-        mksig ~loc:$sloc (Psig_extension ($1, (add_docs_attrs docs $2))) }
-  | mksig(
-      floating_attribute
-        { Psig_attribute $1 }
-    )
-    { $1 }
   | wrap_mksig_ext(
-      value_description
+      item_extension post_item_attributes
+        { psig_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
+    | floating_attribute
+        { psig_attribute $1 }
+    | value_description
         { psig_value $1 }
     | primitive_declaration
         { psig_value $1 }
@@ -1804,25 +1816,25 @@ signature_item:
     | sig_exception_declaration
         { psig_exception $1 }
     | module_declaration
-        { let (body, ext) = $1 in (Psig_module body, ext) }
+        { psig_module $1 }
     | module_alias
-        { let (body, ext) = $1 in (Psig_module body, ext) }
+        { psig_module $1 }
     | module_subst
-        { let (body, ext) = $1 in (Psig_modsubst body, ext) }
+        { psig_modsubst $1 }
     | rec_module_declarations
-        { let (ext, l) = $1 in (Psig_recmodule l, ext) }
+        { psig_recmodule $1 }
     | module_type_declaration
-        { let (body, ext) = $1 in (Psig_modtype body, ext) }
+        { psig_modtype $1 }
     | module_type_subst
-        { let (body, ext) = $1 in (Psig_modtypesubst body, ext) }
+        { psig_modtypesubst $1 }
     | open_description
-        { let (body, ext) = $1 in (Psig_open body, ext) }
+        { psig_open $1 }
     | include_statement(module_type)
         { psig_include $1 }
     | class_descriptions
-        { let (ext, l) = $1 in (Psig_class l, ext) }
+        { psig_class $1 }
     | class_type_declarations
-        { let (ext, l) = $1 in (Psig_class_type l, ext) }
+        { psig_class_type $1 }
     )
     { $1 }
 
@@ -3704,7 +3716,7 @@ function_type:
         { Ptyp_arrow(label, domain, codomain) }
     )
     { $1 }
-  (* The next two cases are for labled tuples - see comment on [tuple_type]
+  (* The next two cases are for labeled tuples - see comment on [tuple_type]
      below.
 
      The first case is present just to resolve a shift/reduce conflict in a
@@ -3773,7 +3785,7 @@ function_type:
    label is not parsed as a proper_tuple_type, but rather as a case of
    function_type above.  This resolves ambiguities around [x:t1 * t2 -> t3]
    which must continue to parse as a function with one labeled argument even in
-   the presence of labled tuples.
+   the presence of labeled tuples.
 *)
 tuple_type:
   | ty = atomic_type
