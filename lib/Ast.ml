@@ -966,7 +966,9 @@ end = struct
       | Pconstraint t -> f t
       | Pcoerce (t1, t2) -> Option.exists t1 ~f || f t2
     in
-    let check_package_type ptyp = List.exists ptyp.ppt_cstrs ~f:snd_f in
+    let check_package_type ptyp =
+      List.exists ptyp.ppt_constraints ~f:snd_f
+    in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
@@ -995,10 +997,10 @@ end = struct
       | Ptyp_class (_, l) -> assert (List.exists l ~f)
       | Ptyp_functor (_, _, ptyp, rhs) ->
           assert (rhs == typ || check_package_type ptyp) )
-    | Td {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest; _} ->
+    | Td {ptype_params; ptype_constraints; ptype_kind; ptype_manifest; _} ->
         assert (
           List.exists ptype_params ~f:fst_f
-          || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
+          || List.exists ptype_constraints ~f:(fun (t1, t2, _) ->
               typ == t1 || typ == t2 )
           || ( match ptype_kind with
             | Ptype_variant cd1N ->

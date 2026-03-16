@@ -116,6 +116,7 @@ module Style = struct
     pp_close_stag ppf ()
 
   let inline_code ppf s = as_inline_code Format_doc.pp_print_string ppf s
+  let hint ppf = Format_doc.fprintf ppf "@{<hint>Hint@}"
 
   (* either prints the tag of [s] or delegates to [or_else] *)
   let mark_open_tag ~or_else s =
@@ -391,3 +392,9 @@ module Utf8_lexeme = struct
     in
     is_lowercase_at (String.length s) s 0
 end
+
+let print_see_manual ppf manual_section =
+  let open Format_doc in
+  fprintf ppf "(see manual section %a)"
+    (pp_print_list ~pp_sep:(fun f () -> pp_print_char f '.') pp_print_int)
+    manual_section
