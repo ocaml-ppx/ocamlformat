@@ -567,7 +567,7 @@ let package_type_of_module_type pmty =
         let loc = ptyp.ptype_loc in
         if ptyp.ptype_params <> [] then
           err loc Syntaxerr.Parameterized_types;
-        if ptyp.ptype_cstrs <> [] then
+        if ptyp.ptype_constraints <> [] then
           err loc Syntaxerr.Constrained_types;
         if ptyp.ptype_private <> Public then
           err loc Syntaxerr.Private_types;
@@ -3219,7 +3219,7 @@ generic_type_declaration(flag, kind):
   params = type_parameters
   id = mkrhs(LIDENT)
   kind_priv_manifest = kind
-  cstrs = constraints
+  constraints = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
@@ -3227,7 +3227,7 @@ generic_type_declaration(flag, kind):
       let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       flag,
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs
+      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs
     }
 ;
 %inline generic_and_type_declaration(kind):
@@ -3236,7 +3236,7 @@ generic_type_declaration(flag, kind):
   params = type_parameters
   id = mkrhs(LIDENT)
   kind_priv_manifest = kind
-  cstrs = constraints
+  constraints = constraints
   attrs2 = post_item_attributes
     {
       let (kind, priv, manifest) = kind_priv_manifest in
@@ -3244,7 +3244,7 @@ generic_type_declaration(flag, kind):
       let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ~cstrs ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:
@@ -3490,7 +3490,7 @@ with_constraint:
           ($3,
            (Type.mk lident
               ~params:$2
-              ~cstrs:$6
+              ~constraints:$6
               ~manifest:$5
               ~priv:$4
               ~loc:(make_loc $sloc))) }
