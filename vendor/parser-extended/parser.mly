@@ -3809,14 +3809,14 @@ function_type:
     { $1 }
 ;
 %inline arg_label:
-  | label = optlabel
-      { Optional (mkrhs label $sloc) }
+  | label = mkrhs(optlabel)
+      { Optional label }
   | arg_label_no_opt
       { $1 }
 
 %inline arg_label_no_opt:
-  | label = LIDENT COLON
-      { Labelled (mkrhs label $sloc) }
+  | label = mkrhs(LIDENT) COLON
+      { Labelled label }
   | /* empty */
       { Nolabel }
 ;
