@@ -84,3 +84,8 @@ let dog : 'this =
   make ~bark:(fun (o : 'this) -> ())
 
 (* </end of #14554> *)
+
+let _ =
+  let type t = Foooooooooooooooooooooooooooooooooooooooooooooooooo | Baaaaaaaaaaaaaaaaaaaaaaaar in
+  let module rec Foooooooooooooooooooooooooooooooooooooooooooooooooooooooo = struct end in
+  ()

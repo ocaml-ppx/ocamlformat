@@ -37,8 +37,8 @@ let _ =
 
 let _ =
   let type t =
-        | A of int
-        | B
+    | A of int
+    | B
   in
   let _ = [ A 42; B ] in
   let type t = .. in
@@ -104,3 +104,12 @@ let dog : 'this =
 ;;
 
 (* </end of #14554> *)
+
+let _ =
+  let type t =
+    | Foooooooooooooooooooooooooooooooooooooooooooooooooo
+    | Baaaaaaaaaaaaaaaaaaaaaaaar
+  in
+  let module rec Foooooooooooooooooooooooooooooooooooooooooooooooooooooooo = struct end in
+  ()
+;;

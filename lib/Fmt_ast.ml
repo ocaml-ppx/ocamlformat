@@ -3472,8 +3472,8 @@ and fmt_class_params c ctx params =
        ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
-and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
-    {ast= decl; _} =
+and fmt_type_declaration c ?(pro = noop) ?(kw = "") ?(nonrec_kw = "") ?name
+    ?(eq = "=") {ast= decl; _} =
   protect c (Td decl)
   @@
   let { ptype_name= {txt; loc}
@@ -3513,7 +3513,7 @@ and fmt_type_declaration c ?(kw = "") ?(nonrec_kw = "") ?name ?(eq = "=")
   in
   let box_manifest k =
     hvbox c.conf.fmt_opts.type_decl_indent.v
-      ( str kw
+      ( pro $ str kw
       $ fmt_extension_suffix c ext
       $ fmt_attributes c attrs_before
       $ str nonrec_kw $ str " "
@@ -3901,9 +3901,9 @@ and fmt_module_type c ?(rec_ = false) ({ast= mty; ctx= ctx0} as xmty) =
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
-        let pre = if first then "with" else " and" in
+        let pro = if first then str "with" else str " and" in
         fmt_or first space_break cut_break
-        $ fmt_with_constraint c ctx ~pre wc
+        $ fmt_with_constraint c ctx ~pro wc
       in
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
         Cmts.fmt c loc
@@ -4336,28 +4336,28 @@ and fmt_module_statement c ~attributes ?(epi = noop) ?keyword mod_expr =
   $ fmt_item_attributes c ~pre:Blank attrs_after
   $ epi $ doc_after
 
-and fmt_with_constraint c ctx ~pre = function
+and fmt_with_constraint c ctx ~pro = function
   | Pwith_type (lid, td) ->
-      fmt_type_declaration ~kw:(pre ^ " type") c ~name:lid (sub_td ~ctx td)
+      fmt_type_declaration ~pro ~kw:" type" c ~name:lid (sub_td ~ctx td)
   | Pwith_module (m1, m2) ->
-      str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
+      pro $ str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration ~kw:(pre ^ " type") c ~eq:":=" ~name:lid
+      fmt_type_declaration ~pro ~kw:" type" c ~eq:":=" ~name:lid
         (sub_td ~ctx td)
   | Pwith_modsubst (m1, m2) ->
-      str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
+      pro $ str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
   | Pwith_modtype (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident c m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
-      str pre $ break 1 2
+      pro $ break 1 2
       $ fmt_module c ctx (str "module type") m1 [] None ~rec_flag:false m2
           ~attrs:Ast_helper.Attr.empty_ext_attrs
   | Pwith_modtypesubst (m1, m2) ->
       let m1 = {m1 with txt= Some (str_longident c m1.txt)} in
       let m2 = Some (sub_mty ~ctx m2) in
-      str pre $ break 1 2
+      pro $ break 1 2
       $ fmt_module c ctx ~eqty:":=" (str "module type") m1 [] None
           ~rec_flag:false m2 ~attrs:Ast_helper.Attr.empty_ext_attrs
 
@@ -4623,7 +4623,7 @@ and fmt_structure c ctx itms =
   let ast (x, _) = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
-and fmt_type c ?(pro = noop) ?(epi = noop) ?eq rec_flag decls ctx =
+and fmt_type c ?pro ?(epi = noop) ?eq rec_flag decls ctx =
   let update_config c td = update_config_attrs c td.ptype_attributes in
   let is_rec = Asttypes.is_recursive rec_flag in
   let fmt_decl c ctx ~prev ~next decl =
@@ -4633,8 +4633,8 @@ and fmt_type c ?(pro = noop) ?(epi = noop) ?eq rec_flag decls ctx =
         if is_rec then ("type", None) else ("type", Some " nonrec")
       else ("and", None)
     in
-    fmt_if first pro
-    $ fmt_type_declaration c ~kw ?nonrec_kw ?eq (sub_td ~ctx decl)
+    let pro = if first then pro else None in
+    fmt_type_declaration c ?pro ~kw ?nonrec_kw ?eq (sub_td ~ctx decl)
     $ fmt_if last epi
   in
   let ast x = Td x in
