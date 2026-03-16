@@ -101,6 +101,10 @@ let pstr_class l =
 let pstr_class_type l =
   Pstr_class_type l
 
+let psig_extension body attrs =
+  (Psig_extension (body, attrs))
+let psig_attribute body =
+  (Psig_attribute body)
 let psig_typext te =
   Psig_typext te
 let psig_value vd =
@@ -114,6 +118,22 @@ let psig_exception te =
   Psig_exception te
 let psig_include body =
   Psig_include body
+let psig_module body =
+  (Psig_module body)
+let psig_modsubst body =
+  (Psig_modsubst body)
+let psig_recmodule l =
+  (Psig_recmodule l)
+let psig_modtype body =
+  (Psig_modtype body)
+let psig_modtypesubst body =
+  (Psig_modtypesubst body)
+let psig_open body =
+  (Psig_open body)
+let psig_class l =
+  (Psig_class l)
+let psig_class_type l =
+  (Psig_class_type l)
 
 let mkctf ~loc ?attrs ?docs d =
   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -395,6 +415,7 @@ let wrap_mksig_ext ~loc (item, ext) =
   | Some id -> mksig ~loc (Psig_extension ((id, PSig [ghsig ~loc item]), []))
 *)
 let wrap_mkstr_ext = mkstr
+let wrap_mksig_ext = mksig
 
 let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
   let exp_id = mkloc id idloc in
@@ -932,10 +953,9 @@ The precedences must be listed from low to high.
 
 %inline wrap_mkstr_ext(symb): symb
     { wrap_mkstr_ext ~loc:$sloc $1 }
-(*
 %inline wrap_mksig_ext(symb): symb
     { wrap_mksig_ext ~loc:$sloc $1 }
-*)
+
 %inline mk_directive_arg(symb): symb
     { mk_directive_arg ~loc:$sloc $1 }
 
@@ -1684,26 +1704,13 @@ signature:
 
 (* A signature item. *)
 signature_item:
-  | item_extension post_item_attributes
-      { let docs = symbol_docs $sloc in
-        mksig ~loc:$sloc (Psig_extension ($1, (add_docs_attrs docs $2))) }
-  | mksig(
-      floating_attribute
-        { Psig_attribute $1 }
-    | module_declaration
-        { Psig_module $1 }
-    | module_alias
-        { Psig_module $1 }
-    | module_subst
-        { Psig_modsubst $1 }
-    | rec_module_declarations
-        { Psig_recmodule $1 }
-    | module_type_declaration
-        { Psig_modtype $1 }
-    | module_type_subst
-        { Psig_modtypesubst $1 }
+  | wrap_mksig_ext(
+      item_extension post_item_attributes
+        { psig_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
+    | floating_attribute
+        { psig_attribute $1 }
     | value_description
-        { Psig_value $1 }
+        { psig_value $1 }
     | primitive_declaration
         { psig_value $1 }
     | type_declarations
@@ -1714,14 +1721,26 @@ signature_item:
         { psig_typext $1 }
     | sig_exception_declaration
         { psig_exception $1 }
+    | module_declaration
+        { psig_module $1 }
+    | module_alias
+        { psig_module $1 }
+    | module_subst
+        { psig_modsubst $1 }
+    | rec_module_declarations
+        { psig_recmodule $1 }
+    | module_type_declaration
+        { psig_modtype $1 }
+    | module_type_subst
+        { psig_modtypesubst $1 }
     | open_description
-        { Psig_open $1 }
+        { psig_open $1 }
     | include_statement(module_type)
         { psig_include $1 }
     | class_descriptions
-        { Psig_class $1 }
+        { psig_class $1 }
     | class_type_declarations
-        { Psig_class_type $1 }
+        { psig_class_type $1 }
     )
     { $1 }
 
