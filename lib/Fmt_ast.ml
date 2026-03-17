@@ -2564,8 +2564,15 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              Some (Cmts.fmt_after c keyword_loc)
                            else None
                          in
+                         let cmts_before_opt loc =
+                           if Cmts.has_before c.cmts loc then
+                             Some
+                               (Cmts.fmt_before ~pro:noop ~epi:noop ~eol:noop
+                                  c loc )
+                           else None
+                         in
                          let p =
-                           Params.get_if_then_else c.conf
+                           Params.get_if_then_else c.conf ~cmts_before_opt
                              ~pro:(fmt_if first pro_inner) ~first ~last
                              ~parens_bch ~parens_prev_bch:!parens_prev_bch
                              ~xcond ~xbch ~expr_loc:pexp_loc

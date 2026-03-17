@@ -252,7 +252,7 @@ let _ =
 
 let () =
   if true then (* a *)
-    begin
+  begin
     ()
   end else
     ()
