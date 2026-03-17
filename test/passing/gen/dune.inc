@@ -3783,6 +3783,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to let_struct_item.ml.stdout
+   (with-stderr-to let_struct_item.ml.stderr
+     (run %{bin:ocamlformat} --name let_struct_item.ml --margin-check %{dep:../tests/let_struct_item.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_struct_item.ml.ref let_struct_item.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff let_struct_item.ml.err let_struct_item.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to line_directives.ml.stdout
    (with-stderr-to line_directives.ml.stderr
      (with-accepted-exit-codes 1
