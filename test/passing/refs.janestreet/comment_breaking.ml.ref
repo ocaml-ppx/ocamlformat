@@ -8,3 +8,19 @@ let () =
   foo aaaaaaaaaa bbbbbbbbbb cccccccccc |> (ignore : t -> _);
   bar dddddddddd eeeeeeeeee ffffffffff |> (ignore : t -> _)
 ;;
+
+type pp_token =
+  | Pp_if_newline
+    (* to do something only if this very
+                                  line has been broken *)
+  | Pp_open_tag of stag (* opening a tag name *)
+  | Pp_close_tag (* closing the most recently open tag *)
+
+let format_pp_token state size = function
+  | Pp_begin (off, ty) ->
+    let insertion_point = state.pp_margin - state.pp_space_left in
+    if insertion_point > state.pp_max_indent
+    then (* can not open a box right there. *)
+      pp_force_break_line state;
+    Stack.push { box_type; width } state.pp_format_stack
+;;

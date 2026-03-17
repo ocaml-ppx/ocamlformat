@@ -220,6 +220,7 @@ type if_then_else =
 
 val get_if_then_else :
      Conf.t
+  -> cmts_before_opt:(Location.t -> Fmt.t option)
   -> pro:Fmt.t
   -> first:bool
   -> last:bool
@@ -234,6 +235,7 @@ val get_if_then_else :
   -> cmts_before_kw:Fmt.t
   -> cmts_after_kw:Fmt.t option
   -> if_then_else
+(** [cmts_before_opt] return the comment before the given location with no breaks around it. *)
 
 val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
 (** [match_indent c ~ctx ~default] returns the indentation used for the
