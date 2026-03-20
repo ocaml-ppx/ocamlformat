@@ -41,7 +41,7 @@
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (>= 4.08))
+   (>= 4.14))
   (alcotest
    (and
     :with-test
@@ -94,7 +94,7 @@
   "**ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.\n\n- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.\n- **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.\n- **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.\n- **RPC:** ocamlformat provides an RPC server that can be used by other tools to easily format OCaml Code.")
  (depends
   (ocaml
-   (>= 4.08))
+   (>= 4.14))
   (cmdliner
    (or
     (and
