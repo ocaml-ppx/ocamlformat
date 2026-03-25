@@ -33,6 +33,7 @@
   ocaml-version
   ocamlformat_format
   ocamlformat_ocaml_common
+  ocamlformat_mll_parser
   ocamlformat_odoc_parser
   ocamlformat_parser_extended
   ocamlformat_parser_standard

@@ -17,6 +17,7 @@ module Indexing_op = struct
     ; brackets: Asttypes.paren_kind
     ; extended: bool  (** eg. [.*{;..}] *)
     ; has_rhs: bool  (** eg. [.*{}<-] *) }
+  [@@warning "-69"]
 
   let parse ident =
     match String.chop_prefix ~prefix:"." ident with

@@ -24,6 +24,8 @@ let create ~text ~tokens =
   in
   {text; tokens= Array.of_list tokens}
 
+let text t = t.text
+
 let string_at t (l : Location.t) =
   let pos = l.loc_start.Lexing.pos_cnum
   and len = Position.distance l.loc_start l.loc_end in

@@ -1,0 +1,14 @@
+(ocamllex mll_lexer)
+
+(menhir
+ (modules mll_grammar)
+ (explain true))
+
+(library
+ (name ocamlformat_mll_parser)
+ (public_name ocamlformat-lib.mll_parser)
+ (instrumentation
+  (backend bisect_ppx))
+ (flags
+  (:standard -w -50 -open Ocamlformat_parser_shims -open Ocamlformat_ocaml_common))
+ (libraries menhirLib ocamlformat_parser_shims ocamlformat_ocaml_common))

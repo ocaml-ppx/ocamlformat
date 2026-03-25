@@ -95,9 +95,18 @@ module Error = struct
           | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
           | Extended_ast.Warning50 _ ->
               " (misplaced documentation comments - warning 50)"
+          | Ocamlformat_mll_parser.Mll_parser.Parse_error _
+          | Ocamlformat_mll_parser.Mll_lexer.Lexer_error _ ->
+              " (syntax error)"
           | _ -> ""
         in
         Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason ;
+        let fmt_pos fmt (pos : Lexing.position) =
+          Format.fprintf fmt "File %S, line %d, characters %d-%d"
+            pos.pos_fname pos.pos_lnum
+            (pos.pos_cnum - pos.pos_bol)
+            (pos.pos_cnum - pos.pos_bol)
+        in
         match exn with
         | Syntaxerr.Error _ | Lexer.Error _ ->
             Location.report_exception fmt exn
@@ -113,6 +122,10 @@ module Error = struct
                (though it might not be consistent with the ocaml compilers \
                and odoc), you can set the --no-comment-check option.\n\
                %!"
+        | Ocamlformat_mll_parser.Mll_parser.Parse_error (msg, pos) ->
+            Format.fprintf fmt "%a:\nError: %s\n%!" fmt_pos pos msg
+        | Ocamlformat_mll_parser.Mll_lexer.Lexer_error (msg, pos) ->
+            Format.fprintf fmt "%a:\nError: %s\n%!" fmt_pos pos msg
         | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
     | Unstable {iteration; prev; next; input_name} ->
         if debug then print_diff input_name ~prev ~next ;
@@ -374,14 +387,18 @@ let parse_and_format (type ext) (ext_fg : ext Extended_ast.t) ?output_file
     ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let line_endings = conf.fmt_opts.line_endings.v in
-  let* ext_parsed =
-    parse_result ~disable_w50:false ext_fg conf ~source ~input_name
-  in
-  let+ strlocs, formatted =
-    format ext_fg ?output_file ~input_name ~prev_source:source ~ext_parsed
-      conf
-  in
-  Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted
+  match ext_fg with
+  | Extended_ast.Mll_file when Poly.(conf.fmt_opts.reformat_mll.v = `No) ->
+      Ok source
+  | _ ->
+      let* ext_parsed =
+        parse_result ~disable_w50:false ext_fg conf ~source ~input_name
+      in
+      let+ strlocs, formatted =
+        format ext_fg ?output_file ~input_name ~prev_source:source ~ext_parsed
+          conf
+      in
+      Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted
 
 let parse_and_format syntax =
   let (Extended_ast.Any ext) = Extended_ast.of_syntax syntax in

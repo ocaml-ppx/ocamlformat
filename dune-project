@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 3.13)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                        ;
@@ -13,7 +13,7 @@
 
 (name ocamlformat)
 
-(using menhir 2.1)
+(using menhir 3.0)
 
 (cram enable)
 

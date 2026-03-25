@@ -37,6 +37,7 @@ type 'a t =
   | Pattern : (pattern, Std_parsetree.pattern) paired t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
+  | Mll_file : Ocamlformat_mll_parser.Mll_ast.lexer_def t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
 

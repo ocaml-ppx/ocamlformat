@@ -5122,6 +5122,25 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
       (* TODO: [source] and [cmts] should have never been computed when
          formatting doc. *)
       Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
+  | Mll_file, d
+    when Poly.(c.conf.fmt_opts.reformat_mll.v = `Ocaml_block) ->
+      let codes = Fmt_mll.collect_ocaml_codes d in
+      let blocks =
+        List.map codes
+          ~f:(fun ({Ocamlformat_mll_parser.Mll_ast.value; loc}, block_level) ->
+            {Fmt_inplace.value; loc; block_level} )
+      in
+      let s =
+        Fmt_inplace.format_inplace ~source:c.source ~fmt_code:c.fmt_code
+          ~conf:c.conf ~menhir_mode:false ~cmts:c.cmts blocks
+      in
+      (* Strip trailing newline: with_buffer_formatter will add one *)
+      str
+        ( if String.is_suffix s ~suffix:"\n" then
+            String.prefix s (String.length s - 1)
+          else s )
+  | Mll_file, d ->
+      Fmt_mll.fmt_lexer_def c.conf ~cmts:c.cmts ~fmt_code:c.fmt_code d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments
     ~set_margin:set_margin_p ~fmt_code =
