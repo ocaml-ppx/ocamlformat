@@ -25,13 +25,6 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Pattern : pattern t
-  (* not implemented *)
-  | Repl_file : unit t
-  | Documentation : unit t
-
-type any_t = Any : 'a t -> any_t [@@unboxed]
-
-val of_syntax : Syntax.t -> any_t
 
 module Parse : sig
   val ast :
