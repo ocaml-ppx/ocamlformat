@@ -424,3 +424,76 @@ module Asttypes = struct
 
   let is_recursive = function Recursive -> true | Nonrecursive -> false
 end
+
+type std_value = Std_value : 'a Std_ast.t * 'a -> std_value
+
+let get_std (type a) (fg : a t) (v : a) : std_value option =
+  match fg with
+  | Structure -> Some (Std_value (Structure, v.std))
+  | Signature -> Some (Std_value (Signature, v.std))
+  | Use_file -> Some (Std_value (Use_file, v.std))
+  | Core_type -> Some (Std_value (Core_type, v.std))
+  | Module_type -> Some (Std_value (Module_type, v.std))
+  | Expression -> Some (Std_value (Expression, v.std))
+  | Pattern -> Some (Std_value (Pattern, v.std))
+  | Repl_file -> None
+  | Documentation -> None
+
+type std_pair = Std_pair : 'a Std_ast.t * 'a * 'a -> std_pair
+
+let get_std_pair (type a) (fg : a t) (v1 : a) (v2 : a) : std_pair option =
+  match fg with
+  | Structure -> Some (Std_pair (Structure, v1.std, v2.std))
+  | Signature -> Some (Std_pair (Signature, v1.std, v2.std))
+  | Use_file -> Some (Std_pair (Use_file, v1.std, v2.std))
+  | Core_type -> Some (Std_pair (Core_type, v1.std, v2.std))
+  | Module_type -> Some (Std_pair (Module_type, v1.std, v2.std))
+  | Expression -> Some (Std_pair (Expression, v1.std, v2.std))
+  | Pattern -> Some (Std_pair (Pattern, v1.std, v2.std))
+  | Repl_file -> None
+  | Documentation -> None
+
+let dump (type a) (fg : a t) fmt (v : a) =
+  match get_std fg v with
+  | Some (Std_value (std_fg, std_v)) -> Std_ast.Printast.ast std_fg fmt std_v
+  | None -> Printast.ast fg fmt v
+
+let dump_normalized (type a) (fg : a t) ~normalize_code conf fmt (v : a) =
+  match get_std fg v with
+  | Some (Std_value (std_fg, std_v)) ->
+      Std_ast.Printast.ast std_fg fmt
+        (Normalize_std_ast.ast std_fg ~normalize_code conf std_v)
+  | None -> Printast.ast fg fmt v
+
+type ast_check_result =
+  | Ast_preserved
+  | Docstrings_moved of Cmt.error list
+  | Ast_changed
+
+let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
+    (new_v : a) : ast_check_result =
+  match get_std_pair fg old_v new_v with
+  | None ->
+      (* TODO: Repl_file and Documentation have no std AST, so we skip the
+         equivalence check.
+         - Repl_file: each toplevel phrase is OCaml code that could be
+           validated individually by parsing it with the standard parser.
+         - Documentation: OCaml code blocks inside .mld files are formatted
+           but never validated for AST preservation. We should check each
+           formatted code block by parsing it with the standard parser and
+           comparing. *)
+      Ast_preserved
+  | Some (Std_pair (std_fg, old_std, new_std)) ->
+      if
+        Normalize_std_ast.equal std_fg ~normalize_code
+          ~ignore_doc_comments:(not conf.Conf.opr_opts.comment_check.v)
+          conf old_std new_std
+      then Ast_preserved
+      else if
+        Normalize_std_ast.equal std_fg ~normalize_code
+          ~ignore_doc_comments:true conf old_std new_std
+      then
+        Docstrings_moved
+          (Normalize_std_ast.moved_docstrings ~normalize_code std_fg conf
+             old_std new_std )
+      else Ast_changed

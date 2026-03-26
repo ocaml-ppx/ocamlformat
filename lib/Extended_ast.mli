@@ -65,3 +65,37 @@ module Asttypes : sig
 
   val is_recursive : rec_flag -> bool
 end
+
+type std_value = Std_value : 'a Std_ast.t * 'a -> std_value
+
+val get_std : 'a t -> 'a -> std_value option
+(** Extract the std AST with its [Std_ast.t] witness, or [None] for
+    [Repl_file] and [Documentation]. *)
+
+val dump : 'a t -> Format.formatter -> 'a -> unit
+(** Print the std AST for debug output. Falls back to extended AST for
+    [Repl_file] and [Documentation]. *)
+
+val dump_normalized :
+     'a t
+  -> normalize_code:(string -> string)
+  -> Conf.t
+  -> Format.formatter
+  -> 'a
+  -> unit
+(** Print the normalized std AST for debug output. *)
+
+type ast_check_result =
+  | Ast_preserved
+  | Docstrings_moved of Cmt.error list
+  | Ast_changed
+
+val equivalent :
+     'a t
+  -> normalize_code:(string -> string)
+  -> Conf.t
+  -> 'a
+  -> 'a
+  -> ast_check_result
+(** Check whether formatting preserved the standard AST. For [Repl_file]
+    and [Documentation], always returns [Ast_preserved]. *)
