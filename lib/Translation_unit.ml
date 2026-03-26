@@ -321,18 +321,21 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
         | std_t_new -> Ok std_t_new
       in
       (* Ast not preserved ? *)
+      let normalize_code = Normalize_extended_ast.normalize_code conf in
       ( if
           not
-            (Normalize_std_ast.equal std_fg conf std_t.ast std_t_new.ast
+            (Normalize_std_ast.equal std_fg ~normalize_code conf std_t.ast
+               std_t_new.ast
                ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
         then
           let old_ast =
             dump_ast std_fg ~suffix:".old"
-              (Normalize_std_ast.ast std_fg conf std_t.ast)
+              (Normalize_std_ast.ast std_fg ~normalize_code conf std_t.ast)
           in
           let new_ast =
             dump_ast std_fg ~suffix:".new"
-              (Normalize_std_ast.ast std_fg conf std_t_new.ast)
+              (Normalize_std_ast.ast std_fg ~normalize_code conf
+                 std_t_new.ast )
           in
           let args ~suffix =
             [ ("output file", dump_formatted ~suffix fmted)
@@ -342,12 +345,12 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
           in
           if
-            Normalize_std_ast.equal std_fg ~ignore_doc_comments:true conf
-              std_t.ast std_t_new.ast
+            Normalize_std_ast.equal std_fg ~normalize_code
+              ~ignore_doc_comments:true conf std_t.ast std_t_new.ast
           then
             let docstrings =
-              Normalize_std_ast.moved_docstrings std_fg conf std_t.ast
-                std_t_new.ast
+              Normalize_std_ast.moved_docstrings ~normalize_code std_fg conf
+                std_t.ast std_t_new.ast
             in
             let args = args ~suffix:".unequal-docs" in
             internal_error
@@ -358,7 +361,8 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
             internal_error [`Ast_changed] args
         else
           dump_ast std_fg ~suffix:""
-            (Normalize_std_ast.ast std_fg conf std_t_new.ast)
+            (Normalize_std_ast.ast std_fg ~normalize_code conf
+               std_t_new.ast )
           |> function
           | Some file ->
               if i = 1 then Format.eprintf "[DEBUG] AST structure: %s\n" file
