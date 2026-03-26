@@ -13,6 +13,7 @@ type block =
 val format_inplace :
      source:Source.t
   -> fmt_code:fmt_code
+  -> fmt_code_structure:fmt_code
   -> conf:Conf.t
   -> menhir_mode:bool
   -> cmts:Cmts.t

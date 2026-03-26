@@ -33,8 +33,7 @@ type rule_entry =
   { entry_name: string located
   ; entry_args: string located list
   ; entry_is_shortest: bool
-  ; entry_cases: rule_case list
-  ; entry_keyword: Lexing.position  (** position of 'rule' or 'and' *) }
+  ; entry_cases: rule_case list }
 
 type named_def =
   { def_name: string located

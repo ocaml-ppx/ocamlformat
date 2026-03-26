@@ -473,11 +473,14 @@ module Wrapped = struct
     in
     let groups =
       List.group lines ~break:(fun _ y -> is_only_whitespaces y)
+      |> List.filter_map ~f:(fun group ->
+             match List.filter group ~f:(Fn.non is_only_whitespaces) with
+             | [] -> None
+             | group -> Some group )
     in
     pro $ str prefix
     $ hovbox 0
         (list_fl groups (fun ~first ~last:last_group group ->
-             let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
              fmt_if (not first) (str "\n" $ force_newline)
              $ hovbox 0
                  (list_fl group (fun ~first ~last x ->

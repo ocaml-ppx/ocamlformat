@@ -8,7 +8,8 @@ type fmt_code =
   -> string
   -> (Fmt.t, [`Msg of string]) Result.t
 
-type c = {fmt_code: fmt_code; conf: Conf.t; cmts: Cmts.t}
+type c =
+  {fmt_code: fmt_code; fmt_code_structure: fmt_code; conf: Conf.t; cmts: Cmts.t}
 
 (* Strip delimiters from ocaml code block: { code } -> code *)
 let strip_braces s =
@@ -33,7 +34,7 @@ let fmt_ocaml_block c code =
   let trimmed = String.strip raw in
   if String.is_empty trimmed then str "{" $ force_newline $ str "}"
   else
-    match c.fmt_code c.conf ~offset:0 ~set_margin:false trimmed with
+    match c.fmt_code_structure c.conf ~offset:0 ~set_margin:false trimmed with
     | Ok formatted ->
         vbox 0 (str "{" $ force_newline $ formatted $ force_newline $ str "}")
     | Error _ -> str code
@@ -80,7 +81,10 @@ let fmt_rule_entry c (entry : rule_entry) =
   let args =
     match entry.entry_args with
     | [] -> noop
-    | args -> str " " $ list args (str " ") (fun arg -> str arg.value)
+    | args ->
+        str " "
+        $ list args (str " ") (fun arg ->
+              fmt_before c arg.loc $ str arg.value $ fmt_after c arg.loc )
   in
   let kind = if entry.entry_is_shortest then "shortest" else "parse" in
   vbox 2
@@ -114,8 +118,8 @@ let collect_ocaml_codes (def : lexer_def) =
       codes := (t, true) :: !codes ) ;
   List.rev !codes
 
-let fmt_lexer_def conf ~cmts ~fmt_code (def : lexer_def) =
-  let c = {fmt_code; conf; cmts} in
+let fmt_lexer_def conf ~cmts ~fmt_code ~fmt_code_structure (def : lexer_def) =
+  let c = {fmt_code; fmt_code_structure; conf; cmts} in
   vbox 0
     ( (* Header *)
       ( match def.header with
@@ -144,15 +148,9 @@ let fmt_lexer_def conf ~cmts ~fmt_code (def : lexer_def) =
     ( match def.rules with
       | [] -> noop
       | first :: rest ->
-          let pos_loc p =
-            {Location.loc_start= p; loc_end= p; loc_ghost= false}
-          in
-          fmt_before c (pos_loc first.entry_keyword)
-          $ str "rule " $ fmt_rule_entry c first
+          str "rule " $ fmt_rule_entry c first
           $ list rest noop (fun entry ->
               force_newline $ force_newline
-              $ lazy_ (fun () ->
-                    fmt_before c (pos_loc entry.entry_keyword) )
               $ str "and " $ fmt_rule_entry c entry ) )
     $
     (* Trailer *)

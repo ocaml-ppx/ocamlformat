@@ -72,15 +72,10 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
         in
         let map_case c = {c with action= map_code c.action} in
         let map_entry entry =
-          let kw_loc =
-            loc {Location.loc_start= entry.entry_keyword;
-                 loc_end= entry.entry_keyword; loc_ghost= false}
-          in
           { entry_name= map_located entry.entry_name
           ; entry_args= List.map ~f:map_located entry.entry_args
           ; entry_is_shortest= entry.entry_is_shortest
-          ; entry_cases= List.map ~f:map_case entry.entry_cases
-          ; entry_keyword= kw_loc.loc_start }
+          ; entry_cases= List.map ~f:map_case entry.entry_cases }
         in
         { header= map_code_opt d.header
         ; named_defs= List.map ~f:map_named_def d.named_defs
@@ -451,7 +446,7 @@ module Printast = struct
     | Mll_file -> Ocamlformat_mll_parser.Mll_printast.pp
 end
 
-(** Strip comment delimiters: (* text *) -> text, /* text */ -> text *)
+(* Strip comment delimiters: [(* text *)] -> [text], [/* text */] -> [text] *)
 let strip_comment_delimiters s =
   let len = String.length s in
   if len >= 4 && Char.equal s.[0] '(' && Char.equal s.[1] '*'
@@ -520,7 +515,7 @@ type ast_check_result =
   | Docstrings_moved of Cmt.error list
   | Ast_changed
 
-let equal_mll ~normalize_code (conf : Conf.t)
+let equal_mll ~normalize_code (_conf : Conf.t)
     (a : Ocamlformat_mll_parser.Mll_ast.lexer_def)
     (b : Ocamlformat_mll_parser.Mll_ast.lexer_def) =
   let open Ocamlformat_mll_parser.Mll_ast in
@@ -555,15 +550,10 @@ let equal_mll ~normalize_code (conf : Conf.t)
     String.equal a.def_name.value b.def_name.value
     && Poly.equal a.def_body b.def_body
   in
-  let comment_equal (a : ocaml_code) (b : ocaml_code) =
-    String.equal (String.strip a.value) (String.strip b.value)
-  in
   code_opt_equal a.header b.header
   && List.equal def_equal a.named_defs b.named_defs
   && List.equal entry_equal a.rules b.rules
   && code_opt_equal a.trailer b.trailer
-  && (not conf.opr_opts.comment_check.v
-     || List.equal comment_equal a.comments b.comments )
 
 let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
     (new_v : a) : ast_check_result =

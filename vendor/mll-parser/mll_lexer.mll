@@ -102,8 +102,9 @@ rule main = parse
       | _ -> IDENT s }
   | '"'
     { reset_string_buffer();
+      store_string_char '"';
       string lexbuf;
-      STRING (Printf.sprintf "\"%s\"" (get_stored_string())) }
+      STRING (get_stored_string()) }
   (* Character literals — from upstream *)
   | "'" [^ '\\'] "'"
     { CHAR (Lexing.lexeme lexbuf) }
@@ -131,19 +132,12 @@ rule main = parse
 
 (* String parsing — from upstream *)
 and string = parse
-  | '"' { () }
+  | '"' { store_string_char '"' }
   | '\\' ('\013'* '\010') ([' ' '\009'] * as spaces)
-    { incr_loc lexbuf (String.length spaces); string lexbuf }
-  | '\\' (backslash_escapes as c)
-    { store_string_char (char_for_backslash c); string lexbuf }
-  | '\\' (['0'-'9'] as c) (['0'-'9'] as d) (['0'-'9'] as u)
-    { store_string_char (Char.chr (decimal_code c d u)); string lexbuf }
-  | '\\' 'o' (['0'-'3'] as c) (['0'-'7'] as d) (['0'-'7'] as u)
-    { store_string_char (char_for_octal_code c d u); string lexbuf }
-  | '\\' 'x' (['0'-'9' 'a'-'f' 'A'-'F'] as d) (['0'-'9' 'a'-'f' 'A'-'F'] as u)
-    { store_string_char (char_for_hexadecimal_code d u); string lexbuf }
-  | '\\' (_ as c)
-    { store_string_char '\\'; store_string_char c; string lexbuf }
+    { store_string_chars (Lexing.lexeme lexbuf);
+      incr_loc lexbuf (String.length spaces); string lexbuf }
+  | '\\' _
+    { store_string_chars (Lexing.lexeme lexbuf); string lexbuf }
   | eof { error lexbuf "unterminated string" }
   | '\013'* '\010' as s
     { store_string_chars s; incr_loc lexbuf 0; string lexbuf }

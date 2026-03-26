@@ -54,8 +54,8 @@ let line_indent source bol =
 
 (** Format a single OCaml code block and return the replacement string,
     or [None] if formatting fails. *)
-let format_block ~source ~fmt_code ~(conf : Conf.t) ~menhir_mode
-    (block : block) =
+let format_block ~source ~fmt_code ~fmt_code_structure ~(conf : Conf.t)
+    ~menhir_mode (block : block) =
   let inner, open_delim, close_delim, _delim_len =
     strip_delimiters block.value
   in
@@ -67,7 +67,8 @@ let format_block ~source ~fmt_code ~(conf : Conf.t) ~menhir_mode
       if block.block_level then 0 else line_ind + 2
     in
     let _ = menhir_mode in
-    match fmt_code conf ~offset ~set_margin:false trimmed
+    let fmt = if block.block_level then fmt_code_structure else fmt_code in
+    match fmt conf ~offset ~set_margin:false trimmed
     with
     | Ok fmt_t ->
         let margin = max 2 (conf.fmt_opts.margin.v - offset) in
@@ -101,7 +102,8 @@ let format_block ~source ~fmt_code ~(conf : Conf.t) ~menhir_mode
         Some result
     | Error _ -> None
 
-let format_inplace ~source ~fmt_code ~conf ~menhir_mode ~cmts blocks =
+let format_inplace ~source ~fmt_code ~fmt_code_structure ~conf ~menhir_mode
+    ~cmts blocks =
   let source = Source.text source in
   let drop_comments_inside = Cmts.drop_inside cmts in
   let sorted =
@@ -123,7 +125,8 @@ let format_inplace ~source ~fmt_code ~conf ~menhir_mode ~cmts blocks =
         Buffer.add_string buf (String.sub source ~pos ~len:(start - pos)) ;
         drop_comments_inside (mk_loc pos start) ;
         ( match
-            format_block ~source ~fmt_code ~conf ~menhir_mode block
+            format_block ~source ~fmt_code ~fmt_code_structure ~conf
+              ~menhir_mode block
           with
         | Some replacement -> Buffer.add_string buf replacement
         | None ->

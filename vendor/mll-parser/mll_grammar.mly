@@ -36,10 +36,7 @@ lexer_def:
     trailer EOF
         { { header = $1;
             named_defs = List.rev $2;
-            rules =
-              (let first = { $5 with entry_keyword = $startpos($4) } in
-               let rest = List.rev_map (fun (kw, e) -> { e with entry_keyword = kw }) $6 in
-               first :: rest);
+            rules = $5 :: List.rev_map snd $6;
             trailer = $7;
             comments = [] } }
 ;
@@ -75,13 +72,13 @@ definition:
             entry_args = $2;
             entry_is_shortest = false;
             entry_cases = $5;
-            entry_keyword = Lexing.dummy_pos } }
+            } }
   | IDENT arguments EQUAL SHORTEST entry
         { { entry_name = located $startpos($1) $endpos($1) $1;
             entry_args = $2;
             entry_is_shortest = true;
             entry_cases = $5;
-            entry_keyword = Lexing.dummy_pos } }
+            } }
 ;
 
 arguments:

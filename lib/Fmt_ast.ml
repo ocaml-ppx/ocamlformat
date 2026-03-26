@@ -5097,8 +5097,8 @@ module Chunk = struct
     fmt fg c ctx @@ split fg l ~state
 end
 
-let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
-    source cmts conf (itms : a) =
+let fmt_file (type a) ~ctx ~fmt_code ~fmt_code_structure ~debug
+    (fragment : a Extended_ast.t) source cmts conf (itms : a) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
   | Structure, {extended= []; _}
@@ -5132,7 +5132,8 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
       in
       let s =
         Fmt_inplace.format_inplace ~source:c.source ~fmt_code:c.fmt_code
-          ~conf:c.conf ~menhir_mode:false ~cmts:c.cmts blocks
+          ~fmt_code_structure ~conf:c.conf ~menhir_mode:false ~cmts:c.cmts
+          blocks
       in
       (* Strip trailing newline: with_buffer_formatter will add one *)
       str
@@ -5140,15 +5141,17 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
             String.prefix s (String.length s - 1)
           else s )
   | Mll_file, d ->
-      Fmt_mll.fmt_lexer_def c.conf ~cmts:c.cmts ~fmt_code:c.fmt_code d
+      Fmt_mll.fmt_lexer_def c.conf ~cmts:c.cmts ~fmt_code:c.fmt_code
+        ~fmt_code_structure d
 
 let fmt_parse_result conf ~debug ast_kind ast source comments
-    ~set_margin:set_margin_p ~fmt_code =
+    ~set_margin:set_margin_p ~fmt_code ~fmt_code_structure =
   let cmts = Cmts.init ast_kind ~debug source ast comments in
   let ctx = Top in
   let code =
     fmt_if set_margin_p (set_margin conf.Conf.fmt_opts.margin.v)
     $ fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code
+        ~fmt_code_structure
   in
   Ok code
 
@@ -5168,10 +5171,10 @@ let fmt_code ~debug =
     with
     | Either.First {Parsed.ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Use_file ast source comments ~set_margin
-          ~fmt_code
+          ~fmt_code ~fmt_code_structure
     | Second {Parsed.ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Repl_file ast source comments
-          ~set_margin ~fmt_code
+          ~set_margin ~fmt_code ~fmt_code_structure
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
         Error (`Msg (Format.asprintf "expecting: %s" x))
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
@@ -5180,12 +5183,28 @@ let fmt_code ~debug =
         Error (`Msg (Format.asprintf "invalid toplevel or OCaml syntax"))
     | exception e when warn -> Error (`Msg (Format.asprintf "%a" Exn.pp e))
     | exception _ -> Error (`Msg "")
+  and fmt_code_structure (conf : Conf.t) ~offset ~set_margin s =
+    let {Conf.fmt_opts; _} = conf in
+    let conf =
+      let margin = {fmt_opts.margin with v= fmt_opts.margin.v - offset} in
+      {conf with fmt_opts= {fmt_opts with margin}}
+    in
+    let input_name = !Location.input_name in
+    match
+      Extended_ast.parse ~disable_deprecated:true Structure conf ~input_name
+        ~source:s
+    with
+    | {Parsed.ast; comments; source; prefix= _} ->
+        fmt_parse_result conf ~debug Structure ast source comments ~set_margin
+          ~fmt_code ~fmt_code_structure
+    | exception _ -> Error (`Msg "")
   in
-  fmt_code
+  (fmt_code, fmt_code_structure)
 
 let fmt_ast fragment ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;
-  let fmt_code = fmt_code ~debug in
-  fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l
+  let fmt_code, fmt_code_structure = fmt_code ~debug in
+  fmt_file ~ctx:Top ~fmt_code ~fmt_code_structure ~debug fragment source cmts
+    conf l

@@ -15,5 +15,6 @@ val fmt_lexer_def :
      Conf.t
   -> cmts:Cmts.t
   -> fmt_code:fmt_code
+  -> fmt_code_structure:fmt_code
   -> Ocamlformat_mll_parser.Mll_ast.lexer_def
   -> Fmt.t
