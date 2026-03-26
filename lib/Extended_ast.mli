@@ -19,6 +19,9 @@ type repl_file = repl_phrase list
 
 module Std_parsetree = Ocamlformat_parser_standard.Parsetree
 
+(** Pairs an extended AST (['a]) with its standard-library counterpart
+    (['b]). Parsing produces both ASTs so that the extended one can be used
+    for formatting while the standard one is used for equivalence checking. *)
 type ('a, 'b) paired = {extended: 'a; std: 'b}
 
 (** Fragment types. OCaml fragments carry both extended and standard ASTs.
