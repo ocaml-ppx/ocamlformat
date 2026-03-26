@@ -5,10 +5,7 @@ type fmt_code =
   -> string
   -> (Fmt.t, [`Msg of string]) Result.t
 
-type block =
-  { value: string
-  ; loc: Location.t
-  ; block_level: bool }
+type block = {value: string; loc: Location.t; block_level: bool}
 
 val format_inplace :
      source:Source.t

@@ -5122,12 +5122,12 @@ let fmt_file (type a) ~ctx ~fmt_code ~fmt_code_structure ~debug
       (* TODO: [source] and [cmts] should have never been computed when
          formatting doc. *)
       Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
-  | Mll_file, d
-    when Poly.(c.conf.fmt_opts.reformat_mll.v = `Ocaml_block) ->
+  | Mll_file, d when Poly.(c.conf.fmt_opts.reformat_mll.v = `Ocaml_block) ->
       let codes = Fmt_mll.collect_ocaml_codes d in
       let blocks =
         List.map codes
-          ~f:(fun ({Ocamlformat_mll_parser.Mll_ast.value; loc}, block_level) ->
+          ~f:(fun
+              ({Ocamlformat_mll_parser.Mll_ast.value; loc}, block_level) ->
             {Fmt_inplace.value; loc; block_level} )
       in
       let s =
@@ -5195,8 +5195,8 @@ let fmt_code ~debug =
         ~source:s
     with
     | {Parsed.ast; comments; source; prefix= _} ->
-        fmt_parse_result conf ~debug Structure ast source comments ~set_margin
-          ~fmt_code ~fmt_code_structure
+        fmt_parse_result conf ~debug Structure ast source comments
+          ~set_margin ~fmt_code ~fmt_code_structure
     | exception _ -> Error (`Msg "")
   in
   (fmt_code, fmt_code_structure)

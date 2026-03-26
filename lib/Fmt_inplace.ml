@@ -34,10 +34,7 @@ let strip_delimiters s =
     (s, "", "", 0)
 
 (** A code block with its source text and position info. *)
-type block =
-  { value: string
-  ; loc: Location.t
-  ; block_level: bool }
+type block = {value: string; loc: Location.t; block_level: bool}
 
 (** Find the column of the first non-whitespace character on the line
     starting at byte offset [bol] in [source]. *)
@@ -45,10 +42,7 @@ let line_indent source bol =
   let len = String.length source in
   let rec loop i =
     if i >= len then i - bol
-    else
-      match source.[i] with
-      | ' ' | '\t' -> loop (i + 1)
-      | _ -> i - bol
+    else match source.[i] with ' ' | '\t' -> loop (i + 1) | _ -> i - bol
   in
   loop bol
 
@@ -63,13 +57,10 @@ let format_block ~source ~fmt_code ~fmt_code_structure ~(conf : Conf.t)
   if String.is_empty trimmed then None
   else
     let line_ind = line_indent source block.loc.loc_start.pos_bol in
-    let offset =
-      if block.block_level then 0 else line_ind + 2
-    in
+    let offset = if block.block_level then 0 else line_ind + 2 in
     let _ = menhir_mode in
     let fmt = if block.block_level then fmt_code_structure else fmt_code in
-    match fmt conf ~offset ~set_margin:false trimmed
-    with
+    match fmt conf ~offset ~set_margin:false trimmed with
     | Ok fmt_t ->
         let margin = max 2 (conf.fmt_opts.margin.v - offset) in
         let formatted = render_fmt ~margin fmt_t in
@@ -78,8 +69,9 @@ let format_block ~source ~fmt_code ~fmt_code_structure ~(conf : Conf.t)
           if String.is_empty open_delim then
             (* No delimiters: trailer — preserve leading newline *)
             let prefix =
-              if String.length block.value > 0
-                 && Char.equal block.value.[0] '\n'
+              if
+                String.length block.value > 0
+                && Char.equal block.value.[0] '\n'
               then "\n"
               else ""
             in

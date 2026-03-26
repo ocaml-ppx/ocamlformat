@@ -1331,16 +1331,15 @@ module Formatting = struct
     let names = ["reformat-mll"] in
     let all =
       [ Decl.Value.make ~name:"ocaml-block" `Ocaml_block
-          "$(b,ocaml-block) formats only the embedded OCaml code \
-           blocks, preserving surrounding syntax and comments."
+          "$(b,ocaml-block) formats only the embedded OCaml code blocks, \
+           preserving surrounding syntax and comments."
       ; Decl.Value.make ~name:"full" `Full
           "$(b,full) reformats the entire .mll file structure."
       ; Decl.Value.make ~name:"no" `No
           "$(b,no) disables formatting of .mll files." ]
     in
     Decl.choice ~names ~all ~default ~doc ~kind
-      (fun conf elt ->
-        update conf ~f:(fun f -> {f with reformat_mll= elt}) )
+      (fun conf elt -> update conf ~f:(fun f -> {f with reformat_mll= elt}))
       (fun conf -> conf.fmt_opts.reformat_mll)
 
   let wrap_comments =

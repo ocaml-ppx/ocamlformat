@@ -6,7 +6,7 @@ type fmt_code =
   -> (Fmt.t, [`Msg of string]) Result.t
 
 val collect_ocaml_codes :
-  Ocamlformat_mll_parser.Mll_ast.lexer_def
+     Ocamlformat_mll_parser.Mll_ast.lexer_def
   -> (Ocamlformat_mll_parser.Mll_ast.ocaml_code * bool) list
 (** Returns [(code, block_level)] pairs. [block_level] is true for
     headers and trailers, false for rule actions. *)

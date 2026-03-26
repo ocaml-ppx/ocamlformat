@@ -446,15 +446,21 @@ module Printast = struct
     | Mll_file -> Ocamlformat_mll_parser.Mll_printast.pp
 end
 
-(* Strip comment delimiters: [(* text *)] -> [text], [/* text */] -> [text] *)
+(* Strip comment delimiters: [(* text *)] -> [text], [/* text */] ->
+   [text] *)
 let strip_comment_delimiters s =
   let len = String.length s in
-  if len >= 4 && Char.equal s.[0] '(' && Char.equal s.[1] '*'
-     && Char.equal s.[len - 2] '*'
-     && Char.equal s.[len - 1] ')'
+  if
+    len >= 4
+    && Char.equal s.[0] '('
+    && Char.equal s.[1] '*'
+    && Char.equal s.[len - 2] '*'
+    && Char.equal s.[len - 1] ')'
   then String.sub s ~pos:2 ~len:(len - 4)
   else if
-    len >= 4 && Char.equal s.[0] '/' && Char.equal s.[1] '*'
+    len >= 4
+    && Char.equal s.[0] '/'
+    && Char.equal s.[1] '*'
     && Char.equal s.[len - 2] '*'
     && Char.equal s.[len - 1] '/'
   then String.sub s ~pos:2 ~len:(len - 4)
@@ -541,7 +547,8 @@ let equal_mll ~normalize_code (_conf : Conf.t)
   in
   let entry_equal a b =
     String.equal a.entry_name.value b.entry_name.value
-    && List.equal (fun a b -> String.equal a.value b.value)
+    && List.equal
+         (fun a b -> String.equal a.value b.value)
          a.entry_args b.entry_args
     && Bool.equal a.entry_is_shortest b.entry_is_shortest
     && List.equal case_equal a.entry_cases b.entry_cases
@@ -565,13 +572,12 @@ let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
         else Ast_changed
     | _ ->
         (* TODO: Repl_file and Documentation have no std AST, so we skip the
-           equivalence check.
-           - Repl_file: each toplevel phrase is OCaml code that could be
-             validated individually by parsing it with the standard parser.
-           - Documentation: OCaml code blocks inside .mld files are formatted
-             but never validated for AST preservation. We should check each
-             formatted code block by parsing it with the standard parser and
-             comparing. *)
+           equivalence check. - Repl_file: each toplevel phrase is OCaml code
+           that could be validated individually by parsing it with the
+           standard parser. - Documentation: OCaml code blocks inside .mld
+           files are formatted but never validated for AST preservation. We
+           should check each formatted code block by parsing it with the
+           standard parser and comparing. *)
         Ast_preserved )
   | Some (Std_pair (std_fg, old_std, new_std)) ->
       if

@@ -207,8 +207,7 @@ let kind =
     ~set:(fun kind conf -> {conf with kind})
     Arg.(
       value
-      & vflag default
-          [impl; intf; use_file; repl_file; doc_file; mll_file] )
+      & vflag default [impl; intf; use_file; repl_file; doc_file; mll_file] )
 
 let name =
   let docv = "NAME" in

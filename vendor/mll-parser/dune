@@ -10,5 +10,11 @@
  (instrumentation
   (backend bisect_ppx))
  (flags
-  (:standard -w -50 -open Ocamlformat_parser_shims -open Ocamlformat_ocaml_common))
+  (:standard
+   -w
+   -50
+   -open
+   Ocamlformat_parser_shims
+   -open
+   Ocamlformat_ocaml_common))
  (libraries menhirLib ocamlformat_parser_shims ocamlformat_ocaml_common))
