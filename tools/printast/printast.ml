@@ -20,12 +20,14 @@ let () =
   let content = In_channel.read_all inputf in
   let (Extended_ast.Any kind) = Extended_ast.of_syntax syntax in
   let conf = Conf.default in
-  let parsed = Extended_ast.parse kind conf ~input_name:inputf ~source:content in
-  if !std then
+  let parsed =
+    Extended_ast.parse kind conf ~input_name:inputf ~source:content
+  in
+  if !std then (
     match Extended_ast.get_std kind parsed.ast with
     | Some (Std_value (std_fg, std_v)) ->
         Std_ast.Printast.ast std_fg Format.std_formatter std_v
     | None ->
         Printf.eprintf "No standard parser for this fragment type\n" ;
-        exit 1
+        exit 1 )
   else Extended_ast.Printast.ast kind Format.std_formatter parsed.ast

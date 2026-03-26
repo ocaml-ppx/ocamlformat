@@ -616,12 +616,11 @@ let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
   | None ->
       (* TODO: Repl_file and Documentation have no std AST, so we skip the
          equivalence check.
-         - Repl_file: each toplevel phrase is OCaml code that could be
-           validated individually by parsing it with the standard parser.
-         - Documentation: OCaml code blocks inside .mld files are formatted
-           but never validated for AST preservation. We should check each
-           formatted code block by parsing it with the standard parser and
-           comparing. *)
+
+         - Repl_file: could validate each toplevel phrase individually.
+
+         - Documentation: could check each formatted code block for AST
+         preservation. *)
       Ast_preserved
   | Some (Std_pair (std_fg, old_std, new_std)) ->
       if
