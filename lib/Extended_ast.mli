@@ -39,17 +39,6 @@ type any_t = Any : 'a t -> any_t [@@unboxed]
 
 val of_syntax : Syntax.t -> any_t
 
-module Parse : sig
-  val ast :
-       'a t
-    -> ocaml_version:Ocaml_version.t
-    -> preserve_beginend:bool
-    -> prefer_let_puns:bool option
-    -> input_name:string
-    -> string
-    -> 'a
-end
-
 val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
 module Printast : sig
@@ -65,6 +54,36 @@ module Asttypes : sig
 
   val is_recursive : rec_flag -> bool
 end
+
+module Parsed : sig
+  type 'a t =
+    {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
+end
+
+exception Warning50 of (Location.t * Warnings.t) list
+
+val parse :
+     ?disable_w50:bool
+  -> ?disable_deprecated:bool
+  -> 'a t
+  -> Conf.t
+  -> input_name:string
+  -> source:string
+  -> 'a Parsed.t
+(** Parse source with warning handling, hash-bang detection, and token
+    collection. For paired fragment types, also parses with the standard
+    parser. *)
+
+val parse_toplevel :
+     ?disable_w50:bool
+  -> ?disable_deprecated:bool
+  -> Conf.t
+  -> input_name:string
+  -> source:string
+  -> ( (use_file, Std_parsetree.toplevel_phrase list) paired Parsed.t
+     , repl_file Parsed.t )
+     Either.t
+(** Parse source as toplevel phrases or REPL phrases depending on content. *)
 
 type std_value = Std_value : 'a Std_ast.t * 'a -> std_value
 

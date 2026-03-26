@@ -12,7 +12,7 @@
 (** Translation units *)
 
 module Location = Migrate_ast.Location
-open Parse_with_comments
+open Extended_ast.Parsed
 
 let ( let* ) = Result.( >>= )
 
@@ -66,7 +66,7 @@ module Error = struct
   let print_internal_error ~debug ~quiet fmt e =
     let s =
       match e with
-      | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+      | `Cannot_parse (Extended_ast.Warning50 _) ->
           "generating invalid comment attachment"
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
@@ -78,7 +78,7 @@ module Error = struct
     | `Comment x when not quiet -> Cmt.pp_error fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
-    | `Cannot_parse (Parse_with_comments.Warning50 _) ->
+    | `Cannot_parse (Extended_ast.Warning50 _) ->
         (* Printing the warning is not useful because it doesn't reference
            the right filename *)
         ()
@@ -93,14 +93,15 @@ module Error = struct
         let reason =
           match exn with
           | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
-          | Warning50 _ -> " (misplaced documentation comments - warning 50)"
+          | Extended_ast.Warning50 _ ->
+              " (misplaced documentation comments - warning 50)"
           | _ -> ""
         in
         Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason ;
         match exn with
         | Syntaxerr.Error _ | Lexer.Error _ ->
             Location.report_exception fmt exn
-        | Warning50 l ->
+        | Extended_ast.Warning50 l ->
             List.iter l ~f:(fun (l, w) -> Warning.print_warning l w) ;
             Format.fprintf fmt
               "@{<warning>Hint@}: (Warning 50) This file contains a \
@@ -230,15 +231,12 @@ let check_comments (conf : Conf.t) cmts ~old:t_old ~new_:t_new =
     | Ok () -> ()
     | Error e -> internal_error (List.map e ~f:(fun x -> `Comment x)) []
 
-let format (type ext std) (ext_fg : ext Extended_ast.t)
-    (std_fg : std Std_ast.t) ?output_file ~input_name ~prev_source
-    ~ext_parsed ~std_parsed (conf : Conf.t) =
+let format (type ext) (ext_fg : ext Extended_ast.t) ?output_file ~input_name
+    ~prev_source ~ext_parsed (conf : Conf.t) =
   Box_debug.enable_stacktraces := conf.opr_opts.debug.v ;
-  let dump_ast fg ~suffix ast =
+  let dump_ast ~suffix fmt =
     if conf.opr_opts.debug.v then
-      Some
-        (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Std_ast.Printast.ast fg fmt ast ) )
+      Some (dump_ast ~input_name ?output_file ~suffix fmt)
     else None
   in
   let dump_formatted ?ext ~suffix fmted =
@@ -248,7 +246,7 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) ~prev_source ext_t std_t =
+  let rec print_check ~i ~(conf : Conf.t) ~prev_source ext_t =
     let format ~box_debug =
       let open Fmt in
       let cmts_t =
@@ -301,42 +299,39 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
       in
       let* ext_t_new =
         match
-          parse (parse_ast conf) ~disable_w50:true ext_fg conf ~input_name
+          Extended_ast.parse ~disable_w50:true ext_fg conf ~input_name
             ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
-        | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
-        | ext_t_new -> Ok ext_t_new
-      in
-      let* std_t_new =
-        match
-          parse Std_ast.Parse.ast std_fg conf ~input_name ~source:fmted
-        with
-        | exception Sys_error msg -> Error (Error.User_error msg)
-        | exception Warning50 l ->
+        | exception Extended_ast.Warning50 l ->
             internal_error
               (List.map ~f:(fun x -> `Warning50 x) l)
               (exn_args ())
         | exception exn -> internal_error [`Cannot_parse exn] (exn_args ())
-        | std_t_new -> Ok std_t_new
+        | ext_t_new -> Ok ext_t_new
       in
       (* Ast not preserved ? *)
       let normalize_code = Normalize_extended_ast.normalize_code conf in
-      ( if
-          not
-            (Normalize_std_ast.equal std_fg ~normalize_code conf std_t.ast
-               std_t_new.ast
-               ~ignore_doc_comments:(not conf.opr_opts.comment_check.v) )
-        then
-          let old_ast =
-            dump_ast std_fg ~suffix:".old"
-              (Normalize_std_ast.ast std_fg ~normalize_code conf std_t.ast)
+      ( match
+          Extended_ast.equivalent ext_fg ~normalize_code conf ext_t.ast
+            ext_t_new.ast
+        with
+      | Ast_preserved -> (
+        match
+          dump_ast ~suffix:"" (fun fmt ->
+              Extended_ast.dump ext_fg fmt ext_t_new.ast )
+        with
+        | Some file ->
+            if i = 1 then Format.eprintf "[DEBUG] AST structure: %s\n" file
+        | None -> () )
+      | (Docstrings_moved _ | Ast_changed) as check -> (
+          let dump_normalized v ~suffix =
+            dump_ast ~suffix (fun fmt ->
+                Extended_ast.dump_normalized ext_fg ~normalize_code conf fmt
+                  v )
           in
-          let new_ast =
-            dump_ast std_fg ~suffix:".new"
-              (Normalize_std_ast.ast std_fg ~normalize_code conf
-                 std_t_new.ast )
-          in
+          let old_ast = dump_normalized ext_t.ast ~suffix:".old" in
+          let new_ast = dump_normalized ext_t_new.ast ~suffix:".new" in
           let args ~suffix =
             [ ("output file", dump_formatted ~suffix fmted)
             ; ("old ast", old_ast)
@@ -344,29 +339,16 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
             |> List.filter_map ~f:(fun (s, f_opt) ->
                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
           in
-          if
-            Normalize_std_ast.equal std_fg ~normalize_code
-              ~ignore_doc_comments:true conf std_t.ast std_t_new.ast
-          then
-            let docstrings =
-              Normalize_std_ast.moved_docstrings ~normalize_code std_fg conf
-                std_t.ast std_t_new.ast
-            in
-            let args = args ~suffix:".unequal-docs" in
-            internal_error
-              (List.map ~f:(fun x -> `Comment x) docstrings)
-              args
-          else
-            let args = args ~suffix:".unequal-ast" in
-            internal_error [`Ast_changed] args
-        else
-          dump_ast std_fg ~suffix:""
-            (Normalize_std_ast.ast std_fg ~normalize_code conf
-               std_t_new.ast )
-          |> function
-          | Some file ->
-              if i = 1 then Format.eprintf "[DEBUG] AST structure: %s\n" file
-          | None -> () ) ;
+          match check with
+          | Docstrings_moved docstrings ->
+              let args = args ~suffix:".unequal-docs" in
+              internal_error
+                (List.map ~f:(fun x -> `Comment x) docstrings)
+                args
+          | Ast_changed ->
+              let args = args ~suffix:".unequal-ast" in
+              internal_error [`Ast_changed] args
+          | Ast_preserved -> assert false ) ) ;
       check_comments conf cmts_t ~old:ext_t ~new_:ext_t_new ;
       (* Too many iteration ? *)
       if i >= conf.opr_opts.max_iters.v then (
@@ -375,36 +357,32 @@ let format (type ext std) (ext_fg : ext Extended_ast.t)
           (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
           ) )
       else (* All good, continue *)
-        print_check ~i:(i + 1) ~conf ~prev_source:fmted ext_t_new std_t_new
+        print_check ~i:(i + 1) ~conf ~prev_source:fmted ext_t_new
   in
-  try print_check ~i:1 ~conf ~prev_source ext_parsed std_parsed with
+  try print_check ~i:1 ~conf ~prev_source ext_parsed with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
-let parse_result ?disable_w50 f fragment conf ~source ~input_name =
-  match parse ?disable_w50 f fragment conf ~input_name ~source with
+let parse_result ?disable_w50 fragment conf ~source ~input_name =
+  match
+    Extended_ast.parse ?disable_w50 fragment conf ~input_name ~source
+  with
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
-let parse_and_format (type ext std) (ext_fg : ext Extended_ast.t)
-    (std_fg : std Std_ast.t) ?output_file ~input_name ~source (conf : Conf.t)
-    =
+let parse_and_format (type ext) (ext_fg : ext Extended_ast.t) ?output_file
+    ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let line_endings = conf.fmt_opts.line_endings.v in
   let* ext_parsed =
-    parse_result (parse_ast conf) ~disable_w50:true ext_fg conf ~source
-      ~input_name
-  in
-  let* std_parsed =
-    parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+    parse_result ~disable_w50:false ext_fg conf ~source ~input_name
   in
   let+ strlocs, formatted =
-    format ext_fg std_fg ?output_file ~input_name ~prev_source:source
-      ~ext_parsed ~std_parsed conf
+    format ext_fg ?output_file ~input_name ~prev_source:source ~ext_parsed
+      conf
   in
   Eol_compat.normalize_eol ~exclude_locs:strlocs ~line_endings formatted
 
 let parse_and_format syntax =
   let (Extended_ast.Any ext) = Extended_ast.of_syntax syntax in
-  let (Std_ast.Any std) = Std_ast.of_syntax syntax in
-  parse_and_format ext std
+  parse_and_format ext
