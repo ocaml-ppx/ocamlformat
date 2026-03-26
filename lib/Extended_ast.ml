@@ -16,14 +16,18 @@ type use_file = toplevel_phrase list
 
 type repl_file = repl_phrase list
 
+module Std_parsetree = Ocamlformat_parser_standard.Parsetree
+
+type ('a, 'b) paired = {extended: 'a; std: 'b}
+
 type 'a t =
-  | Structure : structure t
-  | Signature : signature t
-  | Use_file : use_file t
-  | Core_type : core_type t
-  | Module_type : module_type t
-  | Expression : expression t
-  | Pattern : pattern t
+  | Structure : (structure, Std_parsetree.structure) paired t
+  | Signature : (signature, Std_parsetree.signature) paired t
+  | Use_file : (use_file, Std_parsetree.toplevel_phrase list) paired t
+  | Core_type : (core_type, Std_parsetree.core_type) paired t
+  | Module_type : (module_type, Std_parsetree.module_type) paired t
+  | Expression : (expression, Std_parsetree.expression) paired t
+  | Pattern : (pattern, Std_parsetree.pattern) paired t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
 
@@ -42,13 +46,14 @@ let of_syntax = function
 
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   match x with
-  | Structure -> m.structure m
-  | Signature -> m.signature m
-  | Use_file -> List.map ~f:(m.toplevel_phrase m)
-  | Core_type -> m.typ m
-  | Module_type -> m.module_type m
-  | Expression -> m.expr m
-  | Pattern -> m.pat m
+  | Structure -> fun v -> {v with extended= m.structure m v.extended}
+  | Signature -> fun v -> {v with extended= m.signature m v.extended}
+  | Use_file ->
+      fun v -> {v with extended= List.map ~f:(m.toplevel_phrase m) v.extended}
+  | Core_type -> fun v -> {v with extended= m.typ m v.extended}
+  | Module_type -> fun v -> {v with extended= m.module_type m v.extended}
+  | Expression -> fun v -> {v with extended= m.expr m v.extended}
+  | Pattern -> fun v -> {v with extended= m.pat m v.extended}
   | Repl_file -> List.map ~f:(m.repl_phrase m)
   | Documentation -> Fn.id
 
@@ -342,23 +347,51 @@ module Parse = struct
 
   let ast (type a) (fg : a t) ~ocaml_version ~preserve_beginend
       ~prefer_let_puns ~input_name str : a =
-    map fg
-      (normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns)
-    @@
+    let nm =
+      normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns
+    in
     let lexbuf = Lexing.from_string str in
-    let ocaml_version =
+    let ocaml_version_pair =
       Some Ocaml_version.(major ocaml_version, minor ocaml_version)
     in
     Location.init_info lexbuf input_name ;
+    let parse_std std_fg =
+      (* Suppress warnings during raw std parse to avoid duplicate w50
+         warnings — w50 handling is done separately by parse_ocaml *)
+      Warning.with_warning_filter
+        ~filter_warning:(fun _loc _warn -> false)
+        ~filter_alert:(fun _loc _alert -> false)
+        ~f:(fun () -> Std_ast.Parse.ast std_fg ~ocaml_version ~input_name str)
+    in
+    let paired normalize parse_ext std_fg =
+      let extended =
+        normalize nm (parse_ext ~ocaml_version:ocaml_version_pair lexbuf)
+      in
+      {extended; std= parse_std std_fg}
+    in
     match fg with
-    | Structure -> Parse.implementation ~ocaml_version lexbuf
-    | Signature -> Parse.interface ~ocaml_version lexbuf
-    | Use_file -> Parse.use_file ~ocaml_version lexbuf
-    | Core_type -> Parse.core_type ~ocaml_version lexbuf
-    | Module_type -> Parse.module_type ~ocaml_version lexbuf
-    | Expression -> Parse.expression ~ocaml_version lexbuf
-    | Pattern -> Parse.pattern ~ocaml_version lexbuf
-    | Repl_file -> Toplevel_lexer.repl_file ~ocaml_version lexbuf
+    | Structure ->
+        paired
+          (fun nm -> nm.structure nm)
+          Parse.implementation Std_ast.Structure
+    | Signature ->
+        paired (fun nm -> nm.signature nm) Parse.interface Std_ast.Signature
+    | Use_file ->
+        paired
+          (fun nm -> List.map ~f:(nm.toplevel_phrase nm))
+          Parse.use_file Std_ast.Use_file
+    | Core_type ->
+        paired (fun nm -> nm.typ nm) Parse.core_type Std_ast.Core_type
+    | Module_type ->
+        paired
+          (fun nm -> nm.module_type nm)
+          Parse.module_type Std_ast.Module_type
+    | Expression ->
+        paired (fun nm -> nm.expr nm) Parse.expression Std_ast.Expression
+    | Pattern -> paired (fun nm -> nm.pat nm) Parse.pattern Std_ast.Pattern
+    | Repl_file ->
+        List.map ~f:(nm.repl_phrase nm)
+          (Toplevel_lexer.repl_file ~ocaml_version:ocaml_version_pair lexbuf)
     | Documentation ->
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
@@ -373,13 +406,13 @@ module Printast = struct
   let repl_file = Format.pp_print_list repl_phrase
 
   let ast (type a) : a t -> _ -> a -> _ = function
-    | Structure -> implementation
-    | Signature -> interface
-    | Use_file -> use_file
-    | Core_type -> core_type
-    | Module_type -> module_type
-    | Expression -> expression
-    | Pattern -> pattern
+    | Structure -> fun fmt v -> implementation fmt v.extended
+    | Signature -> fun fmt v -> interface fmt v.extended
+    | Use_file -> fun fmt v -> use_file fmt v.extended
+    | Core_type -> fun fmt v -> core_type fmt v.extended
+    | Module_type -> fun fmt v -> module_type fmt v.extended
+    | Expression -> fun fmt v -> expression fmt v.extended
+    | Pattern -> fun fmt v -> pattern fmt v.extended
     | Repl_file -> repl_file
     | Documentation -> Docstring.dump
 end

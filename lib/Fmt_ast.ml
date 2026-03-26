@@ -5101,18 +5101,22 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
     source cmts conf (itms : a) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
-  | Structure, [] | Signature, [] | Use_file, [] ->
+  | Structure, {extended= []; _}
+   |Signature, {extended= []; _}
+   |Use_file, {extended= []; _} ->
       Cmts.fmt_after ~pro:noop c Location.none
-  | Structure, l -> Chunk.split_and_fmt Structure c ctx l
-  | Signature, l -> Chunk.split_and_fmt Signature c ctx l
-  | Use_file, l -> Chunk.split_and_fmt Use_file c ctx l
-  | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
-  | Module_type, mty ->
+  | Structure, {extended; _} -> Chunk.split_and_fmt Structure c ctx extended
+  | Signature, {extended; _} -> Chunk.split_and_fmt Signature c ctx extended
+  | Use_file, {extended; _} -> Chunk.split_and_fmt Use_file c ctx extended
+  | Core_type, {extended= ty; _} ->
+      fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
+  | Module_type, {extended= mty; _} ->
       compose_module ~f:Fn.id
         (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
-  | Expression, e ->
+  | Expression, {extended= e; _} ->
       fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
-  | Pattern, p -> fmt_pattern c (sub_pat ~ctx:(Pld (PPat (p, None))) p)
+  | Pattern, {extended= p; _} ->
+      fmt_pattern c (sub_pat ~ctx:(Pld (PPat (p, None))) p)
   | Repl_file, l -> fmt_repl_file c ctx l
   | Documentation, d ->
       (* TODO: [source] and [cmts] should have never been computed when

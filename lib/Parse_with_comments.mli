@@ -47,7 +47,10 @@ val parse_toplevel :
   -> Conf.t
   -> input_name:string
   -> source:string
-  -> ( Extended_ast.use_file with_comments
+  -> ( ( Extended_ast.use_file
+       , Extended_ast.Std_parsetree.toplevel_phrase list )
+       Extended_ast.paired
+       with_comments
      , Extended_ast.repl_file with_comments )
      Either.t
 (** Variant of {!parse} that uses {!Extended_ast.Parse.toplevel}. This

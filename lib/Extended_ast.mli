@@ -17,14 +17,21 @@ type use_file = toplevel_phrase list
 
 type repl_file = repl_phrase list
 
+module Std_parsetree = Ocamlformat_parser_standard.Parsetree
+
+type ('a, 'b) paired = {extended: 'a; std: 'b}
+
+(** Fragment types. OCaml fragments carry both extended and standard ASTs.
+    [Repl_file] has no standard parser counterpart. [Documentation] uses
+    the odoc parser directly and does not need a paired representation. *)
 type 'a t =
-  | Structure : structure t
-  | Signature : signature t
-  | Use_file : use_file t
-  | Core_type : core_type t
-  | Module_type : module_type t
-  | Expression : expression t
-  | Pattern : pattern t
+  | Structure : (structure, Std_parsetree.structure) paired t
+  | Signature : (signature, Std_parsetree.signature) paired t
+  | Use_file : (use_file, Std_parsetree.toplevel_phrase list) paired t
+  | Core_type : (core_type, Std_parsetree.core_type) paired t
+  | Module_type : (module_type, Std_parsetree.module_type) paired t
+  | Expression : (expression, Std_parsetree.expression) paired t
+  | Pattern : (pattern, Std_parsetree.pattern) paired t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
 

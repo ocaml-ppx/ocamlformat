@@ -21,7 +21,10 @@ let check_updated_test source expected =
       { Ocamlformat_parser_extended.Ast_mapper.default_mapper with
         location= (fun _ loc -> {loc with loc_ghost= true}) }
     in
-    {ast with ast= ghostify.structure ghostify ast.ast}
+    { ast with
+      ast=
+        {ast.ast with extended= ghostify.structure ghostify ast.ast.extended}
+    }
   in
   let ast_replaced = {ast1 with ast= ast2.ast} in
   let with_buffer_formatter ~buffer_size k =
