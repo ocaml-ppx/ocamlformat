@@ -186,11 +186,6 @@ let normalize_code (conf : Conf.t) code =
   let n = normalize_cmt conf in
   n#code code
 
-let ast fragment ~ignore_doc_comments c =
-  let normalize_cmt = normalize_cmt c in
-  map fragment
-    (make_mapper ~ignore_doc_comments ~normalize_doc:normalize_cmt#doc)
-
 module Normalized_cmt = struct
   type t =
     { cmt_kind: [`Comment | `Doc_comment]
@@ -244,7 +239,3 @@ let diff_cmts (conf : Conf.t) x y =
     Set.of_list (module Normalized_cmt.Comparator) (List.map ~f z)
   in
   diff ~f x y
-
-let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = ast fragment c ~ignore_doc_comments in
-  equal fragment (map ast1) (map ast2)

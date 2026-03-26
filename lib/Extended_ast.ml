@@ -12,8 +12,6 @@
 open Ocamlformat_parser_extended
 include Parsetree
 
-let equal_core_type : core_type -> core_type -> bool = Poly.equal
-
 type use_file = toplevel_phrase list
 
 type repl_file = repl_phrase list
@@ -41,8 +39,6 @@ let of_syntax = function
   | Pattern -> Any Pattern
   | Repl_file -> Any Repl_file
   | Documentation -> Any Documentation
-
-let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   match x with
