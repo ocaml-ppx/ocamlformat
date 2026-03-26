@@ -30,6 +30,7 @@ type 'a t =
   | Pattern : (pattern, Std_parsetree.pattern) paired t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
+  | Mll_file : Ocamlformat_mll_parser.Mll_ast.lexer_def t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
 
@@ -43,6 +44,7 @@ let of_syntax = function
   | Pattern -> Any Pattern
   | Repl_file -> Any Repl_file
   | Documentation -> Any Documentation
+  | Mll_file -> Any Mll_file
 
 let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   match x with
@@ -56,6 +58,30 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Pattern -> fun v -> {v with extended= m.pat m v.extended}
   | Repl_file -> List.map ~f:(m.repl_phrase m)
   | Documentation -> Fn.id
+  | Mll_file ->
+      fun d ->
+        let open Ocamlformat_mll_parser.Mll_ast in
+        let loc l = m.location m l in
+        let map_located x = {x with loc= loc x.loc} in
+        let map_code (c : ocaml_code) = map_located c in
+        let map_code_opt = Option.map ~f:map_code in
+        let map_named_def nd =
+          { def_name= map_located nd.def_name
+          ; def_body= nd.def_body
+          ; def_loc= loc nd.def_loc }
+        in
+        let map_case c = {c with action= map_code c.action} in
+        let map_entry entry =
+          { entry_name= map_located entry.entry_name
+          ; entry_args= List.map ~f:map_located entry.entry_args
+          ; entry_is_shortest= entry.entry_is_shortest
+          ; entry_cases= List.map ~f:map_case entry.entry_cases }
+        in
+        { header= map_code_opt d.header
+        ; named_defs= List.map ~f:map_named_def d.named_defs
+        ; rules= List.map ~f:map_entry d.rules
+        ; trailer= map_code_opt d.trailer
+        ; comments= d.comments }
 
 module Parse = struct
   let normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns =
@@ -396,6 +422,8 @@ module Parse = struct
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
         Docstring.parse_file pos str
+    | Mll_file ->
+        Ocamlformat_mll_parser.Mll_parser.parse_string ~input_name str
 end
 
 module Printast = struct
@@ -415,7 +443,28 @@ module Printast = struct
     | Pattern -> fun fmt v -> pattern fmt v.extended
     | Repl_file -> repl_file
     | Documentation -> Docstring.dump
+    | Mll_file -> Ocamlformat_mll_parser.Mll_printast.pp
 end
+
+(* Strip comment delimiters: [(* text *)] -> [text], [/* text */] ->
+   [text] *)
+let strip_comment_delimiters s =
+  let len = String.length s in
+  if
+    len >= 4
+    && Char.equal s.[0] '('
+    && Char.equal s.[1] '*'
+    && Char.equal s.[len - 2] '*'
+    && Char.equal s.[len - 1] ')'
+  then String.sub s ~pos:2 ~len:(len - 4)
+  else if
+    len >= 4
+    && Char.equal s.[0] '/'
+    && Char.equal s.[1] '*'
+    && Char.equal s.[len - 2] '*'
+    && Char.equal s.[len - 1] '/'
+  then String.sub s ~pos:2 ~len:(len - 4)
+  else s
 
 module Asttypes = struct
   include Asttypes
@@ -424,6 +473,126 @@ module Asttypes = struct
 
   let is_recursive = function Recursive -> true | Nonrecursive -> false
 end
+
+type std_value = Std_value : 'a Std_ast.t * 'a -> std_value
+
+let get_std (type a) (fg : a t) (v : a) : std_value option =
+  match fg with
+  | Structure -> Some (Std_value (Structure, v.std))
+  | Signature -> Some (Std_value (Signature, v.std))
+  | Use_file -> Some (Std_value (Use_file, v.std))
+  | Core_type -> Some (Std_value (Core_type, v.std))
+  | Module_type -> Some (Std_value (Module_type, v.std))
+  | Expression -> Some (Std_value (Expression, v.std))
+  | Pattern -> Some (Std_value (Pattern, v.std))
+  | Repl_file -> None
+  | Documentation -> None
+  | Mll_file -> None
+
+type std_pair = Std_pair : 'a Std_ast.t * 'a * 'a -> std_pair
+
+let get_std_pair (type a) (fg : a t) (v1 : a) (v2 : a) : std_pair option =
+  match fg with
+  | Structure -> Some (Std_pair (Structure, v1.std, v2.std))
+  | Signature -> Some (Std_pair (Signature, v1.std, v2.std))
+  | Use_file -> Some (Std_pair (Use_file, v1.std, v2.std))
+  | Core_type -> Some (Std_pair (Core_type, v1.std, v2.std))
+  | Module_type -> Some (Std_pair (Module_type, v1.std, v2.std))
+  | Expression -> Some (Std_pair (Expression, v1.std, v2.std))
+  | Pattern -> Some (Std_pair (Pattern, v1.std, v2.std))
+  | Repl_file -> None
+  | Documentation -> None
+  | Mll_file -> None
+
+let dump (type a) (fg : a t) fmt (v : a) =
+  match get_std fg v with
+  | Some (Std_value (std_fg, std_v)) -> Std_ast.Printast.ast std_fg fmt std_v
+  | None -> Printast.ast fg fmt v
+
+let dump_normalized (type a) (fg : a t) ~normalize_code conf fmt (v : a) =
+  match get_std fg v with
+  | Some (Std_value (std_fg, std_v)) ->
+      Std_ast.Printast.ast std_fg fmt
+        (Normalize_std_ast.ast std_fg ~normalize_code conf std_v)
+  | None -> Printast.ast fg fmt v
+
+type ast_check_result =
+  | Ast_preserved
+  | Docstrings_moved of Cmt.error list
+  | Ast_changed
+
+let equal_mll ~normalize_code (_conf : Conf.t)
+    (a : Ocamlformat_mll_parser.Mll_ast.lexer_def)
+    (b : Ocamlformat_mll_parser.Mll_ast.lexer_def) =
+  let open Ocamlformat_mll_parser.Mll_ast in
+  let code_equal (a : ocaml_code) (b : ocaml_code) =
+    let strip s =
+      let len = String.length s in
+      if len >= 2 && Char.equal s.[0] '{' && Char.equal s.[len - 1] '}' then
+        String.strip (String.sub s ~pos:1 ~len:(len - 2))
+      else s
+    in
+    let sa = strip a.value and sb = strip b.value in
+    String.equal sa sb
+    || String.equal (normalize_code sa) (normalize_code sb)
+  in
+  let code_opt_equal a b =
+    match (a, b) with
+    | None, None -> true
+    | Some a, Some b -> code_equal a b
+    | _ -> false
+  in
+  let case_equal a b =
+    Poly.equal a.pattern b.pattern && code_equal a.action b.action
+  in
+  let entry_equal a b =
+    String.equal a.entry_name.value b.entry_name.value
+    && List.equal
+         (fun a b -> String.equal a.value b.value)
+         a.entry_args b.entry_args
+    && Bool.equal a.entry_is_shortest b.entry_is_shortest
+    && List.equal case_equal a.entry_cases b.entry_cases
+  in
+  let def_equal a b =
+    String.equal a.def_name.value b.def_name.value
+    && Poly.equal a.def_body b.def_body
+  in
+  code_opt_equal a.header b.header
+  && List.equal def_equal a.named_defs b.named_defs
+  && List.equal entry_equal a.rules b.rules
+  && code_opt_equal a.trailer b.trailer
+
+let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
+    (new_v : a) : ast_check_result =
+  match get_std_pair fg old_v new_v with
+  | None -> (
+    match fg with
+    | Mll_file ->
+        if equal_mll ~normalize_code conf old_v new_v then Ast_preserved
+        else Ast_changed
+    | _ ->
+        (* TODO: Repl_file and Documentation have no std AST, so we skip the
+           equivalence check. - Repl_file: each toplevel phrase is OCaml code
+           that could be validated individually by parsing it with the
+           standard parser. - Documentation: OCaml code blocks inside .mld
+           files are formatted but never validated for AST preservation. We
+           should check each formatted code block by parsing it with the
+           standard parser and comparing. *)
+        Ast_preserved )
+  | Some (Std_pair (std_fg, old_std, new_std)) ->
+      if
+        Normalize_std_ast.equal std_fg ~normalize_code
+          ~ignore_doc_comments:(not conf.Conf.opr_opts.comment_check.v)
+          conf old_std new_std
+      then Ast_preserved
+      else if
+        Normalize_std_ast.equal std_fg ~normalize_code
+          ~ignore_doc_comments:true conf old_std new_std
+      then
+        Docstrings_moved
+          (Normalize_std_ast.moved_docstrings ~normalize_code std_fg conf
+             old_std new_std )
+      else Ast_changed
 
 module Parsed = struct
   type 'a t =
@@ -540,6 +709,17 @@ let parse (type a) ?disable_w50 ?disable_deprecated (fg : a t) conf
       ; comments= []
       ; prefix= ""
       ; source= Source.create ~text:source ~tokens:[] }
+  | Mll_file ->
+      let open Ocamlformat_mll_parser in
+      let ast = Mll_parser.parse_string ~input_name source in
+      let comments =
+        List.map ast.Mll_ast.comments ~f:(fun (c : Mll_ast.ocaml_code) ->
+            Cmt.create_comment (strip_comment_delimiters c.value) c.loc )
+      in
+      { Parsed.ast
+      ; comments
+      ; prefix= ""
+      ; source= Source.create ~text:source ~tokens:[] }
   | fg ->
       parse_ocaml ?disable_w50 ?disable_deprecated fg conf ~input_name
         ~source
@@ -565,74 +745,3 @@ let parse_toplevel ?disable_w50 ?disable_deprecated (conf : Conf.t)
       (parse ?disable_w50 ?disable_deprecated Use_file conf ~input_name
          ~source )
 
-type std_value = Std_value : 'a Std_ast.t * 'a -> std_value
-
-let get_std (type a) (fg : a t) (v : a) : std_value option =
-  match fg with
-  | Structure -> Some (Std_value (Structure, v.std))
-  | Signature -> Some (Std_value (Signature, v.std))
-  | Use_file -> Some (Std_value (Use_file, v.std))
-  | Core_type -> Some (Std_value (Core_type, v.std))
-  | Module_type -> Some (Std_value (Module_type, v.std))
-  | Expression -> Some (Std_value (Expression, v.std))
-  | Pattern -> Some (Std_value (Pattern, v.std))
-  | Repl_file -> None
-  | Documentation -> None
-
-type std_pair = Std_pair : 'a Std_ast.t * 'a * 'a -> std_pair
-
-let get_std_pair (type a) (fg : a t) (v1 : a) (v2 : a) : std_pair option =
-  match fg with
-  | Structure -> Some (Std_pair (Structure, v1.std, v2.std))
-  | Signature -> Some (Std_pair (Signature, v1.std, v2.std))
-  | Use_file -> Some (Std_pair (Use_file, v1.std, v2.std))
-  | Core_type -> Some (Std_pair (Core_type, v1.std, v2.std))
-  | Module_type -> Some (Std_pair (Module_type, v1.std, v2.std))
-  | Expression -> Some (Std_pair (Expression, v1.std, v2.std))
-  | Pattern -> Some (Std_pair (Pattern, v1.std, v2.std))
-  | Repl_file -> None
-  | Documentation -> None
-
-let dump (type a) (fg : a t) fmt (v : a) =
-  match get_std fg v with
-  | Some (Std_value (std_fg, std_v)) -> Std_ast.Printast.ast std_fg fmt std_v
-  | None -> Printast.ast fg fmt v
-
-let dump_normalized (type a) (fg : a t) ~normalize_code conf fmt (v : a) =
-  match get_std fg v with
-  | Some (Std_value (std_fg, std_v)) ->
-      Std_ast.Printast.ast std_fg fmt
-        (Normalize_std_ast.ast std_fg ~normalize_code conf std_v)
-  | None -> Printast.ast fg fmt v
-
-type ast_check_result =
-  | Ast_preserved
-  | Docstrings_moved of Cmt.error list
-  | Ast_changed
-
-let equivalent (type a) (fg : a t) ~normalize_code conf (old_v : a)
-    (new_v : a) : ast_check_result =
-  match get_std_pair fg old_v new_v with
-  | None ->
-      (* TODO: Repl_file and Documentation have no std AST, so we skip the
-         equivalence check.
-
-         - Repl_file: could validate each toplevel phrase individually.
-
-         - Documentation: could check each formatted code block for AST
-         preservation. *)
-      Ast_preserved
-  | Some (Std_pair (std_fg, old_std, new_std)) ->
-      if
-        Normalize_std_ast.equal std_fg ~normalize_code
-          ~ignore_doc_comments:(not conf.Conf.opr_opts.comment_check.v)
-          conf old_std new_std
-      then Ast_preserved
-      else if
-        Normalize_std_ast.equal std_fg ~normalize_code
-          ~ignore_doc_comments:true conf old_std new_std
-      then
-        Docstrings_moved
-          (Normalize_std_ast.moved_docstrings ~normalize_code std_fg conf
-             old_std new_std )
-      else Ast_changed

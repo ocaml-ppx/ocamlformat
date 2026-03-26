@@ -119,6 +119,7 @@ type fmt_opts =
   ; stritem_extension_indent: int elt
   ; type_decl: [`Compact | `Sparse] elt
   ; type_decl_indent: int elt
+  ; reformat_mll: [`No | `Ocaml_block | `Full] elt
   ; wrap_comments: bool elt
   ; wrap_docstrings: bool elt
   ; wrap_fun_args: bool elt }

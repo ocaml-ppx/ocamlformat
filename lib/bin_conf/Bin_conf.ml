@@ -200,10 +200,14 @@ let kind =
   in
   let doc = "Parse input as an odoc documentation." in
   let doc_file = (Some Syntax.Documentation, Arg.info ["doc"] ~doc ~docs) in
+  let doc = "Parse input as a .mll lexer file." in
+  let mll_file = (Some Syntax.Mll_file, Arg.info ["mll"] ~doc ~docs) in
   let default = None in
   declare_option
     ~set:(fun kind conf -> {conf with kind})
-    Arg.(value & vflag default [impl; intf; use_file; repl_file; doc_file])
+    Arg.(
+      value
+      & vflag default [impl; intf; use_file; repl_file; doc_file; mll_file] )
 
 let name =
   let docv = "NAME" in

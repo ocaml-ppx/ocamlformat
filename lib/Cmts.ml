@@ -454,36 +454,40 @@ let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
 module Wrapped = struct
   let fmt ~pro ~epi text =
     let open Fmt in
-    assert (not (String.is_empty text)) ;
-    let prefix = if String.starts_with_whitespace text then " " else ""
-    and suffix = if String.ends_with_whitespace text then " " else "" in
-    let fmt_line line =
-      let words =
-        List.filter ~f:(Fn.non String.is_empty)
-          (String.split_on_chars line
-             ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
+    if String.is_empty text then pro $ epi
+    else
+      let prefix = if String.starts_with_whitespace text then " " else ""
+      and suffix = if String.ends_with_whitespace text then " " else "" in
+      let fmt_line line =
+        let words =
+          List.filter ~f:(Fn.non String.is_empty)
+            (String.split_on_chars line
+               ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
+        in
+        list words space_break str
       in
-      list words space_break str
-    in
-    let lines =
-      List.remove_consecutive_duplicates
-        ~equal:(fun x y -> String.is_empty x && String.is_empty y)
-        (String.split (String.rstrip text) ~on:'\n')
-    in
-    let groups =
-      List.group lines ~break:(fun _ y -> is_only_whitespaces y)
-    in
-    pro $ str prefix
-    $ hovbox 0
-        (list_fl groups (fun ~first ~last:last_group group ->
-             let group = List.filter group ~f:(Fn.non is_only_whitespaces) in
-             fmt_if (not first) (str "\n" $ force_newline)
-             $ hovbox 0
-                 (list_fl group (fun ~first ~last x ->
-                      fmt_if (not first) space_break
-                      $ fmt_line x
-                      $ fmt_if (last_group && last) (str suffix $ epi) ) ) )
-        )
+      let lines =
+        List.remove_consecutive_duplicates
+          ~equal:(fun x y -> String.is_empty x && String.is_empty y)
+          (String.split (String.rstrip text) ~on:'\n')
+      in
+      let groups =
+        List.group lines ~break:(fun _ y -> is_only_whitespaces y)
+        |> List.filter_map ~f:(fun group ->
+            match List.filter group ~f:(Fn.non is_only_whitespaces) with
+            | [] -> None
+            | group -> Some group )
+      in
+      pro $ str prefix
+      $ hovbox 0
+          (list_fl groups (fun ~first ~last:last_group group ->
+               fmt_if (not first) (str "\n" $ force_newline)
+               $ hovbox 0
+                   (list_fl group (fun ~first ~last x ->
+                        fmt_if (not first) space_break
+                        $ fmt_line x
+                        $ fmt_if (last_group && last) (str suffix $ epi) ) ) )
+          )
 end
 
 module Asterisk_prefixed = struct

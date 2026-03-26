@@ -111,6 +111,7 @@ let conventional_profile from =
   ; stritem_extension_indent= elt 0
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
+  ; reformat_mll= elt `Ocaml_block
   ; wrap_comments= elt false
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
@@ -182,6 +183,7 @@ let ocamlformat_profile from =
   ; stritem_extension_indent= elt 0
   ; type_decl= elt `Compact
   ; type_decl_indent= elt 2
+  ; reformat_mll= elt `Ocaml_block
   ; wrap_comments= elt false
   ; wrap_docstrings= elt true
   ; wrap_fun_args= elt true }
@@ -252,6 +254,7 @@ let janestreet_profile from =
   ; stritem_extension_indent= elt 2
   ; type_decl= elt `Sparse
   ; type_decl_indent= elt 2
+  ; reformat_mll= elt `Ocaml_block
   ; wrap_comments= elt false
   ; wrap_docstrings= elt false
   ; wrap_fun_args= elt false }
@@ -1323,6 +1326,22 @@ module Formatting = struct
         update conf ~f:(fun f -> {f with type_decl_indent= elt}) )
       (fun conf -> conf.fmt_opts.type_decl_indent)
 
+  let reformat_mll =
+    let doc = "How to format .mll (ocamllex) files." in
+    let names = ["reformat-mll"] in
+    let all =
+      [ Decl.Value.make ~name:"ocaml-block" `Ocaml_block
+          "$(b,ocaml-block) formats only the embedded OCaml code blocks, \
+           preserving surrounding syntax and comments."
+      ; Decl.Value.make ~name:"full" `Full
+          "$(b,full) reformats the entire .mll file structure."
+      ; Decl.Value.make ~name:"no" `No
+          "$(b,no) disables formatting of .mll files." ]
+    in
+    Decl.choice ~names ~all ~default ~doc ~kind
+      (fun conf elt -> update conf ~f:(fun f -> {f with reformat_mll= elt}))
+      (fun conf -> conf.fmt_opts.reformat_mll)
+
   let wrap_comments =
     let doc =
       "Comments are divided into paragraphs by open lines (two or more \
@@ -1395,6 +1414,7 @@ module Formatting = struct
       ; elt parens_tuple_patterns
       ; elt parse_docstrings
       ; elt parse_toplevel_phrases
+      ; elt reformat_mll
       ; elt sequence_blank_line
       ; elt sequence_style
       ; elt single_case

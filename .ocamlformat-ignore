@@ -1,1 +1,3 @@
 vendor/**
+opam-files/**
+opam-files-mll/**
