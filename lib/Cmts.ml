@@ -454,7 +454,8 @@ let is_only_whitespaces s = String.for_all s ~f:Char.is_whitespace
 module Wrapped = struct
   let fmt ~pro ~epi text =
     let open Fmt in
-    assert (not (String.is_empty text)) ;
+    if String.is_empty text then pro $ epi
+    else
     let prefix = if String.starts_with_whitespace text then " " else ""
     and suffix = if String.ends_with_whitespace text then " " else "" in
     let fmt_line line =
