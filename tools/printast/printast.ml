@@ -21,7 +21,7 @@ let () =
   let (Extended_ast.Any kind) = Extended_ast.of_syntax syntax in
   let conf = Conf.default in
   let parsed =
-    Extended_ast.parse kind conf ~input_name:inputf ~source:content
+    Parse_with_comments.parse kind conf ~input_name:inputf ~source:content
   in
   if !std then (
     match Extended_ast.get_std kind parsed.ast with

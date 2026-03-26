@@ -54,11 +54,11 @@ let normalize_parse_result ~normalize_cmt ast_kind ast comments =
 let normalize_code ~normalize_cmt conf (m : Ast_mapper.mapper) txt =
   let input_name = "<output>" in
   let normalize_cmt = normalize_cmt conf in
-  match Extended_ast.parse_toplevel conf ~input_name ~source:txt with
-  | First {Parsed.ast; comments; _} ->
+  match Parse_with_comments.parse_toplevel conf ~input_name ~source:txt with
+  | First {ast; comments; _} ->
       normalize_parse_result ~normalize_cmt Use_file (map Use_file m ast)
         comments
-  | Second {Parsed.ast; comments; _} ->
+  | Second {ast; comments; _} ->
       normalize_parse_result ~normalize_cmt Repl_file
         (List.map ~f:(m.repl_phrase m) ast)
         comments

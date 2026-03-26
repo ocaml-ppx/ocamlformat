@@ -10,7 +10,8 @@ let check_updated_test source expected =
   in
   let conf = Ocamlformat_lib.Conf.default in
   let ast ~input_name ~source =
-    Ocamlformat_lib.Extended_ast.parse Structure conf ~input_name ~source
+    Ocamlformat_lib.Parse_with_comments.parse Structure conf ~input_name
+      ~source
   in
   let ast1 = ast ~input_name:"source1" ~source:source1 in
   let ast2 =
@@ -33,7 +34,7 @@ let check_updated_test source expected =
     if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
     Buffer.contents buffer
   in
-  let print (ast : _ Extended_ast.Parsed.t) =
+  let print (ast : _ Parse_with_comments.with_comments) =
     let open Fmt in
     let debug = conf.opr_opts.debug.v in
     with_buffer_formatter ~buffer_size:1000

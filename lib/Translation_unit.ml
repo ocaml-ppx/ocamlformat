@@ -12,7 +12,7 @@
 (** Translation units *)
 
 module Location = Migrate_ast.Location
-open Extended_ast.Parsed
+open Parse_with_comments
 
 let ( let* ) = Result.( >>= )
 
@@ -66,7 +66,7 @@ module Error = struct
   let print_internal_error ~debug ~quiet fmt e =
     let s =
       match e with
-      | `Cannot_parse (Extended_ast.Warning50 _) ->
+      | `Cannot_parse (Parse_with_comments.Warning50 _) ->
           "generating invalid comment attachment"
       | `Cannot_parse _ -> "generating invalid ocaml syntax"
       | `Ast_changed -> "ast changed"
@@ -78,7 +78,7 @@ module Error = struct
     | `Comment x when not quiet -> Cmt.pp_error fmt x
     | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
         if debug then Location.report_exception fmt exn
-    | `Cannot_parse (Extended_ast.Warning50 _) ->
+    | `Cannot_parse (Parse_with_comments.Warning50 _) ->
         (* Printing the warning is not useful because it doesn't reference
            the right filename *)
         ()
@@ -93,7 +93,7 @@ module Error = struct
         let reason =
           match exn with
           | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
-          | Extended_ast.Warning50 _ ->
+          | Parse_with_comments.Warning50 _ ->
               " (misplaced documentation comments - warning 50)"
           | _ -> ""
         in
@@ -101,7 +101,7 @@ module Error = struct
         match exn with
         | Syntaxerr.Error _ | Lexer.Error _ ->
             Location.report_exception fmt exn
-        | Extended_ast.Warning50 l ->
+        | Parse_with_comments.Warning50 l ->
             List.iter l ~f:(fun (l, w) -> Warning.print_warning l w) ;
             Format.fprintf fmt
               "@{<warning>Hint@}: (Warning 50) This file contains a \
@@ -299,11 +299,11 @@ let format (type ext) (ext_fg : ext Extended_ast.t) ?output_file ~input_name
       in
       let* ext_t_new =
         match
-          Extended_ast.parse ~disable_w50:true ext_fg conf ~input_name
+          Parse_with_comments.parse ~disable_w50:true ext_fg conf ~input_name
             ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
-        | exception Extended_ast.Warning50 l ->
+        | exception Parse_with_comments.Warning50 l ->
             internal_error
               (List.map ~f:(fun x -> `Warning50 x) l)
               (exn_args ())
@@ -365,7 +365,7 @@ let format (type ext) (ext_fg : ext Extended_ast.t) ?output_file ~input_name
 
 let parse_result ?disable_w50 fragment conf ~source ~input_name =
   match
-    Extended_ast.parse ?disable_w50 fragment conf ~input_name ~source
+    Parse_with_comments.parse ?disable_w50 fragment conf ~input_name ~source
   with
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
