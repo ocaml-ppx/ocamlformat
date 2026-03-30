@@ -12614,6 +12614,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to unboxed_types-erased.ml.stdout
+   (with-stderr-to unboxed_types-erased.ml.stderr
+     (setenv TERM dumb (run %{bin:ocamlformat} --margin-check --erase-jane-syntax --max-iters=5 %{dep:tests/unboxed_types.ml}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_types-erased.ml.ref unboxed_types-erased.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unboxed_types-erased.ml.err unboxed_types-erased.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to unboxed_types.ml.stdout
    (with-stderr-to unboxed_types.ml.stderr
      (setenv TERM dumb (run %{bin:ocamlformat} --margin-check %{dep:tests/unboxed_types.ml}))))))
@@ -12621,7 +12639,7 @@
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/unboxed_types.ml unboxed_types.ml.stdout)))
+ (action (diff tests/unboxed_types.ml.ref unboxed_types.ml.stdout)))
 
 (rule
  (alias runtest)
