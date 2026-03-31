@@ -129,6 +129,11 @@ profile. This started with version 0.26.0.
      M.foo)
     ```
 
+### Emacs mode
+
+- Add `neocaml-mode` support to `ocamlformat-before-save`
+  (#2787, @bbatsov)
+
 ## 0.28.1
 
 ### Highlight
