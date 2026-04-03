@@ -52,7 +52,7 @@ and phrase buf = parse
   | _ as c   { Buffer.add_char buf c; phrase buf lexbuf }
 
 {
-let repl_file ~ocaml_version lx =
+let repl_file ~ocaml_version ~metaocaml lx =
   let x = token lx in
   let open Ocamlformat_parser_extended.Parsetree in
   List.fold_left (fun acc -> function
@@ -61,7 +61,7 @@ let repl_file ~ocaml_version lx =
           let filename = (Location.curr lx).loc_start.pos_fname in
           Lexing.set_filename cmd_lexbuf filename ;
           Lexing.set_position cmd_lexbuf pos_start ;
-          { prepl_phrase= Parse.toplevel_phrase ~ocaml_version cmd_lexbuf
+          { prepl_phrase= Parse.toplevel_phrase ~ocaml_version ~metaocaml cmd_lexbuf
           ; prepl_output= "" }
           :: acc
       | `Output ("", _) -> acc

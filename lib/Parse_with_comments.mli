@@ -31,6 +31,7 @@ val parse :
   -> ?disable_deprecated:bool
   -> (   'b
       -> ocaml_version:Ocaml_version.t
+      -> metaocaml:bool
       -> input_name:string
       -> string
       -> 'a )
@@ -57,6 +58,7 @@ val parse_ast :
      Conf.t
   -> 'a Extended_ast.t
   -> ocaml_version:Ocaml_version.t
+  -> metaocaml:bool
   -> input_name:string
   -> string
   -> 'a
