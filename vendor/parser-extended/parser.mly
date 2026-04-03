@@ -800,8 +800,10 @@ let mk_directive ~loc name arg =
 let convert_jkind_to_legacy_attr =
   let mk ~loc name = [Attr.mk ~loc (mkloc name loc) (PStr [])] in
   function
-  | {txt = Abbreviation {txt = "immediate"; loc}; loc = _} -> mk ~loc "immediate"
-  | {txt = Abbreviation {txt = "immediate64"; loc}; loc = _} -> mk ~loc "immediate64"
+  | {txt = Abbreviation ({txt = Longident.Lident "immediate"; loc}, []); loc = _} ->
+      mk ~loc "immediate"
+  | {txt = Abbreviation ({txt = Longident.Lident "immediate64"; loc}, []); loc = _} ->
+      mk ~loc "immediate64"
   | _ -> []
 
 (* NOTE: An alternate approach for performing the erasure of %call_pos and %src_pos
@@ -3935,9 +3937,8 @@ jkind:
       { Mod ($1, $3) }
   | mkrhs(jkind) WITH core_type optional_atat_modalities_expr
       { With ($1, $3, $4) }
-  | mkrhs(ident)
-      { let {txt; loc} = $1 in
-        Abbreviation ({ txt; loc }) }
+  | abbrev=mkrhs(type_longident) modifiers=mkrhs(LIDENT)*
+      { Abbreviation (abbrev, modifiers) }
   | KIND_OF ty=core_type
       { Kind_of ty }
   | UNDERSCORE

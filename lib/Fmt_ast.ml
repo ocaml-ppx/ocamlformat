@@ -906,7 +906,16 @@ and fmt_jkind c ~ctx {txt= jkd; loc} =
   let parens, fmt =
     match jkd with
     | Default -> (false, fmt "_")
-    | Abbreviation abbrev -> (false, fmt_str_loc c abbrev)
+    | Abbreviation (abbrev, modifiers) ->
+        let fmt =
+          fmt_longident_loc c abbrev
+          $ fmt_if_k
+              (not (List.is_empty modifiers))
+              ( fmt "@ "
+              $ list modifiers "@ " (fun modifier -> fmt_str_loc c modifier)
+              )
+        in
+        (false, fmt)
     | Mod (jkind, modes) ->
         let parens =
           match ctx with

@@ -23,6 +23,13 @@ type t_any : any with type_
 
 type t_void : void with type_
 
+(***********************************************************)
+(* Test 0: scannable axes on layout abbreviations *)
+
+type t_value_non_pointer : value non_pointer with type_
+
+let scannable_id : ('a : value non_pointer with type_) -> 'a = fun x -> x
+
 (***************************************)
 (* Test 1: annotation on type variable *)
 

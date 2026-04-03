@@ -1110,11 +1110,8 @@ let default_mapper =
     jkind_annotation = (fun this ->
       function
       | Default -> Default
-      | Abbreviation s ->
-        let {txt; loc} =
-          map_loc this s
-        in
-        Abbreviation ({ txt; loc })
+      | Abbreviation (s, modifiers) ->
+        Abbreviation (map_loc this s, List.map (map_loc this) modifiers)
       | Mod (t, mode_list) ->
         Mod (map_loc_txt this this.jkind_annotation t, this.modes this mode_list)
       | With (t, ty, ms) ->

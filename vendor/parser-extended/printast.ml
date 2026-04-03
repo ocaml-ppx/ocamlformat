@@ -698,8 +698,12 @@ and jkind_annotation ?loc i ppf jkind =
   in
   match jkind with
   | Default -> line i ppf "Default %a\n" fmt_loc_opt loc
-  | Abbreviation jkind ->
-      line i ppf "Abbreviation \"%s\" %a\n" jkind.txt fmt_loc_opt loc
+  | Abbreviation (jkind, modifiers) ->
+      line i ppf "Abbreviation %a %a\n" fmt_longident_loc jkind fmt_loc_opt loc;
+      List.iter
+        (fun modifier ->
+          line (i+1) ppf "scannable_axis %a\n" fmt_string_loc modifier )
+        modifiers
   | Mod (jkind, m) ->
       line i ppf "Mod %a\n"  fmt_loc_opt loc;
       jkind_annotation_loc (i+1) ppf jkind;

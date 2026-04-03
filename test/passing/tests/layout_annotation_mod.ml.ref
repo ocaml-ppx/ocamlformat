@@ -21,6 +21,11 @@ type t_any : any mod mode
 
 type t_void : void mod mode
 
+(***********************************************************)
+(* Test 0: scannable axes on layout abbreviations *)
+
+type t_value_non_pointer_mod : value non_pointer mod mode
+
 (***************************************)
 (* Test 1: annotation on type variable *)
 

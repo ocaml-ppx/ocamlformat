@@ -40,11 +40,41 @@ type t_imm
 type t_imm64 :
        immediate64
 
+type t_qualified_immediate
+     : Foo.immediate
+
+type t_modified_immediate
+     : immediate non_pointer
+
+type t_modified_immediate64
+     : immediate64 maybe_pointer
+
 type t_float64 : float64
 
 type t_any : any
 
 type t_void : void
+
+(***********************************************************)
+(* Test 0: scannable axes on layout abbreviations *)
+
+type t_any_non_pointer : any non_pointer
+
+type t_value_non_pointer
+     : value non_pointer
+
+type t_value_maybe_pointer : value maybe_pointer
+
+type t_value_maybe_pointer_non_pointer
+     : value maybe_pointer non_pointer
+
+type t_product_non_pointer
+     : value & value non_pointer
+
+type t_qualified_non_pointer
+     : Foo.bar non_pointer
+
+let scannable_id : ('a : value non_pointer) -> 'a = fun x -> x
 
 (***************************************)
 (* Test 1: annotation on type variable *)
@@ -376,4 +406,3 @@ type t =
 
 type t =
   | T : (* 1 *) ('a : value) 'b (* 2 *) ('c : (* 3 *) float64) 'd . (* 4 *) { x : 'a * 'b * 'c * 'd } -> t
-

@@ -15,9 +15,12 @@ let rewrite_type_declaration_imm_attr_to_jkind_annot decl =
   let get_jkind_of_legacy_attr attr =
     match (attr.attr_name.txt, attr.attr_payload) with
     | ("ocaml.immediate64" | "immediate64"), PStr [] ->
-        Some (Abbreviation (Location.mknoloc "immediate64"))
+        Some
+          (Abbreviation
+             (Location.mknoloc (Longident.Lident "immediate64"), []) )
     | ("ocaml.immediate" | "immediate"), PStr [] ->
-        Some (Abbreviation (Location.mknoloc "immediate"))
+        Some
+          (Abbreviation (Location.mknoloc (Longident.Lident "immediate"), []))
     | _ -> None
   in
   let immediate_attrs, remaining_attrs =

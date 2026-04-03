@@ -4050,8 +4050,8 @@ jkind_desc:
   | jkind_annotation WITH core_type optional_atat_modalities_expr {
       With ($1, $3, $4)
     }
-  | ident {
-      Abbreviation $1
+  | mkrhs(type_longident) modifiers=mkrhs(LIDENT)* {
+      Abbreviation ($1, modifiers)
     }
   | KIND_OF ty=core_type {
       Kind_of ty

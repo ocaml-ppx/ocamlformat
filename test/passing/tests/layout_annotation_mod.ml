@@ -23,6 +23,12 @@ type t_any : any mod mode
 
 type t_void : void mod mode 
 
+(***********************************************************)
+(* Test 0: scannable axes on layout abbreviations *)
+
+type t_value_non_pointer_mod
+     : value non_pointer mod mode
+
 (***************************************)
 (* Test 1: annotation on type variable *)
 
@@ -358,4 +364,3 @@ type t =
 
 type t =
   | T : (* 1 *) ('a : value mod mode) 'b (* 2 *) ('c : (* 3 *) float64 (* 4 *) mod mode) 'd . (* 5 *) { x : 'a * 'b * 'c * 'd } -> t
-

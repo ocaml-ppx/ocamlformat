@@ -32,8 +32,12 @@ type old_imm64 [@@immediate64] [@@immediate]
 
 type old_imm : immediate [@@immediate]
 type old_imm : immediate64 [@@immediate]
+type old_imm : Foo.immediate [@@immediate]
+type old_imm : immediate non_pointer [@@immediate]
 type old_imm64 : immediate64 [@@immediate64]
 type old_imm64 : immediate [@@immediate64]
+type old_imm64 : Foo.immediate64 [@@immediate64]
+type old_imm64 : immediate64 maybe_pointer [@@immediate64]
 
 (* Do nothing if there's unexpected payload *)
 

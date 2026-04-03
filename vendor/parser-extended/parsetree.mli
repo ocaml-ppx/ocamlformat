@@ -1328,11 +1328,11 @@ and module_binding =
     }
 (** Values of type [module_binding] represents [module X = ME] *)
 
-and jkind_const_annotation  = string Location.loc
+and jkind_const_annotation  = Longident.t Location.loc
 
 and jkind_annotation =
   | Default
-  | Abbreviation of jkind_const_annotation
+  | Abbreviation of jkind_const_annotation * string Location.loc list
   | Mod of jkind_annotation loc * modes
   | With of jkind_annotation loc * core_type * modalities
   | Kind_of of core_type

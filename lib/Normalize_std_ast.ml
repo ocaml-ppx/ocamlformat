@@ -445,12 +445,18 @@ let make_mapper conf ~ignore_doc_comments ~erase_jane_syntax =
   let type_declaration (m : Ast_mapper.mapper) decl =
     let ptype_jkind_annotation, extra_attributes =
       match decl.ptype_jkind_annotation with
-      | Some {pjkind_desc= Abbreviation "immediate"; _} ->
+      | Some
+          { pjkind_desc=
+              Abbreviation ({txt= Longident.Lident "immediate"; _}, [])
+          ; _ } ->
           ( None
           , [ Ast_helper.Attr.mk
                 {txt= "immediate"; loc= Location.none}
                 (PStr []) ] )
-      | Some {pjkind_desc= Abbreviation "immediate64"; _} ->
+      | Some
+          { pjkind_desc=
+              Abbreviation ({txt= Longident.Lident "immediate64"; _}, [])
+          ; _ } ->
           ( None
           , [ Ast_helper.Attr.mk
                 {txt= "immediate64"; loc= Location.none}
