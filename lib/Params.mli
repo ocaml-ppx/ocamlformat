@@ -234,6 +234,7 @@ val get_if_then_else :
   -> fmt_cond:(expression Ast.xt -> Fmt.t)
   -> cmts_before_kw:Fmt.t
   -> cmts_after_kw:Fmt.t option
+  -> has_cmts_before_body:bool
   -> if_then_else
 (** [cmts_before_opt] return the comment before the given location with no breaks around it. *)
 

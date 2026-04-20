@@ -849,7 +849,8 @@ type if_then_else =
 
 let get_if_then_else (c : Conf.t) ~cmts_before_opt ~pro ~first ~last
     ~parens_bch ~parens_prev_bch ~xcond ~xbch ~expr_loc ~fmt_infix_ext_attrs
-    ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw =
+    ~infix_ext_attrs ~fmt_cond ~cmts_before_kw ~cmts_after_kw
+    ~has_cmts_before_body =
   let imd = c.fmt_opts.indicate_multiline_delimiters.v in
   let beginend_loc, infix_ext_attrs_beginend, branch_expr =
     let ast = xbch.Ast.ast in
@@ -959,7 +960,12 @@ let get_if_then_else (c : Conf.t) ~cmts_before_opt ~pro ~first ~last
             | _ -> 0 )
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
-      ; branch_pro= branch_pro ~begin_end_offset:0 ()
+      ; branch_pro=
+          ( if
+              has_cmts_before_body && (not has_cmts_after_kw)
+              && not (Location.is_single_line expr_loc c.fmt_opts.margin.v)
+            then break 1000 2
+            else branch_pro ~begin_end_offset:0 () )
       ; wrap_parens=
           wrap_parens
             ~wrap_breaks:
