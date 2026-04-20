@@ -218,3 +218,12 @@ let () =
   end
   else
     ()
+
+(* Long condition with comment after then keyword *)
+let test =
+  if long_function_name_to_force_break a b c d e f g h i j k l m n o p q r s t
+  then
+    (* comment *)
+    1
+  else
+    2
