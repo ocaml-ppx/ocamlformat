@@ -2571,9 +2571,6 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                                   c loc )
                            else None
                          in
-                         let has_cmts_before_body =
-                           Cmts.has_before c.cmts xbch.ast.pexp_loc
-                         in
                          let p =
                            Params.get_if_then_else c.conf ~cmts_before_opt
                              ~pro:(fmt_if first pro_inner) ~first ~last
@@ -2584,7 +2581,6 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~infix_ext_attrs
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
-                             ~has_cmts_before_body
                          in
                          let wrap_beginend =
                            match p.beginend_loc with
