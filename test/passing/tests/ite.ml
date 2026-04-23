@@ -181,6 +181,13 @@ let () =
     end
   else ()
 
+(* Match in if-then-else branches should fit on one line *)
+let name =
+  if true then
+    match expr with true -> () | false -> ()
+  else
+    match expr with true -> () | false -> ()
+
 (* Long condition with comment after then keyword *)
 let test =
   if

@@ -382,7 +382,9 @@ module Exp = struct
   let match_inner_pro ~ctx0 ~parens =
     if parens then false
     else
-      match ctx0 with Exp {pexp_desc= Pexp_infix _; _} -> false | _ -> true
+      match ctx0 with
+      | Exp {pexp_desc= Pexp_infix _ | Pexp_ifthenelse _; _} -> false
+      | _ -> true
 
   let function_inner_pro ~has_cmts_outer ~ctx0 =
     if has_cmts_outer then false

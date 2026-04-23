@@ -218,6 +218,21 @@ let () =
   else
     ()
 
+(* Match in if-then-else branches should fit on one line *)
+let name =
+  if true then
+    match expr with
+    | true ->
+        ()
+    | false ->
+        ()
+  else
+    match expr with
+    | true ->
+        ()
+    | false ->
+        ()
+
 (* Long condition with comment after then keyword *)
 let test =
   if long_function_name_to_force_break a b c d e f g h i j k l m n o p q r s t

@@ -8,8 +8,11 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
-- Fix instability on long if-then-else with `if-then-else=fit-or-vertical`
+- Fix instability on long `if-then-else` with `if-then-else=fit-or-vertical`
   (#2797, @MisterDA)
+
+- Fix `match` in `if-then-else` branches expanding to vertical with
+  `fit-or-vertical` (#2798, @MisterDA)
 
 ## 0.29.0
 
@@ -1944,4 +1947,3 @@ profile. This started with version 0.26.0.
 ## 0.1 (2017-10-19)
 
 - Initial release.
-
