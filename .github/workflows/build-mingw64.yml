@@ -33,7 +33,7 @@ jobs:
           git config --global core.autocrlf false
 
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.build_ref }}
 

@@ -26,7 +26,7 @@ jobs:
 
     steps:
       # Clone the project
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       # Setup
       - name: Setup OCaml ${{ matrix.ocaml-version }}
