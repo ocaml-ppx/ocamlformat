@@ -5144,13 +5144,13 @@ let fmt_code ~debug =
     let warn = fmt_opts.parse_toplevel_phrases.v in
     let input_name = !Location.input_name in
     match
-      Parse_with_comments.parse_toplevel ~disable_deprecated:true conf
-        ~input_name ~source:s
+      Extended_ast.parse_toplevel ~disable_deprecated:true conf ~input_name
+        ~source:s
     with
-    | Either.First {ast; comments; source; prefix= _} ->
+    | Either.First {Parsed.ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Use_file ast source comments ~set_margin
           ~fmt_code
-    | Second {ast; comments; source; prefix= _} ->
+    | Second {Parsed.ast; comments; source; prefix= _} ->
         fmt_parse_result conf ~debug Repl_file ast source comments
           ~set_margin ~fmt_code
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
