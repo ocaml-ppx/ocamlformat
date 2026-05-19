@@ -25,6 +25,23 @@ module Std_parsetree = Ocamlformat_parser_standard.Parsetree
     equivalence checking). Only [Use_file] carries a shebang [prefix].
     [Documentation] has no comment-placement state at all; the other kinds
     carry a [Cmts.t] holding the placed comments and the [Source.t]. *)
+module Kind : sig
+  type 'a t =
+    | Structure : structure t
+    | Signature : signature t
+    | Use_file : use_file t
+    | Core_type : core_type t
+    | Module_type : module_type t
+    | Expression : expression t
+    | Pattern : pattern t
+    | Repl_file : repl_file t
+    | Documentation : Ocamlformat_odoc_parser.Ast.t t
+
+  type any = Any : 'a t -> any [@@unboxed]
+
+  val of_syntax : Syntax.t -> any
+end
+
 type 'a t =
   | Structure :
       {ast: structure; std: Std_parsetree.structure; cmts: Cmts.t}
@@ -56,6 +73,8 @@ type 'a t =
       -> Ocamlformat_odoc_parser.Ast.t t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
+
+val kind_of : 'a t -> 'a Kind.t
 
 val ast : 'a t -> 'a
 
@@ -91,25 +110,14 @@ exception Warning50 of (Location.t * Warnings.t) list
 val parse :
      ?disable_w50:bool
   -> ?disable_deprecated:bool
-  -> Syntax.t
+  -> 'a Kind.t
   -> Conf.t
   -> input_name:string
   -> source:string
-  -> any_t
+  -> 'a t
 (** Parse source with warning handling, hash-bang detection, and comment
     placement. For paired fragment kinds, also parses with the standard
     parser. *)
-
-val reparse :
-     ?disable_w50:bool
-  -> ?disable_deprecated:bool
-  -> 'a t
-  -> Conf.t
-  -> input_name:string
-  -> source:string
-  -> 'a t
-(** Re-parse [source] using the same fragment kind as the supplied parsed
-    value. Preserves the type so the result fits in the same context. *)
 
 val parse_toplevel :
      ?disable_w50:bool

@@ -10,10 +10,7 @@ let check_updated_test source expected =
   in
   let conf = Ocamlformat_lib.Conf.default in
   let parse_struct ~input_name ~source =
-    let (Extended_ast.Any parsed) =
-      Extended_ast.parse Syntax.Structure conf ~input_name ~source
-    in
-    match parsed with Structure _ as r -> r | _ -> assert false
+    Extended_ast.parse Structure conf ~input_name ~source
   in
   let unwrap_structure (parsed : _ Extended_ast.t) =
     match parsed with

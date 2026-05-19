@@ -296,8 +296,9 @@ let format ?output_file ~input_name ~prev_source ~ext_parsed (conf : Conf.t)
       in
       let* ext_t_new =
         match
-          Extended_ast.reparse ~disable_w50:true ext_t conf ~input_name
-            ~source:fmted
+          Extended_ast.parse ~disable_w50:true
+            (Extended_ast.kind_of ext_t)
+            conf ~input_name ~source:fmted
         with
         | exception Sys_error msg -> Error (Error.User_error msg)
         | exception Extended_ast.Warning50 l ->
@@ -357,8 +358,9 @@ let parse_and_format syntax ?output_file ~input_name ~source (conf : Conf.t)
     =
   Location.input_name := input_name ;
   let line_endings = conf.fmt_opts.line_endings.v in
-  let* (Extended_ast.Any ext_parsed) =
-    match Extended_ast.parse syntax conf ~input_name ~source with
+  let (Extended_ast.Kind.Any kind) = Extended_ast.Kind.of_syntax syntax in
+  let* ext_parsed =
+    match Extended_ast.parse kind conf ~input_name ~source with
     | exception exn -> Error (Error.Invalid_source {exn; input_name})
     | parsed -> Ok parsed
   in

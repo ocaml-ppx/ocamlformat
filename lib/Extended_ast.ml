@@ -658,7 +658,7 @@ let parse_ocaml (type a) ?(disable_w50 = false) ?(disable_deprecated = false)
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
 
-let parse_kind (type a) ?disable_w50 ?disable_deprecated (k : a Kind.t) conf
+let parse (type a) ?disable_w50 ?disable_deprecated (k : a Kind.t) conf
     ~input_name ~source : a t =
   match k with
   | Documentation ->
@@ -666,16 +666,6 @@ let parse_kind (type a) ?disable_w50 ?disable_deprecated (k : a Kind.t) conf
       Documentation (Docstring.parse_file pos source)
   | k ->
       parse_ocaml ?disable_w50 ?disable_deprecated k conf ~input_name ~source
-
-let parse ?disable_w50 ?disable_deprecated syntax conf ~input_name ~source =
-  let (Kind.Any k) = Kind.of_syntax syntax in
-  Any
-    (parse_kind ?disable_w50 ?disable_deprecated k conf ~input_name ~source)
-
-let reparse (type a) ?disable_w50 ?disable_deprecated (existing : a t) conf
-    ~input_name ~source : a t =
-  parse_kind ?disable_w50 ?disable_deprecated (kind_of existing) conf
-    ~input_name ~source
 
 (** [is_repl_block x] returns whether [x] is a list of REPL phrases and
     outputs of the form:
@@ -692,11 +682,11 @@ let parse_toplevel ?disable_w50 ?disable_deprecated (conf : Conf.t)
     (use_file t, repl_file t) Either.t =
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
     Either.Second
-      (parse_kind ?disable_w50 ?disable_deprecated Repl_file conf ~input_name
+      (parse ?disable_w50 ?disable_deprecated Repl_file conf ~input_name
          ~source )
   else
     First
-      (parse_kind ?disable_w50 ?disable_deprecated Use_file conf ~input_name
+      (parse ?disable_w50 ?disable_deprecated Use_file conf ~input_name
          ~source )
 
 type std_value = Std_value : 'a Std_ast.t * 'a -> std_value

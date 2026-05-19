@@ -19,8 +19,9 @@ let () =
   Printf.printf "Reading %S\n" inputf ;
   let content = In_channel.read_all inputf in
   let conf = Conf.default in
-  let (Extended_ast.Any parsed) =
-    Extended_ast.parse syntax conf ~input_name:inputf ~source:content
+  let (Extended_ast.Kind.Any kind) = Extended_ast.Kind.of_syntax syntax in
+  let parsed =
+    Extended_ast.parse kind conf ~input_name:inputf ~source:content
   in
   if !std then (
     match Extended_ast.get_std parsed with
