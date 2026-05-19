@@ -25,11 +25,36 @@
 
 type t
 
+val source : t -> Source.t
+(** The [Source.t] used to place comments. *)
+
+val copy : t -> t
+(** Deep-copy the placement state so it can be consumed independently. *)
+
 val init :
-  'a Extended_ast.t -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
-(** [init fragment source x comments] associates each comment in [comments]
-    with a source location appearing in [x]. It uses [Source] to help resolve
-    ambiguities. Initializes the state used by the [fmt] functions. *)
+     debug:bool
+  -> source:Source.t
+  -> ast:'a
+  -> comments:Cmt.t list
+  -> traverse:
+       (Ocamlformat_parser_extended.Ast_mapper.mapper -> 'a -> 'a)
+  -> print_ast:(Format.formatter -> 'a -> unit)
+  -> t
+(** Associate each [comment] with a source location appearing in [ast]. Uses
+    [traverse] to walk the AST. [print_ast] is only used in debug mode.
+    Initializes the state used by the [fmt] functions. *)
+
+val dedup_cmts :
+     traverse:(Ocamlformat_parser_extended.Ast_mapper.mapper -> 'a -> 'a)
+  -> 'a
+  -> Cmt.t list
+  -> Cmt.t list
+(** Drop comments that are already represented as docstring attributes in
+    the AST (so they don't get double-printed). *)
+
+val all_comments : t -> Cmt.t list
+(** All comments associated with this state — placed (before/within/after)
+    plus any not-yet-formatted ones. *)
 
 val relocate :
   t -> src:Location.t -> before:Location.t -> after:Location.t -> unit
@@ -38,7 +63,10 @@ val relocate :
     [after]. *)
 
 val relocate_wrongfully_attached_cmts :
-  t -> Source.t -> Extended_ast.expression -> unit
+     t
+  -> Source.t
+  -> Ocamlformat_parser_extended.Parsetree.expression
+  -> unit
 (** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
     comments, e.g. comments that should be attached to the whole
     pattern-matching expressions ([match-with] or [try-with] expressions) but

@@ -9,22 +9,31 @@ let check_updated_test source expected =
     String.make 1000 '\n' ^ source
   in
   let conf = Ocamlformat_lib.Conf.default in
-  let ast ~input_name ~source =
-    Ocamlformat_lib.Extended_ast.parse Structure conf ~input_name ~source
+  let parse_struct ~input_name ~source =
+    let (Extended_ast.Any parsed) =
+      Extended_ast.parse Syntax.Structure conf ~input_name ~source
+    in
+    match parsed with Structure _ as r -> r | _ -> assert false
   in
-  let ast1 = ast ~input_name:"source1" ~source:source1 in
-  let ast2 =
-    let ast = ast ~input_name:"source2" ~source:source2 in
+  let unwrap_structure (parsed : _ Extended_ast.t) =
+    match parsed with
+    | Structure {ast; std; cmts} -> (ast, std, cmts)
+    | _ -> .
+  in
+  let ast1 = parse_struct ~input_name:"source1" ~source:source1 in
+  let _, ast1_std, ast1_cmts = unwrap_structure ast1 in
+  let ast2_ast =
+    let parsed = parse_struct ~input_name:"source2" ~source:source2 in
+    let ast, _, _ = unwrap_structure parsed in
     let ghostify =
       { Ocamlformat_parser_extended.Ast_mapper.default_mapper with
         location= (fun _ loc -> {loc with loc_ghost= true}) }
     in
-    { ast with
-      ast=
-        {ast.ast with extended= ghostify.structure ghostify ast.ast.extended}
-    }
+    ghostify.structure ghostify ast
   in
-  let ast_replaced = {ast1 with ast= ast2.ast} in
+  let mixed =
+    Extended_ast.Structure {ast= ast2_ast; std= ast1_std; cmts= ast1_cmts}
+  in
   let with_buffer_formatter ~buffer_size k =
     let buffer = Buffer.create buffer_size in
     let fs = Format_.formatter_of_buffer buffer in
@@ -33,18 +42,16 @@ let check_updated_test source expected =
     if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
     Buffer.contents buffer
   in
-  let print (ast : _ Extended_ast.Parsed.t) =
+  let print parsed =
     let open Fmt in
     let debug = conf.opr_opts.debug.v in
+    let body, _ = Fmt_ast.fmt_ast parsed ~debug conf in
     with_buffer_formatter ~buffer_size:1000
       ( set_margin conf.fmt_opts.margin.v
       $ set_max_indent conf.fmt_opts.max_indent.v
-      $ Fmt_ast.fmt_ast Structure ~debug ast.source
-          (Ocamlformat_lib.Cmts.init Structure ~debug ast.source ast.ast
-             ast.comments )
-          conf ast.ast )
+      $ body )
   in
-  let printed_ast_replaced = String.strip (print ast_replaced) in
+  let printed_ast_replaced = String.strip (print mixed) in
   (* Ideally we'd improve two things about this test:
 
      - check the new string parses, to the same AST as the original one - use

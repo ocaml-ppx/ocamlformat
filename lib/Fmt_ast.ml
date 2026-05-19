@@ -5097,41 +5097,40 @@ module Chunk = struct
     fmt fg c ctx @@ split fg l ~state
 end
 
-let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
-    source cmts conf (itms : a) =
-  let c = {source; cmts; conf; debug; fmt_code} in
-  match (fragment, itms) with
-  | Structure, {extended= []; _}
-   |Signature, {extended= []; _}
-   |Use_file, {extended= []; _} ->
-      Cmts.fmt_after ~pro:noop c Location.none
-  | Structure, {extended; _} -> Chunk.split_and_fmt Structure c ctx extended
-  | Signature, {extended; _} -> Chunk.split_and_fmt Signature c ctx extended
-  | Use_file, {extended; _} -> Chunk.split_and_fmt Use_file c ctx extended
-  | Core_type, {extended= ty; _} ->
-      fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
-  | Module_type, {extended= mty; _} ->
-      compose_module ~f:Fn.id
-        (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
-  | Expression, {extended= e; _} ->
-      fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
-  | Pattern, {extended= p; _} ->
-      fmt_pattern c (sub_pat ~ctx:(Pld (PPat (p, None))) p)
-  | Repl_file, l -> fmt_repl_file c ctx l
-  | Documentation, d ->
-      (* TODO: [source] and [cmts] should have never been computed when
-         formatting doc. *)
-      Fmt_odoc.fmt_ast c.conf ~fmt_code:c.fmt_code d
-
-let fmt_parse_result conf ~debug ast_kind ast source comments
-    ~set_margin:set_margin_p ~fmt_code =
-  let cmts = Cmts.init ast_kind ~debug source ast comments in
-  let ctx = Top in
-  let code =
-    fmt_if set_margin_p (set_margin conf.Conf.fmt_opts.margin.v)
-    $ fmt_file ~ctx ~debug ast_kind source cmts conf ast ~fmt_code
+let fmt_file (type a) ~ctx ~fmt_code ~debug (parsed : a Extended_ast.t) conf
+    =
+  let mk_c (cmts : Cmts.t) =
+    {source= Cmts.source cmts; cmts; conf; debug; fmt_code}
   in
-  Ok code
+  match parsed with
+  | Documentation d -> Fmt_odoc.fmt_ast conf ~fmt_code d
+  | Structure {ast= []; cmts; _} | Signature {ast= []; cmts; _} ->
+      Cmts.fmt_after ~pro:noop (mk_c cmts) Location.none
+  | Use_file {ast; prefix; cmts; _} ->
+      let c = mk_c cmts in
+      fmt_if (not (String.is_empty prefix)) (str prefix $ force_newline)
+      $ ( match ast with
+        | [] -> Cmts.fmt_after ~pro:noop c Location.none
+        | _ -> Chunk.split_and_fmt Use_file c ctx ast )
+  | Structure {ast; cmts; _} ->
+      Chunk.split_and_fmt Structure (mk_c cmts) ctx ast
+  | Signature {ast; cmts; _} ->
+      Chunk.split_and_fmt Signature (mk_c cmts) ctx ast
+  | Core_type {ast= ty; cmts; _} ->
+      fmt_core_type (mk_c cmts) (sub_typ ~ctx:(Pld (PTyp ty)) ty)
+  | Module_type {ast= mty; cmts; _} ->
+      compose_module ~f:Fn.id
+        (fmt_module_type (mk_c cmts) (sub_mty ~ctx:(Mty mty) mty))
+  | Expression {ast= e; cmts; _} ->
+      fmt_expression (mk_c cmts)
+        (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
+  | Pattern {ast= p; cmts; _} ->
+      fmt_pattern (mk_c cmts) (sub_pat ~ctx:(Pld (PPat (p, None))) p)
+  | Repl_file {ast= l; cmts; _} -> fmt_repl_file (mk_c cmts) ctx l
+
+let fmt_parse_result conf ~debug parsed ~set_margin:set_margin_p ~fmt_code =
+  fmt_if set_margin_p (set_margin conf.Conf.fmt_opts.margin.v)
+  $ fmt_file ~ctx:Top ~debug parsed conf ~fmt_code
 
 let fmt_code ~debug =
   let rec fmt_code (conf : Conf.t) ~offset ~set_margin s =
@@ -5147,12 +5146,10 @@ let fmt_code ~debug =
       Extended_ast.parse_toplevel ~disable_deprecated:true conf ~input_name
         ~source:s
     with
-    | Either.First {Parsed.ast; comments; source; prefix= _} ->
-        fmt_parse_result conf ~debug Use_file ast source comments ~set_margin
-          ~fmt_code
-    | Second {Parsed.ast; comments; source; prefix= _} ->
-        fmt_parse_result conf ~debug Repl_file ast source comments
-          ~set_margin ~fmt_code
+    | Either.First parsed ->
+        Ok (fmt_parse_result conf ~debug parsed ~set_margin ~fmt_code)
+    | Second parsed ->
+        Ok (fmt_parse_result conf ~debug parsed ~set_margin ~fmt_code)
     | exception Syntaxerr.Error (Expecting (_, x)) when warn ->
         Error (`Msg (Format.asprintf "expecting: %s" x))
     | exception Syntaxerr.Error (Not_expecting (_, x)) when warn ->
@@ -5164,9 +5161,10 @@ let fmt_code ~debug =
   in
   fmt_code
 
-let fmt_ast fragment ~debug source cmts conf l =
+let fmt_ast parsed ~debug conf =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;
   let fmt_code = fmt_code ~debug in
-  fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l
+  let parsed = Extended_ast.copy_cmts parsed in
+  (fmt_file ~ctx:Top ~fmt_code ~debug parsed conf, Extended_ast.cmts parsed)

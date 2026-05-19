@@ -13,32 +13,10 @@ open Extended_ast
 
 type 'a t = 'a Extended_ast.t
 
-let dedup_cmts fragment ast comments =
-  let of_ast ast =
-    let docs = ref (Set.empty (module Cmt)) in
-    let attribute m atr =
-      match atr with
-      | { attr_payload=
-            PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant
-                              {pconst_desc= Pconst_string (doc, _, None); _}
-                        ; pexp_loc
-                        ; _ }
-                      , [] )
-                ; _ } ]
-        ; _ }
-        when Ast.Attr.is_doc atr ->
-          docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
-          atr
-      | _ -> Ast_mapper.default_mapper.attribute m atr
-    in
-    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
-    !docs
-  in
-  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
+let comments_of (type a) (parsed : a Extended_ast.t) : Cmt.t list =
+  match Extended_ast.cmts parsed with
+  | Some cmts -> Cmts.all_comments cmts
+  | None -> []
 
 let normalize_comments ~normalize_cmt dedup fmt comments =
   dedup comments
@@ -46,22 +24,20 @@ let normalize_comments ~normalize_cmt dedup fmt comments =
       Migrate_ast.Location.compare (Cmt.loc a) (Cmt.loc b) )
   |> List.iter ~f:(fun cmt -> Format.fprintf fmt "%s," (normalize_cmt cmt))
 
-let normalize_parse_result ~normalize_cmt ast_kind ast comments =
-  Format.asprintf "AST,%a,COMMENTS,[%a]" (Printast.ast ast_kind) ast
-    (normalize_comments ~normalize_cmt (dedup_cmts ast_kind ast))
+let normalize_parse_result ~normalize_cmt parsed =
+  let ast = Extended_ast.ast parsed in
+  let traverse = Extended_ast.traverse parsed in
+  let comments = comments_of parsed in
+  Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.ast parsed
+    (normalize_comments ~normalize_cmt (Cmts.dedup_cmts ~traverse ast))
     comments
 
 let normalize_code ~normalize_cmt conf (m : Ast_mapper.mapper) txt =
   let input_name = "<output>" in
   let normalize_cmt = normalize_cmt conf in
   match Extended_ast.parse_toplevel conf ~input_name ~source:txt with
-  | First {Parsed.ast; comments; _} ->
-      normalize_parse_result ~normalize_cmt Use_file (map Use_file m ast)
-        comments
-  | Second {Parsed.ast; comments; _} ->
-      normalize_parse_result ~normalize_cmt Repl_file
-        (List.map ~f:(m.repl_phrase m) ast)
-        comments
+  | First parsed -> normalize_parse_result ~normalize_cmt (map m parsed)
+  | Second parsed -> normalize_parse_result ~normalize_cmt (map m parsed)
   | exception _ -> txt
 
 let docstring (c : Conf.t) =
@@ -231,10 +207,12 @@ let diff ~f x y =
             ~second:Normalized_cmt.added )
   |> function [] -> Ok () | errors -> Error errors
 
-let diff_cmts (conf : Conf.t) x y =
+let diff_cmts (conf : Conf.t) old new_ =
   let normalize = normalize_cmt conf in
   let f z =
     let f = Normalized_cmt.of_cmt normalize#cmt in
-    Set.of_list (module Normalized_cmt.Comparator) (List.map ~f z)
+    Set.of_list
+      (module Normalized_cmt.Comparator)
+      (List.map ~f (comments_of z))
   in
-  diff ~f x y
+  diff ~f old new_
