@@ -164,296 +164,284 @@ let map (type a) (m : Ast_mapper.mapper) (t : a t) : a t =
   | Module_type r -> Module_type {r with ast= m.module_type m r.ast}
   | Expression r -> Expression {r with ast= m.expr m r.ast}
   | Pattern r -> Pattern {r with ast= m.pat m r.ast}
-  | Repl_file r ->
-      Repl_file {r with ast= List.map ~f:(m.repl_phrase m) r.ast}
+  | Repl_file r -> Repl_file {r with ast= List.map ~f:(m.repl_phrase m) r.ast}
   | Documentation _ as t -> t
 
 let normalize_mapper ~ocaml_version ~preserve_beginend ~prefer_let_puns =
-    let open Asttypes in
-    let open Ast_mapper in
-    let enable_short_field_annot =
-      Ocaml_version.compare ocaml_version Ocaml_version.Releases.v4_03_0 >= 0
-    in
-    let record_field m (f, t, v) =
-      match (t, v) with
-      (* [{ x = x }] -> [{ x }] *)
-      | ( _
-        , Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
-        )
-        when Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, t, None)
-      (* [{ x = (x : t) }] -> [{ x : t }] *)
-      | ( None
-        , Some
-            { pexp_desc=
-                Pexp_constraint
-                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , t1 )
-            ; pexp_attributes= []
-            ; _ } )
-        when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, Some (Pconstraint t1), None)
-      (* [{ x :> t = (x : t) }] -> [{ x : t :> t }] *)
-      | ( Some (Pcoerce (None, t2))
-        , Some
-            { pexp_desc=
-                Pexp_constraint
-                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , t1 )
-            ; pexp_attributes= []
-            ; _ } )
-        when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, Some (Pcoerce (Some t1, t2)), None)
-      (* [{ x = (x :> t) }] -> [{ x :> t }] *)
-      (* [{ x = (x : t :> t) }] -> [{ x : t :> t }] *)
-      | ( None
-        , Some
-            { pexp_desc=
-                Pexp_coerce
-                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , t1
-                  , t2 )
-            ; pexp_attributes= []
-            ; _ } )
-        when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, Some (Pcoerce (t1, t2)), None)
-      (* [{ x : t = (x :> t) }] -> [{ x : t :> t }] *)
-      | ( Some (Pconstraint t1)
-        , Some
-            { pexp_desc=
-                Pexp_coerce
-                  ( { pexp_desc= Pexp_ident {txt= v_txt; _}
-                    ; pexp_attributes= []
-                    ; _ }
-                  , None
-                  , t2 )
-            ; pexp_attributes= []
-            ; _ } )
-        when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt v_txt ->
-          (f, Some (Pcoerce (Some t1, t2)), None)
-      | _ -> (f, t, Option.map ~f:(m.expr m) v)
-    in
-    let pat_record_field m (f, t, v) =
-      match (t, v) with
-      (* [{ x = x }] -> [{ x }] *)
-      | _, Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
-        when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
-          (f, t, None)
-      (* [{ x = (x : t) }] -> [{ x : t}] *)
-      | ( None
-        , Some
-            { ppat_desc=
-                Ppat_constraint
-                  ( { ppat_desc= Ppat_var {txt= v_txt; _}
-                    ; ppat_attributes= []
-                    ; _ }
-                  , t )
-            ; ppat_attributes= []
-            ; _ } )
-        when enable_short_field_annot
-             && Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
-          (f, Some t, None)
-      | _ -> (f, t, Option.map ~f:(m.pat m) v)
-    in
-    let map_labeled_tuple_element m f = function
-      | Lte_simple lte -> f m lte
-      | (Lte_constrained_pun _ | Lte_pun _) as x -> x
-    in
-    let pat_tuple_elt m te =
-      match (te.lte_label, te.lte_elt) with
-      (* [ ~x:x ] -> [ ~x ] *)
-      | ( Some lbl
-        , {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _} )
-        when String.equal lbl.txt v_txt ->
-          Lte_pun lbl
-      (* [~x:(x : t)] -> [ ~(x : t)] *)
-      | ( Some lbl
-        , { ppat_desc=
+  let open Asttypes in
+  let open Ast_mapper in
+  let enable_short_field_annot =
+    Ocaml_version.compare ocaml_version Ocaml_version.Releases.v4_03_0 >= 0
+  in
+  let record_field m (f, t, v) =
+    match (t, v) with
+    (* [{ x = x }] -> [{ x }] *)
+    | _, Some {pexp_desc= Pexp_ident {txt= v_txt; _}; pexp_attributes= []; _}
+      when Std_longident.field_alias ~field:f.txt v_txt ->
+        (f, t, None)
+    (* [{ x = (x : t) }] -> [{ x : t }] *)
+    | ( None
+      , Some
+          { pexp_desc=
+              Pexp_constraint
+                ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , t1 )
+          ; pexp_attributes= []
+          ; _ } )
+      when enable_short_field_annot
+           && Std_longident.field_alias ~field:f.txt v_txt ->
+        (f, Some (Pconstraint t1), None)
+    (* [{ x :> t = (x : t) }] -> [{ x : t :> t }] *)
+    | ( Some (Pcoerce (None, t2))
+      , Some
+          { pexp_desc=
+              Pexp_constraint
+                ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , t1 )
+          ; pexp_attributes= []
+          ; _ } )
+      when enable_short_field_annot
+           && Std_longident.field_alias ~field:f.txt v_txt ->
+        (f, Some (Pcoerce (Some t1, t2)), None)
+    (* [{ x = (x :> t) }] -> [{ x :> t }] *)
+    (* [{ x = (x : t :> t) }] -> [{ x : t :> t }] *)
+    | ( None
+      , Some
+          { pexp_desc=
+              Pexp_coerce
+                ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , t1
+                , t2 )
+          ; pexp_attributes= []
+          ; _ } )
+      when enable_short_field_annot
+           && Std_longident.field_alias ~field:f.txt v_txt ->
+        (f, Some (Pcoerce (t1, t2)), None)
+    (* [{ x : t = (x :> t) }] -> [{ x : t :> t }] *)
+    | ( Some (Pconstraint t1)
+      , Some
+          { pexp_desc=
+              Pexp_coerce
+                ( { pexp_desc= Pexp_ident {txt= v_txt; _}
+                  ; pexp_attributes= []
+                  ; _ }
+                , None
+                , t2 )
+          ; pexp_attributes= []
+          ; _ } )
+      when enable_short_field_annot
+           && Std_longident.field_alias ~field:f.txt v_txt ->
+        (f, Some (Pcoerce (Some t1, t2)), None)
+    | _ -> (f, t, Option.map ~f:(m.expr m) v)
+  in
+  let pat_record_field m (f, t, v) =
+    match (t, v) with
+    (* [{ x = x }] -> [{ x }] *)
+    | _, Some {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
+      when Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+        (f, t, None)
+    (* [{ x = (x : t) }] -> [{ x : t}] *)
+    | ( None
+      , Some
+          { ppat_desc=
               Ppat_constraint
                 ( { ppat_desc= Ppat_var {txt= v_txt; _}
                   ; ppat_attributes= []
                   ; _ }
                 , t )
           ; ppat_attributes= []
-          ; ppat_loc
           ; _ } )
-        when String.equal lbl.txt v_txt ->
-          Lte_constrained_pun
-            { loc= {lbl.loc with loc_end= ppat_loc.loc_end}
-            ; label= lbl
-            ; type_constraint= t }
-      | lte_label, pat -> Lte_simple {lte_label; lte_elt= m.pat m pat}
-    in
-    let pat_tuple_elt m lte =
-      map_labeled_tuple_element m pat_tuple_elt lte
-    in
-    let exp_tuple_elt m te =
-      match (te.lte_label, te.lte_elt) with
-      (* [ ~x:x ] -> [ ~x ] *)
-      | ( Some lbl
-        , { pexp_desc= Pexp_ident {txt= Lident v_txt; _}
-          ; pexp_attributes= []
-          ; _ } )
-        when String.equal lbl.txt v_txt ->
-          Lte_pun lbl
-      (* [~x:(x : t)] -> [ ~(x : t)] *)
-      | ( Some lbl
-        , { pexp_desc=
-              Pexp_constraint
-                ( { pexp_desc= Pexp_ident {txt= Lident v_txt; _}
-                  ; pexp_attributes= []
-                  ; _ }
-                , t )
-          ; pexp_attributes= []
-          ; pexp_loc
-          ; _ } )
-        when String.equal lbl.txt v_txt ->
-          Lte_constrained_pun
-            { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
-            ; label= lbl
-            ; type_constraint= Pconstraint t }
-      (* [~x:(x : t1 :> t2)] -> [ ~(x : t1 :> t2)] *)
-      | ( Some lbl
-        , { pexp_desc=
-              Pexp_coerce
-                ({pexp_desc= Pexp_ident {txt= Lident v_txt; _}; _}, bty, tty)
-          ; pexp_attributes= []
-          ; pexp_loc
-          ; _ } )
-        when String.equal lbl.txt v_txt ->
-          Lte_constrained_pun
-            { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
-            ; label= lbl
-            ; type_constraint= Pcoerce (bty, tty) }
-      | lte_label, exp -> Lte_simple {lte_label; lte_elt= m.expr m exp}
-    in
-    let exp_tuple_elt m lte =
-      map_labeled_tuple_element m exp_tuple_elt lte
-    in
-    let binding_op (m : Ast_mapper.mapper) b =
-      let b' =
-        let loc_start = b.pbop_op.loc.loc_start in
-        let loc_end = b.pbop_exp.pexp_loc.loc_end in
-        let pbop_is_pun =
-          match prefer_let_puns with
-          | None -> b.pbop_is_pun
-          | Some false -> false
-          | Some true -> (
-              b.pbop_is_pun
-              ||
-              match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
-              | Ppat_var {txt; _}, Pexp_ident {txt= Lident e; _} ->
-                  String.equal txt e
-              | _ -> false )
-        in
-        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
-      in
-      Ast_mapper.default_mapper.binding_op m b'
-    in
-    let value_bindings (m : Ast_mapper.mapper) vbs =
-      let punning is_extension vb =
-        let is_extension =
-          (* [and] nodes don't have extensions, so we need to track if the
-             earlier [let] did *)
-          is_extension || Option.is_some vb.pvb_attributes.attrs_extension
-        in
-        let pvb_is_pun =
-          is_extension
-          &&
-          match prefer_let_puns with
-          | None -> vb.pvb_is_pun
-          | Some false -> false
-          | Some true -> (
-              vb.pvb_is_pun
-              ||
-              match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
-              | ( Ppat_var {txt; _}
-                , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
-                ) ->
-                  String.equal txt e
-              | _ -> false )
-        in
-        (is_extension, {vb with pvb_is_pun})
-      in
-      let vbs' =
-        { vbs with
-          pvbs_bindings=
-            snd @@ List.fold_map ~init:false ~f:punning vbs.pvbs_bindings }
-      in
-      Ast_mapper.default_mapper.value_bindings m vbs'
-    in
-    let pat m = function
-      | {ppat_desc= Ppat_cons (_ :: _ :: _ :: _ as l); _} as p
-        when match List.last_exn l with
-             (* Empty lists are always represented as Lident [] *)
-             | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
-               ; ppat_attributes= []
-               ; _ } ->
-                 true
-             | _ -> false ->
-          let pats = List.(rev (tl_exn (rev l))) in
-          {p with ppat_desc= Ppat_list pats}
-      (* Field alias shorthand *)
-      | {ppat_desc= Ppat_record (fields, flag); _} as e ->
-          let fields = List.map ~f:(pat_record_field m) fields in
-          {e with ppat_desc= Ppat_record (fields, flag)}
-      | {ppat_desc= Ppat_tuple (l, oc); _} as p ->
-          let l = List.map ~f:(pat_tuple_elt m) l in
-          {p with ppat_desc= Ppat_tuple (l, oc)}
-      | p -> Ast_mapper.default_mapper.pat m p
-    in
-    let expr (m : Ast_mapper.mapper) = function
-      | {pexp_desc= Pexp_cons (_ :: _ :: _ :: _ as l); _} as e
-        when match List.last_exn l with
-             (* Empty lists are always represented as Lident [] *)
-             | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
-               ; pexp_attributes= []
-               ; _ } ->
-                 true
-             | _ -> false ->
-          let exprs = List.(rev (tl_exn (rev l))) in
-          {e with pexp_desc= Pexp_list exprs}
-      (* Removing beginend *)
-      | { pexp_desc= Pexp_beginend (e', {infix_ext= None; infix_attrs= []})
-        ; pexp_attributes= []
-        ; _ }
-        when not preserve_beginend ->
-          m.expr m e'
-      (* Field alias shorthand *)
-      | {pexp_desc= Pexp_record (fields, with_); _} as e ->
-          let fields = List.map ~f:(record_field m) fields in
-          { e with
-            pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_)
-          }
-      (* [( + ) 1 2] -> [1 + 2] *)
-      | { pexp_desc=
-            Pexp_apply
-              ( { pexp_desc=
-                    Pexp_ident {txt= Lident op as longident; loc= loc_op}
+      when enable_short_field_annot
+           && Std_longident.field_alias ~field:f.txt (Lident v_txt) ->
+        (f, Some t, None)
+    | _ -> (f, t, Option.map ~f:(m.pat m) v)
+  in
+  let map_labeled_tuple_element m f = function
+    | Lte_simple lte -> f m lte
+    | (Lte_constrained_pun _ | Lte_pun _) as x -> x
+  in
+  let pat_tuple_elt m te =
+    match (te.lte_label, te.lte_elt) with
+    (* [ ~x:x ] -> [ ~x ] *)
+    | Some lbl, {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
+      when String.equal lbl.txt v_txt ->
+        Lte_pun lbl
+    (* [~x:(x : t)] -> [ ~(x : t)] *)
+    | ( Some lbl
+      , { ppat_desc=
+            Ppat_constraint
+              ( {ppat_desc= Ppat_var {txt= v_txt; _}; ppat_attributes= []; _}
+              , t )
+        ; ppat_attributes= []
+        ; ppat_loc
+        ; _ } )
+      when String.equal lbl.txt v_txt ->
+        Lte_constrained_pun
+          { loc= {lbl.loc with loc_end= ppat_loc.loc_end}
+          ; label= lbl
+          ; type_constraint= t }
+    | lte_label, pat -> Lte_simple {lte_label; lte_elt= m.pat m pat}
+  in
+  let pat_tuple_elt m lte = map_labeled_tuple_element m pat_tuple_elt lte in
+  let exp_tuple_elt m te =
+    match (te.lte_label, te.lte_elt) with
+    (* [ ~x:x ] -> [ ~x ] *)
+    | ( Some lbl
+      , {pexp_desc= Pexp_ident {txt= Lident v_txt; _}; pexp_attributes= []; _}
+      )
+      when String.equal lbl.txt v_txt ->
+        Lte_pun lbl
+    (* [~x:(x : t)] -> [ ~(x : t)] *)
+    | ( Some lbl
+      , { pexp_desc=
+            Pexp_constraint
+              ( { pexp_desc= Pexp_ident {txt= Lident v_txt; _}
                 ; pexp_attributes= []
                 ; _ }
-              , [(Nolabel, l); (Nolabel, r)] )
-        ; _ } as e
-        when Std_longident.is_infix longident
-             && not (Std_longident.is_monadic_binding longident) ->
-          let label_loc = {txt= op; loc= loc_op} in
-          {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
-      | {pexp_desc= Pexp_tuple l; _} as p ->
-          let l = List.map ~f:(exp_tuple_elt m) l in
-          {p with pexp_desc= Pexp_tuple l}
-      | e -> Ast_mapper.default_mapper.expr m e
+              , t )
+        ; pexp_attributes= []
+        ; pexp_loc
+        ; _ } )
+      when String.equal lbl.txt v_txt ->
+        Lte_constrained_pun
+          { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
+          ; label= lbl
+          ; type_constraint= Pconstraint t }
+    (* [~x:(x : t1 :> t2)] -> [ ~(x : t1 :> t2)] *)
+    | ( Some lbl
+      , { pexp_desc=
+            Pexp_coerce
+              ({pexp_desc= Pexp_ident {txt= Lident v_txt; _}; _}, bty, tty)
+        ; pexp_attributes= []
+        ; pexp_loc
+        ; _ } )
+      when String.equal lbl.txt v_txt ->
+        Lte_constrained_pun
+          { loc= {lbl.loc with loc_end= pexp_loc.loc_end}
+          ; label= lbl
+          ; type_constraint= Pcoerce (bty, tty) }
+    | lte_label, exp -> Lte_simple {lte_label; lte_elt= m.expr m exp}
+  in
+  let exp_tuple_elt m lte = map_labeled_tuple_element m exp_tuple_elt lte in
+  let binding_op (m : Ast_mapper.mapper) b =
+    let b' =
+      let loc_start = b.pbop_op.loc.loc_start in
+      let loc_end = b.pbop_exp.pexp_loc.loc_end in
+      let pbop_is_pun =
+        match prefer_let_puns with
+        | None -> b.pbop_is_pun
+        | Some false -> false
+        | Some true -> (
+            b.pbop_is_pun
+            ||
+            match (b.pbop_pat.ppat_desc, b.pbop_exp.pexp_desc) with
+            | Ppat_var {txt; _}, Pexp_ident {txt= Lident e; _} ->
+                String.equal txt e
+            | _ -> false )
+      in
+      {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}; pbop_is_pun}
     in
-    Ast_mapper.{default_mapper with expr; pat; binding_op; value_bindings}
+    Ast_mapper.default_mapper.binding_op m b'
+  in
+  let value_bindings (m : Ast_mapper.mapper) vbs =
+    let punning is_extension vb =
+      let is_extension =
+        (* [and] nodes don't have extensions, so we need to track if the
+           earlier [let] did *)
+        is_extension || Option.is_some vb.pvb_attributes.attrs_extension
+      in
+      let pvb_is_pun =
+        is_extension
+        &&
+        match prefer_let_puns with
+        | None -> vb.pvb_is_pun
+        | Some false -> false
+        | Some true -> (
+            vb.pvb_is_pun
+            ||
+            match (vb.pvb_pat.ppat_desc, vb.pvb_body) with
+            | ( Ppat_var {txt; _}
+              , Pfunction_body {pexp_desc= Pexp_ident {txt= Lident e; _}; _}
+              ) ->
+                String.equal txt e
+            | _ -> false )
+      in
+      (is_extension, {vb with pvb_is_pun})
+    in
+    let vbs' =
+      { vbs with
+        pvbs_bindings=
+          snd @@ List.fold_map ~init:false ~f:punning vbs.pvbs_bindings }
+    in
+    Ast_mapper.default_mapper.value_bindings m vbs'
+  in
+  let pat m = function
+    | {ppat_desc= Ppat_cons (_ :: _ :: _ :: _ as l); _} as p
+      when match List.last_exn l with
+           (* Empty lists are always represented as Lident [] *)
+           | { ppat_desc= Ppat_construct ({txt= Lident "[]"; loc= _}, None)
+             ; ppat_attributes= []
+             ; _ } ->
+               true
+           | _ -> false ->
+        let pats = List.(rev (tl_exn (rev l))) in
+        {p with ppat_desc= Ppat_list pats}
+    (* Field alias shorthand *)
+    | {ppat_desc= Ppat_record (fields, flag); _} as e ->
+        let fields = List.map ~f:(pat_record_field m) fields in
+        {e with ppat_desc= Ppat_record (fields, flag)}
+    | {ppat_desc= Ppat_tuple (l, oc); _} as p ->
+        let l = List.map ~f:(pat_tuple_elt m) l in
+        {p with ppat_desc= Ppat_tuple (l, oc)}
+    | p -> Ast_mapper.default_mapper.pat m p
+  in
+  let expr (m : Ast_mapper.mapper) = function
+    | {pexp_desc= Pexp_cons (_ :: _ :: _ :: _ as l); _} as e
+      when match List.last_exn l with
+           (* Empty lists are always represented as Lident [] *)
+           | { pexp_desc= Pexp_construct ({txt= Lident "[]"; loc= _}, None)
+             ; pexp_attributes= []
+             ; _ } ->
+               true
+           | _ -> false ->
+        let exprs = List.(rev (tl_exn (rev l))) in
+        {e with pexp_desc= Pexp_list exprs}
+    (* Removing beginend *)
+    | { pexp_desc= Pexp_beginend (e', {infix_ext= None; infix_attrs= []})
+      ; pexp_attributes= []
+      ; _ }
+      when not preserve_beginend ->
+        m.expr m e'
+    (* Field alias shorthand *)
+    | {pexp_desc= Pexp_record (fields, with_); _} as e ->
+        let fields = List.map ~f:(record_field m) fields in
+        { e with
+          pexp_desc= Pexp_record (fields, Option.map ~f:(m.expr m) with_) }
+    (* [( + ) 1 2] -> [1 + 2] *)
+    | { pexp_desc=
+          Pexp_apply
+            ( { pexp_desc=
+                  Pexp_ident {txt= Lident op as longident; loc= loc_op}
+              ; pexp_attributes= []
+              ; _ }
+            , [(Nolabel, l); (Nolabel, r)] )
+      ; _ } as e
+      when Std_longident.is_infix longident
+           && not (Std_longident.is_monadic_binding longident) ->
+        let label_loc = {txt= op; loc= loc_op} in
+        {e with pexp_desc= Pexp_infix (label_loc, m.expr m l, m.expr m r)}
+    | {pexp_desc= Pexp_tuple l; _} as p ->
+        let l = List.map ~f:(exp_tuple_elt m) l in
+        {p with pexp_desc= Pexp_tuple l}
+    | e -> Ast_mapper.default_mapper.expr m e
+  in
+  Ast_mapper.{default_mapper with expr; pat; binding_op; value_bindings}
 
 module Printast = struct
   include Printast
@@ -595,65 +583,70 @@ let parse_ocaml (type a) ?(disable_w50 = false) ?(disable_deprecated = false)
           (ast, std, cmts)
         in
         ( match fg with
-        | Structure ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.implementation
-                ~walk:(fun m -> m.structure m)
-                ~std_fg:Std_ast.Structure ~print_ast:Printast.implementation
-            in
-            Structure {ast; std; cmts}
-        | Signature ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.interface
-                ~walk:(fun m -> m.signature m)
-                ~std_fg:Std_ast.Signature ~print_ast:Printast.interface
-            in
-            Signature {ast; std; cmts}
-        | Use_file ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.use_file
-                ~walk:(fun m -> List.map ~f:(m.toplevel_phrase m))
-                ~std_fg:Std_ast.Use_file ~print_ast:Printast.use_file
-            in
-            Use_file {ast; std; prefix; cmts}
-        | Core_type ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.core_type
-                ~walk:(fun m -> m.typ m) ~std_fg:Std_ast.Core_type
-                ~print_ast:Printast.core_type
-            in
-            Core_type {ast; std; cmts}
-        | Module_type ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.module_type
-                ~walk:(fun m -> m.module_type m)
-                ~std_fg:Std_ast.Module_type ~print_ast:Printast.module_type
-            in
-            Module_type {ast; std; cmts}
-        | Expression ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.expression
-                ~walk:(fun m -> m.expr m) ~std_fg:Std_ast.Expression
-                ~print_ast:Printast.expression
-            in
-            Expression {ast; std; cmts}
-        | Pattern ->
-            let ast, std, cmts =
-              make_paired ~parse_ext:Parse.pattern
-                ~walk:(fun m -> m.pat m) ~std_fg:Std_ast.Pattern
-                ~print_ast:Printast.pattern
-            in
-            Pattern {ast; std; cmts}
-        | Repl_file ->
-            let walk (m : Ast_mapper.mapper) = List.map ~f:(m.repl_phrase m) in
-            let ast =
-              walk nm
-                (Toplevel_lexer.repl_file ~ocaml_version:ocaml_version_pair
-                   lexbuf )
-            in
-            let cmts = make_cmts ~walk ~ast ~print_ast:Printast.repl_file in
-            Repl_file {ast; cmts}
-        | Documentation -> assert false
+          | Structure ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.implementation
+                  ~walk:(fun m -> m.structure m)
+                  ~std_fg:Std_ast.Structure
+                  ~print_ast:Printast.implementation
+              in
+              Structure {ast; std; cmts}
+          | Signature ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.interface
+                  ~walk:(fun m -> m.signature m)
+                  ~std_fg:Std_ast.Signature ~print_ast:Printast.interface
+              in
+              Signature {ast; std; cmts}
+          | Use_file ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.use_file
+                  ~walk:(fun m -> List.map ~f:(m.toplevel_phrase m))
+                  ~std_fg:Std_ast.Use_file ~print_ast:Printast.use_file
+              in
+              Use_file {ast; std; prefix; cmts}
+          | Core_type ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.core_type
+                  ~walk:(fun m -> m.typ m)
+                  ~std_fg:Std_ast.Core_type ~print_ast:Printast.core_type
+              in
+              Core_type {ast; std; cmts}
+          | Module_type ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.module_type
+                  ~walk:(fun m -> m.module_type m)
+                  ~std_fg:Std_ast.Module_type ~print_ast:Printast.module_type
+              in
+              Module_type {ast; std; cmts}
+          | Expression ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.expression
+                  ~walk:(fun m -> m.expr m)
+                  ~std_fg:Std_ast.Expression ~print_ast:Printast.expression
+              in
+              Expression {ast; std; cmts}
+          | Pattern ->
+              let ast, std, cmts =
+                make_paired ~parse_ext:Parse.pattern
+                  ~walk:(fun m -> m.pat m)
+                  ~std_fg:Std_ast.Pattern ~print_ast:Printast.pattern
+              in
+              Pattern {ast; std; cmts}
+          | Repl_file ->
+              let walk (m : Ast_mapper.mapper) =
+                List.map ~f:(m.repl_phrase m)
+              in
+              let ast =
+                walk nm
+                  (Toplevel_lexer.repl_file ~ocaml_version:ocaml_version_pair
+                     lexbuf )
+              in
+              let cmts =
+                make_cmts ~walk ~ast ~print_ast:Printast.repl_file
+              in
+              Repl_file {ast; cmts}
+          | Documentation -> assert false
           : a t ) )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
@@ -678,8 +671,7 @@ let is_repl_block x =
   String.length x >= 2 && Char.equal x.[0] '#' && Char.is_whitespace x.[1]
 
 let parse_toplevel ?disable_w50 ?disable_deprecated (conf : Conf.t)
-    ~input_name ~source :
-    (use_file t, repl_file t) Either.t =
+    ~input_name ~source : (use_file t, repl_file t) Either.t =
   if is_repl_block source && conf.fmt_opts.parse_toplevel_phrases.v then
     Either.Second
       (parse ?disable_w50 ?disable_deprecated Repl_file conf ~input_name

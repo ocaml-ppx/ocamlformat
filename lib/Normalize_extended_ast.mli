@@ -11,8 +11,7 @@
 
 type 'a t = 'a Extended_ast.t
 
-val diff_cmts :
-  Conf.t -> 'a t -> 'a t -> (unit, Cmt.error list) Result.t
+val diff_cmts : Conf.t -> 'a t -> 'a t -> (unit, Cmt.error list) Result.t
 (** Difference between the comments of two parsed values. *)
 
 val normalize_code : Conf.t -> string -> string

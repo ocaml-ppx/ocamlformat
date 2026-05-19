@@ -12,10 +12,7 @@
 (** Format OCaml Ast *)
 
 val fmt_ast :
-     'a Extended_ast.t
-  -> debug:bool
-  -> Conf.t
-  -> Fmt.t * Cmts.t option
+  'a Extended_ast.t -> debug:bool -> Conf.t -> Fmt.t * Cmts.t option
 (** Format a parsed fragment. Internally takes a fresh copy of the embedded
     [Cmts.t] (so the embedded state is preserved). Returns the formatter
     and the copied [Cmts.t] (consumed once the formatter is evaluated),

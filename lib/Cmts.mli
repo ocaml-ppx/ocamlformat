@@ -36,8 +36,7 @@ val init :
   -> source:Source.t
   -> ast:'a
   -> comments:Cmt.t list
-  -> traverse:
-       (Ocamlformat_parser_extended.Ast_mapper.mapper -> 'a -> 'a)
+  -> traverse:(Ocamlformat_parser_extended.Ast_mapper.mapper -> 'a -> 'a)
   -> print_ast:(Format.formatter -> 'a -> unit)
   -> t
 (** Associate each [comment] with a source location appearing in [ast]. Uses
@@ -63,10 +62,7 @@ val relocate :
     [after]. *)
 
 val relocate_wrongfully_attached_cmts :
-     t
-  -> Source.t
-  -> Ocamlformat_parser_extended.Parsetree.expression
-  -> unit
+  t -> Source.t -> Ocamlformat_parser_extended.Parsetree.expression -> unit
 (** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
     comments, e.g. comments that should be attached to the whole
     pattern-matching expressions ([match-with] or [try-with] expressions) but

@@ -67,7 +67,8 @@ type t =
   ; layout_cache: Layout_cache.t
   ; original: Cmt.t list
         (** All dedup'd comments, kept around so they can be retrieved
-            after the maps above have been consumed by formatting. *) }
+            after the maps above have been consumed by formatting. *)
+  }
 
 let source t = t.source
 

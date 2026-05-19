@@ -5106,12 +5106,13 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (parsed : a Extended_ast.t) conf
   | Documentation d -> Fmt_odoc.fmt_ast conf ~fmt_code d
   | Structure {ast= []; cmts; _} | Signature {ast= []; cmts; _} ->
       Cmts.fmt_after ~pro:noop (mk_c cmts) Location.none
-  | Use_file {ast; prefix; cmts; _} ->
+  | Use_file {ast; prefix; cmts; _} -> (
       let c = mk_c cmts in
       fmt_if (not (String.is_empty prefix)) (str prefix $ force_newline)
-      $ ( match ast with
-        | [] -> Cmts.fmt_after ~pro:noop c Location.none
-        | _ -> Chunk.split_and_fmt Use_file c ctx ast )
+      $
+      match ast with
+      | [] -> Cmts.fmt_after ~pro:noop c Location.none
+      | _ -> Chunk.split_and_fmt Use_file c ctx ast )
   | Structure {ast; cmts; _} ->
       Chunk.split_and_fmt Structure (mk_c cmts) ctx ast
   | Signature {ast; cmts; _} ->
