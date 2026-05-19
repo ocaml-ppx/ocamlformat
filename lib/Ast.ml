@@ -12,7 +12,8 @@
 (** Abstract syntax tree term *)
 
 open Migrate_ast
-open Extended_ast
+open Ocamlformat_parser_extended
+open Parsetree
 
 type cmt_checker =
   { cmts_before: Location.t -> bool
