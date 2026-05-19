@@ -20,7 +20,12 @@
 
     The standard parser is used for this comparison because it represents
     what the OCaml compiler sees: two programs are equivalent if the
-    compiler parses them identically. *)
+    compiler parses them identically.
+
+    Before comparison the ASTs are run through {!Normalize_std_ast}, which
+    erases differences that don't affect program meaning (e.g. docstring
+    placement, attribute ordering) so the equality check focuses on
+    semantically significant changes. *)
 
 open Ocamlformat_parser_standard
 
