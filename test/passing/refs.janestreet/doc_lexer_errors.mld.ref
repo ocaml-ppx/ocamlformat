@@ -1,0 +1,41 @@
+Regression test for readable lexer error messages in OCaml code blocks.
+
+Each block below triggers a different Lexer.Error variant; without the
+fix, all of them would report the cryptic
+"invalid code block: Ocamlformat_parser_extended.Lexer.Error" form.
+
+Empty character literal:
+
+{@ocaml[
+  let _ = ''
+]}
+
+Unterminated string:
+
+{@ocaml[
+  let _ = "abc
+]}
+
+Unterminated comment:
+
+{@ocaml[
+  let _ = (* abc
+]}
+
+Invalid literal:
+
+{@ocaml[
+  let _ = 0xz
+]}
+
+Capitalized label:
+
+{@ocaml[
+  let _ = f ~Foo:1
+]}
+
+Keyword used as label:
+
+{@ocaml[
+  let _ = f ~let:1
+]}
