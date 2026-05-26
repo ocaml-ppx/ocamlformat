@@ -5155,7 +5155,14 @@ let fmt_code ~debug =
         Error (`Msg (Format.asprintf "not expecting: %s" x))
     | exception Syntaxerr.Error (Other _) when warn ->
         Error (`Msg (Format.asprintf "invalid toplevel or OCaml syntax"))
-    | exception e when warn -> Error (`Msg (Format.asprintf "%a" Exn.pp e))
+    | exception e when warn ->
+        let msg =
+          match Location.error_of_exn e with
+          | Some (`Ok report) ->
+              Format.asprintf "%a" Format_doc.Doc.format report.main.txt
+          | _ -> Format.asprintf "%a" Exn.pp e
+        in
+        Error (`Msg msg)
     | exception _ -> Error (`Msg "")
   in
   fmt_code
