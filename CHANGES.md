@@ -14,6 +14,9 @@ profile. This started with version 0.26.0.
 - Fix `match` in `if-then-else` branches expanding to vertical with
   `fit-or-vertical` (#2798, @MisterDA)
 
+- Fix lexer error on Windows when an Odoc code block contains CRLF line
+  endings (@hhugo)
+
 ## 0.29.0
 
 ### Highlight

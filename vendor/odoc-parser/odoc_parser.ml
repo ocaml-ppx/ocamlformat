@@ -199,7 +199,15 @@ let code_block_content ~what ~loc s =
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
-      | '\n' -> String.sub s 0 index
+      | '\n' ->
+          (* Also drop a preceding '\r' so the full CRLF is consumed,
+             mirroring [handle_first_newline] which scans forward and reaches
+             '\n' only after eating any leading '\r'. Without this, a bare
+             '\r' survives on the last line. *)
+          let stop =
+            if index > 0 && s.[index - 1] = '\r' then index - 1 else index
+          in
+          String.sub s 0 stop
       | _ -> s
   in
   let s = handle_last_newline (String.length s - 1) in
