@@ -512,15 +512,9 @@ let is_special_beginend exp =
   | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ -> true
   | _ -> false
 
-let needs_raw_cmts_after_kw = function
-  | Pexp_beginend
-      ( { pexp_desc=
-            Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _
-        ; _ }
-      , _ )
-   |Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ ->
-      true
-  | _ -> false
+let is_special_or_nested_special_beginend = function
+  | Pexp_beginend ({pexp_desc; _}, _) -> is_special_beginend pexp_desc
+  | exp -> is_special_beginend exp
 
 let raw_cmts_branch_pro (c : Conf.t) cmts =
   match c.fmt_opts.if_then_else.v with
@@ -942,7 +936,7 @@ let get_if_then_else (c : Conf.t) ~cmts_before_opt ~pro ~first ~last
           (not has_beginend) && (not parens_bch)
           && (not (Location.is_single_line expr_loc c.fmt_opts.margin.v))
           && (not has_cmts_after_kw)
-          && needs_raw_cmts_after_kw xbch.ast.pexp_desc
+          && is_special_or_nested_special_beginend xbch.ast.pexp_desc
         then
           match cmts_before_opt xbch.ast.pexp_loc with
           | Some cmts -> break 1000 0 $ cmts $ break 1000 0

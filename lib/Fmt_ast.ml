@@ -2562,7 +2562,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          let cmts_after_kw, raw_cmts_after_kw =
                            if Cmts.has_after c.cmts keyword_loc then
                              if
-                               Params.needs_raw_cmts_after_kw
+                               Params.is_special_or_nested_special_beginend
                                  xbch.ast.pexp_desc
                              then
                                ( None

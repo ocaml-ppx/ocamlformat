@@ -237,9 +237,9 @@ val get_if_then_else :
   -> if_then_else
 (** [cmts_before_opt] return the comment before the given location with no breaks around it. *)
 
-val needs_raw_cmts_after_kw : expression_desc -> bool
-(** [needs_raw_cmts_after_kw desc] returns [true] when comments after the
-    keyword should be extracted without breaks (raw) to prevent oscillation
+val is_special_or_nested_special_beginend : expression_desc -> bool
+(** [is_special_or_nested_special_beginend] returns [true] when comments after
+    the keyword should be extracted without breaks (raw) to prevent oscillation
     between "after keyword" and "before expression" placements. *)
 
 val raw_cmts_branch_pro : Conf.t -> Fmt.t -> Fmt.t
