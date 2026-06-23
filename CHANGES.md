@@ -8,6 +8,10 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix formatting oscillation with `if-then-else=fit-or-vertical` and
+  `begin...end`.
+  (#2800, @MisterDA)
+
 - Fix instability on long `if-then-else` with `if-then-else=fit-or-vertical`
   (#2797, @MisterDA)
 

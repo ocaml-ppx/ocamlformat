@@ -210,3 +210,31 @@ let test =
     (* comment *)
     1
   else 2
+
+(* Begin-end with long comment before nested if (regression test for
+   formatting oscillation) *)
+let f =
+  match x with
+  | A ->
+      if gf then
+        (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)
+        begin if a then b
+        end
+
+(* Long comment before match in else branch (regression test for
+   formatting oscillation) *)
+let _ =
+  if a then b
+  else
+    (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)
+    match x with A -> f
+
+(* Comment before nested if in then branch - Compact mode oscillation *)
+let _ =
+  if aaaa then
+    if bbbbb then
+      (* in this case, b <- s *)
+      if abs_float fa < abs_float fs then
+        iter (i + 1) ~a:s ~b:a ~c:b ~d:c ~fa:fs ~fb:fa ~fc:fb mflag
+      else iter (i + 1) ~a ~b:s ~c:b ~d:c ~fa ~fb:fs ~fc:fb mflag
+    else g

@@ -2559,10 +2559,18 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          let cmts_before_kw =
                            Cmts.fmt_before c keyword_loc
                          in
-                         let cmts_after_kw =
+                         let cmts_after_kw, raw_cmts_after_kw =
                            if Cmts.has_after c.cmts keyword_loc then
-                             Some (Cmts.fmt_after c keyword_loc)
-                           else None
+                             if
+                               Params.is_special_or_nested_special_beginend
+                                 xbch.ast.pexp_desc
+                             then
+                               ( None
+                               , Some
+                                   (Cmts.fmt_after ~pro:noop ~epi:noop c
+                                      keyword_loc ) )
+                             else (Some (Cmts.fmt_after c keyword_loc), None)
+                           else (None, None)
                          in
                          let cmts_before_opt loc =
                            if Cmts.has_before c.cmts loc then
@@ -2582,6 +2590,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
                          in
+                         let branch_pro =
+                           match raw_cmts_after_kw with
+                           | Some cmts ->
+                               Params.raw_cmts_branch_pro c.conf cmts
+                           | None -> p.branch_pro
+                         in
                          let wrap_beginend =
                            match p.beginend_loc with
                            | Some loc -> Cmts.fmt c loc
@@ -2591,7 +2605,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          p.box_branch
                            ( p.cond
                            $ p.box_keyword_and_expr
-                               ( p.branch_pro
+                               ( branch_pro
                                $ wrap_beginend
                                    (p.wrap_parens
                                       ( fmt_expression c ?box:p.box_expr
