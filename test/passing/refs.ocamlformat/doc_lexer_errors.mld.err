@@ -1,0 +1,18 @@
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 9, character 8 to line 11, character 0:
+invalid code block: Illegal empty character literal ''
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 15, character 8 to line 17, character 0:
+invalid code block: String literal not terminated
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 21, character 8 to line 23, character 0:
+invalid code block: Comment not terminated
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 27, character 8 to line 29, character 0:
+invalid code block: Invalid literal 0xz
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 33, character 8 to line 35, character 0:
+invalid code block: Foo cannot be used as label name, it must start with a lowercase letter
+Warning: Invalid documentation comment:
+File "doc_lexer_errors.mld", line 39, character 8 to line 41, character 0:
+invalid code block: let is a keyword, it cannot be used as label name

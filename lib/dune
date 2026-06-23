@@ -23,6 +23,8 @@
    -open
    Ocamlformat_parser_extended
    -open
+   Ocamlformat_parser_shims
+   -open
    Ocamlformat_stdlib
    -open
    Ocamlformat_format))
@@ -35,6 +37,7 @@
   ocamlformat_ocaml_common
   ocamlformat_odoc_parser
   ocamlformat_parser_extended
+  ocamlformat_parser_shims
   ocamlformat_parser_standard
   ocamlformat_stdlib
   ocp-indent.lib

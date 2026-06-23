@@ -1698,6 +1698,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to doc_lexer_errors.mld.stdout
+   (with-stderr-to doc_lexer_errors.mld.stderr
+     (run %{bin:ocamlformat} --name doc_lexer_errors.mld --margin-check --parse-toplevel-phrases %{dep:../tests/doc_lexer_errors.mld})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff doc_lexer_errors.mld.ref doc_lexer_errors.mld.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff doc_lexer_errors.mld.err doc_lexer_errors.mld.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to doc_repl.mld.stdout
    (with-stderr-to doc_repl.mld.stderr
      (run %{bin:ocamlformat} --name doc_repl.mld --margin-check --parse-toplevel-phrases %{dep:../tests/doc_repl.mld})))))

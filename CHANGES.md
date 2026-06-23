@@ -8,6 +8,10 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Print readable messages for errors raised when parsing OCaml code blocks
+  in documentation comments, instead of the raw exception representation
+  `Ocamlformat_parser_extended.Lexer.Error(_, _)` (#PR, @hhugo)
+
 - Fix instability on long `if-then-else` with `if-then-else=fit-or-vertical`
   (#2797, @MisterDA)
 
