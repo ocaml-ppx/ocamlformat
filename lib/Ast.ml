@@ -2106,7 +2106,9 @@ end = struct
     memo
 
   let last_tuple_and_simple f l =
-    match List.last_exn l with Lte_simple l -> f l.lte_elt | _ -> false
+    match List.last_exn l with
+    | Lte_simple {lte_label= None; lte_elt} -> f lte_elt
+    | _ -> false
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
       which satisfies [Exp.mem_cls cls] and is not parenthesized. *)

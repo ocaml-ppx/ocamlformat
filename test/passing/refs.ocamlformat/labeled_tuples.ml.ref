@@ -643,3 +643,7 @@ module type T = sig
     -> a
     -> 'b
 end
+
+let func cond a b1 b2 = (~a, ~b:(if cond then b1 else b2))
+
+let func cond a b1 b2 = (a, ~b:(match cond with true -> b1 | false -> b2))
