@@ -21,6 +21,8 @@ profile. This started with version 0.26.0.
 - Fix lexer error on Windows when an Odoc code block contains CRLF line
   endings (@hhugo)
 
+- Fix missing parentheses in `(a, ~b:(if .. then .. else ..))` (#2811, @Julow)
+
 ## 0.29.0
 
 ### Highlight
