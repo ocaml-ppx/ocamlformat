@@ -87,9 +87,7 @@ let () =
   | x -> ());
   (try%foo[@foo] () with _ -> ());
   if%foo[@foo] () then () else ();
-  while%foo[@foo] () do
-    ()
-  done;
+  while%foo[@foo] () do () done;
   for%foo[@foo] x = () to () do
     ()
   done;

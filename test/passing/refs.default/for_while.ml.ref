@@ -1,13 +1,13 @@
 let () =
   foo
     (for i = 1 to 10 do
-       ()
+       print_endline ()
      done)
 
 let () =
   foo
     (while true do
-       ()
+       print_endline ()
      done)
 
 let _ =
@@ -48,3 +48,9 @@ let _ =
   do
     test this
   done
+
+let _ =
+  while
+    some biggggggggggggggggggggggggggggggggg
+      expressionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+  do () done
