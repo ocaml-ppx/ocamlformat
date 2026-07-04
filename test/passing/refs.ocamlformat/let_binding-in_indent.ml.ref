@@ -300,3 +300,28 @@ let rewrite_export =
           let+ (a, b) : a * b = () in
               ()
 ;;
+
+(* Comment before in should stay on same line when it fits *)
+let () =
+  let threshold =
+    3
+    (* max depth *)
+  in
+      use threshold
+;;
+
+let () =
+  let left _ =
+    true
+    (* value vs nothing *)
+  in
+      use left
+;;
+
+(* Comment before in that does not fit should break *)
+let () =
+  let some_long_variable_name =
+    some_long_expression_value (* a long comment forcing a break *)
+  in
+      use some_long_variable_name
+;;
