@@ -4906,7 +4906,7 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
         , fmt_item_attributes c ~pre:(Break (1, 2)) at_at_attrs $ in_ indent
         , fmt_opt epi
         , Cmts.fmt_before c lb_loc
-        , Cmts.fmt_after c lb_loc ~pro:force_break )
+        , Cmts.fmt_after c lb_loc ~pro:(break 1 0) )
     | None ->
         let epi =
           fmt_item_attributes c ~pre:(Break (1, 0)) at_at_attrs $ fmt_opt epi
@@ -4985,7 +4985,7 @@ and fmt_value_binding c ~ctx0 ~rec_flag ?in_ ?epi
               ( hvbox_if toplevel indent decl_and_body
               $ cmts_after
               $ opt loc_in
-                  (Cmts.fmt_before c ~pro:force_break ~epi:noop ~eol:noop) )
+                  (Cmts.fmt_before c ~pro:(break 1 0) ~epi:noop ~eol:noop) )
           $ in_ )
       $ opt loc_in (Cmts.fmt_after ~pro:force_break c)
       $ epi )

@@ -276,18 +276,12 @@ let rewrite_export =
 
 (* Comment before in should stay on same line when it fits *)
 let () =
-  let threshold =
-    3
-    (* max depth *)
-  in
+  let threshold = 3 (* max depth *) in
       use threshold
 ;;
 
 let () =
-  let left _ =
-    true
-    (* value vs nothing *)
-  in
+  let left _ = true (* value vs nothing *) in
       use left
 ;;
 
