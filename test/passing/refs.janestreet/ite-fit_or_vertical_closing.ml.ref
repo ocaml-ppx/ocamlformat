@@ -282,9 +282,9 @@ let _ =
   if a then
     b
   else
-    (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)(
-    match x with
-    | A -> f
+    (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)
+    (match x with
+     | A -> f
   )
 ;;
 
@@ -307,10 +307,10 @@ let _ =
   if cond then
     x
   else
-    (* a comment *)(
-    match e with
-    | A -> a
-    | B -> b
+    (* a comment *)
+    (match e with
+     | A -> a
+     | B -> b
   )
 ;;
 

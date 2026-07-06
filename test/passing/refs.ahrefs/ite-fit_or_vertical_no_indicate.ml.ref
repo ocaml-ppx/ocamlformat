@@ -255,9 +255,9 @@ let _ =
   if a then
     b
   else
-    (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)(
-    match x with
-    | A -> f)
+    (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)
+    (match x with
+     | A -> f)
 
 (* Comment before nested if in then branch - Compact mode oscillation *)
 let _ =
@@ -277,10 +277,10 @@ let _ =
   if cond then
     x
   else
-    (* a comment *)(
-    match e with
-    | A -> a
-    | B -> b)
+    (* a comment *)
+    (match e with
+     | A -> a
+     | B -> b)
 
 (* A bare [begin match ... end] branch must keep [match ... with] on one line,
    not split it as [begin match] / scrutinee / [with], and must align [end]
