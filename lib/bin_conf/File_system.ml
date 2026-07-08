@@ -105,7 +105,14 @@ let make ~enable_outside_detected_project ~disable_conf_files
         (* Inside a detected project, configs are applied in top-down
            starting from the project root (i.e. excluding the global config
            file). *)
-        if is_project_root ~root dir then {fs with project_root= Some dir}
+        if is_project_root ~root dir then
+          (* If we are on project's root and still no config file is found,
+             invoke case for possible global one lookup, *)
+          if List.is_empty fs.configuration_files then aux fs ~segs:[]
+          (* otherwise actual project's root and config file(s) is the final
+             result. *)
+          else {fs with project_root= Some dir}
+        (* Continue with lookup in upper parts of path *)
         else aux fs ~segs:upper_segs
   in
   aux ~segs
