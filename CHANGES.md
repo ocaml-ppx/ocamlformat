@@ -23,6 +23,9 @@ profile. This started with version 0.26.0.
 
 - Fix missing parentheses in `(a, ~b:(if .. then .. else ..))` (#2811, @Julow)
 
+- Fix configuration in `$XDG_CONFIG_HOME` was not used when
+  `--enable-outside-detected-project` was passed (#2816, @torimus)
+
 ## 0.29.0
 
 ### Highlight
