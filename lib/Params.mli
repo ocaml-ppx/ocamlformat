@@ -243,18 +243,10 @@ val is_special_or_nested_special_beginend : expression_desc -> bool
     the keyword should be extracted without breaks (raw) to prevent oscillation
     between "after keyword" and "before expression" placements. *)
 
-val is_bare_branch : parens_bch:bool -> expression_desc -> bool
-(** [is_bare_branch ~parens_bch desc] is whether an if-then-else branch with
-    expression description [desc] is rendered "bare", i.e. neither wrapped in
-    [begin]/[end] (including the [begin match end] shortcut) nor parenthesized. *)
-
-val raw_cmts_branch_pro : ?bare_branch:bool -> Conf.t -> Fmt.t -> Fmt.t
+val raw_cmts_branch_pro : Conf.t -> Fmt.t -> Fmt.t
 (** [raw_cmts_branch_pro c cmts] returns the branch_pro for raw comments
     extracted after a keyword, using the correct indentation for the current
-    if-then-else mode. [bare_branch] (default [false]) indicates the branch is
-    a bare [match]/[function]/[try]/[if] (not wrapped in [begin]/[end] or
-    parentheses); such a branch needs a forced break after the comment so that
-    its body is not indented relative to the comment's end column. *)
+    if-then-else mode. *)
 
 val match_indent : ?default:int -> Conf.t -> parens:bool -> ctx:Ast.t -> int
 (** [match_indent c ~ctx ~default] returns the indentation used for the

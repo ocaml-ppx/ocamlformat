@@ -232,6 +232,15 @@ let _ =
     (* a comment *)
     match e with A -> a | B -> b
 
+(* Comment before [begin match ... end]: comment must not glue to [begin]
+   (regression test for paren-glue in profiles with exp_grouping=parens) *)
+let _ =
+  if cond then x
+  else
+    (* a comment *)
+    begin match some_long_scrutinee_expression with A -> a | B -> b
+    end
+
 (* A bare [begin match ... end] branch must keep [match ... with] on one line,
    not split it as [begin match] / scrutinee / [with], and must align [end]
    with [begin] (regression test) *)

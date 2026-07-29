@@ -2591,16 +2591,20 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
                          in
-                         let branch_pro =
+                         let branch_pro, wrap_parens =
                            match raw_cmts_after_kw with
                            | Some cmts ->
-                               let bare_branch =
-                                 Params.is_bare_branch ~parens_bch
-                                   xbch.ast.pexp_desc
+                               let bp =
+                                 Params.raw_cmts_branch_pro c.conf cmts
                                in
-                               Params.raw_cmts_branch_pro ~bare_branch c.conf
-                                 cmts
-                           | None -> p.branch_pro
+                               if
+                                 parens_bch
+                                 && Params
+                                    .is_special_or_nested_special_beginend
+                                      xbch.ast.pexp_desc
+                               then (bp $ str "(", fun k -> k $ str ")")
+                               else (bp, p.wrap_parens)
+                           | None -> (p.branch_pro, p.wrap_parens)
                          in
                          let wrap_beginend =
                            match p.beginend_loc with
@@ -2613,7 +2617,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                            $ p.box_keyword_and_expr
                                ( branch_pro
                                $ wrap_beginend
-                                   (p.wrap_parens
+                                   (wrap_parens
                                       ( fmt_expression c ?box:p.box_expr
                                           ~parens:false ?pro:p.expr_pro
                                           ?eol:p.expr_eol p.branch_expr
