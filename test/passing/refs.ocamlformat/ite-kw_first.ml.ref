@@ -231,10 +231,10 @@ let f =
   match x with
   | A ->
       if gf
-      then
+      then begin
         (* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa *)
-        begin if a then b
-        end
+        if a then b
+      end
 
 (* Long comment before match in else branch (regression test for
    formatting oscillation) *)
@@ -258,3 +258,30 @@ let _ =
       then iter (i + 1) ~a:s ~b:a ~c:b ~d:c ~fa:fs ~fb:fa ~fc:fb mflag
       else iter (i + 1) ~a ~b:s ~c:b ~d:c ~fa ~fb:fs ~fc:fb mflag
     else g
+
+(* Short comment before a bare match in the else branch: the match must stay
+   indented under the comment, not pushed to its end column (regression test) *)
+let _ =
+  if cond
+  then x
+  else
+    (* a comment *)
+    match e with
+    | A ->
+        a
+    | B ->
+        b
+
+(* A bare [begin match ... end] branch must keep [match ... with] on one line,
+   not split it as [begin match] / scrutinee / [with], and must align [end]
+   with [begin] (regression test) *)
+let _ =
+  if cond
+  then x
+  else
+    begin match e with
+    | A ->
+        function_with_a_long_enough_name_to_force_a_vertical_break a
+    | B ->
+        b
+    end

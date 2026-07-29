@@ -8,6 +8,18 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix `begin match … end` (and `begin if … end`) branches: with
+  `if-then-else=fit-or-vertical` the `match … with` header no longer splits
+  over several lines and `end` is aligned with `begin`; and a leading comment
+  on the body no longer reindents it — `begin` keeps the body one indent in
+  instead of gluing the keyword to the comment.
+  (#2810, @MisterDA)
+
+- Fix indentation of a bare `match`/`function`/`try` branch preceded by a
+  comment with `if-then-else=fit-or-vertical`: the branch is no longer
+  indented relative to the comment's end column.
+  (#2810, @MisterDA)
+
 - Fix formatting oscillation with `if-then-else=fit-or-vertical` and
   `begin...end`.
   (#2800, @MisterDA)
