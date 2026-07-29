@@ -5,7 +5,11 @@
  (action
   (with-stdout-to
    manpage_ocamlformat.mld.gen
-   (run ../tools/gen_manpage/gen_manpage.exe %{bin:ocamlformat} --help=plain))))
+   (run
+    ../tools/gen_manpage/gen_manpage.exe
+    ocamlformat
+    %{bin:ocamlformat}
+    --help=plain))))
 
 (rule
  (alias gen_manpage)
@@ -19,6 +23,7 @@
    manpage_ocamlformat_rpc.mld.gen
    (run
     ../tools/gen_manpage/gen_manpage.exe
+    ocamlformat-rpc
     %{bin:ocamlformat-rpc}
     --help=plain))))
 

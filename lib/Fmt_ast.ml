@@ -2581,6 +2581,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          in
                          let p =
                            Params.get_if_then_else c.conf ~cmts_before_opt
+                             ~has_cmts_before:(Cmts.has_before c.cmts)
                              ~pro:(fmt_if first pro_inner) ~first ~last
                              ~parens_bch ~parens_prev_bch:!parens_prev_bch
                              ~xcond ~xbch ~expr_loc:pexp_loc
@@ -2590,11 +2591,20 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                              ~fmt_cond:(fmt_expression ~box:false c)
                              ~cmts_before_kw ~cmts_after_kw
                          in
-                         let branch_pro =
+                         let branch_pro, wrap_parens =
                            match raw_cmts_after_kw with
                            | Some cmts ->
-                               Params.raw_cmts_branch_pro c.conf cmts
-                           | None -> p.branch_pro
+                               let bp =
+                                 Params.raw_cmts_branch_pro c.conf cmts
+                               in
+                               if
+                                 parens_bch
+                                 && Params
+                                    .is_special_or_nested_special_beginend
+                                      xbch.ast.pexp_desc
+                               then (bp $ str "(", fun k -> k $ str ")")
+                               else (bp, p.wrap_parens)
+                           | None -> (p.branch_pro, p.wrap_parens)
                          in
                          let wrap_beginend =
                            match p.beginend_loc with
@@ -2607,7 +2617,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                            $ p.box_keyword_and_expr
                                ( branch_pro
                                $ wrap_beginend
-                                   (p.wrap_parens
+                                   (wrap_parens
                                       ( fmt_expression c ?box:p.box_expr
                                           ~parens:false ?pro:p.expr_pro
                                           ?eol:p.expr_eol p.branch_expr
@@ -3034,11 +3044,23 @@ and fmt_beginend c ~loc ?(box = true) ?(pro = noop) ~ctx ~ctx0 ~fmt_atrs
   $
   match e.pexp_desc with
   | Pexp_match _ | Pexp_try _ | Pexp_function _ | Pexp_ifthenelse _ ->
-      beginend_box
-        (fmt_expression c
-           ~pro:(pro $ begin_ $ str " ")
-           ~box:false ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e) )
-      $ end_
+      (* In an [if-then-else] branch the branch break indents [begin] one
+         level in (e.g. [fit-or-vertical], whose branch box is [hovbox 0]),
+         while [end] follows the branch box; wrap the body and [end] together
+         so [end] lines up with [begin]. Other contexts (e.g. [map x begin
+         fun … end] as an application argument) must keep their own
+         indentation. *)
+      let box =
+        match ctx0 with
+        | Exp {pexp_desc= Pexp_ifthenelse _; _} -> hvbox 0
+        | _ -> Fn.id
+      in
+      box
+        ( beginend_box
+            (fmt_expression c
+               ~pro:(pro $ begin_ $ str " ")
+               ~box:false ?eol ~parens:false ~indent_wrap (sub_exp ~ctx e) )
+        $ end_ )
   | _ ->
       beginend_box
         ( hvbox 0 (pro $ begin_)

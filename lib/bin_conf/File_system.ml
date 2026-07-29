@@ -60,19 +60,7 @@ let make ~enable_outside_detected_project ~disable_conf_files
   let segs = Fpath.segs dir |> List.rev in
   let rec aux fs ~segs =
     match segs with
-    | [] | [""] ->
-        (* Outside of a detected project, only apply the global config file
-           when [--enable-outside-detected-project] is set and no
-           [.ocamlformat] file has been found. *)
-        assert (Option.is_none fs.project_root) ;
-        if
-          List.is_empty fs.configuration_files
-          && enable_outside_detected_project
-        then
-          match xdg_config () with
-          | Some xdg -> {fs with configuration_files= [Ocamlformat xdg]}
-          | None -> fs
-        else fs
+    | [] | [""] -> fs
     | "" :: upper_segs -> aux fs ~segs:upper_segs
     | _ :: upper_segs ->
         let sep = Fpath.dir_sep in
@@ -108,11 +96,22 @@ let make ~enable_outside_detected_project ~disable_conf_files
         if is_project_root ~root dir then {fs with project_root= Some dir}
         else aux fs ~segs:upper_segs
   in
-  aux ~segs
-    { ignore_files= []
-    ; enable_files= []
-    ; configuration_files= []
-    ; project_root= None }
+  let fs =
+    aux ~segs
+      { ignore_files= []
+      ; enable_files= []
+      ; configuration_files= []
+      ; project_root= None }
+  in
+  (* Outside of a detected project, only apply the global config file when
+     [--enable-outside-detected-project] is set and no [.ocamlformat] file
+     has been found. *)
+  if List.is_empty fs.configuration_files && enable_outside_detected_project
+  then
+    match xdg_config () with
+    | Some xdg -> {fs with configuration_files= [Ocamlformat xdg]}
+    | None -> fs
+  else fs
 
 let has_ocamlformat_file fs =
   List.exists fs.configuration_files ~f:(function

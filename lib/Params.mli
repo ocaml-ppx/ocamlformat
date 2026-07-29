@@ -221,6 +221,7 @@ type if_then_else =
 val get_if_then_else :
      Conf.t
   -> cmts_before_opt:(Location.t -> Fmt.t option)
+  -> has_cmts_before:(Location.t -> bool)
   -> pro:Fmt.t
   -> first:bool
   -> last:bool
