@@ -6,6 +6,11 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Changed
+
+- Empty bodies of while loops will be formatted on one line: `do () done`.
+  (#2812, @v-gb)
+
 ### Fixed
 
 - Fix `begin match … end` (and `begin if … end`) branches: with

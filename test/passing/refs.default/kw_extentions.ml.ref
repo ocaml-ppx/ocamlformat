@@ -15,9 +15,7 @@ let () =
   for%ext i = 1 to 10 do
     ()
   done;
-  while%ext false do
-    ()
-  done;
+  while%ext false do () done;
   match%ext x with _ -> ()
 
 let () =

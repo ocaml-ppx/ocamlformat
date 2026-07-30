@@ -2920,6 +2920,14 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                  $ fmt_core_type c (sub_typ ~ctx t2) )
              $ fmt_atrs ) )
   | Pexp_while (e1, e2, infix_ext_attrs) ->
+      let break_around_body =
+        match e2 with
+        | { pexp_desc= Pexp_construct ({txt= Lident "()"; _}, None)
+          ; pexp_attributes= []
+          ; _ } ->
+            str " "
+        | _ -> force_break
+      in
       pro
       $ hvbox 0
           (Params.Exp.wrap c.conf ~parens
@@ -2931,9 +2939,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                          $ break 1 2
                          $ fmt_expression c (sub_exp ~ctx e1)
                          $ space_break $ str "do" )
-                     $ force_break
+                     $ break_around_body
                      $ fmt_expression c (sub_exp ~ctx e2) )
-                 $ force_break $ str "done" )
+                 $ break_around_body $ str "done" )
              $ fmt_atrs ) )
   | Pexp_unreachable -> pro $ str "."
   | Pexp_send (exp, meth) ->
