@@ -43,6 +43,11 @@ profile. This started with version 0.26.0.
 - Fix configuration in `$XDG_CONFIG_HOME` was not used when
   `--enable-outside-detected-project` was passed (#2816, @torimus)
 
+- Fix a comment before `in` in a `let … in` binding forcing an unnecessary
+  vertical break: `let x = v (* comment *) in …` is no longer split across
+  several lines when it otherwise fits. This also fixes a related
+  non-idempotency. (#2813, @yakobowski)
+
 ## 0.29.0
 
 ### Highlight
