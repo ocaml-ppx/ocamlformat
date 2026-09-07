@@ -22,22 +22,6 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Pattern : pattern t
-  (* not implemented *)
-  | Repl_file : unit t
-  | Documentation : unit t
-
-type any_t = Any : 'a t -> any_t [@@unboxed]
-
-let of_syntax = function
-  | Syntax.Structure -> Any Structure
-  | Signature -> Any Signature
-  | Use_file -> Any Use_file
-  | Core_type -> Any Core_type
-  | Module_type -> Any Module_type
-  | Expression -> Any Expression
-  | Pattern -> Any Pattern
-  | Repl_file -> Any Repl_file
-  | Documentation -> Any Documentation
 
 let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -55,8 +39,6 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Module_type -> m.module_type m
   | Expression -> m.expr m
   | Pattern -> m.pat m
-  | Repl_file -> Fn.id
-  | Documentation -> Fn.id
 
 module Parse = struct
   let ast (type a) (fg : a t) ~ocaml_version ~input_name str : a =
@@ -73,8 +55,6 @@ module Parse = struct
     | Module_type -> Parse.module_type ~ocaml_version lexbuf
     | Expression -> Parse.expression ~ocaml_version lexbuf
     | Pattern -> Parse.pattern ~ocaml_version lexbuf
-    | Repl_file -> ()
-    | Documentation -> ()
 end
 
 module Printast = struct
@@ -90,6 +70,4 @@ module Printast = struct
     | Module_type -> module_type 0
     | Expression -> expression 0
     | Pattern -> pattern 0
-    | Repl_file -> fun _ _ -> ()
-    | Documentation -> fun _ _ -> ()
 end
