@@ -13,6 +13,11 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix the indentation of the `in` keyword after a local exception: it is no
+  longer indented one level deeper than the enclosing `let`, matching the
+  behaviour of local types and modules.
+  (#2822, #2823, @MisterDA)
+
 - Fix `begin match … end` (and `begin if … end`) branches: with
   `if-then-else=fit-or-vertical` the `match … with` header no longer splits
   over several lines and `end` is aligned with `begin`; and a leading comment

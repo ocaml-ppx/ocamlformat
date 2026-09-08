@@ -4721,8 +4721,8 @@ and fmt_structure_item' ~ctx0 c ~last:last_item ~semisemi ~pro ?epi ~ctx si =
       $ fmt_opt epi
   | Pstr_exception extn_constr ->
       let pre = pro $ str "exception" in
-      hvbox 2 ~name:"exn"
-        (fmt_type_exception ~pre c ctx extn_constr $ fmt_opt epi)
+      hvbox 2 ~name:"exn" (fmt_type_exception ~pre c ctx extn_constr)
+      $ fmt_opt epi
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
       update_config_maybe_disabled_str_item c pincl_loc ~pro ?epi attributes
       @@ fun c ->

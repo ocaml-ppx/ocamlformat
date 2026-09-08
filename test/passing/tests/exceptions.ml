@@ -108,3 +108,7 @@ exception E of (a, b) #c
 exception E of (t -> t) #c
 
 exception E of (t as 'a) #c
+
+let _ =
+  let exception E of { les_sanglots_longs_des_violons_de_l_automne : int ; blessent_mon_coeur_d_une_langueur_monotone : int } in
+  ()
