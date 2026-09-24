@@ -101,7 +101,8 @@ nil (default)."
 \(add-hook \\='before-save-hook \\='ocamlformat-before-save)."
   (interactive)
   (when
-      (memq major-mode '(tuareg-mode caml-mode ocaml-ts-mode ocamli-ts-mode))
+      (memq major-mode '(tuareg-mode caml-mode ocaml-ts-mode ocamli-ts-mode
+                          neocaml-mode neocaml-interface-mode))
     (ocamlformat)))
 
 (defun ocamlformat--goto-line (line)
