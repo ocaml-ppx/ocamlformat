@@ -96,6 +96,6 @@ ocamlformat is distributed under the terms of the MIT License. See the [LICENSE]
 
 We gratefully acknowledge the individuals and organizations that have significantly contributed to ocamlformat.
 
-ocamlformat owes its existance to its initial author, [Josh Berdine](https://github.com/jberdine). We also want to express our appreciation to [Hugo Heuzard](https://github.com/hhugo), [Guillaume Petiot](https://github.com/gpetiot), and [Jules Aguillon](https://github.com/Julow). Their significant contributions have been instrumental to the advancement of ocamlformat.
+ocamlformat owes its existence to its initial author, [Josh Berdine](https://github.com/jberdine). We also want to express our appreciation to [Hugo Heuzard](https://github.com/hhugo), [Guillaume Petiot](https://github.com/gpetiot), and [Jules Aguillon](https://github.com/Julow). Their significant contributions have been instrumental to the advancement of ocamlformat.
 
 Moreover, our gratitude extends to Facebook, who fostered the inception of ocamlformat as part of their work on the [ReasonML](https://reasonml.github.io/) project. [Jane Street](https://www.janestreet.com/) and [Tarides](https://tarides.com/) have also provided financial support and contributed to the ongoing development of the project.
