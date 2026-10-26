@@ -13,6 +13,9 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix missing parentheses around attributed `let open` and `let module`
+  expressions on the left of a sequence (#2826, @kxc-wraikny, @Don-Yin).
+
 - Fix the indentation of the `in` keyword after a local exception: it is no
   longer indented one level deeper than the enclosing `let`, matching the
   behaviour of local types and modules.
