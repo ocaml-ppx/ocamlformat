@@ -150,3 +150,9 @@ let f :
        (* a *)
        fooo =
   f
+
+type u = (module T with type t = int and type x = float)
+
+type u = (module T with type t = int and type x = float[@att1] [@att2])
+
+type u = (module T with type t = int and type x = float[@att1] [@att2])

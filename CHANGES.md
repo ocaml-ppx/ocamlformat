@@ -6,6 +6,10 @@ profile. This started with version 0.26.0.
 
 ## unreleased
 
+### Highlight
+
+- Support for OCaml 5.6 (#2833, @Julow)
+
 ### Changed
 
 - Empty bodies of while loops will be formatted on one line: `do () done`.
