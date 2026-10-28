@@ -146,3 +146,6 @@ let f :
     fooo =
   f
 
+type u = (module T with type t = int with type x = float)
+type u = (module T with type t = int [@att1] with type x = float [@att2])
+type u = (module T with type t = int and type x = float [@att1][@att2])

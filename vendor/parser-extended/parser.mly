@@ -725,12 +725,17 @@ let package_type_of_module_type pmty =
     | _ ->
         err pmty.pmty_loc Not_with_type
   in
-  match pmty with
-  | {pmty_desc = Pmty_ident lid} -> (lid, [], pmty.pmty_attributes)
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
-      (lid, List.map map_cstr cstrs, pmty.pmty_attributes)
-  | _ ->
-      err pmty.pmty_loc Neither_identifier_nor_with_type
+  let rec flatten attributes cstrs desc =
+    match desc with
+    | Pmty_ident lid -> (lid, cstrs, attributes)
+    | Pmty_with (pmty, more_cstrs) ->
+       let attributes = pmty.pmty_attributes @ attributes in
+       let cstrs = List.map map_cstr more_cstrs @ cstrs in
+       flatten attributes cstrs pmty.pmty_desc
+    | _ ->
+       err pmty.pmty_loc Neither_identifier_nor_with_type
+  in
+  flatten pmty.pmty_attributes [] pmty.pmty_desc
 
 let mk_directive_arg ~loc k =
   { pdira_desc = k;
