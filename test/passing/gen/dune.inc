@@ -4469,6 +4469,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to ocaml_underscore.ml.stdout
+   (with-stderr-to ocaml_underscore.ml.stderr
+     (run %{bin:ocamlformat} --name ocaml_underscore.ml --margin-check %{dep:../tests/ocaml_underscore.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff ocaml_underscore.ml.ref ocaml_underscore.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff ocaml_underscore.ml.err ocaml_underscore.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to ocp_indent_compat-break_colon_after.ml.stdout
    (with-stderr-to ocp_indent_compat-break_colon_after.ml.stderr
      (run %{bin:ocamlformat} --name ocp_indent_compat-break_colon_after.ml --margin-check --ocp-indent-compat --break-colon=after %{dep:../tests/ocp_indent_compat.ml})))))

@@ -8,7 +8,7 @@ profile. This started with version 0.26.0.
 
 ### Highlight
 
-- Support for OCaml 5.6 (#2833, @Julow)
+- Support for OCaml 5.6 (#2833, #2834, @Julow)
 
 ### Changed
 
