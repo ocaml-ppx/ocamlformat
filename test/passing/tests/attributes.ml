@@ -500,3 +500,10 @@ let fold input ~init ~f =
   foldi input ~init ~f:(fun (_ : int) acc x -> f acc x) [@nontail]
 
 [@@@effect]
+
+let () =
+  (let open List in
+   ignore (length [])) [@warning "-33"];
+  (let module N = List in
+   ignore (N.length [])) [@warning "-33"];
+  ignore 1
