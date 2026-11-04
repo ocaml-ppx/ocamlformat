@@ -352,7 +352,8 @@ module Structure_item = struct
      |Pstr_modtype {pmtd_ext_attrs= ea; _}
      |Pstr_type (_, {ptype_attributes= ea; _} :: _)
      |Pstr_value {pvbs_bindings= {pvb_attributes= ea; _} :: _; _}
-     |Pstr_primitive {pval_attributes= ea; _}
+     |Pstr_val {pval_attributes= ea; _}
+     |Pstr_primitive {pprim_attributes= ea; _}
      |Pstr_typext {ptyext_attributes= ea; _} ->
         Ext_attrs.has_doc ea
     | Pstr_module
@@ -400,7 +401,7 @@ module Structure_item = struct
       match (itmI.pstr_desc, itmJ.pstr_desc) with
       | Pstr_eval _, Pstr_eval _
        |Pstr_value _, Pstr_value _
-       |Pstr_primitive _, Pstr_primitive _
+       |(Pstr_val _ | Pstr_primitive _), (Pstr_val _ | Pstr_primitive _)
        |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
        |Pstr_exception _, Pstr_exception _
        |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
@@ -439,6 +440,7 @@ module Signature_item = struct
     | Psig_attribute atr -> Attr.is_doc atr
     | Psig_extension (_, atrs) -> List.exists ~f:Attr.is_doc atrs
     | Psig_value {pval_attributes= ea; _}
+     |Psig_primitive {pprim_attributes= ea; _}
      |Psig_type (_, {ptype_attributes= ea; _} :: _)
      |Psig_typesubst ({ptype_attributes= ea; _} :: _)
      |Psig_typext {ptyext_attributes= ea; _}
@@ -486,7 +488,7 @@ module Signature_item = struct
     with
     | `Compact, `Compact -> (
       match (itmI.psig_desc, itmJ.psig_desc) with
-      | Psig_value _, Psig_value _
+      | (Psig_value _ | Psig_primitive _), (Psig_value _ | Psig_primitive _)
        |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
         , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
        |Psig_exception _, Psig_exception _
@@ -936,6 +938,11 @@ end = struct
     let check_typexn {ptyexn_constructor; _} =
       check_ext ptyexn_constructor
     in
+    let check_primitive {pprim_kind; _} =
+      match pprim_kind with
+      | Pprim_decl (t1, _) -> typ == t1
+      | Pprim_alias (t1, _) -> Option.exists t1 ~f
+    in
     let check_class_type {pci_expr= {pcty_desc; _}; pci_params; _} =
       List.exists pci_params ~f:(fun (t, _) -> t == typ)
       ||
@@ -1089,6 +1096,7 @@ end = struct
     | Sig ctx -> (
       match ctx.psig_desc with
       | Psig_value {pval_type= t1; _} -> assert (typ == t1)
+      | Psig_primitive pd -> assert (check_primitive pd)
       | Psig_type (_, _) -> assert false
       | Psig_typesubst _ -> assert false
       | Psig_typext typext -> assert (check_typext typext)
@@ -1096,7 +1104,8 @@ end = struct
       | _ -> assert false )
     | Str ctx | Str_exp ctx -> (
       match ctx.pstr_desc with
-      | Pstr_primitive {pval_type= t1; _} -> assert (typ == t1)
+      | Pstr_val {pval_type= t1; _} -> assert (typ == t1)
+      | Pstr_primitive pd -> assert (check_primitive pd)
       | Pstr_type (_, _) -> assert false
       | Pstr_typext typext -> assert (check_typext typext)
       | Pstr_exception ext -> assert (check_typexn ext)
@@ -1479,10 +1488,10 @@ end = struct
             List.exists pvbs_bindings ~f:(fun {pvb_body; _} ->
                 check_fun_body pvb_body ) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
-      | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
-       |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
-       |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
-        ->
+      | Pstr_val _ | Pstr_primitive _ | Pstr_type _ | Pstr_typext _
+       |Pstr_exception _ | Pstr_module _ | Pstr_recmodule _
+       |Pstr_modtype _ | Pstr_open _ | Pstr_class _ | Pstr_class_type _
+       |Pstr_include _ | Pstr_attribute _ ->
           assert false )
     | Mod {pmod_desc= Pmod_unpack (e1, _, _); _} -> assert (e1 == exp)
     | Cl ctx ->

@@ -72,6 +72,8 @@ type mapper = {
   package_type: mapper -> package_type -> package_type;
   pat: mapper -> pattern -> pattern;
   payload: mapper -> payload -> payload;
+  primitive_description: mapper -> primitive_description
+                         -> primitive_description;
   signature: mapper -> signature -> signature;
   signature_item: mapper -> signature_item -> signature_item;
   structure: mapper -> structure -> structure;
@@ -486,6 +488,7 @@ module MT = struct
     let loc = sub.location sub loc in
     match desc with
     | Psig_value vd -> value ~loc (sub.value_description sub vd)
+    | Psig_primitive pd -> primitive ~loc (sub.primitive_description sub pd)
     | Psig_type (rf, l) ->
         type_ ~loc rf (List.map (sub.type_declaration sub) l)
     | Psig_typesubst l ->
@@ -538,9 +541,7 @@ module M = struct
           (map_opt (map_package_type sub) ty1)
           (map_opt (map_package_type sub) ty2)
     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
-    (* Added *)
     | Pmod_hole -> hole ~loc ~attrs ()
-    (* *)
 
   let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
     let open Str in
@@ -550,7 +551,8 @@ module M = struct
         let attrs = sub.attributes sub attrs in
         eval ~loc ~attrs (sub.expr sub x)
     | Pstr_value lbs -> value ~loc (sub.value_bindings sub lbs)
-    | Pstr_primitive vd -> primitive ~loc (sub.value_description sub vd)
+    | Pstr_val vd -> val_ ~loc (sub.value_description sub vd)
+    | Pstr_primitive pd -> primitive ~loc (sub.primitive_description sub pd)
     | Pstr_type (rf, l) -> type_ ~loc rf (List.map (sub.type_declaration sub) l)
     | Pstr_typext te -> type_extension ~loc (sub.type_extension sub te)
     | Pstr_exception ed -> exception_ ~loc (sub.type_exception sub ed)
@@ -704,9 +706,7 @@ module E = struct
     | Pexp_unreachable -> unreachable ~loc ~attrs ()
     | Pexp_struct_item (si, e, iea) ->
         struct_item ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.structure_item sub si) (sub.expr sub e)
-    (* Added *)
     | Pexp_hole -> hole ~loc ~attrs ()
-    (* *)
     | Pexp_beginend (e, iea) -> beginend ~loc ~attrs ~infix_ext_attrs:(sub.infix_ext_attrs sub iea) (sub.expr sub e)
     | Pexp_parens e -> parens ~loc ~attrs (sub.expr sub e)
     | Pexp_cons l -> cons ~loc ~attrs (List.map (sub.expr sub) l)
@@ -901,14 +901,30 @@ let default_mapper =
     extension_constructor = T.map_extension_constructor;
     package_type = map_package_type;
     value_description =
-      (fun this {pval_name; pval_type; pval_prim; pval_loc;
-                 pval_attributes} ->
+      (fun this {pval_name; pval_type; pval_loc; pval_attributes} ->
         Val.mk
           (map_loc map_string this pval_name)
           (this.typ this pval_type)
           ~attrs:(this.ext_attrs this pval_attributes)
           ~loc:(this.location this pval_loc)
-          ~prim:(List.map (map_loc map_string this) pval_prim)
+      );
+    primitive_description =
+      (fun this {pprim_name; pprim_kind; pprim_loc; pprim_attributes} ->
+         match pprim_kind with
+         | Pprim_decl (pprim_type, pprim_prim) ->
+           Prim.mk_decl
+             (map_loc map_string this pprim_name)
+             (this.typ this pprim_type)
+             ~attrs:(this.ext_attrs this pprim_attributes)
+             ~loc:(this.location this pprim_loc)
+             ~prim:(List.map (map_loc map_string this) pprim_prim)
+         | Pprim_alias (pprim_type, pprim_ident) ->
+           Prim.mk_alias
+             (map_loc map_string this pprim_name)
+             (Option.map (this.typ this) pprim_type)
+             (map_loc_lid this pprim_ident)
+             ~attrs:(this.ext_attrs this pprim_attributes)
+             ~loc:(this.location this pprim_loc)
       );
 
     pat = P.map;

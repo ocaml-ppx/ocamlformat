@@ -79,6 +79,8 @@ let pstr_attribute body =
   Pstr_attribute body
 let pstr_typext te =
   Pstr_typext te
+let pstr_val vd =
+  Pstr_val vd
 let pstr_primitive vd =
   Pstr_primitive vd
 let pstr_type (nr, tys) =
@@ -109,6 +111,8 @@ let psig_typext te =
   Psig_typext te
 let psig_value vd =
   Psig_value vd
+let psig_primitive pd =
+  Psig_primitive pd
 let psig_type (nr, tys) =
   Psig_type (nr, tys)
 let psig_typesubst (nr, tys) =
@@ -1598,10 +1602,10 @@ local_structure_item:
         { pstr_extension $1 (add_docs_attrs (symbol_docs $sloc) $2) }
     | floating_attribute
         { pstr_attribute $1 }
-    | primitive_declaration
+    | primitive_description
         { pstr_primitive $1 }
     | value_description
-        { pstr_primitive $1 }
+        { pstr_val $1 }
     | type_declarations
         { pstr_type $1 }
     | str_type_extension
@@ -1837,8 +1841,8 @@ signature_item:
         { psig_attribute $1 }
     | value_description
         { psig_value $1 }
-    | primitive_declaration
-        { psig_value $1 }
+    | primitive_description
+        { psig_primitive $1 }
     | type_declarations
         { psig_type $1 }
     | type_subst_declarations
@@ -3298,23 +3302,46 @@ value_description:
     }
 ;
 
-/* Primitive declarations */
+/* Primitive descriptions */
 
-primitive_declaration:
-  EXTERNAL
-  ext = ext
-  attrs1 = attributes
-  id = mkrhs(val_ident)
-  COLON
-  ty = possibly_poly(core_type)
-  EQUAL
-  prim = mkrhs(raw_string)+
-  attrs2 = post_item_attributes
-    { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
-      let loc = make_loc $sloc in
-      let docs = symbol_docs $sloc in
-      Val.mk id ty ~prim ~attrs ~loc ~docs
-    }
+primitive_description:
+  | EXTERNAL
+    ext = ext
+    attrs1 = attributes
+    id = mkrhs(val_ident)
+    COLON
+    ty = possibly_poly(core_type)
+    EQUAL
+    prim = mkrhs(raw_string)+
+    attrs2 = post_item_attributes
+      { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+        let loc = make_loc $sloc in
+        let docs = symbol_docs $sloc in
+        Prim.mk_decl id ty ~prim ~attrs ~loc ~docs }
+  | EXTERNAL
+    ext = ext
+    attrs1 = attributes
+    id = mkrhs(val_ident)
+    EQUAL
+    lid = mkrhs(val_longident)
+    attrs2 = post_item_attributes
+      { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+        let loc = make_loc $sloc in
+        let docs = symbol_docs $sloc in
+        Prim.mk_alias id None lid ~attrs ~loc ~docs }
+  | EXTERNAL
+    ext = ext
+    attrs1 = attributes
+    id = mkrhs(val_ident)
+    COLON
+    ty = possibly_poly(core_type)
+    EQUAL
+    lid = mkrhs(val_longident)
+    attrs2 = post_item_attributes
+      { let attrs = Attr.ext_attrs ?ext ~before:attrs1 ~after:attrs2 () in
+        let loc = make_loc $sloc in
+        let docs = symbol_docs $sloc in
+        Prim.mk_alias id (Some ty) lid ~attrs ~loc ~docs }
 ;
 
 (* Type declarations and type substitutions. *)
@@ -3386,7 +3413,8 @@ generic_type_declaration(flag, kind):
       let attrs = Attr.ext_attrs ~before:attrs1 ~after:attrs2 () in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk
+        id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:
