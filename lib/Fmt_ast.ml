@@ -3456,47 +3456,62 @@ and fmt_case c ctx ~first ~last case =
               p.branch_expr
           $ p.close_paren_branch ) )
 
-and fmt_value_description c ctx ~pro ?epi vd =
-  let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes; pval_loc}
-      =
-    vd
-  in
-  update_config_maybe_disabled_str_item c pval_loc ~pro ?epi pval_attributes
+(** Format a [val] or an [external] item. [fmt_rhs] formats everything after
+    the name, it takes the config updated by the item attributes. *)
+and fmt_val_or_external c ~pro ?epi ~keyword ~attrs ~loc name fmt_rhs =
+  update_config_maybe_disabled_str_item c loc ~pro ?epi attrs
   @@ fun c ->
-  let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc_before, doc_after, attrs_before, attrs_after =
-    fmt_docstring_around_item_attrs ~is_val:true c pval_attributes
+    fmt_docstring_around_item_attrs ~is_val:true c attrs
   in
-  let ext = pval_attributes.attrs_extension in
-  let fmt_val_prim {txt= s; loc} =
+  let fmt_name =
+    Cmts.fmt c name.loc
+      (wrap_if
+         (Std_longident.String_id.is_symbol name.txt)
+         (str "( ") (str " )") (str name.txt) )
+  in
+  hvbox 0
+    ( doc_before $ pro
+    $ box_fun_sig_args c 2
+        ( str keyword
+        $ fmt_extension_suffix c attrs.attrs_extension
+        $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
+        $ str " " $ fmt_name $ fmt_rhs c )
+    $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
+    $ fmt_opt epi $ doc_after )
+
+(** Format the type annotation of a [val] or an [external]. *)
+and fmt_value_type c ctx typ =
+  fmt_core_type c ~pro:":"
+    ~box:(not (c.conf.fmt_opts.ocp_indent_compat.v && is_arrow_or_poly typ))
+    (sub_typ ~ctx typ)
+
+and fmt_value_description c ctx ~pro ?epi vd =
+  let {pval_name; pval_type; pval_attributes; pval_loc} = vd in
+  fmt_val_or_external c ~pro ?epi ~keyword:"val" ~attrs:pval_attributes
+    ~loc:pval_loc pval_name (fun c -> fmt_value_type c ctx pval_type )
+
+and fmt_primitive_description c ctx ~pro ?epi pd =
+  let {pprim_name; pprim_kind; pprim_attributes; pprim_loc} = pd in
+  let fmt_val_prim c {txt= s; loc} =
     hvbox 0 @@ Cmts.fmt c loc
     @@
     if String.exists s ~f:(function ' ' | '\n' -> true | _ -> false) then
       wrap (str "{|") (str "|}") (str s)
     else wrap (str "\"") (str "\"") (str (String.escaped s))
   in
-  hvbox 0
-    ( doc_before $ pro
-    $ box_fun_sig_args c 2
-        ( str pre
-        $ fmt_extension_suffix c ext
-        $ fmt_attributes c ~pre:(Break (1, 0)) attrs_before
-        $ str " "
-        $ Cmts.fmt c loc
-            (wrap_if
-               (Std_longident.String_id.is_symbol txt)
-               (str "( ") (str " )") (str txt) )
-        $ fmt_core_type c ~pro:":"
-            ~box:
-              (not
-                 ( c.conf.fmt_opts.ocp_indent_compat.v
-                 && is_arrow_or_poly pval_type ) )
-            (sub_typ ~ctx pval_type)
-        $ fmt_if (not (List.is_empty pval_prim)) (space_break $ str "= ")
-        $ hvbox_if (List.length pval_prim > 1) 0
-          @@ list pval_prim space_break fmt_val_prim )
-    $ fmt_item_attributes c ~pre:(Break (1, 0)) attrs_after
-    $ fmt_opt epi $ doc_after )
+  let fmt_rhs c =
+    match pprim_kind with
+    | Pprim_decl (typ, prim) ->
+        fmt_value_type c ctx typ $ space_break $ str "= "
+        $ hvbox_if (List.length prim > 1) 0
+          @@ list prim space_break (fmt_val_prim c)
+    | Pprim_alias (typ, lid) ->
+        opt typ (fmt_value_type c ctx)
+        $ space_break $ str "= " $ fmt_longident_loc c lid
+  in
+  fmt_val_or_external c ~pro ?epi ~keyword:"external" ~attrs:pprim_attributes
+    ~loc:pprim_loc pprim_name fmt_rhs
 
 and fmt_tydcl_params c ctx params =
   fmt_if
@@ -4097,6 +4112,7 @@ and fmt_signature_item c {ast= si; _} =
   | Psig_type (rec_flag, decls) -> fmt_type c rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension c ctx ~pro:noop te
   | Psig_value vd -> fmt_value_description c ctx ~pro:noop vd
+  | Psig_primitive pd -> fmt_primitive_description c ctx ~pro:noop pd
   | Psig_class cl -> fmt_class_types c ~pro:(str "class") ~sep:":" cl
   | Psig_class_type cl ->
       fmt_class_types c ~pro:(str "class type") ~sep:"=" cl
@@ -4748,7 +4764,8 @@ and fmt_structure_item' ~ctx0 c ~last:last_item ~semisemi ~pro ?epi ~ctx si =
       in
       fmt_module_statement c ~attributes ~keyword ?epi
         (sub_mod ~ctx popen_expr)
-  | Pstr_primitive vd -> fmt_value_description c ctx ~pro ?epi vd
+  | Pstr_val vd -> fmt_value_description c ctx ~pro ?epi vd
+  | Pstr_primitive pd -> fmt_primitive_description c ctx ~pro ?epi pd
   | Pstr_recmodule mbs ->
       fmt_recmodule c ctx mbs fmt_module_binding ~pro ?epi
         (fun x -> Mb (ctx, x))
