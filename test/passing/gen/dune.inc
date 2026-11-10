@@ -2139,6 +2139,24 @@
  (deps .ocamlformat)
  (package ocamlformat)
  (action
+  (with-stdout-to external.ml.stdout
+   (with-stderr-to external.ml.stderr
+     (run %{bin:ocamlformat} --name external.ml --margin-check %{dep:../tests/external.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff external.ml.ref external.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff external.ml.err external.ml.stderr)))
+
+(rule
+ (deps .ocamlformat)
+ (package ocamlformat)
+ (action
   (with-stdout-to field-op_begin_line.ml.stdout
    (with-stderr-to field-op_begin_line.ml.stderr
      (run %{bin:ocamlformat} --name field-op_begin_line.ml --margin-check --assignment-operator=begin-line %{dep:../tests/field.ml})))))
