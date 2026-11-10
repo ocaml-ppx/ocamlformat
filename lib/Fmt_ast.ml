@@ -382,13 +382,6 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l.txt $ sep
   | Optional l -> str "?" $ str l.txt $ sep
 
-let fmt_arg_label_cmts c lbl arg k =
-  Option.value_map (Ast.Exp.arg_label_loc lbl arg) ~default:k ~f:(fun loc ->
-      Cmts.fmt c loc k )
-
-let fmt_arg_label c lbl arg sep =
-  fmt_arg_label_cmts c lbl arg (fmt_label lbl sep)
-
 let fmt_arg_label_cmts_before c lbl arg =
   Option.value_map
     (Ast.Exp.arg_label_loc lbl arg)
@@ -1761,9 +1754,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
   match (lbl, arg.pexp_desc) with
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l.txt i && List.is_empty arg.pexp_attributes ->
-      Cmts.fmt c loc
-      @@ Cmts.fmt c ?eol arg.pexp_loc
-      @@ fmt_arg_label c lbl arg noop
+      Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl noop
   | ( (Labelled l | Optional l)
     , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
     when String.equal l.txt i
@@ -1777,24 +1768,24 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
         | Optional _ -> str "?"
         | Nolabel -> noop
       in
-      fmt_arg_label_cmts c lbl arg lbl_str $ fmt_expression c ~box xarg
+      lbl_str $ fmt_expression c ~box xarg
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
       hvbox_if box 2
         ( hvbox_if box 0
             (fmt_expression c
-               ~pro:(fmt_arg_label c lbl arg (str ":" $ break 0 2))
+               ~pro:(fmt_label lbl (str ":" $ break 0 2))
                ~box xarg )
         $ cmts_after )
   | (Labelled _ | Optional _), Pexp_beginend _ ->
-      let pro = fmt_arg_label c lbl arg (str ":") in
+      let pro = fmt_label lbl (str ":") in
       fmt_expression c ~box ~pro xarg
   | ( (Labelled _ | Optional _)
     , Pexp_function (args, typ, body, infix_ext_attrs) ) ->
       let wrap_intro x = hovbox 2 x $ space_break in
       let label_sep = Params.Exp.fun_label_sep c.conf in
-      let pro = fmt_arg_label c lbl arg label_sep in
+      let pro = fmt_label lbl label_sep in
       fmt_function ~pro ~box ~ctx:(Exp arg) ~wrap_intro ~ctx0:xarg.ctx
         ~parens:true ~attrs:arg.pexp_attributes ~infix_ext_attrs
         ~loc:arg.pexp_loc c (args, typ, body)
@@ -1803,7 +1794,7 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
         if box || c.conf.fmt_opts.wrap_fun_args.v then str ":" $ cut_break
         else str ":"
       in
-      fmt_arg_label c lbl arg label_sep $ fmt_expression c ~box xarg
+      fmt_label lbl label_sep $ fmt_expression c ~box xarg
 
 and expression_width c xe =
   String.length
@@ -2367,7 +2358,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
               else Break
             in
             let label_sep = Params.Exp.fun_label_sep c.conf in
-            let pro = fmt_arg_label c lbl last_arg label_sep in
+            let pro = fmt_label lbl label_sep in
             fmt_function ~pro ~force_closing_paren ~ctx:inner_ctx ~ctx0:ctx
               ~wrap_intro ~parens:true ~attrs:last_arg.pexp_attributes
               ~infix_ext_attrs ~loc:last_arg.pexp_loc c (largs, ltyp, lbody)
@@ -2392,7 +2383,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           in
           let label_sep = Params.Exp.fun_label_sep c.conf in
           let pro =
-            pro $ break 1 0 $ fmt_arg_label c lbl last_arg label_sep
+            pro $ break 1 0
+            $ fmt_arg_label_cmts_before c lbl last_arg
+            $ fmt_label lbl label_sep
           in
           expr_epi
           $ hovbox 4
