@@ -59,3 +59,31 @@ let _ = (x, ~y:a.b)
 let _ = (x, ~y:a#.b)
 
 let _ = (x, ~y:a#b)
+
+let z =
+  fetch_some_data ~first_argument_name:first_value
+    (* explains the second argument *)
+    ~second_argument_name:second_value ~third_argument_name:third_value
+
+let z =
+  f ~a:1
+    (* c *)
+    ~b:2
+
+let z =
+  f ~a
+    (* c *)
+    ~b
+    (* d *)
+    ?c
+    (* e *)
+    ~(d : int)
+
+let z =
+  f ~a
+    (* c *)
+    ~b:(fun x -> x )
+
+let z = f ~a:1 ~b:(* c *) 2
+
+let f ~((* c *) x : t) ?((* d *) y : t) = e
