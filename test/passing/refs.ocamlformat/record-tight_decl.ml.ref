@@ -82,3 +82,29 @@ let x = A (B).a
 let x = (1).a
 
 type 'a t = A : 'b. {a: 'a} -> 'a t
+
+let _ = Gc.set {(Gc.get ()) with space_overhead = 100}
+
+let _ = Gc.set {Gc.get () with space_overhead = 100}
+
+let _ =
+  { foooooooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooooooo
+    with
+    x }
+
+(* No extra parentheses added: *)
+let _ =
+  ( {(x : t) with x}
+  , {(x :> t) with x}
+  , {(module M) with x}
+  , {(f x [@at]) with x} )
+
+(* Parentheses not preserved: *)
+let _ =
+  { begin
+      x
+    end
+    with
+    x }

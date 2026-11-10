@@ -2500,18 +2500,16 @@ end = struct
                  Option.exists e0 ~f:(fun x -> x == exp) ) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
-      | Pexp_record (_, Some ({pexp_desc= Pexp_prefix _; _} as e0))
-        when e0 == exp ->
-          (* don't put parens around [!e] in [{ !e with a; b }] *)
-          false
       | Pexp_record
           ( _
           , Some
               ( { pexp_desc=
-                    ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
-                    | Pexp_constraint _ | Pexp_field _ )
+                    ( Pexp_prefix _ | Pexp_ident _ | Pexp_constant _
+                    | Pexp_record _ | Pexp_constraint _ | Pexp_field _
+                    | Pexp_apply _ )
                 ; _ } as e0 ) )
         when e0 == exp ->
+          (* Cases where [x] is not parenthesed in [{ x with f }]. *)
           false
       | Pexp_record (_, Some e0) when e0 == exp -> true
       | Pexp_override fields

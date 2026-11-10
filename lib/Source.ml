@@ -97,6 +97,15 @@ let find_token_after t ~filter pos =
       in
       loop i
 
+let first_and_last_token t loc =
+  match
+    ( find_token t `First_greater_than_or_equal_to loc.Location.loc_start
+    , find_token t `Last_strictly_less_than loc.loc_end )
+  with
+  | None, _ | _, None -> None
+  | Some i, Some j ->
+      if i = j then None else Some (fst t.tokens.(i), fst t.tokens.(j))
+
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
     List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
@@ -156,3 +165,8 @@ let loc_of_first_token_at t loc kwd =
   match tokens_at t loc ~filter:(Poly.( = ) kwd) with
   | [] -> None
   | (_, loc) :: _ -> Some loc
+
+let is_parenthesized t loc =
+  match first_and_last_token t loc with
+  | Some (Parser.LPAREN, RPAREN) -> true
+  | _ -> false
