@@ -398,13 +398,13 @@ and expression i ppf x =
       line i ppf "Pexp_extension \"%s\"\n" s.txt;
       payload i ppf arg
   | Pexp_unreachable ->
-      line i ppf "Pexp_unreachable"
+      line i ppf "Pexp_unreachable\n"
   | Pexp_struct_item (si, e) ->
       line i ppf "Pexp_struct_item\n";
       structure_item i ppf si;
       expression i ppf e
   | Pexp_hole ->
-      line i ppf "Pexp_hole"
+      line i ppf "Pexp_hole\n"
 
 and function_param i ppf { pparam_desc = desc; pparam_loc = loc } =
   match desc with
@@ -744,7 +744,7 @@ and module_type i ppf x =
       line i ppf "Pmty_typeof\n";
       module_expr i ppf m;
   | Pmty_extension (s, arg) ->
-      line i ppf "Pmod_extension \"%s\"\n" s.txt;
+      line i ppf "Pmty_extension \"%s\"\n" s.txt;
       payload i ppf arg
 
 and signature i ppf x = list i signature_item ppf x
@@ -875,7 +875,7 @@ and module_expr i ppf x =
       line i ppf "Pmod_extension \"%s\"\n" s.txt;
       payload i ppf arg
   | Pmod_hole ->
-      line i ppf "Pmod_hole"
+      line i ppf "Pmod_hole\n"
 
 and structure i ppf x = list i structure_item ppf x
 
