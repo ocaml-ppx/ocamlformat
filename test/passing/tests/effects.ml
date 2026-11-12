@@ -60,3 +60,18 @@ let baz () =
 ;;
 try perform (Xchg 0) with
 | effect Xchg n, k -> continue k 21 + continue k 21
+
+let _ =
+  match f () with
+  | effect A, (Some k) -> k
+  | effect A, (k : t) -> k
+  | effect A, (k, _) -> k
+  | effect A, (k :: _) -> k
+  | effect A, (lazy k) -> k
+  | effect A, (`A k) -> k
+  | effect A, [ k ] -> k
+  | effect A, _ -> ()
+
+let _ =
+  match f () with
+  | effect A _, k -> k
