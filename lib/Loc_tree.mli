@@ -11,5 +11,9 @@
 
 include Non_overlapping_interval_tree.S with type itv = Location.t
 
-val of_ast : 'a Extended_ast.t -> 'a -> t * Location.t list
-(** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)
+val of_ast :
+     traverse:(Ocamlformat_parser_extended.Ast_mapper.mapper -> 'a -> 'a)
+  -> 'a
+  -> t * Location.t list
+(** Use [traverse] to apply a mapper that collects all locations in the AST,
+    and create a tree of them. *)

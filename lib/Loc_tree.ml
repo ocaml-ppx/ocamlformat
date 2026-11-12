@@ -10,11 +10,12 @@
 (**************************************************************************)
 
 module Location = Migrate_ast.Location
-open Extended_ast
+open Ocamlformat_parser_extended
 include Non_overlapping_interval_tree.Make (Location)
 
-(** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
-let of_ast fragment ast =
+(** Use [traverse] to apply a mapper that collects all locations in the AST,
+    and create a tree of them. *)
+let of_ast ~traverse ast =
   let attribute (m : Ast_mapper.mapper) attr =
     (* ignore location of docstrings *)
     if Ast.Attr.is_doc attr then attr
@@ -30,5 +31,5 @@ let of_ast fragment ast =
   let mapper =
     Ast_mapper.{default_mapper with location; attribute; arg_label}
   in
-  map fragment mapper ast |> ignore ;
+  traverse mapper ast |> ignore ;
   (of_list !locs, !locs)

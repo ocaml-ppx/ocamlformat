@@ -12,7 +12,8 @@
 (** Abstract syntax tree terms *)
 
 open Migrate_ast
-open Extended_ast
+open Ocamlformat_parser_extended
+open Parsetree
 
 val init : Conf.t -> unit
 (** Initialize internal state *)

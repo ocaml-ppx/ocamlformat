@@ -18,18 +18,13 @@ let is_doc = function
   | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
   | _ -> false
 
-let normalize_code conf txt =
-  (* Normalize code blocks in docstrings using the extended AST. This
-     correctly handles repl phrases. *)
-  Normalize_extended_ast.normalize_code conf txt
-
 let docstring (c : Conf.t) =
   Docstring.normalize ~parse_docstrings:c.fmt_opts.parse_docstrings.v
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
-let make_mapper conf ~ignore_doc_comments =
+let make_mapper conf ~normalize_code ~ignore_doc_comments =
   let open Ast_helper in
   (* remove locations *)
   let location _ _ = Location.none in
@@ -47,7 +42,6 @@ let make_mapper conf ~ignore_doc_comments =
                   , [] )
             ; _ } as pstr ) ]
       when is_doc attr ->
-        let normalize_code = normalize_code conf in
         let doc' = docstring conf ~normalize_code doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
@@ -168,11 +162,11 @@ let make_mapper conf ~ignore_doc_comments =
   ; pat
   ; typ }
 
-let ast fragment ~ignore_doc_comments c =
-  map fragment (make_mapper c ~ignore_doc_comments)
+let ast fragment ~normalize_code ~ignore_doc_comments c =
+  map fragment (make_mapper c ~normalize_code ~ignore_doc_comments)
 
-let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = ast fragment c ~ignore_doc_comments in
+let equal fragment ~normalize_code ~ignore_doc_comments c ast1 ast2 =
+  let map = ast fragment c ~normalize_code ~ignore_doc_comments in
   equal fragment (map ast1) (map ast2)
 
 let ast = ast ~ignore_doc_comments:false
@@ -206,14 +200,16 @@ let docstrings (type a) (fragment : a t) s =
   let (_ : a) = map fragment (make_docstring_mapper docstrings) s in
   !docstrings
 
-let docstring conf =
-  let normalize_code = normalize_code conf in
-  docstring conf ~normalize_code
+let docstring ~normalize_code conf = docstring conf ~normalize_code
 
-let moved_docstrings fragment c s1 s2 =
+let moved_docstrings ~normalize_code fragment c s1 s2 =
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
-  let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let equal (_, x) (_, y) =
+    String.equal
+      (docstring ~normalize_code c x)
+      (docstring ~normalize_code c y)
+  in
   let cmt_kind = `Doc_comment in
   let cmt (loc, x) = Cmt.create_docstring x loc in
   let dropped x = {Cmt.kind= `Dropped (cmt x); cmt_kind} in
