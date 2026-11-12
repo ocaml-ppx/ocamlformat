@@ -382,6 +382,11 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l.txt $ sep
   | Optional l -> str "?" $ str l.txt $ sep
 
+let fmt_arg_label_cmts_before c lbl arg =
+  Option.value_map
+    (Ast.Exp.arg_label_loc lbl arg)
+    ~default:noop ~f:(Cmts.fmt_before c)
+
 let fmt_tuple_label c ?pre lbl sep =
   (* No comment can be attached here. *)
   match lbl with
@@ -1443,7 +1448,13 @@ and fmt_param_val c ctx : pparam_val -> _ = function
     when String.equal l.txt txt ->
       let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
       let xpat = sub_pat ~ctx pat in
-      cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
+      let parens = parenze_pat xpat in
+      (* The location of the pattern does not include the parentheses, keep
+         the comments inside. *)
+      cbox 0
+        ( str symbol
+        $ Params.parens_if parens c.conf
+            (fmt_pattern ~parens:false ~box:true c xpat) )
   | (Optional _ as lbl), None, pat ->
       let xpat = sub_pat ~ctx pat in
       let has_attr = not (List.is_empty pat.ppat_attributes) in
@@ -1751,13 +1762,13 @@ and fmt_label_arg ?(box = true) ?eol c (lbl, ({ast= arg; _} as xarg)) =
          && Ocaml_version.(
               compare c.conf.opr_opts.ocaml_version.v Releases.v4_14_0 >= 0 )
     ->
-      let lbl =
+      let lbl_str =
         match lbl with
         | Labelled _ -> str "~"
         | Optional _ -> str "?"
         | Nolabel -> noop
       in
-      lbl $ fmt_expression c ~box xarg
+      lbl_str $ fmt_expression c ~box xarg
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
@@ -1803,9 +1814,11 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
           fits_breaks "" ~hint:(1000, -2) ""
       | _ -> noop
     in
-    hovbox
-      (Params.Indent.fun_args_group c.conf ~lbl ast)
-      (fmt_label_arg c ?box (lbl, xarg) $ break_after)
+    let cmts_before = fmt_arg_label_cmts_before c lbl ast in
+    cmts_before
+    $ hovbox
+        (Params.Indent.fun_args_group c.conf ~lbl ast)
+        (fmt_label_arg c ?box (lbl, xarg) $ break_after)
     $ fmt_if (not last) (break_unless_newline 1 0)
   in
   let fmt_args ~first ~last args =
@@ -2347,6 +2360,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                 (parens, false)
             | _ -> (false, parens)
           in
+          let lbl_cmts_before = fmt_arg_label_cmts_before c lbl last_arg in
           let args =
             let wrap_intro x =
               fmt_if inner_parens (str "(")
@@ -2354,7 +2368,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
                   ( intro_epi
                   $ wrap
                       ( fmt_args_grouped e0 args_before
-                      $ break 1 0 $ hvbox 0 x ) )
+                      $ break 1 0 $ lbl_cmts_before $ hvbox 0 x ) )
               $ break 1 0
             in
             let force_closing_paren =
@@ -2387,7 +2401,11 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
             $ fmt_args_grouped ~epi:fmt_atrs e0 args_before
           in
           let label_sep = Params.Exp.fun_label_sep c.conf in
-          let pro = pro $ break 1 0 $ fmt_label lbl label_sep in
+          let pro =
+            pro $ break 1 0
+            $ fmt_arg_label_cmts_before c lbl last_arg
+            $ fmt_label lbl label_sep
+          in
           expr_epi
           $ hovbox 4
               ( fmt_expression c ~pro ~box:false (sub_exp ~ctx last_arg)

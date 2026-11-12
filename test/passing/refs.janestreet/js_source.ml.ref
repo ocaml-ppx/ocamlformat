@@ -136,13 +136,8 @@ let _ =
   := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ;;
 
-let g =
-  f
-    ~x
-      (* this is a multiple-line-spanning
-                comment *)
-    ~y
-;;
+let g = f ~x (* this is a multiple-line-spanning
+                comment *) ~y
 
 let f =
   very_long_function_name

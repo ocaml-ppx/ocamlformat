@@ -21,14 +21,25 @@ let of_ast fragment ast =
     else Ast_mapper.default_mapper.attribute m attr
   in
   let locs = ref [] in
+  let label_locs = ref [] in
   let location _ loc =
     locs := loc :: !locs ;
     loc
   in
   (* Ignore locations of arg_labels *)
   let arg_label _ lbl = lbl in
+  let expr (m : Ast_mapper.mapper) e =
+    ( match e.pexp_desc with
+    | Pexp_apply (_, args) ->
+        List.iter args ~f:(fun (lbl, arg) ->
+            Option.iter (Ast.Exp.arg_label_loc lbl arg) ~f:(fun loc ->
+                locs := loc :: !locs ;
+                label_locs := loc :: !label_locs ) )
+    | _ -> () ) ;
+    Ast_mapper.default_mapper.expr m e
+  in
   let mapper =
-    Ast_mapper.{default_mapper with location; attribute; arg_label}
+    Ast_mapper.{default_mapper with location; attribute; arg_label; expr}
   in
   map fragment mapper ast |> ignore ;
-  (of_list !locs, !locs)
+  (of_list !locs, !locs, Set.of_list (module Location) !label_locs)

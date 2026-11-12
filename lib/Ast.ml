@@ -142,6 +142,25 @@ end
 module Exp = struct
   let location x = x.pexp_loc
 
+  let arg_label_loc lbl arg =
+    match lbl with
+    | Asttypes.Nolabel -> None
+    | Labelled {txt; loc} | Optional {txt; loc} ->
+        let label_end =
+          { loc.loc_start with
+            pos_cnum= loc.loc_start.pos_cnum + String.length txt + 2 }
+        in
+        let arg_start = arg.pexp_loc.loc_start in
+        let loc_end =
+          if Position.compare label_end arg_start <= 0 then label_end
+          else arg_start
+        in
+        let loc = {loc with loc_end} in
+        Option.some_if
+          ( (not loc.loc_ghost)
+          && Position.compare loc.loc_start loc.loc_end < 0 )
+          loc
+
   let test_id ~f = function
     | {pexp_desc= Pexp_ident {txt= i; _}; _} -> f i
     | _ -> false

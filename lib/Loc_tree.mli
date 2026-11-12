@@ -11,5 +11,9 @@
 
 include Non_overlapping_interval_tree.S with type itv = Location.t
 
-val of_ast : 'a Extended_ast.t -> 'a -> t * Location.t list
-(** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)
+val of_ast :
+     'a Extended_ast.t
+  -> 'a
+  -> t * Location.t list * Set.M(Migrate_ast.Location).t
+(** Use Ast_mapper to collect all locs in ast, and create a tree of them.
+    Also returns the locations of the labels of function arguments. *)

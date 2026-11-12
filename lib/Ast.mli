@@ -47,6 +47,10 @@ end
 module Exp : sig
   val location : expression -> Location.t
 
+  val arg_label_loc : Asttypes.arg_label -> expression -> Location.t option
+  (** [arg_label_loc lbl arg] is the location of the label token of [lbl]
+      (e.g. [~l:] or [~]) in the function application argument [arg]. *)
+
   val is_prefix : expression -> bool
   (** Holds for prefix symbol expressions. *)
 

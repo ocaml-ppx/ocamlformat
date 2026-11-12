@@ -17,6 +17,11 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- \* Fix comments placed before a labelled argument: a comment on its own line
+  before `~l:arg` is no longer moved to the end of the previous argument, and
+  a comment inside the parentheses of `~(x : t)` stays inside them.
+  (#2838, #306, @davesnx)
+
 - Fix missing parentheses around attributed `let open` and `let module`
   expressions on the left of a sequence (#2826, #2827, @kxc-wraikny, @Don-Yin).
 

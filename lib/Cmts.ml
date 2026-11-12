@@ -264,7 +264,7 @@ let add_cmts t position loc ?deep_loc cmts =
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
     children. *)
-let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
+let rec place t loc_tree ~label_locs ?prev_loc ?deep_loc locs cmts =
   match locs with
   | curr_loc :: next_locs ->
       let before, within, after = CmtSet.split cmts curr_loc in
@@ -275,6 +275,7 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
            previous element, so if a comment is at the beginning of the file,
            it should be placed before the next element. *)
         | Some prev_loc when Location.(compare prev_loc none) = 0 -> before
+        | Some prev_loc when Set.mem label_locs prev_loc -> before
         | Some prev_loc ->
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
@@ -288,9 +289,10 @@ let rec place t loc_tree ?prev_loc ?deep_loc locs cmts =
         | [] ->
             add_cmts t `Within curr_loc within ;
             Option.some_if (List.is_empty next_locs) curr_loc
-        | children -> place t loc_tree children within
+        | children -> place t loc_tree ~label_locs children within
       in
-      place t loc_tree ~prev_loc:curr_loc next_locs after ?deep_loc
+      place t loc_tree ~label_locs ~prev_loc:curr_loc next_locs after
+        ?deep_loc
   | [] ->
       ( match prev_loc with
       | Some prev_loc -> add_cmts t `After prev_loc cmts ?deep_loc
@@ -387,7 +389,7 @@ let init fragment ~debug source asts comments_n_docstrings =
     Normalize_extended_ast.dedup_cmts fragment asts comments_n_docstrings
   in
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast fragment asts in
+    let loc_tree, locs, label_locs = Loc_tree.of_ast fragment asts in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
@@ -396,7 +398,7 @@ let init fragment ~debug source asts comments_n_docstrings =
     let cmts = CmtSet.of_list comments in
     ( match locs with
     | [] -> add_cmts t `After Location.none cmts
-    | _ -> ignore @@ place t loc_tree locs cmts ) ;
+    | _ -> ignore @@ place t loc_tree ~label_locs locs cmts ) ;
     if debug then (
       let get_cmts pos loc =
         let cmts = find_at_position t loc pos in
