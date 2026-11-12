@@ -224,15 +224,22 @@ module Pat = struct
     | Ppat_cons pl when List.for_all pl ~f:is_any -> true
     | _ -> false
 
-  let has_trailing_attributes {ppat_desc; ppat_attributes; _} =
+  (** Patterns that don't need parentheses. *)
+  let is_safe {ppat_desc; _} =
     match ppat_desc with
-    | Ppat_construct (_, None)
-     |Ppat_constant _ | Ppat_any | Ppat_var _
+    | Ppat_any | Ppat_var _ | Ppat_constant _ | Ppat_interval _
+     |Ppat_construct (_, None)
      |Ppat_variant (_, None)
-     |Ppat_record _ | Ppat_array _ | Ppat_list _ | Ppat_type _
-     |Ppat_unpack _ | Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
-        false
-    | _ -> List.exists ppat_attributes ~f:(Fn.non Attr.is_doc)
+     |Ppat_type _ | Ppat_record _ | Ppat_list _ | Ppat_array _
+     |Ppat_unpack _ | Ppat_extension _ | Ppat_open _ ->
+        true
+    | _ -> false
+
+  (** Whether an attribute is printed after the pattern, where it would be
+      parsed as part of an enclosing pattern. *)
+  let has_trailing_attributes ({ppat_attributes; _} as pat) =
+    (not (is_safe pat))
+    && List.exists ppat_attributes ~f:(Fn.non Attr.is_doc)
 end
 
 let doc_atrs ?(acc = []) atrs =
@@ -2072,6 +2079,12 @@ end = struct
       , (Ppat_construct (_, Some _) | Ppat_cons _ | Ppat_variant (_, Some _))
       ) ->
         true
+    | Pat {ppat_desc= Ppat_effect (_, p2); _}, _ when p2 == pat ->
+        not (Pat.is_safe pat)
+    | Pat {ppat_desc= Ppat_effect (p1, _); _}, Ppat_construct _
+      when p1 == pat ->
+        false
+    | Pat {ppat_desc= Ppat_effect _; _}, _ -> true
     | _, Ppat_var _ when List.is_empty pat.ppat_attributes -> false
     | ( ( Exp {pexp_desc= Pexp_let ({pvbs_bindings; _}, _, _); _}
         | Str {pstr_desc= Pstr_value {pvbs_bindings; _}; _} )

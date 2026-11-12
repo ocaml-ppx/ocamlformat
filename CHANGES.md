@@ -17,6 +17,8 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix missing parentheses in `effect A, (Some k)` (#2843, @Julow)
+
 - Fix missing parentheses around attributed `let open` and `let module`
   expressions on the left of a sequence (#2826, #2827, @kxc-wraikny, @Don-Yin).
 
