@@ -2033,6 +2033,25 @@ and fmt_match c ?pro ?eol ~loc ~parens ~infix_ext_attrs ctx xexp cs e0
                $ space_break $ fmt_cases c ctx cs ) )
         $ fmt_attributes c ~pre:Space outer_attributes ) )
 
+(** Preserve the parentheses around an expression. *)
+and fmt_expression_preserve_parens c xexp =
+  (* Expressions that always have parentheses and where preserving doesn't
+     make sense. *)
+  let has_forced_parens = function
+    | { pexp_desc=
+          ( Pexp_constraint _ | Pexp_coerce _ | Pexp_beginend _
+          | Pexp_parens _ | Pexp_pack _ )
+      ; pexp_attributes= []
+      ; _ } ->
+        true
+    | _ -> false
+  in
+  let parens =
+    (not (has_forced_parens xexp.ast))
+    && Source.is_parenthesized c.source xexp.ast.pexp_loc
+  in
+  fmt_expression c ~parens xexp
+
 and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
     ?(indent_wrap = 0) ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Exp exp)
@@ -2812,7 +2831,9 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       $ hvbox_if has_attr 0
           ( p1.box
               ( opt default (fun d ->
-                    hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ break 1 (-2))
+                    hvbox 2
+                      ( fmt_expression_preserve_parens c (sub_exp ~ctx d)
+                      $ break 1 (-2) )
                     $ str "with" $ p2.break_after_with )
               $ fmt_fields )
           $ fmt_atrs )

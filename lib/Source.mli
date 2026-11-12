@@ -64,3 +64,7 @@ val loc_of_first_token_at :
   t -> Location.t -> Parser.token -> Location.t option
 
 val find_first_token_on_line : t -> int -> (Parser.token * Location.t) option
+
+val is_parenthesized : t -> Location.t -> bool
+(** Return [true] if parentheses are the first and last tokens at the given
+    location. *)

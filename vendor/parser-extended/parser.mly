@@ -3003,8 +3003,15 @@ class_fun_param:
 ;
 expr_fun_params:
   | nonempty_llist(expr_fun_param) { $1 }
+;
+record_update_expr:
+| simple_expr nonempty_llist(labeled_simple_expr)
+    { mkexp ~loc:$sloc (Pexp_apply ($1, $2)) }
+| simple_expr
+    { $1 }
+;
 record_expr_content:
-  eo = ioption(terminated(simple_expr, WITH))
+  eo = ioption(terminated(record_update_expr, WITH))
   fields = separated_or_terminated_nonempty_list(SEMI, record_expr_field)
     { eo, fields }
 ;
