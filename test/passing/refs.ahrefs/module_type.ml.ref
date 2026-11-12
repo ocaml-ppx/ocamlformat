@@ -111,3 +111,6 @@ module type Grammar = functor
   (* Set of nonterminals *)
   (Attr : Attribute)
   -> sig end
+
+module type T = T with module type T = (T -> T)
+module type T = T with module type T := (T -> T)
