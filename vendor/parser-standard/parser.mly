@@ -3388,7 +3388,8 @@ generic_type_declaration(flag, kind):
       let attrs = attrs1 @ attrs2 in
       let loc = make_loc $sloc in
       let text = symbol_text $symbolstartpos in
-      Type.mk id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
+      Type.mk
+        id ~params ~constraints ~kind ~priv ?manifest ~attrs ~loc ~docs ~text
     }
 ;
 %inline constraints:

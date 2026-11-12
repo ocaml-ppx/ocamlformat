@@ -40,7 +40,37 @@ let maybe_skip_phrase lexbuf =
   | Parser.SEMISEMI | Parser.EOF -> ()
   | _ -> skip_phrase lexbuf
 
-type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
+open Parser.MenhirInterpreter
+
+let rec fix_resume = function
+  | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
+  | Shifting (_, _, _) | AboutToReduce (_, _) as cp ->
+      fix_resume (resume ~strategy:`Simplified cp)
+
+let rec offer_input lexbuf cp tok =
+  let ptok = Lexing.(tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
+  match fix_resume (offer cp ptok) with
+  | InputNeeded _ as cp ->
+      offer_input lexbuf cp (token lexbuf)
+  | Accepted x -> x
+  | Rejected -> raise Parsing.Parse_error
+  | Shifting (_, _, _) | AboutToReduce (_, _) ->
+      assert false
+  | HandlingError _ as cp' ->
+      match Lexer.try_disambiguate lexbuf tok with
+      | Some tok' -> offer_input lexbuf cp tok'
+      | None -> main_loop lexbuf cp'
+
+and main_loop lexbuf = function
+  | InputNeeded _ as cp ->
+      offer_input lexbuf cp (token lexbuf)
+  | Accepted x -> x
+  | Rejected -> raise Parsing.Parse_error
+  | Shifting (_, _, _) | AboutToReduce (_, _) | HandlingError _ as cp ->
+      main_loop lexbuf (resume ~strategy:`Simplified cp)
+
+type 'a parser =
+  Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
 
 let wrap (parser : 'a parser) ~ocaml_version lexbuf : 'a =
   try
@@ -49,38 +79,7 @@ let wrap (parser : 'a parser) ~ocaml_version lexbuf : 'a =
       Some (ocaml_version, [])
     in
     Lexer.init ?keyword_edition ();
-    let open Parser.MenhirInterpreter in
-    let rec fix_resume = function
-      | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
-      | Shifting (_, _, _) | AboutToReduce (_, _) as cp ->
-        fix_resume (resume ~strategy:`Simplified cp)
-    in
-    let rec offer_input lexbuf cp tok =
-      let ptok = Lexing.(tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
-      match fix_resume (offer cp ptok) with
-      | InputNeeded _ as cp ->
-          offer_input lexbuf cp (token lexbuf)
-      | Accepted x -> Some x
-      | Rejected -> None
-      | Shifting (_, _, _) | AboutToReduce (_, _) ->
-          assert false
-      | HandlingError _ as cp' ->
-        match Lexer.try_disambiguate lexbuf tok with
-        | Some tok' -> offer_input lexbuf cp tok'
-        | None -> main_loop lexbuf cp'
-    and main_loop lexbuf = function
-      | InputNeeded _ as cp ->
-          offer_input lexbuf cp (token lexbuf)
-      | Accepted x -> Some x
-      | Rejected -> None
-      | Shifting (_, _, _) | AboutToReduce (_, _) | HandlingError _ as cp ->
-        main_loop lexbuf (resume ~strategy:`Simplified cp)
-    in
-    let ast =
-      match main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) with
-      | Some ast -> ast
-      | None -> raise Parsing.Parse_error
-    in
+    let ast = main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) in
     Parsing.clear_parser();
     Docstrings.warn_bad_docstrings ();
     last_token := Parser.EOF;

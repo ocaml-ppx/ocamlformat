@@ -86,7 +86,7 @@ module Typ = struct
   let variant ?loc ?attrs a b c = mk ?loc ?attrs (Ptyp_variant (a, b, c))
   let poly ?loc ?attrs a b = mk ?loc ?attrs (Ptyp_poly (a, b))
   let functor_ ?loc ?attrs a b c d = mk ?loc ?attrs (Ptyp_functor (a, b, c, d))
-  let package ?loc ?attrs p = mk ?loc ?attrs (Ptyp_package p)
+  let package ?loc ?attrs a = mk ?loc ?attrs (Ptyp_package a)
   let extension ?loc ?attrs a = mk ?loc ?attrs (Ptyp_extension a)
   let open_ ?loc ?attrs mod_ident t = mk ?loc ?attrs (Ptyp_open (mod_ident, t))
 (*
