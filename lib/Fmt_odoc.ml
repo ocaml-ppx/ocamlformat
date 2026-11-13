@@ -261,11 +261,11 @@ let rec fmt_inline_elements c ~wrap elements =
     | `Math_span s :: t -> fmt_math_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
+          (* The lang can contain arbitrary text. *)
           match lang with
-          | Some l -> str_normalized ~wrap l $ str ":"
+          | Some l -> str l $ str ":"
           | None -> noop
         in
-        (* todo check this was an escape sequence *)
         str "{%" $ (lang $ str s) $ str "%}" $ aux t
     | `Styled (style, elems) :: t ->
         let s =

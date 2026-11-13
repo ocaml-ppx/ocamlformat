@@ -17,6 +17,8 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix comment changed on some bad `{% ... %}` syntax (#2845, @Julow)
+
 - Fix comment changed containing `[\\[\\]]` (#2844, @Julow)
 
 - Fix missing parentheses in `effect A, (Some k)` (#2843, @Julow)
