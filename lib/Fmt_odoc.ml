@@ -262,7 +262,9 @@ let rec fmt_inline_elements c ~wrap elements =
     | `Raw_markup (lang, s) :: t ->
         let lang =
           (* The lang can contain arbitrary text. *)
-          match lang with Some l -> str l $ str ":" | None -> noop
+          match lang with
+          | Some l -> str l $ str ":"
+          | None -> noop
         in
         str "{%" $ (lang $ str s) $ str "%}" $ aux t
     | `Styled (style, elems) :: t ->
