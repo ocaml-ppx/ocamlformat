@@ -34,7 +34,7 @@ MODE?=default
 
 code/%:
 	@test -d code || mkdir code
-	@test -d "$@" || git -C code clone "$(URI)"
+	@test -d "$@" || git -C code clone $(GIT_CLONE_ARGS) "$(URI)"
 
 code/ocamlformat: URI = ../../../ocamlformat
 code/infer: URI = https://github.com/facebook/infer.git
