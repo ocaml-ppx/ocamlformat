@@ -60,24 +60,8 @@ jobs:
     if: ${{ github.ref != 'refs/heads/main' }}
     needs: build-linux
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        profile:
-          - conventional
-          - ocamlformat
-          - janestreet
-        # To enable comparing with ocp-indent:
-        # include:
-        #   - ocp_indent: true
-        #     ocp_indent_config: JaneStreet
-        #     profile: janestreet
 
     steps:
-      - name: Install ocp-indent
-        if: ${{ matrix.ocp_indent }}
-        run: |
-          sudo apt install -y ocp-indent
-          sudo touch /etc/ocamlfind.conf
 
       # Clone the project
       - uses: actions/checkout@v7
@@ -105,11 +89,20 @@ jobs:
           name: ocamlformat-${{ runner.os }}-${{ runner.arch }}
           path: ocamlformat-b
 
-      - name: Test ${{ matrix.profile }} profile
+      - name: Setup tests
         run: |
+          cat > test_branch.sh <<EOF
+          ./tools/test_branch.sh -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat
+          EOF
           chmod +x ocamlformat-a/ocamlformat ocamlformat-b/ocamlformat
-          ./tools/test_branch.sh $TEST_BRANCH_ARGS -n -a ocamlformat-a/ocamlformat -b ocamlformat-b/ocamlformat 'profile=${{ matrix.profile }}'
-        shell: bash
-        env:
-          OCP_INDENT_CONFIG: ${{ matrix.ocp_indent_config }}
-          TEST_BRANCH_ARGS: ${{ matrix.ocp_indent && '-o -s' || '' }}
+          # Shallow clone to save time
+          GIT_CLONE_ARGS='--depth 1 --no-tags' make -C test-extra test_setup
+
+      - name: Test conventional profile
+        run: bash test_branch.sh -l profile=conventional
+
+      - name: Test ocamlformat profile
+        run: bash test_branch.sh -l profile=ocamlformat
+
+      - name: Test janestreet profile
+        run: bash test_branch.sh -l profile=janestreet
