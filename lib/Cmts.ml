@@ -702,6 +702,18 @@ let clear_remaining_inside t loc =
   if t.debug then
     update_remaining t ~f:(Set.filter ~f:(Fn.non (Location.contains loc)))
 
+(** Locations inside [loc] that have comments attached. *)
+let locs_with_cmts_inside t (loc : Location.t) =
+  let max = {loc with loc_start= loc.loc_end} in
+  let inner map acc =
+    Map.fold_range_inclusive map ~min:loc ~max ~init:acc
+      ~f:(fun ~key ~data acc ->
+        match data with
+        | _ :: _ when Location.contains loc key -> key :: acc
+        | _ -> acc )
+  in
+  inner t.cmts_before @@ inner t.cmts_within @@ inner t.cmts_after []
+
 let drop_inside t loc =
   let clear pos =
     update_cmts t pos
@@ -712,7 +724,11 @@ let drop_inside t loc =
   clear `Before ;
   clear `Within ;
   clear `After ;
-  clear_remaining_inside t loc
+  clear_remaining_inside t loc ;
+  (* Relocate comments attached to locations inside [loc] but placed
+     outside. *)
+  List.iter (locs_with_cmts_inside t loc) ~f:(fun src ->
+      relocate t ~src ~before:loc ~after:loc )
 
 let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
