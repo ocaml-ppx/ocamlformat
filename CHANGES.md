@@ -17,6 +17,9 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix dropped comment in `let[@ocamlformat "disable"] x = 42 (* a *)`
+  (#2848, @Julow)
+
 - Fix comment changed on some bad `{% ... %}` syntax (#2845, @Julow)
 
 - Fix comment changed containing `[\\[\\]]` (#2844, @Julow)
