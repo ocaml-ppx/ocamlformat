@@ -2484,15 +2484,21 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ Params.parens_if parens c.conf (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_cons l ->
+      (* Inner: [(x :: y) [@a]], outer: [x :: ((y :: z) [@a])]. *)
+      let inner_wrap = parens || has_attr in
+      let outer_wrap = parens && has_attr in
       pro
       $ Cmts.fmt c pexp_loc
-          ( hvbox indent_wrap
-              (fmt_infix_op_args c ~parens xexp
-                 (List.mapi l ~f:(fun i e ->
-                      ( None
-                      , None
-                      , (fmt_if (i > 0) (str "::"), sub_exp ~ctx e) ) ) ) )
-          $ fmt_atrs )
+          (hvbox_if outer_wrap 0
+             (Params.parens_if outer_wrap c.conf
+                ( hvbox indent_wrap
+                    (fmt_infix_op_args c ~parens:inner_wrap xexp
+                       (List.mapi l ~f:(fun i e ->
+                            ( None
+                            , None
+                            , (fmt_if (i > 0) (str "::"), sub_exp ~ctx e) ) )
+                       ) )
+                $ fmt_atrs ) ) )
   | Pexp_construct (lid, Some arg) ->
       pro
       $ Params.parens_if parens c.conf
