@@ -17,6 +17,8 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix dropped parentheses in `1 :: (2 :: [] [@a])` (#2849, @Julow)
+
 - Fix dropped comment in `let[@ocamlformat "disable"] x = 42 (* a *)`
   (#2848, @Julow)
 
