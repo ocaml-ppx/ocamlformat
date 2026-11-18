@@ -14,3 +14,9 @@ let x =
 [@@@ocamlformat "enable"]
 
 (* cmts *)
+
+(* a *)
+type[@ocamlformat "disable"] t = A (* a *)
+
+(* a *)
+let[@ocamlformat "disable"] y = 1 (* a *)

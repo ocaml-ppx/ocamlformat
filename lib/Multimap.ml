@@ -37,6 +37,9 @@ let partition_multi map ~src ~dst ~f =
   in
   change_multi map src dontmove
 
-let filter map ~f = Map.map map ~f:(List.filter ~f)
+let filter_key map key ~f =
+  match List.filter (Map.find_multi map key) ~f with
+  | [] -> Map.remove map key
+  | data -> Map.set map ~key ~data
 
 let to_list map = Map.to_alist map |> List.concat_map ~f:snd

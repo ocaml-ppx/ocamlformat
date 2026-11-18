@@ -93,6 +93,8 @@ module Toplevel : sig
 end
 
 val drop_inside : t -> Location.t -> unit
+(** Drop comments inside the given loc. Comments attached to a sub loc but
+    placed outside of loc are relocated to loc. *)
 
 val drop_before : t -> Location.t -> t
 

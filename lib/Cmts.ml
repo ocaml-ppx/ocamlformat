@@ -702,17 +702,38 @@ let clear_remaining_inside t loc =
   if t.debug then
     update_remaining t ~f:(Set.filter ~f:(Fn.non (Location.contains loc)))
 
+(** Fold over locations inside [loc]. *)
+let fold_loc_range m (loc : Location.t) ~init ~f =
+  let min = {loc with loc_end= loc.loc_start; loc_ghost= false} in
+  match
+    Map.binary_search m `Last_less_than_or_equal_to loc.loc_end
+      ~compare:(fun ~key ~data:_ pos ->
+        Position.compare key.Location.loc_start pos )
+  with
+  | Some (max, _) -> Map.fold_range_inclusive m ~min ~max ~init ~f
+  | None -> init
+
+(** Locations inside [loc] that have comments attached. *)
+let fold_locs_with_cmts t (loc : Location.t) ~init ~f =
+  let inner map acc = fold_loc_range map loc ~init:acc ~f in
+  inner t.cmts_before @@ inner t.cmts_within @@ inner t.cmts_after init
+
 let drop_inside t loc =
   let clear pos =
-    update_cmts t pos
-      ~f:
-        (Multimap.filter ~f:(fun cmt ->
-             not (Location.contains loc (Cmt.loc cmt)) ) )
+    update_cmts t pos ~f:(fun map ->
+        fold_loc_range map loc ~init:map ~f:(fun ~key ~data:_ map ->
+            Multimap.filter_key map key ~f:(fun cmt ->
+                not (Location.contains loc (Cmt.loc cmt)) ) ) )
   in
   clear `Before ;
   clear `Within ;
   clear `After ;
-  clear_remaining_inside t loc
+  clear_remaining_inside t loc ;
+  (* Relocate comments attached to locations inside [loc] but placed
+     outside. *)
+  fold_locs_with_cmts t loc ~init:() ~f:(fun ~key ~data () ->
+      if not (List.is_empty data) then
+        relocate t ~src:key ~before:loc ~after:loc )
 
 let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
