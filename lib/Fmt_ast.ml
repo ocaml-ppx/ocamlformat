@@ -2462,11 +2462,12 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           c.conf
           (fmt_constant c const $ fmt_atrs)
   | Pexp_constraint (e, t) ->
+      let indent = Params.Indent.exp_constraint c.conf in
       pro
-      $ hvbox
-          (Params.Indent.exp_constraint c.conf)
+      $ hvbox indent
           (Params.parens_if parens c.conf
-             ( wrap_fits_breaks ~space:false c.conf "(" ")"
+             ( wrap_fits_breaks ~space:false ~offset_closing:(-indent) c.conf
+                 "(" ")"
                  ( fmt_expression c (sub_exp ~ctx e)
                  $ space_break $ str ": "
                  $ fmt_core_type c (sub_typ ~ctx t) )

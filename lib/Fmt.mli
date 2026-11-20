@@ -163,13 +163,22 @@ val wrap_if_fits_or : bool -> string -> string -> t -> t
 (** As [wrap_if_fits], but prologue and epilogue can be forced by the
     additional condition. *)
 
-val wrap_fits_breaks : ?space:bool -> Conf.t -> string -> string -> t -> t
+val wrap_fits_breaks :
+  ?space:bool -> ?offset_closing:int -> Conf.t -> string -> string -> t -> t
 (** As [wrap], but if [space] is provided, a space is added after prologue
     and a space hint is added before epilogue in case the enclosing box
-    breaks. *)
+    breaks. [offset_closing] shifts the epilogue when it is placed on its own
+    line. *)
 
 val wrap_fits_breaks_if :
-  ?space:bool -> Conf.t -> bool -> string -> string -> t -> t
+     ?space:bool
+  -> ?offset_closing:int
+  -> Conf.t
+  -> bool
+  -> string
+  -> string
+  -> t
+  -> t
 (** As [wrap_fits_breaks], but prologue and epilogue are formatted subject to
     the additional condition. *)
 

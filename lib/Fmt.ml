@@ -237,7 +237,8 @@ let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""
 
-let wrap_fits_breaks_if ?(space = true) (c : Conf.t) cnd pre suf k =
+let wrap_fits_breaks_if ?(space = true) ?(offset_closing = 0) (c : Conf.t)
+    cnd pre suf k =
   match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
   | `No, false -> wrap_if cnd (str pre) (str suf) k
   | `Space, _ | `No, true ->
@@ -247,10 +248,10 @@ let wrap_fits_breaks_if ?(space = true) (c : Conf.t) cnd pre suf k =
   | `Closing_on_separate_line, _ ->
       fits_breaks_if cnd pre (pre ^ " ")
       $ k
-      $ fits_breaks_if cnd suf ~hint:(1000, 0) suf
+      $ fits_breaks_if cnd suf ~hint:(1000, offset_closing) suf
 
-let wrap_fits_breaks ?(space = true) conf x =
-  wrap_fits_breaks_if ~space conf true x
+let wrap_fits_breaks ?(space = true) ?offset_closing conf x =
+  wrap_fits_breaks_if ~space ?offset_closing conf true x
 
 (** Boxes ---------------------------------------------------------------*)
 
