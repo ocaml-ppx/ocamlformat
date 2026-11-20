@@ -398,8 +398,9 @@ OPTIONS (CODE FORMATTING STYLE)
            making some syntactic gotchas visually obvious. The janestreet
            profile is used at Jane Street. The ocsigen profile is used in
            Ocsigen projects. It aims to be compact while staying readable.
-           Separators start the line and closing delimiters are on a line of
-           their own. The default value is default.
+           Separators (; and ->) are at the start of the line and closing
+           parentheses are on their own line for multi-line expressions. The
+           default value is default.
 
        --parens-ite
            Uses parentheses around if-then-else branches that spread across
