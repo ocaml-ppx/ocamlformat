@@ -12,9 +12,41 @@
 open Extended_ast
 open Asttypes
 
-val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens_if :
+     bool
+  -> Conf.t
+  -> ?disambiguate:bool
+  -> ?space_opn:bool
+       (** Add a space after the opening paren when the box breaks. *)
+  -> ?force_indicate:bool
+       (** Indicate the multiline delimiters even when
+           [indicate-multiline-delimiters = no]. *)
+  -> ?offset_closing:int
+       (** Offset of the closing paren used when
+           [indicate-multiline-delimiters = closing-on-separate-line] is set. *)
+  -> Fmt.t
+  -> Fmt.t
 
-val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens :
+     Conf.t
+  -> ?disambiguate:bool
+  -> ?space_opn:bool
+  -> ?force_indicate:bool
+  -> ?offset_closing:int
+  -> Fmt.t
+  -> Fmt.t
+(** See {!parens_if}. *)
+
+val delimiters :
+     Conf.t
+  -> ?no_indicate:bool
+       (** Don't add spaces after the opening delimiter when
+           [indicate-multiline-delimiters = no] *)
+  -> string
+  -> string
+  -> Fmt.t
+  -> Fmt.t
+(** Format delimiters like [[]] or [{}]. *)
 
 module Exp : sig
   module Infix_op_arg : sig
@@ -23,18 +55,6 @@ module Exp : sig
     val dock : expression Ast.xt -> bool
     (** Whether the RHS of an infix operator should be docked. *)
   end
-
-  val wrap :
-       Conf.t
-    -> ?disambiguate:bool
-    -> ?fits_breaks:bool
-    -> ?offset_closing_paren:int
-         (** Offset of the closing paren in case the line has been broken and
-             the option [indicate-multiline-delimiters] is set to
-             [closing-on-separate-line]. By default the offset is 0. *)
-    -> parens:bool
-    -> Fmt.t
-    -> Fmt.t
 
   val box_fun_decl_args :
        ctx:Ast.t

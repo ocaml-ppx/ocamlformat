@@ -237,22 +237,6 @@ let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""
 
-let wrap_fits_breaks_if ?(space = true) ?(offset_closing = 0) (c : Conf.t)
-    cnd pre suf k =
-  match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
-  | `No, false -> wrap_if cnd (str pre) (str suf) k
-  | `Space, _ | `No, true ->
-      fits_breaks_if cnd pre (pre ^ " ")
-      $ k
-      $ fits_breaks_if cnd suf ~hint:(1, 0) suf
-  | `Closing_on_separate_line, _ ->
-      fits_breaks_if cnd pre (pre ^ " ")
-      $ k
-      $ fits_breaks_if cnd suf ~hint:(1000, offset_closing) suf
-
-let wrap_fits_breaks ?(space = true) ?offset_closing conf x =
-  wrap_fits_breaks_if ~space ?offset_closing conf true x
-
 (** Boxes ---------------------------------------------------------------*)
 
 let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n

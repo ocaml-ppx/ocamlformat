@@ -17,8 +17,9 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
-- Fix closing-on-separate-line in a large `( x : t )` expression with
-  `indicate-multiline-delimiters = closing-on-separate-line` (#2850, @Julow)
+- Fix closing parenthesis indentation in some expressions and pattern with
+  `indicate-multiline-delimiters = closing-on-separate-line`
+  (#2850, #2851, @Julow)
 
 - Fix dropped parentheses in `1 :: (2 :: [] [@a])` (#2849, @Julow)
 

@@ -29,7 +29,7 @@ let f =
         | P when h x ->
           (function
             | A -> 6
-            )
+          )
       )
 ;;
 
@@ -45,7 +45,7 @@ let foo =
         | P when h x ->
           (function
             | A -> 6
-            )
+          )
       )
   );
   List.map ~f:(fun x g t h y u ->
@@ -334,7 +334,7 @@ let _ = function
     x
     >>= (function
      | `Halt -> return x
-     )
+    )
   | _ -> ()
 ;;
 
@@ -344,7 +344,7 @@ let _ =
       x
       >>= (function
        | `Halt -> return x
-       )
+      )
     | _ -> ()
   in
   ()
@@ -356,7 +356,7 @@ class c =
       x
       >>= (function
        | `Halt -> return x
-       )
+      )
     | _ -> ()
   in
   object end
