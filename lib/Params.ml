@@ -171,12 +171,6 @@ module Exp = struct
       | _ -> false
   end
 
-  let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true) ~parens
-      k =
-    if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
-      wrap_if_fits_or parens "(" ")" k
-    else parens_if parens c ~space_opn:fits_breaks k
-
   let break_fun_kw c ~ctx ~ctx0 ~last_arg =
     let is_labelled_arg =
       match ctx_is_apply_and_exp_is_arg ~ctx ~ctx0 with

@@ -56,14 +56,6 @@ module Exp : sig
     (** Whether the RHS of an infix operator should be docked. *)
   end
 
-  val wrap :
-       Conf.t
-    -> ?disambiguate:bool
-    -> ?fits_breaks:bool
-    -> parens:bool
-    -> Fmt.t
-    -> Fmt.t
-
   val box_fun_decl_args :
        ctx:Ast.t
     -> ctx0:Ast.t
