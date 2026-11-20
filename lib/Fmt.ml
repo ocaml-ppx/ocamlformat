@@ -237,8 +237,8 @@ let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""
 
-let wrap_fits_breaks_if ?(space = true) ?(offset_closing = 0) (c : Conf.t) cnd
-    pre suf k =
+let wrap_fits_breaks_if ?(space = true) ?(offset_closing = 0) (c : Conf.t)
+    cnd pre suf k =
   match (c.fmt_opts.indicate_multiline_delimiters.v, space) with
   | `No, false -> wrap_if cnd (str pre) (str suf) k
   | `Space, _ | `No, true ->
