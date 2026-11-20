@@ -1625,19 +1625,18 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
     | args, typ, Pfunction_cases (cs, function_loc, cs_infix_ext_attrs) ->
         (* [fun _ -> function] or [function]. [spilled_attrs] are extra attrs
            to add to the [function] keyword. *)
-        let fun_, spilled_infix_ext_attrs, box =
+        let fun_, spilled_infix_ext_attrs, box_indent =
           match (args, typ) with
           | [], None ->
               ( noop
               , Some infix_ext_attrs
-              , hvbox (Params.Indent.function_ c.conf ~ctx ~ctx0 ~parens) )
+              , Params.Indent.function_ c.conf ~ctx ~ctx0 ~parens )
           | [], Some _ -> assert false
           | args, typ ->
               ( fmt_fun_args_typ args typ $ space_break
               , None
-              , hvbox
-                  (Params.Indent.docked_function_after_fun c.conf ~parens
-                     ~ctx0 ~ctx ) )
+              , Params.Indent.docked_function_after_fun c.conf ~parens ~ctx0
+                  ~ctx )
         in
         let function_ =
           let infix_ext_attrs =
@@ -1668,20 +1667,26 @@ and fmt_function ?force_closing_paren ~ctx ~ctx0 ?pro ~wrap_intro
           $ Params.Exp.box_function_cases c.conf ?indent ~ctx ~ctx0 ~parens
               (pro_inner $ cases)
         in
-        let box, cases =
+        let box, box_indent, cases =
           match cs with
           | [{pc_lhs; pc_guard= _; pc_rhs}]
             when Params.Exp.single_line_function ~ctx ~ctx0 ~args ->
               ( hovbox 4
+              , 4
               , hvbox 0
                   ( fmt_pattern c ~pro:(if_newline "| ") (sub_pat ~ctx pc_lhs)
                   $ space_break $ str "->" )
                 $ space_break
                 $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
                 $ cmt_after_cases )
-          | _ -> (box, fmt_cases c ctx cs $ cmt_after_cases)
+          | _ ->
+              ( hvbox box_indent
+              , box_indent
+              , fmt_cases c ctx cs $ cmt_after_cases )
         in
-        (fun_ $ function_, box_cases cases, box, 0)
+        (* Cancel the indentation of [box] for the closing paren. *)
+        let closing_paren_offset = if should_box then -box_indent else 0 in
+        (fun_ $ function_, box_cases cases, box, closing_paren_offset)
   in
   let space_opn_parens, space_cls_parens =
     match ctx0 with

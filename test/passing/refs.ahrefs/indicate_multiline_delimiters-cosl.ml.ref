@@ -120,3 +120,25 @@ class fooooooooooooooooooooooooooooooooo =
     end
  )
     0
+
+let f =
+  foooooooooooooooooooooooo (function
+    | Fooooooooooooooooooooo -> fooooooooooooooooooooooooooooooooo
+    | Baaaaaaaaaaaaaaaaaaaaa -> baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  )
+
+let f =
+  foooooooooooooooooooooooo (fun x -> function
+    | Fooooooooooooooooooooo -> fooooooooooooooooooooooooooooooo x
+    | Baaaaaaaaaaaaaaaaaaaaa -> baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa x
+  )
+
+let f =
+  foooooooooooooooooooooooo (function Fooooooooooooooooooooo ->
+    fooooooooooooooooooooooooooooooooo
+)
+
+let f =
+  foooooooooooooooooooooooo (fun Fooooooooooooooooooooo ->
+    fooooooooooooooooooooooooooooooooo
+)
