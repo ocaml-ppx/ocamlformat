@@ -37,9 +37,6 @@ module Exp : sig
        Conf.t
     -> ?disambiguate:bool
     -> ?fits_breaks:bool
-    -> ?offset_closing_paren:int
-         (** Offset of the closing paren used when [indicate-multiline-delimiters
-             = closing-on-separate-line] is set. *)
     -> parens:bool
     -> Fmt.t
     -> Fmt.t

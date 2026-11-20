@@ -156,20 +156,13 @@ module Exp = struct
       | _ -> false
   end
 
-  let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
-      ?(offset_closing_paren = 0) ~parens k =
+  let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true) ~parens
+      k =
     if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
       wrap_if_fits_or parens "(" ")" k
-    else if not parens then k
-    else if fits_breaks then wrap_fits_breaks ~space:false c "(" ")" k
-    else
-      match c.fmt_opts.indicate_multiline_delimiters.v with
-      | `Space ->
-          Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
-      | `Closing_on_separate_line ->
-          Fmt.fits_breaks "(" "(" $ k
-          $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
-      | `No -> wrap (str "(") (str ")") k
+    else if fits_breaks then
+      wrap_fits_breaks_if ~space:false c parens "(" ")" k
+    else parens_if parens c k
 
   let break_fun_kw c ~ctx ~ctx0 ~last_arg =
     let is_labelled_arg =
