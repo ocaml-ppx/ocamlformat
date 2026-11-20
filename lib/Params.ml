@@ -1103,8 +1103,8 @@ let get_if_then_else (c : Conf.t) ~cmts_before_opt ~has_cmts_before ~pro
               ( pro
               $ fmt_if (not first) (str "else ")
               $ fmt_infix_ext_attrs ~pro:(str "if") infix_ext_attrs
-              $ space_break $ fmt_cond xcond $ cmts_before_kw )
-            $ space_break
+              $ space_break $ fmt_cond xcond )
+            $ space_break $ cmts_before_kw
         | None -> cmts_before_kw
       in
       { box_branch= Fn.id

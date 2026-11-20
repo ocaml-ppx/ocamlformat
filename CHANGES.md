@@ -17,6 +17,8 @@ profile. This started with version 0.26.0.
 
 ### Fixed
 
+- Fix dropped comment with `if-then-else = keyword-first` (#2853, @Julow)
+
 - Fix closing parenthesis indentation in some expressions and pattern with
   `indicate-multiline-delimiters = closing-on-separate-line`
   (#2850, #2851, @Julow)

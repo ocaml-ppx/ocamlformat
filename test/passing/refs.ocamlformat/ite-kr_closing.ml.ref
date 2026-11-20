@@ -344,3 +344,10 @@ let _ =
     | B ->
         b
     end
+
+let () =
+  if false
+  (* aaa *)
+  (* bbb *)
+  then
+    ()

@@ -286,3 +286,10 @@ let _ =
     | B -> b
   )
 ;;
+
+let () =
+  if false
+  (* aaa *)
+  (* bbb *)
+  then ()
+;;
