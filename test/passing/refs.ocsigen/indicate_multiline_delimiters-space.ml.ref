@@ -1,0 +1,116 @@
+let compare = function
+  | Eq -> ( = )
+  | Neq -> ( <> )
+  | Lt -> ( < ) [@attr]
+  | Le -> ( <= )
+  | Gt -> ( > )
+  | Ge -> ( >= )
+
+let raise fmt =
+  Fmt.kstr
+    (fun error_message (result : _ result) ->
+      match result with Ok v -> v | Error `Oh_no -> invalid_arg error_message )
+    fmt
+
+let raise fmt =
+  Fmt.kstr
+    (fun error_message aaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbb ->
+      invalid_arg error_message )
+    fmt
+
+let raise fmt =
+  Fmt.kstr
+    (fun error_message (result : _ result) ->
+      match result with Ok v -> v | Error `Oh_no -> invalid_arg error_message )
+    fmt
+
+let raise fmt =
+  Fmt.kstr
+    (fun error_message aaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbb ->
+      invalid_arg error_message )
+    fmt
+
+let contrived =
+  List.map
+    ~f:(fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+      f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa )
+    l
+
+let contrived =
+  List.map l ~f:(fun aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ->
+      f aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa )
+
+let x =
+  match y with
+  | Empty | Leaf _ -> assert false
+  | Node
+      ( {left = lr_left; key = _; value = fooooooo; height = _; right = lr_right}
+        as lr_node ) ->
+      left_node.right <- lr_left;
+      root_node.left <- lr_right;
+      lr_node.right <- tree
+
+let service, _ =
+  ( Page.receive server_function
+    : (_, _) Eliom.Client_base.server_function_service * _ )
+
+let service, _ =
+  ( Page.receive server_function
+    :> (_, _) Eliom.Client_base.server_function_service * _ )
+
+module Service =
+  ( val Page.receive server_function
+      : Eliom.Client_base.Server_function_service with type t = server_function
+    )
+
+let f
+    (module M : S
+      with type fooooooooooooooooooooooooooooooooooooooooooo =
+        fooooooooooooooooooooooooooooooooooooooooooo ) =
+  ()
+
+let f
+    (fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+     [@foooooooooooooooooooooooooooooooo] ) =
+  ()
+
+let (`Foooooooooooooooooo
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) ) =
+  x
+
+let (Foooooooooooooooooo
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) ) =
+  x
+
+let f :
+    (   fooooooooooooooooooooooooooooooooo
+     -> fooooooooooooooooooooooooooooooooo
+     -> fooooooooooooooooooooooooooooooooo )
+    t =
+  ()
+
+class fooooooooooooooooooooooooooooooooo =
+  (fun x ->
+     object
+       method foo = 1
+       method bar = 2
+     end )
+    0
+
+let f =
+  foooooooooooooooooooooooo (function
+    | Fooooooooooooooooooooo -> fooooooooooooooooooooooooooooooooo
+    | Baaaaaaaaaaaaaaaaaaaaa -> baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa )
+
+let f =
+  foooooooooooooooooooooooo (fun x -> function
+    | Fooooooooooooooooooooo -> fooooooooooooooooooooooooooooooo x
+    | Baaaaaaaaaaaaaaaaaaaaa -> baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa x )
+
+let f =
+  foooooooooooooooooooooooo (function Fooooooooooooooooooooo ->
+      fooooooooooooooooooooooooooooooooo )
+
+let f =
+  foooooooooooooooooooooooo (fun Fooooooooooooooooooooo ->
+      fooooooooooooooooooooooooooooooooo )
