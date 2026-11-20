@@ -69,22 +69,37 @@ let ctx_is_let_or_fun ~ctx ctx0 =
       phys_equal rhs exp
   | _ -> false
 
-let parens_if parens (c : Conf.t) ?(disambiguate = false)
-    ?(offset_closing = 0) k =
+let _delimiters parens (c : Conf.t) ?(disambiguate = false)
+    ?(space_opn = false) ?(force_indicate = false) ?(offset_closing = 0) opn
+    cls k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
-    wrap_if_fits_or parens "(" ")" k
+    wrap_if_fits_or parens opn cls k
   else if not parens then k
   else
-    match c.fmt_opts.indicate_multiline_delimiters.v with
-    | `Space ->
-        Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
-    | `Closing_on_separate_line ->
-        Fmt.fits_breaks "(" "(" $ k
-        $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing) ")"
-    | `No -> wrap (str "(") (str ")") k
+    let opn_break = if space_opn then opn ^ " " else opn in
+    match (c.fmt_opts.indicate_multiline_delimiters.v, force_indicate) with
+    | `No, false -> wrap (str opn) (str cls) k
+    | `Space, _ | `No, true ->
+        Fmt.fits_breaks opn opn_break
+        $ k
+        $ Fmt.fits_breaks cls ~hint:(1, 0) cls
+    | `Closing_on_separate_line, _ ->
+        Fmt.fits_breaks opn opn_break
+        $ k
+        $ Fmt.fits_breaks cls ~hint:(1000, offset_closing) cls
 
-let parens c ?disambiguate ?offset_closing k =
-  parens_if true c ?disambiguate ?offset_closing k
+let parens_if parens c ?disambiguate ?space_opn ?force_indicate
+    ?offset_closing k =
+  _delimiters parens c ?disambiguate ?space_opn ?force_indicate
+    ?offset_closing "(" ")" k
+
+let parens c ?disambiguate ?space_opn ?force_indicate ?offset_closing k =
+  _delimiters true c ?disambiguate ?space_opn ?force_indicate ?offset_closing
+    "(" ")" k
+
+let delimiters c ?(no_indicate = false) opn cls k =
+  _delimiters true c ~space_opn:true ~force_indicate:(not no_indicate) opn
+    cls k
 
 module Exp = struct
   (** Return [None] if [ctx0] is not an application or [ctx] is not one of its
@@ -160,9 +175,7 @@ module Exp = struct
       k =
     if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
       wrap_if_fits_or parens "(" ")" k
-    else if fits_breaks then
-      wrap_fits_breaks_if ~space:false c parens "(" ")" k
-    else parens_if parens c k
+    else parens_if parens c ~space_opn:fits_breaks k
 
   let break_fun_kw c ~ctx ~ctx0 ~last_arg =
     let is_labelled_arg =
@@ -661,7 +674,7 @@ let get_cases (c : Conf.t) ~fmt_infix_ext_attrs ~ctx ~first ~last
 
 let wrap_collec c ~space_around opn cls =
   if space_around then wrap (str opn $ char ' ') (break 1 0 $ str cls)
-  else wrap_fits_breaks c opn cls
+  else fun k -> delimiters c opn cls k
 
 let wrap_record (c : Conf.t) =
   wrap_collec c ~space_around:c.fmt_opts.space_around_records.v "{" "}"
@@ -674,7 +687,8 @@ let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break ?(close = noop) items
     | `After -> str "," $ space_break
   in
   let k = list items tuple_sep Fn.id $ close in
-  if parens then wrap_fits_breaks c "(" ")" (hvbox 0 k)
+  if parens then
+    parens_if true c ~space_opn:true ~force_indicate:true (hvbox 0 k)
   else if no_parens_if_break then k
   else fits_breaks "" "( " $ hvbox 0 k $ fits_breaks "" ~hint:(1, 0) ")"
 

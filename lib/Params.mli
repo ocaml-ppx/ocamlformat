@@ -16,14 +16,37 @@ val parens_if :
      bool
   -> Conf.t
   -> ?disambiguate:bool
+  -> ?space_opn:bool
+       (** Add a space after the opening paren when the box breaks. *)
+  -> ?force_indicate:bool
+       (** Indicate the multiline delimiters even when
+           [indicate-multiline-delimiters = no]. *)
   -> ?offset_closing:int
-       (** Offset of the closing paren used when [indicate-multiline-delimiters
-           = closing-on-separate-line] is set. *)
+       (** Offset of the closing paren used when
+           [indicate-multiline-delimiters = closing-on-separate-line] is set. *)
   -> Fmt.t
   -> Fmt.t
 
 val parens :
-  Conf.t -> ?disambiguate:bool -> ?offset_closing:int -> Fmt.t -> Fmt.t
+     Conf.t
+  -> ?disambiguate:bool
+  -> ?space_opn:bool
+  -> ?force_indicate:bool
+  -> ?offset_closing:int
+  -> Fmt.t
+  -> Fmt.t
+(** See {!parens_if}. *)
+
+val delimiters :
+     Conf.t
+  -> ?no_indicate:bool
+       (** Don't add spaces after the opening delimiter when
+           [indicate-multiline-delimiters = no] *)
+  -> string
+  -> string
+  -> Fmt.t
+  -> Fmt.t
+(** Format delimiters like [[]] or [{}]. *)
 
 module Exp : sig
   module Infix_op_arg : sig

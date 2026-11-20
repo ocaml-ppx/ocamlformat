@@ -932,7 +932,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
   | Ptyp_constr (lid, t1N) ->
       hvbox
         (Params.Indent.type_constr c.conf)
-        ( wrap_fits_breaks c.conf "(" ")"
+        ( Params.parens c.conf ~space_opn:true ~force_indicate:true
             (list t1N (Params.comma_sep c.conf)
                (sub_typ ~ctx >> fmt_core_type c) )
         $ space_break $ fmt_longident_loc c lid )
@@ -977,7 +977,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       in
       hvbox 0
         (wrap_if parenze_constraint_ctx (str "(") (str ")")
-           (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
+           (Params.parens_if parens c.conf ~space_opn:true
               (list typs (space_break $ str "* ") with_label) ) )
   | Ptyp_var s -> fmt_type_var s
   | Ptyp_variant (rfs, flag, lbls) ->
@@ -1065,7 +1065,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
       $ space_break
       $ fmt_longident_loc c ~pre:"#" lid
   | Ptyp_class (lid, t1N) ->
-      wrap_fits_breaks c.conf "(" ")"
+      Params.parens c.conf ~space_opn:true ~force_indicate:true
         (list t1N (Params.comma_sep c.conf)
            (sub_typ ~ctx >> fmt_core_type c) )
       $ space_break
@@ -1181,7 +1181,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         | _ -> None
       in
       hovbox 0
-        (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
+        (Params.parens_if parens c.conf ~space_opn:true
            (hovbox 0
               ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
               $ space_break $ str "as" $ space_break
@@ -1286,7 +1286,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            (p.box (fmt_fields $ fmt_underscore)) )
   | Ppat_array [] ->
       hvbox 0
-        (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
+        (Params.delimiters c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
       let p = Params.get_array_pat c.conf ~ctx:ctx0 pat in
       p.box
@@ -1379,7 +1379,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         | Some pt ->
             let pro = k $ space_break $ str ": " in
             fmt_package_type c ctx ~parens ~pro pt
-        | None -> wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
+        | None -> Params.parens_if parens c.conf ~space_opn:true k
       in
       fmt_constraint_opt pt
         ( str "module"
@@ -2239,7 +2239,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
         | _ -> false
       in
       pro
-      $ wrap_fits_breaks_if c.conf parens "(" ")"
+      $ Params.parens_if parens c.conf ~space_opn:true ~force_indicate:true
           ( fmt_function ~ctx:(Exp r)
               ~ctx0:ctx (*~box:false to fix regression on infix *)
               ~parens:parens_r
@@ -2415,7 +2415,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox 0
           (Params.parens_if parens c.conf
-             ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
+             ( Params.delimiters c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
              $ fmt_atrs ) )
   | Pexp_array e1N ->
       let p = Params.get_array_expr c.conf in
@@ -2471,8 +2471,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox indent
           (Params.parens_if parens c.conf
-             ( wrap_fits_breaks ~space:false ~offset_closing:(-indent) c.conf
-                 "(" ")"
+             ( Params.parens c.conf ~space_opn:true ~offset_closing:(-indent)
                  ( fmt_expression c (sub_exp ~ctx e)
                  $ space_break $ str ": "
                  $ fmt_core_type c (sub_typ ~ctx t) )
@@ -2944,8 +2943,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox 2
           (Params.parens_if (parens && has_attr) c.conf
-             ( wrap_fits_breaks ~space:false ~offset_closing:(-2) c.conf "("
-                 ")"
+             ( Params.parens c.conf ~space_opn:true ~offset_closing:(-2)
                  ( fmt_expression c (sub_exp ~ctx e1)
                  $ opt t1
                      ( space_break $ str ": "
@@ -3022,7 +3020,7 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
           pro
           $ hvbox 0
               (Params.parens_if parens c.conf
-                 ( wrap_fits_breaks ~space:false c.conf "{<" ">}"
+                 ( Params.delimiters c.conf "{<" ">}" ~no_indicate:true
                      (list l (break 0 1 $ str "; ") fmt_field)
                  $ fmt_atrs ) ) )
   | Pexp_setinstvar (name, expr) ->
@@ -3310,7 +3308,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         ~has_attr ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
-        (wrap_fits_breaks ~space:false c.conf "(" ")"
+        (Params.parens c.conf ~space_opn:true
            ( fmt_class_expr c (sub_cl ~ctx e)
            $ str " :" $ space_break
            $ fmt_class_type c (sub_cty ~ctx t) ) )
@@ -3550,9 +3548,9 @@ and fmt_primitive_description c ctx ~pro ?epi pd =
 and fmt_tydcl_params c ctx params =
   fmt_if
     (not (List.is_empty params))
-    ( wrap_fits_breaks_if ~space:false c.conf
+    ( Params.parens_if
         (List.length params > 1)
-        "(" ")"
+        c.conf ~space_opn:true
         (list params (Params.comma_sep c.conf) (fun (ty, vc) ->
              fmt_variance_injectivity c vc
              $ fmt_core_type c (sub_typ ~ctx ty) ) )
@@ -3569,7 +3567,7 @@ and fmt_class_params c ctx params =
   fmt_if
     (not (List.is_empty params))
     (hvbox 0
-       ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
+       ( Params.delimiters c.conf "[" "]" (list_fl params fmt_param)
        $ space_break ) )
 
 and fmt_type_declaration c ?(pro = noop) ?(kw = "") ?(nonrec_kw = "") ?name
@@ -4667,8 +4665,7 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
       ; bdy=
           Cmts.fmt c pmod_loc
             ( hvbox 2
-                (wrap_fits_breaks ~space:false ~offset_closing:(-2) c.conf
-                   "(" ")"
+                (Params.parens c.conf ~space_opn:true ~offset_closing:(-2)
                    ( str "val "
                    $ fmt_expression c (sub_exp ~ctx e)
                    $ opt ty1 (package_type ": ")
