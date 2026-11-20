@@ -65,3 +65,55 @@ let x =
 let service, _ =
   (Page.receive server_function : (_, _) Eliom.Client_base.server_function_service * _)
 ;;
+
+let service, _ =
+  (Page.receive server_function :> (_, _) Eliom.Client_base.server_function_service * _)
+;;
+
+module Service =
+  ( val Page.receive server_function
+    : Eliom.Client_base.Server_function_service with type t = server_function )
+
+let f
+      (module M : S
+        with type fooooooooooooooooooooooooooooooooooooooooooo =
+          fooooooooooooooooooooooooooooooooooooooooooo )
+  =
+  ()
+;;
+
+let f
+      (fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+       [@foooooooooooooooooooooooooooooooo] )
+  =
+  ()
+;;
+
+let (`Foooooooooooooooooo
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+  =
+  x
+;;
+
+let (Foooooooooooooooooo
+       (foooooooooooooo, foooooooooooooo, foooooooooooooo, foooooooooooooo) )
+  =
+  x
+;;
+
+let f
+  : (fooooooooooooooooooooooooooooooooo
+     -> fooooooooooooooooooooooooooooooooo
+     -> fooooooooooooooooooooooooooooooooo )
+      t
+  =
+  ()
+;;
+
+class fooooooooooooooooooooooooooooooooo =
+  (fun x ->
+     object
+       method foo = 1
+       method bar = 2
+     end )
+    0

@@ -12,9 +12,18 @@
 open Extended_ast
 open Asttypes
 
-val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens_if :
+     bool
+  -> Conf.t
+  -> ?disambiguate:bool
+  -> ?offset_closing:int
+       (** Offset of the closing paren used when [indicate-multiline-delimiters
+           = closing-on-separate-line] is set. *)
+  -> Fmt.t
+  -> Fmt.t
 
-val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens :
+  Conf.t -> ?disambiguate:bool -> ?offset_closing:int -> Fmt.t -> Fmt.t
 
 module Exp : sig
   module Infix_op_arg : sig
@@ -29,9 +38,8 @@ module Exp : sig
     -> ?disambiguate:bool
     -> ?fits_breaks:bool
     -> ?offset_closing_paren:int
-         (** Offset of the closing paren in case the line has been broken and
-             the option [indicate-multiline-delimiters] is set to
-             [closing-on-separate-line]. By default the offset is 0. *)
+         (** Offset of the closing paren used when [indicate-multiline-delimiters
+             = closing-on-separate-line] is set. *)
     -> parens:bool
     -> Fmt.t
     -> Fmt.t

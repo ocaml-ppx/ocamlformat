@@ -69,7 +69,8 @@ let ctx_is_let_or_fun ~ctx ctx0 =
       phys_equal rhs exp
   | _ -> false
 
-let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
+let parens_if parens (c : Conf.t) ?(disambiguate = false)
+    ?(offset_closing = 0) k =
   if disambiguate && c.fmt_opts.disambiguate_non_breaking_match.v then
     wrap_if_fits_or parens "(" ")" k
   else if not parens then k
@@ -78,10 +79,12 @@ let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
     | `Space ->
         Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
     | `Closing_on_separate_line ->
-        Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1000, 0) ")"
+        Fmt.fits_breaks "(" "(" $ k
+        $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing) ")"
     | `No -> wrap (str "(") (str ")") k
 
-let parens c ?disambiguate k = parens_if true c ?disambiguate k
+let parens c ?disambiguate ?offset_closing k =
+  parens_if true c ?disambiguate ?offset_closing k
 
 module Exp = struct
   (** Return [None] if [ctx0] is not an application or [ctx] is not one of its

@@ -1102,7 +1102,7 @@ and fmt_package_type c ctx ~parens ~pro ptyp =
   let {ppt_path; ppt_constraints; ppt_attrs; ppt_loc} = ptyp in
   Cmts.fmt c ppt_loc
     (hvbox 2
-       (Params.parens_if parens c.conf
+       (Params.parens_if parens c.conf ~offset_closing:(-2)
           ( hovbox 0 (pro $ fmt_longident_loc c ppt_path)
           $ fmt_package_type_cnstrs c ctx ppt_constraints
           $ fmt_attributes c ppt_attrs ) ) )
@@ -1146,9 +1146,9 @@ and fmt_pattern_attributes c xpat k =
         | (Ppat_record _ | Ppat_array _ | Ppat_list _), `Terminator -> hovbox
         | _ -> hvbox
       in
-      box
-        (if parens_attr then 1 else 0)
-        (Params.parens_if parens_attr c.conf
+      let indent = if parens_attr then 1 else 0 in
+      box indent
+        (Params.parens_if parens_attr c.conf ~offset_closing:(-indent)
            (k $ fmt_attributes c ~pre:Space attrs) )
 
 and fmt_pattern ?ext c ?pro ?parens ?(box = false)
@@ -1229,9 +1229,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       Cmts.fmt c ppat_loc
         (hvbox 0 (fmt_pat_cons c ~parens (List.map lp ~f:(sub_pat ~ctx))))
   | Ppat_construct (lid, Some (exists, pat)) ->
-      cbox
-        (Params.Indent.variant c.conf ~parens)
-        (Params.parens_if parens c.conf
+      let indent = Params.Indent.variant c.conf ~parens in
+      cbox indent
+        (Params.parens_if parens c.conf ~offset_closing:(-indent)
            (hvbox 2
               ( fmt_longident_loc c lid $ space_break
               $ ( match exists with
@@ -1245,9 +1245,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
               $ fmt_pattern c (sub_pat ~ctx pat) ) ) )
   | Ppat_variant (lbl, None) -> variant_var c lbl
   | Ppat_variant (lbl, Some pat) ->
-      cbox
-        (Params.Indent.variant c.conf ~parens)
-        (Params.parens_if parens c.conf
+      let indent = Params.Indent.variant c.conf ~parens in
+      cbox indent
+        (Params.parens_if parens c.conf ~offset_closing:(-indent)
            (hvbox 2
               ( variant_var c lbl $ space_break
               $ fmt_pattern c (sub_pat ~ctx pat) ) ) )
@@ -2939,7 +2939,8 @@ and fmt_expression c ?(box = true) ?(pro = noop) ?eol ?parens
       pro
       $ hvbox 2
           (Params.parens_if (parens && has_attr) c.conf
-             ( wrap_fits_breaks ~space:false c.conf "(" ")"
+             ( wrap_fits_breaks ~space:false ~offset_closing:(-2) c.conf "("
+                 ")"
                  ( fmt_expression c (sub_exp ~ctx e1)
                  $ opt t1
                      ( space_break $ str ": "
@@ -3276,7 +3277,7 @@ and fmt_class_expr c ({ast= exp; ctx= ctx0} as xexp) =
         | _ -> 0
       in
       hvbox indent
-        (Params.parens_if parens c.conf
+        (Params.parens_if parens c.conf ~offset_closing:(-indent)
            ( hovbox 2
                ( box_fun_decl_args c 0
                    ( str "fun "
@@ -4661,7 +4662,8 @@ and fmt_module_expr ?(dock_struct = true) c ({ast= m; ctx= ctx0} as xmod) =
       ; bdy=
           Cmts.fmt c pmod_loc
             ( hvbox 2
-                (wrap_fits_breaks ~space:false c.conf "(" ")"
+                (wrap_fits_breaks ~space:false ~offset_closing:(-2) c.conf
+                   "(" ")"
                    ( str "val "
                    $ fmt_expression c (sub_exp ~ctx e)
                    $ opt ty1 (package_type ": ")
