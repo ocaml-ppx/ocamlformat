@@ -16,7 +16,7 @@
 
 **ocamlformat** is a code formatter for OCaml. It comes with opinionated default settings but is also fully customizable to suit your coding style.
 
-- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet`.
+- **Profiles:** ocamlformat offers profiles we predefined formatting configurations. Profiles include `default`, `ocamlformat`, `janestreet` and `ocsigen`.
 - **Configurable:** Users can change the formatting profile and configure every option in their `.ocamlformat` configuration file.
 - **Format Comments:** ocamlformat can format comments, docstrings, and even code blocks in your comments.
 - **RPC:** ocamlformat provides an RPC server that can bed used by other tools to easily format OCaml Code.

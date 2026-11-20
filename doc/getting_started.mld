@@ -45,7 +45,8 @@ There are a number of preset code style profiles, selected using the [--profile]
 The available profiles are:
 - [conventional] (also known as [default]);
 - [ocamlformat];
-- [janestreet].
+- [janestreet];
+- [ocsigen].
 
 It is considered a good practice to set a profile in the [.ocamlformat] configuration file of a project, even if you plan on using the [default] profile, explicitly setting [profile = default] is recommended.
 

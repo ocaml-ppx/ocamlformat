@@ -1,0 +1,5 @@
+ocamlformat: ignoring "line_directives.ml" (syntax error)
+File "line_directives.ml", line 1, characters 1-9:
+1 | #3 "f.ml"
+     ^^^^^^^^
+Error: Invalid lexer directive "#3 \"f.ml\"": line directives are not supported

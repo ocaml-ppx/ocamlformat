@@ -14,7 +14,8 @@
 # By default, test projects used as regression tests
 DIRS= \
 	code/ocamlformat code/js_of_ocaml code/dune code/irmin \
-	code/dune-release code/mirage code/ppxlib code/base
+	code/dune-release code/mirage code/ppxlib code/base code/eliom \
+	code/ocsigenserver
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml code/infer
@@ -24,7 +25,8 @@ PRUNE_DIRS= \
 	code/ocamlformat/test code/ocamlformat/vendor/parser-recovery \
 	code/ocaml/experimental code/ocaml/testsuite/tests/parse-errors \
 	code/dune/test code/dune/vendor code/dune/otherlibs code/dune/example \
-	code/infer/sledge/vendor/llvm-dune code/mirage/test
+	code/infer/sledge/vendor/llvm-dune code/mirage/test \
+	code/eliom/pkg/distillery/templates
 
 ALL_DIRS=$(DIRS) $(XDIRS)
 
@@ -46,6 +48,8 @@ code/mirage: URI = https://github.com/mirage/mirage
 code/dune-release: URI = https://github.com/ocamllabs/dune-release
 code/ppxlib: URI = https://github.com/ocaml-ppx/ppxlib
 code/base: URI = https://github.com/janestreet/base.git
+code/eliom: URI = https://github.com/ocsigen/eliom
+code/ocsigenserver: URI = https://github.com/ocsigen/ocsigenserver
 
 .PHONY: test_setup
 test_setup: $(ALL_DIRS)
@@ -98,7 +102,8 @@ FIND_ARGS= \
 	-name _build -not -prune -or \
 	$(patsubst %,-path % -not -prune -or,$(PRUNE_DIRS)) \
 	-name '*.ml' -and -not -name '*.pp.ml' -or \
-	-name '*.mli' -and -not -name '*.pp.mli'
+	-name '*.mli' -and -not -name '*.pp.mli' -or \
+	-name '*.eliom' -or -name '*.eliomi'
 
 .PHONY: test_inplace
 test_inplace:
