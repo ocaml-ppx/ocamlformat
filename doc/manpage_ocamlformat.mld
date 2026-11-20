@@ -375,8 +375,8 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. The flag is unset by default.
 
-       -p {default|conventional|ocamlformat|janestreet},
-       --profile={default|conventional|ocamlformat|janestreet}
+       -p {default|conventional|ocamlformat|janestreet|ocsigen},
+       --profile={default|conventional|ocamlformat|janestreet|ocsigen}
            Select a preset profile which sets all options, overriding lower
            priority configuration. default is an alias for the conventional
            profile. The conventional profile aims to be as familiar and
@@ -396,7 +396,10 @@ OPTIONS (CODE FORMATTING STYLE)
            without scrolling is easier, so indentation or white space is
            avoided unless it helps legibility; Attention has been given to
            making some syntactic gotchas visually obvious. The janestreet
-           profile is used at Jane Street. The default value is default.
+           profile is used at Jane Street. The ocsigen profile is used in
+           Ocsigen projects. It aims to be compact while staying readable.
+           Separators start the line and closing delimiters are on a line of
+           their own. The default value is default.
 
        --parens-ite
            Uses parentheses around if-then-else branches that spread across

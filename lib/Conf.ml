@@ -256,6 +256,75 @@ let janestreet_profile from =
   ; wrap_docstrings= elt false
   ; wrap_fun_args= elt false }
 
+let ocsigen_profile from =
+  let elt content = Elt.make content from in
+  { align_symbol_open_paren= elt true
+  ; assignment_operator= elt `End_line
+  ; break_around_multiline_strings= elt false
+  ; break_before_in= elt `Fit_or_vertical
+  ; break_cases= elt `Fit
+  ; break_collection_expressions= elt `Fit_or_vertical
+  ; break_colon= elt `After
+  ; break_infix= elt `Wrap
+  ; break_infix_before_func= elt false
+  ; break_fun_decl= elt `Smart
+  ; break_fun_sig= elt `Smart
+  ; break_separators= elt `Before
+  ; break_sequences= elt false
+  ; break_string_literals= elt `Auto
+  ; break_struct= elt true
+  ; cases_exp_indent= elt 4
+  ; cases_matching_exp_indent= elt `Compact
+  ; disambiguate_non_breaking_match= elt false
+  ; doc_comments= elt `After_when_possible
+  ; doc_comments_padding= elt 2
+  ; doc_comments_tag_only= elt `Default
+  ; dock_collection_brackets= elt false
+  ; exp_grouping= elt `Preserve
+  ; extension_indent= elt 2
+  ; field_space= elt `Loose
+  ; function_indent= elt 2
+  ; function_indent_nested= elt `Never
+  ; if_then_else= elt `Keyword_first
+  ; indent_after_in= elt 0
+  ; indicate_multiline_delimiters= elt `Closing_on_separate_line
+  ; indicate_nested_or_patterns= elt `Unsafe_no
+  ; infix_precedence= elt `Indent
+  ; leading_nested_match_parens= elt false
+  ; let_and= elt `Compact
+  ; let_binding_indent= elt 2
+  ; let_binding_deindent_fun= elt true
+  ; let_binding_spacing= elt `Compact
+  ; let_module= elt `Compact
+  ; letop_punning= elt `Preserve
+  ; line_endings= elt `Lf
+  ; margin= elt 80
+  ; match_indent= elt 0
+  ; match_indent_nested= elt `Never
+  ; max_indent= elt None
+  ; module_indent= elt 2
+  ; module_item_spacing= elt `Compact
+  ; nested_match= elt `Wrap
+  ; ocp_indent_compat= elt false
+  ; parens_ite= elt false
+  ; parens_tuple= elt `Multi_line_only
+  ; parens_tuple_patterns= elt `Multi_line_only
+  ; parse_docstrings= elt true
+  ; parse_toplevel_phrases= elt false
+  ; sequence_blank_line= elt `Compact
+  ; sequence_style= elt `Terminator
+  ; single_case= elt `Compact
+  ; space_around_arrays= elt false
+  ; space_around_lists= elt false
+  ; space_around_records= elt false
+  ; space_around_variants= elt false
+  ; stritem_extension_indent= elt 0
+  ; type_decl= elt `Compact
+  ; type_decl_indent= elt 2
+  ; wrap_comments= elt false
+  ; wrap_docstrings= elt true
+  ; wrap_fun_args= elt true }
+
 let default =
   let elt content = Elt.make content `Default in
   { fmt_opts= default_profile `Default
@@ -313,7 +382,12 @@ let profile =
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious."
     ; Decl.Value.make ~name:"janestreet" `janestreet
-        "The $(b,janestreet) profile is used at Jane Street." ]
+        "The $(b,janestreet) profile is used at Jane Street."
+    ; Decl.Value.make ~name:"ocsigen" `ocsigen
+        "The $(b,ocsigen) profile is used in Ocsigen projects. It aims to \
+         be compact while staying readable. Separators (; and ->) are at \
+         the start of the line and closing parentheses are on their own \
+         line for multi-line expressions." ]
   in
   Decl.choice ~names ~all ~default ~doc ~kind:Decl.Formatting
     ~removed_values:
@@ -327,6 +401,7 @@ let profile =
         | `conventional -> "conventional"
         | `ocamlformat -> "ocamlformat"
         | `janestreet -> "janestreet"
+        | `ocsigen -> "ocsigen"
       in
       let from_p =
         let ufrom =
@@ -341,7 +416,8 @@ let profile =
         | `default -> default_profile
         | `conventional -> conventional_profile
         | `ocamlformat -> ocamlformat_profile
-        | `janestreet -> janestreet_profile )
+        | `janestreet -> janestreet_profile
+        | `ocsigen -> ocsigen_profile )
           from_p
       in
       {conf with profile= elt; fmt_opts= p} )
