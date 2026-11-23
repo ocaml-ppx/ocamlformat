@@ -285,3 +285,9 @@ let _ =
     | A -> function_with_a_long_enough_name_to_force_a_vertical_break a
     | B -> b
     end
+
+let () =
+  if false
+  (* aaa *)
+  (* bbb *)
+  then ()
