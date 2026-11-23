@@ -10,6 +10,10 @@ profile. This started with version 0.26.0.
 
 - Support for OCaml 5.6 (#2833, #2834, #2836, #2837, #2840, @Julow)
 
+### Added
+
+- Add the `ocsigen` profile (#2852, @Julow)
+
 ### Changed
 
 - Empty bodies of while loops will be formatted on one line: `do () done`.
