@@ -72,12 +72,13 @@ and main_loop lexbuf = function
 type 'a parser =
   Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
 
-let wrap (parser : 'a parser) ~ocaml_version lexbuf : 'a =
+let wrap (parser : 'a parser) ~ocaml_version ~metaocaml lexbuf : 'a =
   try
     Docstrings.init ();
     let keyword_edition =
       Some (ocaml_version, [])
     in
+    Lexer.lex_metaocaml := metaocaml;
     Lexer.init ?keyword_edition ();
     let ast = main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) in
     Parsing.clear_parser();

@@ -11,5 +11,6 @@
 
 val repl_file :
      ocaml_version:(int * int) option
+  -> metaocaml:bool
   -> Lexing.lexbuf
   -> Parsetree.repl_phrase list
