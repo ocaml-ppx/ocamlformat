@@ -9,7 +9,23 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Interface over the AST defined in vendor/ocaml-4.13 *)
+(** Standard OCaml parser AST (vendor/parser-standard).
+
+    OCamlformat uses an extended parser for formatting that supports
+    additional syntax constructs (field punning, begin..end nodes, labeled
+    tuples, etc.). To verify that formatting preserves semantics,
+    ocamlformat re-parses both the original and formatted source with the
+    standard OCaml parser and compares the resulting ASTs. If they differ,
+    formatting changed the meaning of the program — which is a bug.
+
+    The standard parser is used for this comparison because it represents
+    what the OCaml compiler sees: two programs are equivalent if the
+    compiler parses them identically.
+
+    Before comparison the ASTs are run through {!Normalize_std_ast}, which
+    erases differences that don't affect program meaning (e.g. docstring
+    placement, attribute ordering) so the equality check focuses on
+    semantically significant changes. *)
 
 open Ocamlformat_parser_standard
 
@@ -25,13 +41,6 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
   | Pattern : pattern t
-  (* not implemented *)
-  | Repl_file : unit t
-  | Documentation : unit t
-
-type any_t = Any : 'a t -> any_t [@@unboxed]
-
-val of_syntax : Syntax.t -> any_t
 
 module Parse : sig
   val ast :

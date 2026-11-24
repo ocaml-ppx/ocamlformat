@@ -11,6 +11,7 @@
 
 (** Placing and formatting comments in a parsetree. *)
 
+open Ocamlformat_parser_extended
 open Migrate_ast
 
 type layout_cache_key =
@@ -63,7 +64,13 @@ type t =
   ; mutable cmts_within: Cmt.t Multimap.M(Location).t
   ; source: Source.t
   ; mutable remaining: Set.M(Location).t
-  ; layout_cache: Layout_cache.t }
+  ; layout_cache: Layout_cache.t
+  ; original: Cmt.t list
+        (** All dedup'd comments, kept around so they can be retrieved
+            after the maps above have been consumed by formatting. *)
+  }
+
+let source t = t.source
 
 let copy
     { debug
@@ -72,14 +79,16 @@ let copy
     ; cmts_within
     ; source
     ; remaining
-    ; layout_cache } =
+    ; layout_cache
+    ; original } =
   { debug
   ; cmts_before
   ; cmts_after
   ; cmts_within
   ; source
   ; remaining
-  ; layout_cache }
+  ; layout_cache
+  ; original }
 
 let restore src ~into =
   into.cmts_before <- src.cmts_before ;
@@ -337,7 +346,7 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
     relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
 let relocate_ext_cmts (t : t) src (_pre, pld) ~whole_loc =
-  let open Extended_ast in
+  let open Parsetree in
   match pld with
   | PStr
       [ { pstr_desc=
@@ -361,7 +370,7 @@ let relocate_ext_cmts (t : t) src (_pre, pld) ~whole_loc =
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
-  let open Extended_ast in
+  let open Parsetree in
   match exp.pexp_desc with
   | Pexp_match (e0, _, _) ->
       relocate_pattern_matching_cmts t src Parser.MATCH
@@ -372,8 +381,38 @@ let relocate_wrongfully_attached_cmts t src exp =
   | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
   | _ -> ()
 
+let all_comments t = t.original
+
+(** Drop comments that are already represented as docstring attributes in
+    the AST (so they don't get double-printed). *)
+let dedup_cmts ~traverse ast comments =
+  let docs = ref (Set.empty (module Cmt)) in
+  let attribute m atr =
+    let open Parsetree in
+    match atr with
+    | { attr_payload=
+          PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( { pexp_desc=
+                          Pexp_constant
+                            {pconst_desc= Pconst_string (doc, _, None); _}
+                      ; pexp_loc
+                      ; _ }
+                    , [] )
+              ; _ } ]
+      ; _ }
+      when Ast.Attr.is_doc atr ->
+        docs := Set.add !docs (Cmt.create_docstring doc pexp_loc) ;
+        atr
+    | _ -> Ast_mapper.default_mapper.attribute m atr
+  in
+  traverse {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+  Set.(to_list (diff (of_list (module Cmt) comments) !docs))
+
 (** Initialize global state and place comments. *)
-let init fragment ~debug source asts comments_n_docstrings =
+let init ~debug ~source ~ast ~comments ~traverse ~print_ast =
+  let comments = dedup_cmts ~traverse ast comments in
   let t =
     { debug
     ; cmts_before= Map.empty (module Location)
@@ -381,13 +420,11 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; cmts_within= Map.empty (module Location)
     ; source
     ; remaining= Set.empty (module Location)
-    ; layout_cache= Layout_cache.create () }
-  in
-  let comments =
-    Normalize_extended_ast.dedup_cmts fragment asts comments_n_docstrings
+    ; layout_cache= Layout_cache.create ()
+    ; original= comments }
   in
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast fragment asts in
+    let loc_tree, locs = Loc_tree.of_ast ~traverse ast in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
@@ -408,8 +445,7 @@ let init fragment ~debug source asts comments_n_docstrings =
         ; after= get_cmts `After }
       in
       Printast.cmts := Some cmts ;
-      Format.eprintf "AST:\n%a\n%!" (Extended_ast.Printast.ast fragment) asts
-      ) ) ;
+      Format.eprintf "AST:\n%a\n%!" print_ast ast ) ) ;
   t
 
 let preserve_nomemo f t =
