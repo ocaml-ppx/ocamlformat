@@ -1,6 +1,10 @@
 name: Build on Dune PM
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
