@@ -116,26 +116,6 @@
    (>= 1.10.3))))
 
 (package
- (name ocamlformat-bench)
- (synopsis "Auto-formatter for OCaml code")
- (description
-  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
- (depends
-  (ocaml
-   (>= 4.08))
-  (alcotest
-   (and
-    :with-test
-    (>= 1.3.0)))
-  (bechamel
-   (>= 0.2.0))
-  (ocamlformat-lib
-   (= :version))
-  stdio
-  (yojson
-   (>= 1.6.0))))
-
-(package
  (name ocamlformat-rpc-lib)
  (synopsis "Auto-formatter for OCaml code (RPC mode)")
  (description
