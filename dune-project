@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 3.18)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                        ;
@@ -33,6 +33,8 @@
 
 (source
  (github ocaml-ppx/ocamlformat))
+
+(maintenance_intent "(any).(any).(latest)")
 
 (package
  (name ocamlformat-lib)

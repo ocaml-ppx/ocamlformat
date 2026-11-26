@@ -12,7 +12,7 @@ let dep fname = spf "%%{dep:%s}" fname
 
 type setup =
   { mutable has_opts: bool
-  ; mutable base_file: string option
+  ; base_file: string option
   ; mutable should_fail: bool
   ; mutable enabled_if: string option }
 
