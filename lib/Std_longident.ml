@@ -12,27 +12,21 @@
 open Longident
 
 module Indexing_op = struct
-  type raw =
-    { opchars: string
-    ; brackets: Asttypes.paren_kind
-    ; extended: bool  (** eg. [.*{;..}] *)
-    ; has_rhs: bool  (** eg. [.*{}<-] *) }
-
   let parse ident =
     match String.chop_prefix ~prefix:"." ident with
-    | None -> None
+    | None -> false
     | Some ident ->
-        let ident, has_rhs =
+        let ident =
           match String.chop_suffix ident ~suffix:"<-" with
-          | Some ident -> (ident, true)
-          | None -> (ident, false)
+          | Some ident -> ident (* has RHS *)
+          | None -> ident
         in
-        let find_suffix (suffix, brackets, extended) =
+        let find_suffix (suffix, _brackets, _extended) =
           match String.chop_suffix ident ~suffix with
-          | None -> None
-          | Some opchars -> Some {opchars; brackets; extended; has_rhs}
+          | None -> false
+          | Some _ -> true
         in
-        List.find_map ~f:find_suffix
+        List.exists ~f:find_suffix
           [ ("{}", Asttypes.Brace, false)
           ; ("[]", Bracket, false)
           ; ("()", Paren, false)
@@ -82,7 +76,7 @@ module String_id = struct
     | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
     | _ -> false
 
-  let is_index_op ident = Option.is_some (Indexing_op.parse ident)
+  let is_index_op ident = Indexing_op.parse ident
 
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
 end

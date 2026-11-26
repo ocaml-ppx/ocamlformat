@@ -19,7 +19,7 @@ license: "MIT"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.18"}
   "ocaml" {>= "4.08"}
   "csexp" {>= "1.4.0"}
   "odoc" {with-doc}
@@ -39,3 +39,4 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+x-maintenance-intent: ["(any).(any).(latest)"]
