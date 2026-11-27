@@ -8,10 +8,13 @@ gitlab_prefix_set=0
 version_set=0
 prefix_set=0
 prev_binary_set=0
+preview=0
+github_user_set=0
+gitlab_user_set=0
 
 function usage()
 {
-  echo "usage: $0 -u <GITHUB_URL_PREFIX> -y <GITLAB_URL_PREFIX> -v <RELEASE> -p <PREFIX> -b <EXE>"
+  echo "usage: $0 [-n] -u <GITHUB_URL_PREFIX> -y <GITLAB_URL_PREFIX> [-U <GITHUB_USER>] [-Y <GITLAB_USER>] -v <RELEASE> -p <PREFIX> -b <EXE>"
   echo "Url prefix is of the form 'git@github.com:my_user'."
 }
 
@@ -45,15 +48,23 @@ function apply_fmt()
   fi
 }
 
-while getopts ":u:y:v:p:b:" opt; do
+while getopts ":u:y:v:p:b:nU:Y:" opt; do
   case "$opt" in
     u)
       github_prefix=$OPTARG
       github_prefix_set=1
       ;;
+    U)
+      github_user=$OPTARG
+      github_user_set=1
+      ;;
     y)
       gitlab_prefix=$OPTARG
       gitlab_prefix_set=1
+      ;;
+    Y)
+      gitlab_user=$OPTARG
+      gitlab_user_set=1
       ;;
     v)
       version=$OPTARG
@@ -66,6 +77,9 @@ while getopts ":u:y:v:p:b:" opt; do
     b)
       prev_binary=$(realpath $OPTARG)
       prev_binary_set=1
+      ;;
+    n)
+      preview=1
       ;;
     *)
       usage
@@ -83,7 +97,7 @@ if [[ "$github_prefix_set" -eq 0 ]] ||
 fi;
 
 project_list_file=`realpath tools/projects.data`
-preview_branch=preview-ocamlformat-$version
+preview_branch=upgrade-ocamlformat-$version
 
 preview_dir=$prefix/$preview_branch
 log_dir=$preview_dir/logs
@@ -100,9 +114,24 @@ dune build @install
 cp -L _build/install/default/bin/ocamlformat "$bin_dir/ocamlformat-next"
 PATH=$bin_dir:$PATH
 
+if [[ $preview -eq 1 ]]; then
+  title="Preview: Upgrade to OCamlformat $version (unreleased)"
+  description="OCamlformat is not released yet. The aim of this preview is to gather feedback.
+
+Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
+else
+  title="Upgrade to OCamlformat $version"
+  description="OCamlformat $version has just been released.
+
+Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/releases"
+fi
+
+# Write the URLs to open the pull requests to that file
+pr_urls_file=`realpath pull_request_urls`
+
 # Options in 'opts' are enclosed in '<>' to allow safe checks that don't
 # require complex parsing.
-while IFS=, read git_platform namespace project opts; do
+while IFS=, read git_platform namespace project opts; do (
 
   case "$git_platform" in
     "github")
@@ -125,6 +154,7 @@ while IFS=, read git_platform namespace project opts; do
   clone_dir="$preview_dir/$project"
   git clone --quiet --single-branch --filter=blob:none --recurse-submodules "$upstream" "$clone_dir"
   cd "$clone_dir"
+  main_branch=`git branch --show-current`
   git checkout -b "$preview_branch" --quiet
 
   case "$namespace/$project" in
@@ -148,20 +178,13 @@ while IFS=, read git_platform namespace project opts; do
   if [[ $prev_binary_set -eq 1 ]]; then
     ln -sf "$prev_binary" "$bin_dir/ocamlformat"
     prev_version=$(ocamlformat --version)
-    apply_fmt "$prev_version" "Upgrade to OCamlformat $prev_version"
+    apply_fmt "$prev_version" "Apply OCamlformat $prev_version"
   fi
 
   ln -sf "ocamlformat-next" "$bin_dir/ocamlformat"
-  apply_fmt "$version" "Preview: Upgrade to OCamlformat $version (unreleased)
+  apply_fmt "$version" "$title
 
-The aim of this preview is to gather feedback.
-
-Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/CHANGES.md"
-
-  case "$namespace/$project" in
-    "tezos/tezos") bash scripts/lint.sh --update-ocamlformat ;;
-  esac
-
+$description"
   if ! [[ $opts = *"<no-ignore-revs>"* ]] && [[ "${#IGNORE_REVS}" -gt 0 ]]; then
     printf "%s\n" "${IGNORE_REVS[@]}" >> .git-blame-ignore-revs
     git add .git-blame-ignore-revs
@@ -170,4 +193,15 @@ Changelog can be found here: https://github.com/ocaml-ppx/ocamlformat/blob/main/
 
   echo "Pushing to $fork"
   git push --quiet -fu "$fork" "$preview_branch"
+
+  # Pull request URL
+  url_encode() { jq -rn --arg arg "$1" '$arg | @uri'; }
+  case "$git_platform" in
+    "github")
+      if [[ $github_user_set -eq 1 ]]; then
+        echo "https://github.com/$namespace/$project/compare/$main_branch...$github_user:$project:upgrade-ocamlformat-0.30.0?expand=1&title=`url_encode "$title"`&body=`url_encode "$description"`" >> "$pr_urls_file"
+      fi
+      ;;
+  esac
+  ) || echo "Error when upgrading $namespace/$project"
 done < "$project_list_file"
